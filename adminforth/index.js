@@ -1,7 +1,7 @@
 
 import ExpressServer from './servers/express.js';
 import Auth from './auth.js';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -35,9 +35,10 @@ class AdminForth {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
     this.config.runningHotReload = hotReload;
-    
+
     const env = {
       ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+      FORCE_COLOR: '1',
       ...process.env,
     };
     const cwd = path.join(__dirname, 'spa');
@@ -55,45 +56,43 @@ class AdminForth {
       console.error('npm ci errors/warnings:', ciErr);
     }
 
-    const command = hotReload ? 'run dev' : 'run build';
-    console.time(`Running npm ${command}...`);
-    const { stdout: buildOut, stderr: buildErr } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
-      cwd,
-      env,
-    });
-    console.timeEnd(`Running npm ${command}...`);
+    if (!hotReload) {
+      const command = 'run build';
+      console.time(`Running npm ${command}...`);
+      const { stdout: buildOut, stderr: buildErr } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
+        cwd,
+        env,
+      });
+      console.timeEnd(`Running npm ${command}...`);
 
-    if (verbose) {
-      console.log(`npm ${command} output:`, buildOut);
-    }
-    if (buildErr) {
-      console.error(`npm ${command} errors/warnings:`, buildErr);
-    }
-    
-  }
+      if (verbose) {
+        console.log(`npm ${command} output:`, buildOut);
+      }
+      if (buildErr) {
+        console.error(`npm ${command} errors/warnings:`, buildErr);
+      }
+    } else {
+      const command = 'run dev';
+      console.time(`Running npm ${command}...`);
+      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
+        cwd,
+        env,
+      });
+      devServer.stdout.on('data', (data) => {
+        console.log(`[AdminForth SPA]:`);
+        process.stdout.write(data);
+      });
+      devServer.stderr.on('data', (data) => {
+        console.error(`[AdminForth SPA ERR]:`);
+        process.stdout.write(data);
 
-  async runDevServer() {
-    console.log('AdminForth running dev server');
-    const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+      });
 
-    const env = {
-      ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
-      ...process.env,
-    };
-    const cwd = path.join(__dirname, 'spa');
-    console.time('Running npm run dev...');
-    const { stdout: devOut, stderr: devErr } = await execAsync(`${nodeBinary} ${npmPath} run dev`, {
-      cwd,
-      env,
-    });
-    console.timeEnd('Running npm run dev...');
-
-    console.log('npm run dev output:', devOut);
-    if (devErr) {
-      console.error('npm run dev errors/warnings:', devErr);
+      console.timeEnd(`Running npm ${command}...`);
     }
   }
+
+
 }
 
 export default AdminForth;
