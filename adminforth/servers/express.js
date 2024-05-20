@@ -23,15 +23,47 @@ class ExpressServer {
     const prefix = this.adminforth.config.baseUrl || '/'
 
     const slashedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
-    // server ../spa/dist index.html without cache and all other files in dist folder with cache
-    app.get(`${slashedPrefix}assets/*`, (req, res) => {
-      res.sendFile(path.join(__dirname, '..', 'spa', 'dist', replaceAtStart(req.url, prefix)))
-    })
 
-    console.log(123, `${prefix}*`)
-    app.get(`${prefix}*`, (req, res) => {
-      res.sendFile(path.join(__dirname, '..', 'spa', 'dist', 'index.html'));
-    });
+    if (this.adminforth.config.runningHotReload) {
+      app.get(`${slashedPrefix}assets/*`, async (req, res) => {
+        // proxy using fetch to webpack dev server
+        try {
+          const r = await fetch(`http://localhost:5173${req.url}`);
+          const body = await r.text();
+          res.status(r.status);
+          r.headers.forEach((value, name) => {
+            res.setHeader(name, value);
+          });
+
+          res.send(body);
+        } catch (e) {
+          res.status(500).send(`Did not get response from Vite dev server: ${e}`);
+        }
+      });
+      app.get(`${prefix}*`, async (req, res) => {
+        // proxy using fetch to webpack dev server
+        try {
+          const r = await fetch(`http://localhost:5173${req.url}`);
+          const body = await r.text();
+          res.status(r.status);
+          r.headers.forEach((value, name) => {
+            res.setHeader(name, value);
+          });
+          res.send(body);
+        } catch (e) {
+          res.status(500).send(`Did not get response from Vite dev server: ${e}`);
+        }
+      });
+
+    } else {
+      app.get(`${slashedPrefix}assets/*`, (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'spa', 'dist', replaceAtStart(req.url, prefix)))
+      })
+
+      app.get(`${prefix}*`, (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'spa', 'dist', 'index.html'));
+      });
+    }
   }
 
   authorize(handler) {

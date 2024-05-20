@@ -30,11 +30,12 @@ class AdminForth {
     console.log('AdminForth init');
   }
 
-  async bundlenow(verbose = false) {
+  async bundleNow({hotReload = false, verbose = false}) {
     console.log('AdminForth bundling');
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
-
+    this.config.runningHotReload = hotReload;
+    
     const env = {
       ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
       ...process.env,
@@ -54,20 +55,44 @@ class AdminForth {
       console.error('npm ci errors/warnings:', ciErr);
     }
 
-    console.time('Running npm run build...');
-    const { stdout: buildOut, stderr: buildErr } = await execAsync(`${nodeBinary} ${npmPath} run build`, {
+    const command = hotReload ? 'run dev' : 'run build';
+    console.time(`Running npm ${command}...`);
+    const { stdout: buildOut, stderr: buildErr } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
-    console.timeEnd('Running npm run build...');
+    console.timeEnd(`Running npm ${command}...`);
 
     if (verbose) {
-      console.log('npm run build output:', buildOut);
+      console.log(`npm ${command} output:`, buildOut);
     }
     if (buildErr) {
-      console.error('npm run build errors/warnings:', buildErr);
+      console.error(`npm ${command} errors/warnings:`, buildErr);
     }
     
+  }
+
+  async runDevServer() {
+    console.log('AdminForth running dev server');
+    const nodeBinary = process.execPath; // Path to the Node.js binary running this script
+    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+
+    const env = {
+      ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+      ...process.env,
+    };
+    const cwd = path.join(__dirname, 'spa');
+    console.time('Running npm run dev...');
+    const { stdout: devOut, stderr: devErr } = await execAsync(`${nodeBinary} ${npmPath} run dev`, {
+      cwd,
+      env,
+    });
+    console.timeEnd('Running npm run dev...');
+
+    console.log('npm run dev output:', devOut);
+    if (devErr) {
+      console.error('npm run dev errors/warnings:', devErr);
+    }
   }
 }
 

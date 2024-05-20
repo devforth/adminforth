@@ -6,6 +6,10 @@ import vue from '@vitejs/plugin-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: process.env.ADMINFORTH_PUBLIC_PATH || '/',
+  server: {
+    port: 5173,
+    strictPort: true, // better predictability
+  },
   plugins: [
     vue(),
   ],

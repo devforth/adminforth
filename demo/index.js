@@ -4,7 +4,7 @@ import AdminForth from '../adminforth/index.js';
 const ADMIN_BASE_URL = '/bo';
 
 const admin = new AdminForth({
-  baseUrl : ADMIN_BASE_URL,
+  // baseUrl : ADMIN_BASE_URL,
   datasources: [
     {
       id: 'sqlite',
@@ -30,13 +30,16 @@ const admin = new AdminForth({
 const app = express()
 const port = 3000;
 
-
 (async () => {
-  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  console.log('Bundling AdminForth');
-  await admin.bundlenow();
-  console.log('Bundling AdminForth done');
+
+    // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
+    console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+
 })();
+
+
+
 
 admin.express.serve(app, express)
 
