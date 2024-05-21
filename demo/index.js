@@ -28,6 +28,7 @@ const admin = new AdminForth({
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
+      open: false,
       children: [
         {
           label: 'Appartments',
@@ -43,8 +44,15 @@ const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
+    },
+    {
+      type: 'divider'
+    },
+    {
+      label: 'Users',
+      icon: 'flowbite:user-solid',
+      resourceId: 'users',
     }
-
   ],
 })
 
