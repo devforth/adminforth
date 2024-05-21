@@ -158,15 +158,15 @@ class ExpressServer {
     }
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
-    const expressHandler = (req, res) => {
+    const expressHandler = async (req, res) => {
       const body = req.body;
       const query = req.query;
       const adminUser = req.adminUser;
       const headers = req.headers;
 
       const input = { body, query, adminUser, headers, _raw_express_req: req, _raw_express_res: res};
-      const output = handler(input);
-      res.json(output.body);
+      const output = await handler(input);
+      res.json(output);
       output.headers?.forEach((value, name) => {
         res.setHeader(name, value);
       })
