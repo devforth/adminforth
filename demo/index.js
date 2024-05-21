@@ -5,24 +5,46 @@ const ADMIN_BASE_URL = '/bo';
 
 const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
-  datasources: [
+  brandName: 'My App',
+  dataSources: [
     {
-      id: 'sqlite',
+      id: 'maindb',
       url: 'sqlite://test1.db',
     }
   ],
   resources: [
     {
-      label: 'User',
-      menugroup: 'system',
-      datasource: 'sqlite'
+      dataSource: 'maindb',
+      table: 'appartments',
+      resourceId: 'apparts' // resourceId is defaulted to table name but you can change it e.g. 
+                            // in case of same table names from different data sources
+    },
+    {
+      dataSource: 'maindb',
+      table: 'users',
     }
   ],
-  menugroups: [
+  menu: [
     {
-      id: 'system',
-      label: 'System',
+      label: 'Core',
+      icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
+      children: [
+        {
+          label: 'Appartments',
+          icon: 'flowbite:home-solid',
+          resourceId: 'apparts',
+        },
+      ]
     },
+    {
+      type: 'gap'
+    },
+    {
+      label: 'Users',
+      icon: 'flowbite:user-solid',
+      resourceId: 'users',
+    }
+
   ],
 })
 
@@ -37,8 +59,6 @@ const port = 3000;
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
-
-
 
 
 admin.express.serve(app, express)

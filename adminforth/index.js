@@ -5,6 +5,8 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+import fsExtra from 'fs-extra';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +23,10 @@ class AdminForth {
 
   validateConfig() {
     const errors = [];
+
+    if (!this.config.baseUrl) {
+      this.config.baseUrl = '';
+    }
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
     }
@@ -30,50 +36,112 @@ class AdminForth {
     console.log('AdminForth init');
   }
 
-  async bundleNow({hotReload = false, verbose = false}) {
-    console.log('AdminForth bundling');
+  async runNpmShell({command, verbose = false, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
-    this.config.runningHotReload = hotReload;
 
     const env = {
-      ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+      VUE_APP_ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
     };
-    const cwd = path.join(__dirname, 'spa');
-    console.time('Running npm ci...');
-    const { stdout: ciOut, stderr: ciErr } = await execAsync(`${nodeBinary} ${npmPath} ci`, {
+
+    console.time(`Running npm ${command}...`);
+    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
-    console.timeEnd('Running npm ci...');
+    console.timeEnd(`Running npm ${command}...`);
 
     if (verbose) {
-      console.log('npm ci output:', ciOut);
+      console.log(`npm ${command} output:`, out);
     }
-    if (ciErr) {
-      console.error('npm ci errors/warnings:', ciErr);
+    if (err) {
+      console.error(`npm ${command} errors/warnings:`, err);
     }
+  }
+
+  async prepareSources() {
+    // remove spa_tmp folder if it is exists
+    const spaTmpPath = path.join(__dirname, 'spa_tmp');
+    try {
+      await fs.promises.rm(spaTmpPath, { recursive: true });
+    } catch (e) {
+      // ignore
+    }
+
+    // copy spa folder to spa_tmp. Ignore node_modules and dist
+    await fs.promises.mkdir(spaTmpPath);
+    await fsExtra.copy(path.join(__dirname, 'spa'), spaTmpPath, {
+      filter: (src) => {
+        return !src.includes('node_modules') && !src.includes('dist');
+      },
+    });
+
+    // collect all 'icon' fields from config
+    const icons = [];
+    const collectIcons = (menu) => {
+      menu.forEach((item) => {
+        if (item.icon) {
+          icons.push(item.icon);
+        }
+        if (item.children) {
+          collectIcons(item.children);
+        }
+      });
+    };
+    collectIcons(this.config.menu);
+
+    // icons are collectionName:iconName. Get list of all unique collection names:
+    const collections = new Set(icons.map((icon) => icon.split(':')[0]));
+
+    // generate npm install command to install all @iconify-prerendered/vue-<collection name>	
+    const npmInstallCommand = `install ${Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`).join(' ')}`;
+    
+    await this.runNpmShell({command: npmInstallCommand, cwd: spaTmpPath});
+
+    // for each icon generate import statement
+    const iconImports = icons.map((icon) => {
+      const [ collection, iconName ] = icon.split(':');
+      const PascalIconName = iconName.split('-').map((part, index) => {
+        return part[0].toUpperCase() + part.slice(1);
+      }).join('');
+      return `import { ${PascalIconName} } from '@iconify-prerendered/vue-${collection}';`;
+    }).join('\n');
+
+    // inject that code into spa_tmp/src/App.vue
+    const appVuePath = path.join(spaTmpPath, 'src', 'App.vue');
+    const appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
+    const newAppVueContent = appVueContent.replace('/* IMPORTANT:ICON IMPORTS */', iconImports);
+    await fs.promises.writeFile(appVuePath, newAppVueContent);
+
+  }
+
+
+
+  async bundleNow({hotReload = false, verbose = false}) {
+    this.config.runningHotReload = hotReload;
+
+    await this.prepareSources();
+    console.log('AdminForth bundling');
+    
+    const cwd = path.join(__dirname, 'spa_tmp');
+    
+    await this.runNpmShell({command: 'ci', verbose, cwd});
 
     if (!hotReload) {
-      const command = 'run build';
-      console.time(`Running npm ${command}...`);
-      const { stdout: buildOut, stderr: buildErr } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
-        cwd,
-        env,
-      });
-      console.timeEnd(`Running npm ${command}...`);
-
-      if (verbose) {
-        console.log(`npm ${command} output:`, buildOut);
-      }
-      if (buildErr) {
-        console.error(`npm ${command} errors/warnings:`, buildErr);
-      }
+      await this.runNpmShell({command: 'run build', verbose, cwd});
     } else {
       const command = 'run dev';
       console.time(`Running npm ${command}...`);
+      const nodeBinary = process.execPath; 
+      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      const env = {
+        VUE_APP_ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+        FORCE_COLOR: '1',
+        ...process.env,
+      };
+
       const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
         cwd,
         env,
@@ -90,6 +158,20 @@ class AdminForth {
 
       console.timeEnd(`Running npm ${command}...`);
     }
+  }
+
+  setupEndpoints(server) {
+    server.endpoint({
+      noAuth: true, // TODO
+      method: 'GET',
+      path: '/get_menu_config',
+      handler: (input) => {
+        return {
+          resources: this.config.resources,
+          menuGroups: this.config.menuGroups,
+        };
+      },
+    });
   }
 
 
