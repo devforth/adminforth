@@ -1,16 +1,3 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import { onMounted } from 'vue'
-import { initFlowbite } from 'flowbite'
-import './index.scss'
-
-// initialize components based on data attribute selectors
-onMounted(() => {
-    initFlowbite();
-})
-
-</script>
-
 <template>
   <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
@@ -22,17 +9,20 @@ onMounted(() => {
                 <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
               </svg>
           </button>
-          <a href="https://flowbite.com" class="flex ms-2 md:me-24">
+          <div  class="flex ms-2 md:me-24">
             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
-            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Flowbite</span>
-          </a>
+            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">AF</span>
+          </div>
         </div>
         <div class="flex items-center">
             <div class="flex items-center ms-3">
               <div>
-                <button type="button" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+                <button type="button" class="flex text-sm bg-gray-100 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">Open user menu</span>
-                  <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+                  <svg class="w-8 h-8 text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
+                  </svg>
+
                 </button>
               </div>
               <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600" id="dropdown-user">
@@ -241,3 +231,28 @@ onMounted(() => {
 
 <style scoped>
 </style>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { callAdminForthApi } from '@/utils';
+import { RouterLink, RouterView } from 'vue-router';
+import { initFlowbite } from 'flowbite'
+import './index.scss'
+/* IMPORTANT:ICON IMPORTS */
+
+const resources = ref([]);
+const brand = ref('');
+
+// initialize components based on data attribute selectors
+onMounted(async () => {
+  initFlowbite();
+
+  const resp = await callAdminForthApi({
+    path: '/get_menu_config',
+    method: 'GET',
+  });
+  resources.value = resp.resources;
+  brand.value = resp.brandName;
+})
+
+</script>
