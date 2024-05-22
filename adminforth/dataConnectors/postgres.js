@@ -1,12 +1,15 @@
 import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
+import pkg from 'pg';
+const { Client } = pkg;
+
 
 class PostgresConnector {
     constructor({ url }) {
-        return
-      // create connection here
-
-    //   this.db = betterSqlite3(url.replace('sqlite://', ''));
+      this.db = new Client({
+        connectionString: url
+      })
+      console.log('PostgresConnector', this.db);
     }
 
     async discoverFields(tableName) {

@@ -45,7 +45,7 @@ const admin = new AdminForth({
     },
     {
         id: 'db2',
-        url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432/postgres',
+        url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432',
     }
   ],
   resources: [
