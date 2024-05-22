@@ -58,7 +58,7 @@
   <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
-          <template v-for="(item, i) in menu" :key="`menu-${i}`">
+          <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-gray-200 dark:border-gray-700"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             
@@ -78,7 +78,11 @@
               <ul :id="`dropdown-example${i}`" role="none" class="py-2 space-y-2" :class="{ 'hidden': !item.open }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
-                    <RouterLink :to="`/resource/${child.resourceId}/`" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">
+                    <RouterLink 
+                        :to="{name: 'resource-list', params: { resourceId: child.resourceId }}" 
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem"
+                        :class="{ 'bg-blue-100': $route.params.resourceId === child.resourceId && $route.name === 'resource-list' }"
+                    >
                       <component v-if="item.icon" :is="getIcon(child.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
                       <span class="ms-3">{{ child.label }}</span>
                     </RouterLink>
@@ -87,7 +91,10 @@
               </ul> 
             </li>
             <li v-else>
-              <RouterLink :to="`/resource/${item.resourceId}/`" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <RouterLink :to="{name: 'resource-list', params: { resourceId: item.resourceId }}" 
+                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                    :class="{ 'bg-blue-100': $route.params.resourceId === item.resourceId && $route.name === 'resource-list' }"
+              >
                   <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
                   <span class="ms-3">{{ item.label }}</span>
               </RouterLink>
@@ -114,13 +121,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref, resolveComponent } from 'vue';
-import { callAdminForthApi } from '@/utils';
 import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
+import { useCoreStore } from '@/stores/core';
 
-const menu = ref([]);
-const brand = ref('');
+const coreStore = useCoreStore();
 
 function getIcon(icon: string) {
   // icon format is "feather:icon-name". We need to get IconName in pascal case
@@ -131,14 +137,10 @@ function getIcon(icon: string) {
 
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  initFlowbite();
 
-  const resp = await callAdminForthApi({
-    path: '/get_menu_config',
-    method: 'GET',
-  });
-  menu.value = resp.menu;
-  brand.value = resp.brandName;
+  initFlowbite();
+  await coreStore.fetchMenuAndResource();
+  
 })
 
 </script>

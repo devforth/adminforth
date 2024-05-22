@@ -31,6 +31,7 @@ class AdminForth {
           errors.push(`Resource ${res.dataSource} is missing table`);
         }
         res.resourceId = res.resourceId || res.table;
+        res.label = res.label || res.table.charAt(0).toUpperCase() + res.table.slice(1);
         if (!res.dataSource) {
           errors.push(`Resource ${res.resourceId} is missing dataSource`);
         }
@@ -103,15 +104,17 @@ class AdminForth {
     this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
-
   setupEndpoints(server) {
     server.endpoint({
       noAuth: true, // TODO
       method: 'GET',
       path: '/get_menu_config',
-      handler: async (input) => {
+      handler: async ({input}) => {
         return {
-          // resources: this.config.resources,
+          resources: this.config.resources.map((res) => ({
+            resourceId: res.resourceId,
+            label: res.label,
+          })),
           menu: this.config.menu,
         };
       },
@@ -120,14 +123,20 @@ class AdminForth {
       noAuth: true, // TODO
       method: 'POST',
       path: '/get_resource_data',
-      handler: async (input) => {
-        const { resourceId } = input;
+      handler: async ({ body }) => {
+        const { resourceId } = body;
+        if (!this.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.statuses.dbDiscover !== 'done') {
+          return { discoverInProgress : true };
+        }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
-        return resource;
-      }
+        return { resource };
+      },
     })
   }
 

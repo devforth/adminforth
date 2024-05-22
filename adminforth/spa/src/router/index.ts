@@ -14,10 +14,12 @@ const router = createRouter({
     {
       path: '/resource/:resourceId',
       component: ResourceParent,
+      name: 'resource',
       children: [
         {
           path: '',
-          component: ListView
+          component: ListView,
+          name: 'resource-list'
         }
       ]
     }, 
