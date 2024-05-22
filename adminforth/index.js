@@ -78,17 +78,19 @@ class AdminForth {
         res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
       }
 
-      res.columns.forEach((col) => {
+      res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name]) {
           throw new Error(`Resource '${res.table}' has no column '${col.name}'`);
         }
         // first find discovered values, but allow override
-        col = {...fieldTypes[col.name], ...col};
+        res.columns[i] = { ...fieldTypes[col.name], ...col };
+
       });
     }));
 
     this.statuses.dbDiscover = 'done';
 
+    console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
   async init() {
