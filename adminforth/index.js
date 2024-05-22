@@ -2,7 +2,7 @@
 import ExpressServer from './servers/express.js';
 import Auth from './auth.js';
 import CodeInjector from './modules/codeInjector.js';
-import SQLiteConnector from './connectors/sqlite.js';
+import SQLiteConnector from './dataConnectors/sqlite.js';
 
 class AdminForth {
   constructor(config) {
@@ -10,11 +10,10 @@ class AdminForth {
     this.validateConfig();
     this.express = new ExpressServer(this);
     this.auth = new Auth();
-    this.codeInjector = new CodeInjector();
+    this.codeInjector = new CodeInjector(this);
 
     this.connectors = {};
-    this.discoverDatabases();
-
+    this.statuses = {}
     
   }
 
@@ -50,7 +49,8 @@ class AdminForth {
     }
   }
 
-  discoverDatabases() {
+  async discoverDatabases() {
+    this.statuses.dbDiscover = 'running';
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
     };
@@ -62,23 +62,33 @@ class AdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType](ds.url);
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url });
     });
 
-    this.config.resources.forEach((res) => {
+    await Promise.all(this.config.resources.map(async (res) => {
       if (!this.connectors[res.dataSource]) {
-        throw new Error(`Resource ${res.table} refers to unknown dataSource ${res.dataSource}`);
+        throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
       }
-      const fieldTypes = this.connectors[res.dataSource].discoverFieldTypes(res.table);
+      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res.table);
+      if (!Object.keys(fieldTypes).length) {
+        throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
+      }
+
+      if (!res.columns) {
+        res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
+      }
 
       res.columns.forEach((col) => {
         if (!fieldTypes[col.name]) {
-          throw new Error(`Resource ${res.table} has no column ${col.name}`);
+          throw new Error(`Resource '${res.table}' has no column '${col.name}'`);
         }
         // first find discovered values, but allow override
         col = {...fieldTypes[col.name], ...col};
       });
-    });
+    }));
+
+    this.statuses.dbDiscover = 'done';
+
   }
 
   async init() {
@@ -102,6 +112,19 @@ class AdminForth {
         };
       },
     });
+    server.endpoint({
+      noAuth: true, // TODO
+      method: 'POST',
+      path: '/get_resource_data',
+      handler: async (input) => {
+        const { resourceId } = input;
+        const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+        return resource;
+      }
+    })
   }
 
 

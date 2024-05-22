@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nodemon": "^3.1.0"
+    "better-sqlite3": "^10.0.0",
+    "nodemon": "^3.1.0",
+    "sqlite3": "^5.1.7"
   }
 }

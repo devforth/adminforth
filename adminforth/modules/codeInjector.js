@@ -15,7 +15,8 @@ const execAsync = promisify(exec);
 
 
 class CodeInjector {
-  constructor() {
+  constructor(adminforth) {
+    this.adminforth = adminforth;
   }
 
   async runNpmShell({command, verbose = false, cwd}) {
@@ -23,7 +24,7 @@ class CodeInjector {
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
 
     const env = {
-      VUE_APP_ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+      VUE_APP_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
     };
@@ -90,7 +91,7 @@ class CodeInjector {
         }
       });
     };
-    collectIcons(this.config.menu);
+    collectIcons(this.adminforth.config.menu);
 
 
     const uniqueIcons = Array.from(new Set(icons));
@@ -178,7 +179,7 @@ class CodeInjector {
   }
 
   async bundleNow({hotReload = false, verbose = false}) {
-    this.config.runningHotReload = hotReload;
+    this.adminforth.config.runningHotReload = hotReload;
 
     await this.prepareSources();
     await this.watchForReprepare();
@@ -196,7 +197,7 @@ class CodeInjector {
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
-        VUE_APP_ADMINFORTH_PUBLIC_PATH: this.config.baseUrl,
+        VUE_APP_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
