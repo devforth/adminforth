@@ -42,6 +42,10 @@ const admin = new AdminForth({
     {
       id: 'maindb',
       url: 'sqlite://test1.sqlite',
+    },
+    {
+        id: 'db2',
+        url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432',
     }
   ],
   resources: [
@@ -74,6 +78,16 @@ const admin = new AdminForth({
     {
       dataSource: 'maindb',
       table: 'users',
+    },
+    {
+        dataSource: 'db2',
+        table: 'games',
+        columns: [
+            {
+                name: 'id',
+                readOnly: true,
+            }
+        ]
     }
   ],
   menu: [
