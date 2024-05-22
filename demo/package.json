@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^10.0.0",
+    "express": "^4.19.2",
     "nodemon": "^3.1.0",
     "sqlite3": "^5.1.7"
   }
