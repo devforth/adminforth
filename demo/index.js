@@ -80,7 +80,7 @@ const admin = new AdminForth({
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
-      open: false,
+      open: true,
       children: [
         {
           label: 'Appartments',
