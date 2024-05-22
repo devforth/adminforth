@@ -1,7 +1,40 @@
 import express from 'express';
 import AdminForth from '../adminforth/index.js';
+import sqlite3 from 'sqlite3';
 
 const ADMIN_BASE_URL = '/bo';
+
+
+// create test1.db
+const db = new sqlite3.Database('test1.db');
+db.serialize(async function() {
+  //check table exists
+  const exists = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='apartments'");
+  if (exists) {
+    await db.run(`
+      CREATE TABLE apartments (
+          id INT PRIMARY KEY VARCHAR(255) NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          square_meter REAL,
+          price DECIMAL(10, 2) NOT NULL,
+          number_of_rooms INT,
+          description TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      )
+
+      CREATE TABLE users (
+          id INT PRIMARY KEY VARCHAR(255) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          created_at VARCHAR(255) NOT NULL,
+      );
+
+      INSERT INTO apartments (name, square_meter, price, number_of_rooms, description) VALUES ('Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
+      `
+    );
+    console.log('Demo tables created');
+  }
+});
 
 const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
@@ -16,8 +49,28 @@ const admin = new AdminForth({
     {
       dataSource: 'maindb',
       table: 'appartments',
-      resourceId: 'apparts' // resourceId is defaulted to table name but you can change it e.g. 
-                            // in case of same table names from different data sources
+      resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
+                             // in case of same table names from different data sources
+      columns: [
+        {
+          name: 'id',
+          readOnly: true,
+        },
+        {
+          name: 'title',
+          required: true,
+        },
+        {
+          name: 'price',
+        },
+        {
+          name: 'description',
+        },
+        {
+          name: 'created_at',
+          readOnly: true,
+        }
+      ]
     },
     {
       dataSource: 'maindb',
