@@ -3,6 +3,7 @@ import ExpressServer from './servers/express.js';
 import Auth from './auth.js';
 import CodeInjector from './modules/codeInjector.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
+import PostgresConnector from './dataConnectors/postgres.js';
 
 class AdminForth {
   constructor(config) {
@@ -53,6 +54,7 @@ class AdminForth {
     this.statuses.dbDiscover = 'running';
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
+      'postgres': PostgresConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
