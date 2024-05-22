@@ -139,7 +139,6 @@ class CodeInjector {
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH IMPORTS */', iconImports + '\n');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n');
-    console.log('!!iconImports', appVueContent);
 
     await fs.promises.writeFile(appVuePath, appVueContent);
   }

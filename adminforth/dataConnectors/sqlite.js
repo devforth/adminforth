@@ -19,31 +19,31 @@ class SQLiteConnector {
           const baseType = row.type.toLowerCase();
           if (baseType == 'int') {
             field.type = AdminForthTypes.INTEGER;
-            field.underlineType = 'int';
+            field._underlineType = 'int';
           } else if (baseType.includes('varchar(')) {
             field.type = AdminForthTypes.STRING;
-            field.underlineType = 'varchar';
+            field._underlineType = 'varchar';
             const length = baseType.match(/\d+/);
             field.maxLength = length ? parseInt(length[0]) : null;
           } else if (baseType == 'text') {
             field.type = AdminForthTypes.TEXT;
-            field.underlineType = 'text';
+            field._underlineType = 'text';
           } else if (baseType.includes('decimal(')) {
             field.type = AdminForthTypes.DECIMAL;
-            field.underlineType = 'decimal';
+            field._underlineType = 'decimal';
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
           } else if (baseType == 'real') {
             field.type = AdminForthTypes.FLOAT; //8-byte IEEE floating point number. It
-            field.underlineType = 'real';
+            field._underlineType = 'real';
           } else if (baseType == 'timestamp') {
             field.type = AdminForthTypes.DATETIME;
-            field.underlineType = 'timestamp';
+            field._underlineType = 'timestamp';
           } else {
             field.type = 'unknown'
           }
-          field.baseTypeDebug = baseType;
+          field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
           field.primaryKey = row.pk == 1;
           field.default = row.dflt_value;
@@ -54,22 +54,22 @@ class SQLiteConnector {
 
     getFieldValue(field, value) {
       if (field.type == AdminForthTypes.TIMESTAMP) {
-        if (field.underlineType == 'timestamp' || field.underlineType == 'int') {
+        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           return dayjs(value).toISOString();
-        } else if (field.underlineType == 'varchar') {
+        } else if (field._underlineType == 'varchar') {
           return dayjs(value).toISOString();
         } else {
-          throw new Error(`AdminForth does not support row type: ${field.underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
         }
       }
     }
 
     setFieldValue(field, value) {
       if (field.type == AdminForthTypes.TIMESTAMP) {
-        if (field.underlineType == 'timestamp' || field.underlineType == 'int') {
+        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).unix();
-        } else if (field.underlineType == 'varchar') {
+        } else if (field._underlineType == 'varchar') {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).toISOString();
         }
