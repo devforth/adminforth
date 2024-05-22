@@ -44,8 +44,8 @@ const admin = new AdminForth({
       url: 'sqlite://test1.sqlite',
     },
     {
-        id: 'db2',
-        url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432',
+      id: 'db2',
+      url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432',
     }
   ],
   resources: [
@@ -54,6 +54,7 @@ const admin = new AdminForth({
       table: 'apartments',
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
+      label: 'Apartments',   // label is defaulted to table name but you can change it
       columns: [
         {
           name: 'id',
@@ -79,16 +80,16 @@ const admin = new AdminForth({
       dataSource: 'maindb',
       table: 'users',
     },
-    {
-        dataSource: 'db2',
-        table: 'games',
-        columns: [
-            {
-                name: 'id',
-                readOnly: true,
-            }
-        ]
-    }
+    // {
+    //     dataSource: 'db2',
+    //     table: 'games',
+    //     columns: [
+    //         {
+    //             name: 'id',
+    //             readOnly: true,
+    //         }
+    //     ]
+    // }
   ],
   menu: [
     {
@@ -124,6 +125,7 @@ const admin = new AdminForth({
 
 
 const app = express()
+app.use(express.json());
 const port = 3000;
 
 (async () => {

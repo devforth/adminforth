@@ -158,7 +158,17 @@ class ExpressServer {
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
     const expressHandler = async (req, res) => {
-      const body = req.body;
+      let body = req.body || {};
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (e) {
+          console.error('Failed to parse body', e);
+          res.status(400).send('Invalid JSON body');
+        }
+      }
+      console.log('-1-1-11body', body);
+      
       const query = req.query;
       const adminUser = req.adminUser;
       const headers = req.headers;
