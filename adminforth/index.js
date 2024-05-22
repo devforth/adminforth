@@ -109,7 +109,7 @@ class AdminForth {
       path: '/get_menu_config',
       handler: async (input) => {
         return {
-          resources: this.config.resources,
+          // resources: this.config.resources,
           menu: this.config.menu,
         };
       },

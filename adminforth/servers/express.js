@@ -130,7 +130,6 @@ class ExpressServer {
     this.expressApp = app;
     this.adminforth.setupEndpoints(this);
     this.setupSpaServer();
-    
   }
 
   authorize(handler) {
