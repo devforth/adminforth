@@ -1,16 +1,18 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthTypes } from '../types';
+import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
 
 class SQLiteConnector {
-    constructor(url) {
+    constructor({ url }) {
       // create connection here
-      this.db = betterSqlite3(url);
+
+      this.db = betterSqlite3(url.replace('sqlite://', ''));
     }
 
-    discoverFields(tableName) {
+    async discoverFields(tableName) {
         const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
-        const rows = stmt.all();
+        const rows = await stmt.all();
+        console.log('rows', rows);
         const fieldTypes = {};
         rows.forEach((row) => {
           const field = {};
@@ -39,8 +41,12 @@ class SQLiteConnector {
             field.type = AdminForthTypes.DATETIME;
             field.underlineType = 'timestamp';
           } else {
-            field.unknownType = baseType;
+            field.type = 'unknown'
           }
+          field.baseTypeDebug = baseType;
+          field.required = row.notnull == 1;
+          field.primaryKey = row.pk == 1;
+          field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
         return fieldTypes;

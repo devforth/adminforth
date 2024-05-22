@@ -1,40 +1,39 @@
 import express from 'express';
 import AdminForth from '../adminforth/index.js';
-import sqlite3 from 'sqlite3';
+import betterSqlite3 from 'better-sqlite3';
 
 const ADMIN_BASE_URL = '/bo';
 
 
 // create test1.db
-const db = new sqlite3.Database('test1.db');
-db.serialize(async function() {
-  //check table exists
-  const exists = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='apartments'");
-  if (exists) {
-    await db.run(`
-      CREATE TABLE apartments (
-          id INT PRIMARY KEY VARCHAR(255) NOT NULL,
-          name VARCHAR(255) NOT NULL,
-          square_meter REAL,
-          price DECIMAL(10, 2) NOT NULL,
-          number_of_rooms INT,
-          description TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      )
 
-      CREATE TABLE users (
-          id INT PRIMARY KEY VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL,
-          password_hash VARCHAR(255) NOT NULL,
-          created_at VARCHAR(255) NOT NULL,
-      );
+const db = betterSqlite3('test1.sqlite')
+  
+const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
+if (!tableExists) {
+  await db.prepare(`
+    CREATE TABLE apartments (
+        id VARCHAR(20) PRIMARY KEY NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        square_meter REAL,
+        price DECIMAL(10, 2) NOT NULL,
+        number_of_rooms INT,
+        description TEXT,
+        created_at TIMESTAMP
+    );`).run();
 
-      INSERT INTO apartments (name, square_meter, price, number_of_rooms, description) VALUES ('Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
-      `
-    );
-    console.log('Demo tables created');
-  }
-});
+  await db.prepare(`
+    CREATE TABLE users (
+        id VARCHAR(255) PRIMARY KEY NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at VARCHAR(255) NOT NULL
+    );`).run();
+
+  await db.prepare(`
+    INSERT INTO apartments (name, square_meter, price, number_of_rooms, description) VALUES ('Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
+    `).run();
+}
 
 const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
@@ -42,13 +41,13 @@ const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: 'sqlite://test1.db',
+      url: 'sqlite://test1.sqlite',
     }
   ],
   resources: [
     {
       dataSource: 'maindb',
-      table: 'appartments',
+      table: 'apartments',
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       columns: [
@@ -123,6 +122,7 @@ const port = 3000;
 
 
 admin.express.serve(app, express)
+admin.discoverDatabases();
 
 app.get(
   '/api/custom_data', 
