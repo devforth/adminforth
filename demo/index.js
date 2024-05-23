@@ -30,9 +30,16 @@ if (!tableExists) {
         created_at VARCHAR(255) NOT NULL
     );`).run();
 
+  
   await db.prepare(`
     INSERT INTO apartments (id, title, square_meter, price, number_of_rooms, description) VALUES ('123', 'Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
-    `).run();
+  `).run();
+
+  for (let i = 0; i < 50; i++) {
+    await db.prepare(`
+      INSERT INTO apartments (id, title, square_meter, price, number_of_rooms, description, created_at) VALUES ('${i}', 'Apartment ${i}', 50.8, 10000.12, 2, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24});
+      `).run();
+  }
 }
 
 const admin = new AdminForth({

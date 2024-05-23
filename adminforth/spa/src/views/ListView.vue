@@ -1,78 +1,146 @@
-
-
 <template>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    
-    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert" v-if="error">
-        <span class="font-medium">Danger alert!</span> {{ error }}
+
+    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert"
+      v-if="error">
+      <span class="font-medium">Danger alert!</span> {{ error }}
     </div>
 
-    <div
-        v-if="!columns"
-        role="status" class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
-    >
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-            </div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+    <!-- skelet loader -->
+    <div v-if="!columns" role="status"
+      class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
-            <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-            </div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+      </div>
+      <div class="flex items-center justify-between pt-4">
+        <div>
+          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
-            <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-            </div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+      </div>
+      <div class="flex items-center justify-between pt-4">
+        <div>
+          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
-            <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-            </div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+      </div>
+      <div class="flex items-center justify-between pt-4">
+        <div>
+          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
-            <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-            </div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+      </div>
+      <div class="flex items-center justify-between pt-4">
+        <div>
+          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
         </div>
-        <span class="sr-only">Loading...</span>
+        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+      </div>
+      <span class="sr-only">Loading...</span>
     </div>
 
     <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-          <tr>
-              <th scope="col" class="p-4">
-                  <div class="flex items-center">
-                      <input id="checkbox-all-search" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                      <label for="checkbox-all-search" class="sr-only">checkbox</label>
-                  </div>
-              </th>
+        <tr>
+          <th scope="col" class="p-4">
+            <div class="flex items-center">
+              <input id="checkbox-all-search" type="checkbox"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="checkbox-all-search" class="sr-only">checkbox</label>
+            </div>
+          </th>
 
 
-              <th v-for="c in columns" scope="col" class="px-6 py-3">
-                <div class="flex items-center">
-                        {{ c.name  }}
-                        <a href="#"><svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
-                        </svg></a>
-                    </div>
-              </th>
-  
-          </tr>
+          <th v-for="c in columns" scope="col" class="px-6 py-3">
+            <div class="flex items-center">
+              {{ c.name }}
+              <a href="#"><svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z" />
+                </svg></a>
+            </div>
+          </th>
+
+          <th scope="col" class="px-6 py-3">
+            Actions
+          </th>
+
+        </tr>
       </thead>
       <tbody>
-          <!-- <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <tr v-if="!rows" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+          <td :colspan="columns.length + 2" class="p-4 text-center">
+
+            <div role="status"
+              class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <span class="sr-only">Loading...</span>
+            </div>
+          </td>
+        </tr>
+
+        <tr v-else v-for="row in rows" :key="row.id" 
+          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="w-4 p-4">
+            <div class="flex items center">
+              <input id="checkbox-table-search-1" type="checkbox"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+            </div>
+          </td>
+          <td v-for="c in columns" class="px-6 py-4">
+            {{ row[c.name] }}
+          </td>
+          <td class="flex items-center px-6 py-4">
+            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Remove</a>
+          </td>
+        </tr>
+
+        <!-- <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
               <td class="w-4 p-4">
                   <div class="flex items-center">
                       <input id="checkbox-table-search-1" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
@@ -105,10 +173,10 @@
                   <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Remove</a>
               </td>
           </tr> -->
-       
+
       </tbody>
-  </table>
-</div>
+    </table>
+  </div>
 </template>
 
 <script setup>
@@ -127,11 +195,14 @@ const page = ref(1);
 const filters = ref([]);
 const sort = ref([]);
 
+const rows = ref(null);
+
 const DEFAULT_PAGE_SIZE = 10;
 
 async function getList() {
   const pageSize = coreStore.resourceById[route.params.resourceId].pageSize || DEFAULT_PAGE_SIZE;
-  await callAdminForthApi({
+  rows.value = null;
+  const data = await callAdminForthApi({
     path: '/get_resource_data',
     method: 'POST',
     body: {
@@ -142,22 +213,23 @@ async function getList() {
       sort: sort.value,
     }
   });
+  rows.value = data.data;
 }
 
 
 async function init() {
-    const res = await callAdminForthApi({
-      path: '/get_resource_columns',
-      method: 'POST',
-      body: {
-        resourceId: route.params.resourceId
-      }
+  const res = await callAdminForthApi({
+    path: '/get_resource_columns',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId
     }
+  }
   );
   if (!res.discoverInProgress) {
     columns.value = res.resource.columns;
   }
-  if (res.error){
+  if (res.error) {
     error.value = res.error;
   }
   const items = await getList();

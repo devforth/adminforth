@@ -158,7 +158,7 @@ class CodeInjector {
     };
     await collectDirectories(spaPath);
 
-    console.log('👌👌Watching for changes in:', directories.join('\n '))
+    // console.log('👌👌Watching for changes in:', directories.join('\n '))
 
     const watcher = filewatcher();
     directories.forEach((dir) => {
