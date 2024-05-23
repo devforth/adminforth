@@ -80,7 +80,7 @@ const admin = new AdminForth({
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       columns: [
-        { name: 'id', readOnly: true },
+        { name: 'id', readOnly: true, label: 'Identifier' },
         { name: 'title', required: true },
         { name: 'price' },
         { name: 'description' },
@@ -99,16 +99,16 @@ const admin = new AdminForth({
     //         { name: 'created_at', readOnly: true }
     //     ]
     // },
-    {
-        dataSource: 'db2', table: 'games',
-        columns: [
-            { name: 'id', readOnly: true, label: 'Identifier'},
-            { name: 'name', required: true },
-            { name: 'created_by', required: true },
-            { name: 'year', required: true },
-            { name: 'created_at', readOnly: true }
-        ]
-    },
+    // {
+    //     dataSource: 'db2', table: 'games',
+    //     columns: [
+    //         { name: 'id', readOnly: true, label: 'Identifier'},
+    //         { name: 'name', required: true },
+    //         { name: 'created_by', required: true },
+    //         { name: 'year', required: true },
+    //         { name: 'created_at', readOnly: true }
+    //     ]
+    // },
     // {
     //     dataSource: 'db3', table: 'users',
     //     columns: [

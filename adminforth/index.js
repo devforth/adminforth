@@ -175,7 +175,7 @@ class AdminForth {
           filters,
           sort,
         });
-        return { data };
+        return data;
       },
     });
   }
