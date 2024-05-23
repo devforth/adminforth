@@ -2,7 +2,54 @@
 
 <template>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    
+    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert" v-if="error">
+        <span class="font-medium">Danger alert!</span> {{ error }}
+    </div>
+
+    <div
+        v-if="!columns"
+        role="status" class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+    >
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        </div>
+        <div class="flex items-center justify-between pt-4">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        </div>
+        <div class="flex items-center justify-between pt-4">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        </div>
+        <div class="flex items-center justify-between pt-4">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        </div>
+        <div class="flex items-center justify-between pt-4">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+        </div>
+        <span class="sr-only">Loading...</span>
+    </div>
+
+    <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
               <th scope="col" class="p-4">
@@ -68,15 +115,38 @@
 import { ref, onMounted } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
+import { useCoreStore } from '@/stores/core';
+
+const coreStore = useCoreStore();
 
 const route = useRoute();
 const columns = ref(null);
 const error = ref(null);
 
+const page = ref(1);
+const filters = ref([]);
+const sort = ref([]);
+
+const DEFAULT_PAGE_SIZE = 10;
+
+async function getList() {
+  const pageSize = coreStore.resourceById[route.params.resourceId].pageSize || DEFAULT_PAGE_SIZE;
+  await callAdminForthApi({
+    path: '/get_resource_data',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId,
+      limit: pageSize,
+      offset: (page.value - 1) * pageSize,
+      filters: filters.value,
+      sort: sort.value,
+    }
+  });
+}
 
 onMounted(async () => {
   const res = await callAdminForthApi({
-      path: '/get_resource_data',
+      path: '/get_resource_columns',
       method: 'POST',
       body: {
         resourceId: route.params.resourceId
@@ -89,7 +159,8 @@ onMounted(async () => {
   if (res.error){
     error.value = res.error;
   }
-
+  const items = await getList();
+  console.log(3213, items);
 });
 
 </script>

@@ -1,5 +1,5 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthTypes } from '../types.js';
+import { AdminForthTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types.js';
 import dayjs from 'dayjs';
 
 class SQLiteConnector {
@@ -75,6 +75,51 @@ class SQLiteConnector {
         }
       }
     }
+
+    OperatorsMap = {
+      [AdminForthFilterOperators.EQ]: '=',
+      [AdminForthFilterOperators.NE]: '!=',
+      [AdminForthFilterOperators.GT]: '>',
+      [AdminForthFilterOperators.LT]: '<',
+      [AdminForthFilterOperators.GTE]: '>=',
+      [AdminForthFilterOperators.LTE]: '<=',
+      [AdminForthFilterOperators.LIKE]: 'LIKE',
+      [AdminForthFilterOperators.ILIKE]: 'ILIKE',
+      [AdminForthFilterOperators.IN]: 'IN',
+      [AdminForthFilterOperators.NIN]: 'NOT IN',
+    };
+
+    SortDirectionsMap = {
+      [AdminForthSortDirections.ASC]: 'ASC',
+      [AdminForthSortDirections.DESC]: 'DESC',
+    };
+    
+
+    getData({ resource, limit, offset, sort, filters }) {
+      const columns = resource.columns.map((col) => col.name).join(', ');
+      const tableName = resource.table;
+      
+      for (const filter of filters) {
+        if (!this.OperatorsMap[filter.operator]) {
+          throw new Error(`Operator ${filter.operator} is not allowed`);
+        }
+
+        if (resource.columns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}`);
+        }
+      }
+
+      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
+      const filterValues = filters.length ? filters.map((f) => f.value) : [];
+
+      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+
+      const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
+      const rows = stmt.all([...filterValues, limit, offset]);
+      return rows;
+    }
+
+
 
     close() {
         this.db.close();

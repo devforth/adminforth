@@ -14,3 +14,21 @@ export const AdminForthTypes = {
   TEXT: 'text',
   JSON: 'json',
 }
+
+export const AdminForthFilterOperators = {
+  EQ: 'eq',
+  NE: 'ne',
+  GT: 'gt',
+  LT: 'lt',
+  GTE: 'gte',
+  LTE: 'lte',
+  LIKE: 'like',
+  ILIKE: 'ilike',
+  IN: 'in',
+  NIN: 'nin',
+};
+
+export const AdminForthSortDirections = {
+  ASC: 'asc',
+  DESC: 'desc',
+};
