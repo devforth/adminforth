@@ -86,15 +86,31 @@ class PostgresConnector {
     }
 
     getFieldValue(field, value) {
-        console.log('getFieldValue', field, value);
+      if (field.type == AdminForthTypes.TIMESTAMP) {
+        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+          return dayjs(value).toISOString();
+        } else if (field._underlineType == 'varchar') {
+          return dayjs(value).toISOString();
+        } else {
+          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+        }
+      }
     }
 
     setFieldValue(field, value) {
-        console.log('setFieldValue', field, value);
+      if (field.type == AdminForthTypes.TIMESTAMP) {
+        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+          // value is iso string now, convert to unix timestamp
+          return dayjs(value).unix();
+        } else if (field._underlineType == 'varchar') {
+          // value is iso string now, convert to unix timestamp
+          return dayjs(value).toISOString();
+        }
+      }
     }
 
-    close() {
-        return
+    async close() {
+        await this.db.end();
     }
 }
 
