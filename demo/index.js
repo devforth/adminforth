@@ -50,46 +50,29 @@ const admin = new AdminForth({
   ],
   resources: [
     {
-      dataSource: 'maindb',
-      table: 'apartments',
+      dataSource: 'maindb', table: 'apartments',
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       columns: [
-        {
-          name: 'id',
-          readOnly: true,
-        },
-        {
-          name: 'title',
-          required: true,
-        },
-        {
-          name: 'price',
-        },
-        {
-          name: 'description',
-        },
-        {
-          name: 'created_at',
-          readOnly: true,
-        }
+        { name: 'id', readOnly: true },
+        { name: 'title', required: true },
+        { name: 'price' },
+        { name: 'description' },
+        { name: 'created_at', readOnly: true }
       ]
     },
+    { dataSource: 'maindb', table: 'users' },
     {
-      dataSource: 'maindb',
-      table: 'users',
-    },
-    // {
-    //     dataSource: 'db2',
-    //     table: 'games',
-    //     columns: [
-    //         {
-    //             name: 'id',
-    //             readOnly: true,
-    //         }
-    //     ]
-    // }
+        dataSource: 'db2', table: 'games',
+        columns: [
+            { name: 'id', readOnly: true },
+            { name: 'name', required: true },
+            { name: 'created_by', required: true },
+            { name: 'year', required: true },
+            { name: 'created_at', readOnly: true }
+        ]
+    }
   ],
   menu: [
     {
