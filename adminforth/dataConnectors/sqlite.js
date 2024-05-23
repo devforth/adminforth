@@ -66,6 +66,9 @@ class SQLiteConnector {
 
     setFieldValue(field, value) {
       if (field.type == AdminForthTypes.TIMESTAMP) {
+        if (!value) {
+          return null;
+        }
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).unix();
@@ -116,7 +119,14 @@ class SQLiteConnector {
 
       const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
       const rows = stmt.all([...filterValues, limit, offset]);
-      return rows;
+      // run all fields via getFieldValue
+      return rows.map((row) => {
+        const newRow = {};
+        for (const [key, value] of Object.entries(row)) {
+          newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+        }
+        return newRow;
+      });
     }
 
 

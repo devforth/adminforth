@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
@@ -144,8 +144,9 @@ async function getList() {
   });
 }
 
-onMounted(async () => {
-  const res = await callAdminForthApi({
+
+async function init() {
+    const res = await callAdminForthApi({
       path: '/get_resource_columns',
       method: 'POST',
       body: {
@@ -161,6 +162,16 @@ onMounted(async () => {
   }
   const items = await getList();
   console.log(3213, items);
+}
+onMounted(async () => {
+  await init();
+});
+
+// on route param change 
+watch(() => route.params.resourceId, async () => {
+  columns.value = null;
+  error.value = null;
+  await init();
 });
 
 </script>
