@@ -48,11 +48,29 @@ const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: 'sqlite://test1.sqlite',
+      url: 'sqlite://test1.sqlite'
     },
     {
       id: 'db2',
-      url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432',
+      url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
+    },
+    {
+      id: 'db3',
+      url: 'mongodb://localhost:27017',
+      fieldtypesByTable: {
+        'users': {
+            _id: {
+                "type": "string",
+                "_underlineType": "varchar",
+                "maxLength": 255,
+                "_baseTypeDebug": "character varying(255)",
+                "required": true,
+                "primaryKey": false,
+                "default": "",
+                "name": "_id"
+            }
+        }
+      }
     }
   ],
   resources: [
@@ -70,7 +88,17 @@ const admin = new AdminForth({
       ],
       listPageSize: 20, 
     },
-    { dataSource: 'maindb', table: 'users' },
+    // { dataSource: 'maindb', table: 'users' },
+    // {
+    //     dataSource: 'db2', table: 'games',
+    //     columns: [
+    //         { name: 'id', readOnly: true },
+    //         { name: 'name', required: true },
+    //         { name: 'created_by', required: true },
+    //         { name: 'year', required: true },
+    //         { name: 'created_at', readOnly: true }
+    //     ]
+    // },
     {
         dataSource: 'db2', table: 'games',
         columns: [
@@ -80,7 +108,13 @@ const admin = new AdminForth({
             { name: 'year', required: true },
             { name: 'created_at', readOnly: true }
         ]
-    }
+    },
+    // {
+    //     dataSource: 'db3', table: 'users',
+    //     columns: [
+    //         { name: '_id', readOnly: true },
+    //     ]
+    // }
   ],
   menu: [
     {
