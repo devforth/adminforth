@@ -15,6 +15,7 @@
     "filewatcher": "^3.0.1",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "6.6",
     "pg": "^8.11.5"
   }
 }
