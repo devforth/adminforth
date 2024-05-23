@@ -108,7 +108,7 @@ class AdminForth {
     server.endpoint({
       noAuth: true, // TODO
       method: 'GET',
-      path: '/get_menu_config',
+      path: '/get_base_config',
       handler: async ({input}) => {
         return {
           resources: this.config.resources.map((res) => ({
@@ -122,7 +122,7 @@ class AdminForth {
     server.endpoint({
       noAuth: true, // TODO
       method: 'POST',
-      path: '/get_resource_data',
+      path: '/get_resource_columns',
       handler: async ({ body }) => {
         const { resourceId } = body;
         if (!this.statuses.dbDiscover) {
@@ -137,7 +137,35 @@ class AdminForth {
         }
         return { resource };
       },
-    })
+    });
+    server.endpoint({
+      noAuth: true, // TODO
+      method: 'POST',
+      path: '/get_resource_data',
+      handler: async ({ body }) => {
+        const { resourceId, limit, offset, filters, sort } = body;
+        console.log('get_resource_data', body);
+        
+        if (!this.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.statuses.dbDiscover !== 'done') {
+          return { discoverInProgress : true };
+        }
+        const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+        const data = await this.connectors[resource.dataSource].getData({
+          resource,
+          limit,
+          offset,
+          filters,
+          sort,
+        });
+        return { data };
+      },
+    });
   }
 
 

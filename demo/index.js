@@ -31,7 +31,7 @@ if (!tableExists) {
     );`).run();
 
   await db.prepare(`
-    INSERT INTO apartments (name, square_meter, price, number_of_rooms, description) VALUES ('Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
+    INSERT INTO apartments (id, title, square_meter, price, number_of_rooms, description) VALUES ('123', 'Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
     `).run();
 }
 
@@ -60,7 +60,8 @@ const admin = new AdminForth({
         { name: 'price' },
         { name: 'description' },
         { name: 'created_at', readOnly: true }
-      ]
+      ],
+      listPageSize: 20, 
     },
     { dataSource: 'maindb', table: 'users' },
     {

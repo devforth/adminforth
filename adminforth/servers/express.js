@@ -167,7 +167,6 @@ class ExpressServer {
           res.status(400).send('Invalid JSON body');
         }
       }
-      console.log('-1-1-11body', body);
       
       const query = req.query;
       const adminUser = req.adminUser;

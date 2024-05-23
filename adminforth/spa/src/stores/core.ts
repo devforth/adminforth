@@ -7,9 +7,11 @@ export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
   const menu = ref([]);
   const brand = ref('');
+  const config = ref({});
+
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
-      path: '/get_menu_config',
+      path: '/get_base_config',
       method: 'GET',
     });
     menu.value = resp.menu;
@@ -17,6 +19,7 @@ export const useCoreStore = defineStore('core', () => {
       acc[resource.resourceId] = resource;
       return acc;
     }, {});
+    config.value = resp.config;
     brand.value = resp.brandName;
   }
 
