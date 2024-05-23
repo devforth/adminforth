@@ -4,6 +4,7 @@ import Auth from './auth.js';
 import CodeInjector from './modules/codeInjector.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import PostgresConnector from './dataConnectors/postgres.js';
+import { guessLabelFromName } from './modules/utils.js';
 
 class AdminForth {
   constructor(config) {
@@ -24,6 +25,8 @@ class AdminForth {
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
+    console.log('🙂 this.config', this.config);
+
 
     if (this.config.resources) {
       this.config.resources.forEach((res) => {
@@ -35,6 +38,13 @@ class AdminForth {
         if (!res.dataSource) {
           errors.push(`Resource ${res.resourceId} is missing dataSource`);
         }
+        if (!res.columns) {
+          res.columns = [];
+        }
+        res.columns.forEach((col) => {
+          col.label = col.label || guessLabelFromName(col.name);
+        })
+        console.log('🙂🙂 res', res);
       });
     }
 
@@ -145,7 +155,7 @@ class AdminForth {
       handler: async ({ body }) => {
         const { resourceId, limit, offset, filters, sort } = body;
         console.log('get_resource_data', body);
-        
+
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }

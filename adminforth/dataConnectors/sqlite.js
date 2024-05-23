@@ -59,7 +59,6 @@ class SQLiteConnector {
           return null;
         }
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          console.log('value ud', value)
           return dayjs.unix(+value).toISOString();
         } else if (field._underlineType == 'varchar') {
           return dayjs.unix(+value).toISOString();
