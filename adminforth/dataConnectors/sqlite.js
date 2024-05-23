@@ -124,14 +124,19 @@ class SQLiteConnector {
 
       const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
       const rows = stmt.all([...filterValues, limit, offset]);
+
+      const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
       // run all fields via getFieldValue
-      return rows.map((row) => {
-        const newRow = {};
-        for (const [key, value] of Object.entries(row)) {
-          newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
-        }
-        return newRow;
-      });
+      return {
+        data: rows.map((row) => {
+          const newRow = {};
+          for (const [key, value] of Object.entries(row)) {
+            newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+          }
+          return newRow;
+        }),
+        total,
+      };
     }
 
 
