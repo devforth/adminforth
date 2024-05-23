@@ -1,10 +1,11 @@
 
-import ExpressServer from './servers/express.js';
 import Auth from './auth.js';
-import CodeInjector from './modules/codeInjector.js';
-import SQLiteConnector from './dataConnectors/sqlite.js';
+import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
 import { guessLabelFromName } from './modules/utils.js';
+import SQLiteConnector from './dataConnectors/sqlite.js';
+import CodeInjector from './modules/codeInjector.js';
+import ExpressServer from './servers/express.js';
 
 class AdminForth {
   constructor(config) {
@@ -66,6 +67,7 @@ class AdminForth {
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
+      'mongodb': MongoConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
@@ -75,7 +77,7 @@ class AdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url });
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url , fieldtypesByTable: ds.fieldtypesByTable});
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
