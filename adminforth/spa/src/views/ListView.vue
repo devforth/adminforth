@@ -52,7 +52,7 @@
         <tr>
           <th scope="col" class="p-4">
             <div class="flex items-center">
-              <input id="checkbox-all-search" type="checkbox"
+              <input id="checkbox-all-search" type="checkbox" @change="selectAll($event.target.checked)"
                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">checkbox</label>
             </div>
@@ -122,11 +122,11 @@
           </td>
         </tr>
 
-        <tr v-else v-for="row in rows" :key="row.id" 
+        <tr v-else v-for="(row, rowI) in rows" :key="row.id" 
           class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
           <td class="w-4 p-4">
             <div class="flex items center">
-              <input id="checkbox-table-search-1" type="checkbox"
+              <input id="checkbox-table-search-1" type="checkbox" v-model="checkboxes[rowI]"
                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
             </div>
@@ -194,7 +194,7 @@
       </span>
       <div class="inline-flex mt-2 xs:mt-0">
         <!-- Buttons -->
-        <button class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        <button class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50"
           @click="page--" :disabled="page <= 1">
             <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4"/>
@@ -202,7 +202,7 @@
             Prev
         </button>
         <input type="text" class="w-10 h-10 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800" v-model="page" />
-        <button class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" 
+        <button class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50"
           @click="page++" :disabled="page >= totalPages">
             Next
             <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
@@ -219,11 +219,15 @@ import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 
+
+
+
 const coreStore = useCoreStore();
 
 const route = useRoute();
 const columns = ref(null);
 const error = ref(null);
+const checkboxes = ref([]);
 
 const page = ref(1);
 const filters = ref([]);
@@ -233,6 +237,11 @@ const rows = ref(null);
 const totalRows = ref(0);
 
 const DEFAULT_PAGE_SIZE = 10;
+
+async function selectAll(value) {
+  console.log('select all');
+  checkboxes.value = rows.value.map(() => value);
+}
 
 const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.pageSize || DEFAULT_PAGE_SIZE);
 const totalPages = computed(() => Math.ceil(totalRows.value / pageSize.value));
