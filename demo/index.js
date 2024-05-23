@@ -74,7 +74,7 @@ const admin = new AdminForth({
     {
         dataSource: 'db2', table: 'games',
         columns: [
-            { name: 'id', readOnly: true },
+            { name: 'id', readOnly: true, label: 'Identifier'},
             { name: 'name', required: true },
             { name: 'created_by', required: true },
             { name: 'year', required: true },
@@ -145,5 +145,5 @@ app.get(
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
-  console.log(`AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}`)
+  console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
 });
