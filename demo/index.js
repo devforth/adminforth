@@ -107,16 +107,20 @@ const admin = new AdminForth({
     //         { name: 'created_at', readOnly: true }
     //     ]
     // },
-    // {
-    //     dataSource: 'db2', table: 'games',
-    //     columns: [
-    //         { name: 'id', readOnly: true, label: 'Identifier'},
-    //         { name: 'name', required: true },
-    //         { name: 'created_by', required: true },
-    //         { name: 'year', required: true },
-    //         { name: 'created_at', readOnly: true }
-    //     ]
-    // },
+    {
+        dataSource: 'db2', table: 'games',
+        resourceId: 'games',
+        label: 'Games',
+        columns: [
+            { name: 'id', readOnly: true, label: 'Identifier'},
+            { name: 'name', required: true },
+            { name: 'created_by', required: true },
+            { name: 'release_date', readOnly: true },
+            { name: 'description' },
+            { name: 'price' }
+        ],
+        listPageSize: 5, 
+    },
     // {
     //     dataSource: 'db3', table: 'users',
     //     columns: [
@@ -135,6 +139,11 @@ const admin = new AdminForth({
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
         },
+        {
+          label: 'Games',
+          icon: 'flowbite:caret-right-solid',
+          resourceId: 'games',
+        }
       ]
     },
     {
@@ -168,7 +177,6 @@ const port = 3000;
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
-
 
 admin.express.serve(app, express)
 admin.discoverDatabases();
