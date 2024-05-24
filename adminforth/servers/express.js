@@ -174,8 +174,9 @@ class ExpressServer {
 
       const input = { body, query, adminUser, headers, _raw_express_req: req, _raw_express_res: res};
 
+      let output;
       try {
-        const output = await handler(input);
+        output = await handler(input);
       } catch (e) {
         console.error('Error in handler', e);
         // print full stack trace 
