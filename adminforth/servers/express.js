@@ -173,7 +173,17 @@ class ExpressServer {
       const headers = req.headers;
 
       const input = { body, query, adminUser, headers, _raw_express_req: req, _raw_express_res: res};
-      const output = await handler(input);
+
+      try {
+        const output = await handler(input);
+      } catch (e) {
+        console.error('Error in handler', e);
+        // print full stack trace 
+        console.error(e.stack);
+        
+        res.status(500).send('Internal server error');
+        return;
+      }
       res.json(output);
       output.headers?.forEach((value, name) => {
         res.setHeader(name, value);
