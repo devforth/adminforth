@@ -106,7 +106,7 @@ class AdminForth {
 
     this.statuses.dbDiscover = 'done';
 
-    console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
+    // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
   async init() {

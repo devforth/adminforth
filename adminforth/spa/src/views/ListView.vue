@@ -334,6 +334,7 @@ onMounted(async () => {
 watch(() => route.params.resourceId, async () => {
   columns.value = null;
   error.value = null;
+  filters.value = [];
   await init();
 });
 
