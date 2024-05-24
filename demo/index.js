@@ -80,8 +80,16 @@ const admin = new AdminForth({
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       columns: [
-        { name: 'id', readOnly: true, label: 'Identifier' },
-        { name: 'title', required: true },
+        { name: 'id', 
+          readOnly: true, 
+          label: 'Identifier',
+          showIn: 'CEFS', 
+        },
+        { 
+          name: 'title',
+          required: true,
+          showIn: 'LCEFS',  // L - List, C - Create, E - Edit, F - Filter, S - Show, LCEFS is default mode
+        }, 
         { name: 'price' },
         { name: 'description' },
         { name: 'created_at', readOnly: true }

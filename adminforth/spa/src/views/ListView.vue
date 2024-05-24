@@ -59,7 +59,7 @@
           </th>
 
 
-          <th v-for="c in columns" scope="col" class="px-6 py-3">
+          <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
             <div class="flex items-center">
               {{ c.label }}
               <a href="#"><svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -131,7 +131,7 @@
               <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
             </div>
           </td>
-          <td v-for="c in columns" class="px-6 py-4">
+          <td v-for="c in columnsListed" class="px-6 py-4">
             {{ row[c.name] }}
           </td>
           <td class="flex items-center px-6 py-4">
@@ -237,6 +237,8 @@ const rows = ref(null);
 const totalRows = ref(0);
 
 const DEFAULT_PAGE_SIZE = 10;
+
+const columnsListed = computed(() => columns.value?.filter(c => c.showIn.includes('L')));
 
 async function selectAll(value) {
   console.log('select all');
