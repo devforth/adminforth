@@ -116,39 +116,39 @@ class PostgresConnector {
     }
     
     async getData({ resource, limit, offset, sort, filters }) {
-        const columns = resource.columns.map((col) => col.name).join(', ');
-        const tableName = resource.table;
-        
-        for (const filter of filters) {
-          if (!this.OperatorsMap[filter.operator]) {
-            throw new Error(`Operator ${filter.operator} is not allowed`);
-          }
-  
-          if (resource.columns.some((col) => col.name == filter.field)) {
-            throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}`);
-          }
+      const columns = resource.columns.map((col) => col.name).join(', ');
+      const tableName = resource.table;
+      
+      for (const filter of filters) {
+        if (!this.OperatorsMap[filter.operator]) {
+          throw new Error(`Operator ${filter.operator} is not allowed`);
         }
-  
-        const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
-        // const filterValues = filters.length ? filters.map((f) => f.value) : [];
-  
-        const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-        const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy}  LIMIT ${limit} OFFSET ${offset}`);
-        const rows = stmt.rows;
-        
-        const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`)).rows[0].count;
-        // run all fields via getFieldValue
-        return {
-          data: rows.map((row) => {
-            const newRow = {};
-            for (const [key, value] of Object.entries(row)) {
-                newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
-            }
-            return newRow;
-          }),
-          total,
-        };
+
+        if (resource.columns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}`);
+        }
       }
+
+      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
+      // const filterValues = filters.length ? filters.map((f) => f.value) : [];
+
+      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy}  LIMIT ${limit} OFFSET ${offset}`);
+      const rows = stmt.rows;
+      
+      const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`)).rows[0].count;
+      // run all fields via getFieldValue
+      return {
+        data: rows.map((row) => {
+          const newRow = {};
+          for (const [key, value] of Object.entries(row)) {
+              newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+          }
+          return newRow;
+        }),
+        total,
+      };
+    }
   
 
     async close() {

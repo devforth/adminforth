@@ -19,6 +19,8 @@ if (!tableExists) {
         price DECIMAL(10, 2) NOT NULL,
         number_of_rooms INT,
         description TEXT,
+        property_type VARCHAR(255) DEFAULT 'apartment',
+        listed BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP
     );`).run();
 
@@ -37,7 +39,10 @@ if (!tableExists) {
 
   for (let i = 0; i < 50; i++) {
     await db.prepare(`
-      INSERT INTO apartments (id, title, square_meter, price, number_of_rooms, description, created_at) VALUES ('${i}', 'Apartment ${i}', 50.8, 10000.12, 2, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24});
+      INSERT INTO apartments (
+        id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
+      ) VALUES ('${i}', 'Apartment ${i}', ${Math.random() * 100}, ${Math.random() * 10000}, ${Math
+        .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
       `).run();
   }
 }
@@ -82,7 +87,7 @@ const admin = new AdminForth({
       columns: [
         { name: 'id', 
           readOnly: true, 
-          label: 'Identifier',
+          label: 'Identifier',  // if you wish you can redefine label
           showIn: 'CEFS', 
         },
         { 
@@ -90,9 +95,41 @@ const admin = new AdminForth({
           required: true,
           showIn: 'LCEFS',  // L - List, C - Create, E - Edit, F - Filter, S - Show, LCEFS is default mode
         }, 
-        { name: 'price' },
-        { name: 'description' },
-        { name: 'created_at', readOnly: true }
+        { 
+          name: 'price',
+          allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
+        },
+        { 
+          name: 'square_meter', 
+          label: 'Square', 
+          allowMinMaxQuery: true,
+         },
+        { 
+          name: 'number_of_rooms',
+          allowMinMaxQuery: true,
+        },
+        { 
+          name: 'description' 
+        },
+        {
+          name: 'property_type',
+          enum: [{
+            value: 'house',
+            label: 'House'
+          }, {
+            value: 'apartment',
+            label: 'Apartment'
+          }],
+          // allowCustomValue: true,
+        },
+        {
+          name: 'listed',
+        },
+        { 
+          name: 'created_at', 
+          readOnly: true,
+          allowMinMaxQuery: true,
+        }
       ],
       listPageSize: 20, 
     },
