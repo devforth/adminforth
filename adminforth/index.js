@@ -44,6 +44,7 @@ class AdminForth {
         }
         res.columns.forEach((col) => {
           col.label = col.label || guessLabelFromName(col.name);
+          col.showIn = col.showIn?.toUpperCase() || 'LCEFS';
         })
         console.log('🙂🙂 res', res);
       });

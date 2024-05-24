@@ -5,6 +5,8 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import { fa } from '@faker-js/faker';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,7 +14,10 @@ const __dirname = path.join(path.dirname(__filename), '..');
 
 const execAsync = promisify(exec);
 
-
+function hashify(obj) {
+  return crypto.createHash
+    ('sha256').update(JSON.stringify(obj)).digest('hex');
+}
 
 class CodeInjector {
   constructor(adminforth) {
@@ -54,7 +59,7 @@ class CodeInjector {
     }
   }
 
-  async prepareSources(filesUpdated) {
+  async prepareSources({ filesUpdated, verbose = false }) {
     const spaTmpPath = path.join(__dirname, 'spa_tmp');
 
     // create spa_tmp folder, or ignore if it exists
@@ -93,7 +98,6 @@ class CodeInjector {
     };
     collectIcons(this.adminforth.config.menu);
 
-
     const uniqueIcons = Array.from(new Set(icons));
 
     // icons are collectionName:iconName. Get list of all unique collection names:
@@ -102,20 +106,6 @@ class CodeInjector {
     // package names @iconify-prerendered/vue-<collection name>
     const packageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
 
-    // check packages installed in spa_tmp/package.json
-    const packageJsonPath = path.join(spaTmpPath, 'package.json');
-    const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf-8'));
-
-    // get packages that need to be installed
-    const packagesToInstall = packageNames.filter((packageName) => {
-      return !packageJson.dependencies[packageName];
-    });
-
-    if (packagesToInstall.length > 0) {
-      const npmInstallCommand = `install ${packagesToInstall.join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: spaTmpPath});
-    }
-    
     // for each icon generate import statement
     const iconImports = uniqueIcons.map((icon) => {
       const [ collection, iconName ] = icon.split(':');
@@ -141,6 +131,36 @@ class CodeInjector {
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n');
 
     await fs.promises.writeFile(appVuePath, appVueContent);
+
+
+    /* hash checking */
+    const packageLockPath = path.join(spaTmpPath, 'package-lock.json');
+    const packageLock = JSON.parse(await fs.promises.readFile(packageLockPath, 'utf-8'));
+    const lockHash = hashify(packageLock);
+    const packagesNamesHash = hashify(packageNames);
+
+    const fullHash = hashify([lockHash, packagesNamesHash]);
+    const hashPath = path.join(spaTmpPath, 'node_modules', '.adminforth_hash');
+
+    try {
+      const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
+      if (existingHash === fullHash) {
+        console.log('Hashes match, skipping npm ci/install');
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
+
+    if (packageNames.length) {
+      const npmInstallCommand = `install ${packageNames.join(' ')}`;
+      await this.runNpmShell({command: npmInstallCommand, cwd: spaTmpPath});
+    }
+
+    await fs.promises.writeFile(hashPath, fullHash);
+
   }
 
   async watchForReprepare() {
@@ -169,7 +189,7 @@ class CodeInjector {
       'change',
       async (file) => {
         console.log(`File ${file} changed, preparing sources...`);
-        await this.prepareSources([file.replace(spaPath + '/', '')]);
+        await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
     process.on('exit', () => {
@@ -180,13 +200,13 @@ class CodeInjector {
   async bundleNow({hotReload = false, verbose = false}) {
     this.adminforth.config.runningHotReload = hotReload;
 
-    await this.prepareSources();
+    await this.prepareSources({ verbose });
     await this.watchForReprepare();
     console.log('AdminForth bundling');
     
     const cwd = path.join(__dirname, 'spa_tmp');
     
-    await this.runNpmShell({command: 'ci', verbose, cwd});
+    
 
     if (!hotReload) {
       await this.runNpmShell({command: 'run build', verbose, cwd});
