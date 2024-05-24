@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <Filters :columns="columns" v-model:filters="filters" />
+    <Filters :columns="columns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
 
     <div class="flex items-center justify-between mb-3">
       <Breadcrumbs />
@@ -160,7 +160,13 @@
               </div>
             </td>
             <td v-for="c in columnsListed" class="px-6 py-4">
-              {{ row[c.name] }}
+              <span v-if="c.type === 'boolean'">
+                <span v-if="row[c.name]" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">Yes</span>
+                <span v-else class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">No</span>
+              </span>
+              <span v-else>
+                {{ row[c.name] }}
+              </span>
             </td>
             <td class="flex items-center px-6 py-4">
               <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
@@ -269,6 +275,7 @@ const checkboxes = ref([]);
 
 const page = ref(1);
 const filters = ref([]);
+const columnsMinMax = ref({});
 const sort = ref([]);
 
 const rows = ref(null);
@@ -325,6 +332,13 @@ async function init() {
   }
   const items = await getList();
   console.log(3213, items);
+  columnsMinMax.value = await callAdminForthApi({
+    path: '/get_min_max_for_columns',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId
+    }
+  });
 }
 onMounted(async () => {
   await init();

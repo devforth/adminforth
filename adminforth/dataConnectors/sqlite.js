@@ -40,6 +40,9 @@ class SQLiteConnector {
           } else if (baseType == 'timestamp') {
             field.type = AdminForthTypes.DATETIME;
             field._underlineType = 'timestamp';
+          } else if (baseType == 'boolean') {
+            field.type = AdminForthTypes.BOOLEAN;
+            field._underlineType = 'boolean';
           } else {
             field.type = 'unknown'
           }
@@ -65,6 +68,8 @@ class SQLiteConnector {
         } else {
           throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
         }
+      } else if (field.type == AdminForthTypes.BOOLEAN) {
+        return !!value;
       }
       return value;
     }
@@ -81,6 +86,8 @@ class SQLiteConnector {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).toISOString();
         }
+      } else if (field.type == AdminForthTypes.BOOLEAN) {
+        return value ? 1 : 0;
       }
       return value;
     }
@@ -132,7 +139,7 @@ class SQLiteConnector {
 
       const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
       const rows = stmt.all([...filterValues, limit, offset]);
-      console.log('⚙️⚙️ stmt', stmt, [...filterValues, limit, offset]);
+      // console.log('⚙️⚙️ stmt', stmt, [...filterValues, limit, offset]);
       const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
       // run all fields via getFieldValue
       return {
@@ -145,6 +152,20 @@ class SQLiteConnector {
         }),
         total,
       };
+    }
+
+    async getMinMaxForColumns({ resource, columns }) {
+      const tableName = resource.table;
+      const result = {};
+      await Promise.all(columns.map(async (col) => {
+        const stmt = await this.db.prepare(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
+        const { min, max } = stmt.get();
+        result[col.name] = {
+          min: this.getFieldValue(col, min),
+          max: this.getFieldValue(col, max),
+        };
+      }))
+      return result;
     }
 
 

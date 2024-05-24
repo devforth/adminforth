@@ -14,7 +14,27 @@
       <ul class="space-y-3 font-medium">
          <li v-for="c in columnsWithFilter" :key="c">
             {{ c.label }}
-            <input type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md" placeholder="Search" @input="setFilter(c, $event.target.value)" :value="filters.find(f => f.field === c.name)?.value">
+
+            <Dropdown 
+              v-if="c.type === 'boolean'" 
+              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }]"
+              @change="setFilter(c, $event.target.checked)" :checked="filters.find(f => f.field === c.name)?.value" />
+            
+            <Dropdown 
+              v-else-if="c.type === 'enum'"
+              :options="c.enum"
+              :allowCustom="c.allowCustom"
+              @change="setFilter(c, $event)" :value="filters.find(f => f.field === c.name)?.value" 
+            />
+
+            <input 
+              v-if="[ 'string', 'number', 'date', 'time', 'datetime' ].includes(c.type)"
+              type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+              placeholder="Search"
+              @input="setFilter(c, $event.target.value)"
+              :value="filters.find(f => f.field === c.name)?.value"
+            >
+            
          </li>
       </ul>
    </div>

@@ -7,6 +7,8 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 
+import { AdminForthTypes } from './types.js';
+
 class AdminForth {
   constructor(config) {
     this.config = config;
@@ -177,6 +179,36 @@ class AdminForth {
           sort,
         });
         return data;
+      },
+    });
+    server.endpoint({
+      noAuth: true, // TODO
+      method: 'POST',
+      path: '/get_min_max_for_columns',
+      handler: async ({ body }) => {
+        const { resourceId } = body;
+        if (!this.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.statuses.dbDiscover !== 'done') {
+          return { discoverInProgress : true };
+        }
+        const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource '${resourceId}' not found` };
+        }
+        const item = await this.connectors[resource.dataSource].getMinMaxForColumns({
+          resource,
+          columns: resource.columns.filter((col) => [
+            AdminForthTypes.INT, 
+            AdminForthTypes.FLOAT,
+            AdminForthTypes.DATE,
+            AdminForthTypes.DATETIME,
+            AdminForthTypes.TIME,
+            AdminForthTypes.DECIMAL,
+          ].includes(col.type) && col.allowMinMaxQuery === true),
+        });
+        return item;
       },
     });
   }
