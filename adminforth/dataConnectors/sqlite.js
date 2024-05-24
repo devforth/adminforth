@@ -82,6 +82,7 @@ class SQLiteConnector {
           return dayjs(value).toISOString();
         }
       }
+      return value;
     }
 
     OperatorsMap = {
@@ -112,19 +113,26 @@ class SQLiteConnector {
           throw new Error(`Operator ${filter.operator} is not allowed`);
         }
 
-        if (resource.columns.some((col) => col.name == filter.field)) {
-          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}`);
+        console.log('resource.c', resource.columns);
+        if (!resource.columns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field "${filter.field}" is not in resource ${resource.resourceId}, available fields: ${resource.columns.map((col) => '"'+col.name+'"').join(', ')}`);
         }
       }
 
       const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
-      const filterValues = filters.length ? filters.map((f) => f.value) : [];
+      const filterValues = filters.length ? filters.map((f) => {
+        const v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+        if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
+          return `%${v}%`;
+        } 
+        return v;
+      }) : [];
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
 
       const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
       const rows = stmt.all([...filterValues, limit, offset]);
-
+      console.log('⚙️⚙️ stmt', stmt, [...filterValues, limit, offset]);
       const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
       // run all fields via getFieldValue
       return {

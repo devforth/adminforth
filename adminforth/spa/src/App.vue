@@ -1,5 +1,5 @@
 <template>
-  <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+  <nav class="fixed h-14 top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center justify-start rtl:justify-end">
@@ -104,12 +104,9 @@
     </div>
   </aside>
 
- <div class="p-4 sm:ml-64">
+  <div class="p-4 sm:ml-64">
     <div class="p-0 dark:border-gray-700 mt-14">
-        <RouterView/>
-       
-       
-        
+        <RouterView/>     
         
     </div>
   </div> 
