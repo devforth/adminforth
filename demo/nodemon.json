@@ -1,0 +1,4 @@
+{
+  "watch": ["../adminforth"],
+  "ignore": ["../adminforth/node_modules", "../adminforth/spa", "../adminforth/spa_tmp"]
+}
