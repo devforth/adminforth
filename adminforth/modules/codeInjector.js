@@ -6,7 +6,6 @@ import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-import { fa } from '@faker-js/faker';
 
 
 const __filename = fileURLToPath(import.meta.url);
