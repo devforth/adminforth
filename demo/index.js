@@ -59,24 +59,24 @@ const admin = new AdminForth({
       id: 'db2',
       url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
     },
-    {
-      id: 'db3',
-      url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
-      fieldtypesByTable: {
-        'game': {
-            _id: {
-                "type": "string",
-                "_underlineType": "varchar",
-                "maxLength": 255,
-                "_baseTypeDebug": "character varying(255)",
-                "required": true,
-                "primaryKey": false,
-                "default": "",
-                "name": "_id"
-            }
-        }
-      }
-    }
+    // {
+    //   id: 'db3',
+    //   url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
+    //   fieldtypesByTable: {
+    //     'game': {
+    //         _id: {
+    //             "type": "string",
+    //             "_underlineType": "varchar",
+    //             "maxLength": 255,
+    //             "_baseTypeDebug": "character varying(255)",
+    //             "required": true,
+    //             "primaryKey": false,
+    //             "default": "",
+    //             "name": "_id"
+    //         }
+    //     }
+    //   }
+    // }
   ],
   resources: [
     {
@@ -153,12 +153,12 @@ const admin = new AdminForth({
         ],
         listPageSize: 5, 
     },
-    {
-        dataSource: 'db3', table: 'game',
-        columns: [
-            { name: '_id', readOnly: true, primaryKey: true },
-        ]
-    }
+    // {
+    //     dataSource: 'db3', table: 'game',
+    //     columns: [
+    //         { name: '_id', readOnly: true, primaryKey: true },
+    //     ]
+    // }
   ],
   menu: [
     {
