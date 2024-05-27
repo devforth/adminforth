@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ResourceParent from '@/views/ResourceParent.vue'
 import ListView from '@/views/ListView.vue'
+import ShowView from '@/views/ShowView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,11 @@ const router = createRouter({
           path: '',
           component: ListView,
           name: 'resource-list'
+        },
+        {
+          path: 'show/:primaryKey',
+          component: () => ShowView,
+          name: 'resource-show'
         }
       ]
     }, 
