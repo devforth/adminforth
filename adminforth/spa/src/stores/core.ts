@@ -6,7 +6,7 @@ import { callAdminForthApi } from '@/utils';
 export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
   const menu = ref([]);
-  const brand = ref('');
+  const brandName = ref('');
   const config = ref({});
 
   async function fetchMenuAndResource() {
@@ -20,8 +20,8 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
-    brand.value = resp.brandName;
+    brandName.value = resp.brandName;
   }
 
-  return { brand, resourceById, menu, fetchMenuAndResource }
+  return { brandName, resourceById, menu, fetchMenuAndResource }
 })

@@ -85,10 +85,12 @@ const admin = new AdminForth({
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       columns: [
-        { name: 'id', 
+        { 
+          name: 'id', 
           readOnly: true, 
           label: 'Identifier',  // if you wish you can redefine label
-          showIn: 'CEFS', 
+          showIn: 'CEFS',
+          primaryKey: true,
         },
         { 
           name: 'title',
@@ -119,6 +121,9 @@ const admin = new AdminForth({
           }, {
             value: 'apartment',
             label: 'Apartment'
+          }, {
+            value: null,
+            label: 'Not defined'
           }],
           // allowCustomValue: true,
         },

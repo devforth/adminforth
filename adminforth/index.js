@@ -104,6 +104,12 @@ class AdminForth {
         res.columns[i] = { ...fieldTypes[col.name], ...col };
 
       });
+
+      // check if primaryKey column is present
+      if (!res.columns.some((col) => col.primaryKey)) {
+        throw new Error(`Resource '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
+      }
+
     }));
 
     this.statuses.dbDiscover = 'done';
@@ -131,6 +137,7 @@ class AdminForth {
             label: res.label,
           })),
           menu: this.config.menu,
+          brandName: this.config.brandName,
         };
       },
     });
