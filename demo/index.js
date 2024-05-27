@@ -61,9 +61,9 @@ const admin = new AdminForth({
     },
     {
       id: 'db3',
-      url: 'mongodb://localhost:27017',
+      url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
       fieldtypesByTable: {
-        'users': {
+        'game': {
             _id: {
                 "type": "string",
                 "_underlineType": "varchar",
@@ -133,17 +133,7 @@ const admin = new AdminForth({
       ],
       listPageSize: 20, 
     },
-    // { dataSource: 'maindb', table: 'users' },
-    // {
-    //     dataSource: 'db2', table: 'games',
-    //     columns: [
-    //         { name: 'id', readOnly: true },
-    //         { name: 'name', required: true },
-    //         { name: 'created_by', required: true },
-    //         { name: 'year', required: true },
-    //         { name: 'created_at', readOnly: true }
-    //     ]
-    // },
+    { dataSource: 'maindb', table: 'users' },
     {
         dataSource: 'db2', table: 'games',
         resourceId: 'games',
@@ -158,12 +148,12 @@ const admin = new AdminForth({
         ],
         listPageSize: 5, 
     },
-    // {
-    //     dataSource: 'db3', table: 'users',
-    //     columns: [
-    //         { name: '_id', readOnly: true },
-    //     ]
-    // }
+    {
+        dataSource: 'db3', table: 'game',
+        columns: [
+            { name: '_id', readOnly: true },
+        ]
+    }
   ],
   menu: [
     {
@@ -180,6 +170,11 @@ const admin = new AdminForth({
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
+        },
+        {
+          label: 'Casino Games',
+          icon: 'flowbite:caret-right-solid',
+          resourceId: 'game',
         }
       ]
     },
