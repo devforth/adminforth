@@ -12,6 +12,19 @@ class PostgresConnector {
         (async () => {
             await this.db.connect();
         })();
+
+        this.OperatorsMap = {
+            'eq': '=',
+            'ne': '!=',
+            'gt': '>',
+            'gte': '>=',
+            'lt': '<',
+            'lte': '<=',
+            'in': 'IN',
+            'nin': 'NOT IN',
+            'like': 'LIKE',
+            'nlike': 'NOT LIKE',
+        };
     }
 
     async discoverFields(tableName) {
@@ -123,13 +136,11 @@ class PostgresConnector {
         if (!this.OperatorsMap[filter.operator]) {
           throw new Error(`Operator ${filter.operator} is not allowed`);
         }
-
-        if (resource.columns.some((col) => col.name == filter.field)) {
-          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}`);
+        if (!resource.columns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
         }
       }
-
-      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
+      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} '${f.value}'`).join(' AND ')}` : '';
       // const filterValues = filters.length ? filters.map((f) => f.value) : [];
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
@@ -150,6 +161,19 @@ class PostgresConnector {
       };
     }
   
+    async getMinMaxForColumns({ resource, columns }) {
+        const tableName = resource.table;
+        const result = {};
+        await Promise.all(columns.map(async (col) => {
+            const stmt = await this.db.query(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
+            const { min, max } = stmt.rows[0];
+            result[col.name] = {
+                min: this.getFieldValue(col, min),
+                max: this.getFieldValue(col, max),
+            };
+        }))
+        return result;
+      }
 
     async close() {
         await this.db.end();
