@@ -169,6 +169,8 @@
               </span>
             </td>
             <td class="flex items-center px-6 py-4">
+              <RouterLink :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
+                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">View</RouterLink>
               <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
               <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Remove</a>
             </td>
@@ -310,7 +312,10 @@ async function getList() {
       sort: sort.value,
     }
   });
-  rows.value = data.data;
+  rows.value = data.data.map(row => {
+    row._primaryKeyValue = row[columns.value.find(c => c.primaryKey).name];
+    return row;
+  });
   totalRows.value = data.total;
 }
 

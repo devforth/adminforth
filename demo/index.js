@@ -138,7 +138,7 @@ const admin = new AdminForth({
       ],
       listPageSize: 20, 
     },
-    { dataSource: 'maindb', table: 'users' },
+    // { dataSource: 'maindb', table: 'users' },
     {
         dataSource: 'db2', table: 'games',
         resourceId: 'games',
@@ -156,7 +156,7 @@ const admin = new AdminForth({
     {
         dataSource: 'db3', table: 'game',
         columns: [
-            { name: '_id', readOnly: true },
+            { name: '_id', readOnly: true, primaryKey: true },
         ]
     }
   ],
