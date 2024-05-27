@@ -1,6 +1,9 @@
 <template>
   <!-- drawer component -->
-  <div id="drawer-navigation" class="fixed top-14 right-0 z-50 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800" tabindex="-1" aria-labelledby="drawer-navigation-label">
+  <div id="drawer-navigation" class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800" 
+      tabindex="-1" aria-labelledby="drawer-navigation-label"
+      :style="{ height: `calc(100vh - 3.5rem)` }"
+  >
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       Filters
 
