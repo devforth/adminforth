@@ -218,6 +218,19 @@ class AdminForth {
         return item;
       },
     });
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/get_record',
+        handler: async ({ body }) => {
+            console.log('get_record', body);
+            const { resourceId, primaryKey } = body;
+            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            const connector = this.connectors[resource.dataSource];
+            const record = connector.getRecordByPrimaryKey(resource, primaryKey);
+            return record;
+        }
+      });
   }
 
 

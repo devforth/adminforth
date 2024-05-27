@@ -116,6 +116,31 @@ class PostgresConnector {
         return value;
       }
 
+    getPrimaryKey(resource) {
+        for (const col of resource.columns) {
+            if (col.primaryKey) {
+                return col.name;
+            }
+        }
+    }
+
+    getRecordByPrimaryKey(resource, key) {
+        const tableName = resource.table;
+        const columns = resource.columns.map((col) => col.name).join(', ');
+        return this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${getPrimaryKey(resource)} = $1`, [key])
+            .then((stmt) => {
+                const row = stmt.rows[0];
+                if (!row) {
+                    return null;
+                }
+                const newRow = {};
+                for (const [key, value] of Object.entries(row)) {
+                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+                }
+                return newRow;
+            });
+    }
+
     setFieldValue(field, value) {
       if (field.type == AdminForthTypes.TIMESTAMP) {
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
