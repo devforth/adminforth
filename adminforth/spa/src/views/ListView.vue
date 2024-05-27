@@ -3,26 +3,24 @@
     <Filters :columns="columns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
     
     <BreadcrumbsWithButtons>
-      <div class="flex items-center space-x-1">
-        <button :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
-          class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-        >
-          <IconPlusOutline class="w-4 h-4 me-2" />
-            Create
-        </button>
-        <button 
-          class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation" aria-controls="drawer-navigation" data-drawer-placement="right"
-        >
-          <IconFilterOutline class="w-4 h-4 me-2" />
-            Filter
-            <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-              v-if="filters.length">
-              {{ filters.length }}
-            </span>
+      <RouterLink :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
+        class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+      >
+        <IconPlusOutline class="w-4 h-4 me-2" />
+          Create
+      </RouterLink>
+      <button 
+        class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation" aria-controls="drawer-navigation" data-drawer-placement="right"
+      >
+        <IconFilterOutline class="w-4 h-4 me-2" />
+          Filter
+          <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
+            v-if="filters.length">
+            {{ filters.length }}
+          </span>
+      </button>
 
-        </button>
-      </div>
     </BreadcrumbsWithButtons>
 
     <!-- table -->

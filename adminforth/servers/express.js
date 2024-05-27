@@ -186,7 +186,7 @@ class ExpressServer {
         return;
       }
       res.json(output);
-      output.headers?.forEach((value, name) => {
+      output?.headers?.forEach((value, name) => {
         res.setHeader(name, value);
       })
       res.status(output.status || 200);
