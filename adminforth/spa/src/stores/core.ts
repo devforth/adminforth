@@ -8,6 +8,7 @@ export const useCoreStore = defineStore('core', () => {
   const menu = ref([]);
   const brandName = ref('');
   const config = ref({});
+  const record = ref({});
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -23,5 +24,18 @@ export const useCoreStore = defineStore('core', () => {
     brandName.value = resp.brandName;
   }
 
-  return { brandName, resourceById, menu, fetchMenuAndResource }
+  async function fetchRecord({ resourceId, primaryKey }) {
+    record.value = null;
+    record.value = await callAdminForthApi({
+      path: '/get_record',
+      method: 'POST',
+      body: {
+        resourceId: resourceId,
+        primaryKey: primaryKey,
+      }
+    });
+  }
+
+
+  return { brandName, resourceById, menu, fetchMenuAndResource, fetchRecord, record, config}
 })

@@ -34,12 +34,18 @@ class AdminForth {
     if (this.config.resources) {
       this.config.resources.forEach((res) => {
         if (!res.table) {
-          errors.push(`Resource ${res.dataSource} is missing table`);
+          errors.push(`Resource "${res.dataSource}" is missing table`);
         }
+        // if itemLabel is not callable, throw error
+        if (res.itemLabel && typeof res.itemLabel !== 'function') {
+          errors.push(`Resource "${res.dataSource}" itemLabel is not a function`);
+        }
+
+
         res.resourceId = res.resourceId || res.table;
         res.label = res.label || res.table.charAt(0).toUpperCase() + res.table.slice(1);
         if (!res.dataSource) {
-          errors.push(`Resource ${res.resourceId} is missing dataSource`);
+          errors.push(`Resource "${res.resourceId}" is missing dataSource`);
         }
         if (!res.columns) {
           res.columns = [];
@@ -226,8 +232,11 @@ class AdminForth {
             console.log('get_record', body);
             const { resourceId, primaryKey } = body;
             const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
             const connector = this.connectors[resource.dataSource];
             const record = connector.getRecordByPrimaryKey(resource, primaryKey);
+            const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
+            record._label = labler(record);
             return record;
         }
       });

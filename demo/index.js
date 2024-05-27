@@ -84,6 +84,7 @@ const admin = new AdminForth({
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
+      itemLabel: (r) => `🏡 ${r.title}`,
       columns: [
         { 
           name: 'id', 
