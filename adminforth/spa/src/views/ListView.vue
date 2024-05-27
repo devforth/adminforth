@@ -1,17 +1,18 @@
 <template>
   <div class="relative">
     <Filters :columns="columns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
+    
 
     <div class="flex items-center justify-between mb-3">
       <Breadcrumbs />
       <div class="flex items-center space-x-1">
-        <Button :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
+        <button :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
           class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
         >
           <IconPlusOutline class="w-4 h-4 me-2" />
             Create
-        </Button>
-        <Button 
+        </button>
+        <button 
           class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
           data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation" aria-controls="drawer-navigation" data-drawer-placement="right"
         >
@@ -22,7 +23,7 @@
               {{ filters.length }}
             </span>
 
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -169,46 +170,47 @@
               </span>
             </td>
             <td class="flex items-center px-6 py-4">
+
               <RouterLink :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
-                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">View</RouterLink>
-              <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-              <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Remove</a>
+                class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                :data-tooltip-target="`tooltip-show-${rowI}`"
+              >
+                <IconEyeSolid class="w-5 h-5 me-2" />
+              </RouterLink>
+              <div :id="`tooltip-show-${rowI}`"
+                role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                  Show item
+                  <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+              <RouterLink :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
+                class="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
+                :data-tooltip-target="`tooltip-edit-${rowI}`"
+              >
+                <IconPenSolid class="w-5 h-5 me-2" />
+              </RouterLink>
+              <div :id="`tooltip-edit-${rowI}`"
+                role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                  Edit
+                  <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+              <button
+                class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                :data-tooltip-target="`tooltip-delete-${rowI}`"
+              >
+                <IconTrashBinSolid class="w-5 h-5 me-2" />
+              </button>
+              <div :id="`tooltip-delete-${rowI}`"
+                role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                  Delete
+                  <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+
             </td>
           </tr>
 
-          <!-- <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <td class="w-4 p-4">
-                    <div class="flex items-center">
-                        <input id="checkbox-table-search-1" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                        <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-                    </div>
-                </td>
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    Apple MacBook Pro 17"
-                </th>
-                <td class="px-6 py-4">
-                    Silver
-                </td>
-                <td class="px-6 py-4">
-                    Laptop
-                </td>
-                <td class="px-6 py-4">
-                    Yes
-                </td>
-                <td class="px-6 py-4">
-                    Yes
-                </td>
-                <td class="px-6 py-4">
-                    $2999
-                </td>
-                <td class="px-6 py-4">
-                    3.0 lb.
-                </td>
-                <td class="flex items-center px-6 py-4">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                    <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3">Remove</a>
-                </td>
-            </tr> -->
 
         </tbody>
       </table>
@@ -261,9 +263,17 @@ import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { initFlowbite } from 'flowbite'
+
 
 import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
+import { 
+  IconEyeSolid, 
+  IconTrashBinSolid,
+  IconPenSolid,
+ } from '@iconify-prerendered/vue-flowbite';
+
 import Filters from '@/components/Filters.vue';
 
 
@@ -317,6 +327,10 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
+
+  setTimeout(() => {
+    initFlowbite();
+  });
 }
 
 

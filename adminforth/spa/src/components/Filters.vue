@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, computed } from 'vue'
+import { ref, defineEmits, computed } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
 
 // props: columns
