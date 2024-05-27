@@ -5,11 +5,29 @@ import { MongoClient } from 'mongodb'
 
 class MongoConnector {
     constructor({ url, fieldtypesByTable }) {
-        this.db = new MongoClient(url, { useUnifiedTopology: true });
+        this.db = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
         if (fieldtypesByTable == null) {
             throw new Error('fieldtypesByTable is required for MongoConnector');
-        }
+        };
+        
+        (async () => {
+            await this.db.connect()
+            console.log('Connected to Mongo');
+        })();
+
         this.fieldtypesByTable = fieldtypesByTable;
+        this.OperatorsMap = {
+            'eq': (value) => value,
+            'ne': (value) => ({ $ne: value }),
+            'gt': (value) => ({ $gt: value }),
+            'gte': (value) => ({ $gte: value }),
+            'lt': (value) => ({ $lt: value }),
+            'lte': (value) => ({ $lte: value }),
+            'in': (value) => ({ $in: value }),
+            'nin': (value) => ({ $nin: value }),
+            'like': (value) => ({ $regex: value, $options: 'i' }),
+            'nlike': (value) => ({ $not: { $regex: value, $options: 'i' } }),
+        };
     }
 
     async discoverFields(tableName) {
@@ -38,6 +56,49 @@ class MongoConnector {
           return dayjs(value).toISOString();
         }
       }
+    }
+    
+    async getData({ resource, limit, offset, sort, filters }) {
+        const columns = resource.columns.map((col) => col.name).join(', ');
+        const tableName = resource.table;
+        
+        for (const filter of filters) {
+            if (!this.OperatorsMap[filter.operator]) {
+            throw new Error(`Operator ${filter.operator} is not allowed`);
+            }
+
+            if (!resource.columns.some((col) => col.name == filter.field)) {
+                throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
+            }
+        }
+
+        const collection = this.db.db().collection(tableName);
+        const query = {};
+        for (const filter of filters) {
+            query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
+        }
+        const total = await collection.countDocuments(query);
+        const result = await collection.find(query)
+            .sort(sort)
+            .skip(offset)
+            .limit(limit)
+            .toArray();
+
+        return { data: result, total }
+    }
+
+    async getMinMaxForColumns({ resource, columns }) {
+        const tableName = resource.table;
+        const collection = this.db.db().collection(tableName);
+        const result = {};
+        for (const column of columns) {
+            result[column] = await collection
+                .aggregate([
+                    { $group: { _id: null, min: { $min: `$${column}` }, max: { $max: `$${column}` } } },
+                ])
+                .toArray();
+        }
+        return result;
     }
 
     async close() {
