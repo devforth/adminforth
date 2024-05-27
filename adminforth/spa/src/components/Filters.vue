@@ -21,14 +21,14 @@
               @change="setFilter(c, $event.target.checked)" :checked="filters.find(f => f.field === c.name)?.value" />
             
             <Dropdown 
-              v-else-if="c.type === 'enum'"
+              v-else-if="c.enum"
               :options="c.enum"
               :allowCustom="c.allowCustom"
               @change="setFilter(c, $event)" :value="filters.find(f => f.field === c.name)?.value" 
             />
 
             <input 
-              v-if="[ 'string', 'number', 'date', 'time', 'datetime' ].includes(c.type)"
+              v-else-if="[ 'string', 'number', 'date', 'time', 'datetime' ].includes(c.type)"
               type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
               placeholder="Search"
               @input="setFilter(c, $event.target.value)"
@@ -52,6 +52,7 @@
 
 <script setup>
 import { ref, defineProps, defineEmits, computed } from 'vue'
+import Dropdown from '@/components/Dropdown.vue';
 
 // props: columns
 // add support for v-model:filers
