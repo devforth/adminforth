@@ -2,9 +2,7 @@
   <div class="relative">
     <Filters :columns="columns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
     
-
-    <div class="flex items-center justify-between mb-3">
-      <Breadcrumbs />
+    <BreadcrumbsWithButtons>
       <div class="flex items-center space-x-1">
         <button :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
           class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
@@ -25,7 +23,7 @@
 
         </button>
       </div>
-    </div>
+    </BreadcrumbsWithButtons>
 
     <!-- table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -262,7 +260,7 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { initFlowbite } from 'flowbite'
 
 
