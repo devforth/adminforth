@@ -13,7 +13,7 @@
           <span>{{ item.label }}</span>
           <button
             type="button"
-            @click="selectedItems.splice(selectedItems.indexOf(item), 1)"
+            @click="toogleItem(item)"
             class="z-index-100  flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 focus:bg-gray-100"
           >
             <span class="sr-only">Remove item</span>
@@ -40,7 +40,7 @@
         :key="item.value"
         class="px-4 py-2 cursor-pointer hover:bg-gray-100"
         :class="{ 'bg-blue-100': selectedItems.includes(item) }"
-        @click="selectedItems.includes(item) ? selectedItems.splice(selectedItems.indexOf(item), 1) : selectedItems.push(item)"
+        @click="toogleItem(item)"
       >
         <label :for="item.value">{{ item.label }}</label>
       </div>
@@ -49,8 +49,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { IconCaretDownSolid, IconCaretUpSolid } from '@iconify-prerendered/vue-flowbite';
+
 
 const props = defineProps({
   options: Array,
@@ -64,10 +65,25 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['update:modelValue']);
+
 const search = ref('');
 const showDropdown = ref(false);
 
 const selectedItems = ref([]);
+
+onMounted(() => {
+  if (props.value) {
+    selectedItems.value = props.options.filter(item => props.value.includes(item.value));
+  }
+
+  watch(selectedItems, (value) => {
+    const list = value.map(item => item.value);
+    emit('update:modelValue', list.length ? list : undefined);
+  });
+});
+
+
 
 const filteredItems = computed(() => {
   return props.options.filter(item =>
@@ -87,6 +103,14 @@ const addClickListener = () => {
 
 const removeClickListener = () => {
   document.removeEventListener('click', handleClickOutside);
+};
+
+const toogleItem = (item) => {
+  if (selectedItems.value.includes(item)) {
+    selectedItems.value = selectedItems.value.filter(i => i !== item);
+  } else {
+    selectedItems.value = [...selectedItems.value, item];
+  }
 };
 
 onMounted(() => {
