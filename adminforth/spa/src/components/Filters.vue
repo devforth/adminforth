@@ -18,23 +18,42 @@
             <Dropdown 
               v-if="c.type === 'boolean'" 
               :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-              @update:modelValue="setFilter(c, $event)" :modelValue="filters.find(f => f.field === c.name)?.value || null"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
             <Dropdown 
               v-else-if="c.enum"
               :options="c.enum"
               :allowCustom="c.allowCustom"
-              @update:modelValue="setFilter(c, $event)" :modelValue="filters.find(f => f.field === c.name)?.value || null"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
             <input 
-              v-else-if="[ 'string', 'number', 'date', 'time', 'datetime' ].includes(c.type)"
+              v-else-if="[ 'string', 'date', 'time', 'datetime', 'text' ].includes(c.type)"
               type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
               placeholder="Search"
-              @input="setFilter(c, $event.target.value)"
-              :value="filters.find(f => f.field === c.name)?.value"
+              @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
+              :value="getFilterItem({ column: c, operator: 'ilike' })"
             >
+
+            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
+              <input 
+                type="number" aria-describedby="helper-text-explanation" 
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="from"
+                @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
+                :value="getFilterItem({ column: c, operator: 'gte' })"
+              >
+              <input 
+                type="number" aria-describedby="helper-text-explanation" 
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="to"
+                @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
+                :value="getFilterItem({ column: c, operator: 'lte' })"
+              >
+            </div>
             
          </li>
       </ul>
@@ -72,27 +91,27 @@ const columnsWithFilter = computed(
 //   operator: 'like'
 // }
 
-async function setFilter(column, value) {
-  const index = props.filters.findIndex(f => f.field === column.name);
-  if (!value) {
+function setFilterItem({ column, operator, value }) {
+
+  const index = props.filters.findIndex(f => f.field === column.name && f.operator === operator);
+  if (value === undefined) {
     if (index !== -1) {
       props.filters.splice(index, 1);
     }
+    emits('update:filters', [...props.filters]);
+    return;
   } else {
-    let operator = 'like';
-    if (column.type === 'number') {
-      operator = 'eq';
-    } else if (column.type === 'boolean' || column.enum) {
-      operator = 'in';
-    }
-
     if (index === -1) {
-      props.filters.push({ field: column.name, value, operator, });
+      props.filters.push({ field: column.name, value, operator });
     } else {
       props.filters[index].value = value;
     }
   }
   emits('update:filters', [...props.filters]);
+}
+
+function getFilterItem({ column, operator }) {
+  return props.filters.find(f => f.field === column.name && f.operator === operator)?.value || '';
 }
 
 async function clear() {

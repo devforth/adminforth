@@ -150,10 +150,17 @@ class SQLiteConnector {
 
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
         let placeholder = '?';
+        let field = f.field;
+        let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
           placeholder = `(${f.value.map(() => '?').join(', ')})`;
+        } else if (f.operator == AdminForthFilterOperators.ILIKE) {
+          placeholder = `LOWER(?)`;
+          field = `LOWER(${f.field})`;
+          operator = 'LIKE';
         }
-        return `${f.field} ${this.OperatorsMap[f.operator]} ${placeholder}`
+
+        return `${field} ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
 
 
@@ -181,9 +188,12 @@ class SQLiteConnector {
       
 
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
+      console.log('⚙️⚙️⚙️ preparing request', q);
       const stmt = this.db.prepare(q);
-      const rows = stmt.all([...filterValues, limit, offset]);
-      // console.log('⚙️⚙️ stmt', stmt, [...filterValues, limit, offset]);
+      const d = [...filterValues, limit, offset];
+      console.log('⚙️⚙️⚙️ running request against data', d);
+      const rows = stmt.all(d);
+
       const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
       // run all fields via getFieldValue
       return {
