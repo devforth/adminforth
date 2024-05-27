@@ -55,8 +55,15 @@ class SQLiteConnector {
         return fieldTypes;
     }
 
-    getFieldValue(field, value) {
+    getPrimaryKey(resource) {
+        for (const col of resource.columns) {
+            if (col.primaryKey) {
+                return col.name;
+            }
+        }
+    }
 
+    getFieldValue(field, value) {
       if (field.type == AdminForthTypes.DATETIME) {
         if (!value) {
           return null;
@@ -72,6 +79,21 @@ class SQLiteConnector {
         return !!value;
       }
       return value;
+    }
+
+    getRecordByPrimaryKey(resource, key) {
+        const columns = resource.columns.map((col) => col.name).join(', ');
+        const tableName = resource.table;
+        const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = ?`);
+        const row = stmt.get(key);
+        if (!row) {
+            return null;
+        }
+        const newRow = {};
+        for (const [key, value] of Object.entries(row)) {
+            newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+        }
+        return newRow;
     }
 
     setFieldValue(field, value) {

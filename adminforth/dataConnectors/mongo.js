@@ -34,6 +34,14 @@ class MongoConnector {
         return this.fieldtypesByTable[tableName];
     }
 
+    getPrimaryKey(resource) {
+        for (const col of resource.columns) {
+            if (col.primaryKey) {
+                return col.name;
+            }
+        }
+    }
+
     getFieldValue(field, value) {
       if (field.type == AdminForthTypes.TIMESTAMP) {
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
@@ -44,6 +52,22 @@ class MongoConnector {
           throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
         }
       }
+    }
+    
+    getRecordByPrimaryKey(resource, key) {
+        const tableName = resource.table;
+        const collection = this.db.db().collection(tableName);
+        return collection.findOne({ [getPrimaryKey(resource)]: key })
+            .then((row) => {
+                if (!row) {
+                    return null;
+                }
+                const newRow = {};
+                for (const [key, value] of Object.entries(row)) {
+                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+                }
+                return newRow;
+            });
     }
 
     setFieldValue(field, value) {
