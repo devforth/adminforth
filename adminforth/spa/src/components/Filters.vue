@@ -17,14 +17,15 @@
 
             <Dropdown 
               v-if="c.type === 'boolean'" 
-              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }]"
-              @change="setFilter(c, $event.target.checked)" :checked="filters.find(f => f.field === c.name)?.value" />
+              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
+              @update:modelValue="setFilter(c, $event)" :modelValue="filters.find(f => f.field === c.name)?.value || null"
+            />
             
             <Dropdown 
               v-else-if="c.enum"
               :options="c.enum"
               :allowCustom="c.allowCustom"
-              @change="setFilter(c, $event)" :value="filters.find(f => f.field === c.name)?.value" 
+              @update:modelValue="setFilter(c, $event)" :modelValue="filters.find(f => f.field === c.name)?.value || null"
             />
 
             <input 
@@ -78,8 +79,15 @@ async function setFilter(column, value) {
       props.filters.splice(index, 1);
     }
   } else {
+    let operator = 'like';
+    if (column.type === 'number') {
+      operator = 'eq';
+    } else if (column.type === 'boolean' || column.enum) {
+      operator = 'in';
+    }
+
     if (index === -1) {
-      props.filters.push({ field: column.name, value, operator: 'like' });
+      props.filters.push({ field: column.name, value, operator, });
     } else {
       props.filters[index].value = value;
     }

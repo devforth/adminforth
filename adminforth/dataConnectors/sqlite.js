@@ -148,18 +148,40 @@ class SQLiteConnector {
         }
       }
 
-      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} ?`).join(' AND ')}` : '';
-      const filterValues = filters.length ? filters.map((f) => {
-        const v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+      const where = filters.length ? `WHERE ${filters.map((f, i) => {
+        let placeholder = '?';
+        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+          placeholder = `(${f.value.map(() => '?').join(', ')})`;
+        }
+        return `${f.field} ${this.OperatorsMap[f.operator]} ${placeholder}`
+      }).join(' AND ')}` : '';
+
+
+      const filterValues = [];
+      
+      filters.length ? filters.forEach((f) => {
+        // for arrays do set in map
+        let v;
+        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+          v = f.value.map((val) => this.setFieldValue(resource.columns.find((col) => col.name == f.field), val));
+        } else {
+          v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+        }
+
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
-          return `%${v}%`;
-        } 
-        return v;
+          filterValues.push(`%${v}%`);
+        } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+          filterValues.push(...v);
+        } else {
+          filterValues.push(v);
+        }
       }) : [];
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      
 
-      const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`);
+      const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
+      const stmt = this.db.prepare(q);
       const rows = stmt.all([...filterValues, limit, offset]);
       // console.log('⚙️⚙️ stmt', stmt, [...filterValues, limit, offset]);
       const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
