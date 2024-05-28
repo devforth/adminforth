@@ -1,6 +1,6 @@
-import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
 import pkg from 'pg';
+import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
 const { Client } = pkg;
 
 
@@ -12,20 +12,25 @@ class PostgresConnector {
         (async () => {
             await this.db.connect();
         })();
-
-        this.OperatorsMap = {
-            'eq': '=',
-            'ne': '!=',
-            'gt': '>',
-            'gte': '>=',
-            'lt': '<',
-            'lte': '<=',
-            'in': 'IN',
-            'nin': 'NOT IN',
-            'like': 'LIKE',
-            'nlike': 'NOT LIKE',
-        };
     }
+
+    OperatorsMap = {
+        [AdminForthFilterOperators.EQ]: '=',
+        [AdminForthFilterOperators.NE]: '!=',
+        [AdminForthFilterOperators.GT]: '>',
+        [AdminForthFilterOperators.LT]: '<',
+        [AdminForthFilterOperators.GTE]: '>=',
+        [AdminForthFilterOperators.LTE]: '<=',
+        [AdminForthFilterOperators.LIKE]: 'LIKE',
+        [AdminForthFilterOperators.ILIKE]: 'ILIKE',
+        [AdminForthFilterOperators.IN]: 'IN',
+        [AdminForthFilterOperators.NIN]: 'NOT IN',
+      };
+  
+      SortDirectionsMap = {
+        [AdminForthSortDirections.ASC]: 'ASC',
+        [AdminForthSortDirections.DESC]: 'DESC',
+      };
 
     async discoverFields(tableName) {
         const stmt = await this.db.query(`
