@@ -9,6 +9,9 @@ export const useCoreStore = defineStore('core', () => {
   const brandName = ref('');
   const config = ref({});
   const record = ref({});
+  const resourceColumns = ref(null);
+  const resourceColumnsError = ref('');
+  const resourceColumnsId = ref(null);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -26,6 +29,7 @@ export const useCoreStore = defineStore('core', () => {
 
   async function fetchRecord({ resourceId, primaryKey }) {
     record.value = null;
+
     record.value = await callAdminForthApi({
       path: '/get_record',
       method: 'POST',
@@ -36,6 +40,34 @@ export const useCoreStore = defineStore('core', () => {
     });
   }
 
+  async function fetchColumns({ resourceId }) {
+    console.log('fetchColumns 1', resourceId, resourceColumnsId.value);
+    if (resourceColumnsId.value === resourceId && resourceColumns.value) {
+      // already fetched
+      return;
+    }
+    resourceColumnsId.value = resourceId;
+    resourceColumns.value = null;
+    resourceColumnsError.value = '';
+    const res = await callAdminForthApi({
+      path: '/get_resource_columns',
+      method: 'POST',
+      body: {
+        resourceId,
+      }
+    }
+    );
+    if (res.error) {
+      resourceColumnsError.value = res.error;
+    } else {
+      resourceColumns.value = res.resource.columns;
+    }
+  }
 
-  return { brandName, resourceById, menu, fetchMenuAndResource, fetchRecord, record, config}
+
+  return { 
+    brandName, 
+    resourceById, 
+    menu, 
+    fetchMenuAndResource, fetchRecord, record, config, resourceColumns, fetchColumns, resourceColumnsError}
 })

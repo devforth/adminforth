@@ -157,7 +157,7 @@ class AdminForth {
           return { error: 'Database discovery not started' };
         }
         if (this.statuses.dbDiscover !== 'done') {
-          return { discoverInProgress : true };
+          return { error : 'Database discovery is still in progress, please try later' };
         }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -178,7 +178,7 @@ class AdminForth {
           return { error: 'Database discovery not started' };
         }
         if (this.statuses.dbDiscover !== 'done') {
-          return { discoverInProgress : true };
+          return { error : 'Database discovery is still in progress, please try later' };
         }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -204,7 +204,7 @@ class AdminForth {
           return { error: 'Database discovery not started' };
         }
         if (this.statuses.dbDiscover !== 'done') {
-          return { discoverInProgress : true };
+          return { error : 'Database discovery is still in progress, please try later' };
         }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {

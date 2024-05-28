@@ -16,9 +16,48 @@
       </button>
     </BreadcrumbsWithButtons>
 
-    <pre>
-      {{ coreStore.record }}
-    </pre>  
+    <div v-if="coreStore.record === null"
+        role="status" class="max-w-sm animate-pulse"
+    >
+        <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
+        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
+        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
+        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
+        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+        <span class="sr-only">Loading...</span>
+    </div>
+    <div 
+      v-else
+      class="relative overflow-x-auto shadow-md sm:rounded-lg"
+    >
+     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Field
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Value
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="column in coreStore.resourceColumns" :key="column.name"
+                class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+            >
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {{ column.label }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {{ coreStore.record[column.name] }}
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
 
   </div>
 </template>
@@ -39,6 +78,9 @@ const route = useRoute();
 const coreStore = useCoreStore();
 
 onMounted(async () => {
+  await coreStore.fetchColumns({
+    resourceId: route.params.resourceId
+  });
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
