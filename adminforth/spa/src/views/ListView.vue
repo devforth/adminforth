@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <Filters :columns="columns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
+    <Filters :columns="coreStore.resourceColumns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
     
     <BreadcrumbsWithButtons>
       <RouterLink :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
@@ -26,13 +26,10 @@
     <!-- table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 
-      <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert"
-        v-if="error">
-        <span class="font-medium">Error!</span> {{ error }}
-      </div>
+      
 
       <!-- skelet loader -->
-      <div v-if="!columns" role="status"
+      <div v-if="!coreStore.resourceColumns" role="status"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <div>
@@ -103,7 +100,7 @@
         </thead>
         <tbody>
           <tr v-if="!rows" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td :colspan="columns.length + 2" class="p-4 text-center">
+            <td :colspan="coreStore.resourceColumns.length + 2" class="p-4 text-center">
 
               <div role="status"
                 class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
@@ -216,7 +213,9 @@
     </div>
 
     <!-- pagination -->
-    <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center">
+    <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center"
+      v-if="rows && totalRows > 0"
+    >
         <!-- Help text -->
         <span class="text-sm text-gray-700 dark:text-gray-400">
             Showing <span class="font-semibold text-gray-900 dark:text-white">
@@ -277,8 +276,6 @@ import Filters from '@/components/Filters.vue';
 const coreStore = useCoreStore();
 
 const route = useRoute();
-const columns = ref(null);
-const error = ref(null);
 const checkboxes = ref([]);
 
 const page = ref(1);
@@ -291,7 +288,7 @@ const totalRows = ref(0);
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const columnsListed = computed(() => columns.value?.filter(c => c.showIn.includes('L')));
+const columnsListed = computed(() => coreStore.resourceColumns?.filter(c => c.showIn.includes('L')));
 
 async function selectAll(value) {
   console.log('select all');
@@ -301,8 +298,8 @@ async function selectAll(value) {
 const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.pageSize || DEFAULT_PAGE_SIZE);
 const totalPages = computed(() => Math.ceil(totalRows.value / pageSize.value));
 
-watch([page, filters, sort], () => {
-  getList();
+watch([page, filters, sort], async () => {
+  await init();
 });
 
 async function getList() {
@@ -318,8 +315,9 @@ async function getList() {
       sort: sort.value,
     }
   });
-  rows.value = data.data.map(row => {
-    row._primaryKeyValue = row[columns.value.find(c => c.primaryKey).name];
+  console.log('coreStore.resourceColumns', coreStore.resourceColumns);
+  rows.value = data.data?.map(row => {
+    row._primaryKeyValue = row[coreStore.resourceColumns.find(c => c.primaryKey).name];
     return row;
   });
   totalRows.value = data.total;
@@ -331,22 +329,11 @@ async function getList() {
 
 
 async function init() {
-  const res = await callAdminForthApi({
-    path: '/get_resource_columns',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId
-    }
-  }
-  );
-  if (!res.discoverInProgress) {
-    columns.value = res.resource.columns;
-  }
-  if (res.error) {
-    error.value = res.error;
-  }
-  const items = await getList();
-  console.log(3213, items);
+  await coreStore.fetchColumns({
+    resourceId: route.params.resourceId
+  });
+
+  await getList();
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
     method: 'POST',
@@ -361,8 +348,6 @@ onMounted(async () => {
 
 // on route param change 
 watch(() => route.params.resourceId, async () => {
-  columns.value = null;
-  error.value = null;
   filters.value = [];
   await init();
 });
