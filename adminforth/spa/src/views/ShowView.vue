@@ -49,7 +49,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     {{ column.label }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
                     {{ coreStore.record[column.name] }}
                 </td>
             </tr>
