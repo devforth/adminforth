@@ -184,15 +184,17 @@ class PostgresConnector {
           throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
         }
       }
+      let totalCounter = filters.length == 0 ? 0 : 1;
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
-        let placeholder = '$'+(i+1);
+        let placeholder = '$'+(totalCounter);
         let field = f.field;
         let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          placeholder = `(${f.value.map(() => '$'+(i+1)
-        ).join(', ')})`;
+            placeholder = `(${f.value.map((_, i) => `$${totalCounter + i}`).join(', ')})`;
+            totalCounter =+ f.value.length;
+        } else {
+            totalCounter += 1;
         }
-
         return `${field} ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
 
@@ -215,12 +217,10 @@ class PostgresConnector {
         }
       }) : [];
 
-      const limitOffset = `LIMIT $${filters.length + 1} OFFSET $${filters.length + 2}`; 
-      console.log('filterValues', filterValues);
+      const limitOffset = `LIMIT $${totalCounter + 1} OFFSET $${totalCounter + 2}`; 
       const d = [...filterValues, limit, offset];
 
     const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-        console.log(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d)
       const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d);
       const rows = stmt.rows;
       
