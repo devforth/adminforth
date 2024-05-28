@@ -250,7 +250,17 @@ class PostgresConnector {
             };
         }))
         return result;
-      }
+    }
+
+    async createRecord({ resource, record }) {
+        // returns id of the created record
+        const tableName = resource.table;
+        const columns = resource.columns.map((col) => col.name).join(', ');
+        const values = resource.columns.map((col, i) => `$${i + 1}`).join(', ');
+        const d = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
+        const stmt = await this.db.query(`INSERT INTO ${tableName} (${columns}) VALUES (${values}) RETURNING ${this.getPrimaryKey(resource)}`, d);
+        return stmt.rows[0][this.getPrimaryKey(resource)];
+    }
 
     async close() {
         await this.db.end();
