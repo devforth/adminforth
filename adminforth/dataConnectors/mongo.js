@@ -11,8 +11,12 @@ class MongoConnector {
         };
         
         (async () => {
-            await this.db.connect()
-            console.log('Connected to Mongo');
+            try {
+                await this.db.connect();
+                console.log('Connected to Mongo');
+            } catch (e) {
+                console.error('ERROR: Failed to connect to Mongo', e);
+            }
         })();
 
         this.fieldtypesByTable = fieldtypesByTable;
