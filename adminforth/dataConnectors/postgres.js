@@ -60,47 +60,55 @@ class PostgresConnector {
         const fieldTypes = {};
 
         rows.forEach((row) => {
-          const field = {};
-          const baseType = row.type.toLowerCase();
-          if (baseType == 'int') {
-            field.type = AdminForthTypes.INTEGER;
-            field._underlineType = 'int';
+            const field = {};
+            const baseType = row.type.toLowerCase();
+            if (baseType == 'int') {
+                field.type = AdminForthTypes.INTEGER;
+                field._underlineType = 'int';
 
-          } else if (baseType.includes('character varying')) {
-            field.type = AdminForthTypes.STRING;
-            field._underlineType = 'varchar';
-            const length = baseType.match(/\d+/);
-            field.maxLength = length ? parseInt(length[0]) : null;
+            } else if (baseType.includes('float') || baseType.includes('double')) {
+                field.type = AdminForthTypes.FLOAT;
+                field._underlineType = 'float';
+            
+            } else if (baseType.includes('bool')) {
+                field.type = AdminForthTypes.BOOLEAN;
+                field._underlineType = 'bool';
 
-          } else if (baseType == 'text') {
-            field.type = AdminForthTypes.TEXT;
-            field._underlineType = 'text';
+            } else if (baseType.includes('character varying')) {
+                field.type = AdminForthTypes.STRING;
+                field._underlineType = 'varchar';
+                const length = baseType.match(/\d+/);
+                field.maxLength = length ? parseInt(length[0]) : null;
 
-          } else if (baseType.includes('decimal(')) {
-            field.type = AdminForthTypes.DECIMAL;
-            field._underlineType = 'decimal';
-            const [precision, scale] = baseType.match(/\d+/g);
-            field.precision = parseInt(precision);
-            field.scale = parseInt(scale);
+            } else if (baseType == 'text') {
+                field.type = AdminForthTypes.TEXT;
+                field._underlineType = 'text';
 
-          } else if (baseType == 'real') {
-            field.type = AdminForthTypes.FLOAT;
-            field._underlineType = 'real';
+            } else if (baseType.includes('decimal(')) {
+                field.type = AdminForthTypes.DECIMAL;
+                field._underlineType = 'decimal';
+                const [precision, scale] = baseType.match(/\d+/g);
+                field.precision = parseInt(precision);
+                field.scale = parseInt(scale);
 
-          } else if (baseType == 'date') {
-            field.type = AdminForthTypes.DATETIME;
-            field._underlineType = 'timestamp';
+            } else if (baseType == 'real') {
+                field.type = AdminForthTypes.FLOAT;
+                field._underlineType = 'real';
 
-          } else {
-            field.type = 'unknown'
-          }
-          field._baseTypeDebug = baseType;
-          field.required = !row.notnull == 1;
-          field.primaryKey = row.pk == 1;
-          field.default = row.dflt_value;
-          fieldTypes[row.name] = field
-        });
-        return fieldTypes;
+            } else if (baseType == 'date') {
+                field.type = AdminForthTypes.DATETIME;
+                field._underlineType = 'timestamp';
+
+            } else {
+                field.type = 'unknown'
+            }
+            field._baseTypeDebug = baseType;
+            field.required = !row.notnull == 1;
+            field.primaryKey = row.pk == 1;
+            field.default = row.dflt_value;
+            fieldTypes[row.name] = field
+            });
+            return fieldTypes;
     }
 
     getFieldValue(field, value) {
