@@ -1,6 +1,6 @@
-import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
 import pkg from 'pg';
+import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
 const { Client } = pkg;
 
 
@@ -12,20 +12,25 @@ class PostgresConnector {
         (async () => {
             await this.db.connect();
         })();
-
-        this.OperatorsMap = {
-            'eq': '=',
-            'ne': '!=',
-            'gt': '>',
-            'gte': '>=',
-            'lt': '<',
-            'lte': '<=',
-            'in': 'IN',
-            'nin': 'NOT IN',
-            'like': 'LIKE',
-            'nlike': 'NOT LIKE',
-        };
     }
+
+    OperatorsMap = {
+        [AdminForthFilterOperators.EQ]: '=',
+        [AdminForthFilterOperators.NE]: '!=',
+        [AdminForthFilterOperators.GT]: '>',
+        [AdminForthFilterOperators.LT]: '<',
+        [AdminForthFilterOperators.GTE]: '>=',
+        [AdminForthFilterOperators.LTE]: '<=',
+        [AdminForthFilterOperators.LIKE]: 'LIKE',
+        [AdminForthFilterOperators.ILIKE]: 'ILIKE',
+        [AdminForthFilterOperators.IN]: 'IN',
+        [AdminForthFilterOperators.NIN]: 'NOT IN',
+      };
+  
+      SortDirectionsMap = {
+        [AdminForthSortDirections.ASC]: 'ASC',
+        [AdminForthSortDirections.DESC]: 'DESC',
+      };
 
     async discoverFields(tableName) {
         const stmt = await this.db.query(`
@@ -55,47 +60,55 @@ class PostgresConnector {
         const fieldTypes = {};
 
         rows.forEach((row) => {
-          const field = {};
-          const baseType = row.type.toLowerCase();
-          if (baseType == 'int') {
-            field.type = AdminForthTypes.INTEGER;
-            field._underlineType = 'int';
+            const field = {};
+            const baseType = row.type.toLowerCase();
+            if (baseType == 'int') {
+                field.type = AdminForthTypes.INTEGER;
+                field._underlineType = 'int';
 
-          } else if (baseType.includes('character varying')) {
-            field.type = AdminForthTypes.STRING;
-            field._underlineType = 'varchar';
-            const length = baseType.match(/\d+/);
-            field.maxLength = length ? parseInt(length[0]) : null;
+            } else if (baseType.includes('float') || baseType.includes('double')) {
+                field.type = AdminForthTypes.FLOAT;
+                field._underlineType = 'float';
+            
+            } else if (baseType.includes('bool')) {
+                field.type = AdminForthTypes.BOOLEAN;
+                field._underlineType = 'bool';
 
-          } else if (baseType == 'text') {
-            field.type = AdminForthTypes.TEXT;
-            field._underlineType = 'text';
+            } else if (baseType.includes('character varying')) {
+                field.type = AdminForthTypes.STRING;
+                field._underlineType = 'varchar';
+                const length = baseType.match(/\d+/);
+                field.maxLength = length ? parseInt(length[0]) : null;
 
-          } else if (baseType.includes('decimal(')) {
-            field.type = AdminForthTypes.DECIMAL;
-            field._underlineType = 'decimal';
-            const [precision, scale] = baseType.match(/\d+/g);
-            field.precision = parseInt(precision);
-            field.scale = parseInt(scale);
+            } else if (baseType == 'text') {
+                field.type = AdminForthTypes.TEXT;
+                field._underlineType = 'text';
 
-          } else if (baseType == 'real') {
-            field.type = AdminForthTypes.FLOAT;
-            field._underlineType = 'real';
+            } else if (baseType.includes('decimal(')) {
+                field.type = AdminForthTypes.DECIMAL;
+                field._underlineType = 'decimal';
+                const [precision, scale] = baseType.match(/\d+/g);
+                field.precision = parseInt(precision);
+                field.scale = parseInt(scale);
 
-          } else if (baseType == 'date') {
-            field.type = AdminForthTypes.DATETIME;
-            field._underlineType = 'timestamp';
+            } else if (baseType == 'real') {
+                field.type = AdminForthTypes.FLOAT;
+                field._underlineType = 'real';
 
-          } else {
-            field.type = 'unknown'
-          }
-          field._baseTypeDebug = baseType;
-          field.required = !row.notnull == 1;
-          field.primaryKey = row.pk == 1;
-          field.default = row.dflt_value;
-          fieldTypes[row.name] = field
-        });
-        return fieldTypes;
+            } else if (baseType == 'date') {
+                field.type = AdminForthTypes.DATETIME;
+                field._underlineType = 'timestamp';
+
+            } else {
+                field.type = 'unknown'
+            }
+            field._baseTypeDebug = baseType;
+            field.required = !row.notnull == 1;
+            field.primaryKey = row.pk == 1;
+            field.default = row.dflt_value;
+            fieldTypes[row.name] = field
+            });
+            return fieldTypes;
     }
 
     getFieldValue(field, value) {
@@ -127,7 +140,7 @@ class PostgresConnector {
     getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
         const columns = resource.columns.map((col) => col.name).join(', ');
-        return this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${getPrimaryKey(resource)} = $1`, [key])
+        return this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key])
             .then((stmt) => {
                 const row = stmt.rows[0];
                 if (!row) {

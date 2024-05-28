@@ -1,6 +1,6 @@
-import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
-import { MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb';
+import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
 
 
 class MongoConnector {
@@ -11,24 +11,34 @@ class MongoConnector {
         };
         
         (async () => {
-            await this.db.connect()
-            console.log('Connected to Mongo');
+            try {
+                await this.db.connect();
+                console.log('Connected to Mongo');
+            } catch (e) {
+                console.error('ERROR: Failed to connect to Mongo', e);
+            }
         })();
 
         this.fieldtypesByTable = fieldtypesByTable;
-        this.OperatorsMap = {
-            'eq': (value) => value,
-            'ne': (value) => ({ $ne: value }),
-            'gt': (value) => ({ $gt: value }),
-            'gte': (value) => ({ $gte: value }),
-            'lt': (value) => ({ $lt: value }),
-            'lte': (value) => ({ $lte: value }),
-            'in': (value) => ({ $in: value }),
-            'nin': (value) => ({ $nin: value }),
-            'like': (value) => ({ $regex: value, $options: 'i' }),
-            'nlike': (value) => ({ $not: { $regex: value, $options: 'i' } }),
-        };
     }
+
+    OperatorsMap = {
+        [AdminForthFilterOperators.EQ]: (value) => value,
+        [AdminForthFilterOperators.NE]: (value) => ({ $ne: value }),
+        [AdminForthFilterOperators.GT]: (value) => ({ $gt: value }),
+        [AdminForthFilterOperators.LT]: (value) => ({ $lt: value }),
+        [AdminForthFilterOperators.GTE]: (value) => ({ $gte: value }),
+        [AdminForthFilterOperators.LTE]: (value) => ({ $lte: value }),
+        [AdminForthFilterOperators.LIKE]: (value) => ({ $regex: value }),
+        [AdminForthFilterOperators.ILIKE]: (value) => ({ $regex: value, $options: 'i' }),
+        [AdminForthFilterOperators.IN]: (value) => ({ $in: value }),
+        [AdminForthFilterOperators.NIN]: (value) => ({ $nin: value }),
+    };
+
+    SortDirectionsMap = {
+        [AdminForthSortDirections.ASC]: 1,
+        [AdminForthSortDirections.DESC]: -1,
+    };
 
     async discoverFields(tableName) {
         return this.fieldtypesByTable[tableName];
@@ -43,29 +53,43 @@ class MongoConnector {
     }
 
     getFieldValue(field, value) {
-      if (field.type == AdminForthTypes.TIMESTAMP) {
-        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          return dayjs(value).toISOString();
-        } else if (field._underlineType == 'varchar') {
-          return dayjs(value).toISOString();
-        } else {
-          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+        if (field.type == AdminForthTypes.DATETIME) {
+          if (!value) {
+            return null;
+          }
+          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+            return dayjs.unix(+value).toISOString();
+          } else if (field._underlineType == 'varchar') {
+            return dayjs.unix(+value).toISOString();
+          } else {
+            throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+          }
+        } else if (field.type == AdminForthTypes.BOOLEAN) {
+          return !!value;
         }
+        return value;
       }
-    }
     
     getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
-        return collection.findOne({ [getPrimaryKey(resource)]: key })
+        return collection.findOne({ [this.getPrimaryKey(resource)]: key })
             .then((row) => {
                 if (!row) {
                     return null;
                 }
                 const newRow = {};
                 for (const [key, value] of Object.entries(row)) {
-                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+                    console.log('aVBFAIODHF', Object.entries(row));
+                    console.log('COLUMNS', resource.columns);
+                    const dbKey = resource.columns.find((col) => col.name == key)
+                    if (!dbKey) {
+                        continue // should I continue or throw an error?
+                        throw new Error(`Resource '${resource.table}' has no column '${key}' defined`);
+                    }
+                    newRow[key] = this.getFieldValue(dbKey, value);
                 }
+                console.log('newRow', newRow);
                 return newRow;
             });
     }
