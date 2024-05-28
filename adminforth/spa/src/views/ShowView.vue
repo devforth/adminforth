@@ -16,9 +16,7 @@
       </button>
     </BreadcrumbsWithButtons>
 
-    <div v-if="coreStore.record === null"
-        role="status" class="max-w-sm animate-pulse"
-    >
+    <div v-if="loading" role="status" class="max-w-sm animate-pulse">
         <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
         <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
         <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
@@ -43,7 +41,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="column in coreStore.resourceColumns" :key="column.name"
+            <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))
+            " :key="column.name"
                 class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
             >
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -72,12 +71,15 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 import { useCoreStore } from '@/stores/core';
 
+
 const item = ref(null);
 const route = useRoute();
+const loading = ref(false);
 
 const coreStore = useCoreStore();
 
 onMounted(async () => {
+  loading.value = true;
   await coreStore.fetchColumns({
     resourceId: route.params.resourceId
   });
@@ -85,6 +87,7 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
+  loading.value = false;
 });
 
 </script>

@@ -288,7 +288,7 @@ const totalRows = ref(0);
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const columnsListed = computed(() => coreStore.resourceColumns?.filter(c => c.showIn.includes('L')));
+const columnsListed = computed(() => coreStore.resourceColumns?.filter(c => c.showIn.includes('list')));
 
 async function selectAll(value) {
   console.log('select all');

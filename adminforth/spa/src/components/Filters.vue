@@ -83,7 +83,7 @@ const props = defineProps(['columns', 'filters']);
 const emits = defineEmits(['update:filters']);
 
 const columnsWithFilter = computed( 
-  () => props.columns?.filter(column => column.showIn.includes('F')) || []
+  () => props.columns?.filter(column => column.showIn.includes('filter')) || []
 );
 
 

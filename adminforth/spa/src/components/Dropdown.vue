@@ -63,6 +63,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  single: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -109,7 +113,11 @@ const toogleItem = (item) => {
   if (selectedItems.value.includes(item)) {
     selectedItems.value = selectedItems.value.filter(i => i !== item);
   } else {
-    selectedItems.value = [...selectedItems.value, item];
+    if (props.single) {
+      selectedItems.value = [item];
+    } else {
+      selectedItems.value = [...selectedItems.value, item];
+    }
   }
 };
 

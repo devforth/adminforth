@@ -9,6 +9,9 @@ import ExpressServer from './servers/express.js';
 
 import { AdminForthTypes } from './types.js';
 
+
+const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
+
 class AdminForth {
   constructor(config) {
     this.config = config;
@@ -52,9 +55,16 @@ class AdminForth {
         }
         res.columns.forEach((col) => {
           col.label = col.label || guessLabelFromName(col.name);
-          col.showIn = col.showIn?.toUpperCase() || 'LCEFS';
+          if (col.showIn && !Array.isArray(col.showIn)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
+          }
+
+          const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
+          if (wrongShowIn) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${AVAILABLE_SHOW_IN.join(', ')}`);
+          }
+          col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
-        console.log('🙂🙂 res', res);
       });
     }
 
