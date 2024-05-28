@@ -250,6 +250,19 @@ class AdminForth {
             return record;
         }
       });
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/create_record',
+        handler: async ({ body }) => {
+            console.log('create_record', body);
+            const { resourceId, data } = body;
+            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            const connector = this.connectors[resource.dataSource];
+            const record = await connector.createRecord(resource, data);
+            return record;
+        }
+    })
   }
 
 
