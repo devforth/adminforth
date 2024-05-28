@@ -1,6 +1,6 @@
-import { AdminForthTypes } from '../types.js';
 import dayjs from 'dayjs';
-import { MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb';
+import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
 
 
 class MongoConnector {
@@ -16,19 +16,25 @@ class MongoConnector {
         })();
 
         this.fieldtypesByTable = fieldtypesByTable;
-        this.OperatorsMap = {
-            'eq': (value) => value,
-            'ne': (value) => ({ $ne: value }),
-            'gt': (value) => ({ $gt: value }),
-            'gte': (value) => ({ $gte: value }),
-            'lt': (value) => ({ $lt: value }),
-            'lte': (value) => ({ $lte: value }),
-            'in': (value) => ({ $in: value }),
-            'nin': (value) => ({ $nin: value }),
-            'like': (value) => ({ $regex: value, $options: 'i' }),
-            'nlike': (value) => ({ $not: { $regex: value, $options: 'i' } }),
-        };
     }
+
+    OperatorsMap = {
+        [AdminForthFilterOperators.EQ]: (value) => value,
+        [AdminForthFilterOperators.NE]: (value) => ({ $ne: value }),
+        [AdminForthFilterOperators.GT]: (value) => ({ $gt: value }),
+        [AdminForthFilterOperators.LT]: (value) => ({ $lt: value }),
+        [AdminForthFilterOperators.GTE]: (value) => ({ $gte: value }),
+        [AdminForthFilterOperators.LTE]: (value) => ({ $lte: value }),
+        [AdminForthFilterOperators.LIKE]: (value) => ({ $regex: value }),
+        [AdminForthFilterOperators.ILIKE]: (value) => ({ $regex: value, $options: 'i' }),
+        [AdminForthFilterOperators.IN]: (value) => ({ $in: value }),
+        [AdminForthFilterOperators.NIN]: (value) => ({ $nin: value }),
+    };
+
+    SortDirectionsMap = {
+        [AdminForthSortDirections.ASC]: 1,
+        [AdminForthSortDirections.DESC]: -1,
+    };
 
     async discoverFields(tableName) {
         return this.fieldtypesByTable[tableName];
