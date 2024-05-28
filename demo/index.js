@@ -107,14 +107,21 @@ const admin = new AdminForth({
           name: 'id', 
           readOnly: true, 
           label: 'Identifier',  // if you wish you can redefine label
-          showIn: 'CEFS',
+          showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
+          fillOnCreate: (initialRecord) => Math.random().toString(36).substring(7),
         },
         { 
           name: 'title',
           required: true,
-          showIn: 'LCEFS',  // L - List, C - Create, E - Edit, F - Filter, S - Show, LCEFS is default mode
+          showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
         }, 
+        {
+          name: 'created_at', 
+          allowMinMaxQuery: true,
+          showIn: ['list', 'filter', 'show'],
+          fillOnCreate: (initialRecord) => (new Date()).toISOString(),
+        },
         { 
           name: 'price',
           allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
@@ -123,7 +130,7 @@ const admin = new AdminForth({
           name: 'square_meter', 
           label: 'Square', 
           allowMinMaxQuery: true,
-         },
+        },
         { 
           name: 'number_of_rooms',
           allowMinMaxQuery: true,
@@ -148,11 +155,7 @@ const admin = new AdminForth({
         {
           name: 'listed',
         },
-        { 
-          name: 'created_at', 
-          readOnly: true,
-          allowMinMaxQuery: true,
-        }
+        
       ],
       listPageSize: 20, 
     },
