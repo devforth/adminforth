@@ -167,7 +167,8 @@ const admin = new AdminForth({
             { name: 'created_by', required: true },
             { name: 'release_date', readOnly: true },
             { name: 'description' },
-            { name: 'price' }
+            { name: 'price' },
+            { name: 'enabled' },
         ],
         listPageSize: 5, 
     },
