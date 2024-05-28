@@ -167,10 +167,18 @@ const admin = new AdminForth({
         columns: [
             { name: 'id', readOnly: true, label: 'Identifier'},
             { name: 'name', required: true },
-            { name: 'created_by', required: true },
+            { name: 'created_by', required: true,
+                enum: [
+                    { value: 'CD Projekt Red', label: 'CD Projekt Red' },
+                    { value: 'Rockstar Studios', label: 'Rockstar' },
+                    { value: 'Bethesda Game Studios', label: 'Bethesda' },
+                    
+                ]
+            },
             { name: 'release_date', readOnly: true },
             { name: 'description' },
-            { name: 'price' }
+            { name: 'price' },
+            { name: 'enabled' },
         ],
         listPageSize: 5, 
     },

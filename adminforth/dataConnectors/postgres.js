@@ -69,7 +69,7 @@ class PostgresConnector {
             } else if (baseType.includes('float') || baseType.includes('double')) {
                 field.type = AdminForthTypes.FLOAT;
                 field._underlineType = 'float';
-            
+
             } else if (baseType.includes('bool')) {
                 field.type = AdminForthTypes.BOOLEAN;
                 field._underlineType = 'bool';
@@ -155,16 +155,22 @@ class PostgresConnector {
     }
 
     setFieldValue(field, value) {
-      if (field.type == AdminForthTypes.TIMESTAMP) {
-        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          // value is iso string now, convert to unix timestamp
-          return dayjs(value).unix();
-        } else if (field._underlineType == 'varchar') {
-          // value is iso string now, convert to unix timestamp
-          return dayjs(value).toISOString();
+        if (field.type == AdminForthTypes.TIMESTAMP) {
+          if (!value) {
+            return null;
+          }
+          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+            // value is iso string now, convert to unix timestamp
+            return dayjs(value).unix();
+          } else if (field._underlineType == 'varchar') {
+            // value is iso string now, convert to unix timestamp
+            return dayjs(value).toISOString();
+          }
+        } else if (field.type == AdminForthTypes.BOOLEAN) {
+          return value ? 1 : 0;
         }
+        return value;
       }
-    }
     
     async getData({ resource, limit, offset, sort, filters }) {
       const columns = resource.columns.map((col) => col.name).join(', ');
@@ -178,14 +184,47 @@ class PostgresConnector {
           throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
         }
       }
-      const where = filters.length ? `WHERE ${filters.map((f, i) => `${f.field} ${this.OperatorsMap[f.operator]} '${f.value}'`).join(' AND ')}` : '';
-      // const filterValues = filters.length ? filters.map((f) => f.value) : [];
+      let totalCounter = filters.length == 0 ? 0 : 1;
+      const where = filters.length ? `WHERE ${filters.map((f, i) => {
+        let placeholder = '$'+(totalCounter);
+        let field = f.field;
+        let operator = this.OperatorsMap[f.operator];
+        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+            placeholder = `(${f.value.map((_, i) => `$${totalCounter + i}`).join(', ')})`;
+            totalCounter =+ f.value.length;
+        } else {
+            totalCounter += 1;
+        }
+        return `${field} ${operator} ${placeholder}`
+      }).join(' AND ')}` : '';
 
-      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-      const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy}  LIMIT ${limit} OFFSET ${offset}`);
+      const filterValues = [];
+      filters.length ? filters.forEach((f) => {
+        // for arrays do set in map
+        let v;
+        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+          v = f.value.map((val) => this.setFieldValue(resource.columns.find((col) => col.name == f.field), val));
+        } else {
+          v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+        }
+
+        if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
+          filterValues.push(`%${v}%`);
+        } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
+          filterValues.push(...v);
+        } else {
+          filterValues.push(v);
+        }
+      }) : [];
+
+      const limitOffset = `LIMIT $${totalCounter + 1} OFFSET $${totalCounter + 2}`; 
+      const d = [...filterValues, limit, offset];
+
+    const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d);
       const rows = stmt.rows;
       
-      const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`)).rows[0].count;
+      const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
       // run all fields via getFieldValue
       return {
         data: rows.map((row) => {
