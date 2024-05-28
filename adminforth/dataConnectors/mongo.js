@@ -43,29 +43,43 @@ class MongoConnector {
     }
 
     getFieldValue(field, value) {
-      if (field.type == AdminForthTypes.TIMESTAMP) {
-        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          return dayjs(value).toISOString();
-        } else if (field._underlineType == 'varchar') {
-          return dayjs(value).toISOString();
-        } else {
-          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+        if (field.type == AdminForthTypes.DATETIME) {
+          if (!value) {
+            return null;
+          }
+          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+            return dayjs.unix(+value).toISOString();
+          } else if (field._underlineType == 'varchar') {
+            return dayjs.unix(+value).toISOString();
+          } else {
+            throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+          }
+        } else if (field.type == AdminForthTypes.BOOLEAN) {
+          return !!value;
         }
+        return value;
       }
-    }
     
     getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
-        return collection.findOne({ [getPrimaryKey(resource)]: key })
+        return collection.findOne({ [this.getPrimaryKey(resource)]: key })
             .then((row) => {
                 if (!row) {
                     return null;
                 }
                 const newRow = {};
                 for (const [key, value] of Object.entries(row)) {
-                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+                    console.log('aVBFAIODHF', Object.entries(row));
+                    console.log('COLUMNS', resource.columns);
+                    const dbKey = resource.columns.find((col) => col.name == key)
+                    if (!dbKey) {
+                        continue // should I continue or throw an error?
+                        throw new Error(`Resource '${resource.table}' has no column '${key}' defined`);
+                    }
+                    newRow[key] = this.getFieldValue(dbKey, value);
                 }
+                console.log('newRow', newRow);
                 return newRow;
             });
     }
