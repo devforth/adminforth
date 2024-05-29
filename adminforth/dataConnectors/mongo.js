@@ -149,6 +149,17 @@ class MongoConnector {
         return result;
     }
 
+    async createRecord({ resource, record }) {
+        const tableName = resource.table;
+        const collection = this.db.db().collection(tableName);
+        const newRow = {};
+        for (const [key, value] of Object.entries(record)) {
+            newRow[key] = this.setFieldValue(resource.columns.find((col) => col.name == key), value);
+        }
+        const result = await collection.insertOne(newRow);
+        return result.insertedId;
+    }
+
     async close() {
         await this.db.end();
     }
