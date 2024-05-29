@@ -21,9 +21,10 @@
 
     </BreadcrumbsWithButtons>
 
-
+    <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+    
     <ResourceForm 
-      :loading="loading"
+      v-else
       :record="{}"
       :resourceColumns="coreStore.resourceColumns"
       @update:record="onUpdateRecord"
@@ -43,8 +44,9 @@ import { callAdminForthApi } from '@/utils';
 import ResourceForm from '@/components/ResourceForm.vue';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 
-const loading = ref(false);
+
 const saving = ref(false);
 
 const route = useRoute();
