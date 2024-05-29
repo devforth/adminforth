@@ -255,11 +255,21 @@ class AdminForth {
         method: 'POST',
         path: '/create_record',
         handler: async ({ body }) => {
-            console.log('create_record', body);
-            const { resourceId, data } = body;
-            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            console.log('create_record', body, this.config.resources);
+            const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+            if (!resource) {
+                return { error: `Resource '${body['resourceId']}' not found` };
+            }
+            for (const column of resource.columns) {
+                if (column.fillOnCreate) {
+                    body['record'][column.name] = column.fillOnCreate(body['record']);
+                }
+                if (column.required && body['record'][column.name] === undefined) {
+                    return { error: `Column '${column.name}' is required` };
+                }
+            }
             const connector = this.connectors[resource.dataSource];
-            const record = await connector.createRecord(resource, data);
+            const record = await connector.createRecord({ resource, record: body['record']});
             return record;
         }
     })
