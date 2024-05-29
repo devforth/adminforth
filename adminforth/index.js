@@ -274,7 +274,25 @@ class AdminForth {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
             }
         }
-    })
+    });
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/update_record',
+        handler: async ({ body }) => {
+            console.log('update_record', body);
+            const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+            if (!resource) {
+                return { error: `Resource '${body['resourceId']}' not found` };
+            }
+            const connector = this.connectors[resource.dataSource];
+            await connector.updateRecord({ resource, recordId: body['recordId'], record: body['record']});
+            return {
+              newRecordId: body['recordId']
+            }
+        }
+    });
+
   }
 
 
