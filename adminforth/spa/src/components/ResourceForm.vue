@@ -42,44 +42,44 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-                <Dropdown
+              <Dropdown
                   single
                   v-if="column.enum"
                   :options="column.enum"
-                  :value="record[column.name]"
-                  @update:value="record[column.name] = $event"
+                  :value="currentValues[column.name]"
+                  @update:modelValue="setCurrentValue(column.name, $event)"
                 />
                 <Dropdown
                   single
                   v-else-if="column.type === 'boolean'"
                   :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-                  :value="record[column.name]"
-                  @update:value="record[column.name] = $event"
+                  :value="currentValues[column.name]"
+                  @update:modelValue="setCurrentValue(column.name, $event)"
                 />
                 <input 
                   v-else-if="['integer'].includes(column.type)"
                   type="number" 
                   step="1"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="0"
-                  @update:value="record[column.name] = $event"
-                  :value="record[column.name]"
+                  :value="currentValues[column.name]"
+                  @input="setCurrentValue(column.name, $event.target.value)"
                 >
                 <input
                   v-else-if="['decimal', 'float'].includes(column.type)"
                   type="number"
                   step="0.1"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="0.0"
-                  @update:value="record[column.name] = $event"
-                  :value="record[column.name]"
+                  :value="currentValues[column.name]"
+                  @input="setCurrentValue(column.name, $event.target.value)"
                 />
                 <textarea
                   v-else-if="['text'].includes(column.type)"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Text"
-                  @update:value="record[column.name] = $event"
-                  :value="record[column.name]"
+                  :value="currentValues[column.name]"
+                  @input="setCurrentValue(column.name, $event.target.value)"
                 >
                 </textarea>
                 <input
@@ -87,8 +87,8 @@
                   type="text"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Text"
-                  @update:value="record[column.name] = $event"
-                  :value="record[column.name]"
+                  :value="currentValues[column.name]"
+                  @input="setCurrentValue(column.name, $event.target.value)"
                 >
 
               </td>
@@ -104,12 +104,11 @@
 
 <script setup>
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import Dropdown from '@/components/Dropdown.vue';
 import { IconExclamationCircleSolid } from '@iconify-prerendered/vue-flowbite';
 import { initFlowbite } from 'flowbite'
-
 
 const props = defineProps({
   loading: Boolean,
@@ -117,11 +116,18 @@ const props = defineProps({
   record: Object,
 });
 
-const initialValues = {}
+const emit = defineEmits(['update:record']);
+
+const currentValues = {}
+
+const setCurrentValue = (key, value) => {
+  currentValues[key] = value;
+  emit('update:record', currentValues);
+};
 
 onMounted(() => {
   Object.keys(props.record).forEach((key) => {
-    initialValues[key] = props.record[key];
+    currentValues[key] = props.record[key];
   });
   initFlowbite();
 });
