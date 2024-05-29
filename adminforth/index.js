@@ -269,8 +269,10 @@ class AdminForth {
                 }
             }
             const connector = this.connectors[resource.dataSource];
-            const record = await connector.createRecord({ resource, record: body['record']});
-            return record;
+            await connector.createRecord({ resource, record: body['record']});
+            return {
+              newRecordId: body['record'][connector.getPrimaryKey(resource)]
+            }
         }
     })
   }

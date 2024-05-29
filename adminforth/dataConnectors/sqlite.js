@@ -99,7 +99,8 @@ class SQLiteConnector {
     setFieldValue(field, value) {
         console.log('got', value, field.type, field._underlineType)
         console.log(field._underlineType, 'timestamp')
-      if (field.type == AdminForthTypes.TIMESTAMP) {
+
+      if (field.type == AdminForthTypes.DATETIME) {
         if (!value) {
             console.log('returning0 null')
           return null;
@@ -237,9 +238,10 @@ class SQLiteConnector {
         console.log('resource.columns', resource.columns)
         console.log('record', record)
         console.log(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`, values);
-        // const stmt = this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`);
-        // const result = stmt.run(values);
-        // return result.lastInsertRowid;
+        const stmt = this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`);
+        const result = stmt.run(values);
+        // result.lastInsertRowid;
+        return
     }
 
     close() {

@@ -9,7 +9,7 @@
         placeholder="Search..."
       />
       <div class="absolute inset-y-0 left-2 flex items-center pr-2 flex-wrap">
-        <div v-for="item in selectedItems" :key="item.value" class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+        <div v-for="item in selectedItems" :key="item.name" class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
           <span>{{ item.label }}</span>
           <button
             type="button"
@@ -57,7 +57,7 @@ const props = defineProps({
   options: Array,
   modelValue: {
     type: [Array, Object],
-    default: () => [],
+    default: undefined,
   },
   allowCustom: {
     type: Boolean,
@@ -77,6 +77,7 @@ const showDropdown = ref(false);
 const selectedItems = ref([]);
 
 function updateFromProps() {
+  console.log('⚡ updateFromProps', props.modelValue)
   if (props.modelValue !== undefined) {
     if (props.single) {
       selectedItems.value = [props.options.find(item => item.value === props.modelValue)];

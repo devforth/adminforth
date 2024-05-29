@@ -72,7 +72,7 @@ onMounted(async () => {
 
 async function saveRecord() {
   saving.value = true;
-  await callAdminForthApi({
+  const response = await callAdminForthApi({
     method: 'POST',
     path: `/create_record`,
     body: {
@@ -81,7 +81,11 @@ async function saveRecord() {
     },
   });
   saving.value = false;
-  router.push({ name: 'resource.show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
+  router.push({ name: 'resource-show', params: { 
+    resourceId: route.params.resourceId, 
+    primaryKey: response.newRecordId
+  
+  } });
 }
 
 

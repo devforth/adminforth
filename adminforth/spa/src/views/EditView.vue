@@ -40,12 +40,22 @@ import ResourceForm from '@/components/ResourceForm.vue';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
+import { callAdminForthApi } from '@/utils';
 
 const coreStore = useCoreStore();
 
 const route = useRoute();
 
 const loading = ref(false);
+
+const saving = ref(false);
+
+const record = ref({});
+
+async function onUpdateRecord(newRecord) {
+  record.value = newRecord;
+}
+
 
 onMounted(async () => {
   loading.value = true;
