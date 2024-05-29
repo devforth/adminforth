@@ -47,6 +47,7 @@ import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 
 
+const loading = ref(false);
 const saving = ref(false);
 
 const route = useRoute();

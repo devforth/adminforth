@@ -239,6 +239,7 @@
           <button
               class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
             @click="page = 1" :disabled="page <= 1">
+            <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
               1
           </button>
           <input type="text" class="w-10 py-1.5  px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10" 
@@ -248,6 +249,7 @@
               class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
             @click="page = totalPages" :disabled="page >= totalPages">
               {{ totalPages }}
+              <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
           </button>
           <button 
               class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
@@ -272,7 +274,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { initFlowbite } from 'flowbite'
 
 
-import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
 import { 
   IconEyeSolid, 
