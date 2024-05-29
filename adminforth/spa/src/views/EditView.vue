@@ -18,8 +18,10 @@
 
     </BreadcrumbsWithButtons>
 
+    <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+
     <ResourceForm 
-      :loading="loading"
+      v-else
       :record="coreStore.record"
       :resourceColumns="coreStore.resourceColumns"
     >
@@ -36,10 +38,10 @@ import { useCoreStore } from '@/stores/core';
 import ResourceForm from '@/components/ResourceForm.vue';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 
 const coreStore = useCoreStore();
 
-const item = ref(null);
 const route = useRoute();
 
 const loading = ref(false);
@@ -54,6 +56,7 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
+  console.log('coreStore.record', coreStore.record);
 
   loading.value = false;
 });
