@@ -49,7 +49,7 @@
                     {{ column.label }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-                    {{ coreStore.record[column.name] }}
+                    <ValueRenderer :column="column" :row="coreStore.record" />
                 </td>
             </tr>
             
@@ -70,6 +70,7 @@ import { callAdminForthApi } from '@/utils';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 import { useCoreStore } from '@/stores/core';
+import ValueRenderer from '@/components/ValueRenderer.vue';
 
 
 const item = ref(null);

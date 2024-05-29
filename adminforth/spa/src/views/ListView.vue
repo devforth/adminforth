@@ -154,13 +154,7 @@
               </div>
             </td>
             <td v-for="c in columnsListed" class="px-6 py-4">
-              <span v-if="c.type === 'boolean'">
-                <span v-if="row[c.name]" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">Yes</span>
-                <span v-else class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">No</span>
-              </span>
-              <span v-else>
-                {{ row[c.name] }}
-              </span>
+              <ValueRenderer :column="c" :row="row" />
             </td>
             <td class="flex items-center px-6 py-4">
 
@@ -273,6 +267,7 @@ import { useCoreStore } from '@/stores/core';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { initFlowbite } from 'flowbite'
 
+import ValueRenderer from '@/components/ValueRenderer.vue';
 
 import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
