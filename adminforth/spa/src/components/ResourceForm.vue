@@ -79,9 +79,9 @@
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
                 >
-                <div v-if="columnError(column)" class="text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
+                <div v-if="columnError(column)" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
 
-                <div v-if="column.editingNote" class="text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</div>
+                <div v-if="column.editingNote" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</div>
               </td>
             </tr>
             
