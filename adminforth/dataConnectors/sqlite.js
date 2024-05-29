@@ -248,6 +248,10 @@ class SQLiteConnector {
         this.db.prepare(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = ?`).run(values);
     }
 
+    async deleteRecord({ resource, recordId }) {
+        this.db.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`).run(recordId);
+    }
+
     close() {
         this.db.close();
     }

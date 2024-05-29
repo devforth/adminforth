@@ -183,6 +183,12 @@ class MongoConnector {
         await collection.updateOne({ [primaryKey]: recordId }, { $set: newValues });
     }
 
+    async deleteRecord({ resource, recordId }) {
+        const primaryKey = this.getPrimaryKey(resource);
+        const collection = this.db.db().collection(resource.table);
+        await collection.deleteOne({ [primaryKey]: recordId });
+    }
+
     async close() {
         await this.db.end();
     }
