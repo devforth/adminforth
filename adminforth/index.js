@@ -292,10 +292,24 @@ class AdminForth {
             }
         }
     });
-
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/delete_record',
+        handler: async ({ body }) => {
+            console.log('delete_record', body);
+            const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+            if (!resource) {
+                return { error: `Resource '${body['resourceId']}' not found` };
+            }
+            const connector = this.connectors[resource.dataSource];
+            await connector.deleteRecord({ resource, recordId: body['recordId']});
+            return {
+              recordId: body['recordId']
+            }
+        }
+    });
   }
-
-
 }
 
 export default AdminForth;
