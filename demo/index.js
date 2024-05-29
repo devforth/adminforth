@@ -174,7 +174,11 @@ const admin = new AdminForth({
         resourceId: 'games',
         label: 'Games',
         columns: [
-            { name: 'id', readOnly: true, required: false, label: 'Identifier', fillOnCreate: (initialRecord) => uuid()},
+            {
+                name: 'id', readOnly: true, required: false, 
+                label: 'Identifier', fillOnCreate: (initialRecord) => uuid(),
+                showIn: ['list', 'filter', 'show'],  // the default is full set
+            },
             { name: 'name', required: true },
             { name: 'created_by', required: true,
                 enum: [
