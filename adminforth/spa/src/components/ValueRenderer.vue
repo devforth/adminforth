@@ -9,6 +9,7 @@
     </span>
     <span v-else-if="column.type === 'datetime'">
       {{ formatDate(row[column.name]) }}
+      
     </span>
     <span v-else>
       {{ row[column.name] }}
@@ -23,6 +24,10 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
+import { useCoreStore } from '@/stores/core';
+
+const coreStore = useCoreStore();
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -34,6 +39,6 @@ const props = defineProps({
 
 function formatDate(date) {
   if (!date) return '';
-  return dayjs.utc(date).local().format('MMM D, YYYY HH:mm:ss');
+  return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD HH:mm:ss');
 }
 </script>

@@ -33,6 +33,13 @@ class AdminForth {
     }
     console.log('🙂 this.config', this.config);
 
+    if (!this.config.brandName) {
+      this.config.brandName = 'AdminForth';
+    }
+
+    if (!this.config.datesFormat) {
+      this.config.datesFormat = 'MMM D, YYYY HH:mm:ss';
+    }
 
     if (this.config.resources) {
       this.config.resources.forEach((res) => {
@@ -153,7 +160,10 @@ class AdminForth {
             label: res.label,
           })),
           menu: this.config.menu,
-          brandName: this.config.brandName,
+          config: { 
+            brandName: this.config.brandName,
+            datesFormat: this.config.datesFormat,
+          },
         };
       },
     });

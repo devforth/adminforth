@@ -50,6 +50,7 @@ if (!tableExists) {
 const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
+  datesFormat: 'D MMM YY HH:mm:ss',
   dataSources: [
     {
       id: 'maindb',
