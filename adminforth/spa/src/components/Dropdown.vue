@@ -125,6 +125,9 @@ const toogleItem = (item) => {
       selectedItems.value = [...selectedItems.value, item];
     }
   }
+  if (props.single) {
+    showDropdown.value = false;
+  }
 };
 
 onMounted(() => {
