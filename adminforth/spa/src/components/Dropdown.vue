@@ -55,7 +55,7 @@ import { IconCaretDownSolid, IconCaretUpSolid } from '@iconify-prerendered/vue-f
 
 const props = defineProps({
   options: Array,
-  value: {
+  modelValue: {
     type: [Array, Object],
     default: () => [],
   },
@@ -76,21 +76,23 @@ const showDropdown = ref(false);
 
 const selectedItems = ref([]);
 
-onMounted(() => {
-  if (props.value) {
-    selectedItems.value = props.options.filter(item => props.value.includes(item.value));
-  }
-
-  watch(selectedItems, (value) => {
-    const list = value.map(item => item.value);
-    const updValue = list.length ? list : undefined;
-
+function updateFromProps() {
+  if (props.modelValue !== undefined) {
     if (props.single) {
-      emit('update:modelValue', updValue ? updValue[0] : undefined)
+      selectedItems.value = [props.options.find(item => item.value === props.modelValue)];
     } else {
-      emit('update:modelValue', updValue)
+      selectedItems.value = props.options.filter(item => props.modelValue.includes(item.value));
     }
+  }
+}
+
+onMounted(() => {
+  updateFromProps();
+
+  watch(() => props.modelValue, (value) => {
+    updateFromProps();
   });
+
 });
 
 
@@ -128,6 +130,19 @@ const toogleItem = (item) => {
   if (props.single) {
     showDropdown.value = false;
   }
+
+  
+  const list = selectedItems.value.map(item => item.value);
+  const updValue = list.length ? list : undefined;
+  let emitValue;
+  if (props.single) {
+    emitValue = updValue ? updValue[0] : undefined;
+  } else {
+    emitValue = updValue;
+  }
+  console.log('⚡ emit', emitValue)
+  emit('update:modelValue', emitValue);
+
 };
 
 onMounted(() => {

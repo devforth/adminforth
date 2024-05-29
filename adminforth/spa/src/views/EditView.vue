@@ -24,6 +24,7 @@
       v-else
       :record="coreStore.record"
       :resourceColumns="coreStore.resourceColumns"
+      @update:record="onUpdateRecord"
     >
     </ResourceForm>
   </div>
@@ -56,9 +57,23 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
-  console.log('coreStore.record', coreStore.record);
 
   loading.value = false;
 });
+
+async function saveRecord() {
+  saving.value = true;
+  await callAdminForthApi({
+    method: 'POST',
+    path: `/update_record`,
+    body: {
+      resourceId: route.params.resourceId,
+      recordId: route.params.primaryKey,
+      record: record.value,
+    },
+  });
+  saving.value = false;
+  router.push({ name: 'resource.show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
+}
 
 </script>
