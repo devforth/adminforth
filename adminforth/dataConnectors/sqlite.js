@@ -97,28 +97,21 @@ class SQLiteConnector {
     }
 
     setFieldValue(field, value) {
-        console.log('got', value, field.type, field._underlineType)
-        console.log(field._underlineType, 'timestamp')
-
       if (field.type == AdminForthTypes.DATETIME) {
         if (!value) {
-            console.log('returning0 null')
           return null;
         }
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           // value is iso string now, convert to unix timestamp
-          console.log('returning1', dayjs(value).unix())
           return dayjs(value).unix();
         } else if (field._underlineType == 'varchar') {
           // value is iso string now, convert to unix timestamp
-            console.log('returning2', dayjs(value).toISOString())
           return dayjs(value).toISOString();
         }
       } else if (field.type == AdminForthTypes.BOOLEAN) {
-        console.log('returning3', value ? 1 : 0)
         return value ? 1 : 0;
       }
-      console.log('returning4', value)
+
       return value;
     }
 
@@ -235,13 +228,24 @@ class SQLiteConnector {
         const columns = resource.columns.map((col) => col.name).join(', ');
         const placeholders = resource.columns.map(() => '?').join(', ');
         const values = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
-        console.log('resource.columns', resource.columns)
-        console.log('record', record)
-        console.log(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`, values);
-        const stmt = this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`);
-        const result = stmt.run(values);
-        // result.lastInsertRowid;
-        return
+        this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`).run(values);
+    }
+
+    async updateRecord({ resource, recordId, record }) {
+        const tableName = resource.table;
+        const primaryKey = this.getPrimaryKey(resource);
+
+        const newValues = {};
+        for (const col of resource.columns) {
+            if (record[col.name] !== undefined) {
+                newValues[col.name] = this.setFieldValue(col, record[col.name]);
+            }
+        }
+
+        const columns = Object.keys(newValues).map((col) => col).join(', ');
+        const placeholders = Object.keys(newValues).map(() => '?').join(', ');
+        const values = [...Object.values(newValues), recordId];
+        this.db.prepare(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = ?`).run(values);
     }
 
     close() {
