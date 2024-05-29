@@ -95,16 +95,22 @@ class MongoConnector {
     }
 
     setFieldValue(field, value) {
-      if (field.type == AdminForthTypes.DATETIME) {
-        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          // value is iso string now, convert to unix timestamp
-          return dayjs(value).unix();
-        } else if (field._underlineType == 'varchar') {
-          // value is iso string now, convert to unix timestamp
-          return dayjs(value).toISOString();
+        if (field.type == AdminForthTypes.DATETIME) {
+          if (!value) {
+            return null;
+          }
+          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+            // value is iso string now, convert to unix timestamp
+            return dayjs(value).unix();
+          } else if (field._underlineType == 'varchar') {
+            // value is iso string now, convert to unix timestamp
+            return dayjs(value).toISOString();
+          }
+        } else if (field.type == AdminForthTypes.BOOLEAN) {
+          return value ? 1 : 0;
         }
+        return value;
       }
-    }
     
     async getData({ resource, limit, offset, sort, filters }) {
         const columns = resource.columns.map((col) => col.name).join(', ');
@@ -154,10 +160,33 @@ class MongoConnector {
         const collection = this.db.db().collection(tableName);
         const newRow = {};
         for (const [key, value] of Object.entries(record)) {
+            if (resource.columns.find((col) => col.name == key) == undefined) {
+                continue
+            }
             newRow[key] = this.setFieldValue(resource.columns.find((col) => col.name == key), value);
         }
-        const result = await collection.insertOne(newRow);
-        return result.insertedId;
+        await collection.insertOne(newRow);
+    }
+
+    async updateRecord({ resource, recordId, record }) {
+        const tableName = resource.table;
+        const primaryKey = this.getPrimaryKey(resource);
+
+        const newValues = {};
+        for (const col of resource.columns) {
+            if (record[col.name] !== undefined) {
+                newValues[col.name] = this.setFieldValue(col, record[col.name]);
+            }
+        }
+
+        const collection = this.db.db().collection(tableName);
+        await collection.updateOne({ [primaryKey]: recordId }, { $set: newValues });
+    }
+
+    async deleteRecord({ resource, recordId }) {
+        const primaryKey = this.getPrimaryKey(resource);
+        const collection = this.db.db().collection(resource.table);
+        await collection.deleteOne({ [primaryKey]: recordId });
     }
 
     async close() {

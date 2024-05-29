@@ -155,7 +155,7 @@ class PostgresConnector {
     }
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthTypes.TIMESTAMP) {
+        if (field.type == AdminForthTypes.DATETIME) {
           if (!value) {
             return null;
           }
@@ -278,6 +278,10 @@ class PostgresConnector {
 
         console.log(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
         await this.db.query(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
+    }
+
+    async deleteRecord({ resource, recordId }) {
+        await this.db.query(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = $1`, [recordId]);
     }
 
     async close() {
