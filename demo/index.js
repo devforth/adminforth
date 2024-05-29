@@ -1,6 +1,7 @@
 import express from 'express';
 import AdminForth from '../adminforth/index.js';
 import betterSqlite3 from 'better-sqlite3';
+import { AdminForthTypes } from '../adminforth/types.js';
 
 const ADMIN_BASE_URL = '/bo';
 
@@ -29,7 +30,8 @@ if (!tableExists) {
         id VARCHAR(255) PRIMARY KEY NOT NULL,
         email VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
-        created_at VARCHAR(255) NOT NULL
+        created_at VARCHAR(255) NOT NULL,
+        role VARCHAR(255) NOT NULL
     );`).run();
 
   
@@ -90,8 +92,6 @@ const admin = new AdminForth({
                 "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
                 "required": false, "primaryKey": false, "default": ""
             },
-
-
         }
       }
     }
@@ -106,11 +106,10 @@ const admin = new AdminForth({
       columns: [
         { 
           name: 'id', 
-          readOnly: true, 
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
-          fillOnCreate: (initialRecord) => Math.random().toString(36).substring(7),
+          fillOnCreate: (initialRecord, adminUser) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
           name: 'title',
@@ -123,7 +122,7 @@ const admin = new AdminForth({
           name: 'created_at',
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
-          fillOnCreate: (initialRecord) => (new Date()).toISOString(),
+          fillOnCreate: (initialRecord, adminUser) => (new Date()).toISOString(),
         },
         { 
           name: 'price',
@@ -166,13 +165,58 @@ const admin = new AdminForth({
       ],
       listPageSize: 20, 
     },
-    // { dataSource: 'maindb', table: 'users' },
+    { 
+      dataSource: 'maindb', 
+      table: 'users',
+      resourceId: 'users',
+      label: 'Users',
+      columns: [
+        { 
+          name: 'id', primaryKey: true 
+        },
+        { 
+          name: 'email', required: true 
+        },
+        { 
+          name: 'created_at', 
+          type: AdminForth.Types.DATETIME,
+          fillOnCreate: (initialRecord, adminUser) => (new Date()).toISOString(),
+        },
+        {
+          name: 'role',
+          enum: [
+            { value: 'superadmin', label: 'Super Admin' },
+            { value: 'user', label: 'User' },
+          ]
+        },
+        {
+          name: 'password',
+          virtual: true,  // field will not be persisted into db
+          required: { create: true }, // to show only in create page
+          editingNote: { edit: 'Leave empty to keep password unchanged' },
+
+          minLength: 8,
+          type: AdminForth.Types.STRING,
+          showIn: ['create', 'edit'], // to show in create and edit pages
+          masked: true, // to show stars in input field
+        }
+      ],
+      hooks: {
+        create: {
+          beforeSave: async (record, adminUser) => {
+            record.password_hash = await AdminForth.utils.hashPassword(record.password);
+            return { record }
+            // if return 'error': , record will not be saved and error will be proxied
+          }
+        }
+      }
+    },
     {
         dataSource: 'db2', table: 'games',
         resourceId: 'games',
         label: 'Games',
         columns: [
-            { name: 'id', readOnly: true, label: 'Identifier'},
+            { name: 'id', label: 'Identifier'},
             { name: 'name', required: true },
             { name: 'created_by', required: true,
                 enum: [
@@ -182,7 +226,7 @@ const admin = new AdminForth({
                     
                 ]
             },
-            { name: 'release_date', readOnly: true },
+            { name: 'release_date', },
             { name: 'description' },
             { name: 'price' },
             { name: 'enabled' },
@@ -192,7 +236,7 @@ const admin = new AdminForth({
     {
         dataSource: 'db3', table: 'game',
         columns: [
-            { name: '_id', readOnly: true, primaryKey: true },
+            { name: '_id', primaryKey: true },
             { name: 'bb_enabled' },
             { name: 'bb_rank' },
             {
@@ -253,11 +297,6 @@ const admin = new AdminForth({
     },
     {
       type: 'gap'
-    },
-    {
-      label: 'Users',
-      icon: 'flowbite:user-solid',
-      resourceId: 'users',
     },
     {
       type: 'divider'

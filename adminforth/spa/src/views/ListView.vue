@@ -100,10 +100,10 @@
         </thead>
         <tbody>
           <tr v-if="!rows" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td :colspan="coreStore.resourceColumns.length + 2" class="p-4 text-center">
+            <td :colspan="coreStore.resourceColumns.length + 2">
 
               <div role="status"
-                class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+                class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
@@ -141,6 +141,16 @@
                 </div>
                 <span class="sr-only">Loading...</span>
               </div>
+            </td>
+          </tr>
+          <tr v-else-if="rows.length === 0" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td :colspan="coreStore.resourceColumns.length + 2">
+              
+              <div id="toast-simple" class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 bg-white divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800" role="alert">
+                <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                <div class="ps-4 text-sm font-normal">No items here yet</div>
+            </div>
+
             </td>
           </tr>
 
@@ -269,7 +279,7 @@ import { initFlowbite } from 'flowbite'
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 
-import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconInboxFullSolid, IconInboxOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
 import { 
   IconEyeSolid, 
