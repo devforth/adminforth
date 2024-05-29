@@ -83,7 +83,13 @@ onMounted(() => {
 
   watch(selectedItems, (value) => {
     const list = value.map(item => item.value);
-    emit('update:modelValue', list.length ? list : undefined);
+    const updValue = list.length ? list : undefined;
+
+    if (props.single) {
+      emit('update:modelValue', updValue ? updValue[0] : undefined)
+    } else {
+      emit('update:modelValue', updValue)
+    }
   });
 });
 

@@ -154,6 +154,7 @@ const admin = new AdminForth({
         },
         {
           name: 'listed',
+          required: true,  // will be required on create/edit
         },
         
       ],
