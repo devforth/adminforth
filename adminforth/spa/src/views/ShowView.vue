@@ -35,7 +35,7 @@
                 <th scope="col" class="px-6 py-3">
                     Field
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th scope="col" class="px-6 py-3 w-4/6">
                     Value
                 </th>
             </tr>
