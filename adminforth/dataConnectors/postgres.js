@@ -258,8 +258,26 @@ class PostgresConnector {
         const columns = resource.columns.map((col) => col.name).join(', ');
         const values = resource.columns.map((col, i) => `$${i + 1}`).join(', ');
         const d = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
-        const stmt = await this.db.query(`INSERT INTO ${tableName} (${columns}) VALUES (${values}) RETURNING ${this.getPrimaryKey(resource)}`, d);
-        return stmt.rows[0][this.getPrimaryKey(resource)];
+        await this.db.query(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`, d);
+    }
+
+    async updateRecord({ resource, recordId, record }) {
+        const tableName = resource.table;
+        const primaryKey = this.getPrimaryKey(resource);
+
+        const newValues = {};
+        for (const col of resource.columns) {
+            if (record[col.name] !== undefined) {
+                newValues[col.name] = this.setFieldValue(col, record[col.name]);
+            }
+        }
+
+        const columns = Object.keys(newValues).map((col) => col).join(', ');
+        const placeholders = Object.keys(newValues).map((_, i) => `$${i + 1}`).join(', ');  // we can't use '?' in postgres, so we need to use numbered placeholders
+        const values = [...Object.values(newValues), recordId];
+
+        console.log(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
+        await this.db.query(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
     }
 
     async close() {
