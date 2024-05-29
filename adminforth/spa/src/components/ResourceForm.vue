@@ -80,6 +80,7 @@
                   @input="setCurrentValue(column.name, $event.target.value)"
                 >
 
+                <span v-if="column.editingNote" class="text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</span>
               </td>
             </tr>
             
