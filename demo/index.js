@@ -1,6 +1,8 @@
+import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from '../adminforth/index.js';
-import betterSqlite3 from 'better-sqlite3';
+import { v1 as uuid } from 'uuid';
+
 
 const ADMIN_BASE_URL = '/bo';
 
@@ -172,7 +174,7 @@ const admin = new AdminForth({
         resourceId: 'games',
         label: 'Games',
         columns: [
-            { name: 'id', readOnly: true, label: 'Identifier'},
+            { name: 'id', readOnly: true, required: false, label: 'Identifier', fillOnCreate: (initialRecord) => uuid()},
             { name: 'name', required: true },
             { name: 'created_by', required: true,
                 enum: [
@@ -182,7 +184,7 @@ const admin = new AdminForth({
                     
                 ]
             },
-            { name: 'release_date', readOnly: true },
+            { name: 'release_date', fillOnCreate: (initialRecord) => (new Date()).toISOString() },
             { name: 'description' },
             { name: 'price' },
             { name: 'enabled' },
