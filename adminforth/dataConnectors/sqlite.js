@@ -135,7 +135,7 @@ class SQLiteConnector {
     
 
     getData({ resource, limit, offset, sort, filters }) {
-      const columns = resource.columns.map((col) => col.name).join(', ');
+      const columns = resource.columns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
       const tableName = resource.table;
       
       for (const filter of filters) {

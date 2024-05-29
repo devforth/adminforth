@@ -13,6 +13,13 @@ import { AdminForthTypes } from './types.js';
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
 class AdminForth {
+  static Types = AdminForthTypes;
+
+  static Utils = {
+    generatePasswordHash: (password) => {
+    }
+  }
+
   constructor(config) {
     this.config = config;
     this.validateConfig();
@@ -66,6 +73,30 @@ class AdminForth {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
           }
 
+          // check col.required is string or object
+          if (col.required && !((typeof col.required === 'boolean') || (typeof col.required === 'object'))) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" required must be a string or object`);
+          }
+
+          // if it is object check the keys are one of ['create', 'edit']
+          if (typeof col.required === 'object') {
+            const wrongRequiredOn = Object.keys(col.required).find((c) => !['create', 'edit'].includes(c));
+            if (wrongRequiredOn) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
+            }
+          }
+
+          // same for editingNote
+          if (col.editingNote && !((typeof col.editingNote === 'string') || (typeof col.editingNote === 'object'))) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" editingNote must be a string or object`);
+          }
+          if (typeof col.editingNote === 'object') {
+            const wrongEditingNoteOn = Object.keys(col.editingNote).find((c) => !['create', 'edit'].includes(c));
+            if (wrongEditingNoteOn) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
+            }
+          }
+
           const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
           if (wrongShowIn) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${AVAILABLE_SHOW_IN.join(', ')}`);
@@ -85,6 +116,18 @@ class AdminForth {
 
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
+    }
+  }
+
+  postProcessColumnAfterDiscover(column) {
+    // if db/user says column is required in boolean, exapd
+    if (typeof column.required === 'boolean') {
+      column.required = { create: column.required, edit: column.required };
+    }
+
+    // same for editingNote
+    if (typeof column.editingNote === 'string') {
+      column.editingNote = { create: column.editingNote, edit: column.editingNote };
     }
   }
 
@@ -120,11 +163,14 @@ class AdminForth {
       }
 
       res.columns.forEach((col, i) => {
-        if (!fieldTypes[col.name]) {
+        if (!fieldTypes[col.name] && !col.virtual) {
           throw new Error(`Resource '${res.table}' has no column '${col.name}'`);
         }
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
+        
+        this.postProcessColumnAfterDiscover(res.columns[i]);
+        
 
       });
 
@@ -163,7 +209,7 @@ class AdminForth {
           config: { 
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
-          },
+          }
         };
       },
     });
@@ -274,7 +320,7 @@ class AdminForth {
                 if (column.fillOnCreate) {
                     body['record'][column.name] = column.fillOnCreate(body['record']);
                 }
-                if (column.required && body['record'][column.name] === undefined) {
+                if (column.requiredOn.includes('create') && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
                 }
             }

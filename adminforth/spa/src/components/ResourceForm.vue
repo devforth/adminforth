@@ -22,7 +22,7 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 {{ column.label }}
                 <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
-                  <IconExclamationCircleSolid v-if="column.required" class="text-red-500" />
+                  <IconExclamationCircleSolid v-if="column.requiredOn.includes(mode)" class="w-4 h-4 text-red-500 dark:text-red-400" />
                 </span>
                 <div :id="`tooltip-show-${i}`"
                   role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
@@ -73,12 +73,14 @@
                 </textarea>
                 <input
                   v-else
-                  type="text"
+                  :type="!column.masked ? 'text' : 'password'"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Text"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
                 >
+
+
                 <div v-if="columnError(column)" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
 
                 <div v-if="column.editingNote" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</div>
@@ -107,13 +109,15 @@ const props = defineProps({
   record: Object,
 });
 
+const mode = computed(() => props.record ? 'edit' : 'create');
+
 const emit = defineEmits(['update:record']);
 
 const currentValues = ref({});
 
 const columnError = (column) => {
   const val = computed(() => {
-    if ( column.required && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
+    if ( column.requiredOn.includes(mode.value) && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
       return 'This field is required';
     }
     if ( column.type === 'string' || column.type === 'text' ) {
