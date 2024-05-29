@@ -95,7 +95,7 @@ class MongoConnector {
     }
 
     setFieldValue(field, value) {
-      if (field.type == AdminForthTypes.TIMESTAMP) {
+      if (field.type == AdminForthTypes.DATETIME) {
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).unix();
