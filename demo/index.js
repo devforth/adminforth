@@ -115,11 +115,13 @@ const admin = new AdminForth({
           name: 'title',
           required: true,
           showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
+          maxLength: 255,  // you can set max length for string fields
+          minLength: 3,  // you can set min length for string fields
         }, 
         {
-          name: 'created_at', 
+          name: 'created_at',
           allowMinMaxQuery: true,
-          showIn: ['list', 'filter', 'show'],
+          showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: (initialRecord) => (new Date()).toISOString(),
         },
         { 
@@ -131,6 +133,8 @@ const admin = new AdminForth({
           name: 'square_meter', 
           label: 'Square', 
           allowMinMaxQuery: true,
+          minValue: 1,  // you can set min /max value for number fields
+          maxValue: 1000,
         },
         { 
           name: 'number_of_rooms',

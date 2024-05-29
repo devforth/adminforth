@@ -6,7 +6,7 @@
         v-model="search"
         @focus="showDropdown = true"
         class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 sm:text-sm transition duration-150 ease-in-out"
-        placeholder="Search..."
+        :placeholder="selectedItems.length ? '' : 'Select...'"
       />
       <div class="absolute inset-y-0 left-2 flex items-center pr-2 flex-wrap">
         <div v-for="item in selectedItems" :key="item.name" class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
@@ -56,7 +56,6 @@ import { IconCaretDownSolid, IconCaretUpSolid } from '@iconify-prerendered/vue-f
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: [Array, Object],
     default: undefined,
   },
   allowCustom: {

@@ -10,7 +10,7 @@
                 <th scope="col" class="px-6 py-3">
                     Field
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th scope="col" class="px-6 py-3 w-4/6">
                     Value
                 </th>
             </tr>
@@ -79,8 +79,9 @@
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
                 >
+                <div v-if="columnError(column)" class="text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
 
-                <span v-if="column.editingNote" class="text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</span>
+                <div v-if="column.editingNote" class="text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote }}</div>
               </td>
             </tr>
             
@@ -110,8 +111,36 @@ const emit = defineEmits(['update:record']);
 
 const currentValues = ref({});
 
+const columnError = (column) => {
+  const val = computed(() => {
+    if ( column.required && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
+      return 'This field is required';
+    }
+    if ( column.type === 'string' || column.type === 'text' ) {
+      if ( column.maxLength && currentValues.value[column.name]?.length > column.maxLength ) {
+        return `This field must be shorter than ${column.maxLength} characters`;
+      }
+      if ( column.minLength && currentValues.value[column.name]?.length < column.minLength ) {
+        return `This field must be longer than ${column.minLength} characters`;
+      }
+    }
+    if ( ['integer', 'decimal', 'float'].includes(column.type) ) {
+      if ( column.minValue !== undefined && currentValues.value[column.name] < column.minValue ) {
+        return `This field must be greater than ${column.minValue}`;
+      }
+      if ( column.maxValue !== undefined && currentValues.value[column.name] > column.maxValue ) {
+        return `This field must be less than ${column.maxValue}`;
+      }
+    }
+    return null;
+  });
+  console.log('val', JSON.stringify(val.value));
+  return val.value;
+};
+
 const setCurrentValue = (key, value) => {
-  currentValues[key] = value;
+  currentValues.value[key] = value;
+
   emit('update:record', currentValues);
 };
 
