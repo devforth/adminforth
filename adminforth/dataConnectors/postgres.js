@@ -280,6 +280,10 @@ class PostgresConnector {
         await this.db.query(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
     }
 
+    async deleteRecord({ resource, recordId }) {
+        await this.db.query(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = $1`, [recordId]);
+    }
+
     async close() {
         await this.db.end();
     }
