@@ -141,7 +141,7 @@ const columnError = (column) => {
 const setCurrentValue = (key, value) => {
   currentValues.value[key] = value;
 
-  emit('update:record', currentValues);
+  emit('update:record', currentValues.value);
 };
 
 onMounted(() => {
