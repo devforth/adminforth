@@ -31,18 +31,18 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-              <Dropdown
+                <Dropdown
                   single
                   v-if="column.enum"
                   :options="column.enum"
-                  :value="currentValues[column.name]"
+                  :modelValue="currentValues[column.name]"
                   @update:modelValue="setCurrentValue(column.name, $event)"
                 />
                 <Dropdown
                   single
                   v-else-if="column.type === 'boolean'"
                   :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-                  :value="currentValues[column.name]"
+                  :modelValue="currentValues[column.name]"
                   @update:modelValue="setCurrentValue(column.name, $event)"
                 />
                 <input 
@@ -115,8 +115,6 @@ const setCurrentValue = (key, value) => {
 };
 
 onMounted(() => {
-  console.log('props.record👌', props.record);
-
   Object.keys(props.record).forEach((key) => {
     currentValues.value[key] = props.record[key];
   });
