@@ -155,7 +155,7 @@ class PostgresConnector {
     }
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthTypes.TIMESTAMP) {
+        if (field.type == AdminForthTypes.DATETIME) {
           if (!value) {
             return null;
           }
