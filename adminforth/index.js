@@ -324,7 +324,7 @@ class AdminForth {
                         body['record'][column.name] = column.fillOnCreate(body['record']);
                     }
                 }
-                if (column.requiredOn.includes('create') && body['record'][column.name] === undefined) {
+                if (column.required?.create && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
                 }
             }
