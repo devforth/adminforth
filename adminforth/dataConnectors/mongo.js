@@ -45,7 +45,7 @@ class MongoConnector {
     }
 
     getPrimaryKey(resource) {
-        for (const col of resource.columns) {
+        for (const col of resource.dataSourceColumns) {
             if (col.primaryKey) {
                 return col.name;
             }

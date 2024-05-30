@@ -225,9 +225,16 @@ class SQLiteConnector {
 
     async createRecord({ resource, record }) {
         const tableName = resource.table;
-        const columns = resource.columns.map((col) => col.name).join(', ');
-        const placeholders = resource.columns.map(() => '?').join(', ');
-        const values = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
+        const columns = Object.keys(record).join(', ');
+        const placeholders = columns.map(() => '?').join(', ');
+        const values = columns.map((colName) => {
+          const col = resource.columns.find((col) => col.name == colName);
+          if (col) {
+            return this.setFieldValue(col, record[colName])
+          } else {
+            return record[colName];
+          }
+        });
         this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`).run(values);
     }
 
