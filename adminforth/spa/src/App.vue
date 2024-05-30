@@ -112,13 +112,12 @@
         </ul>
     </div>
   </aside>
-
   <div class="p-4 sm:ml-64">
     <div class="p-0 dark:border-gray-700 mt-14">
         <RouterView/>     
-        
     </div>
   </div> 
+  <AcceptModal />
     
 </template>
 
@@ -132,6 +131,7 @@ import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import AcceptModal from './components/AcceptModal.vue';
 
 const theme = ref('light');
 
