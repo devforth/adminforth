@@ -249,12 +249,14 @@ class AdminForth {
         method: 'POST',
         path: '/get_record',
         handler: async ({ body }) => {
-            console.log('get_record', body);
             const { resourceId, primaryKey } = body;
             const resource = this.config.resources.find((res) => res.resourceId == resourceId);
             const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
             const connector = this.connectors[resource.dataSource];
-            const record = connector.getRecordByPrimaryKey(resource, primaryKey);
+            const record = await connector.getRecordByPrimaryKey(resource, primaryKey);
+            if (!record) {
+                return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
+            }
             const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
             record._label = labler(record);
             return record;
@@ -297,7 +299,13 @@ class AdminForth {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+
             const connector = this.connectors[resource.dataSource];
+            if (!await connector.getRecordByPrimaryKey(resource, body['recordId'])) {
+                const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+                return { error: `Record with ${primaryKeyColumn.name} ${body['recordId']} not found` };
+            }
+
             await connector.updateRecord({ resource, recordId: body['recordId'], record: body['record']});
             return {
               newRecordId: body['recordId']
