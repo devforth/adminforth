@@ -156,14 +156,18 @@ class MongoConnector {
     async createRecord({ resource, record }) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
-        const newRow = {};
-        for (const [key, value] of Object.entries(record)) {
-            if (resource.columns.find((col) => col.name == key) == undefined) {
-                continue
+        const columns = Object.keys(record);
+        const newRecord = {};
+        for (const colName of columns) {
+            const col = resource.columns.find((col) => col.name == colName);
+            if (col) {
+                newRecord[colName] = this.setFieldValue(col, record[colName]);
+            } else {
+                newRecord[colName] = record[colName];
             }
-            newRow[key] = this.setFieldValue(resource.columns.find((col) => col.name == key), value);
         }
-        await collection.insertOne(newRow);
+
+        await collection.insertOne(newRecord);
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {
