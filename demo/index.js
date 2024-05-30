@@ -276,6 +276,49 @@ const admin = new AdminForth({
         listPageSize: 5, 
     },
     {
+        dataSource: 'db2', table: 'users',
+        resourceId: 'games_users',
+        label: 'Games users',
+        columns: [
+            { 
+              name: 'id', 
+              primaryKey: true,
+              fillOnCreate: ({initialRecord, adminUser}) => uuid(),
+              showIn: ['list', 'filter', 'show'],  // the default is full set
+            },
+            { 
+              name: 'email', 
+              required: true,
+              isUnique: true,
+            },
+            { 
+              name: 'created_at', 
+              type: AdminForth.Types.DATETIME,
+              showIn: ['list', 'filter', 'show'],
+              fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+            },
+            {
+              name: 'role',
+              enum: [
+                { value: 'superadmin', label: 'Super Admin' },
+                { value: 'user', label: 'User' },
+              ]
+            },
+            {
+              name: 'password',
+              virtual: true,  // field will not be persisted into db
+              required: { create: true }, // to show only in create page
+              editingNote: { edit: 'Leave empty to keep password unchanged' },
+    
+              minLength: 8,
+              type: AdminForth.Types.STRING,
+              showIn: ['create', 'edit'], // to show in create and edit pages
+              masked: true, // to show stars in input field
+            }
+        ],
+        listPageSize: 5, 
+    },
+    {
         dataSource: 'db3', table: 'game',
         columns: [
             { name: '_id', primaryKey: true },
@@ -329,6 +372,11 @@ const admin = new AdminForth({
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
+        },
+        {
+          label: 'Games Users',
+          icon: 'flowbite:user-solid',
+          resourceId: 'games_users',
         },
         {
           label: 'Casino Games',
