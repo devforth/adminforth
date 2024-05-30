@@ -103,6 +103,8 @@ class AdminForth {
           }
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
+
+        res.dataSourceColumns = res.columns.filter((col) => !col.virtual);
       });
     }
 
@@ -312,7 +314,7 @@ class AdminForth {
         noAuth: true, // TODO
         method: 'POST',
         path: '/create_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             console.log('create_record', body, this.config.resources);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
@@ -342,7 +344,29 @@ class AdminForth {
                 }
             }
             const connector = this.connectors[resource.dataSource];
-            await connector.createRecord({ resource, record: body['record']});
+
+            const record = body['record'];
+            
+            // execute hook if needed
+            if (resource.hooks?.create?.beforeSave) {
+              const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
+            }
+
+            // remove virtual columns from record
+            for (const column of resource.columns.filter((col) => col.virtual)) {
+              if (record[column.name]) {
+                delete record[column.name];
+              }
+            }
+
+            await connector.createRecord({ resource, record });
             return {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
             }
