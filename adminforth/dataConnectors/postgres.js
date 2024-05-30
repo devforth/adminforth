@@ -250,12 +250,18 @@ class PostgresConnector {
     }
 
     async createRecord({ resource, record }) {
-        // returns id of the created record
         const tableName = resource.table;
-        const columns = resource.columns.map((col) => col.name).join(', ');
-        const values = resource.columns.map((col, i) => `$${i + 1}`).join(', ');
-        const d = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
-        await this.db.query(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`, d);
+        const columns = Object.keys(record);
+        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+        const values = columns.map((colName) => {
+            const col = resource.dataSourceColumns.find((col) => col.name == colName);
+            if (col) {
+                return this.setFieldValue(col, record[colName])
+            } else {
+                return record[colName];
+            }
+        });
+        await this.db.query(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`, values);
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {
