@@ -209,42 +209,42 @@ const admin = new AdminForth({
       ],
       hooks: {
         create: {
-          beforeSave: async (record, adminUser) => {
-            record.password_hash = await AdminForth.utils.hashPassword(record.password);
-            return { record, error: false }
+          beforeSave: async ({ record, adminUser, resource }) => {
+            record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
+            return { ok:true, error: false };
             // if return 'error': , record will not be saved and error will be proxied
           }
         },
         edit: {
-          beforeSave: async (record, adminUser) => {
+          beforeSave: async ({ record, adminUser, resource}) => {
             if (record.password) {
               record.password_hash = await AdminForth.utils.hashPassword(record.password);
             }
-            return { record, error: false }
+            return { ok: true, error: false }
           },
-          beforeDatasourceRequest: async (query, adminUser) => {
-            return { query, error: false }
-          },
-          afterDatasourceResponse: async (response, adminUser) => {
-            return { response, error: false }
-          }
+          // beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
+          //   return { ok: true, error: false }
+          // },
+          // afterDatasourceResponse: async ({ response, adminUser }) => {
+          //   return { ok: true, error: false }
+          // }
         },
-        list: {
-          beforeDatasourceRequest: async (query, adminUser) => {
-            return { query, error: false }
-          },
-          afterDatasourceResponse: async (response, adminUser) => {
-            return { response, error: false }
-          }
-        },
-        show: {
-          beforeDatasourceRequest: async (query, adminUser) => {
-            return { query, error: false }
-          },
-          afterDatasourceResponse: async (response, adminUser) => {
-            return { response, error: false }
-          }
-        },
+        // list: {
+        //   beforeDatasourceRequest: async ({ query, adminUser }) => {
+        //     return { ok: true, error: false }
+        //   },
+        //   afterDatasourceResponse: async ({ response, adminUser }) => {
+        //     return { ok: true, error: false }
+        //   }
+        // },
+        // show: {
+        //   beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
+        //     return { ok: true, error: false }
+        //   },
+        //   afterDatasourceResponse: async ({ response, adminUser, resource }) => {
+        //     return { ok: true, error: false }
+        //   }
+        // },
         
       }
     },

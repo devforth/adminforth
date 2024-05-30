@@ -33,7 +33,7 @@
                       <div class="tooltip-arrow" data-popper-arrow></div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
+                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
                   <Dropdown
                     single
                     v-if="column.enum"
@@ -76,14 +76,27 @@
                   </textarea>
                   <input
                     v-else
-                    :type="!column.masked ? 'text' : 'password'"
+                    :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Text"
                     :value="currentValues[column.name]"
                     @input="setCurrentValue(column.name, $event.target.value)"
                     autocomplete="false"
                     data-lpignore="true"
+                    readonly
+                    onfocus="this.removeAttribute('readonly');"
                   >
+
+                  <button
+                    v-if="column.masked"
+                    type="button"
+                    @click="unmasked[column.name] = !unmasked[column.name]"
+                    class="absolute inset-y-2 top-2 right-6 flex items-center pr-2 z-index-100 focus:outline-none"
+                  >
+                    <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
+                    <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+                  </button>
+
 
 
                   <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
@@ -107,6 +120,7 @@ import { useCoreStore } from '@/stores/core';
 import Dropdown from '@/components/Dropdown.vue';
 import { IconExclamationCircleSolid } from '@iconify-prerendered/vue-flowbite';
 import { initFlowbite } from 'flowbite'
+import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 
 const props = defineProps({
   loading: Boolean,
@@ -114,6 +128,9 @@ const props = defineProps({
   record: Object,
   validating: Boolean,
 });
+
+
+const unmasked = ref({});
 
 const mode = computed(() => props.record  && Object.keys(props.record).length ? 'edit' : 'create');
 
