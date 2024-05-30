@@ -70,28 +70,26 @@ class MongoConnector {
         return value;
       }
     
-    getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
-        return collection.findOne({ [this.getPrimaryKey(resource)]: key })
-            .then((row) => {
-                if (!row) {
-                    return null;
-                }
-                const newRow = {};
-                for (const [key, value] of Object.entries(row)) {
-                    console.log('aVBFAIODHF', Object.entries(row));
-                    console.log('COLUMNS', resource.columns);
-                    const dbKey = resource.columns.find((col) => col.name == key)
-                    if (!dbKey) {
-                        continue // should I continue or throw an error?
-                        throw new Error(`Resource '${resource.table}' has no column '${key}' defined`);
-                    }
-                    newRow[key] = this.getFieldValue(dbKey, value);
-                }
-                console.log('newRow', newRow);
-                return newRow;
-            });
+        const row = await collection.findOne({ [this.getPrimaryKey(resource)]: key });
+        if (!row) {
+            return null;
+        }
+        const newRow = {};
+        for (const [key_1, value] of Object.entries(row)) {
+            console.log('aVBFAIODHF', Object.entries(row));
+            console.log('COLUMNS', resource.columns);
+            const dbKey = resource.columns.find((col) => col.name == key_1);
+            if (!dbKey) {
+                continue; // should I continue or throw an error?
+                throw new Error(`Resource '${resource.table}' has no column '${key_1}' defined`);
+            }
+            newRow[key_1] = this.getFieldValue(dbKey, value);
+        }
+        console.log('newRow', newRow);
+        return newRow;
     }
 
     setFieldValue(field, value) {

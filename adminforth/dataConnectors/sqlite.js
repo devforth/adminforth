@@ -81,7 +81,7 @@ class SQLiteConnector {
       return value;
     }
 
-    getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKey(resource, key) {
         const columns = resource.columns.map((col) => col.name).join(', ');
         const tableName = resource.table;
         const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = ?`);
