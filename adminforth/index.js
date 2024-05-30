@@ -272,7 +272,9 @@ class AdminForth {
             }
             for (const column of resource.columns) {
                 if (column.fillOnCreate) {
-                    body['record'][column.name] = column.fillOnCreate(body['record']);
+                    if (body['record'][column.name] === undefined) {
+                        body['record'][column.name] = column.fillOnCreate(body['record']);
+                    }
                 }
                 if (column.required && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
