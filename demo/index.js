@@ -110,7 +110,7 @@ const admin = new AdminForth({
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
-          fillOnCreate: (initialRecord, adminUser) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
+          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
           name: 'title',
@@ -123,7 +123,7 @@ const admin = new AdminForth({
           name: 'created_at',
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
-          fillOnCreate: (initialRecord, adminUser) => (new Date()).toISOString(),
+          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         { 
           name: 'price',
@@ -175,18 +175,19 @@ const admin = new AdminForth({
         { 
           name: 'id', 
           primaryKey: true,
-          fillOnCreate: (initialRecord, adminUser) => uuid(),
+          fillOnCreate: ({initialRecord, adminUser}) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
         },
         { 
           name: 'email', 
           required: true,
+          isUnique: true,
         },
         { 
           name: 'created_at', 
           type: AdminForth.Types.DATETIME,
           showIn: ['list', 'filter', 'show'],
-          fillOnCreate: (initialRecord, adminUser) => (new Date()).toISOString(),
+          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         {
           name: 'role',
@@ -255,7 +256,7 @@ const admin = new AdminForth({
         columns: [
             {
                 name: 'id', readOnly: true, required: false, 
-                label: 'Identifier', fillOnCreate: (initialRecord) => uuid(),
+                label: 'Identifier', fillOnCreate: ({initialRecord}) => uuid(),
                 showIn: ['list', 'filter', 'show'],  // the default is full set
             },
             { name: 'name', required: true, isUnique: true },

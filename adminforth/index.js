@@ -324,7 +324,9 @@ class AdminForth {
             for (const column of resource.columns) {
                 if (column.fillOnCreate) {
                     if (body['record'][column.name] === undefined) {
-                        body['record'][column.name] = column.fillOnCreate(body['record']);
+                        body['record'][column.name] = column.fillOnCreate({
+                            initialRecord: body['record'], adminUser
+                         });
                     }
                 }
                 if (column.required?.create && body['record'][column.name] === undefined) {
