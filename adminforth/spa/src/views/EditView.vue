@@ -11,6 +11,7 @@
 
       <button  @click="saveRecord"
         class="flex items-center py-1 px-3 mb-2 text-sm font-medium text-red-600 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-red-500 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        :disabled="saving || (validating && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
         Save
@@ -25,6 +26,8 @@
       :record="coreStore.record"
       :resourceColumns="coreStore.resourceColumns"
       @update:record="onUpdateRecord"
+      @update:isValid="isValid = $event"
+      :validating="validating"
     >
     </ResourceForm>
   </div>
@@ -43,6 +46,9 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { callAdminForthApi } from '@/utils';
 
 const coreStore = useCoreStore();
+
+const isValid = ref(false);
+const validating = ref(false);
 
 const route = useRoute();
 

@@ -17,6 +17,8 @@
           </div>
         </div>
         <div class="flex items-center">
+          
+
             <div class="flex items-center ms-3">
               <div>
                 <button type="button" class="flex text-sm bg-gray-100 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded="false" data-dropdown-toggle="dropdown-user">
@@ -40,12 +42,17 @@
                   <li>
                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Dashboard</a>
                   </li>
-                  <li>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Settings</a>
+                  <li >
+                    <span @click="toggleTheme" class=" cursor-pointer flex items-center	 gap-1 block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">
+                      {{ theme === 'dark' ? 'Light' : 'Dark' }}
+                      <IconMoonSolid class="w-5 h-5 text-blue-300
+                      " v-if="theme !== 'dark'"/>
+                      <IconSunSolid class="w-5 h-5 text-yellow-300
+                      " v-else/>
+                      mode
+                    </span>
                   </li>
-                  <li>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Earnings</a>
-                  </li>
+                  
                   <li>
                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
                   </li>
@@ -124,6 +131,14 @@ import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
+import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+
+const theme = ref('light');
+
+function toggleTheme() {
+  theme.value = theme.value === 'light' ? 'dark' : 'light';
+  document.documentElement.classList.toggle('dark');
+}
 
 const coreStore = useCoreStore();
 

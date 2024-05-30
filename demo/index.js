@@ -1,7 +1,8 @@
+import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from '../adminforth/index.js';
-import betterSqlite3 from 'better-sqlite3';
-import { AdminForthTypes } from '../adminforth/types.js';
+import { v1 as uuid } from 'uuid';
+
 
 const ADMIN_BASE_URL = '/bo';
 
@@ -172,14 +173,19 @@ const admin = new AdminForth({
       label: 'Users',
       columns: [
         { 
-          name: 'id', primaryKey: true 
+          name: 'id', 
+          primaryKey: true,
+          fillOnCreate: (initialRecord, adminUser) => uuid(),
+          showIn: ['list', 'filter', 'show'],  // the default is full set
         },
         { 
-          name: 'email', required: true 
+          name: 'email', 
+          required: true,
         },
         { 
           name: 'created_at', 
           type: AdminForth.Types.DATETIME,
+          showIn: ['list', 'filter', 'show'],
           fillOnCreate: (initialRecord, adminUser) => (new Date()).toISOString(),
         },
         {
@@ -205,10 +211,41 @@ const admin = new AdminForth({
         create: {
           beforeSave: async (record, adminUser) => {
             record.password_hash = await AdminForth.utils.hashPassword(record.password);
-            return { record }
+            return { record, error: false }
             // if return 'error': , record will not be saved and error will be proxied
           }
-        }
+        },
+        edit: {
+          beforeSave: async (record, adminUser) => {
+            if (record.password) {
+              record.password_hash = await AdminForth.utils.hashPassword(record.password);
+            }
+            return { record, error: false }
+          },
+          beforeDatasourceRequest: async (query, adminUser) => {
+            return { query, error: false }
+          },
+          afterDatasourceResponse: async (response, adminUser) => {
+            return { response, error: false }
+          }
+        },
+        list: {
+          beforeDatasourceRequest: async (query, adminUser) => {
+            return { query, error: false }
+          },
+          afterDatasourceResponse: async (response, adminUser) => {
+            return { response, error: false }
+          }
+        },
+        show: {
+          beforeDatasourceRequest: async (query, adminUser) => {
+            return { query, error: false }
+          },
+          afterDatasourceResponse: async (response, adminUser) => {
+            return { response, error: false }
+          }
+        },
+        
       }
     },
     {
@@ -216,7 +253,11 @@ const admin = new AdminForth({
         resourceId: 'games',
         label: 'Games',
         columns: [
-            { name: 'id', label: 'Identifier'},
+            {
+                name: 'id', readOnly: true, required: false, 
+                label: 'Identifier', fillOnCreate: (initialRecord) => uuid(),
+                showIn: ['list', 'filter', 'show'],  // the default is full set
+            },
             { name: 'name', required: true },
             { name: 'created_by', required: true,
                 enum: [
@@ -226,7 +267,7 @@ const admin = new AdminForth({
                     
                 ]
             },
-            { name: 'release_date', },
+            { name: 'release_date', fillOnCreate: (initialRecord) => (new Date()).toISOString() },
             { name: 'description' },
             { name: 'price' },
             { name: 'enabled' },

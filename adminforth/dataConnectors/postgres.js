@@ -103,9 +103,9 @@ class PostgresConnector {
                 field.type = 'unknown'
             }
             field._baseTypeDebug = baseType;
-            field.required = !row.notnull == 1;
             field.primaryKey = row.pk == 1;
             field.default = row.dflt_value;
+            field.required = row.notnull && !row.dflt_value;
             fieldTypes[row.name] = field
             });
             return fieldTypes;
