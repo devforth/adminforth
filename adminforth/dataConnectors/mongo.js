@@ -166,19 +166,9 @@ class MongoConnector {
         await collection.insertOne(newRow);
     }
 
-    async updateRecord({ resource, recordId, record }) {
-        const tableName = resource.table;
-        const primaryKey = this.getPrimaryKey(resource);
-
-        const newValues = {};
-        for (const col of resource.columns) {
-            if (record[col.name] !== undefined) {
-                newValues[col.name] = this.setFieldValue(col, record[col.name]);
-            }
-        }
-
-        const collection = this.db.db().collection(tableName);
-        await collection.updateOne({ [primaryKey]: recordId }, { $set: newValues });
+    async updateRecord({ resource, recordId, record, newValues }) {
+        const collection = this.db.db().collection(resource.table);
+        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }) {
