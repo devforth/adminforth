@@ -16,7 +16,8 @@ class AdminForth {
   static Types = AdminForthTypes;
 
   static Utils = {
-    generatePasswordHash: (password) => {
+    generatePasswordHash: async (password) => {
+      return await Auth.generatePasswordHash(password);
     }
   }
 
@@ -104,7 +105,6 @@ class AdminForth {
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
 
-        res.dataSourceColumns = res.columns.filter((col) => !col.virtual);
       });
     }
 
@@ -121,16 +121,19 @@ class AdminForth {
     }
   }
 
-  postProcessColumnAfterDiscover(column) {
-    // if db/user says column is required in boolean, exapd
-    if (typeof column.required === 'boolean') {
-      column.required = { create: column.required, edit: column.required };
-    }
+  postProcessAfterDiscover(resource) {
+    resource.columns.forEach((column) => {
+      // if db/user says column is required in boolean, exapd
+      if (typeof column.required === 'boolean') {
+        column.required = { create: column.required, edit: column.required };
+      }
 
-    // same for editingNote
-    if (typeof column.editingNote === 'string') {
-      column.editingNote = { create: column.editingNote, edit: column.editingNote };
-    }
+      // same for editingNote
+      if (typeof column.editingNote === 'string') {
+        column.editingNote = { create: column.editingNote, edit: column.editingNote };
+      }
+    })
+    resource.dataSourceColumns = resource.columns.filter((col) => !col.virtual);
   }
 
   async discoverDatabases() {
@@ -170,11 +173,9 @@ class AdminForth {
         }
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
-        
-        this.postProcessColumnAfterDiscover(res.columns[i]);
-        
-
       });
+
+      this.postProcessAfterDiscover(res);
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
