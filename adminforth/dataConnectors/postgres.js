@@ -182,7 +182,7 @@ class PostgresConnector {
           throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
         }
       }
-      let totalCounter = filters.length == 0 ? 0 : 1;
+      let totalCounter = 1;
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
         let placeholder = '$'+(totalCounter);
         let field = f.field;
@@ -215,10 +215,9 @@ class PostgresConnector {
         }
       }) : [];
 
-      const limitOffset = `LIMIT $${totalCounter + 1} OFFSET $${totalCounter + 2}`; 
+      const limitOffset = `LIMIT $${totalCounter} OFFSET $${totalCounter + 1}`; 
       const d = [...filterValues, limit, offset];
-
-    const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d);
       const rows = stmt.rows;
       

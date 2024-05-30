@@ -258,7 +258,7 @@ const admin = new AdminForth({
                 label: 'Identifier', fillOnCreate: (initialRecord) => uuid(),
                 showIn: ['list', 'filter', 'show'],  // the default is full set
             },
-            { name: 'name', required: true },
+            { name: 'name', required: true, isUnique: true },
             { name: 'created_by', required: true,
                 enum: [
                     { value: 'CD Projekt Red', label: 'CD Projekt Red' },
