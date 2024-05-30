@@ -2,12 +2,12 @@
 import Auth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
-import { guessLabelFromName } from './modules/utils.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
+import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 
-import { AdminForthTypes } from './types.js';
+import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
@@ -326,6 +326,19 @@ class AdminForth {
                 }
                 if (column.required?.create && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
+                }
+
+                if (column.isUnique) {
+                    const existingRecord = await this.connectors[resource.dataSource].getData({
+                        resource,
+                        filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value: body['record'][column.name] }],
+                        limit: 1,
+                        sort: [],
+                        offset: 0
+                    });
+                    if (existingRecord.data.length > 0) {
+                        return { error: `Record with ${column.name} ${body['record'][column.name]} already exists` };
+                    }
                 }
             }
             const connector = this.connectors[resource.dataSource];
