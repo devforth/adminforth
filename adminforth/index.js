@@ -346,15 +346,26 @@ class AdminForth {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
 
+            const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
-            if (!await connector.getRecordByPrimaryKey(resource, body['recordId'])) {
+            if (!await connector.getRecordByPrimaryKey(resource, recordId)) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-                return { error: `Record with ${primaryKeyColumn.name} ${body['recordId']} not found` };
+                return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
 
-            await connector.updateRecord({ resource, recordId: body['recordId'], record: body['record']});
+            const newValues = {};
+            const record = body['record'];
+            for (const col of resource.columns) {
+                if (record[col.name] !== undefined) {
+                    newValues[col.name] = connector.setFieldValue(col, record[col.name]);
+                }
+            }
+            if (Object.keys(newValues).length > 0) {
+                await connector.updateRecord({ resource, recordId, record, newValues});
+            }
+            
             return {
-              newRecordId: body['recordId']
+              newRecordId: recordId
             }
         }
     });
