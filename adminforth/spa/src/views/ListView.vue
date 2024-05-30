@@ -195,6 +195,7 @@
               <button
                 class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                 :data-tooltip-target="`tooltip-delete-${rowI}`"
+                @click="showDeleteModal(row)"
               >
                 <IconTrashBinSolid class="w-5 h-5 me-2" />
               </button>
@@ -274,6 +275,7 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
+import { useModalStore } from '@/stores/modal';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { initFlowbite } from 'flowbite'
 
@@ -292,6 +294,7 @@ import Filters from '@/components/Filters.vue';
 
 
 const coreStore = useCoreStore();
+const modalStore = useModalStore();
 
 const route = useRoute();
 const checkboxes = ref([]);
@@ -346,6 +349,38 @@ async function getList() {
 }
 
 
+function showDeleteModal (row){
+  
+  
+  modalStore.setModalContent({
+    content: 'Are you sure you want to delete this item?',
+    acceptText: 'Delete',
+    cancelText: 'Cancel',
+  });
+  modalStore.setOnAcceptFunction(()=>{return deleteRecord(row)})
+  console.log('row', row);
+  modalStore.togleModal();
+
+} 
+
+async function deleteRecord(row) {
+  console.log('delete record', row);
+
+
+  await callAdminForthApi({
+    path: '/delete_record',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId,
+      primaryKey: row._primaryKeyValue,
+      recordId:row.id
+    }
+  });
+  await getList();
+  modalStore.resetmodalState()
+
+}
+
 async function init() {
   await coreStore.fetchColumns({
     resourceId: route.params.resourceId
@@ -362,7 +397,7 @@ async function init() {
 }
 onMounted(async () => {
   await init();
-});
+}); 
 
 // on route param change 
 watch(() => route.params.resourceId, async () => {

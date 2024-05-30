@@ -414,7 +414,6 @@ class AdminForth {
         method: 'POST',
         path: '/delete_record',
         handler: async ({ body }) => {
-            console.log('delete_record', body);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
