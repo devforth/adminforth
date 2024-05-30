@@ -137,21 +137,19 @@ class PostgresConnector {
         }
     }
 
-    getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
         const columns = resource.columns.map((col) => col.name).join(', ');
-        return this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key])
-            .then((stmt) => {
-                const row = stmt.rows[0];
-                if (!row) {
-                    return null;
-                }
-                const newRow = {};
-                for (const [key, value] of Object.entries(row)) {
-                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
-                }
-                return newRow;
-            });
+        const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key]);
+        const row = stmt.rows[0];
+        if (!row) {
+            return null;
+        }
+        const newRow = {};
+        for (const [key_1, value] of Object.entries(row)) {
+            newRow[key_1] = this.getFieldValue(resource.columns.find((col_1) => col_1.name == key_1), value);
+        }
+        return newRow;
     }
 
     setFieldValue(field, value) {
