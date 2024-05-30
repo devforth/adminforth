@@ -95,7 +95,7 @@ class PostgresConnector {
                 field.type = AdminForthTypes.FLOAT;
                 field._underlineType = 'real';
 
-            } else if (baseType == 'date') {
+            } else if (baseType.includes('date') || baseType.includes('time')) {
                 field.type = AdminForthTypes.DATETIME;
                 field._underlineType = 'timestamp';
 
@@ -227,6 +227,7 @@ class PostgresConnector {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
+            console.log('key', key, value, resource.columns.find((col) => col.name == key));
               newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
           }
           return newRow;
