@@ -56,7 +56,7 @@ class SQLiteConnector {
     }
 
     getPrimaryKey(resource) {
-        for (const col of resource.columns) {
+        for (const col of resource.dataSourceColumns) {
             if (col.primaryKey) {
                 return col.name;
             }
@@ -71,9 +71,9 @@ class SQLiteConnector {
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           return dayjs.unix(+value).toISOString();
         } else if (field._underlineType == 'varchar') {
-          return dayjs.unix(+value).toISOString();
+          return dayjs(value).toISOString();
         } else {
-          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+          throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field "${field.name}"`);
         }
       } else if (field.type == AdminForthTypes.BOOLEAN) {
         return !!value;
@@ -82,7 +82,7 @@ class SQLiteConnector {
     }
 
     async getRecordByPrimaryKey(resource, key) {
-        const columns = resource.columns.map((col) => col.name).join(', ');
+        const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
         const tableName = resource.table;
         const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = ?`);
         const row = stmt.get(key);
@@ -91,7 +91,7 @@ class SQLiteConnector {
         }
         const newRow = {};
         for (const [key, value] of Object.entries(row)) {
-            newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+            newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
         }
         return newRow;
     }
@@ -135,7 +135,7 @@ class SQLiteConnector {
     
 
     getData({ resource, limit, offset, sort, filters }) {
-      const columns = resource.columns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
+      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
       const tableName = resource.table;
       
       for (const filter of filters) {
@@ -143,9 +143,8 @@ class SQLiteConnector {
           throw new Error(`Operator ${filter.operator} is not allowed`);
         }
 
-        console.log('resource.c', resource.columns);
-        if (!resource.columns.some((col) => col.name == filter.field)) {
-          throw new Error(`Field "${filter.field}" is not in resource ${resource.resourceId}, available fields: ${resource.columns.map((col) => '"'+col.name+'"').join(', ')}`);
+        if (!resource.dataSourceColumns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field "${filter.field}" is not in resource ${resource.resourceId}, available fields: ${resource.dataSourceColumns.map((col) => '"'+col.name+'"').join(', ')}`);
         }
       }
 
@@ -201,7 +200,7 @@ class SQLiteConnector {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
-            newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+            newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
           }
           return newRow;
         }),
@@ -225,17 +224,17 @@ class SQLiteConnector {
 
     async createRecord({ resource, record }) {
         const tableName = resource.table;
-        const columns = Object.keys(record).join(', ');
+        const columns = Object.keys(record);
         const placeholders = columns.map(() => '?').join(', ');
         const values = columns.map((colName) => {
-          const col = resource.columns.find((col) => col.name == colName);
+          const col = resource.dataSourceColumns.find((col) => col.name == colName);
           if (col) {
             return this.setFieldValue(col, record[colName])
           } else {
             return record[colName];
           }
         });
-        this.db.prepare(`INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`).run(values);
+        this.db.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`).run(values);
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {

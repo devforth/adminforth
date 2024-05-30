@@ -210,7 +210,7 @@ const admin = new AdminForth({
       hooks: {
         create: {
           beforeSave: async ({ record, adminUser, resource }) => {
-            record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
+            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             return { ok:true, error: false };
             // if return 'error': , record will not be saved and error will be proxied
           }
@@ -218,7 +218,7 @@ const admin = new AdminForth({
         edit: {
           beforeSave: async ({ record, adminUser, resource}) => {
             if (record.password) {
-              record.password_hash = await AdminForth.utils.hashPassword(record.password);
+              record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
             }
             return { ok: true, error: false }
           },
