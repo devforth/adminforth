@@ -266,12 +266,9 @@ class PostgresConnector {
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {
-        const columns = Object.keys(newValues).map((col) => col).join(', ');
-        const placeholders = Object.keys(newValues).map((_, i) => `$${i + 1}`).join(', ');  // we can't use '?' in postgres, so we need to use numbered placeholders
         const values = [...Object.values(newValues), recordId];
-
-        console.log(`UPDATE ${resource.table} SET ${columns} = ${placeholders} WHERE ${this.getPrimaryKey(resource)} = $${values.length}`, values);
-        await this.db.query(`UPDATE ${resource.table} SET ${columns} = ${placeholders} WHERE ${this.getPrimaryKey(resource)} = $${values.length}`, values);
+        const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `${col} = $${i + 1}`).join(', ');
+        await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = $${values.length}`, values);
     }
 
     async deleteRecord({ resource, recordId }) {
