@@ -54,6 +54,7 @@ const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
+  // deleteConfirmation: true,
   dataSources: [
     {
       id: 'maindb',
@@ -164,7 +165,24 @@ const admin = new AdminForth({
         },
         
       ],
-      listPageSize: 20, 
+      listPageSize: 20,
+      options:{
+        bulkActions: [{
+          name: 'mark_as_listed',
+          label: 'Mark as listed',
+          icon: 'typcn:archive',
+          state:'active',
+          confirm: 'Are you sure you want to mark all selected apartments as listed?',
+          action: function ({selectedIds, adminUser}) {
+            const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+            stmt.run(...selectedIds);
+            return { ok: true, error: false, message: 'Marked as listed' }
+          }
+        }
+        ],
+        allowDelete: true,
+      }
+
     },
     { 
       dataSource: 'maindb', 

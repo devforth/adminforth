@@ -132,6 +132,7 @@ import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import AcceptModal from './components/AcceptModal.vue';
+import {getIcon} from '@/utils';
 
 const theme = ref('light');
 
@@ -142,12 +143,7 @@ function toggleTheme() {
 
 const coreStore = useCoreStore();
 
-function getIcon(icon: string) {
-  // icon format is "feather:icon-name". We need to get IconName in pascal case
-  const [iconSet, iconName] = icon.split(':');
-  const compName = 'Icon' + iconName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-  return resolveComponent(compName);
-}
+
 
 // initialize components based on data attribute selectors
 onMounted(async () => {

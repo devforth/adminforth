@@ -97,6 +97,17 @@ class CodeInjector {
     };
     collectIcons(this.adminforth.config.menu);
 
+    //collect all 'icon' fields from resources bulkActions
+    this.adminforth.config.resources.forEach((resource) => {
+      if (resource.options?.bulkActions) {
+        resource.options.bulkActions.forEach((action) => {
+          if (action.icon) {
+            icons.push(action.icon);
+          }
+        });
+      }
+    });
+
     const uniqueIcons = Array.from(new Set(icons));
 
     // icons are collectionName:iconName. Get list of all unique collection names:
