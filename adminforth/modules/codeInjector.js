@@ -61,6 +61,31 @@ class CodeInjector {
   async prepareSources({ filesUpdated, verbose = false }) {
     const spaTmpPath = path.join(__dirname, 'spa_tmp');
 
+    const customFiles = [];
+    const icons = [];
+    let routes = '';
+
+    const collectAssetsFromMenu = (menu) => {
+      menu.forEach((item) => {
+        if (item.icon) {
+          icons.push(item.icon);
+        }
+        if (item.component) {
+          customFiles.push(item.component);
+          routes += `{
+            path: '${item.path}',
+            name: '${item.path}',
+            component: import('@/custom/${item.component}'),
+          },\n`
+        }
+        if (item.children) {
+          collectAssetsFromMenu(item.children);
+        }
+      });
+    };
+    collectAssetsFromMenu(this.adminforth.config.menu);
+
+
     // create spa_tmp folder, or ignore if it exists
     try {
       await fs.promises.mkdir(spaTmpPath);
@@ -81,21 +106,16 @@ class CodeInjector {
           return !src.includes('/node_modules') && !src.includes('/dist');
         },
       });
+
+      // copy custom files
+      await Promise.all(customFiles.map(async (file) => {
+        const src = path.join(file);
+        const dest = path.join(spaTmpPath, 'src', 'custom', file);
+        await fsExtra.copy(src, dest);
+      }))
     }
 
-    // collect all 'icon' fields from config
-    const icons = [];
-    const collectIcons = (menu) => {
-      menu.forEach((item) => {
-        if (item.icon) {
-          icons.push(item.icon);
-        }
-        if (item.children) {
-          collectIcons(item.children);
-        }
-      });
-    };
-    collectIcons(this.adminforth.config.menu);
+    
 
     //collect all 'icon' fields from resources bulkActions
     this.adminforth.config.resources.forEach((resource) => {
@@ -139,9 +159,15 @@ class CodeInjector {
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH IMPORTS */', iconImports + '\n');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n');
-
     await fs.promises.writeFile(appVuePath, appVueContent);
 
+
+    /* generate custom rotes */
+    const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
+    let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
+    routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMIFORTH ROUTES */', routes);
+    await fs.promises.writeFile(routerVuePath, routerVueContent);
+    
 
     /* hash checking */
     const packageLockPath = path.join(spaTmpPath, 'package-lock.json');

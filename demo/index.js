@@ -55,6 +55,17 @@ const admin = new AdminForth({
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
   // deleteConfirmation: true,
+  rootUser: {
+    username: 'adminforth',
+    password: 'adminforth',
+  },
+  auth: {
+    resourceId: 'users',  // resource for getting user
+    usernameField: 'email',
+    passwordHashField: 'password_hash',
+    userFullNameField: 'fullName', // optional
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
   dataSources: [
     {
       id: 'maindb',
@@ -377,6 +388,13 @@ const admin = new AdminForth({
   ],
   menu: [
     {
+      label: 'Dashboard',
+      icon: 'flowbite:chart-pie-solid',
+      component: './custom/Dash.vue',
+      homepage: true,
+      path: '/dashboard',
+    },
+    {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
       open: true,
@@ -385,6 +403,7 @@ const admin = new AdminForth({
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
+          // homepage: true,
         },
         {
           label: 'Games',
@@ -432,18 +451,6 @@ const port = 3000;
 
 admin.express.serve(app, express)
 admin.discoverDatabases();
-
-app.get(
-  '/api/custom_data', 
-  admin.express.authorize(
-    (req, res) => {
-
-      res.json({
-        number: 124,
-      })
-    }
-  )
-)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

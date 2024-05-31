@@ -15,6 +15,11 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue')
+    },
+    {
       path: '/resource/:resourceId',
       component: ResourceParent,
       name: 'resource',
@@ -41,6 +46,7 @@ const router = createRouter({
         },
       ]
     }, 
+    /* IMPORTANT:ADMIFORTH ROUTES */
   ]
 })
 
