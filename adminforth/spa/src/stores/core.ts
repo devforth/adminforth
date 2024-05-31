@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 
@@ -11,6 +11,7 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumns = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
+  const user = ref(null);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -23,6 +24,7 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
+    user.value = resp.user;
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {
@@ -62,10 +64,36 @@ export const useCoreStore = defineStore('core', () => {
     }
   }
 
+  async function getPublicConfig() {
+    const res = await callAdminForthApi({
+      path: '/get_public_config',
+      method: 'GET',
+    });
+    config.value = {...config.value, ...res};
+  }
+
+  const username = computed(() => {
+    const usernameField = config.value.usernameField;
+    return user.value && user.value[usernameField];
+  });
+
+  const userFullname = computed(() => {
+    const userFullnameField = config.value.userFullnameField;
+    return user.value && user.value[userFullnameField];
+  })
+
 
   return { 
     config,
     resourceById, 
     menu, 
-    fetchMenuAndResource, fetchRecord, record, resourceColumns, fetchColumns, resourceColumnsError}
+    username,
+    userFullname,
+    getPublicConfig,
+    fetchMenuAndResource, 
+    fetchRecord, 
+    record, 
+    resourceColumns, 
+    fetchColumns, 
+    resourceColumnsError}
 })

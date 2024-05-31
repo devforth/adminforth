@@ -32,13 +32,20 @@ class AdminForthAuth {
     return jwt.sign(payload, secret, { expiresIn });
   }
 
-  verify(jwt) {
+  verify(jwtToken) {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
       throw new Error('ADMINFORTH_SECRET environment not set');
     }
-    const decoded = jwt.verify(jwt, secret);
+    try {
+      // verify JWT token
+      const decoded = jwt.verify(jwtToken, secret);
+      return decoded;
+    } catch (err) {
+      console.error('Failed to verify JWT token', err);
+      return null;
+    }
     return decoded;
   }
 
