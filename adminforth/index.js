@@ -388,7 +388,8 @@ class AdminForth {
 
             const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
-            if (!await connector.getRecordByPrimaryKey(resource, recordId)) {
+            const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
+            if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
@@ -396,7 +397,7 @@ class AdminForth {
             const newValues = {};
             const record = body['record'];
             for (const col of resource.columns) {
-                if (record[col.name] !== undefined) {
+                if (record[col.name] !== oldRecord[col.name]) {
                     newValues[col.name] = connector.setFieldValue(col, record[col.name]);
                 }
             }
