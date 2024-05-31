@@ -46,7 +46,6 @@ class AdminForthAuth {
       console.error('Failed to verify JWT token', err);
       return null;
     }
-    return decoded;
   }
 
   static async generatePasswordHash(password) {

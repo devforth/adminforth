@@ -93,9 +93,9 @@ onMounted(() => {
     updateFromProps();
   });
 
+  addClickListener();
+
 });
-
-
 
 const filteredItems = computed(() => {
   return props.options.filter(item =>
@@ -145,9 +145,6 @@ const toogleItem = (item) => {
 
 };
 
-onMounted(() => {
-  addClickListener();
-});
 
 onUnmounted(() => {
   removeClickListener();

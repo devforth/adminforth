@@ -1,4 +1,5 @@
 {
+  "ext": "js,vue",
   "watch": ["../adminforth", "."],
-  "ignore": ["../adminforth/node_modules", "../adminforth/spa", "../adminforth/spa_tmp"]
+  "ignore": ["../adminforth/node_modules/**/*", "../adminforth/spa/**/*", "../adminforth/spa_tmp/**/*"]
 }
