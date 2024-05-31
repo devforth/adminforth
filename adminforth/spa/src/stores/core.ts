@@ -1,7 +1,22 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
+import router from '@/router';
 
+async function findHomepage(menu) {
+  for (const item of menu) {
+    if (item.homepage) {
+      return item;
+    }
+    if (item.children) {
+      const res = findHomepage(item.children);
+      if (res) {
+        return res;
+      }
+    }
+  }
+  return null;
+}
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
@@ -25,6 +40,24 @@ export const useCoreStore = defineStore('core', () => {
     }, {});
     config.value = resp.config;
     user.value = resp.user;
+
+    // find homepage:true in menu recuresively
+    const homepage = await findHomepage(menu.value);
+    console.log('🏠 homepage', homepage);
+    if (homepage) {
+      if (homepage.resourceId) {
+        // redirect to homepage
+        console.log('🏠 1redirecting to homepage', router.currentRoute.value.name, router.currentRoute.value.params.resourceId  );
+        if (router.currentRoute.value.name !== 'resource-list' ||  router.currentRoute.value.params.resourceId !== homepage.resourceId) {
+          // only redirect if not already on resource
+          console.log('🏠 redirecting to homepage', homepage.resourceId);
+          router.push({ name: 'resource-list', params: { resourceId: homepage.resourceId } });
+        }
+      } else {
+        // redirect to path
+        router.push(homepage.path);
+      }
+    }
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {
