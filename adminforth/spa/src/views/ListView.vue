@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <Filters :columns="coreStore.resourceColumns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
-    
+
     <BreadcrumbsWithButtons>
       <button @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"

@@ -133,13 +133,13 @@ class ExpressServer {
   }
 
   authorize(handler) {
-    return (req, res, next) => {
-      // read ADMINFORTH_AUTH cookie
-
-      const cookies = parseExpressCookie(req);
-      const jwt = cookies.ADMINFORTH_AUTH;
+    return async (req, res, next) => {
+      const cookies = await parseExpressCookie(req);
+      console.log('cookies', cookies);
+      const jwt = cookies['adminforth_jwt'];
       if (!jwt) {
         res.status(401).send('Unauthorized by AdminForth');
+        return
       }
       const adminforthUser = this.adminforth.auth.verify(jwt);
       if (!adminforthUser) {
@@ -171,8 +171,21 @@ class ExpressServer {
       const query = req.query;
       const adminUser = req.adminUser;
       const headers = req.headers;
+      const cookies = await parseExpressCookie(req);
 
-      const input = { body, query, adminUser, headers, _raw_express_req: req, _raw_express_res: res};
+      const response = {
+        headers: {},
+        status: 200,
+        message: undefined,
+        setHeader(name, value) {
+          this.headers[name] = value;
+        },
+        setStatus(code, message) {
+          this.status = code;
+          this.message = message;
+        }
+      };
+      const input = { body, query, headers, cookies, response, _raw_express_req: req, _raw_express_res: res};
 
       let output;
       try {
@@ -185,11 +198,15 @@ class ExpressServer {
         res.status(500).send('Internal server error');
         return;
       }
-      res.json(output);
-      output?.headers?.forEach((value, name) => {
-        res.setHeader(name, value);
+      Object.keys(response.headers).forEach((name) => {
+        res.setHeader(name, response.headers[name]);
       })
-      res.status(output.status || 200);
+      const resp = res.status(response.status);
+      if (response.message) {
+        resp.send(response.message);
+        return;
+      }
+      res.json(output);
     }
 
     console.log(`Adding endpoint ${method} ${fullPath}`);

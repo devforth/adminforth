@@ -11,7 +11,6 @@ import {v1 as uuid} from 'uuid';
 
 import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 
-
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
 class AdminForth {
@@ -35,19 +34,40 @@ class AdminForth {
     this.express = new ExpressServer(this);
     this.auth = new Auth();
     this.codeInjector = new CodeInjector(this);
-
     this.connectors = {};
     this.statuses = {}
-    
   }
 
   validateConfig() {
+    if (this.config.rootUser) {
+      if (!this.config.rootUser.username) {
+        throw new Error('rootUser.username is required');
+      }
+      if (!this.config.rootUser.password) {
+        throw new Error('rootUser.password is required');
+      }
+
+      console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config before going to production\n');
+    }
+
+    if (this.config.auth) {
+      if (!this.config.auth.resourceId) {
+        throw new Error('No config.auth.resourceId defined');
+      }
+      if (!this.config.auth.passwordHashField) {
+        throw new Error('No config.auth.passwordHashField defined');
+      }
+      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+      if (!userResource) {
+        throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
+      }
+    }
+
+
     const errors = [];
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
-    console.log('🙂 this.config', this.config);
-
     if (!this.config.brandName) {
       this.config.brandName = 'AdminForth';
     }
@@ -142,6 +162,34 @@ class AdminForth {
           bulkActions = newBulkActions;
         }
       });
+
+      if (!this.config.menu) {
+        errors.push('No config.menu defined');
+      }
+
+      // check if there is only one homepage: true in menu, recursivly
+      let homepages = 0;
+      const browseMenu = (menu) => {
+        menu.forEach((item) => {
+          if (item.component && item.resourceId) {
+            errors.push(`Menu item cannot have both component and resourceId: ${JSON.stringify(item)}`);
+          }
+          if (item.component && !item.path) {
+            errors.push(`Menu item with component must have path : ${JSON.stringify(item)}`);
+          }
+
+          if (item.homepage) {
+            homepages++;
+            if (homepages > 1) {
+              errors.push('There must be only one homepage: true in menu, found second one in ' + JSON.stringify(item) );
+            }
+          }
+          if (item.children) {
+            browseMenu(item.children);
+          }
+        });
+      };
+
     }
 
     // check for duplicate resourceIds and show which ones are duplicated
@@ -240,11 +288,114 @@ class AdminForth {
 
   setupEndpoints(server) {
     server.endpoint({
-      noAuth: true, // TODO
+      noAuth: true,
+      method: 'POST',
+      path: '/login',
+      handler: async ({ body, response }) => {
+        const { username, password } = body;
+        let token;
+        if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
+          token = this.auth.issueJWT({ username, pk: null  });
+        } else {
+          // get resource from db
+          if (!this.config.auth) {
+            throw new Error('No config.auth defined');
+          }
+          const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+
+          const user = await this.connectors[userResource.dataSource].getData({
+            resource: userResource,
+            filters: [
+              { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+            ],
+            limit: 1,
+            offset: 0,
+            sort: [],
+          });
+
+          const INVALID_MESSAGE = 'Invalid username or password';
+          if (!user.data.length) {
+            return { error: INVALID_MESSAGE };
+          }
+
+          const userRecord = user.data[0];
+          const passwordHash = userRecord[this.config.auth.passwordHashField];
+          const valid = await Auth.verifyPassword(password, passwordHash);
+          if (valid) {
+            token = this.auth.issueJWT({ 
+              username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
+            });
+          } else {
+            return { error: INVALID_MESSAGE };
+          }
+        }
+
+        response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+        return { ok: true };
+      },
+    });
+
+    server.endpoint({
+        noAuth: true,
+        method: 'POST',
+        path: '/logout',
+        handler: async ({ response }) => {
+          response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+          return { ok: true };
+        },
+    })
+
+    server.endpoint({
+      noAuth: true,
+      method: 'GET',
+      path: '/get_public_config',
+      handler: async ({ body }) => {
+
+        // find resource
+        if (!this.config.auth) {
+          throw new Error('No config.auth defined');
+        }
+        const usernameField = this.config.auth.usernameField;
+        const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+        const usernameColumn = resource.columns.find((col) => col.name === usernameField);
+
+        return {
+          brandName: this.config.brandName,
+          usernameFieldName: usernameColumn.label,
+          loginBackgroundImage: this.config.auth.loginBackgroundImage,
+        };
+      },
+    });
+
+    server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input}) => {
+      handler: async ({input, adminUser, cookies}) => {
+        const cookieParsed = this.auth.verify(cookies['adminforth_jwt']);
+        let username = ''
+        if (cookieParsed['pk'] == null) {
+            username = this.config.rootUser.username;
+        } else {
+            const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+            const user = await this.connectors[userResource.dataSource].getData({
+              resource: userResource,
+              filters: [
+                { field: userResource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
+              ],
+              limit: 1,
+              offset: 0,
+              sort: [],
+            });
+            if (!user.data.length) {
+              return { error: 'Unauthorized' };
+            }
+            username = user.data[0][this.config.auth.usernameField]; 
+        }
+
         return {
+          user: {
+            [this.config.auth.usernameField]: username
+          },
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
@@ -254,12 +405,15 @@ class AdminForth {
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
             deleteConfirmation: this.config.deleteConfirmation,
-          }
+            auth: this.config.auth,
+            usernameField: this.config.auth.usernameField,
+          },
+          adminUser,
         };
       },
     });
+
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_resource_columns',
       handler: async ({ body }) => {
@@ -278,13 +432,10 @@ class AdminForth {
       },
     });
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_resource_data',
       handler: async ({ body }) => {
         const { resourceId, limit, offset, filters, sort } = body;
-        console.log('get_resource_data', body);
-
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -306,7 +457,6 @@ class AdminForth {
       },
     });
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_min_max_for_columns',
       handler: async ({ body }) => {
@@ -336,7 +486,6 @@ class AdminForth {
       },
     });
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/get_record',
         handler: async ({ body }) => {
@@ -348,6 +497,19 @@ class AdminForth {
             if (!record) {
                 return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
             }
+            
+            // execute hook if needed
+            if (resource.hooks?.show) {
+                const resp = await resource.hooks?.show({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+                }
+
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+              }
+
             const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
             record._label = labler(record);
             return record;
@@ -412,6 +574,19 @@ class AdminForth {
             }
 
             await connector.createRecord({ resource, record });
+            
+            // execute hook if needed
+            if (resource.hooks?.create?.afterSave) {
+                const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
             }
@@ -430,15 +605,28 @@ class AdminForth {
 
             const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
-            if (!await connector.getRecordByPrimaryKey(resource, recordId)) {
+            const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
+            if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
+            }
+
+            // execute hook if needed
+            if (resource.hooks?.edit?.beforeSave) {
+                const resp = await resource.hooks?.edit?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
             }
 
             const newValues = {};
             const record = body['record'];
             for (const col of resource.columns) {
-                if (record[col.name] !== undefined) {
+                if (record[col.name] !== oldRecord[col.name]) {
                     newValues[col.name] = connector.setFieldValue(col, record[col.name]);
                 }
             }
@@ -446,6 +634,18 @@ class AdminForth {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }
             
+            // execute hook if needed
+            if (resource.hooks?.edit?.afterSave) {
+                const resp = await resource.hooks?.edit?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: recordId
             }
@@ -460,10 +660,35 @@ class AdminForth {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.beforeSave) {
+                const resp = await resource.hooks?.delete?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             const connector = this.connectors[resource.dataSource];
-            await connector.deleteRecord({ resource, recordId: body['recordId']});
+            await connector.deleteRecord({ resource, recordId: body['primaryKey']});
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.afterSave) {
+                const resp = await resource.hooks?.delete?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
             return {
-              recordId: body['recordId']
+              recordId: body['primaryKey']
             }
         }
     });
