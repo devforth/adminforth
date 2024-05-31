@@ -369,12 +369,13 @@ const admin = new AdminForth({
     }
   ],
   menu: [
-    // {
-    //   label: 'Dashboard',
-    //   icon: 'flowbite:chart-pie-solid',
-    //   component: './custom/Dash.vue',
-    //   homepage: true,
-    // },
+    {
+      label: 'Dashboard',
+      icon: 'flowbite:chart-pie-solid',
+      component: './custom/Dash.vue',
+      homepage: true,
+      path: '/dashboard',
+    },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
@@ -384,7 +385,7 @@ const admin = new AdminForth({
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
-          homepage: true,
+          // homepage: true,
         },
         {
           label: 'Games',
