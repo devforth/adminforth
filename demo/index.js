@@ -31,7 +31,8 @@ if (!tableExists) {
         id VARCHAR(255) PRIMARY KEY NOT NULL,
         email VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
-        created_at VARCHAR(255) NOT NULL
+        created_at VARCHAR(255) NOT NULL,
+        role VARCHAR(255) NOT NULL
     );`).run();
 
   
@@ -53,6 +54,17 @@ const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
+  rootUser: {
+    username: 'adminforth',
+    password: 'adminforth',
+  },
+  auth: {
+    resourceId: 'users',  // resource for getting user
+    usernameField: 'email',
+    passwordHashField: 'password_hash',
+    userFullNameField: 'fullName', // optional
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
   dataSources: [
     {
       id: 'maindb',
@@ -92,8 +104,6 @@ const admin = new AdminForth({
                 "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
                 "required": false, "primaryKey": false, "default": ""
             },
-
-
         }
       }
     }
@@ -108,11 +118,10 @@ const admin = new AdminForth({
       columns: [
         { 
           name: 'id', 
-          readOnly: true, 
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
-          fillOnCreate: (initialRecord) => Math.random().toString(36).substring(7),
+          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
           name: 'title',
@@ -125,7 +134,7 @@ const admin = new AdminForth({
           name: 'created_at',
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
-          fillOnCreate: (initialRecord) => (new Date()).toISOString(),
+          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         { 
           name: 'price',
@@ -168,7 +177,89 @@ const admin = new AdminForth({
       ],
       listPageSize: 20, 
     },
-    // { dataSource: 'maindb', table: 'users' },
+    { 
+      dataSource: 'maindb', 
+      table: 'users',
+      resourceId: 'users',
+      label: 'Users',
+      columns: [
+        { 
+          name: 'id', 
+          primaryKey: true,
+          fillOnCreate: ({initialRecord, adminUser}) => uuid(),
+          showIn: ['list', 'filter', 'show'],  // the default is full set
+        },
+        { 
+          name: 'email', 
+          required: true,
+          isUnique: true,
+        },
+        { 
+          name: 'created_at', 
+          type: AdminForth.Types.DATETIME,
+          showIn: ['list', 'filter', 'show'],
+          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+        },
+        {
+          name: 'role',
+          enum: [
+            { value: 'superadmin', label: 'Super Admin' },
+            { value: 'user', label: 'User' },
+          ]
+        },
+        {
+          name: 'password',
+          virtual: true,  // field will not be persisted into db
+          required: { create: true }, // to show only in create page
+          editingNote: { edit: 'Leave empty to keep password unchanged' },
+
+          minLength: 8,
+          type: AdminForth.Types.STRING,
+          showIn: ['create', 'edit'], // to show in create and edit pages
+          masked: true, // to show stars in input field
+        }
+      ],
+      hooks: {
+        create: {
+          beforeSave: async ({ record, adminUser, resource }) => {
+            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+            return { ok:true, error: false };
+            // if return 'error': , record will not be saved and error will be proxied
+          }
+        },
+        edit: {
+          beforeSave: async ({ record, adminUser, resource}) => {
+            if (record.password) {
+              record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
+            }
+            return { ok: true, error: false }
+          },
+          // beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
+          //   return { ok: true, error: false }
+          // },
+          // afterDatasourceResponse: async ({ response, adminUser }) => {
+          //   return { ok: true, error: false }
+          // }
+        },
+        // list: {
+        //   beforeDatasourceRequest: async ({ query, adminUser }) => {
+        //     return { ok: true, error: false }
+        //   },
+        //   afterDatasourceResponse: async ({ response, adminUser }) => {
+        //     return { ok: true, error: false }
+        //   }
+        // },
+        // show: {
+        //   beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
+        //     return { ok: true, error: false }
+        //   },
+        //   afterDatasourceResponse: async ({ response, adminUser, resource }) => {
+        //     return { ok: true, error: false }
+        //   }
+        // },
+        
+      }
+    },
     {
         dataSource: 'db2', table: 'games',
         resourceId: 'games',
@@ -176,10 +267,10 @@ const admin = new AdminForth({
         columns: [
             {
                 name: 'id', readOnly: true, required: false, 
-                label: 'Identifier', fillOnCreate: (initialRecord) => uuid(),
+                label: 'Identifier', fillOnCreate: ({initialRecord}) => uuid(),
                 showIn: ['list', 'filter', 'show'],  // the default is full set
             },
-            { name: 'name', required: true },
+            { name: 'name', required: true, isUnique: true },
             { name: 'created_by', required: true,
                 enum: [
                     { value: 'CD Projekt Red', label: 'CD Projekt Red' },
@@ -196,9 +287,52 @@ const admin = new AdminForth({
         listPageSize: 5, 
     },
     {
+        dataSource: 'db2', table: 'users',
+        resourceId: 'games_users',
+        label: 'Games users',
+        columns: [
+            { 
+              name: 'id', 
+              primaryKey: true,
+              fillOnCreate: ({initialRecord, adminUser}) => uuid(),
+              showIn: ['list', 'filter', 'show'],  // the default is full set
+            },
+            { 
+              name: 'email', 
+              required: true,
+              isUnique: true,
+            },
+            { 
+              name: 'created_at', 
+              type: AdminForth.Types.DATETIME,
+              showIn: ['list', 'filter', 'show'],
+              fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+            },
+            {
+              name: 'role',
+              enum: [
+                { value: 'superadmin', label: 'Super Admin' },
+                { value: 'user', label: 'User' },
+              ]
+            },
+            {
+              name: 'password',
+              virtual: true,  // field will not be persisted into db
+              required: { create: true }, // to show only in create page
+              editingNote: { edit: 'Leave empty to keep password unchanged' },
+    
+              minLength: 8,
+              type: AdminForth.Types.STRING,
+              showIn: ['create', 'edit'], // to show in create and edit pages
+              masked: true, // to show stars in input field
+            }
+        ],
+        listPageSize: 5, 
+    },
+    {
         dataSource: 'db3', table: 'game',
         columns: [
-            { name: '_id', readOnly: true, primaryKey: true },
+            { name: '_id', primaryKey: true },
             { name: 'bb_enabled' },
             { name: 'bb_rank' },
             {
@@ -236,6 +370,13 @@ const admin = new AdminForth({
   ],
   menu: [
     {
+      label: 'Dashboard',
+      icon: 'flowbite:chart-pie-solid',
+      component: './custom/Dash.vue',
+      homepage: true,
+      path: '/dashboard',
+    },
+    {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
       open: true,
@@ -244,11 +385,17 @@ const admin = new AdminForth({
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
+          // homepage: true,
         },
         {
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
+        },
+        {
+          label: 'Games Users',
+          icon: 'flowbite:user-solid',
+          resourceId: 'games_users',
         },
         {
           label: 'Casino Games',
@@ -259,11 +406,6 @@ const admin = new AdminForth({
     },
     {
       type: 'gap'
-    },
-    {
-      label: 'Users',
-      icon: 'flowbite:user-solid',
-      resourceId: 'users',
     },
     {
       type: 'divider'
@@ -291,18 +433,6 @@ const port = 3000;
 
 admin.express.serve(app, express)
 admin.discoverDatabases();
-
-app.get(
-  '/api/custom_data', 
-  admin.express.authorize(
-    (req, res) => {
-
-      res.json({
-        number: 124,
-      })
-    }
-  )
-)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <Filters :columns="coreStore.resourceColumns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
-    
+
     <BreadcrumbsWithButtons>
       <RouterLink :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
         class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
@@ -100,10 +100,10 @@
         </thead>
         <tbody>
           <tr v-if="!rows" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td :colspan="coreStore.resourceColumns.length + 2" class="p-4 text-center">
+            <td :colspan="coreStore.resourceColumns.length + 2">
 
               <div role="status"
-                class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
+                class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                   <div>
                     <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
@@ -141,6 +141,16 @@
                 </div>
                 <span class="sr-only">Loading...</span>
               </div>
+            </td>
+          </tr>
+          <tr v-else-if="rows.length === 0" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td :colspan="coreStore.resourceColumns.length + 2">
+              
+              <div id="toast-simple" class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 bg-white divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800" role="alert">
+                <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                <div class="ps-4 text-sm font-normal">No items here yet</div>
+            </div>
+
             </td>
           </tr>
 
@@ -185,6 +195,7 @@
               <button
                 class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                 :data-tooltip-target="`tooltip-delete-${rowI}`"
+                @click="showDeleteModal(row)"
               >
                 <IconTrashBinSolid class="w-5 h-5 me-2" />
               </button>
@@ -264,12 +275,13 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
+import { useModalStore } from '@/stores/modal';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { initFlowbite } from 'flowbite'
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 
-import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconInboxFullSolid, IconInboxOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
 import { 
   IconEyeSolid, 
@@ -282,6 +294,7 @@ import Filters from '@/components/Filters.vue';
 
 
 const coreStore = useCoreStore();
+const modalStore = useModalStore();
 
 const route = useRoute();
 const checkboxes = ref([]);
@@ -336,6 +349,38 @@ async function getList() {
 }
 
 
+function showDeleteModal (row){
+  
+  
+  modalStore.setModalContent({
+    content: 'Are you sure you want to delete this item?',
+    acceptText: 'Delete',
+    cancelText: 'Cancel',
+  });
+  modalStore.setOnAcceptFunction(()=>{return deleteRecord(row)})
+  console.log('row', row);
+  modalStore.togleModal();
+
+} 
+
+async function deleteRecord(row) {
+  console.log('delete record', row);
+
+
+  await callAdminForthApi({
+    path: '/delete_record',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId,
+      primaryKey: row._primaryKeyValue,
+      recordId:row.id
+    }
+  });
+  await getList();
+  modalStore.resetmodalState()
+
+}
+
 async function init() {
   await coreStore.fetchColumns({
     resourceId: route.params.resourceId
@@ -352,7 +397,7 @@ async function init() {
 }
 onMounted(async () => {
   await init();
-});
+}); 
 
 // on route param change 
 watch(() => route.params.resourceId, async () => {

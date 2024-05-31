@@ -1,7 +1,22 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
+import router from '@/router';
 
+async function findHomepage(menu) {
+  for (const item of menu) {
+    if (item.homepage) {
+      return item;
+    }
+    if (item.children) {
+      const res = findHomepage(item.children);
+      if (res) {
+        return res;
+      }
+    }
+  }
+  return null;
+}
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
@@ -11,6 +26,7 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumns = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
+  const user = ref(null);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -23,6 +39,19 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
+    user.value = resp.user;
+
+    // find homepage:true in menu recuresively
+    const homepage = await findHomepage(menu.value);
+    if (homepage) {
+      if (homepage.resourceId) {
+        // redirect to homepage
+        router.push({ name: 'resource-list', params: { resourceId: homepage.resourceId } });
+      } else {
+        // redirect to path
+        router.push(homepage.path);
+      }
+    }
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {
@@ -62,10 +91,45 @@ export const useCoreStore = defineStore('core', () => {
     }
   }
 
+  async function getPublicConfig() {
+    const res = await callAdminForthApi({
+      path: '/get_public_config',
+      method: 'GET',
+    });
+    config.value = {...config.value, ...res};
+  }
+
+  async function logout() {
+    await callAdminForthApi({
+      path: '/logout',
+      method: 'POST',
+    });
+  }
+
+  const username = computed(() => {
+    const usernameField = config.value.usernameField;
+    return user.value && user.value[usernameField];
+  });
+
+  const userFullname = computed(() => {
+    const userFullnameField = config.value.userFullnameField;
+    return user.value && user.value[userFullnameField];
+  })
+
 
   return { 
     config,
     resourceById, 
     menu, 
-    fetchMenuAndResource, fetchRecord, record, resourceColumns, fetchColumns, resourceColumnsError}
+    username,
+    userFullname,
+    getPublicConfig,
+    fetchMenuAndResource, 
+    fetchRecord, 
+    record, 
+    resourceColumns, 
+    fetchColumns, 
+    resourceColumnsError,
+    logout
+  }
 })

@@ -28,7 +28,7 @@
           </button>
         </div>  
       </div>
-      <div class="absolute inset-y-0 right-2 flex items-center">
+      <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
         <IconCaretDownSolid v-if="!showDropdown" class="h-5 w-5 text-gray-400" />
         <IconCaretUpSolid v-else class="h-5 w-5 text-gray-400" />

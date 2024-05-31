@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=development nodemon index.js"
+    "start": "ADMINFORTH_SECRET=123 NODE_ENV=development nodemon index.js"
   },
   "author": "",
   "license": "ISC",

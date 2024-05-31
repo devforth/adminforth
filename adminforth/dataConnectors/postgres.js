@@ -95,7 +95,7 @@ class PostgresConnector {
                 field.type = AdminForthTypes.FLOAT;
                 field._underlineType = 'real';
 
-            } else if (baseType == 'date') {
+            } else if (baseType.includes('date') || baseType.includes('time')) {
                 field.type = AdminForthTypes.DATETIME;
                 field._underlineType = 'timestamp';
 
@@ -130,28 +130,26 @@ class PostgresConnector {
       }
 
     getPrimaryKey(resource) {
-        for (const col of resource.columns) {
+        for (const col of resource.dataSourceColumns) {
             if (col.primaryKey) {
                 return col.name;
             }
         }
     }
 
-    getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
-        const columns = resource.columns.map((col) => col.name).join(', ');
-        return this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key])
-            .then((stmt) => {
-                const row = stmt.rows[0];
-                if (!row) {
-                    return null;
-                }
-                const newRow = {};
-                for (const [key, value] of Object.entries(row)) {
-                    newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
-                }
-                return newRow;
-            });
+        const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+        const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key]);
+        const row = stmt.rows[0];
+        if (!row) {
+            return null;
+        }
+        const newRow = {};
+        for (const [key_1, value] of Object.entries(row)) {
+            newRow[key_1] = this.getFieldValue(resource.dataSourceColumns.find((col_1) => col_1.name == key_1), value);
+        }
+        return newRow;
     }
 
     setFieldValue(field, value) {
@@ -173,25 +171,25 @@ class PostgresConnector {
       }
     
     async getData({ resource, limit, offset, sort, filters }) {
-      const columns = resource.columns.map((col) => col.name).join(', ');
+      const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
       const tableName = resource.table;
       
       for (const filter of filters) {
         if (!this.OperatorsMap[filter.operator]) {
           throw new Error(`Operator ${filter.operator} is not allowed`);
         }
-        if (!resource.columns.some((col) => col.name == filter.field)) {
-          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
+        if (!resource.dataSourceColumns.some((col) => col.name == filter.field)) {
+          throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.dataSourceColumns.map((col) => col.name).join(', ')}`);
         }
       }
-      let totalCounter = filters.length == 0 ? 0 : 1;
+      let totalCounter = 1;
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
         let placeholder = '$'+(totalCounter);
         let field = f.field;
         let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
             placeholder = `(${f.value.map((_, i) => `$${totalCounter + i}`).join(', ')})`;
-            totalCounter =+ f.value.length;
+            totalCounter += f.value.length;
         } else {
             totalCounter += 1;
         }
@@ -203,9 +201,9 @@ class PostgresConnector {
         // for arrays do set in map
         let v;
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          v = f.value.map((val) => this.setFieldValue(resource.columns.find((col) => col.name == f.field), val));
+          v = f.value.map((val) => this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), val));
         } else {
-          v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+          v = this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), f.value);
         }
 
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
@@ -217,10 +215,9 @@ class PostgresConnector {
         }
       }) : [];
 
-      const limitOffset = `LIMIT $${totalCounter + 1} OFFSET $${totalCounter + 2}`; 
+      const limitOffset = `LIMIT $${totalCounter} OFFSET $${totalCounter + 1}`; 
       const d = [...filterValues, limit, offset];
-
-    const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d);
       const rows = stmt.rows;
       
@@ -230,7 +227,8 @@ class PostgresConnector {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
-              newRow[key] = this.getFieldValue(resource.columns.find((col) => col.name == key), value);
+            console.log('key', key, value, resource.dataSourceColumns.find((col) => col.name == key));
+              newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
           }
           return newRow;
         }),
@@ -253,31 +251,24 @@ class PostgresConnector {
     }
 
     async createRecord({ resource, record }) {
-        // returns id of the created record
         const tableName = resource.table;
-        const columns = resource.columns.map((col) => col.name).join(', ');
-        const values = resource.columns.map((col, i) => `$${i + 1}`).join(', ');
-        const d = resource.columns.map((col) => this.setFieldValue(col, record[col.name]));
-        await this.db.query(`INSERT INTO ${tableName} (${columns}) VALUES (${values})`, d);
+        const columns = Object.keys(record);
+        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+        const values = columns.map((colName) => {
+            const col = resource.dataSourceColumns.find((col) => col.name == colName);
+            if (col) {
+                return this.setFieldValue(col, record[colName])
+            } else {
+                return record[colName];
+            }
+        });
+        await this.db.query(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`, values);
     }
 
-    async updateRecord({ resource, recordId, record }) {
-        const tableName = resource.table;
-        const primaryKey = this.getPrimaryKey(resource);
-
-        const newValues = {};
-        for (const col of resource.columns) {
-            if (record[col.name] !== undefined) {
-                newValues[col.name] = this.setFieldValue(col, record[col.name]);
-            }
-        }
-
-        const columns = Object.keys(newValues).map((col) => col).join(', ');
-        const placeholders = Object.keys(newValues).map((_, i) => `$${i + 1}`).join(', ');  // we can't use '?' in postgres, so we need to use numbered placeholders
+    async updateRecord({ resource, recordId, record, newValues }) {
         const values = [...Object.values(newValues), recordId];
-
-        console.log(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
-        await this.db.query(`UPDATE ${tableName} SET ${columns} = ${placeholders} WHERE ${primaryKey} = $${values.length}`, values);
+        const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `${col} = $${i + 1}`).join(', ');
+        await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = $${values.length}`, values);
     }
 
     async deleteRecord({ resource, recordId }) {
