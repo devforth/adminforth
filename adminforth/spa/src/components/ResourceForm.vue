@@ -91,7 +91,7 @@
                     v-if="column.masked"
                     type="button"
                     @click="unmasked[column.name] = !unmasked[column.name]"
-                    class="absolute inset-y-2 top-2 right-6 flex items-center pr-2 z-index-100 focus:outline-none"
+                    class="h-6 absolute inset-y-2 top-6 right-6 flex items-center pr-2 z-index-100 focus:outline-none"
                   >
                     <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
                     <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
