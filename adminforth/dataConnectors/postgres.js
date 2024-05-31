@@ -189,7 +189,7 @@ class PostgresConnector {
         let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
             placeholder = `(${f.value.map((_, i) => `$${totalCounter + i}`).join(', ')})`;
-            totalCounter =+ f.value.length;
+            totalCounter += f.value.length;
         } else {
             totalCounter += 1;
         }
