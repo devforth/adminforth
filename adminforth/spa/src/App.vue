@@ -93,26 +93,13 @@
               <ul :id="`dropdown-example${i}`" role="none" class="py-2 space-y-2" :class="{ 'hidden': !item.open }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
-                    <RouterLink 
-                        :to="{name: 'resource-list', params: { resourceId: child.resourceId }}" 
-                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem"
-                        :class="{ 'bg-blue-100': $route.params.resourceId === child.resourceId && $route.name === 'resource-list' }"
-                    >
-                      <component v-if="item.icon" :is="getIcon(child.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
-                      <span class="ms-3">{{ child.label }}</span>
-                    </RouterLink>
+                    <MenuLink :item="child" isChild="true" />
                   </li>
                 </template>
               </ul> 
             </li>
             <li v-else>
-              <RouterLink :to="{name: 'resource-list', params: { resourceId: item.resourceId }}" 
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                    :class="{ 'bg-blue-100': $route.params.resourceId === item.resourceId && $route.name === 'resource-list' }"
-              >
-                  <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
-                  <span class="ms-3">{{ item.label }}</span>
-              </RouterLink>
+              <MenuLink :item="item" />
             </li>
           </template>
         </ul>
@@ -135,15 +122,17 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, resolveComponent, watch } from 'vue';
+import { computed, onMounted, ref, watch, defineComponent } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import AcceptModal from './components/AcceptModal.vue';
-
+import MenuLink from './components/MenuLink.vue';
 import { useRoute, useRouter } from 'vue-router';
+import { getIcon } from '@/utils';
+
 
 const route = useRoute();
 const router = useRouter();
@@ -166,12 +155,7 @@ async function logout() {
 
 const coreStore = useCoreStore();
 
-function getIcon(icon: string) {
-  // icon format is "feather:icon-name". We need to get IconName in pascal case
-  const [iconSet, iconName] = icon.split(':');
-  const compName = 'Icon' + iconName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-  return resolveComponent(compName);
-}
+
 
 async function initRouter() {
   await router.isReady();
