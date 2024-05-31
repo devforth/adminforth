@@ -458,6 +458,19 @@ class AdminForth {
             }
 
             await connector.createRecord({ resource, record });
+            
+            // execute hook if needed
+            if (resource.hooks?.create?.afterSave) {
+                const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
             }
@@ -476,15 +489,28 @@ class AdminForth {
 
             const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
-            if (!await connector.getRecordByPrimaryKey(resource, recordId)) {
+            const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
+            if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
+            }
+
+            // execute hook if needed
+            if (resource.hooks?.edit?.beforeSave) {
+                const resp = await resource.hooks?.edit?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
             }
 
             const newValues = {};
             const record = body['record'];
             for (const col of resource.columns) {
-                if (record[col.name] !== undefined) {
+                if (record[col.name] !== oldRecord[col.name]) {
                     newValues[col.name] = connector.setFieldValue(col, record[col.name]);
                 }
             }
@@ -492,6 +518,18 @@ class AdminForth {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }
             
+            // execute hook if needed
+            if (resource.hooks?.edit?.afterSave) {
+                const resp = await resource.hooks?.edit?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: recordId
             }
@@ -502,15 +540,39 @@ class AdminForth {
         method: 'POST',
         path: '/delete_record',
         handler: async ({ body }) => {
-            console.log('delete_record', body);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.beforeSave) {
+                const resp = await resource.hooks?.delete?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             const connector = this.connectors[resource.dataSource];
-            await connector.deleteRecord({ resource, recordId: body['recordId']});
+            await connector.deleteRecord({ resource, recordId: body['primaryKey']});
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.afterSave) {
+                const resp = await resource.hooks?.delete?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
             return {
-              recordId: body['recordId']
+              recordId: body['primaryKey']
             }
         }
     });

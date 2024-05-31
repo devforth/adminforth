@@ -169,9 +169,9 @@ class SQLiteConnector {
         // for arrays do set in map
         let v;
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          v = f.value.map((val) => this.setFieldValue(resource.columns.find((col) => col.name == f.field), val));
+          v = f.value.map((val) => this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), val));
         } else {
-          v = this.setFieldValue(resource.columns.find((col) => col.name == f.field), f.value);
+          v = this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), f.value);
         }
 
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
