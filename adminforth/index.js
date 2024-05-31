@@ -341,8 +341,6 @@ class AdminForth {
       path: '/get_resource_data',
       handler: async ({ body }) => {
         const { resourceId, limit, offset, filters, sort } = body;
-        console.log('get_resource_data', body);
-
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -411,7 +409,7 @@ class AdminForth {
                 if (!resp || (!resp.ok && !resp.error)) {
                   throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
                 }
-  
+
                 if (resp.error) {
                   return { error: resp.error };
                 }
