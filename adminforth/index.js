@@ -404,6 +404,19 @@ class AdminForth {
             if (!record) {
                 return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
             }
+            
+            // execute hook if needed
+            if (resource.hooks?.show) {
+                const resp = await resource.hooks?.show({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+              }
+
             const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
             record._label = labler(record);
             return record;
