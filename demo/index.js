@@ -433,17 +433,6 @@ const port = 3000;
 admin.express.serve(app, express)
 admin.discoverDatabases();
 
-app.post(
-  '/api/logout', 
-  admin.express.authorize(
-    async (req, res, next) => {
-        // set expire for cookie "ADMINFORTH_AUTH" for 1 second in the past
-        res.cookie('ADMINFORTH_AUTH', '', { expires: new Date(0) });
-        res.json({ ok: true });
-    }
-  )
-)
-
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
   console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
