@@ -420,9 +420,9 @@ class AdminForth {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
             const connector = this.connectors[resource.dataSource];
-            await connector.deleteRecord({ resource, recordId: body['recordId']});
+            await connector.deleteRecord({ resource, recordId: body['primaryKey']});
             return {
-              recordId: body['recordId']
+              recordId: body['primaryKey']
             }
         }
     });
