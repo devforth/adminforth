@@ -370,6 +370,19 @@ class AdminForth {
             }
 
             await connector.createRecord({ resource, record });
+            
+            // execute hook if needed
+            if (resource.hooks?.create?.afterSave) {
+                const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
             }
@@ -417,6 +430,18 @@ class AdminForth {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }
             
+            // execute hook if needed
+            if (resource.hooks?.edit?.afterSave) {
+                const resp = await resource.hooks?.edit?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             return {
               newRecordId: recordId
             }
@@ -446,6 +471,18 @@ class AdminForth {
 
             const connector = this.connectors[resource.dataSource];
             await connector.deleteRecord({ resource, recordId: body['primaryKey']});
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.afterSave) {
+                const resp = await resource.hooks?.delete?.afterSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
             return {
               recordId: body['primaryKey']
             }
