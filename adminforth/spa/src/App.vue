@@ -129,7 +129,6 @@
     <RouterView/>
   </div>
   <AcceptModal />
-    
 </template>
 
 <style scoped>
