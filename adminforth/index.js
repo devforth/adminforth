@@ -127,6 +127,34 @@ class AdminForth {
         })
 
       });
+
+      if (!this.config.menu) {
+        errors.push('No config.menu defined');
+      }
+
+      // check if there is only one homepage: true in menu, recursivly
+      let homepages = 0;
+      const browseMenu = (menu) => {
+        menu.forEach((item) => {
+          if (item.component && item.resourceId) {
+            errors.push(`Menu item cannot have both component and resourceId: ${JSON.stringify(item)}`);
+          }
+          if (item.component && !item.path) {
+            errors.push(`Menu item with component must have path : ${JSON.stringify(item)}`);
+          }
+
+          if (item.homepage) {
+            homepages++;
+            if (homepages > 1) {
+              errors.push('There must be only one homepage: true in menu, found second one in ' + JSON.stringify(item) );
+            }
+          }
+          if (item.children) {
+            browseMenu(item.children);
+          }
+        });
+      };
+
     }
 
     // check for duplicate resourceIds and show which ones are duplicated
