@@ -394,6 +394,18 @@ class AdminForth {
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
 
+            // execute hook if needed
+            if (resource.hooks?.edit?.beforeSave) {
+                const resp = await resource.hooks?.edit?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             const newValues = {};
             const record = body['record'];
             for (const col of resource.columns) {
@@ -419,6 +431,19 @@ class AdminForth {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+
+            // execute hook if needed
+            if (resource.hooks?.delete?.beforeSave) {
+                const resp = await resource.hooks?.delete?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             const connector = this.connectors[resource.dataSource];
             await connector.deleteRecord({ resource, recordId: body['primaryKey']});
             return {
