@@ -261,8 +261,7 @@ class AdminForth {
             throw new Error('No config.auth defined');
           }
           const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
-
-          const user = await this.connectors[userResource.dataSource].getData({
+          const userRecord = await this.connectors[userResource.dataSource].getData({
             resource: userResource,
             filters: [
               { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
@@ -270,15 +269,14 @@ class AdminForth {
             limit: 1,
             offset: 0,
             sort: [],
-          });
+          }).data[0];
 
-          const INVALID_MESSAGE = 'Invalid username or password';
-          if (!user.data.length) {
-            return { error: INVALID_MESSAGE };
+          if (!userRecord) {
+            return { error: 'User not found' };
           }
 
-          const userRecord = user.data[0];
           const passwordHash = userRecord[this.config.auth.passwordHashField];
+          console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await Auth.verifyPassword(password, passwordHash);
           if (valid) {
             token = this.auth.issueJWT({ 
