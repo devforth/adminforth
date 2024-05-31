@@ -296,6 +296,16 @@ class AdminForth {
     });
 
     server.endpoint({
+        noAuth: true,
+        method: 'POST',
+        path: '/logout',
+        handler: async ({ response }) => {
+          response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+          return { ok: true };
+        },
+    })
+
+    server.endpoint({
       noAuth: true,
       method: 'GET',
       path: '/get_public_config',
@@ -359,8 +369,6 @@ class AdminForth {
       path: '/get_resource_data',
       handler: async ({ body }) => {
         const { resourceId, limit, offset, filters, sort } = body;
-        console.log('get_resource_data', body);
-
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -422,6 +430,19 @@ class AdminForth {
             if (!record) {
                 return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
             }
+            
+            // execute hook if needed
+            if (resource.hooks?.show) {
+                const resp = await resource.hooks?.show({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+                }
+
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+              }
+
             const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
             record._label = labler(record);
             return record;
