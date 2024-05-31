@@ -1,7 +1,6 @@
 import { onMounted, ref, resolveComponent } from 'vue';
 
 import router from "./router";
-import { resolveComponent } from 'vue';
 
 export async function callApi({path, method, body=undefined} ) {
   const options = {
