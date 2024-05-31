@@ -3,8 +3,31 @@
     <Filters :columns="coreStore.resourceColumns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
     
     <BreadcrumbsWithButtons>
+      <button @click="()=>{checkboxes = []}"
+        v-if="checkboxes.length"
+        :data-tooltip-target="`tooltip-remove-all`"
+        data-tooltip-placement="bottom"
+        class="flex gap-1  items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+       >
+        <IconBanOutline class="w-5 h-5 " /> 
+        <div :id="`tooltip-remove-all`"
+                role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                  Remove  selection
+                  <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+      </button>
+      <button v-if="checkboxes.length" v-for="(action,i) in allCheckedActions" :key="action.id" @click="startBulkAction(action.id)" 
+        class="flex gap-1 items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        :class="{'bg-red-100 text-red-800 border-red-400 dark:bg-red-700 dark:text-red-400 dark:border-red-400':action.state==='danger', 'bg-green-100 text-green-800 border-green-400 dark:bg-green-700 dark:text-green-400 dark:border-green-400':action.state==='success',
+        'bg-blue-100 text-blue-800 border-blue-400 dark:bg-blue-700 dark:text-blue-400 dark:border-blue-400':action.state==='active',
+        }"
+        >
+        <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
+
+        {{ `${action.label} (${checkboxes.length})` }}
+      </button>
       <RouterLink :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }" 
-        class="flex items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        class="flex items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
         <IconPlusOutline class="w-4 h-4 me-2" />
           Create
@@ -20,9 +43,9 @@
             {{ filters.length }}
           </span>
       </button>
+     
 
     </BreadcrumbsWithButtons>
-
     <!-- table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 
@@ -73,8 +96,8 @@
         <thead class="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="p-4">
-              <div class="flex items-center">
-                <input id="checkbox-all-search" type="checkbox" @change="selectAll($event.target.checked)"
+              <div v-if="rows && rows.length" class="flex items-center">
+                <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()"
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="checkbox-all-search" class="sr-only">checkbox</label>
               </div>
@@ -158,7 +181,7 @@
             class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td class="w-4 p-4">
               <div class="flex items center">
-                <input id="checkbox-table-search-1" type="checkbox" v-model="checkboxes[rowI]"
+                <input id="checkbox-table-search-1"  type="checkbox" :checked="checkboxes.includes(row.id)"  @change="(e)=>{addToCheckedValues(row.id)}" 
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
               </div>
@@ -192,7 +215,7 @@
                   <div class="tooltip-arrow" data-popper-arrow></div>
               </div>
 
-              <button
+              <button v-if = "allowDelete"
                 class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                 :data-tooltip-target="`tooltip-delete-${rowI}`"
                 @click="showDeleteModal(row)"
@@ -272,7 +295,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi,getIcon } from '@/utils';
 import { useRoute } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import { useModalStore } from '@/stores/modal';
@@ -282,11 +305,12 @@ import { initFlowbite } from 'flowbite'
 import ValueRenderer from '@/components/ValueRenderer.vue';
 
 import { IconChevronDoubleLeftOutline, IconChevronDoubleRightOutline, IconInboxFullSolid, IconInboxOutline, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { IconFilterOutline } from '@iconify-prerendered/vue-flowbite';
+
 import { 
   IconEyeSolid, 
   IconTrashBinSolid,
   IconPenSolid,
+  IconFilterOutline,IconBanOutline
  } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
@@ -306,6 +330,8 @@ const sort = ref([]);
 
 const rows = ref(null);
 const totalRows = ref(0);
+const allCheckedActions = ref([]);
+const allowDelete = ref(false);
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -313,11 +339,16 @@ const columnsListed = computed(() => coreStore.resourceColumns?.filter(c => c.sh
 
 async function selectAll(value) {
   console.log('select all');
-  checkboxes.value = rows.value.map(() => value);
+  rows.value.forEach((r)=>{if(!checkboxes.value.includes(r.id)){checkboxes.value.push(r.id)}else{checkboxes.value = checkboxes.value.filter((item) => item !== r.id)}});
+  // checkboxes.value = rows.value.map((v) => v.id);
 }
 
 const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.pageSize || DEFAULT_PAGE_SIZE);
 const totalPages = computed(() => Math.ceil(totalRows.value / pageSize.value));
+const allFromThisPageChecked = computed(() => {
+  if (!rows.value) return false;
+  return rows.value.every((r) => checkboxes.value.includes(r.id));
+});
 
 watch([page, filters, sort], async () => {
   await init();
@@ -342,16 +373,21 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
+  allCheckedActions.value = data.options?.bulkActions||[];
+  allowDelete.value = data.options?.allowDelete;
+
 
   setTimeout(() => {
     initFlowbite();
+    console.log('initFlowbite');
   });
 }
 
 
 function showDeleteModal (row){
-  
-  
+  if (!coreStore.config?.deleteConfirmation) {
+    return deleteRecord(row);
+  }
   modalStore.setModalContent({
     content: 'Are you sure you want to delete this item?',
     acceptText: 'Delete',
@@ -364,9 +400,6 @@ function showDeleteModal (row){
 } 
 
 async function deleteRecord(row) {
-  console.log('delete record', row);
-
-
   await callAdminForthApi({
     path: '/delete_record',
     method: 'POST',
@@ -378,7 +411,31 @@ async function deleteRecord(row) {
   });
   await getList();
   modalStore.resetmodalState()
+}
 
+async function startBulkAction(actionId){
+  const data =await callAdminForthApi({
+    path: '/start_bulk_action',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId,
+      actionId: actionId,
+      recordIds: checkboxes.value
+      
+    }
+  });
+  if (data?.status === 'success'){
+    checkboxes.value = [];
+  }
+  await getList();
+}
+
+function addToCheckedValues(id){
+  if (checkboxes.value.includes(id)){
+    checkboxes.value = checkboxes.value.filter((item) => item !== id);
+  } else {
+    checkboxes.value.push(id);
+  }
 }
 
 async function init() {
@@ -402,6 +459,7 @@ onMounted(async () => {
 // on route param change 
 watch(() => route.params.resourceId, async () => {
   filters.value = [];
+  checkboxes.value = [];
   await init();
 });
 

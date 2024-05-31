@@ -6,6 +6,8 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
+import {v1 as uuid} from 'uuid';
+
 
 import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 
@@ -21,8 +23,14 @@ class AdminForth {
     }
   }
 
+  #defaultConfig = {
+    deleteConfirmation: true,
+    
+    
+  }
+
   constructor(config) {
-    this.config = config;
+    this.config = {...this.#defaultConfig,...config};
     this.validateConfig();
     this.express = new ExpressServer(this);
     this.auth = new Auth();
@@ -35,7 +43,6 @@ class AdminForth {
 
   validateConfig() {
     const errors = [];
-
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
@@ -105,6 +112,35 @@ class AdminForth {
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
 
+
+        //check if resource has bulkActions
+        if(res.options?.bulkActions){
+          let bulkActions = res.options.bulkActions;
+
+          if(!Array.isArray(bulkActions)){
+            errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
+            bulkActions = [];
+          }
+          if(res.options?.allowDelete){
+            bulkActions.push({
+              label: `Delete checked`,
+              state: 'danger',
+              icon: 'flowbite:trash-bin-outline',
+              action: async ({selectedIds}) => {
+                const connector = this.connectors[res.dataSource];
+                await Promise.all(selectedIds.map(async (recordId) => {
+                  await connector.deleteRecord({ resource: res, recordId });
+                }));
+              }
+            });
+          }  
+          
+          const newBulkActions = bulkActions.map((action) => {
+            return Object.assign(action, {id: uuid()});
+          });
+          console.log('newBulkActions', newBulkActions);
+          bulkActions = newBulkActions;
+        }
       });
     }
 
@@ -115,6 +151,11 @@ class AdminForth {
       const duplicates = resourceIds.filter((item, index) => resourceIds.indexOf(item) != index);
       errors.push(`Duplicate fields "resourceId" or "table": ${duplicates.join(', ')}`);
     }
+
+    //add ids for onSelectedAllActions for each resource
+   
+
+
 
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
@@ -212,6 +253,7 @@ class AdminForth {
           config: { 
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
+            deleteConfirmation: this.config.deleteConfirmation,
           }
         };
       },
@@ -260,7 +302,7 @@ class AdminForth {
           filters,
           sort,
         });
-        return data;
+        return {...data, options: resource?.options };
       },
     });
     server.endpoint({
@@ -425,6 +467,32 @@ class AdminForth {
             }
         }
     });
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/start_bulk_action',
+        handler: async ({ body }) => {
+            const { resourceId, actionId, recordIds } = body;
+            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            if (!resource) {
+                return { error: `Resource '${resourceId}' not found` };
+            }
+            const action = resource.options.bulkActions.find((act) => act.id == actionId);
+            if (!action) {
+                return { error: `Action '${actionId}' not found` };
+            } else{
+              await action.action({selectedIds:recordIds})
+
+            }
+            return {
+              actionId,
+              recordIds,
+              resourceId,
+              status:'success'
+              
+            }
+        }
+    })
   }
 }
 
