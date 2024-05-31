@@ -31,12 +31,7 @@ export async function callAdminForthApi({ path, method, body=undefined }) {
 }
 
 
-export function getIcon(icon: string) {
-  // icon format is "feather:icon-name". We need to get IconName in pascal case
-  const [iconSet, iconName] = icon.split(':');
-  const compName = 'Icon' + iconName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-  return resolveComponent(compName);
-}
+
 
 
 export function getIcon(icon: string) {
