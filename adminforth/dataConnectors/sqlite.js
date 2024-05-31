@@ -187,7 +187,6 @@ class SQLiteConnector {
       
 
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
-      console.log('⚙️⚙️⚙️ preparing request', q);
       const stmt = this.db.prepare(q);
       const d = [...filterValues, limit, offset];
       console.log('⚙️⚙️⚙️ running request against data', d);

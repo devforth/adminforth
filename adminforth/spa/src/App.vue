@@ -57,8 +57,8 @@
                   </li>
                   
                   <li>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
-                  </li>
+                    <button @click="logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</button>
+                </li>
                 </ul>
               </div>
             </div>
@@ -146,6 +146,11 @@ const theme = ref('light');
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   document.documentElement.classList.toggle('dark');
+}
+
+async function logout() {
+  await coreStore.logout();
+  router.push({ name: 'login' });
 }
 
 const coreStore = useCoreStore();
