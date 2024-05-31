@@ -72,7 +72,7 @@
   </div>
 </template>
 <script setup>
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
+import {ref, computed, onMounted, watch, onBeforeUnmount} from 'vue';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -98,22 +98,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
-
-onMounted(() => {
-  initDatepickers();
-
-  updateFromProps();
-
-  watch(() => [props.valueStart, props.valueEnd], (value) => {
-    updateFromProps();
-  });
-});
-
-onUnmounted(() => {
-  datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
-
-  datepickerEndEl.value.removeEventListener('changeDate', setEndDate)
-})
 
 const datepickerStartEl = ref();
 const datepickerEndEl = ref();
@@ -156,6 +140,25 @@ const end = computed(() => {
   return date.utc().toISOString();
 })
 
+function updateFromProps() {
+  if (props.valueStart === undefined) {
+    datepickerStartEl.value.value = '';
+    startTime.value = '';
+  }
+  if (props.valueEnd === undefined) {
+    datepickerEndEl.value.value = '';
+    endTime.value = '';
+  }
+}
+
+onMounted(() => {
+  updateFromProps();
+
+  watch(() => [props.valueStart, props.valueEnd], (value) => {
+    updateFromProps();
+  });
+})
+
 watch(start, () => {
   //console.log('⚡ emit', start.value)
   emit('update:valueStart', start.value)
@@ -167,11 +170,21 @@ watch(end, () => {
 })
 
 function initDatepickers() {
-  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
+
   new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
 
-  datepickerEndEl.value.addEventListener('changeDate', setEndDate)
   new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
+  addChangeDateListener();
+}
+
+function addChangeDateListener() {
+  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
+  datepickerEndEl.value.addEventListener('changeDate', setEndDate)
+}
+
+function removeChangeDateListener() {
+  datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
+  datepickerEndEl.value.removeEventListener('changeDate', setEndDate);
 }
 
 function setStartDate(event) {
@@ -191,18 +204,15 @@ function addTimeToDate(time, date) {
   return date.hour(hours).minute(minutes).second(seconds)
 }
 
-function updateFromProps() {
-  if (props.valueStart === undefined) {
-    datepickerStartEl.value.value = '';
-    startTime.value = '';
-  }
-  if (props.valueEnd === undefined) {
-    datepickerEndEl.value.value = '';
-    endTime.value = '';
-  }
-}
-
 const toggleTimeInputs = () => {
   showTimeInputs.value = !showTimeInputs.value
 }
+
+onMounted(() => {
+  initDatepickers();
+});
+
+onBeforeUnmount(() => {
+  removeChangeDateListener();
+})
 </script>
