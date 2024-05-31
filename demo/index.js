@@ -433,14 +433,13 @@ const port = 3000;
 admin.express.serve(app, express)
 admin.discoverDatabases();
 
-app.get(
-  '/api/custom_data', 
+app.post(
+  '/api/logout', 
   admin.express.authorize(
-    (req, res) => {
-
-      res.json({
-        number: 124,
-      })
+    async (req, res, next) => {
+        // set expire for cookie "ADMINFORTH_AUTH" for 1 second in the past
+        res.cookie('ADMINFORTH_AUTH', '', { expires: new Date(0) });
+        res.json({ ok: true });
     }
   )
 )
