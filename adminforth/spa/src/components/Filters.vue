@@ -1,8 +1,8 @@
 <template>
   <!-- drawer component -->
-  <div id="drawer-navigation" class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800" 
-      tabindex="-1" aria-labelledby="drawer-navigation-label"
-      :style="{ height: `calc(100vh - 3.5rem)` }"
+  <div id="drawer-navigation" class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800"
+       tabindex="-1" aria-labelledby="drawer-navigation-label"
+       :style="{ height: `calc(100vh - 3.5rem)` }"
   >
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       Filters
@@ -12,78 +12,93 @@
         <span class="sr-only">Close menu</span>
       </button>
     </h5>
-   
+
     <div class="py-4 ">
       <ul class="space-y-3 font-medium">
-         <li v-for="c in columnsWithFilter" :key="c">
-            {{ c.label }}
+        <li v-for="c in columnsWithFilter" :key="c">
+          {{ c.label }}
 
-            <Dropdown 
-              v-if="c.type === 'boolean'" 
-              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
-              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
-            />
-            
-            <Dropdown 
-              v-else-if="c.enum"
-              :options="c.enum"
-              :allowCustom="c.allowCustom"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
-              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
-            />
+          <Dropdown
+            v-if="c.type === 'boolean'"
+            :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
+            @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+            :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+          />
 
-            <input 
-              v-else-if="[ 'string', 'date', 'time', 'datetime', 'text' ].includes(c.type)"
-              type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
-              placeholder="Search"
-              @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
-              :value="getFilterItem({ column: c, operator: 'ilike' })"
+          <Dropdown
+            v-else-if="c.enum"
+            :options="c.enum"
+            :allowCustom="c.allowCustom"
+            @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+            :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+          />
+
+          <input
+            v-else-if="[ 'string', 'text' ].includes(c.type)"
+            type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+            placeholder="Search"
+            @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
+            :value="getFilterItem({ column: c, operator: 'ilike' })"
+          >
+
+          <CustomDateRangePicker
+            v-else-if="['datetime'].includes(c.type)"
+            :column="c"
+            @update="setFilterItem($event)"
+          />
+
+          <input
+            v-else-if="[ 'date', 'time' ].includes(c.type)"
+            type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+            placeholder="Search datetime"
+            @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
+            :value="getFilterItem({ column: c, operator: 'ilike' })"
+          >
+
+          <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
+            <input
+              type="number" aria-describedby="helper-text-explanation"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="from"
+              @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
+              :value="getFilterItem({ column: c, operator: 'gte' })"
             >
+            <input
+              type="number" aria-describedby="helper-text-explanation"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="to"
+              @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
+              :value="getFilterItem({ column: c, operator: 'lte' })"
+            >
+          </div>
 
-            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
-              <input 
-                type="number" aria-describedby="helper-text-explanation" 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="from"
-                @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
-                :value="getFilterItem({ column: c, operator: 'gte' })"
-              >
-              <input 
-                type="number" aria-describedby="helper-text-explanation" 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="to"
-                @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
-                :value="getFilterItem({ column: c, operator: 'lte' })"
-              >
-            </div>
-            
-         </li>
+        </li>
       </ul>
-   </div>
+    </div>
 
-   <div class="flex justify-end gap-2">
-      <button 
+    <div class="flex justify-end gap-2">
+      <button
         :disabled="!filters.length"
-        type="button" 
+        type="button"
         class="flex items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear">Clear all</button>
 
-   </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, defineEmits, computed } from 'vue'
+import { ref, defineEmits, computed } from 'vue';
 import Dropdown from '@/components/Dropdown.vue';
+import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 
 // props: columns
 // add support for v-model:filers
 const props = defineProps(['columns', 'filters']);
 const emits = defineEmits(['update:filters']);
 
-const columnsWithFilter = computed( 
-  () => props.columns?.filter(column => column.showIn.includes('filter')) || []
+const columnsWithFilter = computed(
+    () => props.columns?.filter(column => column.showIn.includes('filter')) || []
 );
 
 

@@ -13,6 +13,7 @@
     "better-sqlite3": "^10.0.0",
     "dayjs": "^1.11.11",
     "filewatcher": "^3.0.1",
+    "flowbite-datepicker": "^1.2.6",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "6.6",
