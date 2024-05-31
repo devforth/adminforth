@@ -93,13 +93,13 @@
               <ul :id="`dropdown-example${i}`" role="none" class="py-2 space-y-2" :class="{ 'hidden': !item.open }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
-                    <MenuLink :child="child" />
+                    <MenuLink :item="child" isChild="true" />
                   </li>
                 </template>
               </ul> 
             </li>
             <li v-else>
-              <MenuLink :child="item" />
+              <MenuLink :item="item" />
             </li>
           </template>
         </ul>
