@@ -79,9 +79,7 @@ class MongoConnector {
         }
         const newRow = {};
         for (const [key_1, value] of Object.entries(row)) {
-            console.log('aVBFAIODHF', Object.entries(row));
-            console.log('COLUMNS', resource.columns);
-            const dbKey = resource.columns.find((col) => col.name == key_1);
+            const dbKey = resource.dataSourceColumns.find((col) => col.name == key_1);
             if (!dbKey) {
                 continue; // should I continue or throw an error?
                 throw new Error(`Resource '${resource.table}' has no column '${key_1}' defined`);
@@ -111,7 +109,7 @@ class MongoConnector {
       }
     
     async getData({ resource, limit, offset, sort, filters }) {
-        // const columns = resource.columns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
+        // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
         
         for (const filter of filters) {
@@ -119,8 +117,8 @@ class MongoConnector {
             throw new Error(`Operator ${filter.operator} is not allowed`);
             }
 
-            if (!resource.columns.some((col) => col.name == filter.field)) {
-                throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
+            if (!resource.dataSourceColumns.some((col) => col.name == filter.field)) {
+                throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.dataSourceColumns.map((col) => col.name).join(', ')}`);
             }
         }
 
@@ -156,14 +154,18 @@ class MongoConnector {
     async createRecord({ resource, record }) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
-        const newRow = {};
-        for (const [key, value] of Object.entries(record)) {
-            if (resource.columns.find((col) => col.name == key) == undefined) {
-                continue
+        const columns = Object.keys(record);
+        const newRecord = {};
+        for (const colName of columns) {
+            const col = resource.dataSourceColumns.find((col) => col.name == colName);
+            if (col) {
+                newRecord[colName] = this.setFieldValue(col, record[colName]);
+            } else {
+                newRecord[colName] = record[colName];
             }
-            newRow[key] = this.setFieldValue(resource.columns.find((col) => col.name == key), value);
         }
-        await collection.insertOne(newRow);
+
+        await collection.insertOne(newRecord);
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {

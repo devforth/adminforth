@@ -118,18 +118,17 @@
         </ul>
     </div>
   </aside>
-
     
   <div class="p-4 sm:ml-64" v-if="loggedIn">
     <div class="p-0 dark:border-gray-700 mt-14">
         <RouterView/>     
-        
     </div>
   </div> 
 
   <div v-else>
     <RouterView/>
   </div>
+  <AcceptModal />
     
 </template>
 
@@ -143,6 +142,7 @@ import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import AcceptModal from './components/AcceptModal.vue';
 
 import { useRoute, useRouter } from 'vue-router';
 
