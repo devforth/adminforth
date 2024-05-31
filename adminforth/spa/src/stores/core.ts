@@ -43,16 +43,10 @@ export const useCoreStore = defineStore('core', () => {
 
     // find homepage:true in menu recuresively
     const homepage = await findHomepage(menu.value);
-    console.log('🏠 homepage', homepage);
     if (homepage) {
       if (homepage.resourceId) {
         // redirect to homepage
-        console.log('🏠 1redirecting to homepage', router.currentRoute.value.name, router.currentRoute.value.params.resourceId  );
-        if (router.currentRoute.value.name !== 'resource-list' ||  router.currentRoute.value.params.resourceId !== homepage.resourceId) {
-          // only redirect if not already on resource
-          console.log('🏠 redirecting to homepage', homepage.resourceId);
-          router.push({ name: 'resource-list', params: { resourceId: homepage.resourceId } });
-        }
+        router.push({ name: 'resource-list', params: { resourceId: homepage.resourceId } });
       } else {
         // redirect to path
         router.push(homepage.path);
