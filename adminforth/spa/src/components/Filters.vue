@@ -44,7 +44,10 @@
           <CustomDateRangePicker
             v-else-if="['datetime'].includes(c.type)"
             :column="c"
-            @update="setFilterItem($event)"
+            :valueStart="filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
+            @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+            :valueEnd="filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
+            @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
           />
 
           <input

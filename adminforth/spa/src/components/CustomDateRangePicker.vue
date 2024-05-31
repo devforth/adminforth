@@ -2,14 +2,15 @@
   <div>
     <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
       <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Start date:</label>
+        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Start
+          date:</label>
 
         <div class="relative">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
             <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
           </div>
 
-          <input id="datepicker-start" type="text"
+          <input ref="datepickerStartEl" type="text"
                  class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                  placeholder="Start date">
         </div>
@@ -23,7 +24,7 @@
             <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
           </div>
 
-          <input id="datepicker-end" type="text"
+          <input ref="datepickerEndEl" type="text"
                  class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                  placeholder="End date">
         </div>
@@ -71,7 +72,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -85,31 +86,42 @@ const coreStore = useCoreStore();
 dayjs.extend(utc)
 
 const props = defineProps({
-  modelValue: {
-    default: undefined,
+  valueStart: {
+    default: undefined
+  },
+  valueEnd: {
+    default: undefined
   },
   column: {
     type: Object,
   },
 });
 
-const emit = defineEmits(['update']);
+const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
 onMounted(() => {
-  const datepickerStartEl = document.getElementById('datepicker-start');
-  datepickerStartEl.addEventListener('changeDate', setStartDate)
-  new Datepicker(datepickerStartEl, {});
+  initDatepickers();
 
+  updateFromProps();
 
-  const datepickerEndEl = document.getElementById('datepicker-end');
-  datepickerEndEl.addEventListener('changeDate', setEndDate)
-  new Datepicker(datepickerEndEl, {});
+  watch(() => [props.valueStart, props.valueEnd], (value) => {
+    updateFromProps();
+  });
 });
+
+onUnmounted(() => {
+  datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
+
+  datepickerEndEl.value.removeEventListener('changeDate', setEndDate)
+})
+
+const datepickerStartEl = ref();
+const datepickerEndEl = ref();
 
 const showTimeInputs = ref(false);
 
-const startDate = ref(undefined);
-const endDate = ref(undefined);
+const startDate = ref('');
+const endDate = ref('');
 
 const startTime = ref('');
 const endTime = ref('');
@@ -118,11 +130,11 @@ const start = computed(() => {
   if (!startDate.value) {
     return;
   }
+
   let date = dayjs(startDate.value);
 
   if (startTime.value) {
-    console.log(startTime.value);
-    date = addTimeToDate(startTime.value, date)
+    date = addTimeToDate(formatTime(startTime.value), date)
   }
 
   return date.utc().toISOString();
@@ -132,43 +144,35 @@ const end = computed(() => {
   if (!endDate.value) {
     return;
   }
+
   let date = dayjs(endDate.value);
 
   if (endTime.value) {
-    console.log(endTime.value);
-    date = addTimeToDate(endTime.value, date)
-  }else {
-    date = addTimeToDate('23:59:59', date )
+    date = addTimeToDate(formatTime(endTime.value), date)
+  } else {
+    date = addTimeToDate('23:59:59', date)
   }
 
   return date.utc().toISOString();
 })
 
 watch(start, () => {
-  console.log('start', start.value)
-  emit('update', {column: props.column, value: start.value, operator: 'gte'})
+  //console.log('⚡ emit', start.value)
+  emit('update:valueStart', start.value)
 })
 
 watch(end, () => {
-  console.log('end', end.value)
-  emit('update', {column: props.column, value: end.value, operator: 'lte'})
+  //console.log('⚡ emit', end.value)
+  emit('update:valueEnd', end.value)
 })
 
-watch(startDate, () => {
-  console.log('startDate', startDate.value)
-})
+function initDatepickers() {
+  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
+  new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
 
-watch(endDate, () => {
-  console.log('endDate', endDate.value)
-})
-
-watch(startTime, () => {
-  console.log('startTime', startTime.value)
-})
-
-watch(endTime, () => {
-  console.log('endTime', endTime.value)
-})
+  datepickerEndEl.value.addEventListener('changeDate', setEndDate)
+  new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
+}
 
 function setStartDate(event) {
   startDate.value = event.detail.date
@@ -178,9 +182,24 @@ function setEndDate(event) {
   endDate.value = event.detail.date
 }
 
+function formatTime(time) {
+  return time.split(':').map(Number).length === 2 ? time + ':00' : time;
+}
+
 function addTimeToDate(time, date) {
   const [hours, minutes, seconds] = time.split(':').map(Number)
   return date.hour(hours).minute(minutes).second(seconds)
+}
+
+function updateFromProps() {
+  if (props.valueStart === undefined) {
+    datepickerStartEl.value.value = '';
+    startTime.value = '';
+  }
+  if (props.valueEnd === undefined) {
+    datepickerEndEl.value.value = '';
+    endTime.value = '';
+  }
 }
 
 const toggleTimeInputs = () => {
