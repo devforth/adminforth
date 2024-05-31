@@ -9,7 +9,6 @@ import ExpressServer from './servers/express.js';
 
 import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 
-
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
 class AdminForth {
@@ -302,8 +301,32 @@ class AdminForth {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser}) => {
+      handler: async ({input, adminUser, cookies}) => {
+        const cookieParsed = this.auth.verify(cookies['adminforth_jwt']);
+        let username = ''
+        if (cookieParsed['pk'] == null) {
+            username = this.config.rootUser.username;
+        } else {
+            const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+            const user = await this.connectors[userResource.dataSource].getData({
+              resource: userResource,
+              filters: [
+                { field: userResource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
+              ],
+              limit: 1,
+              offset: 0,
+              sort: [],
+            });
+            if (!user.data.length) {
+              return { error: 'Unauthorized' };
+            }
+            username = user.data[0][this.config.auth.usernameField]; 
+        }
+
         return {
+          user: {
+            [this.config.auth.usernameField]: username
+          },
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
@@ -313,11 +336,13 @@ class AdminForth {
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
             auth: this.config.auth,
+            usernameField: this.config.auth.usernameField,
           },
           adminUser,
         };
       },
     });
+
     server.endpoint({
       method: 'POST',
       path: '/get_resource_columns',
