@@ -27,20 +27,41 @@ class AdminForth {
     this.express = new ExpressServer(this);
     this.auth = new Auth();
     this.codeInjector = new CodeInjector(this);
-
     this.connectors = {};
     this.statuses = {}
-    
   }
 
   validateConfig() {
+    if (this.config.rootUser) {
+      if (!this.config.rootUser.username) {
+        throw new Error('rootUser.username is required');
+      }
+      if (!this.config.rootUser.password) {
+        throw new Error('rootUser.password is required');
+      }
+
+      console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config before going to production\n');
+    }
+
+    if (this.config.auth) {
+      if (!this.config.auth.resourceId) {
+        throw new Error('No config.auth.resourceId defined');
+      }
+      if (!this.config.auth.passwordHashField) {
+        throw new Error('No config.auth.passwordHashField defined');
+      }
+      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+      if (!userResource) {
+        throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
+      }
+    }
+
+
     const errors = [];
 
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
-    console.log('🙂 this.config', this.config);
-
     if (!this.config.brandName) {
       this.config.brandName = 'AdminForth';
     }
@@ -199,10 +220,79 @@ class AdminForth {
 
   setupEndpoints(server) {
     server.endpoint({
-      noAuth: true, // TODO
+      noAuth: true,
+      method: 'POST',
+      path: '/login',
+      handler: async ({ body, response }) => {
+        const { username, password } = body;
+        let token;
+        if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
+          token = this.auth.issueJWT({ username, pk: null  });
+        } else {
+          // get resource from db
+          if (!this.config.auth) {
+            throw new Error('No config.auth defined');
+          }
+          const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+
+          const user = await this.connectors[userResource.dataSource].getData({
+            resource: userResource,
+            filters: [
+              { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+            ],
+            limit: 1,
+            offset: 0,
+            sort: [],
+          });
+
+          const INVALID_MESSAGE = 'Invalid username or password';
+          if (!user.data.length) {
+            return { error: INVALID_MESSAGE };
+          }
+
+          const userRecord = user.data[0];
+          const passwordHash = userRecord[this.config.auth.passwordHashField];
+          const valid = await Auth.verifyPassword(password, passwordHash);
+          if (valid) {
+            token = this.auth.issueJWT({ 
+              username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
+            });
+          } else {
+            return { error: INVALID_MESSAGE };
+          }
+        }
+
+        response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+        return { ok: true };
+      },
+    });
+
+    server.endpoint({
+      noAuth: true,
+      method: 'GET',
+      path: '/get_public_config',
+      handler: async ({ body }) => {
+
+        // find resource
+        if (!this.config.auth) {
+          throw new Error('No config.auth defined');
+        }
+        const usernameField = this.config.auth.usernameField;
+        const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+        const usernameColumn = resource.columns.find((col) => col.name === usernameField);
+
+        return {
+          brandName: this.config.brandName,
+          usernameFieldName: usernameColumn.label,
+          loginBackgroundImage: this.config.auth.loginBackgroundImage,
+        };
+      },
+    });
+
+    server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input}) => {
+      handler: async ({input, adminUser}) => {
         return {
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
@@ -212,12 +302,13 @@ class AdminForth {
           config: { 
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
-          }
+            auth: this.config.auth,
+          },
+          adminUser,
         };
       },
     });
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_resource_columns',
       handler: async ({ body }) => {
@@ -236,7 +327,6 @@ class AdminForth {
       },
     });
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_resource_data',
       handler: async ({ body }) => {
@@ -264,7 +354,6 @@ class AdminForth {
       },
     });
     server.endpoint({
-      noAuth: true, // TODO
       method: 'POST',
       path: '/get_min_max_for_columns',
       handler: async ({ body }) => {
@@ -294,7 +383,6 @@ class AdminForth {
       },
     });
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/get_record',
         handler: async ({ body }) => {

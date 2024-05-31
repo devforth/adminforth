@@ -54,6 +54,17 @@ const admin = new AdminForth({
   // baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
+  rootUser: {
+    username: 'adminforth',
+    password: 'adminforth',
+  },
+  auth: {
+    resourceId: 'users',  // resource for getting user
+    usernameField: 'email',
+    passwordHashField: 'password_hash',
+    userFullNameField: 'fullName', // optional
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
   dataSources: [
     {
       id: 'maindb',
@@ -315,6 +326,12 @@ const admin = new AdminForth({
     }
   ],
   menu: [
+    {
+      label: 'Dashboard',
+      icon: 'flowbite:dashboard-solid',
+      component: './custom/Dash.vue',
+      homepage: true,
+    },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
