@@ -159,7 +159,7 @@ function toggleTheme() {
   document.documentElement.classList.toggle('dark');
 }
 
-function logout() {
+async function logout() {
   await coreStore.logout();
   router.push({ name: 'login' });
 }
