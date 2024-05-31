@@ -6,9 +6,10 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
+import {v1 as uuid} from 'uuid';
+
 
 import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
-
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
@@ -21,8 +22,14 @@ class AdminForth {
     }
   }
 
+  #defaultConfig = {
+    deleteConfirmation: true,
+    
+    
+  }
+
   constructor(config) {
-    this.config = config;
+    this.config = {...this.#defaultConfig,...config};
     this.validateConfig();
     this.express = new ExpressServer(this);
     this.auth = new Auth();
@@ -58,7 +65,6 @@ class AdminForth {
 
 
     const errors = [];
-
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
@@ -126,6 +132,35 @@ class AdminForth {
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
 
+
+        //check if resource has bulkActions
+        if(res.options?.bulkActions){
+          let bulkActions = res.options.bulkActions;
+
+          if(!Array.isArray(bulkActions)){
+            errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
+            bulkActions = [];
+          }
+          if(res.options?.allowDelete){
+            bulkActions.push({
+              label: `Delete checked`,
+              state: 'danger',
+              icon: 'flowbite:trash-bin-outline',
+              action: async ({selectedIds}) => {
+                const connector = this.connectors[res.dataSource];
+                await Promise.all(selectedIds.map(async (recordId) => {
+                  await connector.deleteRecord({ resource: res, recordId });
+                }));
+              }
+            });
+          }  
+          
+          const newBulkActions = bulkActions.map((action) => {
+            return Object.assign(action, {id: uuid()});
+          });
+          console.log('newBulkActions', newBulkActions);
+          bulkActions = newBulkActions;
+        }
       });
 
       if (!this.config.menu) {
@@ -164,6 +199,11 @@ class AdminForth {
       const duplicates = resourceIds.filter((item, index) => resourceIds.indexOf(item) != index);
       errors.push(`Duplicate fields "resourceId" or "table": ${duplicates.join(', ')}`);
     }
+
+    //add ids for onSelectedAllActions for each resource
+   
+
+
 
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
@@ -262,8 +302,7 @@ class AdminForth {
             throw new Error('No config.auth defined');
           }
           const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
-
-          const user = await this.connectors[userResource.dataSource].getData({
+          const userRecord = await this.connectors[userResource.dataSource].getData({
             resource: userResource,
             filters: [
               { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
@@ -271,15 +310,14 @@ class AdminForth {
             limit: 1,
             offset: 0,
             sort: [],
-          });
+          }).data[0];
 
-          const INVALID_MESSAGE = 'Invalid username or password';
-          if (!user.data.length) {
-            return { error: INVALID_MESSAGE };
+          if (!userRecord) {
+            return { error: 'User not found' };
           }
 
-          const userRecord = user.data[0];
           const passwordHash = userRecord[this.config.auth.passwordHashField];
+          console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await Auth.verifyPassword(password, passwordHash);
           if (valid) {
             token = this.auth.issueJWT({ 
@@ -330,8 +368,32 @@ class AdminForth {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser}) => {
+      handler: async ({input, adminUser, cookies}) => {
+        const cookieParsed = this.auth.verify(cookies['adminforth_jwt']);
+        let username = ''
+        if (cookieParsed['pk'] == null) {
+            username = this.config.rootUser.username;
+        } else {
+            const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+            const user = await this.connectors[userResource.dataSource].getData({
+              resource: userResource,
+              filters: [
+                { field: userResource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
+              ],
+              limit: 1,
+              offset: 0,
+              sort: [],
+            });
+            if (!user.data.length) {
+              return { error: 'Unauthorized' };
+            }
+            username = user.data[0][this.config.auth.usernameField]; 
+        }
+
         return {
+          user: {
+            [this.config.auth.usernameField]: username
+          },
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
@@ -340,12 +402,15 @@ class AdminForth {
           config: { 
             brandName: this.config.brandName,
             datesFormat: this.config.datesFormat,
+            deleteConfirmation: this.config.deleteConfirmation,
             auth: this.config.auth,
+            usernameField: this.config.auth.usernameField,
           },
           adminUser,
         };
       },
     });
+
     server.endpoint({
       method: 'POST',
       path: '/get_resource_columns',
@@ -386,7 +451,7 @@ class AdminForth {
           filters,
           sort,
         });
-        return data;
+        return {...data, options: resource?.options };
       },
     });
     server.endpoint({
@@ -625,6 +690,32 @@ class AdminForth {
             }
         }
     });
+    server.endpoint({
+        noAuth: true, // TODO
+        method: 'POST',
+        path: '/start_bulk_action',
+        handler: async ({ body }) => {
+            const { resourceId, actionId, recordIds } = body;
+            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+            if (!resource) {
+                return { error: `Resource '${resourceId}' not found` };
+            }
+            const action = resource.options.bulkActions.find((act) => act.id == actionId);
+            if (!action) {
+                return { error: `Action '${actionId}' not found` };
+            } else{
+              await action.action({selectedIds:recordIds})
+
+            }
+            return {
+              actionId,
+              recordIds,
+              resourceId,
+              status:'success'
+              
+            }
+        }
+    })
   }
 }
 

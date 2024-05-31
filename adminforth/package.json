@@ -14,9 +14,11 @@
     "crypto": "^1.0.1",
     "dayjs": "^1.11.11",
     "filewatcher": "^3.0.1",
+    "flowbite-datepicker": "^1.2.6",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "6.6",
-    "pg": "^8.11.5"
+    "pg": "^8.11.5",
+    "uuid": "^9.0.1"
   }
 }
