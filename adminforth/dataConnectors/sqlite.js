@@ -12,7 +12,6 @@ class SQLiteConnector {
     async discoverFields(tableName) {
         const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
-        console.log('rows', rows);
         const fieldTypes = {};
         rows.forEach((row) => {
           const field = {};
