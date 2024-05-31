@@ -33,13 +33,30 @@
               :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
-            <input 
-              v-else-if="[ 'string', 'date', 'time', 'datetime', 'text' ].includes(c.type)"
-              type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
-              placeholder="Search"
-              @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
-              :value="getFilterItem({ column: c, operator: 'ilike' })"
-            >
+           <input
+             v-else-if="[ 'string', 'text' ].includes(c.type)"
+             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+             placeholder="Search"
+             @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
+             :value="getFilterItem({ column: c, operator: 'ilike' })"
+           >
+
+           <CustomDateRangePicker
+             v-else-if="['datetime'].includes(c.type)"
+             :column="c"
+             :valueStart="filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
+             @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+             :valueEnd="filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
+             @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
+           />
+
+           <input
+             v-else-if="[ 'date', 'time' ].includes(c.type)"
+             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+             placeholder="Search datetime"
+             @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
+             :value="getFilterItem({ column: c, operator: 'ilike' })"
+           >
 
             <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
               <input 
@@ -74,8 +91,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, defineEmits, computed } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
+import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 
 // props: columns
 // add support for v-model:filers
