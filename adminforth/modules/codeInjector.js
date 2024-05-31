@@ -23,6 +23,13 @@ class CodeInjector {
     this.adminforth = adminforth;
   }
 
+  async runShell({command, verbose = false}) {
+    console.time(`Running ${command}...`);
+    const { stdout: out, stderr: err } = await execAsync(command);
+    console.timeEnd(`Running ${command}...`);
+    console.log(`Command ${command} output:`, out, err);
+  }
+
   async runNpmShell({command, verbose = false, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
@@ -85,6 +92,9 @@ class CodeInjector {
     };
     collectAssetsFromMenu(this.adminforth.config.menu);
 
+    if (this.adminforth.config.customization?.vueUsesFile) {
+      customFiles.push(this.adminforth.config.customization.vueUsesFile);
+    }
 
     // create spa_tmp folder, or ignore if it exists
     try {
@@ -115,8 +125,6 @@ class CodeInjector {
       }))
     }
 
-    
-
     const uniqueIcons = Array.from(new Set(icons));
 
     // icons are collectionName:iconName. Get list of all unique collection names:
@@ -143,18 +151,27 @@ class CodeInjector {
       return `app.component('${PascalIconName}', ${PascalIconName});`;
     }).join('\n');
 
+    let imports = iconImports + '\n';
+
+    if (this.adminforth.config.customization?.vueUsesFile) {
+      imports += `import addCustomUses from '@/custom/${this.adminforth.config.customization.vueUsesFile}';\n`;
+    }
+
     // inject that code into spa_tmp/src/App.vue
     const appVuePath = path.join(spaTmpPath, 'src', 'main.ts');
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
-    appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH IMPORTS */', iconImports + '\n');
-    appVueContent = appVueContent.replace('/* IMPORTANT:ADMIFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n');
+    appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH IMPORTS */', imports);
+    appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n' );
+    if (this.adminforth.config.customization?.vueUsesFile) {
+      appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH CUSTOM USES */', 'addCustomUses(app);');
+    }
     await fs.promises.writeFile(appVuePath, appVueContent);
 
 
     /* generate custom rotes */
     const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
-    routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMIFORTH ROUTES */', routes);
+    routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES */', routes);
     await fs.promises.writeFile(routerVuePath, routerVueContent);
     
 
@@ -162,9 +179,18 @@ class CodeInjector {
     const packageLockPath = path.join(spaTmpPath, 'package-lock.json');
     const packageLock = JSON.parse(await fs.promises.readFile(packageLockPath, 'utf-8'));
     const lockHash = hashify(packageLock);
+    /* customPackageLock */
+    const customPackagePath = path.join('./package.json');
+    const customPackage = JSON.parse(await fs.promises.readFile(customPackagePath, 'utf-8'));
+    const customPackageHash = hashify(customPackage);
+
+    const customLockPath = path.join('./package-lock.json');
+    const customLock = JSON.parse(await fs.promises.readFile(customLockPath, 'utf-8'));
+    const customLockHash = hashify(customLock);
+
     const packagesNamesHash = hashify(packageNames);
 
-    const fullHash = hashify([lockHash, packagesNamesHash]);
+    const fullHash = hashify([lockHash, packagesNamesHash, customLockHash]);
     const hashPath = path.join(spaTmpPath, 'node_modules', '.adminforth_hash');
 
     try {
@@ -179,8 +205,16 @@ class CodeInjector {
 
     await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
 
+    // get packages with version from customPackage
+    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])].reduce(
+      (acc, packageName) => {
+        const version = customLock.packages[`node_modules/${packageName}`].version;
+        acc.push(`${packageName}@${version}`);
+        return acc;
+      }, []);
+
     if (packageNames.length) {
-      const npmInstallCommand = `install ${packageNames.join(' ')}`;
+      const npmInstallCommand = `install ${[...packageNames, ...customPackgeNames].join(' ')}`;
       await this.runNpmShell({command: npmInstallCommand, cwd: spaTmpPath});
     }
 

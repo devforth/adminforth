@@ -13,6 +13,7 @@
   "dependencies": {
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2",
+    "highcharts-vue": "^2.0.1",
     "nodemon": "^3.1.0",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"

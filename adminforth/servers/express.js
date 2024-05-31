@@ -135,7 +135,6 @@ class ExpressServer {
   authorize(handler) {
     return async (req, res, next) => {
       const cookies = await parseExpressCookie(req);
-      console.log('cookies', cookies);
       const jwt = cookies['adminforth_jwt'];
       if (!jwt) {
         res.status(401).send('Unauthorized by AdminForth');

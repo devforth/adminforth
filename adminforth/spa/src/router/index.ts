@@ -46,7 +46,7 @@ const router = createRouter({
         },
       ]
     }, 
-    /* IMPORTANT:ADMIFORTH ROUTES */
+    /* IMPORTANT:ADMINFORTH ROUTES */
   ]
 })
 
