@@ -268,6 +268,16 @@ class AdminForth {
     });
 
     server.endpoint({
+        noAuth: true,
+        method: 'POST',
+        path: '/logout',
+        handler: async ({ response }) => {
+          response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+          return { ok: true };
+        },
+    })
+
+    server.endpoint({
       noAuth: true,
       method: 'GET',
       path: '/get_public_config',
