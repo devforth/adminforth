@@ -189,7 +189,6 @@ class SQLiteConnector {
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
       const stmt = this.db.prepare(q);
       const d = [...filterValues, limit, offset];
-      console.log('⚙️⚙️⚙️ running request against data', d);
       const rows = stmt.all(d);
 
       const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
