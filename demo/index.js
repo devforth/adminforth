@@ -137,6 +137,7 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
+          type: AdminForth.Types.DATETIME,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
