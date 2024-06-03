@@ -316,7 +316,6 @@ import {
 import Filters from '@/components/Filters.vue';
 
 
-
 const coreStore = useCoreStore();
 const modalStore = useModalStore();
 

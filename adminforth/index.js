@@ -158,7 +158,6 @@ class AdminForth {
           const newBulkActions = bulkActions.map((action) => {
             return Object.assign(action, {id: uuid()});
           });
-          console.log('newBulkActions', newBulkActions);
           bulkActions = newBulkActions;
         }
       });
