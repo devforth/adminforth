@@ -13,6 +13,9 @@ class MongoConnector {
         (async () => {
             try {
                 await this.db.connect();
+                this.db.on('error', (err) => {
+                    console.log('Mongo error: ', err.message)
+                 });
                 console.log('Connected to Mongo');
             } catch (e) {
                 console.error('ERROR: Failed to connect to Mongo', e);

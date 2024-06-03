@@ -113,7 +113,7 @@ class CodeInjector {
     } else {
       await fsExtra.copy(path.join(__dirname, 'spa'), spaTmpPath, {
         filter: (src) => {
-          return !src.includes('/node_modules') && !src.includes('/dist');
+          return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
         },
       });
 
