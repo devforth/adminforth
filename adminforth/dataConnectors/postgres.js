@@ -227,7 +227,6 @@ class PostgresConnector {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
-            console.log('key', key, value, resource.dataSourceColumns.find((col) => col.name == key));
               newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
           }
           return newRow;
