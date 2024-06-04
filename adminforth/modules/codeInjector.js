@@ -87,7 +87,6 @@ class CodeInjector {
       await fs.promises.mkdir(spaTmpPath, { recursive: true });
     }
 
-    const customFiles = [];
     const icons = [];
     let routes = '';
 
@@ -97,11 +96,10 @@ class CodeInjector {
           icons.push(item.icon);
         }
         if (item.component) {
-          customFiles.push(item.component);
           routes += `{
             path: '${item.path}',
             name: '${item.path}',
-            component: import('@/custom/${item.component}'),
+            component: import('${item.component}'),
           },\n`
         }
         if (item.children) {
@@ -110,10 +108,6 @@ class CodeInjector {
       });
     };
     collectAssetsFromMenu(this.adminforth.config.menu);
-
-    if (this.adminforth.config.customization?.vueUsesFile) {
-      customFiles.push(this.adminforth.config.customization.vueUsesFile);
-    }
 
     // create spa_tmp folder, or ignore if it exists
     try {
@@ -136,12 +130,12 @@ class CodeInjector {
         },
       });
 
-      // copy custom files
-      await Promise.all(customFiles.map(async (file) => {
-        const src = path.join(file);
-        const dest = path.join(spaTmpPath, 'src', 'custom', file);
-        await fsExtra.copy(src, dest);
-      }))
+      // copy whole custom directory
+      if (this.adminforth.config.customization?.customComponentsDir) {
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(spaTmpPath, 'src', 'custom'), {
+          recursive: true,
+        });
+      }
     }
 
     //collect all 'icon' fields from resources bulkActions
@@ -184,7 +178,7 @@ class CodeInjector {
     let imports = iconImports + '\n';
 
     if (this.adminforth.config.customization?.vueUsesFile) {
-      imports += `import addCustomUses from '@/custom/${this.adminforth.config.customization.vueUsesFile}';\n`;
+      imports += `import addCustomUses from '${this.adminforth.config.customization.vueUsesFile}';\n`;
     }
 
     // inject that code into spa_tmp/src/App.vue
@@ -286,11 +280,61 @@ class CodeInjector {
     });
   }
 
+  async watchCustomComponentsForCopy() {
+    const customComponentsDir = this.adminforth.config.customization.customComponentsDir;
+
+    // check if folder exists
+    try {
+      await fs.promises.access(customComponentsDir, fs.constants.F_OK);
+    } catch (e) {
+      return;
+    }
+
+    // get all subdirs
+    const directories = [];
+    const collectDirectories = async (dir) => {
+      directories.push(dir);
+
+      const files = await fs.promises.readdir(dir, { withFileTypes: true });
+      for (const file of files) {
+        if (file.isDirectory()) {
+          await collectDirectories(path.join(dir, file.name));
+        }
+      }
+    };
+
+    await collectDirectories(customComponentsDir);
+
+    const watcher = filewatcher();
+    directories.forEach((dir) => {
+      watcher.add(dir);
+    });
+
+    watcher.on(
+      'change',
+      async (file) => {
+        // copy one file
+        // TODO: non optimal, copy only changed file, test on both nested and parent dir
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(spaTmpPath, 'src', 'custom'), {
+          recursive: true,
+        });
+      }
+    )
+    process.on('exit', () => {
+      watcher.removeAll();
+    });
+  }
+
   async bundleNow({hotReload = false, verbose = false}) {
     this.adminforth.config.runningHotReload = hotReload;
 
     await this.prepareSources({ verbose });
-    await this.watchForReprepare();
+
+    if (hotReload) {
+      await this.watchForReprepare();
+      await this.watchCustomComponentsForCopy();
+    }
+
     console.log('AdminForth bundling');
     
     const cwd = CodeInjector.SPA_TMP_PATH;

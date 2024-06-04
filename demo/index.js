@@ -67,7 +67,8 @@ const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   customization: {
-    vueUsesFile: './custom/vueUses.ts',
+    customComponentsDir: './custom',
+    vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory
   },
 
   dataSources: [
@@ -403,7 +404,7 @@ const admin = new AdminForth({
     {
       label: 'Dashboard',
       icon: 'flowbite:chart-pie-solid',
-      component: './custom/Dash.vue',
+      component: '@@/Dash.vue',
       homepage: true,
       path: '/dashboard',
     },
@@ -457,13 +458,27 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development1' });
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
 
+
+// add api before .serve
+app.get(
+  '/api/testtest/', 
+  admin.express.authorize(
+    async (req, res, next,) => {
+        res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
+    }
+  )
+)
+
+// serve after you added all api
 admin.express.serve(app, express)
 admin.discoverDatabases();
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
