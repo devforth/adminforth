@@ -526,6 +526,20 @@ class AdminForth {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            
+            const record = body['record'];
+            // execute hook if needed
+            if (resource.hooks?.create?.beforeSave) {
+                const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             for (const column of resource.columns) {
                 if (column.fillOnCreate) {
                     if (body['record'][column.name] === undefined) {
@@ -551,31 +565,15 @@ class AdminForth {
                     }
                 }
             }
-            const connector = this.connectors[resource.dataSource];
-
-            const record = body['record'];
-            
-            // execute hook if needed
-            if (resource.hooks?.create?.beforeSave) {
-              const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
 
             // remove virtual columns from record
             for (const column of resource.columns.filter((col) => col.virtual)) {
-              if (record[column.name]) {
-                delete record[column.name];
-              }
+                if (record[column.name]) {
+                  delete record[column.name];
+                }
             }
-
+            const connector = this.connectors[resource.dataSource];
             await connector.createRecord({ resource, record });
-            
             // execute hook if needed
             if (resource.hooks?.create?.afterSave) {
                 const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
