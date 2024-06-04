@@ -16,7 +16,7 @@
     <div class="py-4 ">
       <ul class="space-y-3 font-medium">
          <li v-for="c in columnsWithFilter" :key="c">
-            {{ c.label }}
+            <p class="dark:text-gray-400">{{ c.label }}</p>
 
             <Dropdown 
               v-if="c.type === 'boolean'" 
@@ -35,7 +35,7 @@
 
            <input
              v-else-if="[ 'string', 'text' ].includes(c.type)"
-             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
+             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
              placeholder="Search"
              @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
              :value="getFilterItem({ column: c, operator: 'ilike' })"
@@ -62,14 +62,14 @@
               <input 
                 type="number" aria-describedby="helper-text-explanation" 
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="from"
+                placeholder="From"
                 @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
                 :value="getFilterItem({ column: c, operator: 'gte' })"
               >
               <input 
                 type="number" aria-describedby="helper-text-explanation" 
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="to"
+                placeholder="To"
                 @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
                 :value="getFilterItem({ column: c, operator: 'lte' })"
               >
@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, computed } from 'vue'
+import { ref, computed } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 

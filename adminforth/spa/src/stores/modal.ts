@@ -11,14 +11,14 @@ export const useModalStore = defineStore('modal', () => {
     cancelText: 'cancelText',
   });  
   const isOpened = ref(false);
-  const onAcceptFunction = ref(()=>{});
+  const onAcceptFunction: any = ref(()=>{});
   function togleModal() {
     isOpened.value = !isOpened.value;
   }
-  function setOnAcceptFunction(func) {
+  function setOnAcceptFunction(func: Function) {
     onAcceptFunction.value = func;
   }
-  function setModalContent(content) {
+  function setModalContent(content: string) {
     modalContent.value = content;
   }
   function resetmodalState() {
