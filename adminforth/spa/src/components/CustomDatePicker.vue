@@ -10,7 +10,7 @@
           </div>
 
           <input ref="datepickerStartEl" type="text"
-                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                  placeholder="Start date">
         </div>
       </div>
@@ -21,11 +21,11 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white"/>
+              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
             </div>
 
             <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
-                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    value="00:00" required/>
           </div>
         </div>
