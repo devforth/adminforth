@@ -5,16 +5,16 @@ import vue from '@vitejs/plugin-vue'
 
 
 const customLogger = {
-  info(msg) {
+  info(msg: string) {
     // Filter out the lines containing '➜ Local:' or '➜ Network:'
     if (!msg.includes('➜')) {
       console.log(msg);
     }
   },
-  warn(msg) {
+  warn(msg: string) {
     console.warn(msg);
   },
-  error(msg) {
+  error(msg: string) {
     console.error(msg);
   },
   clear() {

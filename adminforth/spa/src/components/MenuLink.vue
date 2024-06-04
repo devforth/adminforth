@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 import { getIcon } from '@/utils';
-import { defineProps } from 'vue';
 
 const props = defineProps(['item', 'isChild']);
 

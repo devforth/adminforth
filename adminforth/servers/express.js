@@ -2,6 +2,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import CodeInjector from '../modules/codeInjector.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -104,11 +105,11 @@ class ExpressServer {
 
     } else {
       this.expressApp.get(`${slashedPrefix}assets/*`, (req, res) => {
-        res.sendFile(path.join(__dirname, '..', 'spa', 'dist', replaceAtStart(req.url, prefix)))
+        res.sendFile(path.join(CodeInjector.SPA_TMP_PATH, 'dist', replaceAtStart(req.url, prefix)))
       })
 
       this.expressApp.get(`${prefix}*`, async (req, res) => {
-        const fullPath = path.join(__dirname, '..', 'spa', 'dist', 'index.html');
+        const fullPath = path.join(CodeInjector.SPA_TMP_PATH, 'dist', 'index.html');
         
         let fileExists = true;
         try { 
@@ -116,7 +117,6 @@ class ExpressServer {
         } catch (e) {
           fileExists = false;
         }
-        console.log('fileExists', fileExists);
         if (!fileExists) {
           res.status(500).send(respondNoServer(`${this.adminforth.config.brandName} is still warming up`, 'Please wait a moment...'));
           return;
