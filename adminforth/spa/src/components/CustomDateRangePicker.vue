@@ -1,33 +1,24 @@
 <template>
   <div>
     <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
-      <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Start
-          date:</label>
-
-        <div class="relative">
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
-            <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
-          </div>
-
-          <input ref="datepickerStartEl" type="text"
-                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                 placeholder="Start date">
+      <div class="relative">
+        <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+          <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
         </div>
+
+        <input ref="datepickerStartEl" type="text"
+               class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               placeholder="From">
       </div>
 
-      <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">End date:</label>
-
-        <div class="relative">
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
-            <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
-          </div>
-
-          <input ref="datepickerEndEl" type="text"
-                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                 placeholder="End date">
+      <div class="relative">
+        <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+          <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
         </div>
+
+        <input ref="datepickerEndEl" type="text"
+               class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               placeholder="To">
       </div>
     </div>
 
@@ -35,7 +26,7 @@
       <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
-            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
               <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
             </div>
 
@@ -61,7 +52,7 @@
       <button type="button"
               class="text-blue-700 dark:text-blue-500 text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
               @click="toggleTimeInputs">{{ showTimeInputs ? 'Hide time' : 'Show time' }}
-        <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
+        <svg class="w-8 h-8 ms-0.5 relative top-px" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
              fill="none" viewBox="0 0 24 24">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

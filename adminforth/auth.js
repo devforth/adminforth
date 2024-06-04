@@ -28,7 +28,7 @@ class AdminForthAuth {
     }
 
     // issue JWT token
-    const expiresIn = process.env.ADMINFORTH_AUTH_EXPIRESIN || '1h';
+    const expiresIn = process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h';
     return jwt.sign(payload, secret, { expiresIn });
   }
 
