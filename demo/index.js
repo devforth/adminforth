@@ -4,7 +4,7 @@ import AdminForth from '../adminforth/index.js';
 import { v1 as uuid } from 'uuid';
 
 
-const ADMIN_BASE_URL = '/bo';
+const ADMIN_BASE_URL = '';
 
 
 // create test1.db
@@ -51,7 +51,7 @@ if (!tableExists) {
 }
 
 const admin = new AdminForth({
-  // baseUrl : ADMIN_BASE_URL,
+  baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
   // deleteConfirmation: true,
@@ -453,7 +453,7 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development1' });
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
