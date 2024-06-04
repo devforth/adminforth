@@ -46,49 +46,32 @@
      
 
     </BreadcrumbsWithButtons>
+
     <!-- table -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 
       
 
       <!-- skelet loader -->
-      <div v-if="!coreStore.resourceColumns" role="status"
+      <div  role="status" v-if="!coreStore.resourceColumns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between h-16">
           <div>
             <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
             <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
           </div>
           <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
+        <div  class="flex items-center justify-between  h-16 pt-4" v-for="i in new Array(10)" >
           <div>
             <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
             <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
           </div>
           <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
         </div>
-        <div class="flex items-center justify-between pt-4">
-          <div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-            <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-          </div>
-          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-        </div>
-        <div class="flex items-center justify-between pt-4">
-          <div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-            <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-          </div>
-          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-        </div>
-        <div class="flex items-center justify-between pt-4">
-          <div>
-            <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-            <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-          </div>
-          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-        </div>
+       
+        
+
         <span class="sr-only">Loading...</span>
       </div>
 
@@ -105,13 +88,16 @@
 
 
             <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
-              <div class="flex items-center">
+              <div  @click="onSortButtonClick(c.name)" class="flex items-center">
                 {{ c.label }}
-                <a href="#"><svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor" viewBox="0 0 24 24">
+             
+                <div  :style = "{'color':ascArr.includes(c.name)?'green':descArr.includes(c.name)?'red':'currentColor'}" ><svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill='currentColor'
+                   
+                     viewBox="0 0 24 24">
                     <path
                       d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z" />
-                  </svg></a>
+                  </svg></div>
               </div>
             </th>
 
@@ -227,19 +213,11 @@
                   Delete
                   <div class="tooltip-arrow" data-popper-arrow></div>
               </div>
-
-
             </td>
           </tr>
-
-
         </tbody>
       </table>
-
-      
-        
     </div>
-
     <!-- pagination -->
     <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center"
       v-if="rows && totalRows > 0"
@@ -348,10 +326,31 @@ const allFromThisPageChecked = computed(() => {
   if (!rows.value) return false;
   return rows.value.every((r) => checkboxes.value.includes(r.id));
 });
+const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
+const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
 
-watch([page, filters, sort], async () => {
+watch([page, filters], async () => {
   await init();
 });
+
+watch([sort], async () => {
+  await init();
+}, { deep: true });
+
+function onSortButtonClick(field) {
+  const sortIndex = sort.value.findIndex((s) => s.field === field);
+  console.log('sortIndex', sortIndex);
+  if (sortIndex === -1) {
+    sort.value = [{ field, direction: 'asc' }, ...sort.value];
+  } else {
+    const sortField = sort.value[sortIndex];
+    if (sortField.direction === 'asc') {
+      sort.value[sortIndex].direction = 'desc';
+    } else {
+      sort.value.splice(sortIndex, 1);
+    }
+  }
+}
 
 async function getList() {
   rows.value = null;
@@ -459,6 +458,7 @@ onMounted(async () => {
 watch(() => route.params.resourceId, async () => {
   filters.value = [];
   checkboxes.value = [];
+  sort.value = [];
   await init();
 });
 
