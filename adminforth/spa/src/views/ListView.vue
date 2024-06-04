@@ -55,7 +55,7 @@
     </BreadcrumbsWithButtons>
 
     <!-- table -->
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg dark:shadow-2xl">
 
       
 
