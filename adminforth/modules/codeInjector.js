@@ -6,17 +6,19 @@ import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import os from 'os';
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.join(path.dirname(__filename), '..');
 
-// const SPA_TMP_PATH = path.join(__dirname, 'spa_tmp');
+let TMP_DIR;
 
-// folder in /tmp directory to store SPA sources
-const SPA_TMP_PATH = path.join('/tmp', 'adminforth', 'spa_tmp');
-// make sure the folder exists
-fsExtra.ensureDirSync(SPA_TMP_PATH);
+try {
+  TMP_DIR = os.tmpdir();
+} catch (e) {
+  TMP_DIR = '/tmp';
+}
 
 
 const execAsync = promisify(exec);
@@ -27,6 +29,9 @@ function hashify(obj) {
 }
 
 class CodeInjector {
+
+  static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
+
   constructor(adminforth) {
     this.adminforth = adminforth;
   }
@@ -65,7 +70,7 @@ class CodeInjector {
 
   async rmTmpDir() {
     // remove spa_tmp folder if it is exists
-    const spaTmpPath = SPA_TMP_PATH;
+    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     try {
       await fs.promises.rm(spaTmpPath, { recursive: true });
     } catch (e) {
@@ -74,7 +79,13 @@ class CodeInjector {
   }
 
   async prepareSources({ filesUpdated, verbose = false }) {
-    const spaTmpPath = SPA_TMP_PATH;
+    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
+    // check SPA_TMP_PATH exists and create if not
+    try {
+      await fs.promises.access(spaTmpPath, fs.constants.F_OK);
+    } catch (e) {
+      await fs.promises.mkdir(spaTmpPath, { recursive: true });
+    }
 
     const customFiles = [];
     const icons = [];
@@ -282,7 +293,7 @@ class CodeInjector {
     await this.watchForReprepare();
     console.log('AdminForth bundling');
     
-    const cwd = SPA_TMP_PATH;
+    const cwd = CodeInjector.SPA_TMP_PATH;
 
     if (!hotReload) {
       // probably add option to build with tsh check (plain 'build')
