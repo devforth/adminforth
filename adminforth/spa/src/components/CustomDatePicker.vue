@@ -2,8 +2,7 @@
   <div>
     <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
       <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Start
-          date:</label>
+        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
         <div class="relative">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
@@ -13,20 +12,6 @@
           <input ref="datepickerStartEl" type="text"
                  class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                  placeholder="Start date">
-        </div>
-      </div>
-
-      <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">End date:</label>
-
-        <div class="relative">
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
-            <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
-          </div>
-
-          <input ref="datepickerEndEl" type="text"
-                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                 placeholder="End date">
         </div>
       </div>
     </div>
@@ -39,19 +24,7 @@
               <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
             </div>
 
-            <input v-model="startTime" type="time" id="start-time"
-                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   value="00:00" required/>
-          </div>
-        </div>
-
-        <div>
-          <div class="relative">
-            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
-            </div>
-
-            <input v-model="endTime" type="time" id="end-time"
+            <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
                    class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    value="00:00" required/>
           </div>
@@ -89,26 +62,25 @@ const props = defineProps({
   valueStart: {
     default: undefined
   },
-  valueEnd: {
-    default: undefined
-  },
   column: {
     type: Object,
   },
+  label: {
+    type: String,
+  }
 });
 
-const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
+const emit = defineEmits(['update:valueStart']);
 
 const datepickerStartEl = ref();
-const datepickerEndEl = ref();
 
 const showTimeInputs = ref(false);
 
 const startDate = ref('');
-const endDate = ref('');
 
 const startTime = ref('');
-const endTime = ref('');
+
+const datepickerObject = ref('')
 
 const start = computed(() => {
   if (!startDate.value) {
@@ -124,37 +96,21 @@ const start = computed(() => {
   return date.utc().toISOString();
 })
 
-const end = computed(() => {
-  if (!endDate.value) {
-    return;
-  }
-
-  let date = dayjs(endDate.value);
-
-  if (endTime.value) {
-    date = addTimeToDate(formatTime(endTime.value), date)
-  } else {
-    date = addTimeToDate('23:59:59', date)
-  }
-
-  return date.utc().toISOString();
-})
-
 function updateFromProps() {
   if (props.valueStart === undefined) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   }
-  if (props.valueEnd === undefined) {
-    datepickerEndEl.value.value = '';
-    endTime.value = '';
+  else {
+    datepickerObject.value.setDate(dayjs(props.valueStart).format('DD MMM YYYY'));
+    startTime.value = dayjs(props.valueStart).format('HH:mm:ss')
   }
 }
 
 onMounted(() => {
   updateFromProps();
 
-  watch(() => [props.valueStart, props.valueEnd], (value) => {
+  watch(() => [props.valueStart], (value) => {
     updateFromProps();
   });
 })
@@ -164,35 +120,22 @@ watch(start, () => {
   emit('update:valueStart', start.value)
 })
 
-watch(end, () => {
-  //console.log('⚡ emit', end.value)
-  emit('update:valueEnd', end.value)
-})
-
 function initDatepickers() {
+  datepickerObject.value = new Datepicker(datepickerStartEl.value, { format: 'dd M yyyy' });
 
-  new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
-
-  new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
   addChangeDateListener();
 }
 
 function addChangeDateListener() {
   datepickerStartEl.value.addEventListener('changeDate', setStartDate)
-  datepickerEndEl.value.addEventListener('changeDate', setEndDate)
 }
 
 function removeChangeDateListener() {
   datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
-  datepickerEndEl.value.removeEventListener('changeDate', setEndDate);
 }
 
 function setStartDate(event) {
   startDate.value = event.detail.date
-}
-
-function setEndDate(event) {
-  endDate.value = event.detail.date
 }
 
 function formatTime(time) {
