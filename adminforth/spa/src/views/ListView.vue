@@ -1,6 +1,13 @@
 <template>
   <div class="relative">
-    <Filters :columns="coreStore.resourceColumns" v-model:filters="filters" :columnsMinMax="columnsMinMax" />
+    <Teleport to="body">
+      <Filters 
+        :columns="coreStore.resourceColumns" 
+        v-model:filters="filters" 
+        :columnsMinMax="columnsMinMax" :show="filtersShow" 
+        @hide="filtersShow = false"
+      />
+    </Teleport>
 
     <BreadcrumbsWithButtons>
       <button @click="()=>{checkboxes = []}"
@@ -12,7 +19,7 @@
         <IconBanOutline class="w-5 h-5 " /> 
         <div :id="`tooltip-remove-all`"
                 role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                  Remove  selection
+                  Remove selection
                   <div class="tooltip-arrow" data-popper-arrow></div>
               </div>
       </button>
@@ -34,7 +41,7 @@
       </RouterLink>
       <button 
         class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-        data-drawer-target="drawer-navigation" data-drawer-show="drawer-navigation" aria-controls="drawer-navigation" data-drawer-placement="right"
+        @click="()=>{filtersShow = !filtersShow}"
       >
         <IconFilterOutline class="w-4 h-4 me-2" />
           Filter
@@ -293,6 +300,8 @@ import {
 
 import Filters from '@/components/Filters.vue';
 
+const filtersShow = ref(false);
+
 
 const coreStore = useCoreStore();
 const modalStore = useModalStore();
@@ -329,9 +338,14 @@ const allFromThisPageChecked = computed(() => {
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
 
-watch([page, filters], async () => {
+watch([page], async () => {
   await init();
 });
+
+watch([filters], async () => {
+  page.value = 1;
+  await getList();
+}, { deep: true });
 
 watch([sort], async () => {
   await init();
@@ -365,7 +379,6 @@ async function getList() {
       sort: sort.value,
     }
   });
-  console.log('coreStore.resourceColumns', coreStore.resourceColumns);
   rows.value = data.data?.map(row => {
     row._primaryKeyValue = row[coreStore.resourceColumns.find(c => c.primaryKey).name];
     return row;

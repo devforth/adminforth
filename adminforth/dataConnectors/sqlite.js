@@ -235,12 +235,11 @@ class SQLiteConnector {
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {
-        const columns = Object.keys(newValues).map((col) => col).join(', ');
-        const placeholders = Object.keys(newValues).map(() => '?').join(', ');
+        const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
         const values = [...Object.values(newValues), recordId];
 
         this.db.prepare(
-            `UPDATE ${resource.table} SET ${columns} = ${placeholders} WHERE ${this.getPrimaryKey(resource)} = ?`
+            `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
         ).run(values);
     }
 
