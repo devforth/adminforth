@@ -1,13 +1,17 @@
 <template>
   <!-- drawer component -->
-  <div id="drawer-navigation" class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800" 
+  <div id="drawer-navigation" 
+  
+      class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl"
+
+      :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
       :style="{ height: `calc(100vh - 3.5rem)` }"
   >
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       Filters
 
-      <button type="button" data-drawer-hide="drawer-navigation" aria-controls="drawer-navigation" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
+      <button type="button"   @click="$emit('hide')"  class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
         <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
         <span class="sr-only">Close menu</span>
       </button>
@@ -88,22 +92,34 @@
 
    </div>
   </div>
+
+  <div v-if="show" drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-30"
+    @click="$emit('hide')">
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { watch, computed } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 
 // props: columns
 // add support for v-model:filers
-const props = defineProps(['columns', 'filters']);
-const emits = defineEmits(['update:filters']);
+const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
+const emits = defineEmits(['update:filters', 'hide']);
 
 const columnsWithFilter = computed( 
   () => props.columns?.filter(column => column.showIn.includes('filter')) || []
 );
 
+// sync 'body' class 'overflow-hidden' with show prop show
+watch(() => props.show, (show) => {
+  if (show) {
+    document.body.classList.add('overflow-hidden');
+  } else {
+    document.body.classList.remove('overflow-hidden');
+  }
+});
 
 // filters is a array of objects
 // {
