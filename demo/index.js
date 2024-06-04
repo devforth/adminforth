@@ -126,6 +126,9 @@ const admin = new AdminForth({
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
+          component: {
+            show: './custom/IdShow.vue'
+          },
           fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
