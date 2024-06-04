@@ -79,39 +79,39 @@ const admin = new AdminForth({
       id: 'db2',
       url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
     },
-    {
-      id: 'db3',
-      url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
-      fieldtypesByTable: {
-        'game': {
-            _id: {
-                "name": "_id",
-                "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-                "required": true, "primaryKey": false, "default": ""
-            },
-            bb_enabled: {
-                "name": "bb_enabled",
-                "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
-                "required": false, "primaryKey": false, "default": false
-            },
-            bb_rank: {
-                "name": "bb_rank",
-                "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
-                "required": false, "primaryKey": false, "default": 0
-            },
-            blocked_countries: {
-                "name": "blocked_countries",
-                "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-                "required": false, "primaryKey": false, "default": ""
-            },
-            release_date: {
-                "name": "release_date",
-                "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
-                "required": false, "primaryKey": false, "default": ""
-            },
-        }
-      }
-    }
+    // {
+    //   id: 'db3',
+    //   url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
+    //   fieldtypesByTable: {
+    //     'game': {
+    //         _id: {
+    //             "name": "_id",
+    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
+    //             "required": true, "primaryKey": false, "default": ""
+    //         },
+    //         bb_enabled: {
+    //             "name": "bb_enabled",
+    //             "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
+    //             "required": false, "primaryKey": false, "default": false
+    //         },
+    //         bb_rank: {
+    //             "name": "bb_rank",
+    //             "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
+    //             "required": false, "primaryKey": false, "default": 0
+    //         },
+    //         blocked_countries: {
+    //             "name": "blocked_countries",
+    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
+    //             "required": false, "primaryKey": false, "default": ""
+    //         },
+    //         release_date: {
+    //             "name": "release_date",
+    //             "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
+    //             "required": false, "primaryKey": false, "default": ""
+    //         },
+    //     }
+    //   }
+    // }
   ],
   resources: [
     {
@@ -357,44 +357,44 @@ const admin = new AdminForth({
         ],
         listPageSize: 5, 
     },
-    {
-        dataSource: 'db3', table: 'game',
-        columns: [
-            { name: '_id', primaryKey: true },
-            { name: 'bb_enabled' },
-            { name: 'bb_rank' },
-            {
-                name: 'blocked_countries',
-                enum: [
-                    { value: 'TR', label: 'Turkey' },
-                    { value: 'DE', label: 'Germany' },
-                    { value: 'RU', label: 'Russia' },
-                    { value: 'US', label: 'United States' },
-                    { value: 'GB', label: 'United Kingdom' },
-                    { value: 'FR', label: 'France' },
-                    { value: 'IT', label: 'Italy' },
-                    { value: 'ES', label: 'Spain' },
-                    { value: 'BR', label: 'Brazil' },
-                    { value: 'CA', label: 'Canada' },
-                    { value: 'AU', label: 'Australia' },
-                    { value: 'NL', label: 'Netherlands' },
-                    { value: 'SE', label: 'Sweden' },
-                    { value: 'NO', label: 'Norway' },
-                    { value: 'FI', label: 'Finland' },
-                    { value: 'DK', label: 'Denmark' },
-                    { value: 'PL', label: 'Poland' },
-                    { value: 'CZ', label: 'Czechia' },
-                    { value: 'SK', label: 'Slovakia' },
-                    { value: 'HU', label: 'Hungary' },
-                    { value: 'RO', label: 'Romania' },
-                    { value: 'BG', label: 'Bulgaria' },
-                    { value: 'GR', label: 'Greece' },
-                    { value: 'TR', label: 'Turkey' }
-                ]
-            },
-            { name: 'release_date' }
-        ]
-    }
+    // {
+    //     dataSource: 'db3', table: 'game',
+    //     columns: [
+    //         { name: '_id', primaryKey: true },
+    //         { name: 'bb_enabled' },
+    //         { name: 'bb_rank' },
+    //         {
+    //             name: 'blocked_countries',
+    //             enum: [
+    //                 { value: 'TR', label: 'Turkey' },
+    //                 { value: 'DE', label: 'Germany' },
+    //                 { value: 'RU', label: 'Russia' },
+    //                 { value: 'US', label: 'United States' },
+    //                 { value: 'GB', label: 'United Kingdom' },
+    //                 { value: 'FR', label: 'France' },
+    //                 { value: 'IT', label: 'Italy' },
+    //                 { value: 'ES', label: 'Spain' },
+    //                 { value: 'BR', label: 'Brazil' },
+    //                 { value: 'CA', label: 'Canada' },
+    //                 { value: 'AU', label: 'Australia' },
+    //                 { value: 'NL', label: 'Netherlands' },
+    //                 { value: 'SE', label: 'Sweden' },
+    //                 { value: 'NO', label: 'Norway' },
+    //                 { value: 'FI', label: 'Finland' },
+    //                 { value: 'DK', label: 'Denmark' },
+    //                 { value: 'PL', label: 'Poland' },
+    //                 { value: 'CZ', label: 'Czechia' },
+    //                 { value: 'SK', label: 'Slovakia' },
+    //                 { value: 'HU', label: 'Hungary' },
+    //                 { value: 'RO', label: 'Romania' },
+    //                 { value: 'BG', label: 'Bulgaria' },
+    //                 { value: 'GR', label: 'Greece' },
+    //                 { value: 'TR', label: 'Turkey' }
+    //             ]
+    //         },
+    //         { name: 'release_date' }
+    //     ]
+    // }
   ],
   menu: [
     {
@@ -454,7 +454,7 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development1' });
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
