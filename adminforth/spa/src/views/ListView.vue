@@ -379,7 +379,6 @@ async function getList() {
       sort: sort.value,
     }
   });
-  console.log('coreStore.resourceColumns', coreStore.resourceColumns);
   rows.value = data.data?.map(row => {
     row._primaryKeyValue = row[coreStore.resourceColumns.find(c => c.primaryKey).name];
     return row;
