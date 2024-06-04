@@ -11,6 +11,14 @@ import crypto from 'crypto';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.join(path.dirname(__filename), '..');
 
+// const SPA_TMP_PATH = path.join(__dirname, 'spa_tmp');
+
+// folder in /tmp directory to store SPA sources
+const SPA_TMP_PATH = path.join('/tmp', 'adminforth', 'spa_tmp');
+// make sure the folder exists
+fsExtra.ensureDirSync(SPA_TMP_PATH);
+
+
 const execAsync = promisify(exec);
 
 function hashify(obj) {
@@ -57,7 +65,7 @@ class CodeInjector {
 
   async rmTmpDir() {
     // remove spa_tmp folder if it is exists
-    const spaTmpPath = path.join(__dirname, 'spa_tmp');
+    const spaTmpPath = SPA_TMP_PATH;
     try {
       await fs.promises.rm(spaTmpPath, { recursive: true });
     } catch (e) {
@@ -66,7 +74,7 @@ class CodeInjector {
   }
 
   async prepareSources({ filesUpdated, verbose = false }) {
-    const spaTmpPath = path.join(__dirname, 'spa_tmp');
+    const spaTmpPath = SPA_TMP_PATH;
 
     const customFiles = [];
     const icons = [];
@@ -274,12 +282,11 @@ class CodeInjector {
     await this.watchForReprepare();
     console.log('AdminForth bundling');
     
-    const cwd = path.join(__dirname, 'spa_tmp');
-    
-    
+    const cwd = SPA_TMP_PATH;
 
     if (!hotReload) {
-      await this.runNpmShell({command: 'run build', verbose, cwd});
+      // probably add option to build with tsh check (plain 'build')
+      await this.runNpmShell({command: 'run build-only', verbose, cwd});
     } else {
       const command = 'run dev';
       console.time(`Running npm ${command}...`);
