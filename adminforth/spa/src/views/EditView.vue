@@ -79,6 +79,13 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
+  if (!isValid.value) {
+    validating.value = true;
+    return;
+  } else {
+    validating.value = false;
+  }
+
   saving.value = true;
   await callAdminForthApi({
     method: 'POST',
