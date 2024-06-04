@@ -41,8 +41,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))
-            " :key="column.name"
+            <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))" :key="column.name"
                 class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
             >
                 <td class="px-6 py-4 whitespace-nowrap">

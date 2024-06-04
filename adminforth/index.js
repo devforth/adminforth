@@ -370,6 +370,7 @@ class AdminForth {
       handler: async ({input, adminUser, cookies}) => {
         const cookieParsed = this.auth.verify(cookies['adminforth_jwt']);
         let username = ''
+        let userFullName = ''
         if (cookieParsed['pk'] == null) {
             username = this.config.rootUser.username;
         } else {
@@ -387,12 +388,15 @@ class AdminForth {
               return { error: 'Unauthorized' };
             }
             username = user.data[0][this.config.auth.usernameField]; 
+            userFullName = user.data[0][this.config.auth.userFullName];
         }
 
+        const userData = {
+            [this.config.auth.usernameField]: username,
+            [this.config.auth.userFullName]: userFullName
+        };
         return {
-          user: {
-            [this.config.auth.usernameField]: username
-          },
+          user: userData,
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
@@ -522,6 +526,20 @@ class AdminForth {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            
+            const record = body['record'];
+            // execute hook if needed
+            if (resource.hooks?.create?.beforeSave) {
+                const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+                }
+  
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+            }
+
             for (const column of resource.columns) {
                 if (column.fillOnCreate) {
                     if (body['record'][column.name] === undefined) {
@@ -547,31 +565,15 @@ class AdminForth {
                     }
                 }
             }
-            const connector = this.connectors[resource.dataSource];
-
-            const record = body['record'];
-            
-            // execute hook if needed
-            if (resource.hooks?.create?.beforeSave) {
-              const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
 
             // remove virtual columns from record
             for (const column of resource.columns.filter((col) => col.virtual)) {
-              if (record[column.name]) {
-                delete record[column.name];
-              }
+                if (record[column.name]) {
+                  delete record[column.name];
+                }
             }
-
+            const connector = this.connectors[resource.dataSource];
             await connector.createRecord({ resource, record });
-            
             // execute hook if needed
             if (resource.hooks?.create?.afterSave) {
                 const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
@@ -593,7 +595,7 @@ class AdminForth {
         noAuth: true, // TODO
         method: 'POST',
         path: '/update_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             console.log('update_record', body);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
@@ -607,6 +609,7 @@ class AdminForth {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
+            const record = body['record'];
 
             // execute hook if needed
             if (resource.hooks?.edit?.beforeSave) {
@@ -621,8 +624,7 @@ class AdminForth {
             }
 
             const newValues = {};
-            const record = body['record'];
-            for (const col of resource.columns) {
+            for (const col of resource.columns.filter((col) => !col.virtual)) {
                 if (record[col.name] !== oldRecord[col.name]) {
                     newValues[col.name] = connector.setFieldValue(col, record[col.name]);
                 }
