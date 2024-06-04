@@ -37,7 +37,7 @@
 <script setup>
 
 import { ref, computed, onMounted } from 'vue';  
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import ResourceForm from '@/components/ResourceForm.vue';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
@@ -51,6 +51,7 @@ const isValid = ref(false);
 const validating = ref(false);
 
 const route = useRoute();
+const router = useRouter();
 
 const loading = ref(false);
 
@@ -89,7 +90,7 @@ async function saveRecord() {
     },
   });
   saving.value = false;
-  router.push({ name: 'resource.show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
+  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
 }
 
 </script>
