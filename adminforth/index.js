@@ -7,6 +7,7 @@ import CodeInjector from './modules/codeInjector.js';
 import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
+import fs from 'fs';
 
 
 import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
@@ -61,6 +62,14 @@ class AdminForth {
       if (!userResource) {
         throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
       }
+    }
+
+    if (!this.config.customization) {
+      this.config.customization = {};
+    }
+
+    if (!this.config.customization.customComponentsDir) {
+      this.config.customization.customComponentsDir = './custom';
     }
 
 
@@ -176,6 +185,17 @@ class AdminForth {
           if (item.component && !item.path) {
             errors.push(`Menu item with component must have path : ${JSON.stringify(item)}`);
           }
+          // make sure component starts with @@
+          if (item.component) {
+            if (!item.component.startsWith('@@')) {
+              errors.push(`Menu item component must start with @@ : ${JSON.stringify(item)}`);
+            }
+
+            const path = item.component.replace('@@', this.config.customization.customComponentsDir);
+            if ( !fs.existsSync(path) ) {
+              errors.push(`Menu item component "${item.component.replace('@@', '')}" does not exist in "${this.config.customization.customComponentsDir}"`);
+            }
+          }
 
           if (item.homepage) {
             homepages++;
@@ -188,6 +208,7 @@ class AdminForth {
           }
         });
       };
+      browseMenu(this.config.menu);
 
     }
 
