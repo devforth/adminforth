@@ -257,7 +257,7 @@ const admin = new AdminForth({
         edit: {
           beforeSave: async ({ record, adminUser, resource}) => {
             if (record.password) {
-              record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
+              record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
             return { ok: true, error: false }
           },
