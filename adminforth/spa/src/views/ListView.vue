@@ -227,7 +227,7 @@
     </div>
     <!-- pagination -->
     <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center"
-      v-if="rows && totalRows > 0"
+      v-if="rows && totalRows >= pageSize && totalRows > 0"
     >
         <!-- Help text -->
         <span class="text-sm text-gray-700 dark:text-gray-400">
