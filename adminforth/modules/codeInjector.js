@@ -6,10 +6,20 @@ import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import os from 'os';
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.join(path.dirname(__filename), '..');
+
+let TMP_DIR;
+
+try {
+  TMP_DIR = os.tmpdir();
+} catch (e) {
+  TMP_DIR = '/tmp';
+}
+
 
 const execAsync = promisify(exec);
 
@@ -19,6 +29,9 @@ function hashify(obj) {
 }
 
 class CodeInjector {
+
+  static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
+
   constructor(adminforth) {
     this.adminforth = adminforth;
   }
@@ -57,7 +70,7 @@ class CodeInjector {
 
   async rmTmpDir() {
     // remove spa_tmp folder if it is exists
-    const spaTmpPath = path.join(__dirname, 'spa_tmp');
+    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     try {
       await fs.promises.rm(spaTmpPath, { recursive: true });
     } catch (e) {
@@ -66,7 +79,13 @@ class CodeInjector {
   }
 
   async prepareSources({ filesUpdated, verbose = false }) {
-    const spaTmpPath = path.join(__dirname, 'spa_tmp');
+    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
+    // check SPA_TMP_PATH exists and create if not
+    try {
+      await fs.promises.access(spaTmpPath, fs.constants.F_OK);
+    } catch (e) {
+      await fs.promises.mkdir(spaTmpPath, { recursive: true });
+    }
 
     const customFiles = [];
     const icons = [];
@@ -274,12 +293,11 @@ class CodeInjector {
     await this.watchForReprepare();
     console.log('AdminForth bundling');
     
-    const cwd = path.join(__dirname, 'spa_tmp');
-    
-    
+    const cwd = CodeInjector.SPA_TMP_PATH;
 
     if (!hotReload) {
-      await this.runNpmShell({command: 'run build', verbose, cwd});
+      // probably add option to build with tsh check (plain 'build')
+      await this.runNpmShell({command: 'run build-only', verbose, cwd});
     } else {
       const command = 'run dev';
       console.time(`Running npm ${command}...`);
