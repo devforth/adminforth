@@ -132,7 +132,7 @@ class CodeInjector {
 
       // copy whole custom directory
       if (this.adminforth.config.customization?.customComponentsDir) {
-        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(spaTmpPath, 'src', 'custom'), {
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
           recursive: true,
         });
       }
@@ -246,7 +246,7 @@ class CodeInjector {
 
   }
 
-  async watchForReprepare() {
+async watchForReprepare({ verbose }) {
     const spaPath = path.join(__dirname, 'spa');
     // get list of all subdirectories in spa recursively
     const directories = [];
@@ -261,7 +261,10 @@ class CodeInjector {
     };
     await collectDirectories(spaPath);
 
-    // console.log('👌👌Watching for changes in:', directories.join('\n '))
+    if (verbose) {
+      console.log('🔎 Watching for changes in:', directories.join(','));
+    }
+
 
     const watcher = filewatcher();
     directories.forEach((dir) => {
@@ -280,13 +283,16 @@ class CodeInjector {
     });
   }
 
-  async watchCustomComponentsForCopy() {
+  async watchCustomComponentsForCopy({ verbose }) {
     const customComponentsDir = this.adminforth.config.customization.customComponentsDir;
 
     // check if folder exists
     try {
       await fs.promises.access(customComponentsDir, fs.constants.F_OK);
     } catch (e) {
+      if (verbose) {
+        console.log(`Custom components dir ${customComponentsDir} does not exist, skipping watching`);
+      }
       return;
     }
 
@@ -310,12 +316,19 @@ class CodeInjector {
       watcher.add(dir);
     });
 
+    if (verbose) {
+      console.log('🔎 Watching for changes in:', directories.join(','));
+    }
+    
     watcher.on(
       'change',
       async (file) => {
         // copy one file
         // TODO: non optimal, copy only changed file, test on both nested and parent dir
-        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(spaTmpPath, 'src', 'custom'), {
+        if (verbose) {
+          console.log(`🔎 File ${file} changed, copying to spa_tmp...`);
+        }
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
           recursive: true,
         });
       }
@@ -331,8 +344,8 @@ class CodeInjector {
     await this.prepareSources({ verbose });
 
     if (hotReload) {
-      await this.watchForReprepare();
-      await this.watchCustomComponentsForCopy();
+      await this.watchForReprepare({ verbose });
+      await this.watchCustomComponentsForCopy({ verbose });
     }
 
     console.log('AdminForth bundling');
