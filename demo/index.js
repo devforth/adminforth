@@ -4,7 +4,7 @@ import AdminForth from '../adminforth/index.js';
 import { v1 as uuid } from 'uuid';
 
 
-const ADMIN_BASE_URL = '/bo';
+const ADMIN_BASE_URL = '';
 
 
 // create test1.db
@@ -51,7 +51,7 @@ if (!tableExists) {
 }
 
 const admin = new AdminForth({
-  // baseUrl : ADMIN_BASE_URL,
+  baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
   // deleteConfirmation: true,
@@ -137,6 +137,7 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
+          type: AdminForth.Types.DATETIME,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
@@ -257,7 +258,7 @@ const admin = new AdminForth({
         edit: {
           beforeSave: async ({ record, adminUser, resource}) => {
             if (record.password) {
-              record.password_hash = await AdminForth.utils.generatePasswordHash(record.password);
+              record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
             return { ok: true, error: false }
           },

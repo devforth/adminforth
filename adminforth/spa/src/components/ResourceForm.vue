@@ -57,6 +57,12 @@
                     :value="currentValues[column.name]"
                     @input="setCurrentValue(column.name, $event.target.value)"
                   >
+                  <CustomDatePicker
+                    v-else-if="['datetime'].includes(column.type)"
+                    :column="column"
+                    :valueStart="currentValues[column.name]"
+                    @update:valueStart="setCurrentValue(column.name, $event)"
+                  />
                   <input
                     v-else-if="['decimal', 'float'].includes(column.type)"
                     type="number"
@@ -121,6 +127,7 @@ import Dropdown from '@/components/Dropdown.vue';
 import { IconExclamationCircleSolid } from '@iconify-prerendered/vue-flowbite';
 import { initFlowbite } from 'flowbite'
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
+import CustomDatePicker from "@/components/CustomDatePicker.vue";
 
 const props = defineProps({
   loading: Boolean,
