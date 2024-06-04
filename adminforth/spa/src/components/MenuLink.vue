@@ -5,7 +5,7 @@
       :class="{ 
         'px-4': isChild,
         'px-2': !isChild,
-        'bg-blue-100': item.resourceId ? 
+        'bg-blue-100 dark:bg-gray-700': item.resourceId ?
         ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
         ($route.name === item.path)
       }"
