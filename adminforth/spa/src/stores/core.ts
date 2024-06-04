@@ -72,7 +72,6 @@ export const useCoreStore = defineStore('core', () => {
   }
 
   async function fetchColumns({ resourceId }) {
-    console.log('fetchColumns 1', resourceId, resourceColumnsId.value);
     if (resourceColumnsId.value === resourceId && resourceColumns.value) {
       // already fetched
       return;
