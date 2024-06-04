@@ -105,7 +105,7 @@ import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 
 // props: columns
 // add support for v-model:filers
-const props = defineProps(['columns', 'filters', 'show']);
+const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
 const emits = defineEmits(['update:filters', 'hide']);
 
 const columnsWithFilter = computed( 
