@@ -36,12 +36,13 @@ class CodeInjector {
     this.adminforth = adminforth;
   }
 
-  async runShell({command, verbose = false}) {
-    console.time(`Running ${command}...`);
-    const { stdout: out, stderr: err } = await execAsync(command);
-    console.timeEnd(`Running ${command}...`);
-    console.log(`Command ${command} output:`, out, err);
-  }
+  // async runShell({command, verbose = false}) {
+  //   console.log(`⚙️ Running shell ${command}...`);
+  //   console.time(`${command} done in`);
+  //   const { stdout: out, stderr: err } = await execAsync(command);
+  //   console.timeEnd(`${command} done in`);
+  //   console.log(`Command ${command} output:`, out, err);
+  // }
 
   async runNpmShell({command, verbose = false, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
@@ -53,12 +54,13 @@ class CodeInjector {
       ...process.env,
     };
 
-    console.time(`Running npm ${command}...`);
+    console.log(`⚙️ Running npm ${command}...`);
+    console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
-    console.timeEnd(`Running npm ${command}...`);
+    console.timeEnd(`npm ${command} done in`);
 
     if (verbose) {
       console.log(`npm ${command} output:`, out);
@@ -357,7 +359,7 @@ async watchForReprepare({ verbose }) {
       await this.runNpmShell({command: 'run build-only', verbose, cwd});
     } else {
       const command = 'run dev';
-      console.time(`Running npm ${command}...`);
+      console.log(`⚙️ Running npm ${command}...`);
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
@@ -380,7 +382,6 @@ async watchForReprepare({ verbose }) {
 
       });
 
-      console.timeEnd(`Running npm ${command}...`);
     }
   }
 }
