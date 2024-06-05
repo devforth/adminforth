@@ -374,7 +374,7 @@ class AdminForth {
       if (!this.connectors[res.dataSource]) {
         throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
       }
-      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res.table);
+      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
       if (!Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }

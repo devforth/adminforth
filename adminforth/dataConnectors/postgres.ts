@@ -40,7 +40,8 @@ class PostgresConnector {
         [AdminForthSortDirections.DESC]: 'DESC',
       };
 
-    async discoverFields(tableName) {
+    async discoverFields(resource) {
+        const tableName = resource.table;
         const stmt = await this.db.query(`
         SELECT
             a.attname AS name,

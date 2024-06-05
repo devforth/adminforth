@@ -12,7 +12,8 @@ class SQLiteConnector {
       this.db = betterSqlite3(url.replace('sqlite://', ''));
     }
 
-    async discoverFields(tableName) {
+    async discoverFields(resource) {
+        const tableName = resource.table;
         const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
         const fieldTypes = {};
