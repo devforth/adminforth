@@ -166,10 +166,8 @@ class PostgresConnector {
             return null;
           }
           if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).unix();
+            return dayjs(value);
           } else if (field._underlineType == 'varchar') {
-            // value is iso string now, convert to unix timestamp
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthTypes.BOOLEAN) {
