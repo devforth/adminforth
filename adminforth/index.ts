@@ -209,6 +209,8 @@ class AdminForth {
         }
         res.columns.forEach((col) => {
           col.label = col.label || guessLabelFromName(col.name);
+          //define default sortable
+          if (!Object.keys(col).includes('sortable')) {col.sortable = true;}
           if (col.showIn && !Array.isArray(col.showIn)) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
           }
@@ -236,6 +238,8 @@ class AdminForth {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
             }
           }
+
+
 
           const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
           if (wrongShowIn) {
