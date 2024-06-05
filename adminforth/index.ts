@@ -785,6 +785,7 @@ class AdminForth {
         path: '/delete_record',
         handler: async ({ body, adminUser }) => {
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+            const record = await this.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
