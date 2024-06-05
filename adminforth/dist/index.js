@@ -239,7 +239,7 @@ class AdminForth {
                 if (!this.connectors[res.dataSource]) {
                     throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
                 }
-                const fieldTypes = yield this.connectors[res.dataSource].discoverFields(res.table);
+                const fieldTypes = yield this.connectors[res.dataSource].discoverFields(res);
                 if (!Object.keys(fieldTypes).length) {
                     throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
                 }
@@ -625,6 +625,7 @@ class AdminForth {
             handler: (_6) => __awaiter(this, [_6], void 0, function* ({ body, adminUser }) {
                 var _7, _8, _9, _10, _11, _12, _13, _14;
                 const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+                const record = yield this.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
                 if (!resource) {
                     return { error: `Resource '${body['resourceId']}' not found` };
                 }
