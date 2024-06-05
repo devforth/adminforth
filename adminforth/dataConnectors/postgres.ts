@@ -126,14 +126,13 @@ class PostgresConnector {
             return null;
           }
           if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            return dayjs.unix(+value).toISOString();
+            return dayjs(value).toISOString();
           } else if (field._underlineType == 'varchar') {
-            return dayjs.unix(+value).toISOString();
+            return dayjs(value).toISOString();
           } else {
             throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
           }
         }
-
 
         return value;
       }
