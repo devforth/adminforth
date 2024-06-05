@@ -4,7 +4,7 @@ import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } 
 
 
 class MongoConnector {
-    db: any;
+    db: MongoClient
 
     constructor({ url }) {
         this.db = new MongoClient(url);
@@ -188,7 +188,7 @@ class MongoConnector {
     }
 
     async close() {
-        await this.db.end();
+        await this.db.close()
     }
 }
 
