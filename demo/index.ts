@@ -434,7 +434,6 @@ const admin = new AdminForth({
       label: 'Dashboard',
       icon: 'flowbite:chart-pie-solid',
       component: '@@/Dash.vue',
-      homepage: true,
       path: '/dashboard',
     },
     {
@@ -446,12 +445,12 @@ const admin = new AdminForth({
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
-          // homepage: true,
         },
         {
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
+          homepage: true,
         },
         {
           label: 'Games Users',
