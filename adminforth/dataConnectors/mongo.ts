@@ -4,10 +4,10 @@ import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } 
 
 
 class MongoConnector {
-    db: any;
+    db: MongoClient
 
     constructor({ url }) {
-        this.db = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+        this.db = new MongoClient(url);
         (async () => {
             try {
                 await this.db.connect();
@@ -188,7 +188,7 @@ class MongoConnector {
     }
 
     async close() {
-        await this.db.end();
+        await this.db.close()
     }
 }
 
