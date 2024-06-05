@@ -280,6 +280,7 @@ class AdminForth {
             method: 'POST',
             path: '/login',
             handler: (_b) => __awaiter(this, [_b], void 0, function* ({ body, response }) {
+                const INVALID_MESSAGE = 'Invalid username or password';
                 const { username, password } = body;
                 let token;
                 if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
@@ -471,7 +472,7 @@ class AdminForth {
         server.endpoint({
             method: 'POST',
             path: '/get_record',
-            handler: (_j) => __awaiter(this, [_j], void 0, function* ({ body }) {
+            handler: (_j) => __awaiter(this, [_j], void 0, function* ({ body, adminUser }) {
                 var _k, _l;
                 const { resourceId, primaryKey } = body;
                 const resource = this.config.resources.find((res) => res.resourceId == resourceId);
@@ -622,7 +623,7 @@ class AdminForth {
             noAuth: true, // TODO
             method: 'POST',
             path: '/delete_record',
-            handler: (_6) => __awaiter(this, [_6], void 0, function* ({ body }) {
+            handler: (_6) => __awaiter(this, [_6], void 0, function* ({ body, adminUser }) {
                 var _7, _8, _9, _10, _11, _12, _13, _14;
                 const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
                 if (!resource) {

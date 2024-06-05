@@ -86,6 +86,7 @@ type AdminForthConfig = {
     usernameField: string,
     passwordHashField: string,
     loginBackgroundImage?: string,
+    userFullName?: string,
   },
   resources: Array<any>,
   menu: Array<AdminForthConfigMenuItem>,
@@ -121,6 +122,7 @@ class AdminForth {
   auth: Auth;
   codeInjector: CodeInjector;
   connectors: any;
+  connectorClasses: any;
 
   statuses: {
     dbDiscover?: 'running' | 'done',
@@ -410,6 +412,7 @@ class AdminForth {
       method: 'POST',
       path: '/login',
       handler: async ({ body, response }) => {
+        const INVALID_MESSAGE = 'Invalid username or password';
         const { username, password } = body;
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
@@ -608,7 +611,7 @@ class AdminForth {
     server.endpoint({
         method: 'POST',
         path: '/get_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             const { resourceId, primaryKey } = body;
             const resource = this.config.resources.find((res) => res.resourceId == resourceId);
             const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
