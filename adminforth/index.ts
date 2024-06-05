@@ -617,6 +617,71 @@ class AdminForth {
     });
     server.endpoint({
       method: 'POST',
+      path: '/get_resource_foreign_data',
+      handler: async ({ body }) => {
+        const { resourceId, column } = body;
+        if (!this.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.statuses.dbDiscover !== 'done') {
+          return { error : 'Database discovery is still in progress, please try later' };
+        }
+        const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+        const columnConfig = resource.columns.find((col) => col.name == column);
+        if (!columnConfig.foreignResource) {
+          return { error: `Column ${column} in resource ${resourceId} is not a foreign key` };
+        }
+        const targetResourceId = columnConfig.foreignResource.resourceId;
+        const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
+        if (columnConfig.foreignResource.hooks?.beforeDatasourceRequest) {
+          const resp = await column.foreignResource.hooks?.beforeDatasourceRequest({ query: body, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        const { limit, offset, filters, sort } = body;
+        const dbDataItems = await this.connectors[targetResource.dataSource].getData({
+          resource: targetResource,
+          limit,
+          offset,
+          filters: filters || [],
+          sort: sort || [],
+        });
+        const items = dbDataItems.data.map((item) => {
+          const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
+          const labler = targetResource.itemLabel || ((record) => `${targetResource.label} ${pk}`);
+          return { 
+            value: pk,
+            label: labler(item),
+            _item: item, // user might need it in hook to form new label
+          }
+        });
+        const response = {
+          items
+        };
+        if (columnConfig.foreignResource.hooks?.afterDatasourceRequest) {
+          const resp = await column.foreignResource.hooks?.afterDatasourceRequest({ response, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        return response;
+      },
+    });
+
+    server.endpoint({
+      method: 'POST',
       path: '/get_min_max_for_columns',
       handler: async ({ body }) => {
         const { resourceId } = body;
