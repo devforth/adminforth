@@ -210,6 +210,24 @@ class CodeInjector {
 
 
     /* generate custom rotes */
+    const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
+    let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
+    let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
+    let homePagePath = homepageMenuItem?.path || `resource/${childrenHomepage?.resourceId}`;
+    if (!homePagePath) {
+      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+    }
+
+    
+    
+      
+
+    routes += `{
+      path: '/',
+      name: 'home',
+      //redirect to login 
+      redirect: '${homePagePath}'
+    },\n`;
     const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES */', routes);
