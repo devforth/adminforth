@@ -37,7 +37,7 @@
                   <Dropdown
                     single
                     v-if="column.foreignResource"
-                    :options="columnOptions[column.name]"
+                    :options="columnOptions[column.name] || []"
                     :modelValue="currentValues[column.name]"
                     @update:modelValue="setCurrentValue(column.name, $event)"
                   />
@@ -137,6 +137,7 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
 import { callAdminForthApi } from '@/utils';
 import { useRouter } from 'vue-router';
+import { computedAsync } from '@vueuse/core';
 
 const router = useRouter();
 
@@ -156,7 +157,6 @@ const emit = defineEmits(['update:record', 'update:isValid']);
 
 const currentValues = ref({});
 
-const columnOptions = ref({});
 
 const columnError = (column) => {
   const val = computed(() => {
@@ -200,25 +200,26 @@ onMounted(() => {
   
 });
 
-watch(() => props.resourceColumns, () => {
+const columnOptions = computedAsync(async () => { 
+  return (await Promise.all(
+    Object.values(props.resourceColumns).map(async (column) => {
+      if (column.foreignResource) {
+        const list = await callAdminForthApi({
+          method: 'POST',
+          path: `/get_resource_foreign_data`,
+          body: {
+            resourceId: router.currentRoute.value.params.resourceId,
+            column: column.name,
+            limit: 1000,
+            offset: 0,
+          },
+        });
+        return { [column.name]: list.items };
+      }
+    })
+  )).reduce((acc, val) => Object.assign(acc, val), {})
 
-  Object.values(props.resourceColumns).forEach(async (column) => {
-    if (column.foreignResource) {
-      const list = await callAdminForthApi({
-        method: 'POST',
-        path: `/get_resource_foreign_data`,
-        body: {
-          resourceId: router.currentRoute.value.params.resourceId,
-          column: column.name,
-          limit: 1000,
-          offset: 0,
-        },
-      });
-      columnOptions.value[column.name] = list.items;
-    }
-  });
-
-});
+}, {});
 
 const coreStore = useCoreStore();
 
