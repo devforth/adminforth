@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
+import AdminForth from '../index.js';
+import { Express } from 'express';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,6 +83,10 @@ const respondNoServer = (title, explanation) => {
     `;
 }
 class ExpressServer {
+
+  expressApp: Express;
+  adminforth: AdminForth;
+
   constructor(adminforth) {
     this.adminforth = adminforth;
   }
@@ -90,7 +96,7 @@ class ExpressServer {
 
     const slashedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
 
-    if (this.adminforth.config.runningHotReload) {
+    if (this.adminforth.runningHotReload) {
       const handler = async (req, res) => {
         // proxy using fetch to webpack dev server
         try {
@@ -98,7 +104,7 @@ class ExpressServer {
         } catch (e) {
           res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
           return;
-        }
+      }
       }
       this.expressApp.get(`${slashedPrefix}assets/*`, handler);
       this.expressApp.get(`${prefix}*`, handler);
