@@ -265,12 +265,15 @@ class CodeInjector {
     await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
 
     // get packages with version from customPackage
-    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])].reduce(
-      (acc, packageName) => {
-        const version = customLock.packages[`node_modules/${packageName}`].version;
-        acc.push(`${packageName}@${version}`);
-        return acc;
-      }, []);
+    const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon'];
+    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])]
+      .filter((packageName) => !IGNORE_PACKAGES.includes(packageName))
+      .reduce(
+        (acc, packageName) => {
+          const version = customLock.packages[`node_modules/${packageName}`].version;
+          acc.push(`${packageName}@${version}`);
+          return acc;
+        }, []);
 
     if (packageNames.length) {
       const npmInstallCommand = `install ${[...packageNames, ...customPackgeNames].join(' ')}`;

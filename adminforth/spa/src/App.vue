@@ -112,7 +112,7 @@
     </div>
   </div> 
 
-  <div v-else>
+  <div v-else-if="routerIsReady">
     <RouterView/>
   </div>
   <AcceptModal />
@@ -140,6 +140,10 @@ const router = useRouter();
 const routerIsReady = ref(false);
 
 const loggedIn = computed(() => route.name !== 'login' && routerIsReady.value);
+
+watch(loggedIn, (value) => {
+  console.log('🔻🔻🔻 loggedIn', value);
+});
 
 const theme = ref('light');
 

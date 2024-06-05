@@ -357,6 +357,9 @@ const totalRows = ref(0);
 const allCheckedActions = ref([]);
 const allowedActions = ref({});
 
+onMounted(() => {
+  console.log('LISTVIEW mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
+});
 
 const DEFAULT_PAGE_SIZE = 10;
 
