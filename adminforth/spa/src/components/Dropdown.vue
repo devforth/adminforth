@@ -34,7 +34,7 @@
         <IconCaretUpSolid v-else class="h-5 w-5 text-gray-400" />
       </div>
     </div>
-    <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+    <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
       <div
         v-for="item in filteredItems"
         :key="item.value"
