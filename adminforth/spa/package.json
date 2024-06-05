@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@iconify-prerendered/vue-flowbite": "^0.23.1714023977",
+    "@vueuse/core": "^10.10.0",
     "dayjs": "^1.11.11",
     "flowbite": "^2.3.0",
     "flowbite-datepicker": "^1.2.6",

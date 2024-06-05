@@ -229,7 +229,8 @@ const admin = new AdminForth({
       dataSource: 'maindb', 
       table: 'users',
       resourceId: 'users',
-      label: 'Users',
+      label: 'Users',  
+      itemLabel: (r) => `👤 ${r.email}`,
       columns: [
         { 
           name: 'id', 

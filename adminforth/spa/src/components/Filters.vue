@@ -22,8 +22,14 @@
          <li v-for="c in columnsWithFilter" :key="c">
             <p class="dark:text-gray-400">{{ c.label }}</p>
 
+            <Dropdown
+              v-if="c.foreignResource"
+              :options="columnOptions[c.name] || []"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+            />
             <Dropdown 
-              v-if="c.type === 'boolean'" 
+              v-else-if="c.type === 'boolean'" 
               :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
               :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
@@ -99,18 +105,55 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue'
+import { watch, computed, ref, onMounted } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
+import { callAdminForthApi } from '@/utils';
+import { useRouter } from 'vue-router';
+import { computedAsync } from '@vueuse/core'
 
+
+onMounted(() => {
+  console.log('Filters mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
+});
 // props: columns
 // add support for v-model:filers
 const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
 const emits = defineEmits(['update:filters', 'hide']);
 
+const router = useRouter();
+
+
 const columnsWithFilter = computed( 
   () => props.columns?.filter(column => column.showIn.includes('filter')) || []
 );
+
+const columnOptions = computedAsync(async () => {
+  const ret = {};
+  if (!props.columns) {
+    return ret;
+  }
+  await Promise.all(
+    Object.values(props.columns).map(async (column) => {
+      if (column.foreignResource) {
+        const list = await callAdminForthApi({
+          method: 'POST',
+          path: `/get_resource_foreign_data`,
+          body: {
+            resourceId: router.currentRoute.value.params.resourceId,
+            column: column.name,
+            limit: 1000,
+            offset: 0,
+          },
+        });
+        ret[column.name] = list.items;
+      }
+    })
+  );
+
+  return ret;
+}, {});
+
 
 // sync 'body' class 'overflow-hidden' with show prop show
 watch(() => props.show, (show) => {
