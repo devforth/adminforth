@@ -183,7 +183,10 @@ const admin = new AdminForth({
           name: 'listed',
           required: true,  // will be required on create/edit
         },
-        
+        {
+          name: 'user_id',
+          foreignResource: 'users',
+        }
       ],
       listPageSize: 20,
       options:{
