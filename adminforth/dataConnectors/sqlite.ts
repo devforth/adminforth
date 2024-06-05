@@ -3,6 +3,9 @@ import { AdminForthTypes, AdminForthFilterOperators, AdminForthSortDirections } 
 import dayjs from 'dayjs';
 
 class SQLiteConnector {
+
+    db: any;
+
     constructor({ url }) {
       // create connection here
 
@@ -14,7 +17,7 @@ class SQLiteConnector {
         const rows = await stmt.all();
         const fieldTypes = {};
         rows.forEach((row) => {
-          const field = {};
+          const field: any = {};
           const baseType = row.type.toLowerCase();
           if (baseType == 'int') {
             field.type = AdminForthTypes.INTEGER;

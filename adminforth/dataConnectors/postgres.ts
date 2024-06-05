@@ -5,6 +5,9 @@ const { Client } = pkg;
 
 
 class PostgresConnector {
+
+    db: any;
+    
     constructor({ url }) {
         this.db = new Client({
             connectionString: url

@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,21 +12,17 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _a, _AdminForth_defaultConfig;
-Object.defineProperty(exports, "__esModule", { value: true });
-const auth_js_1 = __importDefault(require("./auth.js"));
-const mongo_js_1 = __importDefault(require("./dataConnectors/mongo.js"));
-const postgres_js_1 = __importDefault(require("./dataConnectors/postgres.js"));
-const sqlite_js_1 = __importDefault(require("./dataConnectors/sqlite.js"));
-const codeInjector_js_1 = __importDefault(require("./modules/codeInjector.js"));
-const utils_js_1 = require("./modules/utils.js");
-const express_js_1 = __importDefault(require("./servers/express.js"));
-const uuid_1 = require("uuid");
-const fs_1 = __importDefault(require("fs"));
-const types_js_1 = require("./types.js");
+import Auth from './auth.js';
+import MongoConnector from './dataConnectors/mongo.js';
+import PostgresConnector from './dataConnectors/postgres.js';
+import SQLiteConnector from './dataConnectors/sqlite.js';
+import CodeInjector from './modules/codeInjector.js';
+import { guessLabelFromName } from './modules/utils.js';
+import ExpressServer from './servers/express.js';
+import { v1 as uuid } from 'uuid';
+import fs from 'fs';
+import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 class AdminForth {
     constructor(config) {
@@ -36,9 +31,9 @@ class AdminForth {
         });
         this.config = Object.assign(Object.assign({}, __classPrivateFieldGet(this, _AdminForth_defaultConfig, "f")), config);
         this.validateConfig();
-        this.express = new express_js_1.default(this);
-        this.auth = new auth_js_1.default();
-        this.codeInjector = new codeInjector_js_1.default(this);
+        this.express = new ExpressServer(this);
+        this.auth = new Auth();
+        this.codeInjector = new CodeInjector(this);
         this.connectors = {};
         this.statuses = {};
     }
@@ -100,7 +95,7 @@ class AdminForth {
                 }
                 res.columns.forEach((col) => {
                     var _b;
-                    col.label = col.label || (0, utils_js_1.guessLabelFromName)(col.name);
+                    col.label = col.label || guessLabelFromName(col.name);
                     if (col.showIn && !Array.isArray(col.showIn)) {
                         errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
                     }
@@ -152,7 +147,7 @@ class AdminForth {
                         });
                     }
                     const newBulkActions = bulkActions.map((action) => {
-                        return Object.assign(action, { id: (0, uuid_1.v1)() });
+                        return Object.assign(action, { id: uuid() });
                     });
                     bulkActions = newBulkActions;
                 }
@@ -176,7 +171,7 @@ class AdminForth {
                             errors.push(`Menu item component must start with @@ : ${JSON.stringify(item)}`);
                         }
                         const path = item.component.replace('@@', this.config.customization.customComponentsDir);
-                        if (!fs_1.default.existsSync(path)) {
+                        if (!fs.existsSync(path)) {
                             errors.push(`Menu item component "${item.component.replace('@@', '')}" does not exist in "${this.config.customization.customComponentsDir}"`);
                         }
                     }
@@ -222,9 +217,9 @@ class AdminForth {
         return __awaiter(this, void 0, void 0, function* () {
             this.statuses.dbDiscover = 'running';
             this.connectorClasses = {
-                'sqlite': sqlite_js_1.default,
-                'postgres': postgres_js_1.default,
-                'mongodb': mongo_js_1.default,
+                'sqlite': SQLiteConnector,
+                'postgres': PostgresConnector,
+                'mongodb': MongoConnector,
             };
             if (!this.config.databaseConnectors) {
                 this.config.databaseConnectors = Object.assign({}, this.connectorClasses);
@@ -295,7 +290,7 @@ class AdminForth {
                     const userRecord = yield this.connectors[userResource.dataSource].getData({
                         resource: userResource,
                         filters: [
-                            { field: this.config.auth.usernameField, operator: types_js_1.AdminForthFilterOperators.EQ, value: username },
+                            { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
                         ],
                         limit: 1,
                         offset: 0,
@@ -306,7 +301,7 @@ class AdminForth {
                     }
                     const passwordHash = userRecord[this.config.auth.passwordHashField];
                     console.log('User record', userRecord, passwordHash); // why does it has no hash?
-                    const valid = yield auth_js_1.default.verifyPassword(password, passwordHash);
+                    const valid = yield Auth.verifyPassword(password, passwordHash);
                     if (valid) {
                         token = this.auth.issueJWT({
                             username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
@@ -363,7 +358,7 @@ class AdminForth {
                     const user = yield this.connectors[userResource.dataSource].getData({
                         resource: userResource,
                         filters: [
-                            { field: userResource.columns.find((col) => col.primaryKey).name, operator: types_js_1.AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
+                            { field: userResource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
                         ],
                         limit: 1,
                         offset: 0,
@@ -458,12 +453,12 @@ class AdminForth {
                 const item = yield this.connectors[resource.dataSource].getMinMaxForColumns({
                     resource,
                     columns: resource.columns.filter((col) => [
-                        types_js_1.AdminForthTypes.INT,
-                        types_js_1.AdminForthTypes.FLOAT,
-                        types_js_1.AdminForthTypes.DATE,
-                        types_js_1.AdminForthTypes.DATETIME,
-                        types_js_1.AdminForthTypes.TIME,
-                        types_js_1.AdminForthTypes.DECIMAL,
+                        AdminForthTypes.INTEGER,
+                        AdminForthTypes.FLOAT,
+                        AdminForthTypes.DATE,
+                        AdminForthTypes.DATETIME,
+                        AdminForthTypes.TIME,
+                        AdminForthTypes.DECIMAL,
                     ].includes(col.type) && col.allowMinMaxQuery === true),
                 });
                 return item;
@@ -533,7 +528,7 @@ class AdminForth {
                     if (column.isUnique) {
                         const existingRecord = yield this.connectors[resource.dataSource].getData({
                             resource,
-                            filters: [{ field: column.name, operator: types_js_1.AdminForthFilterOperators.EQ, value: body['record'][column.name] }],
+                            filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value: body['record'][column.name] }],
                             limit: 1,
                             sort: [],
                             offset: 0
@@ -684,10 +679,10 @@ class AdminForth {
     }
 }
 _a = AdminForth, _AdminForth_defaultConfig = new WeakMap();
-AdminForth.Types = types_js_1.AdminForthTypes;
+AdminForth.Types = AdminForthTypes;
 AdminForth.Utils = {
     generatePasswordHash: (password) => __awaiter(void 0, void 0, void 0, function* () {
-        return yield auth_js_1.default.generatePasswordHash(password);
+        return yield Auth.generatePasswordHash(password);
     })
 };
-exports.default = AdminForth;
+export default AdminForth;

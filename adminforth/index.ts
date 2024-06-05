@@ -94,6 +94,7 @@ type AdminForthConfig = {
   dataSources: Array<any>,
   customization?: {
     customComponentsDir?: string,
+    vueUsesFile?: string,
   },
   baseUrl?: string,
   brandName?: string,
@@ -123,6 +124,8 @@ class AdminForth {
   codeInjector: CodeInjector;
   connectors: any;
   connectorClasses: any;
+  runningHotReload?: boolean;
+
 
   statuses: {
     dbDiscover?: 'running' | 'done',
@@ -597,7 +600,7 @@ class AdminForth {
         const item = await this.connectors[resource.dataSource].getMinMaxForColumns({
           resource,
           columns: resource.columns.filter((col) => [
-            AdminForthTypes.INT, 
+            AdminForthTypes.INTEGER, 
             AdminForthTypes.FLOAT,
             AdminForthTypes.DATE,
             AdminForthTypes.DATETIME,

@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import os from 'os';
+import AdminForth from '../index.ts';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +30,8 @@ function hashify(obj) {
 }
 
 class CodeInjector {
+
+  adminforth: AdminForth;
 
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
@@ -80,7 +83,7 @@ class CodeInjector {
     }
   }
 
-  async prepareSources({ filesUpdated, verbose = false }) {
+  async prepareSources({ filesUpdated, verbose = false }: { filesUpdated?: string[], verbose?: boolean }) {
     const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     // check SPA_TMP_PATH exists and create if not
     try {
@@ -340,8 +343,8 @@ async watchForReprepare({ verbose }) {
     });
   }
 
-  async bundleNow({hotReload = false, verbose = false}) {
-    this.adminforth.config.runningHotReload = hotReload;
+  async bundleNow({hotReload = false, verbose = false}: {hotReload: boolean, verbose: boolean}) {
+    this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources({ verbose });
 
