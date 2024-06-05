@@ -6,13 +6,8 @@ import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } 
 class MongoConnector {
     db: any;
 
-    constructor({ url, fieldtypesByTable }) {
-        
+    constructor({ url }) {
         this.db = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
-        if (fieldtypesByTable == null) {
-            throw new Error('fieldtypesByTable is required for MongoConnector');
-        };
-        
         (async () => {
             try {
                 await this.db.connect();
@@ -24,8 +19,6 @@ class MongoConnector {
                 console.error('ERROR: Failed to connect to Mongo', e);
             }
         })();
-
-        this.fieldtypesByTable = fieldtypesByTable;
     }
 
     OperatorsMap = {
@@ -46,8 +39,17 @@ class MongoConnector {
         [AdminForthSortDirections.DESC]: -1,
     };
 
-    async discoverFields(tableName) {
-        return this.fieldtypesByTable[tableName];
+    async discoverFields(resource) {
+        return resource.columns.reduce((acc, col) => {
+            acc[col.name] = {
+                name: col.name,
+                type: col.type,
+                primaryKey: col.primaryKey,
+                virtual: col.virtual,
+                _underlineType: col._underlineType,
+            };
+            return acc;
+        }, {});
     }
 
     getPrimaryKey(resource) {
