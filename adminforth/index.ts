@@ -14,8 +14,95 @@ import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
+type AdminForthConfigMenuItem = {
+  label: string,
+  icon?: string,
+  path?: string,
+  component?: string,
+  resourceId?: string,
+  homepage?: boolean,
+  children?: Array<AdminForthConfigMenuItem>,
+}
+
+type AdminForthResourceColumn = {
+  name: string,
+  label?: string,
+  type?: AdminForthTypes,
+  primaryKey?: boolean,
+  required?: boolean | { create: boolean, edit: boolean },
+  editingNote?: string | { create: string, edit: string },
+  showIn?: Array<string>,
+  fillOnCreate?: Function,
+  isUnique?: boolean,
+  virtual?: boolean,
+  allowMinMaxQuery?: boolean,
+}
+
+type AdminForthResource = {
+  resourceId: string,
+  label?: string,
+  table: string,
+  dataSource: string,
+  columns: Array<AdminForthResourceColumn>,
+  itemLabel?: Function,
+  hooks?: {
+    show?: Function,
+    create?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+    edit?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+    delete?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+  },
+  options?: {
+    bulkActions?: Array<{
+      label: string,
+      state: string,
+      icon: string,
+      action: Function,
+    }>,
+    allowDelete?: boolean,
+  },
+}
+
+type AdminForthDataSource = {
+  id: string,
+  url: string,
+}
+
+type AdminForthConfig = {
+  rootUser?: {
+    username: string,
+    password: string,
+  },
+  auth?: {
+    resourceId: string,
+    usernameField: string,
+    passwordHashField: string,
+    loginBackgroundImage?: string,
+  },
+  resources: Array<any>,
+  menu: Array<AdminForthConfigMenuItem>,
+  databaseConnectors?: any,
+  dataSources: Array<any>,
+  customization?: {
+    customComponentsDir?: string,
+  },
+  baseUrl?: string,
+  brandName?: string,
+  datesFormat?: string,
+  deleteConfirmation?: boolean,
+}
+
 class AdminForth {
   static Types = AdminForthTypes;
+
 
   static Utils = {
     generatePasswordHash: async (password) => {
@@ -29,7 +116,18 @@ class AdminForth {
     
   }
 
-  constructor(config) {
+  config: AdminForthConfig;
+  express: ExpressServer;
+  auth: Auth;
+  codeInjector: CodeInjector;
+  connectors: any;
+
+  statuses: {
+    dbDiscover?: 'running' | 'done',
+  }
+
+
+  constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
     this.validateConfig();
     this.express = new ExpressServer(this);
@@ -675,7 +773,7 @@ class AdminForth {
         noAuth: true, // TODO
         method: 'POST',
         path: '/delete_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };

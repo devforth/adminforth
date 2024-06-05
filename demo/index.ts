@@ -1,6 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth from '../adminforth/index.js';
+import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
 
 
