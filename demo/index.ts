@@ -200,7 +200,12 @@ const admin = new AdminForth({
           }
         }
         ],
-        allowDelete: true,
+        allowedActions:{
+          edit: false,
+          delete: false,
+          // show: true,
+          // filter: true,
+        },
       }
 
     },
