@@ -1,6 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth from '../adminforth/index.js';
+import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
 
 
@@ -23,7 +23,8 @@ if (!tableExists) {
         description TEXT,
         property_type VARCHAR(255) DEFAULT 'apartment',
         listed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP
+        created_at TIMESTAMP,
+        user_id VARCHAR(255)
     );`).run();
 
   await db.prepare(`
@@ -67,7 +68,8 @@ const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   customization: {
-    vueUsesFile: './custom/vueUses.ts',
+    customComponentsDir: './custom',
+    vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory
   },
 
   dataSources: [
@@ -82,35 +84,35 @@ const admin = new AdminForth({
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
-      fieldtypesByTable: {
-        'game': {
-            _id: {
-                "name": "_id",
-                "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-                "required": true, "primaryKey": false, "default": ""
-            },
-            bb_enabled: {
-                "name": "bb_enabled",
-                "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
-                "required": false, "primaryKey": false, "default": false
-            },
-            bb_rank: {
-                "name": "bb_rank",
-                "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
-                "required": false, "primaryKey": false, "default": 0
-            },
-            blocked_countries: {
-                "name": "blocked_countries",
-                "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-                "required": false, "primaryKey": false, "default": ""
-            },
-            release_date: {
-                "name": "release_date",
-                "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
-                "required": false, "primaryKey": false, "default": ""
-            },
-        }
-      }
+    //   fieldtypesByTable: {
+    //     'game': {
+    //         _id: {
+    //             "name": "_id",
+    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
+    //             "required": true, "primaryKey": false, "default": ""
+    //         },
+    //         bb_enabled: {
+    //             "name": "bb_enabled",
+    //             "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
+    //             "required": false, "primaryKey": false, "default": false
+    //         },
+    //         bb_rank: {
+    //             "name": "bb_rank",
+    //             "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
+    //             "required": false, "primaryKey": false, "default": 0
+    //         },
+    //         blocked_countries: {
+    //             "name": "blocked_countries",
+    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
+    //             "required": false, "primaryKey": false, "default": ""
+    //         },
+    //         release_date: {
+    //             "name": "release_date",
+    //             "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
+    //             "required": false, "primaryKey": false, "default": ""
+    //         },
+    //     }
+    //   }
     }
   ],
   resources: [
@@ -184,7 +186,22 @@ const admin = new AdminForth({
           name: 'listed',
           required: true,  // will be required on create/edit
         },
-        
+        {
+          name: 'user_id',
+          foreignResource: {
+            resourceId: 'users',
+            hooks: {
+              list: {
+                beforeDatasourceRequest: async ({ query, adminUser }) => {
+                  return { ok: true, error: false }
+                },
+                afterDatasourceResponse: async ({ response, adminUser }) => {
+                  return { ok: true, error: false }
+                }
+              },
+            }
+          }
+        }
       ],
       listPageSize: 20,
       options:{
@@ -201,7 +218,12 @@ const admin = new AdminForth({
           }
         }
         ],
-        allowDelete: true,
+        allowedActions:{
+          edit: false,
+          delete: false,
+          // show: true,
+          // filter: true,
+        },
       }
 
     },
@@ -209,7 +231,8 @@ const admin = new AdminForth({
       dataSource: 'maindb', 
       table: 'users',
       resourceId: 'users',
-      label: 'Users',
+      label: 'Users',  
+      itemLabel: (r) => `👤 ${r.email}`,
       columns: [
         { 
           name: 'id', 
@@ -221,6 +244,12 @@ const admin = new AdminForth({
           name: 'email', 
           required: true,
           isUnique: true,
+          validation: [
+            {
+              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+              message: 'Email is not valid, must be in format example@test.com'
+            }
+          ]
         },
         { 
           name: 'created_at', 
@@ -334,6 +363,7 @@ const admin = new AdminForth({
               name: 'email', 
               required: true,
               isUnique: true,
+              sortable: false,
             },
             { 
               name: 'created_at', 
@@ -365,11 +395,12 @@ const admin = new AdminForth({
     {
         dataSource: 'db3', table: 'game',
         columns: [
-            { name: '_id', primaryKey: true },
-            { name: 'bb_enabled' },
-            { name: 'bb_rank' },
+            { name: '_id', primaryKey: true, "type": "string", "maxLength": 255,  "required": true, "default": "" },
+            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false },
+            { name: 'bb_rank', "type": "integer", "required": false, "default": 0 },
             {
                 name: 'blocked_countries',
+                "type": "string", "maxLength": 255, "required": false, "default": "",
                 enum: [
                     { value: 'TR', label: 'Turkey' },
                     { value: 'DE', label: 'Germany' },
@@ -397,7 +428,7 @@ const admin = new AdminForth({
                     { value: 'TR', label: 'Turkey' }
                 ]
             },
-            { name: 'release_date' }
+            { name: 'release_date', "type": "datetime", "required": false, "default": "" },
         ]
     }
   ],
@@ -405,8 +436,7 @@ const admin = new AdminForth({
     {
       label: 'Dashboard',
       icon: 'flowbite:chart-pie-solid',
-      component: './custom/Dash.vue',
-      homepage: true,
+      component: '@@/Dash.vue',
       path: '/dashboard',
     },
     {
@@ -418,12 +448,12 @@ const admin = new AdminForth({
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'apparts',
-          // homepage: true,
         },
         {
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
+          homepage: true,
         },
         {
           label: 'Games Users',
@@ -459,13 +489,27 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development1' });
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development', verbose: true});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
 
+
+// add api before .serve
+app.get(
+  '/api/testtest/', 
+  admin.express.authorize(
+    async (req, res, next,) => {
+        res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
+    }
+  )
+)
+
+// serve after you added all api
 admin.express.serve(app, express)
 admin.discoverDatabases();
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

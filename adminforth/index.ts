@@ -7,14 +7,114 @@ import CodeInjector from './modules/codeInjector.js';
 import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
+import fs from 'fs';
 
 
-import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
+import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
+const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
+
+type AdminForthConfigMenuItem = {
+  label: string,
+  icon?: string,
+  path?: string,
+  component?: string,
+  resourceId?: string,
+  homepage?: boolean,
+  children?: Array<AdminForthConfigMenuItem>,
+}
+
+
+type AdminForthResourceColumn = {
+  name: string,
+  label?: string,
+  type?: AdminForthTypesValues,
+  primaryKey?: boolean,
+  required?: boolean | { create: boolean, edit: boolean },
+  editingNote?: string | { create: string, edit: string },
+  showIn?: Array<string>,
+  fillOnCreate?: Function,
+  isUnique?: boolean,
+  virtual?: boolean,
+  allowMinMaxQuery?: boolean,
+}
+
+type AdminForthResource = {
+  resourceId: string,
+  label?: string,
+  table: string,
+  dataSource: string,
+  columns: Array<AdminForthResourceColumn>,
+  itemLabel?: Function,
+  hooks?: {
+    show?: Function,
+    create?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+    edit?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+    delete?: {
+      beforeSave?: Function,
+      afterSave?: Function,
+    },
+  },
+  options?: {
+    bulkActions?: Array<{
+      label: string,
+      state: string,
+      icon: string,
+      action: Function,
+    }>,
+    allowedActions?: AllowedActions,
+    
+  },
+}
+
+type AdminForthDataSource = {
+  id: string,
+  url: string,
+}
+
+type AdminForthConfig = {
+  rootUser?: {
+    username: string,
+    password: string,
+  },
+  auth?: {
+    resourceId: string,
+    usernameField: string,
+    passwordHashField: string,
+    loginBackgroundImage?: string,
+    userFullName?: string,
+  },
+  resources: Array<any>,
+  menu: Array<AdminForthConfigMenuItem>,
+  databaseConnectors?: any,
+  dataSources: Array<any>,
+  customization?: {
+    customComponentsDir?: string,
+    vueUsesFile?: string,
+  },
+  baseUrl?: string,
+  brandName?: string,
+  datesFormat?: string,
+  deleteConfirmation?: boolean,
+}
+
+type AllowedActions = {
+  create: boolean,
+  edit: boolean,
+  show: boolean,
+  delete: boolean,
+}
 
 class AdminForth {
   static Types = AdminForthTypes;
+
 
   static Utils = {
     generatePasswordHash: async (password) => {
@@ -28,7 +128,21 @@ class AdminForth {
     
   }
 
-  constructor(config) {
+  config: AdminForthConfig;
+  express: ExpressServer;
+  auth: Auth;
+  codeInjector: CodeInjector;
+  connectors: any;
+  connectorClasses: any;
+  runningHotReload?: boolean;
+
+
+  statuses: {
+    dbDiscover?: 'running' | 'done',
+  }
+
+
+  constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
     this.validateConfig();
     this.express = new ExpressServer(this);
@@ -61,6 +175,14 @@ class AdminForth {
       if (!userResource) {
         throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
       }
+    }
+
+    if (!this.config.customization) {
+      this.config.customization = {};
+    }
+
+    if (!this.config.customization.customComponentsDir) {
+      this.config.customization.customComponentsDir = './custom';
     }
 
 
@@ -97,6 +219,8 @@ class AdminForth {
         }
         res.columns.forEach((col) => {
           col.label = col.label || guessLabelFromName(col.name);
+          //define default sortable
+          if (!Object.keys(col).includes('sortable')) {col.sortable = true;}
           if (col.showIn && !Array.isArray(col.showIn)) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
           }
@@ -125,12 +249,18 @@ class AdminForth {
             }
           }
 
+
+
           const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
           if (wrongShowIn) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${AVAILABLE_SHOW_IN.join(', ')}`);
           }
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
+
+        if (!res.options) {
+          res.options = {bulkActions: [], allowedActions: {}};
+        }
 
 
         //check if resource has bulkActions
@@ -160,7 +290,22 @@ class AdminForth {
           });
           bulkActions = newBulkActions;
         }
-      });
+
+          //add default allowedActions to resources
+          if(res.options.allowedActions){
+            //check if allowedActions is an object
+            if(typeof res.options.allowedActions !== 'object'){
+              errors.push(`Resource "${res.resourceId}" allowedActions must be an object`);
+            }
+            const userAllowedActions = res.options.allowedActions 
+            res.options.allowedActions = Object.assign({}, DEFAULT_ALLOWED_ACTIONS, userAllowedActions);         
+          } else {
+            res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
+          }
+        })
+
+    
+
 
       if (!this.config.menu) {
         errors.push('No config.menu defined');
@@ -176,6 +321,17 @@ class AdminForth {
           if (item.component && !item.path) {
             errors.push(`Menu item with component must have path : ${JSON.stringify(item)}`);
           }
+          // make sure component starts with @@
+          if (item.component) {
+            if (!item.component.startsWith('@@')) {
+              errors.push(`Menu item component must start with @@ : ${JSON.stringify(item)}`);
+            }
+
+            const path = item.component.replace('@@', this.config.customization.customComponentsDir);
+            if ( !fs.existsSync(path) ) {
+              errors.push(`Menu item component "${item.component.replace('@@', '')}" does not exist in "${this.config.customization.customComponentsDir}"`);
+            }
+          }
 
           if (item.homepage) {
             homepages++;
@@ -188,6 +344,7 @@ class AdminForth {
           }
         });
       };
+      browseMenu(this.config.menu);
 
     }
 
@@ -246,7 +403,7 @@ class AdminForth {
       if (!this.connectors[res.dataSource]) {
         throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
       }
-      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res.table);
+      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
       if (!Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
@@ -291,6 +448,7 @@ class AdminForth {
       method: 'POST',
       path: '/login',
       handler: async ({ body, response }) => {
+        const INVALID_MESSAGE = 'Invalid username or password';
         const { username, password } = body;
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
@@ -459,6 +617,71 @@ class AdminForth {
     });
     server.endpoint({
       method: 'POST',
+      path: '/get_resource_foreign_data',
+      handler: async ({ body }) => {
+        const { resourceId, column } = body;
+        if (!this.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.statuses.dbDiscover !== 'done') {
+          return { error : 'Database discovery is still in progress, please try later' };
+        }
+        const resource = this.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+        const columnConfig = resource.columns.find((col) => col.name == column);
+        if (!columnConfig.foreignResource) {
+          return { error: `Column ${column} in resource ${resourceId} is not a foreign key` };
+        }
+        const targetResourceId = columnConfig.foreignResource.resourceId;
+        const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
+        if (columnConfig.foreignResource.hooks?.beforeDatasourceRequest) {
+          const resp = await column.foreignResource.hooks?.beforeDatasourceRequest({ query: body, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        const { limit, offset, filters, sort } = body;
+        const dbDataItems = await this.connectors[targetResource.dataSource].getData({
+          resource: targetResource,
+          limit,
+          offset,
+          filters: filters || [],
+          sort: sort || [],
+        });
+        const items = dbDataItems.data.map((item) => {
+          const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
+          const labler = targetResource.itemLabel || ((record) => `${targetResource.label} ${pk}`);
+          return { 
+            value: pk,
+            label: labler(item),
+            _item: item, // user might need it in hook to form new label
+          }
+        });
+        const response = {
+          items
+        };
+        if (columnConfig.foreignResource.hooks?.afterDatasourceRequest) {
+          const resp = await column.foreignResource.hooks?.afterDatasourceRequest({ response, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        return response;
+      },
+    });
+
+    server.endpoint({
+      method: 'POST',
       path: '/get_min_max_for_columns',
       handler: async ({ body }) => {
         const { resourceId } = body;
@@ -475,7 +698,7 @@ class AdminForth {
         const item = await this.connectors[resource.dataSource].getMinMaxForColumns({
           resource,
           columns: resource.columns.filter((col) => [
-            AdminForthTypes.INT, 
+            AdminForthTypes.INTEGER, 
             AdminForthTypes.FLOAT,
             AdminForthTypes.DATE,
             AdminForthTypes.DATETIME,
@@ -489,7 +712,7 @@ class AdminForth {
     server.endpoint({
         method: 'POST',
         path: '/get_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             const { resourceId, primaryKey } = body;
             const resource = this.config.resources.find((res) => res.resourceId == resourceId);
             const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
@@ -654,8 +877,9 @@ class AdminForth {
         noAuth: true, // TODO
         method: 'POST',
         path: '/delete_record',
-        handler: async ({ body }) => {
+        handler: async ({ body, adminUser }) => {
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
+            const record = await this.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }

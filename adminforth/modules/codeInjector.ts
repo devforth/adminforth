@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import os from 'os';
+import AdminForth from '../index.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,18 +31,21 @@ function hashify(obj) {
 
 class CodeInjector {
 
+  adminforth: AdminForth;
+
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
   constructor(adminforth) {
     this.adminforth = adminforth;
   }
 
-  async runShell({command, verbose = false}) {
-    console.time(`Running ${command}...`);
-    const { stdout: out, stderr: err } = await execAsync(command);
-    console.timeEnd(`Running ${command}...`);
-    console.log(`Command ${command} output:`, out, err);
-  }
+  // async runShell({command, verbose = false}) {
+  //   console.log(`⚙️ Running shell ${command}...`);
+  //   console.time(`${command} done in`);
+  //   const { stdout: out, stderr: err } = await execAsync(command);
+  //   console.timeEnd(`${command} done in`);
+  //   console.log(`Command ${command} output:`, out, err);
+  // }
 
   async runNpmShell({command, verbose = false, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
@@ -53,12 +57,13 @@ class CodeInjector {
       ...process.env,
     };
 
-    console.time(`Running npm ${command}...`);
+    console.log(`⚙️ Running npm ${command}...`);
+    console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
-    console.timeEnd(`Running npm ${command}...`);
+    console.timeEnd(`npm ${command} done in`);
 
     if (verbose) {
       console.log(`npm ${command} output:`, out);
@@ -78,7 +83,7 @@ class CodeInjector {
     }
   }
 
-  async prepareSources({ filesUpdated, verbose = false }) {
+  async prepareSources({ filesUpdated, verbose = false }: { filesUpdated?: string[], verbose?: boolean }) {
     const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     // check SPA_TMP_PATH exists and create if not
     try {
@@ -87,7 +92,6 @@ class CodeInjector {
       await fs.promises.mkdir(spaTmpPath, { recursive: true });
     }
 
-    const customFiles = [];
     const icons = [];
     let routes = '';
 
@@ -97,11 +101,10 @@ class CodeInjector {
           icons.push(item.icon);
         }
         if (item.component) {
-          customFiles.push(item.component);
           routes += `{
             path: '${item.path}',
             name: '${item.path}',
-            component: import('@/custom/${item.component}'),
+            component: import('${item.component}'),
           },\n`
         }
         if (item.children) {
@@ -110,10 +113,6 @@ class CodeInjector {
       });
     };
     collectAssetsFromMenu(this.adminforth.config.menu);
-
-    if (this.adminforth.config.customization?.vueUsesFile) {
-      customFiles.push(this.adminforth.config.customization.vueUsesFile);
-    }
 
     // create spa_tmp folder, or ignore if it exists
     try {
@@ -128,20 +127,32 @@ class CodeInjector {
         const src = path.join(__dirname, 'spa', file);
         const dest = path.join(spaTmpPath, file);
         await fsExtra.copy(src, dest);
+        if (process.env.HEAVY_DEBUG) {
+          console.log('🪲 await fsExtra.copy filtering', src, dest);
+        }
+
       }));
     } else {
+      if (process.env.HEAVY_DEBUG) {
+        console.log(`🪲 await fsExtra.copy from ${path.join(__dirname, 'spa')}, ${spaTmpPath}`);
+      }
+
       await fsExtra.copy(path.join(__dirname, 'spa'), spaTmpPath, {
         filter: (src) => {
+          if (process.env.HEAVY_DEBUG) {
+            console.log('🪲 await fsExtra.copy filtering', src);
+          }
+
           return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
         },
       });
 
-      // copy custom files
-      await Promise.all(customFiles.map(async (file) => {
-        const src = path.join(file);
-        const dest = path.join(spaTmpPath, 'src', 'custom', file);
-        await fsExtra.copy(src, dest);
-      }))
+      // copy whole custom directory
+      if (this.adminforth.config.customization?.customComponentsDir) {
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
+          recursive: true,
+        });
+      }
     }
 
     //collect all 'icon' fields from resources bulkActions
@@ -184,7 +195,7 @@ class CodeInjector {
     let imports = iconImports + '\n';
 
     if (this.adminforth.config.customization?.vueUsesFile) {
-      imports += `import addCustomUses from '@/custom/${this.adminforth.config.customization.vueUsesFile}';\n`;
+      imports += `import addCustomUses from '${this.adminforth.config.customization.vueUsesFile}';\n`;
     }
 
     // inject that code into spa_tmp/src/App.vue
@@ -199,6 +210,24 @@ class CodeInjector {
 
 
     /* generate custom rotes */
+    const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
+    let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
+    let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
+    let homePagePath = homepageMenuItem?.path || `resource/${childrenHomepage?.resourceId}`;
+    if (!homePagePath) {
+      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+    }
+
+    
+    
+      
+
+    routes += `{
+      path: '/',
+      name: 'home',
+      //redirect to login 
+      redirect: '${homePagePath}'
+    },\n`;
     const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES */', routes);
@@ -236,12 +265,15 @@ class CodeInjector {
     await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
 
     // get packages with version from customPackage
-    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])].reduce(
-      (acc, packageName) => {
-        const version = customLock.packages[`node_modules/${packageName}`].version;
-        acc.push(`${packageName}@${version}`);
-        return acc;
-      }, []);
+    const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon'];
+    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])]
+      .filter((packageName) => !IGNORE_PACKAGES.includes(packageName))
+      .reduce(
+        (acc, packageName) => {
+          const version = customLock.packages[`node_modules/${packageName}`].version;
+          acc.push(`${packageName}@${version}`);
+          return acc;
+        }, []);
 
     if (packageNames.length) {
       const npmInstallCommand = `install ${[...packageNames, ...customPackgeNames].join(' ')}`;
@@ -252,7 +284,7 @@ class CodeInjector {
 
   }
 
-  async watchForReprepare() {
+async watchForReprepare({ verbose }) {
     const spaPath = path.join(__dirname, 'spa');
     // get list of all subdirectories in spa recursively
     const directories = [];
@@ -267,7 +299,10 @@ class CodeInjector {
     };
     await collectDirectories(spaPath);
 
-    // console.log('👌👌Watching for changes in:', directories.join('\n '))
+    if (verbose) {
+      console.log('🔎 Watching for changes in:', directories.join(','));
+    }
+
 
     const watcher = filewatcher();
     directories.forEach((dir) => {
@@ -286,11 +321,71 @@ class CodeInjector {
     });
   }
 
-  async bundleNow({hotReload = false, verbose = false}) {
-    this.adminforth.config.runningHotReload = hotReload;
+  async watchCustomComponentsForCopy({ verbose }) {
+    const customComponentsDir = this.adminforth.config.customization.customComponentsDir;
+
+    // check if folder exists
+    try {
+      await fs.promises.access(customComponentsDir, fs.constants.F_OK);
+    } catch (e) {
+      if (verbose) {
+        console.log(`Custom components dir ${customComponentsDir} does not exist, skipping watching`);
+      }
+      return;
+    }
+
+    // get all subdirs
+    const directories = [];
+    const collectDirectories = async (dir) => {
+      directories.push(dir);
+
+      const files = await fs.promises.readdir(dir, { withFileTypes: true });
+      for (const file of files) {
+        if (file.isDirectory()) {
+          await collectDirectories(path.join(dir, file.name));
+        }
+      }
+    };
+
+    await collectDirectories(customComponentsDir);
+
+    const watcher = filewatcher();
+    directories.forEach((dir) => {
+      watcher.add(dir);
+    });
+
+    if (verbose) {
+      console.log('🔎 Watching for changes in:', directories.join(','));
+    }
+    
+    watcher.on(
+      'change',
+      async (file) => {
+        // copy one file
+        // TODO: non optimal, copy only changed file, test on both nested and parent dir
+        if (verbose) {
+          console.log(`🔎 File ${file} changed, copying to spa_tmp...`);
+        }
+        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
+          recursive: true,
+        });
+      }
+    )
+    process.on('exit', () => {
+      watcher.removeAll();
+    });
+  }
+
+  async bundleNow({hotReload = false, verbose = false}: {hotReload: boolean, verbose: boolean}) {
+    this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources({ verbose });
-    await this.watchForReprepare();
+
+    if (hotReload) {
+      await this.watchForReprepare({ verbose });
+      await this.watchCustomComponentsForCopy({ verbose });
+    }
+
     console.log('AdminForth bundling');
     
     const cwd = CodeInjector.SPA_TMP_PATH;
@@ -300,7 +395,7 @@ class CodeInjector {
       await this.runNpmShell({command: 'run build-only', verbose, cwd});
     } else {
       const command = 'run dev';
-      console.time(`Running npm ${command}...`);
+      console.log(`⚙️ Running npm ${command}...`);
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
@@ -323,7 +418,6 @@ class CodeInjector {
 
       });
 
-      console.timeEnd(`Running npm ${command}...`);
     }
   }
 }

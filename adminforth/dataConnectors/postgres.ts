@@ -5,6 +5,9 @@ const { Client } = pkg;
 
 
 class PostgresConnector {
+
+    db: any;
+
     constructor({ url }) {
         this.db = new Client({
             connectionString: url
@@ -37,7 +40,8 @@ class PostgresConnector {
         [AdminForthSortDirections.DESC]: 'DESC',
       };
 
-    async discoverFields(tableName) {
+    async discoverFields(resource) {
+        const tableName = resource.table;
         const stmt = await this.db.query(`
         SELECT
             a.attname AS name,
@@ -65,7 +69,7 @@ class PostgresConnector {
         const fieldTypes = {};
 
         rows.forEach((row) => {
-            const field = {};
+            const field: any = {};
             const baseType = row.type.toLowerCase();
             if (baseType == 'int') {
                 field.type = AdminForthTypes.INTEGER;
@@ -122,14 +126,13 @@ class PostgresConnector {
             return null;
           }
           if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            return dayjs.unix(+value).toISOString();
+            return dayjs(value).toISOString();
           } else if (field._underlineType == 'varchar') {
-            return dayjs.unix(+value).toISOString();
+            return dayjs(value).toISOString();
           } else {
             throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
           }
         }
-
 
         return value;
       }
@@ -163,10 +166,8 @@ class PostgresConnector {
             return null;
           }
           if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).unix();
+            return dayjs(value);
           } else if (field._underlineType == 'varchar') {
-            // value is iso string now, convert to unix timestamp
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthTypes.BOOLEAN) {

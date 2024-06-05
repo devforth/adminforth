@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ADMINFORTH_SECRET=123 NODE_ENV=development nodemon index.js"
+    "start": "ADMINFORTH_SECRET=123 NODE_ENV=development tsx watch index.ts",
+    "--start-old": "ADMINFORTH_SECRET=123 NODE_ENV=development nodemon --exec ts-node-esm  index.ts"
   },
   "author": "",
   "license": "ISC",
@@ -14,8 +15,12 @@
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2",
     "highcharts-vue": "^2.0.1",
-    "nodemon": "^3.1.0",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.11.2",
+    "typescript": "^5.4.5"
   }
 }
