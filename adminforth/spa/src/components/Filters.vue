@@ -2,7 +2,7 @@
   <!-- drawer component -->
   <div id="drawer-navigation" 
   
-      class="fixed top-14 right-0 z-40 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl"
+      class="fixed top-14 right-0 z-40 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl dark:shadow-black"
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
