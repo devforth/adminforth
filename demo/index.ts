@@ -23,7 +23,8 @@ if (!tableExists) {
         description TEXT,
         property_type VARCHAR(255) DEFAULT 'apartment',
         listed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP
+        created_at TIMESTAMP,
+        user_id VARCHAR(255)
     );`).run();
 
   await db.prepare(`
@@ -185,7 +186,19 @@ const admin = new AdminForth({
         },
         {
           name: 'user_id',
-          foreignResource: 'users',
+          foreignResource: {
+            resourceId: 'users',
+            hooks: {
+              list: {
+                beforeDatasourceRequest: async ({ query, adminUser }) => {
+                  return { ok: true, error: false }
+                },
+                afterDatasourceResponse: async ({ response, adminUser }) => {
+                  return { ok: true, error: false }
+                }
+              },
+            }
+          }
         }
       ],
       listPageSize: 20,
