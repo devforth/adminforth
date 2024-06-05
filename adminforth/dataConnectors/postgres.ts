@@ -7,7 +7,7 @@ const { Client } = pkg;
 class PostgresConnector {
 
     db: any;
-    
+
     constructor({ url }) {
         this.db = new Client({
             connectionString: url
@@ -68,7 +68,7 @@ class PostgresConnector {
         const fieldTypes = {};
 
         rows.forEach((row) => {
-            const field = {};
+            const field: any = {};
             const baseType = row.type.toLowerCase();
             if (baseType == 'int') {
                 field.type = AdminForthTypes.INTEGER;
