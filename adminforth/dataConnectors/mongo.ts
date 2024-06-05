@@ -4,7 +4,10 @@ import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } 
 
 
 class MongoConnector {
+    db: any;
+
     constructor({ url, fieldtypesByTable }) {
+        
         this.db = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
         if (fieldtypesByTable == null) {
             throw new Error('fieldtypesByTable is required for MongoConnector');

@@ -15,6 +15,8 @@ export const AdminForthTypes = {
   JSON: 'json',
 }
 
+export type AdminForthTypesValues = keyof typeof AdminForthTypes;
+
 export const AdminForthFilterOperators = {
   EQ: 'eq',
   NE: 'ne',

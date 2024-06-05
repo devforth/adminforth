@@ -10,7 +10,7 @@ import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 
 
-import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
+import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 
@@ -27,7 +27,7 @@ type AdminForthConfigMenuItem = {
 type AdminForthResourceColumn = {
   name: string,
   label?: string,
-  type?: AdminForthTypes,
+  type?: AdminForthTypesValues,
   primaryKey?: boolean,
   required?: boolean | { create: boolean, edit: boolean },
   editingNote?: string | { create: string, edit: string },

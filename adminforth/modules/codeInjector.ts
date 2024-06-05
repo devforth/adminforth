@@ -7,7 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import os from 'os';
-import AdminForth from '../index.ts';
+import AdminForth from '../index.js';
 
 
 const __filename = fileURLToPath(import.meta.url);

@@ -96,6 +96,10 @@ class AdminForth {
                 res.columns.forEach((col) => {
                     var _b;
                     col.label = col.label || guessLabelFromName(col.name);
+                    //define default sortable
+                    if (!Object.keys(col).includes('sortable')) {
+                        col.sortable = true;
+                    }
                     if (col.showIn && !Array.isArray(col.showIn)) {
                         errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
                     }
