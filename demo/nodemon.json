@@ -1,5 +1,5 @@
 {
-  "ext": "js",
+  "ext": "ts",
   "watch": ["../adminforth", "."],
   "ignore": [
     "../adminforth/node_modules/**/*", 

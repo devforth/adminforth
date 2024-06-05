@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "NODE_PATH=./node_modules/ vite",
-    "build": "NODE_PATH=./node_modules/ run-p type-check \"build-only {@}\" --",
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
