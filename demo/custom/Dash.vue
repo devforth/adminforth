@@ -1,11 +1,12 @@
 
 <template>
   <div>
-    <h1>Dashboard</h1>
-    <p>Welcome to the dashboard</p>
+    <h1>Dashboard 111221✅✅✅</h1>
+    <ttt />
+    <p>Welcome t11o the da2kkk1shboa1111rd 2111 1 1</p>
 
     <highcharts :options="chartOptions" />
-
+ 
   </div>
 </template>
 
@@ -13,6 +14,7 @@
 
 import HighchartsVue from 'highcharts-vue';
 import { ref } from 'vue';
+import ttt from '@@/comp/ttt.vue';
 
 const chartOptions = ref({
   title: {

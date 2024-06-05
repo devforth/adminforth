@@ -3,18 +3,22 @@ import { AdminForthTypes, AdminForthFilterOperators, AdminForthSortDirections } 
 import dayjs from 'dayjs';
 
 class SQLiteConnector {
+
+    db: any;
+
     constructor({ url }) {
       // create connection here
 
       this.db = betterSqlite3(url.replace('sqlite://', ''));
     }
 
-    async discoverFields(tableName) {
+    async discoverFields(resource) {
+        const tableName = resource.table;
         const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
         const fieldTypes = {};
         rows.forEach((row) => {
-          const field = {};
+          const field: any = {};
           const baseType = row.type.toLowerCase();
           if (baseType == 'int') {
             field.type = AdminForthTypes.INTEGER;

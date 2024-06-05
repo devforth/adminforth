@@ -42,7 +42,7 @@
         {{ `${action.label} (${checkboxes.length})` }}
       </button>
 
-      <RouterLink
+      <RouterLink v-if="allowedActions.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
         class="flex items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
@@ -101,7 +101,7 @@
           </th>
 
           <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
-            <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center cursor-pointer">
+            <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center " :class="{'cursor-pointer':c.sortable}">
               {{ c.label }}
 
               <div v-if="c.sortable"
@@ -217,7 +217,7 @@
               <div class="tooltip-arrow" data-popper-arrow></div>
             </div>
 
-            <RouterLink
+            <RouterLink v-if="allowedActions.edit"
               :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
               class="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
               :data-tooltip-target="`tooltip-edit-${rowI}`"
@@ -232,7 +232,7 @@
               <div class="tooltip-arrow" data-popper-arrow></div>
             </div>
 
-            <button v-if="allowDelete"
+            <button v-if="allowedActions.delete"
                     class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                     :data-tooltip-target="`tooltip-delete-${rowI}`"
                     @click="showDeleteModal(row)"
@@ -355,7 +355,11 @@ const fetchStatus = ref({pending: false, error: null, success: false});
 const rows = ref(null);
 const totalRows = ref(0);
 const allCheckedActions = ref([]);
-const allowDelete = ref(false);
+const allowedActions = ref({});
+
+onMounted(() => {
+  console.log('LISTVIEW mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
+});
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -432,8 +436,8 @@ async function getList() {
   });
   totalRows.value = data.total;
   allCheckedActions.value = data.options?.bulkActions || [];
-  allowDelete.value = data.options?.allowDelete;
-
+  allowedActions.value = data.options?.allowedActions;
+  
 
   setTimeout(() => {
     initFlowbite();
