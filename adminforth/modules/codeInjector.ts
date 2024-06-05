@@ -127,10 +127,22 @@ class CodeInjector {
         const src = path.join(__dirname, 'spa', file);
         const dest = path.join(spaTmpPath, file);
         await fsExtra.copy(src, dest);
+        if (process.env.HEAVY_DEBUG) {
+          console.log('🪲 await fsExtra.copy filtering', src, dest);
+        }
+
       }));
     } else {
+      if (process.env.HEAVY_DEBUG) {
+        console.log(`🪲 await fsExtra.copy from ${path.join(__dirname, 'spa')}, ${spaTmpPath}`);
+      }
+
       await fsExtra.copy(path.join(__dirname, 'spa'), spaTmpPath, {
         filter: (src) => {
+          if (process.env.HEAVY_DEBUG) {
+            console.log('🪲 await fsExtra.copy filtering', src);
+          }
+
           return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
         },
       });
