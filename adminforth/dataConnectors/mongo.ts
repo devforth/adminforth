@@ -7,7 +7,7 @@ class MongoConnector {
     db: any;
 
     constructor({ url }) {
-        this.db = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+        this.db = new MongoClient(url);
         (async () => {
             try {
                 await this.db.connect();

@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,6 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "tsc": "^2.0.4",
     "typescript": "^5.4.5"
   }
 }
