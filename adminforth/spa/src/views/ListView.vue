@@ -101,7 +101,7 @@
           </th>
 
           <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
-            <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center cursor-pointer">
+            <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center " :class="{'cursor-pointer':c.sortable}">
               {{ c.label }}
 
               <div v-if="c.sortable"

@@ -333,6 +333,7 @@ const admin = new AdminForth({
               name: 'email', 
               required: true,
               isUnique: true,
+              sortable: false,
             },
             { 
               name: 'created_at', 
