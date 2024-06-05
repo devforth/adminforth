@@ -13,6 +13,7 @@ import fs from 'fs';
 import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
+const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
 type AdminForthConfigMenuItem = {
   label: string,
@@ -23,6 +24,7 @@ type AdminForthConfigMenuItem = {
   homepage?: boolean,
   children?: Array<AdminForthConfigMenuItem>,
 }
+
 
 type AdminForthResourceColumn = {
   name: string,
@@ -67,7 +69,8 @@ type AdminForthResource = {
       icon: string,
       action: Function,
     }>,
-    allowDelete?: boolean,
+    allowedActions?: AllowedActions,
+    
   },
 }
 
@@ -100,6 +103,13 @@ type AdminForthConfig = {
   brandName?: string,
   datesFormat?: string,
   deleteConfirmation?: boolean,
+}
+
+type AllowedActions = {
+  create: boolean,
+  edit: boolean,
+  show: boolean,
+  delete: boolean,
 }
 
 class AdminForth {
@@ -248,6 +258,10 @@ class AdminForth {
           col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
         })
 
+        if (!res.options) {
+          res.options = {bulkActions: [], allowedActions: {}};
+        }
+
 
         //check if resource has bulkActions
         if(res.options?.bulkActions){
@@ -276,7 +290,22 @@ class AdminForth {
           });
           bulkActions = newBulkActions;
         }
-      });
+
+          //add default allowedActions to resources
+          if(res.options.allowedActions){
+            //check if allowedActions is an object
+            if(typeof res.options.allowedActions !== 'object'){
+              errors.push(`Resource "${res.resourceId}" allowedActions must be an object`);
+            }
+            const userAllowedActions = res.options.allowedActions 
+            res.options.allowedActions = Object.assign({}, DEFAULT_ALLOWED_ACTIONS, userAllowedActions);         
+          } else {
+            res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
+          }
+        })
+
+    
+
 
       if (!this.config.menu) {
         errors.push('No config.menu defined');
