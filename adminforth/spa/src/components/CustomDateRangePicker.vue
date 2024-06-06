@@ -26,7 +26,7 @@
       <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
-            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
+            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
               <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
             </div>
 
