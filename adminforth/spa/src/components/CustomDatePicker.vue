@@ -5,7 +5,7 @@
         <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
         <div class="relative">
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5">
+          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
             <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
           </div>
 
@@ -97,7 +97,7 @@ const start = computed(() => {
 })
 
 function updateFromProps() {
-  if (props.valueStart === undefined) {
+  if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   }
@@ -157,5 +157,5 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   removeChangeDateListener();
-})
+});
 </script>

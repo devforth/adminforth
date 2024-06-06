@@ -71,45 +71,58 @@ const sliderValue = ref([start.value, end.value]);
 
 const updateFromSlider =
     debounce((value: [number, number]) => {
+      console.log('start end', value)
       start.value = value[0];
       end.value = value[1];
     }, 500);
 
-function updateFromProps() {
-  if (props.valueStart || props.valueEnd) {
-    setFromProps(props.valueStart, props.valueEnd)
-  } else {
-    clear();
-  }
-}
-
 onMounted(() => {
-  updateFromProps();
+  updateStartFromProps();
+  updateEndFromProps();
 
-  watch(() => [props.valueStart, props.valueEnd], (value) => {
-    updateFromProps();
+  watch(() => props.valueStart, (value) => {
+    updateStartFromProps();
+  });
+
+  watch(() => props.valueEnd, (value) => {
+    updateEndFromProps();
   });
 })
 
+function updateStartFromProps() {
+  if (props.valueStart || props.valueStart === 0) {
+    start.value = props.valueStart ? props.valueStart : minFormatted.value;
+    sliderValue.value = [start.value, end.value]
+  } else {
+    console.log(props.valueStart)
+    start.value = minFormatted.value;
+    sliderValue.value = [minFormatted.value, end.value];
+  }
+}
+
+function updateEndFromProps() {
+  if (props.valueEnd || props.valueStart === 0) {
+    end.value = props.valueEnd ? props.valueEnd : minFormatted.value;
+    sliderValue.value = [start.value, end.value]
+  } else {
+    end.value = maxFormatted.value;
+    sliderValue.value = [start.value, maxFormatted.value];
+  }
+}
+
 watch(start, () => {
-  //console.log('⚡ emit', start.value)
+  console.log('⚡ emit', start.value)
   emit('update:valueStart', start.value)
 })
 
 watch(end, () => {
-  //console.log('⚡ emit', end.value)
+  console.log('⚡ emit', end.value)
   emit('update:valueEnd', end.value);
 })
 
 const clear = () => {
   start.value = minFormatted.value;
   end.value = maxFormatted.value;
-  sliderValue.value = [start.value, end.value]
-}
-
-function setFromProps(startValue: number, endValue: number) {
-  start.value = startValue ? startValue : minFormatted.value
-  end.value = endValue ? endValue : maxFormatted.value
   sliderValue.value = [start.value, end.value]
 }
 </script>
