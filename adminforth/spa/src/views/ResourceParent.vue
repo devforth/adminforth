@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`">
     <RouterView/>
   </div>
 </template>
