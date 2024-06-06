@@ -267,6 +267,21 @@ class AdminForth {
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
     }
+
+    // check is all custom components files exists
+    for (const resource of this.config.resources) {
+      for (const column of resource.columns) {
+          if (column.component) {
+            for (const [key, value] of Object.entries(column.component)) {
+                // console.log(`${key}: ${value}`);
+                const path = value.replace('@@', this.config.customization.customComponentsDir);
+                if (!fs.existsSync(path)) {
+                    throw new Error(`Component file ${path} does not exist`);
+                }
+            }
+        }
+      }
+    }
   }
 
   postProcessAfterDiscover(resource) {
