@@ -41,6 +41,10 @@ class MongoConnector {
 
     async discoverFields(resource) {
         return resource.columns.reduce((acc, col) => {
+            if (!col.type) {
+                throw new Error(`Type is not defined for column ${col.name}`);
+            }
+
             acc[col.name] = {
                 name: col.name,
                 type: col.type,
@@ -122,11 +126,22 @@ class MongoConnector {
         
         for (const filter of filters) {
             if (!this.OperatorsMap[filter.operator]) {
-            throw new Error(`Operator ${filter.operator} is not allowed`);
+                throw new Error(`Operator ${filter.operator} is not allowed`);
             }
 
-            if (!resource.dataSourceColumns.some((col) => col.name == filter.field)) {
+            if (!resource.dataSourceColumns.some((col) => col.name === filter.field)) {
                 throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.dataSourceColumns.map((col) => col.name).join(', ')}`);
+            }
+
+            if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
+                if (!Array.isArray(filter.value)) {
+                    throw new Error(`Value for operator ${filter.operator} should be an array`);
+                }
+            }
+
+            if (filter.operator === AdminForthFilterOperators.IN && filter.value.length === 0) {
+                // nonsense
+                return { data: [], total: 0 };
             }
         }
 

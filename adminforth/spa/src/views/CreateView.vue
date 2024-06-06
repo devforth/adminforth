@@ -31,6 +31,7 @@
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
+      :customComponentsPerColumn="createComponentsPerColumn"
     >
     </ResourceForm>
 
@@ -40,14 +41,14 @@
 
 <script setup>
 
-import { ref, computed, onMounted } from 'vue';  
-import { useRoute, useRouter } from 'vue-router';
+import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
+import ResourceForm from '@/components/ResourceForm.vue';
+import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi } from '@/utils';
-import ResourceForm from '@/components/ResourceForm.vue';
-import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
+import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -59,6 +60,7 @@ const route = useRoute();
 const router = useRouter();
 
 const record = ref({});
+let createComponentsPerColumn = {};
 
 const coreStore = useCoreStore();
 
@@ -69,9 +71,17 @@ async function onUpdateRecord(newRecord) {
 
 onMounted(async () => {
   loading.value = true;
-  coreStore.fetchColumns({
+  await coreStore.fetchColumns({
     resourceId: route.params.resourceId
   });
+  createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+    if (column.component?.create) {
+      const path = column.component.create.replace('@@', '../custom');
+      let component = defineAsyncComponent(() => import(`${path}`))
+      acc[column.name] = component;
+    }
+    return acc;
+    }, {});
   loading.value = false;
 });
 
