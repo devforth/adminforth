@@ -138,6 +138,7 @@ class SQLiteConnector {
     
 
     getData({ resource, limit, offset, sort, filters }) {
+      console.log('getDataREQ', { resource, limit, offset, sort, filters });
       const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
       const tableName = resource.table;
       
