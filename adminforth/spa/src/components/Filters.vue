@@ -114,7 +114,7 @@ import { computedAsync } from '@vueuse/core'
 
 
 onMounted(() => {
-  console.log('Filters mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
+  console.log('Filters mounted⌛⌛⌛⌛🔻🔻🔻');
 });
 // props: columns
 // add support for v-model:filers

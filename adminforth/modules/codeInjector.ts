@@ -75,9 +75,8 @@ class CodeInjector {
 
   async rmTmpDir() {
     // remove spa_tmp folder if it is exists
-    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     try {
-      await fs.promises.rm(spaTmpPath, { recursive: true });
+      await fs.promises.rm(CodeInjector.SPA_TMP_PATH, { recursive: true });
     } catch (e) {
       // ignore
     }
@@ -235,21 +234,21 @@ class CodeInjector {
     
 
     /* hash checking */
-    const packageLockPath = path.join(spaTmpPath, 'package-lock.json');
-    const packageLock = JSON.parse(await fs.promises.readFile(packageLockPath, 'utf-8'));
-    const lockHash = hashify(packageLock);
-    /* customPackageLock */
-    const customPackagePath = path.join('./package.json');
-    const customPackage = JSON.parse(await fs.promises.readFile(customPackagePath, 'utf-8'));
-    const customPackageHash = hashify(customPackage);
+    const spaPackageLockPath = path.join(spaTmpPath, 'package-lock.json');
+    const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
+    const spaLockHash = hashify(spaPackageLock);
 
-    const customLockPath = path.join('./package-lock.json');
-    const customLock = JSON.parse(await fs.promises.readFile(customLockPath, 'utf-8'));
-    const customLockHash = hashify(customLock);
+    /* customPackageLock */
+    const usersPackagePath = path.join('./package.json');
+    const usersPackage = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+
+    const usersLockPath = path.join('./package-lock.json');
+    const usersLock = JSON.parse(await fs.promises.readFile(usersLockPath, 'utf-8'));
+    const usersLockHash = hashify(usersLock);
 
     const packagesNamesHash = hashify(packageNames);
 
-    const fullHash = hashify([lockHash, packagesNamesHash, customLockHash]);
+    const fullHash = `${spaLockHash}::${packagesNamesHash}::${usersLockHash}`;
     const hashPath = path.join(spaTmpPath, 'node_modules', '.adminforth_hash');
 
     try {
@@ -257,20 +256,27 @@ class CodeInjector {
       if (existingHash === fullHash) {
         console.log('Hashes match, skipping npm ci/install');
         return;
+      } else {
+        if (verbose) {
+          console.log(`Hashes do not match: existing ${existingHash} new ${fullHash}, proceeding with npm ci/install`);
+        }
       }
     } catch (e) {
       // ignore
+      if (verbose) {
+        console.log('Hash file does not exist, proceeding with npm ci/install');
+      }
     }
 
     await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
 
     // get packages with version from customPackage
     const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon'];
-    const customPackgeNames = [...Object.keys(customPackage.dependencies), ...Object.keys(customPackage.devDependencies || [])]
+    const customPackgeNames = [...Object.keys(usersPackage.dependencies), ...Object.keys(usersPackage.devDependencies || [])]
       .filter((packageName) => !IGNORE_PACKAGES.includes(packageName))
       .reduce(
         (acc, packageName) => {
-          const version = customLock.packages[`node_modules/${packageName}`].version;
+          const version = usersLock.packages[`node_modules/${packageName}`].version;
           acc.push(`${packageName}@${version}`);
           return acc;
         }, []);
