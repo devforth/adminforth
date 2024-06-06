@@ -106,10 +106,6 @@ import { useRouter } from 'vue-router';
 import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 
-
-onMounted(() => {
-  console.log('Filters mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
-});
 // props: columns
 // add support for v-model:filers
 const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
