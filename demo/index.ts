@@ -456,6 +456,10 @@ const admin = new AdminForth({
       type: 'divider'
     },
     {
+      type: 'heading',
+      label: 'SYSTEM',
+    },
+    {
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
