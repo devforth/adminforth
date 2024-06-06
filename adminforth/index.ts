@@ -541,8 +541,8 @@ class AdminForth {
               throw new Error(`Operator '${filter.operator}' is not allowed`);
           }
 
-          if (!resource.dataSourceColumns.some((col) => col.name === filter.field)) {
-              throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.dataSourceColumns.map((col) => col.name).join(', ')}`);
+          if (!resource.columns.some((col) => col.name === filter.field)) {
+              throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
           }
 
           if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
