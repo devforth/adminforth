@@ -128,7 +128,7 @@ const admin = new AdminForth({
         { 
           name: 'square_meter', 
           label: 'Square', 
-          allowMinMaxQuery: true,
+          // allowMinMaxQuery: true,
           minValue: 1,  // you can set min /max value for number fields
           maxValue: 1000,
         },
@@ -145,7 +145,8 @@ const admin = new AdminForth({
           allowCustomValue: true,
         },
         { 
-          name: 'description' 
+          name: 'description',
+          sortable: false,
         },
         {
           name: 'property_type',
@@ -417,6 +418,7 @@ const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/Dash.vue',
       path: '/dashboard',
+      homepage: true,
     },
     {
       label: 'Core',
@@ -432,7 +434,6 @@ const admin = new AdminForth({
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
-          homepage: true,
         },
         {
           label: 'Games Users',
@@ -443,6 +444,7 @@ const admin = new AdminForth({
           label: 'Casino Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'game',
+
         }
       ]
     },

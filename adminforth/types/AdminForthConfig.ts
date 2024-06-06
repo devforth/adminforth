@@ -70,6 +70,7 @@ export type AdminForthResource = {
           state: string,
           icon: string,
           action: Function,
+          id?: string,
         }>,
         allowedActions?: AllowedActions,
         allowDelete?: boolean,
@@ -147,23 +148,12 @@ export type AdminForthTypesValues =
 export type AdminForthResourceColumnEnumElement = {
     value: string | null,
     label: string,
-    } 
+} 
 
 export type AdminForthResourceColumnForeignResource = {
     resourceId: string,
     hooks?: {
-        show?: Function,
-        create?: {
         beforeDatasourceRequest?: Function,
         afterDatasourceResponse?: Function,
-        },
-        list?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
-        },
-        edit?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
-        },
     },
-    }
+  }
