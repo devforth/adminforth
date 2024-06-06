@@ -570,6 +570,10 @@ class AdminForth {
             const targetResource = this.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
             const targetConnector = this.connectors[targetResource.dataSource];
             const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
+            const pksUnique = [...new Set(data.data.map((item) => item[col.name]))];
+            if (pksUnique.length === 0) {
+              return;
+            }
             const targetData = await targetConnector.getData({
               resource: targetResource,
               limit: limit,
@@ -578,7 +582,7 @@ class AdminForth {
                 {
                   field: targetResourcePkField,
                   operator: AdminForthFilterOperators.IN,
-                  value: data.data.map((item) => item[col.name]),
+                  value: pksUnique,
                 }
               ],
               sort: [],
