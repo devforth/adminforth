@@ -226,7 +226,7 @@ class CodeInjector {
       path: '/',
       name: 'home',
       //redirect to login 
-      redirect: '${homePagePath}'
+      redirect: '/${homePagePath}'
     },\n`;
     const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
