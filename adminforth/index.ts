@@ -8,7 +8,8 @@ import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
-import { AdminForthFilterOperators, AdminForthTypes } from './types.js';
+import { ADMINFORTH_VERSION } from './modules/utils.js';
+import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 import { AdminForthConfig } from './types/AdminForthConfig.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
@@ -51,6 +52,7 @@ class AdminForth {
     this.codeInjector = new CodeInjector(this);
     this.connectors = {};
     this.statuses = {}
+    console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
 
   validateConfig() {
@@ -297,7 +299,7 @@ class AdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url , fieldtypesByTable: ds.fieldtypesByTable});
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
@@ -333,10 +335,6 @@ class AdminForth {
     this.statuses.dbDiscover = 'done';
 
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
-  }
-
-  async init() {
-    console.log('AdminForth init');
   }
 
   async bundleNow({ hotReload=false, verbose=false }) {
@@ -447,12 +445,12 @@ class AdminForth {
               return { error: 'Unauthorized' };
             }
             username = user.data[0][this.config.auth.usernameField]; 
-            userFullName = user.data[0][this.config.auth.userFullName];
+            userFullName = user.data[0][this.config.auth.userFullNameField];
         }
 
         const userData = {
             [this.config.auth.usernameField]: username,
-            [this.config.auth.userFullName]: userFullName
+            [this.config.auth.userFullNameField]: userFullName
         };
         return {
           user: userData,
@@ -469,6 +467,7 @@ class AdminForth {
             usernameField: this.config.auth.usernameField,
           },
           adminUser,
+          version: ADMINFORTH_VERSION,
         };
       },
     });
@@ -494,8 +493,11 @@ class AdminForth {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body }) => {
-        const { resourceId, limit, offset, filters, sort } = body;
+      handler: async ({ body, adminUser }) => {
+        const { resourceId, source } = body;
+        if (['show', 'list'].includes(source) === false) {
+          return { error: 'Invalid source, should be list or show' };
+        }
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -506,6 +508,19 @@ class AdminForth {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        if (resource.hooks?.[source]?.beforeDatasourceRequest) {
+          const resp = await resource.hooks?.[source]?.beforeDatasourceRequest({ resource, query: body, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        const { limit, offset, filters, sort } = body;
+
+
         const data = await this.connectors[resource.dataSource].getData({
           resource,
           limit,
@@ -513,13 +528,57 @@ class AdminForth {
           filters,
           sort,
         });
+        // for foreign keys, add references
+        await Promise.all(
+          resource.columns.filter((col) => col.foreignResource).map(async (col) => {
+            const targetResource = this.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
+            const targetConnector = this.connectors[targetResource.dataSource];
+            const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
+            const targetData = await targetConnector.getData({
+              resource: targetResource,
+              limit: limit,
+              offset: 0,
+              filters: [
+                {
+                  field: targetResourcePkField,
+                  operator: AdminForthFilterOperators.IN,
+                  value: data.data.map((item) => item[col.name]),
+                }
+              ],
+              sort: [],
+            });
+            const targetDataMap = targetData.data.reduce((acc, item) => {
+              acc[item[targetResourcePkField]] = {
+                label: targetResource.itemLabel ? targetResource.itemLabel(item) : item[targetResourcePkField],
+                pk: item[targetResourcePkField],
+              }
+              return acc;
+            }, {});
+            data.data.forEach((item) => {
+              item[col.name] = targetDataMap[item[col.name]];
+            });
+          })
+        );
+
+      
+        if (resource.hooks?.[source]?.afterDatasourceRequest) {
+          const resp = await resource.hooks?.[source]?.afterDatasourceRequest({ resource, response: data.data, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+
         return {...data, options: resource?.options };
       },
     });
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const { resourceId, column } = body;
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -567,8 +626,8 @@ class AdminForth {
         const response = {
           items
         };
-        if (columnConfig.foreignResource.hooks?.afterDatasourceRequest) {
-          const resp = await column.foreignResource.hooks?.afterDatasourceRequest({ response, adminUser });
+        if (columnConfig.foreignResource.hooks?.afterDatasourceResponse) {
+          const resp = await column.foreignResource.hooks?.afterDatasourceResponse({ response, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -577,6 +636,7 @@ class AdminForth {
             return { error: resp.error };
           }
         }
+        
         return response;
       },
     });
@@ -610,36 +670,7 @@ class AdminForth {
         return item;
       },
     });
-    server.endpoint({
-        method: 'POST',
-        path: '/get_record',
-        handler: async ({ body, adminUser }) => {
-            const { resourceId, primaryKey } = body;
-            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            const connector = this.connectors[resource.dataSource];
-            const record = await connector.getRecordByPrimaryKey(resource, primaryKey);
-            if (!record) {
-                return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
-            }
-            
-            // execute hook if needed
-            if (resource.hooks?.show) {
-                const resp = await resource.hooks?.show({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-                }
 
-                if (resp.error) {
-                  return { error: resp.error };
-                }
-              }
-
-            const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
-            record._label = labler(record);
-            return record;
-        }
-      });
     server.endpoint({
         noAuth: true, // TODO
         method: 'POST',
@@ -672,7 +703,7 @@ class AdminForth {
                          });
                     }
                 }
-                if (column.required?.create && body['record'][column.name] === undefined) {
+                if ((column.required as {create?: boolean, edit?: boolean}) ?.create && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
                 }
 

@@ -84,35 +84,6 @@ const admin = new AdminForth({
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
-    //   fieldtypesByTable: {
-    //     'game': {
-    //         _id: {
-    //             "name": "_id",
-    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-    //             "required": true, "primaryKey": false, "default": ""
-    //         },
-    //         bb_enabled: {
-    //             "name": "bb_enabled",
-    //             "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
-    //             "required": false, "primaryKey": false, "default": false
-    //         },
-    //         bb_rank: {
-    //             "name": "bb_rank",
-    //             "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
-    //             "required": false, "primaryKey": false, "default": 0
-    //         },
-    //         blocked_countries: {
-    //             "name": "blocked_countries",
-    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-    //             "required": false, "primaryKey": false, "default": ""
-    //         },
-    //         release_date: {
-    //             "name": "release_date",
-    //             "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
-    //             "required": false, "primaryKey": false, "default": ""
-    //         },
-    //     }
-    //   }
     }
   ],
   resources: [
@@ -149,7 +120,7 @@ const admin = new AdminForth({
         },
         { 
           name: 'price',
-          min: 100,
+          min: 10,
           max: 10000.12,
           allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
           editingNote: 'Price is in USD',  // you can appear note on editing or creating page
@@ -157,7 +128,7 @@ const admin = new AdminForth({
         { 
           name: 'square_meter', 
           label: 'Square', 
-          allowMinMaxQuery: true,
+          // allowMinMaxQuery: true,
           minValue: 1,  // you can set min /max value for number fields
           maxValue: 1000,
         },
@@ -174,7 +145,8 @@ const admin = new AdminForth({
           allowCustomValue: true,
         },
         { 
-          name: 'description' 
+          name: 'description',
+          sortable: false,
         },
         {
           name: 'property_type',
@@ -447,7 +419,6 @@ const admin = new AdminForth({
       component: '@@/Dash.vue',
       path: '/dashboard',
       homepage: true,
-
     },
     {
       label: 'Core',
@@ -463,7 +434,6 @@ const admin = new AdminForth({
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
-          
         },
         {
           label: 'Games Users',

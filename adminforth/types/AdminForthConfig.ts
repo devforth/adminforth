@@ -23,7 +23,7 @@ export type AdminForthResourceColumn = {
     isUnique?: boolean,
     virtual?: boolean,
     allowMinMaxQuery?: boolean,
-    component?:AdminForthResourceColumnComponent
+    component?: AdminForthResourceColumnComponent
     maxLength?: number, 
     minLength?: number,
     min?: number,
@@ -31,8 +31,9 @@ export type AdminForthResourceColumn = {
     minValue?: number,
     maxValue?: number,
     enum?: Array<AdminForthResourceColumnEnumElement>,
-    foreignResource?:AdminForthResourceColumnForeignResource
-    }
+    foreignResource?:AdminForthResourceColumnForeignResource,
+    sortable?: boolean,
+  } 
   
 export type AdminForthResource = {
     resourceId: string,
@@ -42,28 +43,37 @@ export type AdminForthResource = {
     columns: Array<AdminForthResourceColumn>,
     itemLabel?: Function,
     hooks?: {
-        show?: Function,
+        show?: {
+          beforeDatasourceRequest?: Function,
+          afterDatasourceResponse?: Function,
+        },
+        list?: {
+          beforeDatasourceRequest?: Function,
+          afterDatasourceResponse?: Function,
+        },
         create?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
         edit?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
         delete?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
     },
     options?: {
         bulkActions?: Array<{
-        label: string,
-        state: string,
-        icon: string,
-        action: Function,
+          label: string,
+          state: string,
+          icon: string,
+          action: Function,
+          id?: string,
         }>,
         allowedActions?: AllowedActions,
+        allowDelete?: boolean,
         
     },
   }
@@ -100,10 +110,10 @@ export  type AdminForthConfig = {
   }
   
 export type AllowedActions = {
-    create: boolean,
-    edit: boolean,
-    show: boolean,
-    delete: boolean,
+    create?: boolean,
+    edit?: boolean,
+    show?: boolean,
+    delete?: boolean,
   }
   
 export type ValidationObject = {
@@ -138,23 +148,12 @@ export type AdminForthTypesValues =
 export type AdminForthResourceColumnEnumElement = {
     value: string | null,
     label: string,
-    } 
+} 
 
 export type AdminForthResourceColumnForeignResource = {
     resourceId: string,
     hooks?: {
-        show?: Function,
-        create?: {
         beforeDatasourceRequest?: Function,
         afterDatasourceResponse?: Function,
-        },
-        list?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
-        },
-        edit?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
-        },
     },
-    }
+  }
