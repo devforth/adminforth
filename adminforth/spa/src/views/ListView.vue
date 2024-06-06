@@ -198,7 +198,12 @@
             </div>
           </td>
           <td v-for="c in columnsListed" class="px-6 py-4">
-            <ValueRenderer :column="c" :row="row"/>
+            <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
+            <component
+              :is="listComponentsPerColumn[c.name] || ValueRenderer"
+              :column="c"
+              :row="row"
+            />
           </td>
           <td class="flex items-center px-6 py-4">
 
@@ -310,29 +315,27 @@
 </template>
 
 <script setup>
-import {ref, onMounted, watch, computed} from 'vue';
-import {callAdminForthApi, getIcon} from '@/utils';
-import {useRoute} from 'vue-router';
-import {useCoreStore} from '@/stores/core';
-import {useModalStore} from '@/stores/modal';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import {initFlowbite} from 'flowbite'
+import { useCoreStore } from '@/stores/core';
+import { useModalStore } from '@/stores/modal';
+import { callAdminForthApi, getIcon } from '@/utils';
+import { initFlowbite } from 'flowbite';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 
 import {
-  IconChevronDoubleLeftOutline,
-  IconChevronDoubleRightOutline,
-  IconInboxFullSolid,
-  IconInboxOutline,
-  IconPlusOutline
+IconInboxOutline,
+IconPlusOutline
 } from '@iconify-prerendered/vue-flowbite';
 
 import {
-  IconEyeSolid,
-  IconTrashBinSolid,
-  IconPenSolid,
-  IconFilterOutline, IconBanOutline
+IconBanOutline,
+IconEyeSolid,
+IconFilterOutline,
+IconPenSolid,
+IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
@@ -375,6 +378,7 @@ async function selectAll(value) {
 
 const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.pageSize || DEFAULT_PAGE_SIZE);
 const totalPages = computed(() => Math.ceil(totalRows.value / pageSize.value));
+let listComponentsPerColumn = {};
 const allFromThisPageChecked = computed(() => {
   if (!rows.value) return false;
   return rows.value.every((r) => checkboxes.value.includes(r.id));
@@ -418,6 +422,7 @@ async function getList() {
     path: '/get_resource_data',
     method: 'POST',
     body: {
+      source: 'list',
       resourceId: route.params.resourceId,
       limit: pageSize.value,
       offset: (page.value - 1) * pageSize.value,
@@ -425,7 +430,16 @@ async function getList() {
       sort: sort.value,
     }
   });
-  fetchStatus.value.pending = false;
+  listComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+      if (column.component?.list) {
+        const path = column.component.list.replace('@@', '../custom');
+        let component = defineAsyncComponent(() => import(`${path}`))
+        acc[column.name] = component;
+    }
+    return acc;
+  }, {});
+
+fetchStatus.value.pending = false;
   rows.value = data.data?.map(row => {
     row._primaryKeyValue = row[coreStore.resourceColumns.find(c => c.primaryKey).name];
     return row;

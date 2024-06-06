@@ -8,10 +8,8 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import os from 'os';
 import AdminForth from '../index.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.join(path.dirname(__filename), '..');
 
 let TMP_DIR;
 
@@ -83,12 +81,11 @@ class CodeInjector {
   }
 
   async prepareSources({ filesUpdated, verbose = false }: { filesUpdated?: string[], verbose?: boolean }) {
-    const spaTmpPath = CodeInjector.SPA_TMP_PATH;
     // check SPA_TMP_PATH exists and create if not
     try {
-      await fs.promises.access(spaTmpPath, fs.constants.F_OK);
+      await fs.promises.access(CodeInjector.SPA_TMP_PATH, fs.constants.F_OK);
     } catch (e) {
-      await fs.promises.mkdir(spaTmpPath, { recursive: true });
+      await fs.promises.mkdir(CodeInjector.SPA_TMP_PATH, { recursive: true });
     }
 
     const icons = [];
@@ -113,18 +110,11 @@ class CodeInjector {
     };
     collectAssetsFromMenu(this.adminforth.config.menu);
 
-    // create spa_tmp folder, or ignore if it exists
-    try {
-      await fs.promises.mkdir(spaTmpPath);
-    } catch (e) {
-      // ignore
-    }
-
     if (filesUpdated) {
       // copy only updated files
       await Promise.all(filesUpdated.map(async (file) => {
-        const src = path.join(__dirname, 'spa', file);
-        const dest = path.join(spaTmpPath, file);
+        const src = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa', file);
+        const dest = path.join(CodeInjector.SPA_TMP_PATH, file);
         await fsExtra.copy(src, dest);
         if (process.env.HEAVY_DEBUG) {
           console.log('🪲 await fsExtra.copy filtering', src, dest);
@@ -133,10 +123,10 @@ class CodeInjector {
       }));
     } else {
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲 await fsExtra.copy from ${path.join(__dirname, 'spa')}, ${spaTmpPath}`);
+        console.log(`🪲 await fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, ${CodeInjector.SPA_TMP_PATH}`);
       }
 
-      await fsExtra.copy(path.join(__dirname, 'spa'), spaTmpPath, {
+      await fsExtra.copy(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa'), CodeInjector.SPA_TMP_PATH, {
         filter: (src) => {
           if (process.env.HEAVY_DEBUG) {
             console.log('🪲 await fsExtra.copy filtering', src);
@@ -144,6 +134,7 @@ class CodeInjector {
 
           return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
         },
+        overwrite: true,
       });
 
       // copy whole custom directory
@@ -198,7 +189,7 @@ class CodeInjector {
     }
 
     // inject that code into spa_tmp/src/App.vue
-    const appVuePath = path.join(spaTmpPath, 'src', 'main.ts');
+    const appVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'main.ts');
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH IMPORTS */', imports);
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n' );
@@ -212,9 +203,9 @@ class CodeInjector {
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
     let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
     let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
-    let homePagePath = homepageMenuItem?.path || `resource/${childrenHomepage?.resourceId}`;
+    let homePagePath = homepageMenuItem?.path || `/resource/${childrenHomepage?.resourceId}`;
     if (!homePagePath) {
-      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
 
     
@@ -225,16 +216,16 @@ class CodeInjector {
       path: '/',
       name: 'home',
       //redirect to login 
-      redirect: '/${homePagePath}'
+      redirect: '${homePagePath}'
     },\n`;
-    const routerVuePath = path.join(spaTmpPath, 'src', 'router', 'index.ts');
+    const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES */', routes);
     await fs.promises.writeFile(routerVuePath, routerVueContent);
     
 
     /* hash checking */
-    const spaPackageLockPath = path.join(spaTmpPath, 'package-lock.json');
+    const spaPackageLockPath = path.join(CodeInjector.SPA_TMP_PATH, 'package-lock.json');
     const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
     const spaLockHash = hashify(spaPackageLock);
 
@@ -249,7 +240,7 @@ class CodeInjector {
     const packagesNamesHash = hashify(packageNames);
 
     const fullHash = `${spaLockHash}::${packagesNamesHash}::${usersLockHash}`;
-    const hashPath = path.join(spaTmpPath, 'node_modules', '.adminforth_hash');
+    const hashPath = path.join(CodeInjector.SPA_TMP_PATH, 'node_modules', '.adminforth_hash');
 
     try {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
@@ -268,7 +259,7 @@ class CodeInjector {
       }
     }
 
-    await this.runNpmShell({command: 'ci', verbose, cwd: spaTmpPath});
+    await this.runNpmShell({command: 'ci', verbose, cwd: CodeInjector.SPA_TMP_PATH});
 
     // get packages with version from customPackage
     const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon'];
@@ -283,7 +274,7 @@ class CodeInjector {
 
     if (packageNames.length) {
       const npmInstallCommand = `install ${[...packageNames, ...customPackgeNames].join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: spaTmpPath});
+      await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
@@ -291,7 +282,7 @@ class CodeInjector {
   }
 
 async watchForReprepare({ verbose }) {
-    const spaPath = path.join(__dirname, 'spa');
+    const spaPath = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
     // get list of all subdirectories in spa recursively
     const directories = [];
     const collectDirectories = async (dir) => {

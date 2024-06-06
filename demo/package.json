@@ -19,7 +19,6 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
     "tsx": "^4.11.2",
     "typescript": "^5.4.5"
   }

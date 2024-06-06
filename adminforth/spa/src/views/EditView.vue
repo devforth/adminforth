@@ -23,11 +23,12 @@
 
     <ResourceForm 
       v-else
-      :record="coreStore.record"
+      :record="editableRecord"
       :resourceColumns="coreStore.resourceColumns"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
+      :customComponentsPerColumn="editComponentsPerColumn"
     >
     </ResourceForm>
   </div>
@@ -36,14 +37,14 @@
 
 <script setup>
 
-import { ref, computed, onMounted } from 'vue';  
-import { useRoute, useRouter } from 'vue-router';
-import { useCoreStore } from '@/stores/core';
-import ResourceForm from '@/components/ResourceForm.vue';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
+import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi } from '@/utils';
+import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import { defineAsyncComponent, onMounted, ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const coreStore = useCoreStore();
 
@@ -58,11 +59,24 @@ const loading = ref(false);
 const saving = ref(false);
 
 const record = ref({});
+let editComponentsPerColumn = {};
 
 async function onUpdateRecord(newRecord) {
   record.value = newRecord;
 }
 
+const editableRecord = computed(() => {
+  const newRecord = { ...coreStore.record };
+  if (!coreStore.resourceColumns) {
+    return {};
+  }
+  coreStore.resourceColumns.forEach(column => {
+    if (column.foreignResource) {
+      newRecord[column.name] = newRecord[column.name]?.pk
+    }
+  });
+  return newRecord;
+})
 
 onMounted(async () => {
   loading.value = true;
@@ -75,6 +89,14 @@ onMounted(async () => {
     primaryKey: route.params.primaryKey,
   });
 
+  editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+      if (column.component?.edit) {
+        const path = column.component.edit.replace('@@', '../custom');
+        let component = defineAsyncComponent(() => import(`${path}`))
+        acc[column.name] = component;
+    }
+    return acc;
+  }, {});
   loading.value = false;
 });
 
