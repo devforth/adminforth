@@ -42,18 +42,25 @@ export type AdminForthResource = {
     columns: Array<AdminForthResourceColumn>,
     itemLabel?: Function,
     hooks?: {
-        show?: Function,
+        show?: {
+          beforeDatasourceRequest?: Function,
+          afterDatasourceResponse?: Function,
+        },
+        list?: {
+          beforeDatasourceRequest?: Function,
+          afterDatasourceResponse?: Function,
+        },
         create?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
         edit?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
         delete?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+          beforeSave?: Function,
+          afterSave?: Function,
         },
     },
     options?: {
