@@ -147,7 +147,7 @@ class PostgresConnector {
 
     async getRecordByPrimaryKey(resource, key) {
         const tableName = resource.table;
-        const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+        const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
         const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key]);
         const row = stmt.rows[0];
         if (!row) {
@@ -177,7 +177,7 @@ class PostgresConnector {
       }
     
     async getData({ resource, limit, offset, sort, filters }) {
-      const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
+      const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => `"${col.name}"`).join(', ');
       const tableName = resource.table;
       
       for (const filter of filters) {
@@ -199,7 +199,7 @@ class PostgresConnector {
         } else {
             totalCounter += 1;
         }
-        return `${field} ${operator} ${placeholder}`
+        return `"${field}" ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
 
       const filterValues = [];
@@ -267,17 +267,20 @@ class PostgresConnector {
                 return record[colName];
             }
         });
+        for (let i = 0; i < columns.length; i++) {
+            columns[i] = `"${columns[i]}"`;
+        }
         await this.db.query(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`, values);
     }
 
     async updateRecord({ resource, recordId, record, newValues }) {
         const values = [...Object.values(newValues), recordId];
-        const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `${col} = $${i + 1}`).join(', ');
-        await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = $${values.length}`, values);
+        const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `"${col}" = $${i + 1}`).join(', ');
+        await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`, values);
     }
 
     async deleteRecord({ resource, recordId }) {
-        await this.db.query(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = $1`, [recordId]);
+        await this.db.query(`DELETE FROM ${resource.table} WHERE "${this.getPrimaryKey(resource)}" = $1`, [recordId]);
     }
 
     async close() {
