@@ -299,7 +299,7 @@ class AdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url , fieldtypesByTable: ds.fieldtypesByTable});
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
@@ -445,12 +445,12 @@ class AdminForth {
               return { error: 'Unauthorized' };
             }
             username = user.data[0][this.config.auth.usernameField]; 
-            userFullName = user.data[0][this.config.auth.userFullName];
+            userFullName = user.data[0][this.config.auth.userFullNameField];
         }
 
         const userData = {
             [this.config.auth.usernameField]: username,
-            [this.config.auth.userFullName]: userFullName
+            [this.config.auth.userFullNameField]: userFullName
         };
         return {
           user: userData,
@@ -509,7 +509,7 @@ class AdminForth {
           return { error: `Resource ${resourceId} not found` };
         }
         if (resource.hooks?.[source]?.beforeDatasourceRequest) {
-          const resp = await resource.hooks?.show({ resource, query: body, adminUser });
+          const resp = await resource.hooks?.[source]?.beforeDatasourceRequest({ resource, query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }

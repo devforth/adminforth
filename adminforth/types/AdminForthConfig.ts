@@ -23,7 +23,7 @@ export type AdminForthResourceColumn = {
     isUnique?: boolean,
     virtual?: boolean,
     allowMinMaxQuery?: boolean,
-    component?:AdminForthResourceColumnComponent
+    component?: AdminForthResourceColumnComponent
     maxLength?: number, 
     minLength?: number,
     min?: number,
@@ -31,8 +31,9 @@ export type AdminForthResourceColumn = {
     minValue?: number,
     maxValue?: number,
     enum?: Array<AdminForthResourceColumnEnumElement>,
-    foreignResource?:AdminForthResourceColumnForeignResource
-    }
+    foreignResource?:AdminForthResourceColumnForeignResource,
+    sortable?: boolean,
+  } 
   
 export type AdminForthResource = {
     resourceId: string,
@@ -65,12 +66,13 @@ export type AdminForthResource = {
     },
     options?: {
         bulkActions?: Array<{
-        label: string,
-        state: string,
-        icon: string,
-        action: Function,
+          label: string,
+          state: string,
+          icon: string,
+          action: Function,
         }>,
         allowedActions?: AllowedActions,
+        allowDelete?: boolean,
         
     },
   }
@@ -107,10 +109,10 @@ export  type AdminForthConfig = {
   }
   
 export type AllowedActions = {
-    create: boolean,
-    edit: boolean,
-    show: boolean,
-    delete: boolean,
+    create?: boolean,
+    edit?: boolean,
+    show?: boolean,
+    delete?: boolean,
   }
   
 export type ValidationObject = {

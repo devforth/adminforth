@@ -84,35 +84,6 @@ const admin = new AdminForth({
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
-    //   fieldtypesByTable: {
-    //     'game': {
-    //         _id: {
-    //             "name": "_id",
-    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-    //             "required": true, "primaryKey": false, "default": ""
-    //         },
-    //         bb_enabled: {
-    //             "name": "bb_enabled",
-    //             "type": "boolean", "_underlineType": "bool", "_baseTypeDebug": "boolean",
-    //             "required": false, "primaryKey": false, "default": false
-    //         },
-    //         bb_rank: {
-    //             "name": "bb_rank",
-    //             "type": "integer", "_underlineType": "int", "_baseTypeDebug": "integer",
-    //             "required": false, "primaryKey": false, "default": 0
-    //         },
-    //         blocked_countries: {
-    //             "name": "blocked_countries",
-    //             "type": "string", "_underlineType": "varchar", "maxLength": 255, "_baseTypeDebug": "character varying(255)",
-    //             "required": false, "primaryKey": false, "default": ""
-    //         },
-    //         release_date: {
-    //             "name": "release_date",
-    //             "type": "datetime", "_underlineType": "timestamp", "_baseTypeDebug": "timestamp",
-    //             "required": false, "primaryKey": false, "default": ""
-    //         },
-    //     }
-    //   }
     }
   ],
   resources: [
