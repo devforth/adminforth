@@ -537,7 +537,7 @@ class AdminForth {
         const { limit, offset, filters, sort } = body;
 
         for (const filter of (filters || [])) {
-          if (AdminForthFilterOperators[filter.operator] === undefined) {
+          if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
               throw new Error(`Operator '${filter.operator}' is not allowed`);
           }
 
