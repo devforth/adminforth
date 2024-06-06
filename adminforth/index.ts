@@ -493,8 +493,11 @@ class AdminForth {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body }) => {
-        const { resourceId, limit, offset, filters, sort } = body;
+      handler: async ({ body, adminUser }) => {
+        const { resourceId, source } = body;
+        if (['show', 'list'].includes(source) === false) {
+          return { error: 'Invalid source, should be list or show' };
+        }
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -505,6 +508,19 @@ class AdminForth {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        if (resource.hooks?.[source]?.beforeDatasourceRequest) {
+          const resp = await resource.hooks?.show({ resource, query: body, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+        const { limit, offset, filters, sort } = body;
+
+
         const data = await this.connectors[resource.dataSource].getData({
           resource,
           limit,
@@ -512,6 +528,50 @@ class AdminForth {
           filters,
           sort,
         });
+        // for foreign keys, add references
+        await Promise.all(
+          resource.columns.filter((col) => col.foreignResource).map(async (col) => {
+            const targetResource = this.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
+            const targetConnector = this.connectors[targetResource.dataSource];
+            const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
+            const targetData = await targetConnector.getData({
+              resource: targetResource,
+              limit: limit,
+              offset: 0,
+              filters: [
+                {
+                  field: targetResourcePkField,
+                  operator: AdminForthFilterOperators.IN,
+                  value: data.data.map((item) => item[col.name]),
+                }
+              ],
+              sort: [],
+            });
+            const targetDataMap = targetData.data.reduce((acc, item) => {
+              acc[item[targetResourcePkField]] = {
+                label: targetResource.itemLabel ? targetResource.itemLabel(item) : item[targetResourcePkField],
+                pk: item[targetResourcePkField],
+              }
+              return acc;
+            }, {});
+            data.data.forEach((item) => {
+              item[col.name] = targetDataMap[item[col.name]];
+            });
+          })
+        );
+
+      
+        if (resource.hooks?.[source]?.afterDatasourceRequest) {
+          const resp = await resource.hooks?.show({ resource, response: data.data, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
+
         return {...data, options: resource?.options };
       },
     });
@@ -576,6 +636,7 @@ class AdminForth {
             return { error: resp.error };
           }
         }
+        
         return response;
       },
     });
@@ -609,36 +670,7 @@ class AdminForth {
         return item;
       },
     });
-    server.endpoint({
-        method: 'POST',
-        path: '/get_record',
-        handler: async ({ body, adminUser }) => {
-            const { resourceId, primaryKey } = body;
-            const resource = this.config.resources.find((res) => res.resourceId == resourceId);
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            const connector = this.connectors[resource.dataSource];
-            const record = await connector.getRecordByPrimaryKey(resource, primaryKey);
-            if (!record) {
-                return { error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
-            }
-            
-            // execute hook if needed
-            if (resource.hooks?.show) {
-                const resp = await resource.hooks?.show({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-                }
 
-                if (resp.error) {
-                  return { error: resp.error };
-                }
-              }
-
-            const labler = resource.itemLabel || ((record) => `${resource.label} ${record[primaryKeyColumn.name]}`);
-            record._label = labler(record);
-            return record;
-        }
-      });
     server.endpoint({
         noAuth: true, // TODO
         method: 'POST',

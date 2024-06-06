@@ -418,6 +418,7 @@ async function getList() {
     path: '/get_resource_data',
     method: 'POST',
     body: {
+      source: 'list',
       resourceId: route.params.resourceId,
       limit: pageSize.value,
       offset: (page.value - 1) * pageSize.value,
