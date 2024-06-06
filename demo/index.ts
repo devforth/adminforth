@@ -164,6 +164,14 @@ const admin = new AdminForth({
         { 
           name: 'number_of_rooms',
           allowMinMaxQuery: true,
+          enum: [
+            { value: 1, label: '1 room' },
+            { value: 2, label: '2 rooms' },
+            { value: 3, label: '3 rooms' },
+            { value: 4, label: '4 rooms' },
+            { value: 5, label: '5 rooms' },
+          ],
+          allowCustomValue: true,
         },
         { 
           name: 'description' 
@@ -219,7 +227,7 @@ const admin = new AdminForth({
         }
         ],
         allowedActions:{
-          edit: false,
+          // edit: false,
           delete: false,
           // show: true,
           // filter: true,
