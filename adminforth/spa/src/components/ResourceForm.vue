@@ -179,6 +179,18 @@ const columnError = (column) => {
         return `This field must be less than ${column.maxValue}`;
       }
     }
+    if ( column.validation && column.validation.length ){
+      const validationArray = column.validation;
+      for (let i = 0; i < validationArray.length; i++) {
+        if (validationArray[i].regExp) {
+          const regExp = new RegExp(validationArray[i].regExp);
+          if (!regExp.test(currentValues.value[column.name])) {
+            return validationArray[i].message;
+          }
+        }
+      }
+
+    }
     return null;
   });
   return val.value;
