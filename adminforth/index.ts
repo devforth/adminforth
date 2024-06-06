@@ -8,109 +8,13 @@ import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
-
-
+import { ADMINFORTH_VERSION } from './modules/utils.js';
 import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
+import { AdminForthConfig } from './types/AdminForthConfig.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
-type AdminForthConfigMenuItem = {
-  label: string,
-  icon?: string,
-  path?: string,
-  component?: string,
-  resourceId?: string,
-  homepage?: boolean,
-  children?: Array<AdminForthConfigMenuItem>,
-}
-
-
-type AdminForthResourceColumn = {
-  name: string,
-  label?: string,
-  type?: AdminForthTypesValues,
-  primaryKey?: boolean,
-  required?: boolean | { create: boolean, edit: boolean },
-  editingNote?: string | { create: string, edit: string },
-  showIn?: Array<string>,
-  fillOnCreate?: Function,
-  isUnique?: boolean,
-  virtual?: boolean,
-  allowMinMaxQuery?: boolean,
-}
-
-type AdminForthResource = {
-  resourceId: string,
-  label?: string,
-  table: string,
-  dataSource: string,
-  columns: Array<AdminForthResourceColumn>,
-  itemLabel?: Function,
-  hooks?: {
-    show?: Function,
-    create?: {
-      beforeSave?: Function,
-      afterSave?: Function,
-    },
-    edit?: {
-      beforeSave?: Function,
-      afterSave?: Function,
-    },
-    delete?: {
-      beforeSave?: Function,
-      afterSave?: Function,
-    },
-  },
-  options?: {
-    bulkActions?: Array<{
-      label: string,
-      state: string,
-      icon: string,
-      action: Function,
-    }>,
-    allowedActions?: AllowedActions,
-    
-  },
-}
-
-type AdminForthDataSource = {
-  id: string,
-  url: string,
-}
-
-type AdminForthConfig = {
-  rootUser?: {
-    username: string,
-    password: string,
-  },
-  auth?: {
-    resourceId: string,
-    usernameField: string,
-    passwordHashField: string,
-    loginBackgroundImage?: string,
-    userFullName?: string,
-  },
-  resources: Array<any>,
-  menu: Array<AdminForthConfigMenuItem>,
-  databaseConnectors?: any,
-  dataSources: Array<any>,
-  customization?: {
-    customComponentsDir?: string,
-    vueUsesFile?: string,
-  },
-  baseUrl?: string,
-  brandName?: string,
-  datesFormat?: string,
-  deleteConfirmation?: boolean,
-}
-
-type AllowedActions = {
-  create: boolean,
-  edit: boolean,
-  show: boolean,
-  delete: boolean,
-}
 
 class AdminForth {
   static Types = AdminForthTypes;
@@ -124,8 +28,6 @@ class AdminForth {
 
   #defaultConfig = {
     deleteConfirmation: true,
-    
-    
   }
 
   config: AdminForthConfig;
@@ -150,6 +52,7 @@ class AdminForth {
     this.codeInjector = new CodeInjector(this);
     this.connectors = {};
     this.statuses = {}
+    console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
 
   validateConfig() {
@@ -434,10 +337,6 @@ class AdminForth {
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
-  async init() {
-    console.log('AdminForth init');
-  }
-
   async bundleNow({ hotReload=false, verbose=false }) {
     this.codeInjector.bundleNow({ hotReload, verbose });
   }
@@ -568,6 +467,7 @@ class AdminForth {
             usernameField: this.config.auth.usernameField,
           },
           adminUser,
+          version: ADMINFORTH_VERSION,
         };
       },
     });
@@ -618,7 +518,7 @@ class AdminForth {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const { resourceId, column } = body;
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
