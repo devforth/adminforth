@@ -142,7 +142,7 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
-          type: AdminForth.Types.DATETIME,
+          type: AdminForth.Types.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
@@ -248,7 +248,7 @@ const admin = new AdminForth({
             {
               regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
               message: 'Email is not valid, must be in format example@test.com'
-            }
+            },
           ]
         },
         { 
