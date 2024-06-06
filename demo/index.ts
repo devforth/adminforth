@@ -142,14 +142,14 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
-          type: AdminForth.Types.DATETIME,
+          type: AdminForth.Types.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         { 
           name: 'price',
-          min: 100,
+          min: 10,
           max: 10000.12,
           allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
           editingNote: 'Price is in USD',  // you can appear note on editing or creating page
@@ -256,7 +256,7 @@ const admin = new AdminForth({
             {
               regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
               message: 'Email is not valid, must be in format example@test.com'
-            }
+            },
           ]
         },
         { 
