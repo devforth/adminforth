@@ -48,7 +48,12 @@
                     {{ column.label }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-                    <ValueRenderer :column="column" :row="coreStore.record" />
+                    <!-- if column.name in showComponentsPerColumn, render it. If not, render ValueRenderer -->
+                    <component
+                        :is="showComponentsPerColumn[column.name] || ValueRenderer"
+                        :column="column"
+                        :row="coreStore.record"
+                    />
                 </td>
             </tr>
             
@@ -63,18 +68,18 @@
 
 <script setup>
 
-import { ref, computed, onMounted } from 'vue';  
-import { useRoute } from 'vue-router';
-import { callAdminForthApi } from '@/utils';
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
-import { useCoreStore } from '@/stores/core';
 import ValueRenderer from '@/components/ValueRenderer.vue';
+import { useCoreStore } from '@/stores/core';
+import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
+import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 
 const item = ref(null);
 const route = useRoute();
 const loading = ref(false);
+let showComponentsPerColumn = {};
 
 const coreStore = useCoreStore();
 
@@ -87,6 +92,16 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
+  showComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+      if (column.component?.show) {
+          const path = column.component.show.replace('@@', '../custom');
+          console.log('path', path);
+          let component = defineAsyncComponent(() => import(`${path}`))
+          acc[column.name] = component;
+        }
+        return acc;
+    }, {});
+  console.log('showComponentsPerColumn', showComponentsPerColumn);
   loading.value = false;
 });
 
