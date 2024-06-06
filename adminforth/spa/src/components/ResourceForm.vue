@@ -2,7 +2,7 @@
   <div>
     
     <div 
-      class="relative shadow-md sm:rounded-lg dark:shadow-2xl"
+      class="relative shadow-md sm:rounded-lg dark:shadow-2xl dark:shadow-black"
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

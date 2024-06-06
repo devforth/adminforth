@@ -15,11 +15,13 @@
     "@iconify-prerendered/vue-flowbite": "^0.23.1714023977",
     "@vueuse/core": "^10.10.0",
     "dayjs": "^1.11.11",
+    "debounce": "^2.1.0",
     "flowbite": "^2.3.0",
     "flowbite-datepicker": "^1.2.6",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue-slider-component": "^4.1.0-beta.7"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
