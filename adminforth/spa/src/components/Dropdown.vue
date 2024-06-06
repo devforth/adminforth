@@ -76,10 +76,14 @@ const showDropdown = ref(false);
 const selectedItems = ref([]);
 
 function updateFromProps() {
-  console.log('⚡ updateFromProps', props.modelValue)
   if (props.modelValue !== undefined) {
     if (props.single) {
-      selectedItems.value = [props.options.find(item => item.value === props.modelValue)];
+      const el = props.options.find(item => item.value === props.modelValue);
+      if (el) {
+        selectedItems.value = [el];
+      } else {
+        selectedItems.value = [];
+      }
     } else {
       selectedItems.value = props.options.filter(item => props.modelValue.includes(item.value));
     }
