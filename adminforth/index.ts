@@ -8,6 +8,7 @@ import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
+import { ADMINFORTH_VERSION } from './modules/utils.js';
 
 
 import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
@@ -150,6 +151,7 @@ class AdminForth {
     this.codeInjector = new CodeInjector(this);
     this.connectors = {};
     this.statuses = {}
+    console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
 
   validateConfig() {
@@ -434,10 +436,6 @@ class AdminForth {
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
-  async init() {
-    console.log('AdminForth init');
-  }
-
   async bundleNow({ hotReload=false, verbose=false }) {
     this.codeInjector.bundleNow({ hotReload, verbose });
   }
@@ -568,6 +566,7 @@ class AdminForth {
             usernameField: this.config.auth.usernameField,
           },
           adminUser,
+          version: ADMINFORTH_VERSION,
         };
       },
     });
@@ -618,7 +617,7 @@ class AdminForth {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const { resourceId, column } = body;
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };

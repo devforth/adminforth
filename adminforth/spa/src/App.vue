@@ -141,10 +141,6 @@ const routerIsReady = ref(false);
 
 const loggedIn = computed(() => route.name !== 'login' && routerIsReady.value);
 
-watch(loggedIn, (value) => {
-  console.log('🔻🔻🔻 loggedIn', value);
-});
-
 const theme = ref('light');
 
 function toggleTheme() {
