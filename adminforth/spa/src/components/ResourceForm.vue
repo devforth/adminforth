@@ -20,102 +20,113 @@
               <tr v-for="column, i in editableColumns" :key="column.name"
                   class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
               >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  {{ column.label }}
-                  <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
-                    <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                      :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
+                <!-- if column is in customComponentsPerColumn, use this component. If not, use this code -->
+                <template v-if="customComponentsPerColumn[column.name]">
+                    <component
+                        :is="customComponentsPerColumn[column.name]"
+                        :column="column"
+                        :value="currentValues[column.name]"
+                        @update:value="setCurrentValue(column.name, $event)"
                     />
-                  </span>
-                  <div :id="`tooltip-show-${i}`"
-                    role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                      Required field
-                      <div class="tooltip-arrow" data-popper-arrow></div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
-                  <Dropdown
-                    single
-                    v-if="column.foreignResource"
-                    :options="columnOptions[column.name] || []"
-                    :modelValue="currentValues[column.name]"
-                    @update:modelValue="setCurrentValue(column.name, $event)"
-                  />
-                  <Dropdown
-                    single
-                    v-else-if="column.enum"
-                    :options="column.enum"
-                    :modelValue="currentValues[column.name]"
-                    @update:modelValue="setCurrentValue(column.name, $event)"
-                  />
-                  <Dropdown
-                    single
-                    v-else-if="column.type === 'boolean'"
-                    :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-                    :modelValue="currentValues[column.name]"
-                    @update:modelValue="setCurrentValue(column.name, $event)"
-                  />
-                  <input 
-                    v-else-if="['integer'].includes(column.type)"
-                    type="number" 
-                    step="1"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="0"
-                    :value="currentValues[column.name]"
-                    @input="setCurrentValue(column.name, $event.target.value)"
-                  >
-                  <CustomDatePicker
-                    v-else-if="['datetime'].includes(column.type)"
-                    :column="column"
-                    :valueStart="currentValues[column.name]"
-                    @update:valueStart="setCurrentValue(column.name, $event)"
-                  />
-                  <input
-                    v-else-if="['decimal', 'float'].includes(column.type)"
-                    type="number"
-                    step="0.1"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="0.0"
-                    :value="currentValues[column.name]"
-                    @input="setCurrentValue(column.name, $event.target.value)"
-                  />
-                  <textarea
-                    v-else-if="['text'].includes(column.type)"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Text"
-                    :value="currentValues[column.name]"
-                    @input="setCurrentValue(column.name, $event.target.value)"
-                  >
-                  </textarea>
-                  <input
-                    v-else
-                    :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Text"
-                    :value="currentValues[column.name]"
-                    @input="setCurrentValue(column.name, $event.target.value)"
-                    autocomplete="false"
-                    data-lpignore="true"
-                    readonly
-                    onfocus="this.removeAttribute('readonly');"
-                  >
+                </template>
+                <template v-else>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                    {{ column.label }}
+                    <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
+                        <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
+                        :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
+                        />
+                    </span>
+                    <div :id="`tooltip-show-${i}`"
+                        role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                        Required field
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
+                    <Dropdown
+                        single
+                        v-if="column.foreignResource"
+                        :options="columnOptions[column.name] || []"
+                        :modelValue="currentValues[column.name]"
+                        @update:modelValue="setCurrentValue(column.name, $event)"
+                    />
+                    <Dropdown
+                        single
+                        v-else-if="column.enum"
+                        :options="column.enum"
+                        :modelValue="currentValues[column.name]"
+                        @update:modelValue="setCurrentValue(column.name, $event)"
+                    />
+                    <Dropdown
+                        single
+                        v-else-if="column.type === 'boolean'"
+                        :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
+                        :modelValue="currentValues[column.name]"
+                        @update:modelValue="setCurrentValue(column.name, $event)"
+                    />
+                    <input 
+                        v-else-if="['integer'].includes(column.type)"
+                        type="number" 
+                        step="1"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="0"
+                        :value="currentValues[column.name]"
+                        @input="setCurrentValue(column.name, $event.target.value)"
+                    >
+                    <CustomDatePicker
+                        v-else-if="['datetime'].includes(column.type)"
+                        :column="column"
+                        :valueStart="currentValues[column.name]"
+                        @update:valueStart="setCurrentValue(column.name, $event)"
+                    />
+                    <input
+                        v-else-if="['decimal', 'float'].includes(column.type)"
+                        type="number"
+                        step="0.1"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="0.0"
+                        :value="currentValues[column.name]"
+                        @input="setCurrentValue(column.name, $event.target.value)"
+                    />
+                    <textarea
+                        v-else-if="['text'].includes(column.type)"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Text"
+                        :value="currentValues[column.name]"
+                        @input="setCurrentValue(column.name, $event.target.value)"
+                    >
+                    </textarea>
+                    <input
+                        v-else
+                        :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Text"
+                        :value="currentValues[column.name]"
+                        @input="setCurrentValue(column.name, $event.target.value)"
+                        autocomplete="false"
+                        data-lpignore="true"
+                        readonly
+                        onfocus="this.removeAttribute('readonly');"
+                    >
 
-                  <button
-                    v-if="column.masked"
-                    type="button"
-                    @click="unmasked[column.name] = !unmasked[column.name]"
-                    class="h-6 absolute inset-y-2 top-6 right-6 flex items-center pr-2 z-index-100 focus:outline-none"
-                  >
-                    <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
-                    <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
-                  </button>
+                    <button
+                        v-if="column.masked"
+                        type="button"
+                        @click="unmasked[column.name] = !unmasked[column.name]"
+                        class="h-6 absolute inset-y-2 top-6 right-6 flex items-center pr-2 z-index-100 focus:outline-none"
+                    >
+                        <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
+                        <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+                    </button>
 
 
 
-                  <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
+                    <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
 
-                  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
-                </td>
+                    <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
+                    </td>
+                </template>
               </tr>
               
           </tbody>
@@ -128,16 +139,15 @@
 
 <script setup>
 
-import { ref, computed, onMounted, watch } from 'vue';
-import { useCoreStore } from '@/stores/core';
-import Dropdown from '@/components/Dropdown.vue';
-import { IconExclamationCircleSolid } from '@iconify-prerendered/vue-flowbite';
-import { initFlowbite } from 'flowbite'
-import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
+import Dropdown from '@/components/Dropdown.vue';
+import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi } from '@/utils';
-import { useRouter } from 'vue-router';
+import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';
+import { initFlowbite } from 'flowbite';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
@@ -146,6 +156,7 @@ const props = defineProps({
   resourceColumns: Object,
   record: Object,
   validating: Boolean,
+  customComponentsPerColumn: Object,
 });
 
 
