@@ -1,9 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
-import router from '@/router';
-
-
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
@@ -27,6 +24,7 @@ export const useCoreStore = defineStore('core', () => {
     }, {});
     config.value = resp.config;
     user.value = resp.user;
+    console.log('🌍 AdminForth version', resp.version);
 
     // find homepage:true in menu recuresively
     
@@ -34,15 +32,32 @@ export const useCoreStore = defineStore('core', () => {
 
   async function fetchRecord({ resourceId, primaryKey }) {
     record.value = null;
+    
+    if (!resourceColumns.value) {
+      throw new Error('Columns not fetched yet');
+    }
 
-    record.value = await callAdminForthApi({
-      path: '/get_record',
+    const respData = await callAdminForthApi({
+      path: '/get_resource_data',
       method: 'POST',
       body: {
+        source: 'show',
         resourceId: resourceId,
-        primaryKey: primaryKey,
+        filters: [
+          {
+            field: resourceColumns.value.find((col) => col.primaryKey).name,
+            operator: 'eq',
+            value: primaryKey
+          }
+        ],
+        sort: [],
+        limit: 1,
+        offset: 0
       }
     });
+
+    console.log('📦 record', respData);
+    record.value = respData.data[0];
   }
 
   async function fetchColumns({ resourceId }) {

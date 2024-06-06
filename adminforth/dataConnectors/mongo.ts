@@ -41,6 +41,10 @@ class MongoConnector {
 
     async discoverFields(resource) {
         return resource.columns.reduce((acc, col) => {
+            if (!col.type) {
+                throw new Error(`Type is not defined for column ${col.name}`);
+            }
+
             acc[col.name] = {
                 name: col.name,
                 type: col.type,
