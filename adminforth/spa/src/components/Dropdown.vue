@@ -97,6 +97,10 @@ onMounted(() => {
     updateFromProps();
   });
 
+  watch(() => props.options, () => {
+    updateFromProps();
+  });
+
   addClickListener();
 
 });
