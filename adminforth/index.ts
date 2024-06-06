@@ -588,11 +588,14 @@ class AdminForth {
         }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
-          return { error: `Resource ${resourceId} not found` };
+          return { error: `Resource '${resourceId}' not found` };
         }
         const columnConfig = resource.columns.find((col) => col.name == column);
+        if (!columnConfig) {
+          return { error: `Column "${column}' not found in resource with resourceId '${resourceId}'` };
+        }
         if (!columnConfig.foreignResource) {
-          return { error: `Column ${column} in resource ${resourceId} is not a foreign key` };
+          return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
         const targetResourceId = columnConfig.foreignResource.resourceId;
         const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
@@ -751,7 +754,6 @@ class AdminForth {
         method: 'POST',
         path: '/update_record',
         handler: async ({ body, adminUser }) => {
-            console.log('update_record', body);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
