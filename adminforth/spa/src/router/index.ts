@@ -12,7 +12,9 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      //redirect to login 
+      /* IMPORTANT:ADMINFORTH REDIRECT */
+
     },
     {
       path: '/login',

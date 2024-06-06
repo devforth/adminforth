@@ -65,7 +65,7 @@
     </BreadcrumbsWithButtons>
 
     <!-- table -->
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg dark:shadow-2xl">
+    <div class="relative overflow-x-auto shadow-md dark:shadow-black	 sm:rounded-lg dark:s">
 
 
       <!-- skelet loader -->
@@ -357,6 +357,9 @@ const totalRows = ref(0);
 const allCheckedActions = ref([]);
 const allowedActions = ref({});
 
+onMounted(() => {
+  console.log('LISTVIEW mounted⌛⌛⌛⌛⌛⌛🔻🔻🔻');
+});
 
 const DEFAULT_PAGE_SIZE = 10;
 

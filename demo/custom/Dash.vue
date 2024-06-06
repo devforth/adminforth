@@ -3,10 +3,10 @@
   <div>
     <h1>Dashboard 111221✅✅✅</h1>
     <ttt />
-    <p>Welcome to the da2kkk1shboa1111rd 2111 1 1</p>
+    <p>Welcome t11o the da2kkk1shboa1111rd 2111 1 1</p>
 
     <highcharts :options="chartOptions" />
-
+ 
   </div>
 </template>
 

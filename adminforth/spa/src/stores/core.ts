@@ -42,20 +42,7 @@ export const useCoreStore = defineStore('core', () => {
     user.value = resp.user;
 
     // find homepage:true in menu recuresively
-    if (import.meta.env.DEV){
-      return
-    } else {
-      const homepage = await findHomepage(menu.value);
-      if (homepage) {
-        if (homepage.resourceId) {
-          // redirect to homepage
-          router.push({ name: 'resource-list', params: { resourceId: homepage.resourceId } });
-        } else {
-          // redirect to path
-          router.push(homepage.path);
-        }
-      }
-    }
+    
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {
