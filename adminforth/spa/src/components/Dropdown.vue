@@ -78,7 +78,12 @@ const selectedItems = ref([]);
 function updateFromProps() {
   if (props.modelValue !== undefined) {
     if (props.single) {
-      selectedItems.value = [props.options.find(item => item.value === props.modelValue)];
+      const el = props.options.find(item => item.value === props.modelValue);
+      if (el) {
+        selectedItems.value = [el];
+      } else {
+        selectedItems.value = [];
+      }
     } else {
       selectedItems.value = props.options.filter(item => props.modelValue.includes(item.value));
     }
