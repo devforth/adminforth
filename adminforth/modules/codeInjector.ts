@@ -203,9 +203,9 @@ class CodeInjector {
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
     let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
     let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
-    let homePagePath = homepageMenuItem?.path || `resource/${childrenHomepage?.resourceId}`;
+    let homePagePath = homepageMenuItem?.path || `/resource/${childrenHomepage?.resourceId}`;
     if (!homePagePath) {
-      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
 
     
@@ -216,7 +216,7 @@ class CodeInjector {
       path: '/',
       name: 'home',
       //redirect to login 
-      redirect: '/${homePagePath}'
+      redirect: '${homePagePath}'
     },\n`;
     const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');

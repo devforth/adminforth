@@ -444,6 +444,7 @@ const admin = new AdminForth({
           label: 'Casino Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'game',
+
         }
       ]
     },
