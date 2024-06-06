@@ -2,7 +2,7 @@
   <div>
     
     <div 
-      class="relative shadow-md sm:rounded-lg dark:shadow-2xl"
+      class="relative shadow-md sm:rounded-lg dark:shadow-2xl dark:shadow-black"
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -36,7 +36,14 @@
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
                   <Dropdown
                     single
-                    v-if="column.enum"
+                    v-if="column.foreignResource"
+                    :options="columnOptions[column.name] || []"
+                    :modelValue="currentValues[column.name]"
+                    @update:modelValue="setCurrentValue(column.name, $event)"
+                  />
+                  <Dropdown
+                    single
+                    v-else-if="column.enum"
                     :options="column.enum"
                     :modelValue="currentValues[column.name]"
                     @update:modelValue="setCurrentValue(column.name, $event)"
@@ -128,6 +135,11 @@ import { IconExclamationCircleSolid } from '@iconify-prerendered/vue-flowbite';
 import { initFlowbite } from 'flowbite'
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
+import { callAdminForthApi } from '@/utils';
+import { useRouter } from 'vue-router';
+import { computedAsync } from '@vueuse/core';
+
+const router = useRouter();
 
 const props = defineProps({
   loading: Boolean,
@@ -144,6 +156,7 @@ const mode = computed(() => props.record  && Object.keys(props.record).length ? 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
 const currentValues = ref({});
+
 
 const columnError = (column) => {
   const val = computed(() => {
@@ -172,8 +185,6 @@ const columnError = (column) => {
 };
 
 
-
-
 const setCurrentValue = (key, value) => {
   currentValues.value[key] = value;
 
@@ -185,7 +196,30 @@ onMounted(() => {
     currentValues.value[key] = props.record[key];
   });
   initFlowbite();
+
+  
 });
+
+const columnOptions = computedAsync(async () => { 
+  return (await Promise.all(
+    Object.values(props.resourceColumns).map(async (column) => {
+      if (column.foreignResource) {
+        const list = await callAdminForthApi({
+          method: 'POST',
+          path: `/get_resource_foreign_data`,
+          body: {
+            resourceId: router.currentRoute.value.params.resourceId,
+            column: column.name,
+            limit: 1000,
+            offset: 0,
+          },
+        });
+        return { [column.name]: list.items };
+      }
+    })
+  )).reduce((acc, val) => Object.assign(acc, val), {})
+
+}, {});
 
 const coreStore = useCoreStore();
 

@@ -2,7 +2,7 @@
   <!-- drawer component -->
   <div id="drawer-navigation" 
   
-      class="fixed top-14 right-0 z-40 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl"
+      class="fixed top-14 right-0 z-40 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl dark:shadow-black"
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
@@ -22,8 +22,14 @@
          <li v-for="c in columnsWithFilter" :key="c">
             <p class="dark:text-gray-400">{{ c.label }}</p>
 
-            <Dropdown 
-              v-if="c.type === 'boolean'" 
+            <Dropdown
+              v-if="c.foreignResource"
+              :options="columnOptions[c.name] || []"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+            />
+            <Dropdown
+              v-else-if="c.type === 'boolean'"
               :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
               :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
@@ -62,22 +68,15 @@
              :value="getFilterItem({ column: c, operator: 'ilike' })"
            >
 
-            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
-              <input 
-                type="number" aria-describedby="helper-text-explanation" 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="From"
-                @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
-                :value="getFilterItem({ column: c, operator: 'gte' })"
-              >
-              <input 
-                type="number" aria-describedby="helper-text-explanation" 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="To"
-                @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
-                :value="getFilterItem({ column: c, operator: 'lte' })"
-              >
-            </div>
+           <CustomRangePicker
+             v-else-if="['integer', 'decimal', 'float'].includes(c.type)"
+             :min="c.min"
+             :max="c.max"
+             :valueStart="getFilterItem({ column: c, operator: 'gte' })"
+             @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+             :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
+             @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
+           />
             
          </li>
       </ul>
@@ -99,18 +98,52 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue'
+import { watch, computed, ref, onMounted } from 'vue'
 import Dropdown from '@/components/Dropdown.vue';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
+import { callAdminForthApi } from '@/utils';
+import { useRouter } from 'vue-router';
+import { computedAsync } from '@vueuse/core'
+import CustomRangePicker from "@/components/CustomRangePicker.vue";
 
 // props: columns
 // add support for v-model:filers
 const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
 const emits = defineEmits(['update:filters', 'hide']);
 
-const columnsWithFilter = computed( 
+const router = useRouter();
+
+
+const columnsWithFilter = computed(
   () => props.columns?.filter(column => column.showIn.includes('filter')) || []
 );
+
+const columnOptions = computedAsync(async () => {
+  const ret = {};
+  if (!props.columns) {
+    return ret;
+  }
+  await Promise.all(
+    Object.values(props.columns).map(async (column) => {
+      if (column.foreignResource) {
+        const list = await callAdminForthApi({
+          method: 'POST',
+          path: `/get_resource_foreign_data`,
+          body: {
+            resourceId: router.currentRoute.value.params.resourceId,
+            column: column.name,
+            limit: 1000,
+            offset: 0,
+          },
+        });
+        ret[column.name] = list.items;
+      }
+    })
+  );
+
+  return ret;
+}, {});
+
 
 // sync 'body' class 'overflow-hidden' with show prop show
 watch(() => props.show, (show) => {

@@ -32,7 +32,7 @@
 
                 </button>
               </div>
-              <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600 dark:shadow-xl" id="dropdown-user">
+              <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-gray-700 dark:divide-gray-600 dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-white" role="none" v-if="coreStore.userFullname">
                     {{ coreStore.userFullname }}
@@ -112,7 +112,7 @@
     </div>
   </div> 
 
-  <div v-else>
+  <div v-else-if="routerIsReady">
     <RouterView/>
   </div>
   <AcceptModal />
@@ -140,6 +140,10 @@ const router = useRouter();
 const routerIsReady = ref(false);
 
 const loggedIn = computed(() => route.name !== 'login' && routerIsReady.value);
+
+watch(loggedIn, (value) => {
+  console.log('🔻🔻🔻 loggedIn', value);
+});
 
 const theme = ref('light');
 
