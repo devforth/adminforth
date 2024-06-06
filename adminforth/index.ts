@@ -110,6 +110,12 @@ class AdminForth {
         if (res.itemLabel && typeof res.itemLabel !== 'function') {
           errors.push(`Resource "${res.dataSource}" itemLabel is not a function`);
         }
+        if (!res.itemLabel) {
+          res.itemLabel = (item) => {
+            const pkVal = item[res.columns.find((col) => col.primaryKey).name];
+            return `${res.label} ${pkVal}`;
+          }
+        }
 
 
         res.resourceId = res.resourceId || res.table;
@@ -589,7 +595,7 @@ class AdminForth {
             });
             const targetDataMap = targetData.data.reduce((acc, item) => {
               acc[item[targetResourcePkField]] = {
-                label: targetResource.itemLabel ? targetResource.itemLabel(item) : item[targetResourcePkField],
+                label: targetResource.itemLabel(item),
                 pk: item[targetResourcePkField],
               }
               return acc;
@@ -599,6 +605,10 @@ class AdminForth {
             });
           })
         );
+
+        data.data.forEach((item) => {
+          item._label = resource.itemLabel(item)
+        })
 
       
         if (resource.hooks?.[source]?.afterDatasourceRequest) {
@@ -659,7 +669,7 @@ class AdminForth {
         });
         const items = dbDataItems.data.map((item) => {
           const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
-          const labler = targetResource.itemLabel || ((record) => `${targetResource.label} ${pk}`);
+          const labler = targetResource.itemLabel;
           return { 
             value: pk,
             label: labler(item),
