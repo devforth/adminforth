@@ -562,7 +562,7 @@ class AdminForth {
 
       
         if (resource.hooks?.[source]?.afterDatasourceRequest) {
-          const resp = await resource.hooks?.show({ resource, response: data.data, adminUser });
+          const resp = await resource.hooks?.[source]?.afterDatasourceRequest({ resource, response: data.data, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -626,8 +626,8 @@ class AdminForth {
         const response = {
           items
         };
-        if (columnConfig.foreignResource.hooks?.afterDatasourceRequest) {
-          const resp = await column.foreignResource.hooks?.afterDatasourceRequest({ response, adminUser });
+        if (columnConfig.foreignResource.hooks?.afterDatasourceResponse) {
+          const resp = await column.foreignResource.hooks?.afterDatasourceResponse({ response, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -703,7 +703,7 @@ class AdminForth {
                          });
                     }
                 }
-                if (column.required?.create && body['record'][column.name] === undefined) {
+                if ((column.required as {create?: boolean, edit?: boolean}) ?.create && body['record'][column.name] === undefined) {
                     return { error: `Column '${column.name}' is required` };
                 }
 
