@@ -445,12 +445,12 @@ class AdminForth {
               return { error: 'Unauthorized' };
             }
             username = user.data[0][this.config.auth.usernameField]; 
-            userFullName = user.data[0][this.config.auth.userFullName];
+            userFullName = user.data[0][this.config.auth.userFullNameField];
         }
 
         const userData = {
             [this.config.auth.usernameField]: username,
-            [this.config.auth.userFullName]: userFullName
+            [this.config.auth.userFullNameField]: userFullName
         };
         return {
           user: userData,
