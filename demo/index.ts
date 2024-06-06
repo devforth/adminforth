@@ -446,6 +446,8 @@ const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/Dash.vue',
       path: '/dashboard',
+      homepage: true,
+
     },
     {
       label: 'Core',
@@ -461,7 +463,7 @@ const admin = new AdminForth({
           label: 'Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'games',
-          homepage: true,
+          
         },
         {
           label: 'Games Users',
@@ -472,6 +474,7 @@ const admin = new AdminForth({
           label: 'Casino Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'game',
+
         }
       ]
     },

@@ -3,20 +3,7 @@ import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import router from '@/router';
 
-async function findHomepage(menu) {
-  for (const item of menu) {
-    if (item.homepage) {
-      return item;
-    }
-    if (item.children) {
-      const res = findHomepage(item.children);
-      if (res) {
-        return res;
-      }
-    }
-  }
-  return null;
-}
+
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById = ref([]);
