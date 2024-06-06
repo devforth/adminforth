@@ -132,11 +132,11 @@ const end = computed(() => {
 })
 
 function updateFromProps() {
-  if (props.valueStart === undefined) {
+  if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   }
-  if (props.valueEnd === undefined) {
+  if (!props.valueEnd) {
     datepickerEndEl.value.value = '';
     endTime.value = '';
   }

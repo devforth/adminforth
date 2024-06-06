@@ -97,7 +97,7 @@ const start = computed(() => {
 })
 
 function updateFromProps() {
-  if (props.valueStart === undefined) {
+  if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   }
@@ -157,5 +157,5 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   removeChangeDateListener();
-})
+});
 </script>
