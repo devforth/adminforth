@@ -29,8 +29,9 @@ export async function callAdminForthApi({ path, method, body=undefined }) {
   }
 }
 
-export function getCustomComponent(name) {
-    return resolveComponent(name);
+export function getCustomComponent(filePath: string) {
+  const name = filePath.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
+  return resolveComponent(name);
 }
 
 export function getIcon(icon: string) {
