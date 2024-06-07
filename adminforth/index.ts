@@ -629,9 +629,8 @@ class AdminForth {
           item._label = resource.itemLabel(item);
         })
 
-      
-        if (resource.hooks?.[source]?.afterDatasourceRequest) {
-          const resp = await resource.hooks?.[source]?.afterDatasourceRequest({ resource, response: data.data, adminUser });
+        if (resource.hooks?.[source]?.afterDatasourceResponse) {
+          const resp = await resource.hooks?.[source]?.afterDatasourceResponse({ resource, response: data.data, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -649,9 +648,11 @@ class AdminForth {
             }
           })
         });
-        console.log('data', data);
 
-        return {...data, options: resource?.options };
+        return {
+          ...data, 
+          options: resource?.options,
+        };
       },
     });
     server.endpoint({
