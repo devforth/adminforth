@@ -76,7 +76,7 @@ onMounted(async () => {
   });
   createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
       if (column.component?.create) {
-          acc[column.name] = getCustomComponent(column.component.create.replace('@@', '').replace('./custom/', '')).split('.')[0];
+          acc[column.name] = getCustomComponent(column.component.create);
       }
       return acc;
     }, {});

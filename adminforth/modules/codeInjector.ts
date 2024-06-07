@@ -8,6 +8,7 @@ import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
+import { getComponentNameFromPath } from './utils.js';
 
 
 let TMP_DIR;
@@ -185,7 +186,7 @@ class CodeInjector {
                     return;
                 }
                 if (data.isFile()) {
-                    const componentName = filePath.split('.')[0].replace('/', '');
+                    const componentName = getComponentNameFromPath(filePath);
                     customComponentsImports += `import ${componentName} from '@/custom/${filePath}';\n`;
                 }
             })
@@ -212,7 +213,7 @@ class CodeInjector {
                     return;
                 }
                 if (data.isFile()) {
-                    const componentName = filePath.split('.')[0].replace('/', '');
+                    const componentName = getComponentNameFromPath(filePath);
                     customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
                 }
             })

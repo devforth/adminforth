@@ -26,4 +26,8 @@ export const ADMIN_FORTH_ABSOLUTE_PATH = __dirname;
 
 const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'package.json'), 'utf8'));
 
-export const ADMINFORTH_VERSION = package_json.version;
+export const ADMINFORTH_VERSION: string = package_json.version;
+
+export function getComponentNameFromPath(filePath) {
+  return filePath.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
+}
