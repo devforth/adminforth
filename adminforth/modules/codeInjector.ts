@@ -177,7 +177,7 @@ class CodeInjector {
     let customComponentsImports = '';
     if (customComponentsDir) {
         // if file - return, if dir - go recursively
-        const customComponents = await fs.promises.readdir(customComponentsDir, { recursive: true });
+        const customComponents = await fs.promises.readdir(customComponentsDir);
         for (const filePath of customComponents) {
             fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
                 if (err) {
@@ -204,7 +204,7 @@ class CodeInjector {
     // Generate Vue.component statements for each custom component
     let customComponentsComponents = '';
     if (customComponentsDir) {
-        const customComponents = await fs.promises.readdir(customComponentsDir, { recursive: true });
+        const customComponents = await fs.promises.readdir(customComponentsDir);
         for (const filePath of customComponents) {
             fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
                 if (err) {
