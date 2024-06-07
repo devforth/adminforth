@@ -41,9 +41,9 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { defineAsyncComponent, onMounted, ref, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const coreStore = useCoreStore();
@@ -90,13 +90,11 @@ onMounted(async () => {
   });
 
   editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.edit) {
-        const path = column.component.edit.replace('@@', '../custom');
-        let component = defineAsyncComponent(() => import(`${path}`))
-        acc[column.name] = component;
-    }
-    return acc;
-  }, {});
+      if (column.component?.show) {
+          acc[column.name] = getCustomComponent(column.component.edit.replace('@@', '').replace('./custom/', '')).split('.')[0];
+      }
+      return acc;
+    }, {});
   loading.value = false;
 });
 
