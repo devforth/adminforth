@@ -101,13 +101,16 @@ const admin = new AdminForth({
       'form-view-heading': '#f1f5f9',
   },
   boxShadow: {
-    'custom-light': '0 2px 4px rgba(0, 0, 0, 0.1)',
-    'header-shadow': '0 4px 8px rgba(0, 0, 0, 0.3)',
-    'list-table-shadow': '0 6px 12px rgba(0, 0, 0, 0.4)',
-    'resourse-form-shadow': '0 6px 12px rgba(0, 0, 0, 0.4)',
+    'custom-light': '0 4px 8px rgba(0, 0, 0, 0.2)',
+    'header-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
+    'list-table-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
+    'resourse-form-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
   fontSize: {
     'header-text-size': '1rem'
+  },
+  borderRadius:{
+    'default':'2px'
   }
   },
   auth: {

@@ -44,14 +44,14 @@
 
       <RouterLink v-if="allowedActions.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="flex items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        class="flex items-center py-1 px-3  mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
       >
         <IconPlusOutline class="w-4 h-4 me-2"/>
         Create
       </RouterLink>
 
       <button
-        class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        class="flex gap-1 items-center py-1 px-3 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
         @click="()=>{filtersShow = !filtersShow}"
       >
         <IconFilterOutline class="w-4 h-4 me-2"/>
@@ -65,7 +65,7 @@
     </BreadcrumbsWithButtons>
 
     <!-- table -->
-    <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	  dark:s">
+    <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	  rounded-default">
 
 
       <!-- skelet loader -->
@@ -89,7 +89,7 @@
         <span class="sr-only">Loading...</span>
       </div>
 
-      <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+      <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
         <thead class="text-xs text-view-table-heading-text bg-list-view-table-heading dark:bg-gray-700 dark:text-gray-400">
         <tr>
           <th scope="col" class="p-4">

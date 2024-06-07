@@ -57,7 +57,7 @@
   <aside 
     v-if="loggedIn"
 
-    id="logo-sidebar" class="fixed border-none top-0 left-0 z-50 w-64 h-screen  transition-transform -translate-x-full bg-nav-menu-bg border-r border-  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
+    id="logo-sidebar" class="fixed border-none top-0 left-0 z-40 w-64 h-screen  transition-transform -translate-x-full bg-nav-menu-bg border-r border-  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
       <div class="flex ms-2 md:me-24  m-4  ">
             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
@@ -74,7 +74,7 @@
 
             
             <li v-else-if="item.children">
-              <button  type="button" class="flex items-center w-full p-2 text-base text-nav-menu-text transition duration-75  group hover:bg-nav-menu-bg-hover dark:text-white dark:hover:bg-gray-700" 
+              <button  type="button" class="flex items-center w-full p-2 text-base text-nav-menu-text rounded-default transition duration-75  group hover:bg-nav-menu-bg-hover dark:text-white dark:hover:bg-gray-700" 
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
