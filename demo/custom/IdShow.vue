@@ -1,6 +1,6 @@
 <template>
     Hello from 🇺🇦 1
-    "{{ column.name }}" is not "{{ row.id }}""
+    "{{ column?.name }}" is not "{{ row?.id }}""
 </template>
 
 <script setup>
