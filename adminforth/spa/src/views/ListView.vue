@@ -432,7 +432,7 @@ async function getList() {
     }
   });
   listComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.show) {
+      if (column.component?.list) {
           acc[column.name] = getCustomComponent(column.component.list.replace('@@', '').replace('./custom/', '')).split('.')[0];
       }
       return acc;
