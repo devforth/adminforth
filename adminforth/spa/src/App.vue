@@ -61,7 +61,7 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
       <div class="flex ms-2 md:me-24  m-4  ">
             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
-            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-header-text text-header-logo-color">
+            <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
               {{ coreStore.config?.brandName }}
             </span>
           </div>
