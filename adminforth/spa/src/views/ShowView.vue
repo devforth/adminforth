@@ -27,10 +27,10 @@
     </div>
     <div 
       v-else
-      class="relative overflow-x-auto shadow-md sm:rounded-lg"
+      class="relative overflow-x-auto shadow-resourse-form-shadow "
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-form-view-heading dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
                     Field
@@ -42,7 +42,7 @@
         </thead>
         <tbody>
             <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))" :key="column.name"
-                class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+                class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
                 <td class="px-6 py-4 whitespace-nowrap">
                     {{ column.label }}

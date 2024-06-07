@@ -1,11 +1,11 @@
 <template>
   <RouterLink 
       :to="{name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
-      class="flex items-center py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem"
+      class="flex items-center py-2 text-nav-menu-text hover:bg-nav-menu-bg-hover active:bg-nav-menu-bg-active" role="menuitem"
       :class="{ 
         'px-4': isChild,
         'px-2': !isChild,
-        'bg-blue-100 dark:bg-gray-700': item.resourceId ?
+        'bg-nav-menu-bg-active dark:bg-gray-700': item.resourceId ?
         ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
         ($route.name === item.path)
       }"

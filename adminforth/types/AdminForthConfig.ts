@@ -111,6 +111,7 @@ export  type AdminForthConfig = {
     datesFormat?: string,
     deleteConfirmation?: boolean,
     title?: string,
+    styles?: Object,
   }
   
 export type AllowedActions = {

@@ -238,6 +238,17 @@ class CodeInjector {
     }
     await fs.promises.writeFile(appVuePath, appVueContent);
 
+    // generate tailwind extend styles 
+    if(this.adminforth.config?.styles){
+      const tailwindStyles = this.adminforth.config?.styles
+      const stylesText = JSON.stringify(tailwindStyles, null, 2).slice(1, -1);
+      let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
+      let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
+      tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+      await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
+    }
+
+
 
     /* generate custom rotes */
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
