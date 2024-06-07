@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="rounded-default">
     
     <div 
-      class="relative shadow-resourse-form-shadow sm:rounded-lg dark:shadow-2xl dark:shadow-black"
+      class="relative shadow-resourse-form-shadow sm:rounded-lg dark:shadow-2xl dark:shadow-black rounded-default"
     >
       <form autocomplete="off" @submit.prevent>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
           <thead class="text-xs text-gray-700 uppercase bg-form-view-heading dark:bg-gray-700 dark:text-gray-400">
               <tr>
                   <th scope="col" class="px-6 py-3">

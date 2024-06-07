@@ -1,7 +1,7 @@
 <template>
   <RouterLink 
       :to="{name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
-      class="flex items-center py-2 text-nav-menu-text hover:bg-nav-menu-bg-hover active:bg-nav-menu-bg-active" role="menuitem"
+      class="flex items-center py-2 text-nav-menu-text rounded-default  hover:bg-nav-menu-bg-hover active:bg-nav-menu-bg-active" role="menuitem"
       :class="{ 
         'px-4': isChild,
         'px-2': !isChild,
