@@ -617,15 +617,6 @@ class AdminForth {
             data.data.forEach((item) => {
               item[col.name] = targetDataMap[item[col.name]];
             });
-
-            data.data.forEach((item) => {
-              Object.keys(item).forEach((key) => {
-                if (!targetResource.columns.find((col) => col.name === key) || targetResource.columns.find((col) => col.name === key && col.backendOnly)) {
-                  delete item[key];
-                }
-              })
-            });
-
           })
         );
 
@@ -649,10 +640,12 @@ class AdminForth {
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
             if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
+              console.log*('deleting', key);
               delete item[key];
             }
           })
         });
+        console.log('data', data);
 
         return {...data, options: resource?.options };
       },
