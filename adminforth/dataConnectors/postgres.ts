@@ -83,6 +83,10 @@ class PostgresConnector {
                 field.type = AdminForthTypes.BOOLEAN;
                 field._underlineType = 'bool';
 
+            } else if (baseType == 'uuid') {
+                field.type = AdminForthTypes.STRING;
+                field._underlineType = 'uuid';
+
             } else if (baseType.includes('character varying')) {
                 field.type = AdminForthTypes.STRING;
                 field._underlineType = 'varchar';
@@ -183,6 +187,7 @@ class PostgresConnector {
       let totalCounter = 1;
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
         let placeholder = '$'+(totalCounter);
+        const fieldData = resource.dataSourceColumns.find((col) => col.name == f.field);
         let field = f.field;
         let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
@@ -191,7 +196,13 @@ class PostgresConnector {
         } else {
             totalCounter += 1;
         }
-        return `"${field}" ${operator} ${placeholder}`
+
+        if (fieldData._underlineType == 'uuid') {
+            field = `cast("${field}" as text)`
+        } else { 
+            field = `"${field}"`
+        }
+        return `${field} ${operator} ${placeholder}`;
       }).join(' AND ')}` : '';
 
       const filterValues = [];
