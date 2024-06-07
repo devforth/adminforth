@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@iconify-prerendered/vue-flowbite": "^0.23.1714023977",
+    "@unhead/vue": "^1.9.12",
     "@vueuse/core": "^10.10.0",
     "dayjs": "^1.11.11",
     "debounce": "^2.1.0",
