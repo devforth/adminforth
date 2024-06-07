@@ -180,6 +180,9 @@ class CodeInjector {
         // if file - return, if dir - go recursively
         const customComponents = await fs.promises.readdir(customComponentsDir);
         for (const filePath of customComponents) {
+            if (!filePath.endsWith('.vue')) {
+              continue;
+            }
             fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
                 if (err) {
                     console.log(err);
@@ -207,16 +210,19 @@ class CodeInjector {
     if (customComponentsDir) {
         const customComponents = await fs.promises.readdir(customComponentsDir);
         for (const filePath of customComponents) {
-            fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
-                if (err) {
-                    console.log('Custom components importing error: ', err);
-                    return;
-                }
-                if (data.isFile()) {
-                    const componentName = getComponentNameFromPath(filePath);
-                    customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
-                }
-            })
+          if (!filePath.endsWith('.vue')) {
+            continue;
+          }
+          fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
+            if (err) {
+              console.log('Custom components importing error: ', err);
+              return;
+            }
+            if (data.isFile()) {
+              const componentName = getComponentNameFromPath(filePath);
+              customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
+            }
+          })
         }
     }
     
