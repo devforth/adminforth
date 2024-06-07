@@ -110,9 +110,9 @@ const admin = new AdminForth({
           minLength: 3,  // you can set min length for string fields
           component: {
               show: './custom/IdShow.vue',
-              edit: './custom/IdShow.vue',
+              // edit: './custom/IdShow.vue',
               list: './custom/IdShow.vue',
-              create: './custom/IdShow.vue',
+              // create: './custom/IdShow.vue',
           },
         }, 
         {
