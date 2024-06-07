@@ -74,6 +74,9 @@
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-gray-200 dark:border-gray-700"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
+            <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 opacity-40
+            ">{{ item.label }}</div>
+
             
             <li v-else-if="item.children">
               <button  type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" 
@@ -88,7 +91,7 @@
                 </svg>
               </button>
 
-              <ul :id="`dropdown-example${i}`" role="none" class="py-2 space-y-2" :class="{ 'hidden': !item.open }">
+              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !item.open }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
                     <MenuLink :item="child" isChild="true" />

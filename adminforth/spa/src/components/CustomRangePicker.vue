@@ -42,10 +42,10 @@ import debounce from 'debounce'
 
 const props = defineProps({
   valueStart: {
-    default: 0,
+    default: '',
   },
   valueEnd: {
-    default: 10,
+    default: '',
   },
   min: {
     default: 0,
@@ -61,19 +61,18 @@ const minFormatted = computed(() => Math.floor(props.min));
 const maxFormatted = computed(() => Math.ceil(props.max));
 
 const isChanged = computed(() => {
-  return start.value !== minFormatted.value || end.value !== maxFormatted.value;
+  return start.value && start.value !== minFormatted.value || end.value && end.value !== maxFormatted.value;
 });
 
-const start = ref(minFormatted.value);
-const end = ref(maxFormatted.value);
+const start = ref(props.valueStart);
+const end = ref(props.valueEnd);
 
-const sliderValue = ref([start.value, end.value]);
+const sliderValue = ref([minFormatted.value, maxFormatted.value]);
 
 const updateFromSlider =
     debounce((value: [number, number]) => {
-      console.log('start end', value)
-      start.value = value[0];
-      end.value = value[1];
+      start.value = value[0] === minFormatted.value ? '': value[0];
+      end.value = value[1] === maxFormatted.value ? '': value[1];
     }, 500);
 
 onMounted(() => {
@@ -90,24 +89,13 @@ onMounted(() => {
 })
 
 function updateStartFromProps() {
-  if (props.valueStart || props.valueStart === 0) {
-    start.value = props.valueStart ? props.valueStart : minFormatted.value;
-    sliderValue.value = [start.value, end.value]
-  } else {
-    console.log(props.valueStart)
-    start.value = minFormatted.value;
-    sliderValue.value = [minFormatted.value, end.value];
-  }
+  start.value = props.valueStart;
+  setSliderValues(start.value, end.value)
 }
 
 function updateEndFromProps() {
-  if (props.valueEnd || props.valueStart === 0) {
-    end.value = props.valueEnd ? props.valueEnd : minFormatted.value;
-    sliderValue.value = [start.value, end.value]
-  } else {
-    end.value = maxFormatted.value;
-    sliderValue.value = [start.value, maxFormatted.value];
-  }
+  end.value = props.valueEnd;
+  setSliderValues(start.value, end.value)
 }
 
 watch(start, () => {
@@ -121,9 +109,13 @@ watch(end, () => {
 })
 
 const clear = () => {
-  start.value = minFormatted.value;
-  end.value = maxFormatted.value;
-  sliderValue.value = [start.value, end.value]
+  start.value = ''
+  end.value = ''
+  setSliderValues('', '')
+}
+
+function setSliderValues(start, end) {
+  sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
 }
 </script>
 

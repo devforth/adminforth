@@ -110,6 +110,12 @@ class AdminForth {
         if (res.itemLabel && typeof res.itemLabel !== 'function') {
           errors.push(`Resource "${res.dataSource}" itemLabel is not a function`);
         }
+        if (!res.itemLabel) {
+          res.itemLabel = (item) => {
+            const pkVal = item[res.columns.find((col) => col.primaryKey).name];
+            return `${res.label} ${pkVal}`;
+          }
+        }
 
 
         res.resourceId = res.resourceId || res.table;
@@ -266,6 +272,21 @@ class AdminForth {
 
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
+    }
+
+    // check is all custom components files exists
+    for (const resource of this.config.resources) {
+      for (const column of resource.columns) {
+          if (column.component) {
+            for (const [key, value] of Object.entries(column.component)) {
+                // console.log(`${key}: ${value}`);
+                const path = value.replace('@@', this.config.customization.customComponentsDir);
+                if (!fs.existsSync(path)) {
+                    throw new Error(`Component file ${path} does not exist`);
+                }
+            }
+        }
+      }
     }
   }
 
@@ -509,6 +530,7 @@ class AdminForth {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+
         if (resource.hooks?.[source]?.beforeDatasourceRequest) {
           const resp = await resource.hooks?.[source]?.beforeDatasourceRequest({ resource, query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
@@ -521,6 +543,26 @@ class AdminForth {
         }
         const { limit, offset, filters, sort } = body;
 
+        for (const filter of (filters || [])) {
+          if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
+              throw new Error(`Operator '${filter.operator}' is not allowed`);
+          }
+
+          if (!resource.columns.some((col) => col.name === filter.field)) {
+              throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
+          }
+
+          if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
+              if (!Array.isArray(filter.value)) {
+                  throw new Error(`Value for operator '${filter.operator}'' should be an array`);
+              }
+          }
+
+          if (filter.operator === AdminForthFilterOperators.IN && filter.value.length === 0) {
+              // nonsense
+              return { data: [], total: 0 };
+          }
+      }
 
         const data = await this.connectors[resource.dataSource].getData({
           resource,
@@ -535,6 +577,10 @@ class AdminForth {
             const targetResource = this.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
             const targetConnector = this.connectors[targetResource.dataSource];
             const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
+            const pksUnique = [...new Set(data.data.map((item) => item[col.name]))];
+            if (pksUnique.length === 0) {
+              return;
+            }
             const targetData = await targetConnector.getData({
               resource: targetResource,
               limit: limit,
@@ -543,14 +589,14 @@ class AdminForth {
                 {
                   field: targetResourcePkField,
                   operator: AdminForthFilterOperators.IN,
-                  value: data.data.map((item) => item[col.name]),
+                  value: pksUnique,
                 }
               ],
               sort: [],
             });
             const targetDataMap = targetData.data.reduce((acc, item) => {
               acc[item[targetResourcePkField]] = {
-                label: targetResource.itemLabel ? targetResource.itemLabel(item) : item[targetResourcePkField],
+                label: targetResource.itemLabel(item),
                 pk: item[targetResourcePkField],
               }
               return acc;
@@ -560,6 +606,10 @@ class AdminForth {
             });
           })
         );
+
+        data.data.forEach((item) => {
+          item._label = resource.itemLabel(item)
+        })
 
       
         if (resource.hooks?.[source]?.afterDatasourceRequest) {
@@ -589,11 +639,14 @@ class AdminForth {
         }
         const resource = this.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
-          return { error: `Resource ${resourceId} not found` };
+          return { error: `Resource '${resourceId}' not found` };
         }
         const columnConfig = resource.columns.find((col) => col.name == column);
+        if (!columnConfig) {
+          return { error: `Column "${column}' not found in resource with resourceId '${resourceId}'` };
+        }
         if (!columnConfig.foreignResource) {
-          return { error: `Column ${column} in resource ${resourceId} is not a foreign key` };
+          return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
         const targetResourceId = columnConfig.foreignResource.resourceId;
         const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
@@ -617,7 +670,7 @@ class AdminForth {
         });
         const items = dbDataItems.data.map((item) => {
           const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
-          const labler = targetResource.itemLabel || ((record) => `${targetResource.label} ${pk}`);
+          const labler = targetResource.itemLabel;
           return { 
             value: pk,
             label: labler(item),
@@ -752,7 +805,6 @@ class AdminForth {
         method: 'POST',
         path: '/update_record',
         handler: async ({ body, adminUser }) => {
-            console.log('update_record', body);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };

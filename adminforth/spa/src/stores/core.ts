@@ -24,7 +24,7 @@ export const useCoreStore = defineStore('core', () => {
     }, {});
     config.value = resp.config;
     user.value = resp.user;
-    console.log('🌍 AdminForth version', resp.version);
+    console.log('🌍 AdminForth v', resp.version);
 
     // find homepage:true in menu recuresively
     

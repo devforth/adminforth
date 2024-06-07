@@ -44,6 +44,7 @@
                     </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
+
                     <Dropdown
                         single
                         v-if="column.foreignResource"

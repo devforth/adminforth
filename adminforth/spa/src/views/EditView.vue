@@ -23,7 +23,7 @@
 
     <ResourceForm 
       v-else
-      :record="coreStore.record"
+      :record="editableRecord"
       :resourceColumns="coreStore.resourceColumns"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
@@ -43,7 +43,7 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { defineAsyncComponent, onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const coreStore = useCoreStore();
@@ -65,6 +65,18 @@ async function onUpdateRecord(newRecord) {
   record.value = newRecord;
 }
 
+const editableRecord = computed(() => {
+  const newRecord = { ...coreStore.record };
+  if (!coreStore.resourceColumns) {
+    return {};
+  }
+  coreStore.resourceColumns.forEach(column => {
+    if (column.foreignResource) {
+      newRecord[column.name] = newRecord[column.name]?.pk
+    }
+  });
+  return newRecord;
+})
 
 onMounted(async () => {
   loading.value = true;
