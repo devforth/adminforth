@@ -230,6 +230,19 @@ class AdminForth {
           if (item.component && !item.path) {
             errors.push(`Menu item with component must have path : ${JSON.stringify(item)}`);
           }
+
+          if (item.type === 'resource' && !item.resourceId) {
+            errors.push(`Menu item with type 'resource' must have resourceId : ${JSON.stringify(item)}`);
+          }
+
+          if (item.resourceId && !this.config.resources.find((res) => res.resourceId === item.resourceId)) {
+            errors.push(`Menu item with type 'resourceId' has resourceId which is not in resources: ${JSON.stringify(item)}`);
+          }
+
+          if (item.type === 'component' && !item.component) {
+            errors.push(`Menu item with type 'component' must have component : ${JSON.stringify(item)}`);
+          }
+
           // make sure component starts with @@
           if (item.component) {
             if (!item.component.startsWith('@@')) {
@@ -604,11 +617,20 @@ class AdminForth {
             data.data.forEach((item) => {
               item[col.name] = targetDataMap[item[col.name]];
             });
+
+            data.data.forEach((item) => {
+              Object.keys(item).forEach((key) => {
+                if (!targetResource.columns.find((col) => col.name === key) || targetResource.columns.find((col) => col.name === key && col.backendOnly)) {
+                  delete item[key];
+                }
+              })
+            });
+
           })
         );
 
         data.data.forEach((item) => {
-          item._label = resource.itemLabel(item)
+          item._label = resource.itemLabel(item);
         })
 
       
@@ -622,6 +644,15 @@ class AdminForth {
             return { error: resp.error };
           }
         }
+
+        // remove all columns which are not defined in resources, or defined but backendOnly
+        data.data.forEach((item) => {
+          Object.keys(item).forEach((key) => {
+            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
+              delete item[key];
+            }
+          })
+        });
 
         return {...data, options: resource?.options };
       },
@@ -726,7 +757,6 @@ class AdminForth {
     });
 
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/create_record',
         handler: async ({ body, adminUser }) => {
@@ -801,7 +831,6 @@ class AdminForth {
         }
     });
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/update_record',
         handler: async ({ body, adminUser }) => {
@@ -832,11 +861,19 @@ class AdminForth {
             }
 
             const newValues = {};
-            for (const col of resource.columns.filter((col) => !col.virtual)) {
-                if (record[col.name] !== oldRecord[col.name]) {
-                    newValues[col.name] = connector.setFieldValue(col, record[col.name]);
+
+            for (const recordField in record) {
+              if (record[recordField] !== oldRecord[recordField]) {
+                const column = resource.columns.find((col) => col.name === recordField);
+                if (column) {
+                  newValues[recordField] = connector.setFieldValue(column, record[recordField]);
+                } else {
+                  newValues[recordField] = record[recordField];
                 }
-            }
+              }
+            } 
+
+            console.log('✅ newValues', newValues)
             if (Object.keys(newValues).length > 0) {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }
@@ -859,7 +896,6 @@ class AdminForth {
         }
     });
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/delete_record',
         handler: async ({ body, adminUser }) => {
@@ -901,7 +937,6 @@ class AdminForth {
         }
     });
     server.endpoint({
-        noAuth: true, // TODO
         method: 'POST',
         path: '/start_bulk_action',
         handler: async ({ body }) => {
