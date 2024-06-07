@@ -1,12 +1,11 @@
+import { exec, spawn } from 'child_process';
+import crypto from 'crypto';
+import filewatcher from 'filewatcher';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import filewatcher from 'filewatcher';
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import crypto from 'crypto';
 import os from 'os';
+import path from 'path';
+import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 
@@ -173,6 +172,26 @@ class CodeInjector {
       return `import { ${PascalIconName} } from '@iconify-prerendered/vue-${collection}';`;
     }).join('\n');
 
+    // for each custom component generate import statement
+    const customComponentsDir = this.adminforth.config.customization?.customComponentsDir;
+    let customComponentsImports = '';
+    if (customComponentsDir) {
+        // if file - return, if dir - go recursively
+        const customComponents = await fs.promises.readdir(customComponentsDir, { recursive: true });
+        for (const filePath of customComponents) {
+            fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                if (data.isFile()) {
+                    const componentName = filePath.split('.')[0].replace('/', '');
+                    customComponentsImports += `import ${componentName} from '@/custom/${filePath}';\n`;
+                }
+            })
+        }
+    }
+
     // Generate Vue.component statements for each icon
     const iconComponents = uniqueIcons.map((icon) => {
       const [ collection, iconName ] = icon.split(':');
@@ -182,7 +201,28 @@ class CodeInjector {
       return `app.component('${PascalIconName}', ${PascalIconName});`;
     }).join('\n');
 
+    // Generate Vue.component statements for each custom component
+    let customComponentsComponents = '';
+    if (customComponentsDir) {
+        const customComponents = await fs.promises.readdir(customComponentsDir, { recursive: true });
+        for (const filePath of customComponents) {
+            fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
+                if (err) {
+                    console.log('Custom components importing error: ', err);
+                    return;
+                }
+                if (data.isFile()) {
+                    const componentName = filePath.split('.')[0].replace('/', '');
+                    customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
+                }
+            })
+        }
+    }
+    
+
     let imports = iconImports + '\n';
+    imports += customComponentsImports + '\n';
+
 
     if (this.adminforth.config.customization?.vueUsesFile) {
       imports += `import addCustomUses from '${this.adminforth.config.customization.vueUsesFile}';\n`;
@@ -192,7 +232,7 @@ class CodeInjector {
     const appVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'main.ts');
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH IMPORTS */', imports);
-    appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n' );
+    appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n' + customComponentsComponents + '\n');
     if (this.adminforth.config.customization?.vueUsesFile) {
       appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH CUSTOM USES */', 'addCustomUses(app);');
     }

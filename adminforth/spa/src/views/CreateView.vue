@@ -45,9 +45,9 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const isValid = ref(false);
@@ -75,12 +75,10 @@ onMounted(async () => {
     resourceId: route.params.resourceId
   });
   createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-    if (column.component?.create) {
-      const path = column.component.create.replace('@@', '../custom');
-      let component = defineAsyncComponent(() => import(`${path}`))
-      acc[column.name] = component;
-    }
-    return acc;
+      if (column.component?.show) {
+          acc[column.name] = getCustomComponent(column.component.create.replace('@@', '').replace('./custom/', '')).split('.')[0];
+      }
+      return acc;
     }, {});
   loading.value = false;
 });
