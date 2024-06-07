@@ -106,6 +106,9 @@ const admin = new AdminForth({
     'list-table-shadow': '0 6px 12px rgba(0, 0, 0, 0.4)',
     'resourse-form-shadow': '0 6px 12px rgba(0, 0, 0, 0.4)',
   },
+  fontSize: {
+    'header-text-size': '1rem'
+  }
   },
   auth: {
     resourceId: 'users',  // resource for getting user
