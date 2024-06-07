@@ -1,8 +1,8 @@
 
 
 export type AdminForthConfigMenuItem = {
-    type: 'heading' | 'group' | 'resource' | 'page' | undefined,
-    label: string,
+    type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',
+    label?: string,
     icon?: string,
     path?: string,
     component?: string,
@@ -34,6 +34,7 @@ export type AdminForthResourceColumn = {
     enum?: Array<AdminForthResourceColumnEnumElement>,
     foreignResource?:AdminForthResourceColumnForeignResource,
     sortable?: boolean,
+    backendOnly?: boolean, // if true field will not be passed to UI under no circumstances, but will be presented in hooks
   } 
   
 export type AdminForthResource = {
