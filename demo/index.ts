@@ -141,6 +141,12 @@ const admin = new AdminForth({
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       itemLabel: (r) => `🏡 ${r.title}`,
+      hooks: {
+        afterDatasourceRequest: async ({ response, adminUser }) => {
+          console.log('afterDatasourceRequest', response);
+          return { ok: true, error: false }
+        }
+      },
       columns: [
         { 
           name: 'id', 
@@ -319,6 +325,12 @@ const admin = new AdminForth({
         }
       ],
       hooks: {
+        list: {
+          afterDatasourceResponse: async ({ query, adminUser }) => {
+            console.log('321321312')
+            return { ok: true, error: false }
+          }
+        },
         create: {
           beforeSave: async ({ record, adminUser, resource }) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
