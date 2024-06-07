@@ -75,7 +75,7 @@ onMounted(async () => {
     resourceId: route.params.resourceId
   });
   createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.show) {
+      if (column.component?.create) {
           acc[column.name] = getCustomComponent(column.component.create.replace('@@', '').replace('./custom/', '')).split('.')[0];
       }
       return acc;
