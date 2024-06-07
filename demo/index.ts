@@ -102,9 +102,6 @@ const admin = new AdminForth({
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
-          component: {
-            show: './custom/IdShow.vue'
-          },
           fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
@@ -113,6 +110,12 @@ const admin = new AdminForth({
           showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
           maxLength: 255,  // you can set max length for string fields
           minLength: 3,  // you can set min length for string fields
+          component: {
+              show: './custom/IdShow.vue',
+              edit: './custom/IdShow.vue',
+              list: './custom/IdShow.vue',
+              create: './custom/IdShow.vue',
+          },
         }, 
         {
           name: 'created_at',
@@ -326,6 +329,7 @@ const admin = new AdminForth({
                 ]
             },
             { name: 'release_date', fillOnCreate: (initialRecord) => (new Date()).toISOString() },
+            { name: 'release_date2' },
             { name: 'description' },
             { name: 'price' },
             { name: 'enabled' },
