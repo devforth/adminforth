@@ -640,7 +640,6 @@ class AdminForth {
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
             if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
-              console.log*('deleting', key);
               delete item[key];
             }
           })
