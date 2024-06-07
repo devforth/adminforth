@@ -74,7 +74,7 @@
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-gray-200 dark:border-gray-700"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
-            <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 opacity-40
+            <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-gray-400 dark:text-gray-400
             ">{{ item.label }}</div>
 
             
