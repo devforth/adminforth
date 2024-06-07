@@ -123,16 +123,6 @@ class MongoConnector {
     async getData({ resource, limit, offset, sort, filters }) {
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
-        
-        for (const filter of filters) {
-            if (!this.OperatorsMap[filter.operator]) {
-            throw new Error(`Operator ${filter.operator} is not allowed`);
-            }
-
-            if (!resource.dataSourceColumns.some((col) => col.name == filter.field)) {
-                throw new Error(`Field ${filter.field} is not in resource ${resource.resourceId}. Available fields: ${resource.dataSourceColumns.map((col) => col.name).join(', ')}`);
-            }
-        }
 
         const collection = this.db.db().collection(tableName);
         const query = {};

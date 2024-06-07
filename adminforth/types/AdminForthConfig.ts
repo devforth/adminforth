@@ -1,6 +1,7 @@
 
 
 export type AdminForthConfigMenuItem = {
+    type: 'heading' | 'group' | 'resource' | 'page' | undefined,
     label: string,
     icon?: string,
     path?: string,

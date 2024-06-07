@@ -186,6 +186,7 @@ const admin = new AdminForth({
       ],
       listPageSize: 20,
       options:{
+        allowDelete: true,
         bulkActions: [{
           name: 'mark_as_listed',
           label: 'Mark as listed',
@@ -201,7 +202,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           // edit: false,
-          delete: false,
+          // delete: false,
           // show: true,
           // filter: true,
         },
@@ -454,6 +455,10 @@ const admin = new AdminForth({
     },
     {
       type: 'divider'
+    },
+    {
+      type: 'heading',
+      label: 'SYSTEM',
     },
     {
       label: 'Users',
