@@ -19,6 +19,7 @@
     "flowbite": "^2.3.0",
     "flowbite-datepicker": "^1.2.6",
     "pinia": "^2.1.7",
+    "unhead": "^1.9.12",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
     "vue-slider-component": "^4.1.0-beta.7"

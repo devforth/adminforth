@@ -48,7 +48,6 @@
                     {{ column.label }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-                    <!-- if column.name in showComponentsPerColumn, render it. If not, render ValueRenderer -->
                     <component
                         :is="showComponentsPerColumn[column.name] || ValueRenderer"
                         :column="column"
@@ -71,8 +70,9 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
+import { getCustomComponent } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
-import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 
@@ -94,14 +94,10 @@ onMounted(async () => {
   });
   showComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
       if (column.component?.show) {
-          const path = column.component.show.replace('@@', '../custom');
-          console.log('path', path);
-          let component = defineAsyncComponent(() => import(`${path}`))
-          acc[column.name] = component;
-        }
-        return acc;
+          acc[column.name] = getCustomComponent(column.component.show.replace('@@', '').replace('./custom/', '')).split('.')[0];
+      }
+      return acc;
     }, {});
-  console.log('showComponentsPerColumn', showComponentsPerColumn);
   loading.value = false;
 });
 
