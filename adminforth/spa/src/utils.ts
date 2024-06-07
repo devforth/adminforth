@@ -29,9 +29,9 @@ export async function callAdminForthApi({ path, method, body=undefined }) {
   }
 }
 
-
-
-
+export function getCustomComponent(name) {
+    return resolveComponent(name);
+}
 
 export function getIcon(icon: string) {
   // icon format is "feather:icon-name". We need to get IconName in pascal case
