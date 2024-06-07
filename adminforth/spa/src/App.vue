@@ -64,6 +64,7 @@
     </div>
   </nav>
 
+
   <aside 
     v-if="loggedIn"
 
@@ -132,10 +133,22 @@ import AcceptModal from './components/AcceptModal.vue';
 import MenuLink from './components/MenuLink.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getIcon } from '@/utils';
+import { useHead } from 'unhead'
+import { createHead } from 'unhead'
+const coreStore = useCoreStore();
+
+
+createHead()
+
+
+
+
 
 
 const route = useRoute();
 const router = useRouter();
+const title = ref('');
+
 
 const routerIsReady = ref(false);
 
@@ -153,7 +166,6 @@ async function logout() {
   router.push({ name: 'login' });
 }
 
-const coreStore = useCoreStore();
 
 
 
@@ -167,6 +179,11 @@ onMounted(async () => {
   initRouter();
   initFlowbite();
   await coreStore.fetchMenuAndResource();
+  title.value = coreStore.config.title || 'Admin Forth';
+  useHead({
+  title: title.value,
+  
+})
 })
 
 </script>

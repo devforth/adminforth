@@ -320,10 +320,11 @@ import { useCoreStore } from '@/stores/core';
 import { useModalStore } from '@/stores/modal';
 import { callAdminForthApi, getIcon } from '@/utils';
 import { initFlowbite } from 'flowbite';
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
+import { getCustomComponent } from '@/utils';
 
 import {
 IconInboxOutline,
@@ -431,13 +432,11 @@ async function getList() {
     }
   });
   listComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.list) {
-        const path = column.component.list.replace('@@', '../custom');
-        let component = defineAsyncComponent(() => import(`${path}`))
-        acc[column.name] = component;
-    }
-    return acc;
-  }, {});
+      if (column.component?.show) {
+          acc[column.name] = getCustomComponent(column.component.list.replace('@@', '').replace('./custom/', '')).split('.')[0];
+      }
+      return acc;
+    }, {});
 
 fetchStatus.value.pending = false;
   rows.value = data.data?.map(row => {

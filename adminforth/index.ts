@@ -499,6 +499,7 @@ class AdminForth {
             deleteConfirmation: this.config.deleteConfirmation,
             auth: this.config.auth,
             usernameField: this.config.auth.usernameField,
+            title: this.config?.title,
           },
           adminUser,
           version: ADMINFORTH_VERSION,
