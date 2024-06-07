@@ -109,13 +109,21 @@ async function saveRecord() {
   }
 
   saving.value = true;
+
+  const updates = {};
+  for (const key in record.value) {
+    if (record.value[key] !== coreStore.record[key]) {
+      updates[key] = record.value[key];
+    }
+  }
+
   await callAdminForthApi({
     method: 'POST',
     path: `/update_record`,
     body: {
       resourceId: route.params.resourceId,
       recordId: route.params.primaryKey,
-      record: record.value,
+      record: updates,
     },
   });
   saving.value = false;

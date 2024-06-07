@@ -214,6 +214,10 @@ const admin = new AdminForth({
       resourceId: 'users',
       label: 'Users',  
       itemLabel: (r) => `👤 ${r.email}`,
+      inlineLists: [{
+        resourceId: 'apparts',
+        
+      }],
       columns: [
         { 
           name: 'id', 
@@ -242,6 +246,7 @@ const admin = new AdminForth({
           name: 'password_hash',
           type: AdminForth.Types.STRING,
           showIn: [],
+          backendOnly: true,  // will never go to frontend
         },
         {
           name: 'role',
