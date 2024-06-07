@@ -135,6 +135,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getIcon } from '@/utils';
 import { useHead } from 'unhead'
 import { createHead } from 'unhead'
+// import { link } from 'fs';
 const coreStore = useCoreStore();
 
 
@@ -182,6 +183,12 @@ onMounted(async () => {
   title.value = coreStore.config.title || 'Admin Forth';
   useHead({
   title: title.value,
+  link: [
+    {
+      rel: 'icon',
+      href: coreStore.config.favicon || '/favicon.ico',
+    },
+  ],
   
 })
 })

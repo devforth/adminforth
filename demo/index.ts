@@ -56,6 +56,7 @@ const admin = new AdminForth({
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
   title: 'My App Admin',
+  // For changing favicon put your favicon.ico in public folder
   // deleteConfirmation: true,
   rootUser: {
     username: 'adminforth',
@@ -70,6 +71,7 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
+    customPublicDir: '.custom/public',
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory
   },
 
