@@ -55,6 +55,7 @@ const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   brandName: 'My App',
   datesFormat: 'D MMM YY HH:mm:ss',
+  title: 'My App Admin',
   // deleteConfirmation: true,
   rootUser: {
     username: 'adminforth',

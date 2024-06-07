@@ -107,6 +107,7 @@ export  type AdminForthConfig = {
     brandName?: string,
     datesFormat?: string,
     deleteConfirmation?: boolean,
+    title?: string,
   }
   
 export type AllowedActions = {
