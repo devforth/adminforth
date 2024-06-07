@@ -1,9 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content:  ["./src/**/*.{vue, js}", "./node_modules/flowbite/**/*.js"],
+  content:  ["./src/**/*.{vue, js}","./src/*.{vue, js}", "./index.html", "./node_modules/flowbite/**/*.js"],
   theme: {
-    extend: {},
+    extend: {
+      /* IMPORTANT:ADMINFORTH TAILWIND STYLES */
+  }
   },
+
   darkMode: 'class',
   plugins: [
     require('flowbite/plugin'),

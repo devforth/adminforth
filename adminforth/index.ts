@@ -16,6 +16,11 @@ const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
 
+type ValidationObject = {
+  regex: string,
+  message: string,
+}
+
 class AdminForth {
   static Types = AdminForthTypes;
 
