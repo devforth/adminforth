@@ -90,8 +90,8 @@ onMounted(async () => {
   });
 
   editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.show) {
-          acc[column.name] = getCustomComponent(column.component.edit.replace('@@', '').replace('./custom/', '')).split('.')[0];
+      if (column.component?.edit) {
+          acc[column.name] = getCustomComponent(column.component.edit);
       }
       return acc;
     }, {});
