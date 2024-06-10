@@ -15,14 +15,17 @@ export function guessLabelFromName(name) {
 }
 
 
-const __filename = fileURLToPath(import.meta.url);
-let __dirname = path.join(path.dirname(__filename), '..');
-if (__dirname.endsWith('dist')) {
-  // in prod build we are in dist also
-  __dirname = path.join(__dirname, '..');
+export const currentFileDir = (metaUrl) => {
+  const __filename = fileURLToPath(metaUrl);
+  let __dirname = path.dirname(__filename);
+  if (__dirname.endsWith('dist')) {
+    // in prod build we are in dist also
+    __dirname = path.join(__dirname, '..');
+  }
+  return __dirname;
 }
 
-export const ADMIN_FORTH_ABSOLUTE_PATH = __dirname;
+export const ADMIN_FORTH_ABSOLUTE_PATH = path.join(currentFileDir(import.meta.url), '..');
 
 const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'package.json'), 'utf8'));
 
