@@ -448,10 +448,10 @@ fetchStatus.value.pending = false;
   allowedActions.value = data.options?.allowedActions;
   
 
-  setTimeout(() => {
-    initFlowbite();
-    console.log('initFlowbite');
-  });
+  // setTimeout(() => {
+  //   initFlowbite();
+  //   console.log('initFlowbite');
+  // });
 }
 
 
@@ -512,6 +512,7 @@ function addToCheckedValues(id) {
 }
 
 async function init() {
+  
   await coreStore.fetchColumns({
     resourceId: route.params.resourceId
   });
@@ -527,7 +528,13 @@ async function init() {
 }
 
 onMounted(async () => {
+  if (!coreStore.flowBitIsInitialised){
+     initFlowbite();
+     coreStore.flowBitIsInitialised = true;
+  }
+ 
   await init();
+
 });
 
 // on route param change 

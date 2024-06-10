@@ -11,12 +11,16 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
   const user = ref(null);
+  const flowBitIsInitialised = ref(false);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
       path: '/get_base_config',
       method: 'GET',
     });
+    if(!resp){
+      return
+    }
     menu.value = resp.menu;
     resourceById.value = resp.resources.reduce((acc, resource) => {
       acc[resource.resourceId] = resource;
@@ -122,6 +126,7 @@ export const useCoreStore = defineStore('core', () => {
     resourceColumns, 
     fetchColumns, 
     resourceColumnsError,
+    flowBitIsInitialised,
     logout
   }
 })

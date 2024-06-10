@@ -1,7 +1,7 @@
 <template>
   <nav 
-    v-if="loggedIn"
-    class="fixed h-14 top-0 z-40 w-full  border-b shadow-sm bg-header-bg shadow-header-shadow dark:bg-header-bg-hover dark:border-nav-menu-devider">
+    v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
+    class="fixed h-14 top-0 z-20 w-full  border-b shadow-sm bg-header-bg shadow-header-shadow dark:bg-header-bg-hover dark:border-nav-menu-devider">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center justify-start rtl:justify-end">
@@ -56,7 +56,7 @@
 
   <aside 
 
-    v-if="loggedIn"
+    v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
 
     id="logo-sidebar" class="fixed border-none top-0 left-0 z-40 w-64 h-screen  transition-transform -translate-x-full bg-nav-menu-bg border-r border-  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
@@ -102,16 +102,18 @@
     </div>
   </aside>
     
-  <div class="p-4 sm:ml-64 dark:bg-gray-800" v-if="loggedIn">
+  <div class="p-4 sm:ml-64 dark:bg-gray-800" v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady">
     <div class="p-0 dark:border-gray-700 mt-14">
         <RouterView/>     
     </div>
   </div> 
 
-  <div v-else-if="routerIsReady">
+  <div v-else-if="routerIsReady && loginRedirectCheckIsReady">
     <RouterView/>
   </div>
+  <div v-else>...Loading</div>
   <AcceptModal />
+
 </template>
 
 <style scoped>
@@ -149,8 +151,9 @@ const opened = ref<string[]>([]);
 
 
 const routerIsReady = ref(false);
+const loginRedirectCheckIsReady = ref(false);
 
-const loggedIn = computed(() => route.name !== 'login' && routerIsReady.value);
+const loggedIn = computed(() => route.name !== 'login');
 
 const theme = ref('light');
 
@@ -186,6 +189,7 @@ onMounted(async () => {
   initRouter();
   initFlowbite();
   await coreStore.fetchMenuAndResource();
+  loginRedirectCheckIsReady.value = true;
   title.value = coreStore.config.title || 'Admin Forth';
   useHead({
   title: title.value,
