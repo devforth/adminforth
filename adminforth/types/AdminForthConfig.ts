@@ -1,4 +1,4 @@
-import { AdminForthPlugin } from './AdminForthPlugin';
+import AdminForthPlugin from '../plugins/base.js';
 
 export type AdminForthConfigMenuItem = {
     type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',

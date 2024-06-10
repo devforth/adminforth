@@ -1,5 +1,5 @@
-import { AdminForth } from '../core/adminforth';
-
+import { AdminForthResource } from '../types/AdminForthConfig.js';
+import AdminForth from '../index.js';
 
 export default class AdminForthPlugin {
 

@@ -1,5 +1,6 @@
 import { AdminForthResource } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
+import AdminForth from "../../index.js";
 
 type PluginOptions = {
   foreignResourceId: string;
@@ -10,7 +11,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
   options: PluginOptions;
 
   constructor(options: PluginOptions) {
-    super();
+    super(options);
     this.options = options;
     console.log('ForeignInlineListPlugin', this);
   }
