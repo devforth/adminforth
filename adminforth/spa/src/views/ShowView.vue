@@ -44,18 +44,12 @@
             <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))" :key="column.name"
                 class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
-                <td class="px-6 py-4 whitespace-nowrap">
-                    {{ column.label }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
-                    <component
-                        :is="showComponentsPerColumn[column.name] || ValueRenderer"
-                        :column="column"
-                        :row="coreStore.record"
-                    />
-                </td>
+              <component
+                  :is="showComponentsPerColumn[column.name] || ShowTableItem"
+                  :column="column"
+                  :row="coreStore.record"
+              />
             </tr>
-            
         </tbody>
     </table>
 </div>
@@ -68,6 +62,8 @@
 <script setup>
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
+import ShowTableItem from '@/components/ShowTableItem.vue';
+
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent } from '@/utils';
