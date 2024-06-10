@@ -3,6 +3,7 @@ import express from 'express';
 import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
 
+import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -277,10 +278,11 @@ const admin = new AdminForth({
       resourceId: 'users',
       label: 'Users',  
       itemLabel: (r) => `👤 ${r.email}`,
-      inlineLists: [{
-        resourceId: 'apparts',
-        
-      }],
+      plugins: [
+        new ForeignInlineListPlugin({
+          foreignResourceId: 'apparts',
+        })
+      ],
       columns: [
         { 
           name: 'id', 
