@@ -112,7 +112,17 @@ class ExpressServer {
 
     } else {
       this.expressApp.get(`${slashedPrefix}assets/*`, (req, res) => {
-        res.sendFile(path.join(CodeInjector.SPA_TMP_PATH, 'dist', replaceAtStart(req.url, prefix)))
+        res.sendFile(
+          path.join(CodeInjector.SPA_TMP_PATH, 'dist', replaceAtStart(req.url, prefix)),
+          {
+            cacheControl: false,
+            // store for a year
+            headers: {
+              'Cache-Control': 'public, max-age=31536000',
+              'Pragma': 'public',
+            }
+          }
+        )
       })
 
       this.expressApp.get(`${prefix}*`, async (req, res) => {
@@ -128,7 +138,14 @@ class ExpressServer {
           res.status(500).send(respondNoServer(`${this.adminforth.config.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
-        res.sendFile(fullPath);
+        res.sendFile(fullPath, { 
+          cacheControl: false,
+          headers: { 
+            'Content-Type': 'text/html', 
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+         } });
       });
     }
   }

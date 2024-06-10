@@ -1,4 +1,4 @@
-
+import { AdminForthPlugin } from './AdminForthPlugin';
 
 export type AdminForthConfigMenuItem = {
     type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',
@@ -44,39 +44,39 @@ export type AdminForthResource = {
     dataSource: string,
     columns: Array<AdminForthResourceColumn>,
     itemLabel?: Function,
+    plugins?: Array<AdminForthPlugin>,
     hooks?: {
-        show?: {
-          beforeDatasourceRequest?: Function,
-          afterDatasourceResponse?: Function,
-        },
-        list?: {
-          beforeDatasourceRequest?: Function,
-          afterDatasourceResponse?: Function,
-        },
-        create?: {
-          beforeSave?: Function,
-          afterSave?: Function,
-        },
-        edit?: {
-          beforeSave?: Function,
-          afterSave?: Function,
-        },
-        delete?: {
-          beforeSave?: Function,
-          afterSave?: Function,
-        },
+      show?: {
+        beforeDatasourceRequest?: Function,
+        afterDatasourceResponse?: Function,
+      },
+      list?: {
+        beforeDatasourceRequest?: Function,
+        afterDatasourceResponse?: Function,
+      },
+      create?: {
+        beforeSave?: Function,
+        afterSave?: Function,
+      },
+      edit?: {
+        beforeSave?: Function,
+        afterSave?: Function,
+      },
+      delete?: {
+        beforeSave?: Function,
+        afterSave?: Function,
+      },
     },
     options?: {
-        bulkActions?: Array<{
-          label: string,
-          state: string,
-          icon: string,
-          action: Function,
-          id?: string,
-        }>,
-        allowedActions?: AllowedActions,
-        allowDelete?: boolean,
-        
+      bulkActions?: Array<{
+        label: string,
+        state: string,
+        icon: string,
+        action: Function,
+        id?: string,
+      }>,
+      allowedActions?: AllowedActions,
+      allowDelete?: boolean,
     },
   }
   

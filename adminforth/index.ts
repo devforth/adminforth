@@ -51,13 +51,25 @@ class AdminForth {
 
   constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
+    
     this.validateConfig();
+    this.activatePlugins();
+    this.validateConfig(); // revalidate after plugins
+
     this.express = new ExpressServer(this);
     this.auth = new Auth();
     this.codeInjector = new CodeInjector(this);
     this.connectors = {};
-    this.statuses = {}
+    this.statuses = {};
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
+  }
+
+  activatePlugins() {
+    for (let resource of this.config.resources) {
+      for (let pluginInstance of resource.plugins || []) {
+        pluginInstance.modifyResourceConfig(this, resource);
+      }
+    };
   }
 
   validateConfig() {
@@ -527,7 +539,8 @@ class AdminForth {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
-        return { resource };
+        // exclude "plugins" key
+        return { resource: { ...resource, plugins: undefined } };
       },
     });
     server.endpoint({
