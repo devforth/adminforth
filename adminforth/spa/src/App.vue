@@ -55,10 +55,12 @@
 
 
   <aside 
+
     v-if="loggedIn"
 
     id="logo-sidebar" class="fixed border-none top-0 left-0 z-40 w-64 h-screen  transition-transform -translate-x-full bg-nav-menu-bg border-r border-  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
+
       <div class="flex ms-2 md:me-24  m-4  ">
             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
             <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
@@ -71,17 +73,15 @@
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-gray-400 dark:text-gray-400
             ">{{ item.label }}</div>
-
-            
             <li v-else-if="item.children">
-              <button  type="button" class="flex items-center w-full p-2 text-base text-nav-menu-text rounded-default transition duration-75  group hover:bg-nav-menu-bg-hover dark:text-white dark:hover:bg-gray-700" 
+              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-nav-menu-text rounded-default transition duration-75  group hover:bg-nav-menu-bg-hover dark:text-white dark:hover:bg-gray-700" 
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
                 <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400  dark:group-hover:text-white" ></component>
 
                 <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
-                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                 </svg>
               </button>
@@ -144,6 +144,8 @@ createHead()
 const route = useRoute();
 const router = useRouter();
 const title = ref('');
+//create a ref to store the opened menu items with ts type;
+const opened = ref<string[]>([]);
 
 
 const routerIsReady = ref(false);
@@ -155,6 +157,15 @@ const theme = ref('light');
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   document.documentElement.classList.toggle('dark');
+}
+
+function clickOnMenuItem (label: string) {
+if (opened.value.includes(label)) {
+  opened.value = opened.value.filter((item) => item !== label);
+} else {
+  opened.value.push(label);
+}
+ 
 }
 
 async function logout() {
@@ -186,6 +197,11 @@ onMounted(async () => {
   ],
   
 })
+coreStore.menu.forEach((item, i) => {
+  if (item.open) {
+    opened.value.push(i);
+  }
+});
 })
 
 </script>
