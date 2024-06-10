@@ -11,9 +11,10 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
   options: PluginOptions;
 
   constructor(options: PluginOptions) {
-    super(options);
+    super(options, import.meta.url);
+
     this.options = options;
-    console.log('ForeignInlineListPlugin', this);
+
   }
 
   modifyResourceConfig(adminforth: AdminForth, resourceConfig: AdminForthResource) {
@@ -30,6 +31,9 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
       label: 'Foreign Inline List',
       virtual: true,
       showIn: ['show'],
+      component: {
+        show: this.componentPath('InlineList.vue'),
+      },
     });
   }
 }

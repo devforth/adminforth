@@ -43,7 +43,6 @@ class AdminForth {
   connectorClasses: any;
   runningHotReload?: boolean;
 
-
   statuses: {
     dbDiscover?: 'running' | 'done',
   }
@@ -51,6 +50,7 @@ class AdminForth {
 
   constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
+    this.codeInjector = new CodeInjector(this);
     
     this.validateConfig();
     this.activatePlugins();
@@ -58,7 +58,6 @@ class AdminForth {
 
     this.express = new ExpressServer(this);
     this.auth = new Auth();
-    this.codeInjector = new CodeInjector(this);
     this.connectors = {};
     this.statuses = {};
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
@@ -309,7 +308,11 @@ class AdminForth {
       for (const column of resource.columns) {
           if (column.component) {
             for (const [key, value] of Object.entries(column.component)) {
-                // console.log(`${key}: ${value}`);
+                if (this.codeInjector.allComponentNames[value]) {
+                  // not obvious, but if we are in this if, it means that this is plugin component
+                  // and there is no sense to check if it exists in users folder
+                  continue;
+                }
                 const path = value.replace('@@', this.config.customization.customComponentsDir);
                 if (!fs.existsSync(path)) {
                     throw new Error(`Component file ${path} does not exist`);
