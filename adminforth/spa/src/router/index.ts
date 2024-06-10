@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ResourceParent from '@/views/ResourceParent.vue'
+/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

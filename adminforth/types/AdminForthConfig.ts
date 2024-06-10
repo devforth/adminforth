@@ -10,6 +10,7 @@ export type AdminForthConfigMenuItem = {
     homepage?: boolean,
     open?: boolean,
     children?: Array<AdminForthConfigMenuItem>,
+    isStaticRoute?: boolean,
   }
   
   
