@@ -18,6 +18,9 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_base_config',
       method: 'GET',
     });
+    if(!resp){
+      return
+    }
     menu.value = resp.menu;
     resourceById.value = resp.resources.reduce((acc, resource) => {
       acc[resource.resourceId] = resource;
