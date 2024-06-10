@@ -90,18 +90,50 @@ class CodeInjector {
 
     const icons = [];
     let routes = '';
+    let routerComponents = '';  
 
     const collectAssetsFromMenu = (menu) => {
       menu.forEach((item) => {
         if (item.icon) {
           icons.push(item.icon);
         }
+        
         if (item.component) {
-          routes += `{
-            path: '${item.path}',
-            name: '${item.path}',
-            component: () => import('${item.component}'),
-          },\n`
+          if(Object.keys(item).includes('isStaticRoute')){
+            if(!item.isStaticRoute){
+            routes += `{
+              path: '${item.path}',
+              name: '${item.path}',
+              component: () => import('${item.component}'),
+            },\n`} else {
+              routes += `{
+                path: '${item.path}',
+                name: '${item.path}',
+                component: ${getComponentNameFromPath(item.component)},
+              },\n`
+              const componentName = `${getComponentNameFromPath(item.component)}`;
+              routerComponents += `import ${componentName} from '${item.component}';\n`;
+            }
+          } else{
+            if(item.homepage){
+              routes += `{
+                path: '${item.path}',
+                name: '${item.path}',
+                component: ${getComponentNameFromPath(item.component)},
+              },\n`
+              const componentName = `${getComponentNameFromPath(item.component)}`;
+              routerComponents += `import ${componentName} from '${item.component}';\n`;}
+              else {
+              routes += `{
+                path: '${item.path}',
+                name: '${item.path}',
+                component: () => import('${item.component}'),
+              },\n` 
+              
+            }
+            
+          }
+          
         }
         if (item.children) {
           collectAssetsFromMenu(item.children);
@@ -212,6 +244,8 @@ class CodeInjector {
       const componentName = getComponentNameFromPath(filePath);
       customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
     })
+
+    
     
 
     let imports = iconImports + '\n';
@@ -243,6 +277,12 @@ class CodeInjector {
     }
 
 
+    const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
+
+    let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
+    routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */', routerComponents);
+
+
 
     /* generate custom routes */
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
@@ -259,8 +299,6 @@ class CodeInjector {
       //redirect to login 
       redirect: '${homePagePath}'
     },\n`;
-    const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
-    let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES */', routes);
     await fs.promises.writeFile(routerVuePath, routerVueContent);
     
