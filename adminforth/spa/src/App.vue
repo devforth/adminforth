@@ -111,7 +111,11 @@
   <div v-else-if="routerIsReady && loginRedirectCheckIsReady">
     <RouterView/>
   </div>
-  <div v-else>...Loading</div>
+  <div v-else class="flex items-center justify-center h-screen">
+    <div class="text-3xl text-gray-400 animate-bounce">
+      ▶️
+    </div>
+  </div>
   <AcceptModal />
 
 </template>

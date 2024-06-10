@@ -30,8 +30,8 @@ function hashify(obj) {
 class CodeInjector {
 
   adminforth: AdminForth;
-  allComponentNames: Object<string, string> = {};
-  srcFoldersToSync: Object<string, string> = {};
+  allComponentNames: { [key: string]: string } = {};
+  srcFoldersToSync: { [key: string]: string } = {};
 
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
