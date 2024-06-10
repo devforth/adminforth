@@ -30,6 +30,8 @@ function hashify(obj) {
 class CodeInjector {
 
   adminforth: AdminForth;
+  allComponentNames: Object<string, string> = {};
+  srcFoldersToSync: Object<string, string> = {};
 
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
@@ -139,11 +141,22 @@ class CodeInjector {
 
       // copy whole custom directory
       if (this.adminforth.config.customization?.customComponentsDir) {
-        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
+        this.srcFoldersToSync[this.adminforth.config.customization.customComponentsDir] = './'
+      }
+
+      for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
+        const to = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', dest);
+        if (process.env.HEAVY_DEBUG) {
+          console.log(`🪲 await fsExtra.copy from ${src}, ${to}`);
+        }
+
+        await fsExtra.copy(src, to, {
           recursive: true,
         });
       }
     }
+
+
 
     //collect all 'icon' fields from resources bulkActions
     this.adminforth.config.resources.forEach((resource) => {
@@ -189,12 +202,15 @@ class CodeInjector {
       });
     });
 
-    let customComponentsImports = '';
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
-      customComponentsImports += `import ${componentName} from '${filePath}';\n`;
+      this.allComponentNames[filePath] = componentName;
     });
-
+    
+    let customComponentsImports = '';
+    for (const [targetPath, component] of Object.entries(this.allComponentNames)) {
+      customComponentsImports += `import ${component} from '${targetPath}';\n`;
+    }
 
 
     // Generate Vue.component statements for each icon
@@ -208,11 +224,9 @@ class CodeInjector {
 
     // Generate Vue.component statements for each custom component
     let customComponentsComponents = '';
-    customResourceComponents.forEach((filePath) => {
-      const componentName = getComponentNameFromPath(filePath);
-      customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
-    })
-    
+    for (const name of Object.values(this.allComponentNames)) {
+      customComponentsComponents += `app.component('${name}', ${name});\n`;
+    }
 
     let imports = iconImports + '\n';
     imports += customComponentsImports + '\n';
