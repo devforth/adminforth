@@ -100,7 +100,7 @@ class CodeInjector {
           routes += `{
             path: '${item.path}',
             name: '${item.path}',
-            component: import('${item.component}'),
+            component: () => import('${item.component}'),
           },\n`
         }
         if (item.children) {
@@ -175,26 +175,27 @@ class CodeInjector {
 
     // for each custom component generate import statement
     const customComponentsDir = this.adminforth.config.customization?.customComponentsDir;
-    let customComponentsImports = '';
-    if (customComponentsDir) {
-        // if file - return, if dir - go recursively
-        const customComponents = await fs.promises.readdir(customComponentsDir);
-        for (const filePath of customComponents) {
-            if (!filePath.endsWith('.vue')) {
-              continue;
+
+    const customResourceComponents = [];
+    this.adminforth.config.resources.forEach((resource) => {
+      resource.columns.forEach((field) => {
+        if (field.component) {
+          Object.values(field.component).forEach((filePath) => {
+            if (!customResourceComponents.includes(filePath)) {
+              customResourceComponents.push(filePath);
             }
-            fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-                if (data.isFile()) {
-                    const componentName = getComponentNameFromPath(filePath);
-                    customComponentsImports += `import ${componentName} from '@/custom/${filePath}';\n`;
-                }
-            })
+          });
         }
-    }
+      });
+    });
+
+    let customComponentsImports = '';
+    customResourceComponents.forEach((filePath) => {
+      const componentName = getComponentNameFromPath(filePath);
+      customComponentsImports += `import ${componentName} from '${filePath}';\n`;
+    });
+
+
 
     // Generate Vue.component statements for each icon
     const iconComponents = uniqueIcons.map((icon) => {
@@ -207,24 +208,10 @@ class CodeInjector {
 
     // Generate Vue.component statements for each custom component
     let customComponentsComponents = '';
-    if (customComponentsDir) {
-        const customComponents = await fs.promises.readdir(customComponentsDir);
-        for (const filePath of customComponents) {
-          if (!filePath.endsWith('.vue')) {
-            continue;
-          }
-          fs.stat(`${customComponentsDir}/${filePath}`, (err, data) => {
-            if (err) {
-              console.log('Custom components importing error: ', err);
-              return;
-            }
-            if (data.isFile()) {
-              const componentName = getComponentNameFromPath(filePath);
-              customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
-            }
-          })
-        }
-    }
+    customResourceComponents.forEach((filePath) => {
+      const componentName = getComponentNameFromPath(filePath);
+      customComponentsComponents += `app.component('${componentName}', ${componentName});\n`;
+    })
     
 
     let imports = iconImports + '\n';
@@ -257,7 +244,7 @@ class CodeInjector {
 
 
 
-    /* generate custom rotes */
+    /* generate custom routes */
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
     let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
     let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
@@ -265,10 +252,6 @@ class CodeInjector {
     if (!homePagePath) {
       homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
-
-    
-    
-      
 
     routes += `{
       path: '/',
