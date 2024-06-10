@@ -8,6 +8,7 @@ export type AdminForthConfigMenuItem = {
     component?: string,
     resourceId?: string,
     homepage?: boolean,
+    open?: boolean,
     children?: Array<AdminForthConfigMenuItem>,
   }
   
