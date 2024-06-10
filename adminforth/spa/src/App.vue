@@ -1,7 +1,7 @@
 <template>
   <nav 
     v-if="loggedIn"
-    class="fixed h-14 top-0 z-40 w-full  border-b shadow-sm bg-header-bg shadow-header-shadow dark:bg-header-bg-hover dark:border-nav-menu-devider">
+    class="fixed h-14 top-0 z-20 w-full  border-b shadow-sm bg-header-bg shadow-header-shadow dark:bg-header-bg-hover dark:border-nav-menu-devider">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center justify-start rtl:justify-end">

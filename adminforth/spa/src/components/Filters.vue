@@ -2,11 +2,11 @@
   <!-- drawer component -->
   <div id="drawer-navigation" 
   
-      class="fixed top-14 right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl dark:shadow-black"
+      class="fixed  right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl dark:shadow-black"
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
-      :style="{ height: `calc(100vh - 3.5rem)` }"
+      :style="{ height: `calc(100vh ` }"
   >
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       Filters
@@ -92,7 +92,7 @@
    </div>
   </div>
 
-  <div v-if="show" drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-30"
+  <div v-if="show"  class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0  z-30"
     @click="$emit('hide')">
   </div>
 </template>
