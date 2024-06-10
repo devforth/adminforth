@@ -1,20 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ResourceParent from '@/views/ResourceParent.vue'
-import ListView from '@/views/ListView.vue'
-import ShowView from '@/views/ShowView.vue'
-import EditView from '@/views/EditView.vue'
-import CreateView from '@/views/CreateView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      //redirect to login 
-      /* IMPORTANT:ADMINFORTH REDIRECT */
-
-    },
     {
       path: '/login',
       name: 'login',
@@ -27,22 +16,22 @@ const router = createRouter({
       children: [
         {
           path: '',
-          component: ListView,
+          component: () => import('@/views/ListView.vue'),
           name: 'resource-list'
         },
         {
           path: 'show/:primaryKey',
-          component: ShowView,
+          component: () => import('@/views/ShowView.vue'),
           name: 'resource-show'
         },
         {
           path: 'edit/:primaryKey',
-          component: EditView,
+          component: () => import('@/views/EditView.vue'),
           name: 'resource-edit'
         },
         {
           path: 'create',
-          component: CreateView,
+          component: () => import('@/views/CreateView.vue'),
           name: 'resource-create'
         },
       ]

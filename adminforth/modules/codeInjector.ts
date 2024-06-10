@@ -100,7 +100,7 @@ class CodeInjector {
           routes += `{
             path: '${item.path}',
             name: '${item.path}',
-            component: import('${item.component}'),
+            component: () => import('${item.component}'),
           },\n`
         }
         if (item.children) {
