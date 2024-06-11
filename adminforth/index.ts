@@ -110,12 +110,12 @@ class AdminForth {
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
-    if (!this.config.brandName) {
-      this.config.brandName = 'AdminForth';
+    if (!this.config?.customization.brandName) {
+      this.config.customization.brandName = 'AdminForth';
     }
 
-    if (!this.config.datesFormat) {
-      this.config.datesFormat = 'MMM D, YYYY HH:mm:ss';
+    if (!this.config.customization.datesFormat) {
+      this.config.customization.datesFormat = 'MMM D, YYYY HH:mm:ss';
     }
 
     if (this.config.resources) {
@@ -469,10 +469,10 @@ class AdminForth {
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
         return {
-          brandName: this.config.brandName,
+          brandName: this.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.config.auth.loginBackgroundImage,
-          title: this.config?.title,
+          title: this.config.customization?.title,
         };
       },
     });
@@ -516,12 +516,12 @@ class AdminForth {
           })),
           menu: this.config.menu,
           config: { 
-            brandName: this.config.brandName,
-            datesFormat: this.config.datesFormat,
+            brandName: this.config.customization.brandName,
+            datesFormat: this.config.customization.datesFormat,
             deleteConfirmation: this.config.deleteConfirmation,
             auth: this.config.auth,
             usernameField: this.config.auth.usernameField,
-            title: this.config?.title,
+            title: this.config.customization?.title,
           },
           adminUser,
           version: ADMINFORTH_VERSION,

@@ -107,12 +107,14 @@ export  type AdminForthConfig = {
       customComponentsDir?: string,
       vueUsesFile?: string,
       customPublicDir?: string,
+      brandName?: string,
+      datesFormat?: string,
+      title?: string,
     },
     baseUrl?: string,
-    brandName?: string,
-    datesFormat?: string,
+   
     deleteConfirmation?: boolean,
-    title?: string,
+   
     styles?: Object,
   }
   
