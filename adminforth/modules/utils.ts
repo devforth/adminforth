@@ -18,8 +18,8 @@ export function guessLabelFromName(name) {
 export const currentFileDir = (metaUrl) => {
   const __filename = fileURLToPath(metaUrl);
   let __dirname = path.dirname(__filename);
-  if (__dirname.endsWith('dist')) {
-    // in prod build we are in dist also
+  if (__dirname.endsWith('/dist/modules')) {
+    // in prod build we are in dist also, so make another back jump to go true sorces
     __dirname = path.join(__dirname, '..');
   }
   return __dirname;
