@@ -528,10 +528,7 @@ async function init() {
 }
 
 onMounted(async () => {
-  if (!coreStore.flowBitIsInitialised){
-     initFlowbite();
-     coreStore.flowBitIsInitialised = true;
-  }
+  
  
   await init();
 

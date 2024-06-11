@@ -191,7 +191,9 @@ async function initRouter() {
 // initialize components based on data attribute selectors
 onMounted(async () => {
   initRouter();
-  initFlowbite();
+    setTimeout(() => {
+      initFlowbite();
+    }, 100); 
   await coreStore.fetchMenuAndResource();
   loginRedirectCheckIsReady.value = true;
   title.value = coreStore.config?.title || 'AdminForth';
