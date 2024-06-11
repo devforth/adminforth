@@ -8,6 +8,7 @@ export const useCoreStore = defineStore('core', () => {
   const config = ref({});
   const record = ref({});
   const resourceColumns = ref(null);
+  const resourceOptions = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
   const user = ref(null);
@@ -62,6 +63,7 @@ export const useCoreStore = defineStore('core', () => {
 
     console.log('📦 record', respData);
     record.value = respData.data[0];
+    resourceOptions.value = respData.options;
   }
 
   async function fetchColumns({ resourceId }) {
@@ -127,6 +129,7 @@ export const useCoreStore = defineStore('core', () => {
     fetchColumns, 
     resourceColumnsError,
     flowBitIsInitialised,
+    resourceOptions,
     logout
   }
 })
