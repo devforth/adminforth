@@ -11,6 +11,9 @@ export type AdminForthConfigMenuItem = {
     open?: boolean,
     children?: Array<AdminForthConfigMenuItem>,
     isStaticRoute?: boolean,
+    meta?: {
+      title?: string,
+    },
   }
   
   
