@@ -196,7 +196,7 @@ class AdminForth {
             errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
             bulkActions = [];
           }
-          if(res.options?.allowDelete){
+          if(res.options?.allowDelete && !bulkActions.find((action) => action.label === 'Delete checked')){
             bulkActions.push({
               label: `Delete checked`,
               state: 'danger',
