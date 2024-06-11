@@ -67,6 +67,9 @@ const props = defineProps({
   },
   label: {
     type: String,
+  },
+  autoHide: {
+    type: Boolean,
   }
 });
 
@@ -100,8 +103,7 @@ function updateFromProps() {
   if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
-  }
-  else {
+  } else {
     datepickerObject.value.setDate(dayjs(props.valueStart).format('DD MMM YYYY'));
     startTime.value = dayjs(props.valueStart).format('HH:mm:ss')
   }
@@ -121,7 +123,13 @@ watch(start, () => {
 })
 
 function initDatepickers() {
-  datepickerObject.value = new Datepicker(datepickerStartEl.value, { format: 'dd M yyyy' });
+  const options = {format: 'dd M yyyy'};
+
+  if (props.autoHide) {
+    options.autohide = true;
+  }
+
+  datepickerObject.value = new Datepicker(datepickerStartEl.value, options);
 
   addChangeDateListener();
 }
