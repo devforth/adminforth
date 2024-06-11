@@ -32,5 +32,5 @@ const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_P
 export const ADMINFORTH_VERSION: string = package_json.version;
 
 export function getComponentNameFromPath(filePath) {
-  return filePath.replace(/@/g, '').replace(/.vue/g, '').replace(/\./g, '').replace(/\//g, '');
+  return filePath.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
 }
