@@ -303,7 +303,7 @@ class CodeInjector {
     // inject title to index.html
     const indexHtmlPath = path.join(CodeInjector.SPA_TMP_PATH, 'index.html');
     let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
-    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.title || 'AdminForth'}`);
+    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization.title || 'AdminForth'}`);
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
 
