@@ -14,12 +14,11 @@ export function guessLabelFromName(name) {
   }
 }
 
-
 export const currentFileDir = (metaUrl) => {
   const __filename = fileURLToPath(metaUrl);
   let __dirname = path.dirname(__filename);
-  if (__dirname.endsWith('dist')) {
-    // in prod build we are in dist also
+  if (__dirname.endsWith('/dist/modules')) {
+    // in prod build we are in dist also, so make another back jump to go true sorces
     __dirname = path.join(__dirname, '..');
   }
   return __dirname;
@@ -32,5 +31,5 @@ const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_P
 export const ADMINFORTH_VERSION: string = package_json.version;
 
 export function getComponentNameFromPath(filePath) {
-  return filePath.replace(/@/g, '').replace(/.vue/g, '').replace(/\./g, '').replace(/\//g, '');
+  return filePath.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
 }
