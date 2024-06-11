@@ -32,7 +32,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
       virtual: true,
       showIn: ['show'],
       component: {
-        show: this.componentPath('InlineList.vue'),
+        showRow: this.componentPath('InlineList.vue'),
       },
     });
   }

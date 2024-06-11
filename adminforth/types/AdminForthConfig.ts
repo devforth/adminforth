@@ -49,24 +49,24 @@ export type AdminForthResource = {
     plugins?: Array<AdminForthPlugin>,
     hooks?: {
       show?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
+        beforeDatasourceRequest?: Function | Array<Function>,
+        afterDatasourceResponse?: Function | Array<Function>,
       },
       list?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
+        beforeDatasourceRequest?: Function | Array<Function>,
+        afterDatasourceResponse?: Function | Array<Function>,
       },
       create?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+        beforeSave?: Function | Array<Function>,
+        afterSave?: Function | Array<Function>,
       },
       edit?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+        beforeSave?: Function | Array<Function>,
+        afterSave?: Function | Array<Function>,
       },
       delete?: {
-        beforeSave?: Function,
-        afterSave?: Function,
+        beforeSave?: Function | Array<Function>,
+        afterSave?: Function | Array<Function>,
       },
     },
     options?: {
@@ -134,9 +134,11 @@ export type DataSource = {
 }
 
 export type AdminForthResourceColumnComponent = {
-    show?: string,
+    show?: string,    // rewrite value in show
+    showRow?: string,  // rewrite full view table row (both <td> tags)
     create?: string,
     edit?: string,
+    list?: string,
 }
 
 
