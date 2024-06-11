@@ -80,7 +80,6 @@
 <script setup>
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import ShowTableItem from '@/components/ShowTableItem.vue';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
