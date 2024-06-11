@@ -20,7 +20,7 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
-  mySidebar: [
+  apiSidebar: [
     {
       type: "category",
       label: "API",

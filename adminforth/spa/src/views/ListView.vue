@@ -377,7 +377,7 @@ async function selectAll(value) {
   // checkboxes.value = rows.value.map((v) => v.id);
 }
 
-const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.pageSize || DEFAULT_PAGE_SIZE);
+const pageSize = computed(() => coreStore.resourceById[route.params.resourceId]?.options?.listPageSize || DEFAULT_PAGE_SIZE);
 const totalPages = computed(() => Math.ceil(totalRows.value / pageSize.value));
 let listComponentsPerColumn = {};
 const allFromThisPageChecked = computed(() => {
@@ -510,7 +510,7 @@ function addToCheckedValues(id) {
 
 async function init() {
   
-  await coreStore.fetchColumns({
+  await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
 

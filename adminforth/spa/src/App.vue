@@ -62,11 +62,11 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
 
       <div class="flex ms-2 md:me-24  m-4  ">
-            <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" />
-            <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
-              {{ coreStore.config?.brandName }}
-            </span>
-          </div>
+        <img :src="loadFile('@/assets/logo.svg')" class="h-8 me-3" alt="FlowBite Logo" />
+        <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
+          {{ coreStore.config?.brandName }}
+        </span>
+      </div>
         <ul class="space-y-2 font-medium">
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-nav-menu-devider dark:border-gray-700"></div>
@@ -139,6 +139,27 @@ import { useHead } from 'unhead'
 import { createHead } from 'unhead'
 // import { link } from 'fs';
 const coreStore = useCoreStore();
+
+
+const splitAtLast = (str: string, separator: string) => {
+  const index = str.lastIndexOf(separator);
+  return [str.slice(0, index), str.slice(index + 1)];
+}
+
+const loadFile = (file: string) => {
+  let path;
+  let baseUrl = '';
+  if (file.startsWith('@/')) {
+    path = file.replace('@/', '');
+    baseUrl = new URL(`./${path}`, import.meta.url).href;
+  } else if (file.startsWith('@@/')) {
+    path = file.replace('@@/', '');
+    baseUrl = new URL(`./${path}`, import.meta.url).href;
+  } else {
+    baseUrl = new URL(`./${file}`, import.meta.url).href;
+  }
+  return baseUrl;
+}
 
 
 createHead()

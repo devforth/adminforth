@@ -247,13 +247,13 @@ const admin = new AdminForth({
           }
         }
       ],
-      listPageSize: 20,
       options:{
+        listPageSize: 5,
         allowDelete: true,
         bulkActions: [{
           name: 'mark_as_listed',
           label: 'Mark as listed',
-          icon: 'typcn:archive',
+          // icon: 'typcn:archive',
           state:'active',
           confirm: 'Are you sure you want to mark all selected apartments as listed?',
           action: function ({selectedIds, adminUser}) {
@@ -404,9 +404,11 @@ const admin = new AdminForth({
             { name: 'price' },
             { name: 'enabled' },
         ],
-        listPageSize: 5, 
-    },
-    {
+        options: {
+          listPageSize: 10,
+        },
+      },
+      {
         dataSource: 'db2', table: 'users',
         resourceId: 'games_users',
         label: 'Games users',
@@ -448,7 +450,6 @@ const admin = new AdminForth({
               masked: true, // to show stars in input field
             }
         ],
-        listPageSize: 5, 
     },
     {
         dataSource: 'db3', table: 'game',

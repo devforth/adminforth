@@ -64,7 +64,7 @@ export const useCoreStore = defineStore('core', () => {
     record.value = respData.data[0];
   }
 
-  async function fetchColumns({ resourceId }) {
+  async function fetchResourceFull({ resourceId }) {
     if (resourceColumnsId.value === resourceId && resourceColumns.value) {
       // already fetched
       return;
@@ -84,6 +84,7 @@ export const useCoreStore = defineStore('core', () => {
       resourceColumnsError.value = res.error;
     } else {
       resourceColumns.value = res.resource.columns;
+      resourceById.value[resourceId] = res.resource;
     }
   }
 
@@ -124,7 +125,7 @@ export const useCoreStore = defineStore('core', () => {
     fetchRecord, 
     record, 
     resourceColumns, 
-    fetchColumns, 
+    fetchResourceFull, 
     resourceColumnsError,
     flowBitIsInitialised,
     logout

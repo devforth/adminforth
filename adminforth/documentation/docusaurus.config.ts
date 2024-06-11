@@ -92,9 +92,9 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          sidebarId: 'apiSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'API',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {

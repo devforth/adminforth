@@ -11,6 +11,12 @@ const customLogger = {
       console.log(msg);
     }
   },
+  warnOnce(msg: string) {
+    console.warn('warn once', msg);
+    if (!this.hasWarned) {
+      this.hasWarned = true;
+    }
+  },
   warn(msg: string) {
     console.warn(msg);
   },
