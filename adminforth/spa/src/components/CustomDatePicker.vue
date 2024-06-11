@@ -142,6 +142,10 @@ function removeChangeDateListener() {
   datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
 }
 
+function destroyDatepickerElement() {
+  datepickerObject.value.destroy();
+}
+
 function setStartDate(event) {
   startDate.value = event.detail.date
 }
@@ -165,5 +169,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   removeChangeDateListener();
+  destroyDatepickerElement();
 });
 </script>
