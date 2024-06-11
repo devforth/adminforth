@@ -14,7 +14,6 @@ export function guessLabelFromName(name) {
   }
 }
 
-
 export const currentFileDir = (metaUrl) => {
   const __filename = fileURLToPath(metaUrl);
   let __dirname = path.dirname(__filename);

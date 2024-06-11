@@ -45,10 +45,28 @@
                 class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
               <component
-                  :is="showComponentsPerColumn[column.name] || ShowTableItem"
+                v-if="showRowComponentsPerColumn[column.name]"
+                  :is="showRowComponentsPerColumn[column.name]"
                   :column="column"
                   :row="coreStore.record"
               />
+              <template v-else>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  {{ column.label }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
+                  <component
+                    v-if="showComponentsPerColumn[column.name]"
+                    :is="showComponentsPerColumn[column.name]"
+                    :column="column"
+                    :row="coreStore.record"
+                  />
+                  <ValueRenderer v-else 
+                    :column="column" 
+                    :row="coreStore.record"
+                  />
+                </td>
+              </template>
             </tr>
         </tbody>
     </table>
@@ -76,6 +94,7 @@ const item = ref(null);
 const route = useRoute();
 const loading = ref(false);
 let showComponentsPerColumn = {};
+let showRowComponentsPerColumn = {};
 
 const coreStore = useCoreStore();
 
@@ -93,7 +112,14 @@ onMounted(async () => {
           acc[column.name] = getCustomComponent(column.component.show);
       }
       return acc;
-    }, {});
+  }, {});
+  showRowComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+      if (column.component?.showRow) {
+          acc[column.name] = getCustomComponent(column.component.showRow);
+      }
+      return acc;
+  }, {});
+
   loading.value = false;
 });
 
