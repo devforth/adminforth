@@ -99,7 +99,7 @@ const coreStore = useCoreStore();
 
 onMounted(async () => {
   loading.value = true;
-  await coreStore.fetchColumns({
+  await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
   await coreStore.fetchRecord({

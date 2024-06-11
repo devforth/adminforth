@@ -79,6 +79,7 @@ export type AdminForthResource = {
       }>,
       allowedActions?: AllowedActions,
       allowDelete?: boolean,
+      listPageSize?: number,
     },
   }
   
