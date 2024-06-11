@@ -471,6 +471,7 @@ class AdminForth {
           brandName: this.config.brandName,
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.config.auth.loginBackgroundImage,
+          title: this.config?.title,
         };
       },
     });

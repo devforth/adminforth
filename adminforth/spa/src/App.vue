@@ -194,7 +194,7 @@ onMounted(async () => {
   initFlowbite();
   await coreStore.fetchMenuAndResource();
   loginRedirectCheckIsReady.value = true;
-  title.value = coreStore.config.title || 'Admin Forth';
+  title.value = coreStore.config?.title || 'AdminForth';
   useHead({
   title: title.value,
   link: [
