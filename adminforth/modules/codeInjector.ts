@@ -107,11 +107,13 @@ class CodeInjector {
               path: '${item.path}',
               name: '${item.path}',
               component: () => import('${item.component}'),
+              meta: { title: '${item?.meta?.title}'}
             },\n`} else {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
+                meta: { title: '${item?.meta?.title}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;
@@ -122,6 +124,7 @@ class CodeInjector {
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
+                meta: { title: '${item?.meta?.title}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;}
@@ -129,7 +132,8 @@ class CodeInjector {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
-                component: () => import('${item.component}'),
+                component: () => import('${item.component}'),}
+                meta: { title: '${item?.meta?.title}'
               },\n` 
               
             }
@@ -295,6 +299,12 @@ class CodeInjector {
 
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */', routerComponents);
+
+    // inject title to index.html
+    const indexHtmlPath = path.join(CodeInjector.SPA_TMP_PATH, 'index.html');
+    let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
+    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.title || 'AdminForth'}`);
+    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
 
 

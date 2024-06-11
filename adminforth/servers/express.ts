@@ -135,7 +135,7 @@ class ExpressServer {
           fileExists = false;
         }
         if (!fileExists) {
-          res.status(500).send(respondNoServer(`${this.adminforth.config.brandName} is still warming up`, 'Please wait a moment...'));
+          res.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
         res.sendFile(fullPath, { 
