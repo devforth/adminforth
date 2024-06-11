@@ -66,7 +66,7 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
 
       <div class="flex ms-2 md:me-24  m-4  ">
-        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" alt="logo" class="w-8 h-8 mr-2" />
+        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
         <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
           {{ coreStore.config?.brandName }}
         </span>
