@@ -296,6 +296,12 @@ class CodeInjector {
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */', routerComponents);
 
+    // inject title to index.html
+    const indexHtmlPath = path.join(CodeInjector.SPA_TMP_PATH, 'index.html');
+    let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
+    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.title || 'AdminForth'}`);
+    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
+
 
 
     /* generate custom routes */

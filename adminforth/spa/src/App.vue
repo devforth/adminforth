@@ -208,16 +208,16 @@ onMounted(async () => {
   await coreStore.fetchMenuAndResource();
   loginRedirectCheckIsReady.value = true;
   title.value = coreStore.config?.title || 'AdminForth';
-  useHead({
-  title: title.value,
-  link: [
-    {
-      rel: 'icon',
-      href: coreStore.config.favicon || '/favicon.ico',
-    },
-  ],
+//   useHead({
+//   title: title.value,
+//   link: [
+//     {
+//       rel: 'icon',
+//       href: coreStore.config.favicon || '/favicon.ico',
+//     },
+//   ],
   
-})
+// })
 coreStore.menu.forEach((item, i) => {
   if (item.open) {
     opened.value.push(i);
