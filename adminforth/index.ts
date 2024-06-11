@@ -11,6 +11,7 @@ import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
 import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 import { AdminForthConfig } from './types/AdminForthConfig.js';
+import { getFunctionList } from './modules/utils.js';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
@@ -565,8 +566,8 @@ class AdminForth {
           return { error: `Resource ${resourceId} not found` };
         }
 
-        if (resource.hooks?.[source]?.beforeDatasourceRequest) {
-          const resp = await resource.hooks?.[source]?.beforeDatasourceRequest({ resource, query: body, adminUser });
+        for (const hook of getFunctionList(resource.hooks?.[source]?.beforeDatasourceRequest)) {
+          const resp = await hook({ resource, query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -645,8 +646,8 @@ class AdminForth {
           item._label = resource.itemLabel(item);
         })
 
-        if (resource.hooks?.[source]?.afterDatasourceResponse) {
-          const resp = await resource.hooks?.[source]?.afterDatasourceResponse({ resource, response: data.data, adminUser });
+        for (const hook of getFunctionList(resource.hooks?.[source]?.afterDatasourceResponse)) {
+          const resp = await hook({ resource, response: data.data, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -695,8 +696,9 @@ class AdminForth {
         }
         const targetResourceId = columnConfig.foreignResource.resourceId;
         const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
-        if (columnConfig.foreignResource.hooks?.beforeDatasourceRequest) {
-          const resp = await column.foreignResource.hooks?.beforeDatasourceRequest({ query: body, adminUser });
+
+        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.beforeDatasourceRequest)) {
+          const resp = await hook({ query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -725,8 +727,9 @@ class AdminForth {
         const response = {
           items
         };
-        if (columnConfig.foreignResource.hooks?.afterDatasourceResponse) {
-          const resp = await column.foreignResource.hooks?.afterDatasourceResponse({ response, adminUser });
+
+        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.afterDatasourceResponse)) {
+          const resp = await hook({ response, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -735,7 +738,7 @@ class AdminForth {
             return { error: resp.error };
           }
         }
-        
+       
         return response;
       },
     });
@@ -782,15 +785,15 @@ class AdminForth {
             
             const record = body['record'];
             // execute hook if needed
-            if (resource.hooks?.create?.beforeSave) {
-                const resp = await resource.hooks?.create?.beforeSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+            for (const hook of getFunctionList(resource.hooks?.create?.beforeSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
             }
 
             for (const column of resource.columns) {
@@ -828,15 +831,15 @@ class AdminForth {
             const connector = this.connectors[resource.dataSource];
             await connector.createRecord({ resource, record });
             // execute hook if needed
-            if (resource.hooks?.create?.afterSave) {
-                const resp = await resource.hooks?.create?.afterSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+            for (const hook of getFunctionList(resource.hooks?.create?.afterSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
             }
 
             return {
@@ -863,17 +866,16 @@ class AdminForth {
             const record = body['record'];
 
             // execute hook if needed
-            if (resource.hooks?.edit?.beforeSave) {
-                const resp = await resource.hooks?.edit?.beforeSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
-            }
+            for (const hook of getFunctionList(resource.hooks?.edit?.beforeSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+              }
 
+              if (resp.error) {
+                return { error: resp.error };
+              }
+            }
             const newValues = {};
 
             for (const recordField in record) {
@@ -893,15 +895,15 @@ class AdminForth {
             }
             
             // execute hook if needed
-            if (resource.hooks?.edit?.afterSave) {
-                const resp = await resource.hooks?.edit?.afterSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+            for (const hook of getFunctionList(resource.hooks?.edit?.afterSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
             }
 
             return {
@@ -920,30 +922,30 @@ class AdminForth {
             }
 
             // execute hook if needed
-            if (resource.hooks?.delete?.beforeSave) {
-                const resp = await resource.hooks?.delete?.beforeSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+            for (const hook of getFunctionList(resource.hooks?.delete?.beforeSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
             }
 
             const connector = this.connectors[resource.dataSource];
             await connector.deleteRecord({ resource, recordId: body['primaryKey']});
 
             // execute hook if needed
-            if (resource.hooks?.delete?.afterSave) {
-                const resp = await resource.hooks?.delete?.afterSave({ resource, record, adminUser });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-                }
-  
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+            for (const hook of getFunctionList(resource.hooks?.delete?.afterSave)) {
+              const resp = await hook({ resource, record, adminUser });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
             }
             return {
               recordId: body['primaryKey']

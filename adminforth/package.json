@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "rollout": "tsc && cp -r spa dist/spa && npm version patch  && npm publish"
+    "rollout": "tsc && cp -r spa dist/spa && npm version patch  && npm publish",
+    "docs": "typedoc --out docs index.ts"
   },
   "author": "devforth.io",
   "license": "ISC",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
+    "typedoc": "^0.25.13",
     "typescript": "^5.4.5"
   }
 }
