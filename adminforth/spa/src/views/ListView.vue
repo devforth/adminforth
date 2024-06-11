@@ -448,10 +448,7 @@ fetchStatus.value.pending = false;
   allowedActions.value = data.options?.allowedActions;
   
 
-  // setTimeout(() => {
-  //   initFlowbite();
-  //   console.log('initFlowbite');
-  // });
+
 }
 
 
@@ -528,7 +525,7 @@ async function init() {
 }
 
 onMounted(async () => {
-  
+  initFlowbite(); 
  
   await init();
 
