@@ -162,7 +162,9 @@ export type AdminForthResourceColumnEnumElement = {
 export type AdminForthResourceColumnForeignResource = {
     resourceId: string,
     hooks?: {
+      dropdownList?: {
         beforeDatasourceRequest?: Function,
         afterDatasourceResponse?: Function,
+      },
     },
   }
