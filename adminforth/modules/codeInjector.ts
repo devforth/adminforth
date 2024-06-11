@@ -238,6 +238,8 @@ class CodeInjector {
       const componentName = getComponentNameFromPath(filePath);
       this.allComponentNames[filePath] = componentName;
     });
+
+    console.log('🔧 Injecting code into Vue sources...', this.allComponentNames);
     
     let customComponentsImports = '';
     for (const [targetPath, component] of Object.entries(this.allComponentNames)) {
