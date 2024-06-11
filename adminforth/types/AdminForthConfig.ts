@@ -114,6 +114,7 @@ export  type AdminForthConfig = {
       brandName?: string,
       datesFormat?: string,
       title?: string,
+      brandLogo?: string,
     },
     baseUrl?: string,
    

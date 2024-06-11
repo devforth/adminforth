@@ -71,7 +71,7 @@ async function onUpdateRecord(newRecord) {
 
 onMounted(async () => {
   loading.value = true;
-  await coreStore.fetchColumns({
+  await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
   createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {

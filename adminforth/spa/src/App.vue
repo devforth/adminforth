@@ -66,7 +66,7 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
 
       <div class="flex ms-2 md:me-24  m-4  ">
-        <img :src="loadFile('@/assets/logo.svg')" class="h-8 me-3" alt="FlowBite Logo" />
+        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" alt="logo" class="w-8 h-8 mr-2" />
         <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
           {{ coreStore.config?.brandName }}
         </span>
@@ -164,7 +164,7 @@ const loadFile = (file: string) => {
     baseUrl = new URL(`./${path}`, import.meta.url).href;
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
-    baseUrl = new URL(`./${path}`, import.meta.url).href;
+    baseUrl = new URL(`./custom/${path}`, import.meta.url).href;
   } else {
     baseUrl = new URL(`./${file}`, import.meta.url).href;
   }

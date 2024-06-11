@@ -113,6 +113,15 @@ class AdminForth {
     if (!this.config?.customization.brandName) {
       this.config.customization.brandName = 'AdminForth';
     }
+    if (this.config.customization.brandLogo) {
+      if (!this.config.customization.brandLogo.startsWith('@@/')) {
+        errors.push(`Brand logo must start with @@ and be placed in custom directory`);
+      }
+      // todo check file exist
+    }
+    
+
+
 
     if (!this.config.customization.datesFormat) {
       this.config.customization.datesFormat = 'MMM D, YYYY HH:mm:ss';
@@ -517,6 +526,7 @@ class AdminForth {
           menu: this.config.menu,
           config: { 
             brandName: this.config.customization.brandName,
+            brandLogo: this.config.customization.brandLogo,
             datesFormat: this.config.customization.datesFormat,
             deleteConfirmation: this.config.deleteConfirmation,
             auth: this.config.auth,
@@ -643,10 +653,6 @@ class AdminForth {
           })
         );
 
-        data.data.forEach((item) => {
-          item._label = resource.itemLabel(item);
-        })
-
         for (const hook of getFunctionList(resource.hooks?.[source]?.afterDatasourceResponse)) {
           const resp = await hook({ resource, response: data.data, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
@@ -665,6 +671,10 @@ class AdminForth {
               delete item[key];
             }
           })
+        });
+
+        data.data.forEach((item) => {
+          item._label = resource.itemLabel(item);
         });
 
         return {
