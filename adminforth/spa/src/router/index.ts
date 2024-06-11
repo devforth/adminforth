@@ -8,7 +8,8 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue')
+      component: () => import('@/views/LoginView.vue'),
+      meta: { title: 'login' }
     },
     {
       path: '/resource/:resourceId',
@@ -18,22 +19,28 @@ const router = createRouter({
         {
           path: '',
           component: () => import('@/views/ListView.vue'),
-          name: 'resource-list'
+          name: 'resource-list',
+          meta: { title: 'list' }
         },
         {
           path: 'show/:primaryKey',
           component: () => import('@/views/ShowView.vue'),
-          name: 'resource-show'
+          name: 'resource-show',
+          meta: { title: 'show' }
+
         },
         {
           path: 'edit/:primaryKey',
           component: () => import('@/views/EditView.vue'),
-          name: 'resource-edit'
+          name: 'resource-edit',
+          meta: { title: 'edit' }
         },
         {
           path: 'create',
           component: () => import('@/views/CreateView.vue'),
-          name: 'resource-create'
+          name: 'resource-create',
+          meta: { title: 'create' }
+
         },
       ]
     }, 

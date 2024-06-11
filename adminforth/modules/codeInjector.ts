@@ -107,11 +107,13 @@ class CodeInjector {
               path: '${item.path}',
               name: '${item.path}',
               component: () => import('${item.component}'),
+              meta: { title: '${item?.meta?.title}'}
             },\n`} else {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
+                meta: { title: '${item?.meta?.title}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;
@@ -122,6 +124,7 @@ class CodeInjector {
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
+                meta: { title: '${item?.meta?.title}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;}
@@ -129,7 +132,8 @@ class CodeInjector {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
-                component: () => import('${item.component}'),
+                component: () => import('${item.component}'),}
+                meta: { title: '${item?.meta?.title}'
               },\n` 
               
             }

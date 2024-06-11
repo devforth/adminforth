@@ -497,7 +497,10 @@ const admin = new AdminForth({
       component: '@@/Dash.vue',
       path: '/dashboard',
       homepage: true,
-      isStaticRoute:false
+      isStaticRoute:false,
+      meta:{
+        title: 'Dashboard',
+      }
     },
     {
       label: 'Core',

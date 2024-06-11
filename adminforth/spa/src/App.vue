@@ -159,6 +159,13 @@ const sideBarOpen = ref(false);
 
 
 const route = useRoute();
+watch(route, () => {
+  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
+  useHead({
+  title: title.value,
+})
+});
+
 const router = useRouter();
 const title = ref('');
 //create a ref to store the opened menu items with ts type;
@@ -207,17 +214,7 @@ onMounted(async () => {
     }, 100); 
   await coreStore.fetchMenuAndResource();
   loginRedirectCheckIsReady.value = true;
-  title.value = coreStore.config?.title || 'AdminForth';
-//   useHead({
-//   title: title.value,
-//   link: [
-//     {
-//       rel: 'icon',
-//       href: coreStore.config.favicon || '/favicon.ico',
-//     },
-//   ],
-  
-// })
+ 
 coreStore.menu.forEach((item, i) => {
   if (item.open) {
     opened.value.push(i);
