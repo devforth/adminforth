@@ -698,7 +698,7 @@ class AdminForth {
         const targetResourceId = columnConfig.foreignResource.resourceId;
         const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
 
-        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.beforeDatasourceRequest)) {
+        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest)) {
           const resp = await hook({ query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -729,7 +729,7 @@ class AdminForth {
           items
         };
 
-        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.afterDatasourceResponse)) {
+        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse)) {
           const resp = await hook({ response, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
