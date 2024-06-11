@@ -264,10 +264,10 @@ const admin = new AdminForth({
         }
         ],
         allowedActions:{
-          // edit: false,
-          // delete: false,
-          // show: true,
-          // filter: true,
+          edit: false,
+          delete: true,
+          show: true,
+          filter: true,
         },
       }
 
