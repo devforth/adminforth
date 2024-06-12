@@ -1,4 +1,5 @@
 import { onMounted, ref, resolveComponent } from 'vue';
+import type {  CoreConfig } from './spa_types/core';
 
 import router from "./router";
 import { useCoreStore } from './stores/core';
@@ -64,12 +65,18 @@ export const loadFile = (file: string) => {
   return baseUrl;
 }
 
-// export function checkEmptyValues(value: any, viewType:'show' | 'list' | 'create' | 'edit') {
-//   const config: = useCoreStore().config;
-//   const emptyFieldPlaceholder = config.emptyFieldPlaceholder?.[viewType] || '---';
-
-//   if (value === null || value === undefined || value === '') {
-//     return emptyFieldPlaceholder;
-//   }
-//   return value;
-// }
+export function checkEmptyValues(value: any, viewType:'show' | 'list' ) {
+  const config: CoreConfig | {} = useCoreStore().config;
+  let emptyFieldPlaceholder = '';
+  if (config.emptyFieldPlaceholder) {
+    if(typeof config.emptyFieldPlaceholder === 'string') {
+      emptyFieldPlaceholder = config.emptyFieldPlaceholder;
+    } else {
+       emptyFieldPlaceholder = config.emptyFieldPlaceholder?.[viewType] || '';
+    }
+    if (value === null || value === undefined || value === '') {
+      return emptyFieldPlaceholder;
+    }
+  }
+  return value;
+}

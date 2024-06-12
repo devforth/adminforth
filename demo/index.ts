@@ -117,7 +117,7 @@ const admin = new AdminForth({
     passwordHashField: 'password_hash',
     userFullNameField: 'fullName', // optional
     // loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    loginBackgroundImage: '@@/pho1.jpeg', // TODO, not working
+    loginBackgroundImage: '@@/pho.jpg', // TODO, not working
   },
   customization: {
     customComponentsDir: './custom',
@@ -127,7 +127,7 @@ const admin = new AdminForth({
     datesFormat: 'D MMM YY HH:mm:ss',
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
-    emtyFieldPlaceholder: {list:'-', show: '-', edit: '-', create: '-'},
+    emptyFieldPlaceholder: '-',
   },
 
   dataSources: [
