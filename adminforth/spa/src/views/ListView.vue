@@ -205,8 +205,8 @@
               :row="row"
             />
           </td>
-          <td class="flex items-center px-6 py-4">
-
+          <td class=" items-center px-6 py-4">
+            <div class="flex">
             <RouterLink
               :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
               class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -251,6 +251,7 @@
               Delete
               <div class="tooltip-arrow" data-popper-arrow></div>
             </div>
+          </div>
           </td>
         </tr>
         </tbody>
