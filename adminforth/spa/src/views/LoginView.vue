@@ -1,7 +1,7 @@
 <template>
   <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800"
     :style="coreStore.config?.loginBackgroundImage ? {
-      'background-image': 'url(' + coreStore.config?.loginBackgroundImage + ')',
+      'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
       'background-blend-mode': 'darken'
@@ -81,8 +81,9 @@
 import { onMounted, ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
+import { initFlowbite } from 'flowbite'
 
 const router = useRouter();
 const inProgress = ref(false);
@@ -114,6 +115,10 @@ async function login() {
       error.value = null;
       router.push('/');
       await coreStore.fetchMenuAndResource();
+      setTimeout(() => {
+        initFlowbite();
+      }); 
+
     }
 
 }

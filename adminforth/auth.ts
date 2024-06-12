@@ -43,8 +43,10 @@ class AdminForthAuth {
       const decoded = jwt.verify(jwtToken, secret);
       return decoded;
     } catch (err) {
-      if (err.name === 'JsonWebTokenError') {
+      if (err.name === 'TokenExpiredError') {
         console.error('Token expired', err.message);
+      } else  if (err.name === 'JsonWebTokenError') {
+        console.error('Token error', err.message);
       } else {
         console.error('Failed to verify JWT token', err);
       }

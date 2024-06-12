@@ -12,7 +12,6 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
   const user = ref(null);
-  const flowBitIsInitialised = ref(false);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -129,7 +128,6 @@ export const useCoreStore = defineStore('core', () => {
     resourceColumns, 
     fetchResourceFull, 
     resourceColumnsError,
-    flowBitIsInitialised,
     resourceOptions,
     logout
   }
