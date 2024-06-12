@@ -127,6 +127,7 @@ const admin = new AdminForth({
     datesFormat: 'D MMM YY HH:mm:ss',
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
+    emtyFieldPlaceholder: {list:'-', show: '-', edit: '-', create: '-'},
   },
 
   dataSources: [
@@ -251,9 +252,7 @@ const admin = new AdminForth({
       ],
       options:{
         listPageSize: 5,
-        allowDelete: true,
         bulkActions: [{
-          name: 'mark_as_listed',
           label: 'Mark as listed',
           // icon: 'typcn:archive',
           state:'active',

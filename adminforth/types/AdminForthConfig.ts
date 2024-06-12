@@ -81,7 +81,6 @@ export type AdminForthResource = {
         id?: string,
       }>,
       allowedActions?: AllowedActions,
-      allowDelete?: boolean,
       listPageSize?: number,
     },
   }
@@ -115,6 +114,12 @@ export  type AdminForthConfig = {
       datesFormat?: string,
       title?: string,
       brandLogo?: string,
+      emtyFieldPlaceholder?: {
+        show?: string,
+        list?: string,
+        create?: string,
+        edit?: string,
+      },
     },
     baseUrl?: string,
    
