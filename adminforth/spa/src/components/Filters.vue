@@ -69,7 +69,7 @@
            >
 
            <CustomRangePicker
-             v-else-if="['integer', 'decimal', 'float'].includes(c.type)"
+             v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
              :min="c.min"
              :max="c.max"
              :valueStart="getFilterItem({ column: c, operator: 'gte' })"
@@ -77,6 +77,23 @@
              :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
              @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
            />
+
+           <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
+             <input
+               type="number" aria-describedby="helper-text-explanation"
+               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               placeholder="From"
+               @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
+               :value="getFilterItem({ column: c, operator: 'gte' })"
+             >
+             <input
+               type="number" aria-describedby="helper-text-explanation"
+               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               placeholder="To"
+               @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
+               :value="getFilterItem({ column: c, operator: 'lte' })"
+             >
+           </div>
             
          </li>
       </ul>
