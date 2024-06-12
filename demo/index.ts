@@ -121,7 +121,6 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
-    customPublicDir: '.custom/public',
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My App',
     datesFormat: 'D MMM YY HH:mm:ss',
