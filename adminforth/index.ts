@@ -206,7 +206,7 @@ class AdminForth {
             errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
             bulkActions = [];
           }
-          if(res.options?.allowDelete && !bulkActions.find((action) => action.label === 'Delete checked')){
+          if(res.options?.allowedActions?.delete && !bulkActions.find((action) => action.label === 'Delete checked')){
             bulkActions.push({
               label: `Delete checked`,
               state: 'danger',
@@ -532,6 +532,7 @@ class AdminForth {
             auth: this.config.auth,
             usernameField: this.config.auth.usernameField,
             title: this.config.customization?.title,
+            emtyFieldPlaceholder: this.config.customization?.emtyFieldPlaceholder,
           },
           adminUser,
           version: ADMINFORTH_VERSION,
