@@ -79,6 +79,7 @@
                         v-else-if="['datetime'].includes(column.type)"
                         :column="column"
                         :valueStart="currentValues[column.name]"
+                        auto-hide
                         @update:valueStart="setCurrentValue(column.name, $event)"
                     />
                     <input

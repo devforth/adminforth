@@ -101,6 +101,9 @@ const endDate = ref('');
 const startTime = ref('');
 const endTime = ref('');
 
+const datepickerStartObject = ref('')
+const datepickerEndObject = ref('')
+
 const start = computed(() => {
   if (!startDate.value) {
     return;
@@ -162,9 +165,9 @@ watch(end, () => {
 
 function initDatepickers() {
 
-  new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
+  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
 
-  new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
+  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
   addChangeDateListener();
 }
 
@@ -176,6 +179,11 @@ function addChangeDateListener() {
 function removeChangeDateListener() {
   datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
   datepickerEndEl.value.removeEventListener('changeDate', setEndDate);
+}
+
+function destroyDatepickerElement() {
+  datepickerStartObject.value.destroy();
+  datepickerEndObject.value.destroy();
 }
 
 function setStartDate(event) {
@@ -205,5 +213,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   removeChangeDateListener();
+  destroyDatepickerElement();
 })
 </script>
