@@ -1,5 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
+
 import dayjs from 'dayjs';
 
 class SQLiteConnector {
@@ -21,30 +22,30 @@ class SQLiteConnector {
           const field: any = {};
           const baseType = row.type.toLowerCase();
           if (baseType == 'int') {
-            field.type = AdminForthTypes.INTEGER;
+            field.type = AdminForthDataTypes.INTEGER;
             field._underlineType = 'int';
           } else if (baseType.includes('varchar(')) {
-            field.type = AdminForthTypes.STRING;
+            field.type = AdminForthDataTypes.STRING;
             field._underlineType = 'varchar';
             const length = baseType.match(/\d+/);
             field.maxLength = length ? parseInt(length[0]) : null;
           } else if (baseType == 'text') {
-            field.type = AdminForthTypes.TEXT;
+            field.type = AdminForthDataTypes.TEXT;
             field._underlineType = 'text';
           } else if (baseType.includes('decimal(')) {
-            field.type = AdminForthTypes.DECIMAL;
+            field.type = AdminForthDataTypes.DECIMAL;
             field._underlineType = 'decimal';
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
           } else if (baseType == 'real') {
-            field.type = AdminForthTypes.FLOAT; //8-byte IEEE floating point number. It
+            field.type = AdminForthDataTypes.FLOAT; //8-byte IEEE floating point number. It
             field._underlineType = 'real';
           } else if (baseType == 'timestamp') {
-            field.type = AdminForthTypes.DATETIME;
+            field.type = AdminForthDataTypes.DATETIME;
             field._underlineType = 'timestamp';
           } else if (baseType == 'boolean') {
-            field.type = AdminForthTypes.BOOLEAN;
+            field.type = AdminForthDataTypes.BOOLEAN;
             field._underlineType = 'boolean';
           } else {
             field.type = 'unknown'
@@ -67,7 +68,7 @@ class SQLiteConnector {
     }
 
     getFieldValue(field, value) {
-      if (field.type == AdminForthTypes.DATETIME) {
+      if (field.type == AdminForthDataTypes.DATETIME) {
         if (!value) {
           return null;
         }
@@ -78,7 +79,7 @@ class SQLiteConnector {
         } else {
           throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field "${field.name}"`);
         }
-      } else if (field.type == AdminForthTypes.BOOLEAN) {
+      } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return !!value;
       }
       return value;
@@ -100,7 +101,7 @@ class SQLiteConnector {
     }
 
     setFieldValue(field, value) {
-      if (field.type == AdminForthTypes.DATETIME) {
+      if (field.type == AdminForthDataTypes.DATETIME) {
         if (!value) {
           return null;
         }
@@ -111,7 +112,7 @@ class SQLiteConnector {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).toISOString();
         }
-      } else if (field.type == AdminForthTypes.BOOLEAN) {
+      } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value ? 1 : 0;
       }
 

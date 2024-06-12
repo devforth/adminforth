@@ -8,10 +8,7 @@
     }: {}"
     >
 
-    {{ coreStore.config?.brandLogo }}
-    <img 
-     :src="loadFile('@@/pho.jpg')" class="w-40 h-40" alt="logo" />
-   <!-- Main modal -->
+    <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" class=" overflow-y-auto overflow-x-hidden z-50 min-w-[400px] justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-w-md max-h-full">
             <!-- Modal content -->
@@ -82,12 +79,13 @@
 
 <script setup>
 
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watchEffect } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
 import { initFlowbite } from 'flowbite'
+
 
 const router = useRouter();
 const inProgress = ref(false);
