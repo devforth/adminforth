@@ -65,7 +65,7 @@
     </BreadcrumbsWithButtons>
 
     <!-- table -->
-    <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	  rounded-default">
+    <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	overflow-y-hidden  rounded-default">
 
 
       <!-- skelet loader -->
