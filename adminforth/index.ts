@@ -93,6 +93,10 @@ class AdminForth implements AdminForthClass {
 
       console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config before going to production\n');
     }
+    
+    if (!this.config.customization.customComponentsDir) {
+      this.config.customization.customComponentsDir = './custom';
+    }
 
     if (this.config.auth) {
       if (!this.config.auth.resourceId) {
@@ -115,10 +119,6 @@ class AdminForth implements AdminForthClass {
 
     if (!this.config.customization) {
       this.config.customization = {};
-    }
-
-    if (!this.config.customization.customComponentsDir) {
-      this.config.customization.customComponentsDir = './custom';
     }
 
 
