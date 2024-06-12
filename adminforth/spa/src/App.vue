@@ -66,7 +66,7 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800">
 
       <div class="flex ms-2 md:me-24  m-4  ">
-        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" alt="logo" class="w-8 h-8 mr-2" />
+        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
         <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
           {{ coreStore.config?.brandName }}
         </span>
@@ -90,7 +90,7 @@
                 </svg>
               </button>
 
-              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !item.open }">
+              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
                     <MenuLink :item="child" isChild="true" />
@@ -147,6 +147,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { getIcon } from '@/utils';
 import { useHead } from 'unhead'
 import { createHead } from 'unhead'
+import { loadFile } from './utils';
+
 // import { link } from 'fs';
 const coreStore = useCoreStore();
 
@@ -156,20 +158,6 @@ const splitAtLast = (str: string, separator: string) => {
   return [str.slice(0, index), str.slice(index + 1)];
 }
 
-const loadFile = (file: string) => {
-  let path;
-  let baseUrl = '';
-  if (file.startsWith('@/')) {
-    path = file.replace('@/', '');
-    baseUrl = new URL(`./${path}`, import.meta.url).href;
-  } else if (file.startsWith('@@/')) {
-    path = file.replace('@@/', '');
-    baseUrl = new URL(`./custom/${path}`, import.meta.url).href;
-  } else {
-    baseUrl = new URL(`./${file}`, import.meta.url).href;
-  }
-  return baseUrl;
-}
 
 
 createHead()
@@ -183,8 +171,8 @@ const route = useRoute();
 watch(route, () => {
   title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
   useHead({
-  title: title.value,
-})
+    title: title.value,
+  })
 });
 
 const router = useRouter();
@@ -227,20 +215,27 @@ async function initRouter() {
   routerIsReady.value = true;
 }
 
+async function loadMenu() {
+  await coreStore.fetchMenuAndResource()
+  loginRedirectCheckIsReady.value = true;
+  
+  coreStore.menu.forEach((item, i) => {
+    if (item.open) {
+      opened.value.push(i);
+    }
+  });
+}
+
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  initRouter();
-    setTimeout(() => {
-      initFlowbite();
-    }, 100); 
-  await coreStore.fetchMenuAndResource();
-  loginRedirectCheckIsReady.value = true;
- 
-coreStore.menu.forEach((item, i) => {
-  if (item.open) {
-    opened.value.push(i);
-  }
-});
+  loadMenu(); // run this in async mode
+  // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
+  await initRouter()
+  setTimeout(() => {
+    initFlowbite();
+  }); 
+
+
 })
 
 </script>

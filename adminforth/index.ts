@@ -893,6 +893,9 @@ class AdminForth {
             for (const recordField in record) {
               if (record[recordField] !== oldRecord[recordField]) {
                 const column = resource.columns.find((col) => col.name === recordField);
+                if (column.virtual) {
+                  continue
+                }
                 if (column) {
                   newValues[recordField] = connector.setFieldValue(column, record[recordField]);
                 } else {

@@ -44,3 +44,21 @@ export function getIcon(icon: string) {
   const compName = 'Icon' + iconName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
   return resolveComponent(compName);
 }
+
+export const loadFile = (file: string) => {
+  if (file.startsWith('http')) {
+    return file;
+  }
+  let path;
+  let baseUrl = '';
+  if (file.startsWith('@/')) {
+    path = file.replace('@/', '');
+    baseUrl = new URL(`./${path}`, import.meta.url).href;
+  } else if (file.startsWith('@@/')) {
+    path = file.replace('@@/', '');
+    baseUrl = new URL(`./custom/${path}`, import.meta.url).href;
+  } else {
+    baseUrl = new URL(`./${file}`, import.meta.url).href;
+  }
+  return baseUrl;
+}
