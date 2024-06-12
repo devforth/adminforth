@@ -10,7 +10,7 @@
 
     {{ coreStore.config?.brandLogo }}
     <img 
-     :src="loadFile('@@/pho.jpg')" class="w-40 h-40" alt="logo" />
+     :src="loadFile('@@/logo2.png')" class="w-40 h-40" alt="logo" />
    <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" class=" overflow-y-auto overflow-x-hidden z-50 min-w-[400px] justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-w-md max-h-full">

@@ -1,4 +1,23 @@
-import AdminForthPlugin from '../plugins/base.js';
+
+
+export interface CodeInjector {
+  srcFoldersToSync: Object;
+  allComponentNames: Object;
+}
+
+export interface AdminForthClass {
+  config: AdminForthConfig;
+  codeInjector: CodeInjector;
+}
+
+
+export interface AdminForthPluginType {
+  adminforth: AdminForthClass;
+  pluginDir: string;
+  customFolderName: string;
+  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource): void;
+  componentPath(componentFile: string): string;
+}
 
 export type AdminForthConfigMenuItem = {
     type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',
@@ -20,7 +39,7 @@ export type AdminForthConfigMenuItem = {
 export type AdminForthResourceColumn = {
     name: string,
     label?: string,
-    type?: AdminForthTypesValues,
+    type?: AdminForthDataTypes,
     primaryKey?: boolean,
     required?: boolean | { create: boolean, edit: boolean },
     editingNote?: string | { create: string, edit: string },
@@ -48,8 +67,9 @@ export type AdminForthResource = {
     table: string,
     dataSource: string,
     columns: Array<AdminForthResourceColumn>,
+    dataSourceColumns?: Array<AdminForthResourceColumn>,
     itemLabel?: Function,
-    plugins?: Array<AdminForthPlugin>,
+    plugins?: Array<AdminForthPluginType>,
     hooks?: {
       show?: {
         beforeDatasourceRequest?: Function | Array<Function>,
@@ -153,18 +173,37 @@ export type AdminForthResourceColumnComponent = {
     list?: string,
 }
 
+export enum AdminForthDataTypes {
+  STRING = 'string',
+  INTEGER = 'integer',
+  FLOAT = 'float',
+  DECIMAL = 'decimal',
+  BOOLEAN = 'boolean',
+  DATE = 'date',
+  DATETIME = 'datetime',
+  TIME = 'time',
+  TEXT = 'text',
+  JSON = 'json',
+}
 
-export type AdminForthTypesValues = 
-  | 'string'
-  | 'integer'
-  | 'float'
-  | 'decimal'
-  | 'boolean'
-  | 'date'
-  | 'datetime'
-  | 'time'
-  | 'text'
-  | 'json';
+export enum AdminForthFilterOperators {
+  EQ = 'eq',
+  NE = 'ne',
+  GT = 'gt',
+  LT = 'lt',
+  GTE = 'gte',
+  LTE = 'lte',
+  LIKE = 'like',
+  ILIKE = 'ilike',
+  IN = 'in',
+  NIN = 'nin',
+};
+
+export enum AdminForthSortDirections {
+  ASC = 'asc',
+  DESC = 'desc',
+};
+
 
 export type AdminForthResourceColumnEnumElement = {
     value: string | null,
