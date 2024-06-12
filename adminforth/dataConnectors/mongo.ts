@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
-
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
 
 class MongoConnector {
     db: MongoClient
@@ -65,7 +64,7 @@ class MongoConnector {
     }
 
     getFieldValue(field, value) {
-        if (field.type == AdminForthTypes.DATETIME) {
+        if (field.type == AdminForthDataTypes.DATETIME) {
           if (!value) {
             return null;
           }
@@ -76,7 +75,7 @@ class MongoConnector {
           } else {
             throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
           }
-        } else if (field.type == AdminForthTypes.BOOLEAN) {
+        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return !!value;
         }
         return value;
@@ -103,7 +102,7 @@ class MongoConnector {
     }
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthTypes.DATETIME) {
+        if (field.type == AdminForthDataTypes.DATETIME) {
           if (!value) {
             return null;
           }
@@ -114,7 +113,7 @@ class MongoConnector {
             // value is iso string now, convert to unix timestamp
             return dayjs(value).toISOString();
           }
-        } else if (field.type == AdminForthTypes.BOOLEAN) {
+        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return value ? 1 : 0;
         }
         return value;

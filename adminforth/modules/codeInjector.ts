@@ -176,7 +176,11 @@ class CodeInjector {
       await Promise.all(filesUpdated.map(async (file) => {
         const src = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa', file);
         const dest = path.join(CodeInjector.SPA_TMP_PATH, file);
-        await fsExtra.copy(src, dest);
+ 
+        await fsExtra.copy(src, dest, {
+          overwrite: true,
+          dereference: true, // needed to dereference types
+        });
         if (process.env.HEAVY_DEBUG) {
           console.log('🪲 await fsExtra.copy filtering', src, dest);
         }
