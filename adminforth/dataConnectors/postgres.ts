@@ -227,7 +227,11 @@ class PostgresConnector {
       const limitOffset = `LIMIT $${totalCounter} OFFSET $${totalCounter + 1}`; 
       const d = [...filterValues, limit, offset];
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-      const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`, d);
+      const selectQuery = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`;
+      if (process.env.HEAVY_DEBUG) {
+        console.log('🗨️ PG selectQuery:', selectQuery, 'params:', d);
+      }
+      const stmt = await this.db.query(selectQuery, d);
       const rows = stmt.rows;
       
       const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
