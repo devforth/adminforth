@@ -12,6 +12,7 @@ import { ADMINFORTH_VERSION } from './modules/utils.js';
 import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
 import { AdminForthConfig } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
+import path from 'path';
 
 const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
@@ -72,7 +73,19 @@ class AdminForth {
     };
   }
 
+  checkCustomFileExists(filePath: string): Array<string> {
+    if (filePath.startsWith('@@/')) {
+      const checkPath = path.join(this.config.customization.customComponentsDir, filePath.replace('@@/', ''));
+      if (!fs.existsSync(checkPath)) {
+        return [`File file ${filePath} does not exist in ${this.config.customization.customComponentsDir}`];
+      }
+    }
+    return [];
+  }
+
   validateConfig() {
+    const errors = [];
+
     if (this.config.rootUser) {
       if (!this.config.rootUser.username) {
         throw new Error('rootUser.username is required');
@@ -91,6 +104,12 @@ class AdminForth {
       if (!this.config.auth.passwordHashField) {
         throw new Error('No config.auth.passwordHashField defined');
       }
+      if (!this.config.auth.usernameField) {
+        throw new Error('No config.auth.usernameField defined');
+      }
+      if (this.config.auth.loginBackgroundImage) {
+        errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
+      }
       const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
       if (!userResource) {
         throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
@@ -106,7 +125,6 @@ class AdminForth {
     }
 
 
-    const errors = [];
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
@@ -114,10 +132,7 @@ class AdminForth {
       this.config.customization.brandName = 'AdminForth';
     }
     if (this.config.customization.brandLogo) {
-      if (!this.config.customization.brandLogo.startsWith('@@/')) {
-        errors.push(`Brand logo must start with @@ and be placed in custom directory`);
-      }
-      // todo check file exist
+      errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
     }
     
 
