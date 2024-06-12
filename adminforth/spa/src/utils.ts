@@ -1,6 +1,7 @@
 import { onMounted, ref, resolveComponent } from 'vue';
 
 import router from "./router";
+import { useCoreStore } from './stores/core';
 
 export async function callApi({path, method, body=undefined} ) {
   const options = {
@@ -62,3 +63,13 @@ export const loadFile = (file: string) => {
   }
   return baseUrl;
 }
+
+// export function checkEmptyValues(value: any, viewType:'show' | 'list' | 'create' | 'edit') {
+//   const config: = useCoreStore().config;
+//   const emptyFieldPlaceholder = config.emptyFieldPlaceholder?.[viewType] || '---';
+
+//   if (value === null || value === undefined || value === '') {
+//     return emptyFieldPlaceholder;
+//   }
+//   return value;
+// }
