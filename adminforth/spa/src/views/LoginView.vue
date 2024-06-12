@@ -114,6 +114,7 @@ async function login() {
     } else {
       error.value = null;
       router.push('/');
+      await router.isReady();
       await coreStore.fetchMenuAndResource();
       setTimeout(() => {
         initFlowbite();

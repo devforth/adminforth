@@ -29,14 +29,36 @@ function hashify(obj) {
 
 class CodeInjector {
 
+  allWatchers = [];
   adminforth: AdminForth;
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
 
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
+  cleanup() {
+    console.log('Cleaning up...');
+    this.allWatchers.forEach((watcher) => {
+      watcher.removeAll();
+    });
+  }
   constructor(adminforth) {
     this.adminforth = adminforth;
+
+    process.on('SIGINT', () => {
+      console.log('Received SIGINT.');
+      this.cleanup(); 
+    });
+    
+    process.on('SIGTERM', () => {
+      console.log('Received SIGTERM.');
+      this.cleanup();
+    });
+
+    process.on('exit', () => {
+      console.log('Exiting.');
+      this.cleanup();
+    });
   }
 
   // async runShell({command, verbose = false}) {
@@ -416,9 +438,7 @@ async watchForReprepare({ verbose }) {
         await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
-    process.on('exit', () => {
-      watcher.removeAll();
-    });
+    this.allWatchers.push(watcher);
   }
 
   async watchCustomComponentsForCopy({ verbose }) {
@@ -471,9 +491,7 @@ async watchForReprepare({ verbose }) {
         });
       }
     )
-    process.on('exit', () => {
-      watcher.removeAll();
-    });
+    this.allWatchers.push(watcher);
   }
 
   async bundleNow({hotReload = false, verbose = false}: {hotReload: boolean, verbose: boolean}) {
