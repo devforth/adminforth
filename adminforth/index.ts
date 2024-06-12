@@ -9,8 +9,7 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
-import { AdminForthFilterOperators, AdminForthTypes, AdminForthTypesValues } from './types.js';
-import { AdminForthConfig } from './types/AdminForthConfig.js';
+import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
 import path from 'path';
 
@@ -23,9 +22,8 @@ type ValidationObject = {
   message: string,
 }
 
-class AdminForth {
-  static Types = AdminForthTypes;
-
+class AdminForth implements AdminForthClass {
+  static Types = AdminForthDataTypes;
 
   static Utils = {
     generatePasswordHash: async (password) => {
@@ -48,7 +46,6 @@ class AdminForth {
   statuses: {
     dbDiscover?: 'running' | 'done',
   }
-
 
   constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
@@ -801,12 +798,12 @@ class AdminForth {
         const item = await this.connectors[resource.dataSource].getMinMaxForColumns({
           resource,
           columns: resource.columns.filter((col) => [
-            AdminForthTypes.INTEGER, 
-            AdminForthTypes.FLOAT,
-            AdminForthTypes.DATE,
-            AdminForthTypes.DATETIME,
-            AdminForthTypes.TIME,
-            AdminForthTypes.DECIMAL,
+            AdminForthDataTypes.INTEGER, 
+            AdminForthDataTypes.FLOAT,
+            AdminForthDataTypes.DATE,
+            AdminForthDataTypes.DATETIME,
+            AdminForthDataTypes.TIME,
+            AdminForthDataTypes.DECIMAL,
           ].includes(col.type) && col.allowMinMaxQuery === true),
         });
         return item;

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
-import { AdminForthFilterOperators, AdminForthSortDirections, AdminForthTypes } from '../types.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
+
 const { Client } = pkg;
 
 
@@ -72,44 +73,44 @@ class PostgresConnector {
             const field: any = {};
             const baseType = row.type.toLowerCase();
             if (baseType == 'int') {
-                field.type = AdminForthTypes.INTEGER;
+                field.type = AdminForthDataTypes.INTEGER;
                 field._underlineType = 'int';
 
             } else if (baseType.includes('float') || baseType.includes('double')) {
-                field.type = AdminForthTypes.FLOAT;
+                field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'float';
 
             } else if (baseType.includes('bool')) {
-                field.type = AdminForthTypes.BOOLEAN;
+                field.type = AdminForthDataTypes.BOOLEAN;
                 field._underlineType = 'bool';
 
             } else if (baseType == 'uuid') {
-                field.type = AdminForthTypes.STRING;
+                field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'uuid';
 
             } else if (baseType.includes('character varying')) {
-                field.type = AdminForthTypes.STRING;
+                field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'varchar';
                 const length = baseType.match(/\d+/);
                 field.maxLength = length ? parseInt(length[0]) : null;
 
             } else if (baseType == 'text') {
-                field.type = AdminForthTypes.TEXT;
+                field.type = AdminForthDataTypes.TEXT;
                 field._underlineType = 'text';
 
             } else if (baseType.includes('decimal(')) {
-                field.type = AdminForthTypes.DECIMAL;
+                field.type = AdminForthDataTypes.DECIMAL;
                 field._underlineType = 'decimal';
                 const [precision, scale] = baseType.match(/\d+/g);
                 field.precision = parseInt(precision);
                 field.scale = parseInt(scale);
 
             } else if (baseType == 'real') {
-                field.type = AdminForthTypes.FLOAT;
+                field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'real';
 
             } else if (baseType.includes('date') || baseType.includes('time')) {
-                field.type = AdminForthTypes.DATETIME;
+                field.type = AdminForthDataTypes.DATETIME;
                 field._underlineType = 'timestamp';
 
             } else {
@@ -125,7 +126,7 @@ class PostgresConnector {
     }
 
     getFieldValue(field, value) {
-        if (field.type == AdminForthTypes.DATETIME) {
+        if (field.type == AdminForthDataTypes.DATETIME) {
           if (!value) {
             return null;
           }
@@ -165,7 +166,7 @@ class PostgresConnector {
     }
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthTypes.DATETIME) {
+        if (field.type == AdminForthDataTypes.DATETIME) {
           if (!value) {
             return null;
           }
@@ -174,7 +175,7 @@ class PostgresConnector {
           } else if (field._underlineType == 'varchar') {
             return dayjs(value).toISOString();
           }
-        } else if (field.type == AdminForthTypes.BOOLEAN) {
+        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return value ? 1 : 0;
         }
         return value;
