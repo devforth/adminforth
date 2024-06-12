@@ -9,6 +9,8 @@ import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 import { getComponentNameFromPath } from './utils.js';
+import { styles } from '../styles.js'
+
 
 
 
@@ -326,6 +328,11 @@ class CodeInjector {
       let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
       let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
       tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+      await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
+    } else {
+      let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
+      let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
+      tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */',styles());
       await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     }
 
