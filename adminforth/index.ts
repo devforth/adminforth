@@ -560,7 +560,7 @@ class AdminForth {
             auth: this.config.auth,
             usernameField: this.config.auth.usernameField,
             title: this.config.customization?.title,
-            emtyFieldPlaceholder: this.config.customization?.emtyFieldPlaceholder,
+            emptyFieldPlaceholder: this.config.customization?.emptyFieldPlaceholder,
           },
           adminUser,
           version: ADMINFORTH_VERSION,
