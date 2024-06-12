@@ -456,7 +456,9 @@ async watchForReprepare({ verbose }) {
 
   async watchCustomComponentsForCopy({ verbose }) {
     const customComponentsDir = this.adminforth.config.customization.customComponentsDir;
-
+    if (!customComponentsDir) {
+      return;
+    }
     // check if folder exists
     try {
       await fs.promises.access(customComponentsDir, fs.constants.F_OK);
