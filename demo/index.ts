@@ -127,7 +127,7 @@ const admin = new AdminForth({
     datesFormat: 'D MMM YY HH:mm:ss',
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
-    emtyFieldPlaceholder: {list:'-', show: '-', edit: '-', create: '-'},
+    emptyFieldPlaceholder: '-',
   },
 
   dataSources: [

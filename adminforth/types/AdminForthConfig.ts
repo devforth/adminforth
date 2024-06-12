@@ -134,12 +134,11 @@ export  type AdminForthConfig = {
       datesFormat?: string,
       title?: string,
       brandLogo?: string,
-      emtyFieldPlaceholder?: {
+      emptyFieldPlaceholder?: {
         show?: string,
         list?: string,
-        create?: string,
-        edit?: string,
-      },
+        
+      } | string,
     },
     baseUrl?: string,
    

@@ -30,8 +30,7 @@ export const useCoreStore = defineStore('core', () => {
     user.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
 
-    // find homepage:true in menu recuresively
-    
+      
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {

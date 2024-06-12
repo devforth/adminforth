@@ -20,26 +20,26 @@ const router = createRouter({
           path: '',
           component: () => import('@/views/ListView.vue'),
           name: 'resource-list',
-          meta: { title: 'list' }
+          meta: { title: 'list',type: 'list' }
         },
         {
           path: 'show/:primaryKey',
           component: () => import('@/views/ShowView.vue'),
           name: 'resource-show',
-          meta: { title: 'show' }
+          meta: { title: 'show', type: 'show'}
 
         },
         {
           path: 'edit/:primaryKey',
           component: () => import('@/views/EditView.vue'),
           name: 'resource-edit',
-          meta: { title: 'edit' }
+          meta: { title: 'edit', type: 'edit'}
         },
         {
           path: 'create',
           component: () => import('@/views/CreateView.vue'),
           name: 'resource-create',
-          meta: { title: 'create' }
+          meta: { title: 'create', type: 'create'}
 
         },
       ]
