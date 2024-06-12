@@ -9,7 +9,7 @@ import router from './router'
 const app = createApp(App)
 /* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */
 
-
+ 
 app.use(createPinia())
 app.use(router)
 

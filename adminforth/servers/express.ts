@@ -5,6 +5,7 @@ import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
 import AdminForth from '../index.js';
 import { Express } from 'express';
+import fetch from 'node-fetch';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,13 +20,9 @@ function replaceAtStart(string, substring) {
 }
 
 async function proxyTo(url, res) {
-  const r = await fetch(url);
-  const body = await r.text();
-  res.status(r.status);
-  r.headers.forEach((value, name) => {
-    res.setHeader(name, value);
-  });
-  res.send(body);
+  const actual = await fetch(url);
+  actual.headers.forEach((v, n) => res.setHeader(n, v));
+  actual.body.pipe(res);
 }
 
 async function parseExpressCookie(req) {
@@ -99,13 +96,14 @@ class ExpressServer {
 
     if (this.adminforth.runningHotReload) {
       const handler = async (req, res) => {
-        // proxy using fetch to webpack dev server
+        // proxy using fetch to webpack dev server 
         try {
           await proxyTo(`http://localhost:5173${req.url}`, res);
         } catch (e) {
+          // console.log('Failed to proxy', e);
           res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
           return;
-      }
+        }
       }
       this.expressApp.get(`${slashedPrefix}assets/*`, handler);
       this.expressApp.get(`${prefix}*`, handler);
