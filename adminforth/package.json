@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "6.6",
     "pg": "^8.11.5",
+    "request": "^2.88.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
