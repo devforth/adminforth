@@ -295,13 +295,6 @@ class CodeInjector {
       await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     }
 
-    // inject adminforth types to spa tmp
-    // const typesPath = path.resolve(ADMIN_FORTH_ABSOLUTE_PATH, 'types');
-    // const to = path.resolve(ADMIN_FORTH_ABSOLUTE_PATH, 'spa', 'src', 'types');
-    // await fsExtra.copy(typesPath, to, {
-    //   recursive: true,
-    // });
-
 
     const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
 
