@@ -430,7 +430,7 @@ class AdminForth {
             limit: 1,
             offset: 0,
             sort: [],
-          }).data[0];
+          }).data?.[0];
 
           if (!userRecord) {
             return { error: 'User not found' };
@@ -892,11 +892,10 @@ class AdminForth {
             for (const recordField in record) {
               if (record[recordField] !== oldRecord[recordField]) {
                 const column = resource.columns.find((col) => col.name === recordField);
-                if (column.virtual) {
-                  continue
-                }
                 if (column) {
-                  newValues[recordField] = connector.setFieldValue(column, record[recordField]);
+                  if (!column.virtual) {
+                    newValues[recordField] = connector.setFieldValue(column, record[recordField]);
+                  }
                 } else {
                   newValues[recordField] = record[recordField];
                 }
