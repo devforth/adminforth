@@ -187,6 +187,13 @@ class CodeInjector {
         console.log(`🪲 await fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, ${CodeInjector.SPA_TMP_PATH}`);
       }
 
+      // try to rm SPA_TMP_PATH/src/types directory 
+      try {
+        await fs.promises.rm(path.join(CodeInjector.SPA_TMP_PATH, 'src', 'types'), { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+
       await fsExtra.copy(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa'), CodeInjector.SPA_TMP_PATH, {
         filter: (src) => {
           if (process.env.HEAVY_DEBUG) {
@@ -196,6 +203,7 @@ class CodeInjector {
           return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
         },
         overwrite: true,
+        dereference: true, // needed to dereference types
       });
 
       // copy whole custom directory
