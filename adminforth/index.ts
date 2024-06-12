@@ -422,15 +422,28 @@ class AdminForth {
             throw new Error('No config.auth defined');
           }
           const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
-          const userRecord = await this.connectors[userResource.dataSource].getData({
-            resource: userResource,
-            filters: [
-              { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
-            ],
-            limit: 1,
-            offset: 0,
-            sort: [],
-          }).data?.[0];
+          // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
+          if (!userResource.dataSourceColumns.find((col) => col.name === this.config.auth.passwordHashField)) {
+            userResource.dataSourceColumns.push({
+              name: this.config.auth.passwordHashField,
+              backendOnly: true,
+              showIn: [],
+              type: AdminForth.Types.STRING,
+            });
+            console.log('Adding passwordHashField to userResource', userResource)
+          }
+
+          const userRecord = (
+            await this.connectors[userResource.dataSource].getData({
+              resource: userResource,
+              filters: [
+                { field: this.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+              ],
+              limit: 1,
+              offset: 0,
+              sort: [],
+            })
+          ).data?.[0];
 
           if (!userRecord) {
             return { error: 'User not found' };

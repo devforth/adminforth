@@ -181,7 +181,7 @@ class PostgresConnector {
       }
     
     async getData({ resource, limit, offset, sort, filters }) {
-      const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => `"${col.name}"`).join(', ');
+      const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
       const tableName = resource.table;
       
       let totalCounter = 1;
@@ -229,7 +229,7 @@ class PostgresConnector {
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const selectQuery = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`;
       if (process.env.HEAVY_DEBUG) {
-        console.log('🗨️ PG selectQuery:', selectQuery, 'params:', d);
+        console.log('🪲 PG selectQuery:', selectQuery, 'params:', d);
       }
       const stmt = await this.db.query(selectQuery, d);
       const rows = stmt.rows;

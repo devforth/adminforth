@@ -308,12 +308,12 @@ const admin = new AdminForth({
           showIn: ['list', 'filter', 'show'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
-        { 
-          name: 'password_hash',
-          type: AdminForth.Types.STRING,
-          showIn: [],
-          backendOnly: true,  // will never go to frontend
-        },
+        // { 
+        //   name: 'password_hash',
+        //   type: AdminForth.Types.STRING,
+        //   showIn: [],
+        //   backendOnly: true,  // will never go to frontend
+        // },
         {
           name: 'role',
           enum: [
