@@ -98,6 +98,13 @@ class AdminForth implements AdminForthClass {
       this.config.customization.customComponentsDir = './custom';
     }
 
+    try {
+      // check customComponentsDir exists
+      fs.accessSync(this.config.customization.customComponentsDir, fs.constants.R_OK);
+    } catch (e) {
+      this.config.customization.customComponentsDir = undefined;
+    }
+
     if (this.config.auth) {
       if (!this.config.auth.resourceId) {
         throw new Error('No config.auth.resourceId defined');
