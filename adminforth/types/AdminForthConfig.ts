@@ -46,6 +46,7 @@ export type AdminForthResourceColumn = {
     showIn?: Array<string>,
     fillOnCreate?: Function,
     isUnique?: boolean,
+    validation?: Array<ValidationObject>,
     virtual?: boolean,
     allowMinMaxQuery?: boolean,
     component?: AdminForthResourceColumnComponent
@@ -204,7 +205,7 @@ export type AllowedActions = {
   }
   
 export type ValidationObject = {
-    regExp: string,
+    regExp: string | RegExp,
     message: string,
   }
 
