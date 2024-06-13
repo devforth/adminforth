@@ -41,7 +41,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -79,6 +79,7 @@ const editableRecord = computed(() => {
 })
 
 onMounted(async () => {
+
   loading.value = true;
 
   await coreStore.fetchResourceFull({
@@ -88,6 +89,7 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
+  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
 
   editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
       if (column.component?.edit) {

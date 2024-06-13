@@ -205,7 +205,7 @@ export type AllowedActions = {
   }
   
 export type ValidationObject = {
-    regExp: string | RegExp,
+    regExp: string ,
     message: string,
   }
 

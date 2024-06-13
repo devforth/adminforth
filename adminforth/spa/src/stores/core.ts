@@ -85,6 +85,7 @@ export const useCoreStore = defineStore('core', () => {
     } else {
       resourceColumns.value = res.resource.columns;
       resourceById.value[resourceId] = res.resource;
+      resourceOptions.value = res.resource.options;
     }
   }
 
