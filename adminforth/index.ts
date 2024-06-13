@@ -966,6 +966,12 @@ class AdminForth implements AdminForthClass {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            if (!record){
+                return { error: `Record with ${body['primaryKey']} not found` };
+            }
+            if (resource.options.allowedActions.delete === false) {
+                return { error: `Resource '${resource.resourceId}' does not allow delete action` };
+            }
 
             // execute hook if needed
             for (const hook of getFunctionList(resource.hooks?.delete?.beforeSave)) {
