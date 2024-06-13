@@ -121,9 +121,6 @@
                         <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
                         <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
                     </button>
-
-
-
                     <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
 
                     <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
@@ -197,7 +194,11 @@ const columnError = (column) => {
       for (let i = 0; i < validationArray.length; i++) {
         if (validationArray[i].regExp) {
           const regExp = new RegExp(validationArray[i].regExp);
-          if (!regExp.test(currentValues.value[column.name])) {
+          let value = currentValues.value[column.name];
+          if (value === undefined || value === null) {
+            value = '';
+          }
+          if (!regExp.test(value)) {
             return validationArray[i].message;
           }
         }
