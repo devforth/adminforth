@@ -23,6 +23,7 @@
     </BreadcrumbsWithButtons>
 
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+
     
     <ResourceForm 
       v-else
@@ -35,6 +36,7 @@
     >
     </ResourceForm>
 
+
   </div>
 </template>
 
@@ -45,10 +47,11 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -81,6 +84,7 @@ onMounted(async () => {
       return acc;
     }, {});
   loading.value = false;
+  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'create');
 });
 
 async function saveRecord() {

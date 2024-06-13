@@ -2,6 +2,7 @@ import { onMounted, ref, resolveComponent } from 'vue';
 import type {  CoreConfig } from './spa_types/core';
 
 import router from "./router";
+import { useRouter } from 'vue-router';
 import { useCoreStore } from './stores/core';
 
 export async function callApi({path, method, body=undefined} ) {
@@ -79,4 +80,15 @@ export function checkEmptyValues(value: any, viewType:'show' | 'list' ) {
     }
   }
   return value;
+}
+
+export function checkAcessByAllowedActions(allowedActions:any, action:any ) {
+  if (!allowedActions) {
+    console.warn('allowedActions not set');
+    return;
+  }
+  if(allowedActions[action] === false) {
+    console.warn(`Action ${action} is not allowed`);
+    router.back();
+  }
 }

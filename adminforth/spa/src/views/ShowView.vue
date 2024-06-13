@@ -84,7 +84,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
 import { useModalStore } from '@/stores/modal';
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent,checkAcessByAllowedActions } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
@@ -113,6 +113,8 @@ onMounted(async () => {
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
   });
+  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
+
   showComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
       if (column.component?.show) {
           acc[column.name] = getCustomComponent(column.component.show);
