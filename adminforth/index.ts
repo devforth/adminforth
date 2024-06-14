@@ -15,15 +15,9 @@ import path from 'path';
 
 
 //get array from enum AdminForthResourcePages
-const AVAILABLE_SHOW_IN: Array<AdminForthResourcePages> = Object.values(AdminForthResourcePages);
 
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
-
-type ValidationObject = {
-  regex: string,
-  message: string,
-}
 
 class AdminForth implements AdminForthClass {
   static Types = AdminForthDataTypes;
@@ -44,7 +38,7 @@ class AdminForth implements AdminForthClass {
   codeInjector: CodeInjector;
   connectors: any;
   connectorClasses: any;
-  runningHotReload?: boolean;
+  runningHotReload: boolean;
 
   statuses: {
     dbDiscover?: 'running' | 'done',
@@ -206,11 +200,11 @@ class AdminForth implements AdminForthClass {
             }
           }
 
-          const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
+          const wrongShowIn = col.showIn && col.showIn.find((c) => AdminForthResourcePages[c] === undefined);
           if (wrongShowIn) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${AVAILABLE_SHOW_IN.join(', ')}`);
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${Object.keys(AdminForthResourcePages).join(', ')}`);
           }
-          col.showIn = col.showIn || AVAILABLE_SHOW_IN;
+          col.showIn = col.showIn || Object.values(AdminForthResourcePages);
         })
 
         if (!res.options) {
@@ -267,19 +261,18 @@ class AdminForth implements AdminForthClass {
 
         }
 
-          //add default allowedActions to resources
-          if(res.options.allowedActions){
-            //check if allowedActions is an object
-            if(typeof res.options.allowedActions !== 'object'){
-              errors.push(`Resource "${res.resourceId}" allowedActions must be an object`);
-            }
-            const userAllowedActions = res.options.allowedActions 
-            res.options.allowedActions = Object.assign({}, DEFAULT_ALLOWED_ACTIONS, userAllowedActions);         
-          } else {
-            res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
+        //add default allowedActions to resources
+        if(res.options.allowedActions){
+          //check if allowedActions is an object
+          if(typeof res.options.allowedActions !== 'object'){
+            errors.push(`Resource "${res.resourceId}" allowedActions must be an object`);
           }
-        })
-
+          const userAllowedActions = res.options.allowedActions 
+          res.options.allowedActions = Object.assign({}, DEFAULT_ALLOWED_ACTIONS, userAllowedActions);         
+        } else {
+          res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
+        }
+      })
     
 
 
@@ -357,8 +350,8 @@ class AdminForth implements AdminForthClass {
     // check is all custom components files exists
     for (const resource of this.config.resources) {
       for (const column of resource.columns) {
-          if (column.component) {
-            for (const [key, value] of Object.entries(column.component)) {
+          if (column.components) {
+            for (const [key, value] of Object.entries(column.components)) {
                 if (this.codeInjector.allComponentNames[value]) {
                   // not obvious, but if we are in this if, it means that this is plugin component
                   // and there is no sense to check if it exists in users folder

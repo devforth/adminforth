@@ -1,13 +1,89 @@
+import { Express } from 'express';
 
-
-export interface CodeInjector {
+export interface CodeInjectorType {
   srcFoldersToSync: Object;
   allComponentNames: Object;
 }
 
+/**
+ * Implement this interface to create custom HTTP server adapter for AdminForth.
+ */
+export interface GenericHttpServer {
+
+  // constructor(adminforth: AdminForthClass): void;
+
+  /**
+   * Sets up HTTP server to serve AdminForth SPA.
+   * if hotReload is true, it should proxy all requests and headers to Vite dev server at http://localhost:5173${req.url}
+   * otherwise it should serve AdminForth SPA from dist folder. See Express for example.
+   */
+  setupSpaServer(): void;
+
+}
+
+export interface ExpressHttpServer extends GenericHttpServer {
+
+  /**
+   * Call this method to serve AdminForth SPA from Express instance.
+   * @param app : Express instance
+   */
+  serve(app: Express): void;
+
+  /**
+   * Method (middleware) to wrap express endpoints with authorization check.
+   * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
+   * @param callable : Function which will be called if user is authorized.
+   * 
+   * Example:
+   * 
+   * ```ts
+   * expressApp.get('/myApi', authorize((req, res) => {
+   *  console.log('User is authorized', req.adminUser);
+   *  res.json({ message: 'Hello World' });
+   * }));
+   * ``
+   * 
+   */
+  authorize(callable: Function): void;
+}
+
+
 export interface AdminForthClass {
   config: AdminForthConfig;
-  codeInjector: CodeInjector;
+  codeInjector: CodeInjectorType;
+  express: GenericHttpServer;
+
+  auth: {
+
+    verify(jwt : string): any;
+  }
+
+  /**
+   * Internal flag which indicates if AdminForth is running in hot reload mode.
+   */
+  runningHotReload: boolean;
+
+
+  /**
+   * Connects to databases defined in datasources and fetches described resource columns to find out data types and constraints.
+   * You must call this method as soon as possible after AdminForth class is instantiated.
+   */
+  discoverDatabases(): Promise<void>;
+
+  /**
+   * Bundles AdminForth SPA by injecting custom components into internal pre-made SPA source code. It generates internally dist which then will be
+   * served by AdminForth HTTP adapter.
+   * Bundle is generated in /tmp folder so if you have ramfs or tmpfs this operation will be faster.
+   * 
+   * We recommend calling this method from dedicated script which will be run by CI/CD pipeline in build time. This ensures lowest downtime for your users.
+   * However for simple setup you can call it from your main script, and users will see some "AdminForth is bundling" message in the admin panel while app is bundling.
+   */
+  bundleNow({ hotReload, verbose }: { hotReload: boolean, verbose: boolean }): Promise<void>;
+
+  /**
+   * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
+   */
+  setupEndpoints(server: GenericHttpServer): void;
 }
 
 
@@ -24,20 +100,20 @@ export enum AdminForthMenuType {
    * HEADING is just a label in the menu.
    * Respect `label` and `icon` property in {@link AdminForthConfigMenuItem}
    */
-  HEADING = 'heading',
+  heading = 'heading',
 
   /**
    * GROUP is a group of menu items.
    * Respects `label`, `icon` and `children` properties in {@link AdminForthConfigMenuItem}
    * use @AdminForthMenuType.open to set if group is open by default
    */
-  GROUP = 'group',
+  group = 'group',
 
   /**
    * RESOURCE is a link to a resource.
    * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in {@link AdminForthConfigMenuItem}
    */
-  RESOURCE = 'resource',
+  resource = 'resource',
 
   /**
    * PAGE is a link to a custom page.
@@ -57,25 +133,25 @@ export enum AdminForthMenuType {
    * ```
    * 
    */
-  PAGE = 'page',
+  page = 'page',
 
   /**
    * GAP ads some space between menu items.
    */
-  GAP = 'gap',
+  gap = 'gap',
 
   /**
    * DIVIDER is a divider between menu items.
    */
-  DIVIDER = 'divider',
+  divider = 'divider',
 }
 
 export enum AdminForthResourcePages {
-  LIST = 'list',
-  SHOW = 'show',
-  EDIT = 'edit',
-  CREATE = 'create',
-  FILTER = 'filter',
+  list = 'list',
+  show = 'show',
+  edit = 'edit',
+  create = 'create',
+  filter = 'filter',
 }
 
 
@@ -83,7 +159,7 @@ export enum AdminForthResourcePages {
  * Menu item which displayed in the left sidebar of the admin panel.
  */
 export type AdminForthConfigMenuItem = {
-    type?: AdminForthMenuType,
+    type?: AdminForthMenuType | keyof typeof AdminForthMenuType,
 
     /**
      * Label for menu item which will be displayed in the admin panel.
@@ -196,12 +272,12 @@ export type AdminForthResourceColumn = {
      * Can be set to boolean or object with create and edit properties.
      * If boolean, it will be used for both create and edit forms.
      */
-    required?: boolean | { create: boolean, edit: boolean },
+    required?: boolean | { create?: boolean, edit?: boolean },
 
     /**
      * Whether AdminForth will show editing note near the field in edit/create form.
      */
-    editingNote?: string | { create: string, edit: string },
+    editingNote?: string | { create?: string, edit?: string },
 
     /**
      * On which AdminForth pages this field will be shown. By default all.
@@ -212,7 +288,7 @@ export type AdminForthResourceColumn = {
      * ```
      * 
      */
-    showIn?: Array<AdminForthResourcePages>,
+    showIn?: Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>,
 
     /**
      * Whether AdminForth will show this field in show view.
@@ -242,7 +318,7 @@ export type AdminForthResourceColumn = {
      *  type: AdminForthDataTypes.STRING,
      *  virtual: true,
      *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
-     *  component: {
+     *  components: {
      *    show: '@@/CountryFlag.vue',
      *    list: '@@/CountryFlag.vue',
      *   },
@@ -274,17 +350,17 @@ export type AdminForthResourceColumn = {
     allowMinMaxQuery?: boolean,
 
     /**
-     * Custom component which will be used to render this field in the admin panel.
+     * Custom components which will be used to render this field in the admin panel.
      */
-    component?: AdminForthResourceColumnComponent
+    components?: AdminForthFieldComponents
     maxLength?: number, 
     minLength?: number,
     min?: number,
     max?: number,
     minValue?: number,
     maxValue?: number,
-    enum?: Array<AdminForthResourceColumnEnumElement>,
-    foreignResource?:AdminForthResourceColumnForeignResource,
+    enum?: Array<AdminForthColumnEnumItem>,
+    foreignResource?:AdminForthForeignResource,
     sortable?: boolean,
     backendOnly?: boolean, // if true field will not be passed to UI under no circumstances, but will be presented in hooks
 }
@@ -607,7 +683,7 @@ export type AdminForthConfig = {
        * For example if file path is `./custom/comp/my.vue`, you can use it in AdminForth config like this:
        * 
        * ```ts
-       * component: {
+       * components: {
        *  show: '@@/comp/my.vue',
        * }
        * ```
@@ -665,6 +741,7 @@ export type AllowedActions = {
     edit?: boolean,
     show?: boolean,
     delete?: boolean,
+    filter?: boolean,
 }
   
 export type ValidationObject = {
@@ -690,7 +767,7 @@ export type ValidationObject = {
   }
 
 
-export type AdminForthResourceColumnComponent = {
+export type AdminForthFieldComponents = {
     /**
      * Show component is used to redefine cell which renders field value in show view.
      * Component accepts next properties: [record, column, resource, adminUser].
@@ -711,7 +788,7 @@ export type AdminForthResourceColumnComponent = {
      *  label: 'Full Name',
      *  virtual: true,
      *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
-     *  component: {
+     *  components: {
      *   show: '@@/FullName.vue',
      *   list: '@@/FullName.vue',
      *  },
@@ -722,7 +799,7 @@ export type AdminForthResourceColumnComponent = {
     show?: string,
 
     /**
-     * showRow component is similar to {@link AdminForthResourceColumnComponent.show} but rewrites full table row (both \<td\> tags)
+     * showRow component is similar to {@link AdminForthFieldComponent.show} but rewrites full table row (both \<td\> tags)
      * Accepts next properties: [record, column, resource, adminUser]
      */
     showRow?: string, 
@@ -780,12 +857,12 @@ export enum AdminForthSortDirections {
 };
 
 
-export type AdminForthResourceColumnEnumElement = {
-    value: string | null,
+export type AdminForthColumnEnumItem = {
+    value: any | null,
     label: string,
 } 
 
-export type AdminForthResourceColumnForeignResource = {
+export type AdminForthForeignResource = {
     resourceId: string,
     hooks?: {
       dropdownList?: {

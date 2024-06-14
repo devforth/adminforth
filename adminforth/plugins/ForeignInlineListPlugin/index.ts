@@ -31,7 +31,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
       label: 'Foreign Inline List',
       virtual: true,
       showIn: [AdminForthResourcePages.SHOW],
-      component: {
+      components: {
         showRow: this.componentPath('InlineList.vue'),
       },
     });

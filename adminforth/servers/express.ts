@@ -1,15 +1,10 @@
 
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
-import AdminForth from '../index.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+import { AdminForthClass, ExpressHttpServer } from '../types/AdminForthConfig.js';
 
 
 function replaceAtStart(string, substring) {
@@ -80,12 +75,12 @@ const respondNoServer = (title, explanation) => {
     </body>
     `;
 }
-class ExpressServer {
+class ExpressServer implements ExpressHttpServer {
 
   expressApp: Express;
-  adminforth: AdminForth;
+  adminforth: AdminForthClass;
 
-  constructor(adminforth) {
+  constructor(adminforth: AdminForthClass) {
     this.adminforth = adminforth;
   }
 

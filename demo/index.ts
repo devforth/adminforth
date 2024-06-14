@@ -120,7 +120,7 @@ const admin = new AdminForth({
           showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
           maxLength: 255,  // you can set max length for string fields
           minLength: 3,  // you can set min length for string fields
-          component: {
+          components: {
               show: '@@/IdShow.vue',
               // edit: './custom/IdShow.vue',
               list: '@@/IdShow.vue',
@@ -158,7 +158,6 @@ const admin = new AdminForth({
             { value: 4, label: '4 rooms' },
             { value: 5, label: '5 rooms' },
           ],
-          allowCustomValue: true,
         },
         { 
           name: 'description',
@@ -187,7 +186,7 @@ const admin = new AdminForth({
           foreignResource: {
             resourceId: 'users',
             hooks: {
-              list: {
+              dropdownList: {
                 beforeDatasourceRequest: async ({ query, adminUser }) => {
                   return { ok: true, error: false }
                 },
