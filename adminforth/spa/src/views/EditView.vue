@@ -1,5 +1,12 @@
 <template>
   <div class="relative">
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
 
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
@@ -19,6 +26,14 @@
 
     </BreadcrumbsWithButtons>
 
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
+
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
 
     <ResourceForm 
@@ -31,6 +46,15 @@
       :customComponentsPerColumn="editComponentsPerColumn"
     >
     </ResourceForm>
+
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
+
   </div>
 </template>
 

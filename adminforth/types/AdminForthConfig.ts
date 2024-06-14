@@ -19,17 +19,134 @@ export interface AdminForthPluginType {
   componentPath(componentFile: string): string;
 }
 
+export enum AdminForthMenuType {
+  /**
+   * HEADING is just a label in the menu.
+   * Respect `label` and `icon` property in @AdminForthConfigMenuItem
+   */
+  HEADING = 'heading',
+
+  /**
+   * GROUP is a group of menu items.
+   * Respects `label`, `icon` and `children` properties in @AdminForthConfigMenuItem
+   * use @AdminForthMenuType.open to set if group is open by default
+   */
+  GROUP = 'group',
+
+  /**
+   * RESOURCE is a link to a resource.
+   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in @AdminForthConfigMenuItem
+   */
+  RESOURCE = 'resource',
+
+  /**
+   * PAGE is a link to a custom page.
+   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in @AdminForthConfigMenuItem
+   * 
+   * Example:
+   * 
+   * ```ts
+   * \{
+   *  type: AdminForthMenuType.PAGE,
+   *  label: 'Custom Page',
+   *  icon: 'home',
+   *  path: '/dash',
+   *  component: '@@/Dashboard.vue',
+   *  homepage: true,
+   * \}
+   * ```
+   * 
+   */
+  PAGE = 'page',
+
+  /**
+   * GAP ads some space between menu items.
+   */
+  GAP = 'gap',
+
+  /**
+   * DIVIDER is a divider between menu items.
+   */
+  DIVIDER = 'divider',
+}
+
+
+/**
+ * Menu item which displayed in the left sidebar of the admin panel.
+ */
 export type AdminForthConfigMenuItem = {
-    type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',
+    type?: AdminForthMenuType,
+
+    /**
+     * Label for menu item which will be displayed in the admin panel.
+     */
     label?: string,
+
+    /**
+     * Icon for menu item which will be displayed in the admin panel.
+     * Supports iconify icons in format `<icon set name>:<icon name>`
+     * Browse available icons here: https://icon-sets.iconify.design/
+     * 
+     * Example:
+     * 
+     * ```ts
+     * icon: 'flowbite:brain-solid', 
+     * ```
+     * 
+     */
     icon?: string,
+
+    /**
+     * Path to custom component which will be displayed in the admin panel.
+     * 
+     */
     path?: string,
+
+    /**
+     * Component to be used for this menu item. Component should be placed in custom folder and referenced with `@@/` prefix.
+     * Supported for AdminForthMenuType.PAGE only!
+     * Example:
+     * 
+     * ```ts
+     * component: '@@/Dashboard.vue',
+     * ```
+     * 
+     */
     component?: string,
+
+    /**
+     * Resource ID which will be used to fetch data from.
+     * Supported for AdminForthMenuType.RESOURCE only!
+     * 
+     */
     resourceId?: string,
+
+    /**
+     * If true, group will be open by default after user login to the admin panel.
+     * Also will be used to redirect from root path.
+     */
     homepage?: boolean,
+
+    /**
+     * Where Group is open by default
+     * Supported for AdminForthMenuType.GROUP only!
+     * 
+     */    
     open?: boolean,
+
+    /**
+     * Children menu items which will be displayed in this group.
+     * Supported for AdminForthMenuType.GROUP only!
+     */
     children?: Array<AdminForthConfigMenuItem>,
+
+    /**
+     * By default all pages are imported dynamically with lazy import().
+     * If you wish to import page statically, set this option to true.
+     * Homepage will be imported statically by default. but you can override it with this option.
+     */
     isStaticRoute?: boolean,
+
     meta?: {
       title?: string,
     },
@@ -63,13 +180,59 @@ export type AdminForthResourceColumn = {
   } 
   
 export type AdminForthResource = {
+    /**
+     * Unique identifier of resource. By default it equals to table name in database. 
+     * If you wish you can explicitly set it to any string.
+     * We added to support cases when 2 datasources have tables with the same name.
+     */
     resourceId: string,
+
+    /**
+     * Label for resource which will be displayed in the admin panel.
+     * By default it equals to table name in database.
+     */
     label?: string,
+
+    /**
+     * Table name in database which will be used to fetch data from. Might be case sensitive.
+     */
     table: string,
+
+    /**
+     * ID of datasource which will be used to fetch data from.
+     */
     dataSource: string,
+
+    /**
+     * Array of columns which will be displayed in the admin panel.
+     * Each column has its own configuration.
+     */
     columns: Array<AdminForthResourceColumn>,
-    dataSourceColumns?: Array<AdminForthResourceColumn>,
+
+    dataSourceColumns?: Array<AdminForthResourceColumn>,  // TODO, mark as private
+
+    /**
+     * Hook which allow you to modify item label
+     * 
+     * Example:
+     * 
+     * ```ts
+     * itemLabel: (item) => `${item.name} - ${item.id}`,
+     * ```
+     * 
+     */
     itemLabel?: Function,
+
+    /**
+     * Hook which allow you to modify item title
+     * 
+     * Example:
+     * 
+     * ```ts
+     * itemTitle: (item) => `${item.name} - ${item.id}`,
+     * ```
+     * 
+     */
     plugins?: Array<AdminForthPluginType>,
     hooks?: {
       show?: {
@@ -102,7 +265,50 @@ export type AdminForthResource = {
         id?: string,
       }>,
       allowedActions?: AllowedActions,
+
+      /** 
+       * Page size for list view
+       */
       listPageSize?: number,
+
+      /** 
+       * Custom components which can be injected into AdminForth CRUD pages.
+       * Each injection is a path to a custom component which will be displayed in the admin panel.
+       * Can be also array to render multiple injections one after another.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * pageInjections: {
+       *  list: {
+       *   beforeBreadcrumbs: '@@/Announcement.vue',
+       *  }
+       * }
+       * ```
+       * 
+       */
+      pageInjections?: {
+        list?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        show?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        edit?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        create?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+      }
     },
   }
   
@@ -173,23 +379,131 @@ export type AdminForthConfig = {
        */
       userFullNameField?: string,
     },
+     /**
+      * Array of resources which will be displayed in the admin panel.
+      * Resource represents one table or collection in database.
+      * Each resource has its own configuration.
+      */ 
     resources: Array<AdminForthResource>,
+
+    /**
+     * Array of left sidebar menu items which will be displayed in the admin panel.
+     * Menu items can be links to resources or custom pages.
+     * Menu items can be grouped.
+     * 
+     */
     menu: Array<AdminForthConfigMenuItem>,
-    databaseConnectors?: any,
+
+    /**
+     * If you want use custom DataSource which is not supported by AdminForth yet, you can define it's class here
+     * 
+     */
+    databaseConnectors?: any,  // TODO Define interface for database connector
+
+    /**
+     * List of data sources which will be used to fetch data for resources.
+     * Datasource is one database connection
+     * 
+     */
     dataSources: Array<DataSource>,
+
+    /**
+     * Settings which allow you to customize AdminForth
+     * 
+     */
     customization?: {
-      customComponentsDir?: string,
-      vueUsesFile?: string,
+      /**
+       * Your app name
+       */
       brandName?: string,
-      datesFormat?: string,
-      title?: string,
+
+      /**
+       * Path to your app logo
+       * 
+       * Example:
+       * Place file `logo.svg` to `./custom` folder and set this option:
+       * 
+       * ```ts
+       * brandLogo: '@@/logo.svg',
+       * ```
+       * 
+       */
       brandLogo?: string,
+
+      /**
+       * DayJS format string for all dates in the app
+       */
+      datesFormat?: string,
+
+      /**
+       * HTML title tag value, defaults to brandName
+       */
+      title?: string,
+
+      /**
+       * Placeholder for empty fields in lists and show views, by default empty string ''
+       */
       emptyFieldPlaceholder?: {
         show?: string,
         list?: string,
         
       } | string,
+
+      /**
+       * Relative or absolute path to custom components directory
+       * By default equals  `./custom`.
+       * 
+       * Custom .vue files, images, and any other assets placed in this directory can be accessed in AdminForth components and configs with `@@/`.
+       * 
+       * For example if file path is `./custom/comp/my.vue`, you can use it in AdminForth config like this:
+       * 
+       * ```ts
+       * component: {
+       *  show: '@@/comp/my.vue',
+       * }
+       * ```
+       * 
+       */
+      customComponentsDir?: string,
+
+      /**
+       * Path to custom .ts file which allows to inject custom Vue uses in SPA or add custom imports.
+       * 
+       * Example: Create file: `./custom/vue-uses.ts` with next content:
+       * 
+       * ```ts
+       * import HighchartsVue from 'highcharts-vue';
+       * // import '@@/custom.scss'; // here is how you can import custom styles
+       *
+       *  export default function (app) {
+       *    app.use(HighchartsVue);
+       * }
+       * ```
+       * 
+       * Install HighCharts:
+       * 
+       * ```bash
+       * npm install highcharts highcharts-vue
+       * ```
+       * 
+       * And specify vueUsesFile in AdminForth config:
+       * 
+       * ```ts
+       * vueUsesFile: '@@/vue-uses.ts',
+       * ```
+       * 
+       */
+      vueUsesFile?: string,
     },
+
+    /**
+     * If you want to Serve AdminForth from a subdirectory, e.g. on example.com/backoffice, you can specify it like:
+     * 
+     * ```ts
+     * baseUrl: '/backoffice',
+     * ```
+     * 
+     */
     baseUrl?: string,
    
     deleteConfirmation?: boolean,
@@ -202,15 +516,43 @@ export type AllowedActions = {
     edit?: boolean,
     show?: boolean,
     delete?: boolean,
-  }
+}
   
 export type ValidationObject = {
-    regExp: string ,
+    /**
+     * Should be pure string (not RegExp string)
+     * 
+     * Example:
+     * 
+     * ```ts
+     * // regex for email
+     * regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+     * ```
+     * 
+     */
+    regExp: string,
+
+    /**
+     * Error message shown to user if validation fails
+     * 
+     * Example: "Invalid email format"
+     */
     message: string,
   }
 
 export type DataSource = {
+    /**
+     * ID of datasource which you will use in resources to specify from which database to fetch data from
+     */
     id: string,
+
+    /**
+     * URL to database. Examples:
+     * 
+     * - MongoDB: `mongodb://<user>:<password>@<host>:<port>/<database>`
+     * - PostgreSQL: `postgresql://<user>:<password>@<host>:<port>/<database>`
+     * - SQLite: `sqlite://<path>`
+     */
     url: string,
 }
 
