@@ -327,12 +327,12 @@ export type AdminForthResource = {
     dataSourceColumns?: Array<AdminForthResourceColumn>,  // TODO, mark as private
 
     /**
-     * Hook which allow you to modify item label
+     * Hook which allow you to modify record label
      * 
      * Example:
      * 
      * ```ts
-     * recordLabel: (record) => `${record.name} - ${item.id}`,
+     * recordLabel: (record) => `${record.name} - ${record.id}`,
      * ```
      * 
      */
@@ -408,16 +408,34 @@ export type AdminForthResource = {
           afterBreadcrumbs?: string | Array<string>,
           bottom?: string | Array<string>,
         },
+
+        /**
+         * Custom components which can be injected into resource show page.
+         * 
+         * Component accepts next props: [record, resource, adminUser]
+         */
         show?: {
           beforeBreadcrumbs?: string | Array<string>,
           afterBreadcrumbs?: string | Array<string>,
           bottom?: string | Array<string>,
         },
+
+        /**
+         * Custom components which can be injected into resource edit page.
+         * 
+         * Component accepts next props: [record, resource, adminUser]
+         */
         edit?: {
           beforeBreadcrumbs?: string | Array<string>,
           afterBreadcrumbs?: string | Array<string>,
           bottom?: string | Array<string>,
         },
+
+        /**
+         * Custom components which can be injected into resource create page.
+         * 
+         * Component accepts next props: [resource, adminUser]
+         */
         create?: {
           beforeBreadcrumbs?: string | Array<string>,
           afterBreadcrumbs?: string | Array<string>,
@@ -704,7 +722,7 @@ export type AdminForthResourceColumnComponent = {
     show?: string,
 
     /**
-     * showRow component is similar to {@link AdminForthResourceColumnComponent.show} but rewrites full table row (both <td> tags)
+     * showRow component is similar to {@link AdminForthResourceColumnComponent.show} but rewrites full table row (both \<td\> tags)
      * Accepts next properties: [record, column, resource, adminUser]
      */
     showRow?: string, 

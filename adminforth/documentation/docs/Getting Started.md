@@ -28,7 +28,7 @@ For demo purposes we will use SQLite data source. You can use postgress, Mongo o
 npm install better-sqlite3@10.0.0
 ```
 
-You can use adminforth in pure node, but we recommend using TypeScript for better development experience.
+You can use adminforth in pure Node, but we recommend using TypeScript for better development experience.
 
 ```bash
 npm install typescript@5.4.5 --save-dev
