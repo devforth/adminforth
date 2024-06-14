@@ -248,22 +248,34 @@ export type AdminForthResourceColumn = {
      *   },
      * }
      * ```
+     * 
      * This field will be displayed in show and list views with custom component `CountryFlag.vue`. CountryFlag.vue should be placed in custom folder and can be next:
      * 
      * ```vue
      * <template>
-     *  {{ getFlagEmojiFromIso(row.ipCountry) }}
+     *  {{ getFlagEmojiFromIso(record.ipCountry) }}
      * </template>
      * 
      * <script setup>
+     * const props = defineProps(['record']);
+     * 
      * function getFlagEmojiFromIso(iso) {
      *    return iso.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
      * }
      * </script>
+     * ```
      * 
      */
     virtual?: boolean,
+
+    /**
+     * Whether AdminForth will show this field in list view.
+     */
     allowMinMaxQuery?: boolean,
+
+    /**
+     * Custom component which will be used to render this field in the admin panel.
+     */
     component?: AdminForthResourceColumnComponent
     maxLength?: number, 
     minLength?: number,
@@ -661,10 +673,60 @@ export type ValidationObject = {
 
 
 export type AdminForthResourceColumnComponent = {
-    show?: string,    // rewrite value in show
-    showRow?: string,  // rewrite full view table row (both <td> tags)
+    /**
+     * Show component is used to redefine cell which renders field value in show view.
+     * Component accepts next properties: [record, column, resource, adminUser].
+     * 
+     * Example: `FullName.vue`
+     * 
+     * ```vue
+     * <template>
+     *   {{ record.firstName }} {{ record.lastName }}
+     * </template>
+     * 
+     * <script setup>
+     * defineProps(['record']);
+     * </script>
+     * 
+     * ```ts
+     * {
+     *  label: 'Full Name',
+     *  virtual: true,
+     *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+     *  component: {
+     *   show: '@@/FullName.vue',
+     *   list: '@@/FullName.vue',
+     *  },
+     * }
+     * ```
+     * 
+     */
+    show?: string,
+
+    /**
+     * showRow component is similar to {@link AdminForthResourceColumnComponent.show} but rewrites full table row (both <td> tags)
+     * Accepts next properties: [record, column, resource, adminUser]
+     */
+    showRow?: string, 
+
+    /**
+     * Create component is used to redefine input field in create view.
+     * Component accepts next properties: [record, column, resource, adminUser].
+     */
     create?: string,
+
+    /**
+     * Edit component is used to redefine input field in edit view.
+     * Component accepts next properties: [record, column, resource, adminUser].
+     */
     edit?: string,
+
+    /**
+     * List component is used to redefine cell which renders field value in list view.
+     * Component accepts next properties: [record, column, resource, adminUser].
+     * 
+     * Exa
+     */
     list?: string,
 }
 

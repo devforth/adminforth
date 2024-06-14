@@ -4,7 +4,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
@@ -27,7 +27,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -63,7 +63,8 @@
                 v-if="showRowComponentsPerColumn[column.name]"
                   :is="showRowComponentsPerColumn[column.name]"
                   :column="column"
-                  :row="coreStore.record"
+                  :resource="coreStore.resource"
+                  :record="coreStore.record"
               />
               <template v-else>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -73,12 +74,13 @@
                   <component
                     v-if="showComponentsPerColumn[column.name]"
                     :is="showComponentsPerColumn[column.name]"
+                    :resource="coreStore.resource"
                     :column="column"
-                    :row="coreStore.record"
+                    :record="coreStore.record"
                   />
                   <ValueRenderer v-else 
                     :column="column" 
-                    :row="coreStore.record"
+                    :record="coreStore.record"
                   />
                 </td>
               </template>
@@ -89,8 +91,9 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
       :is="getCustomComponent(c)"
+      :column="column"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 </div>

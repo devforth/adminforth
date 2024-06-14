@@ -216,7 +216,9 @@
             <component
               :is="listComponentsPerColumn[c.name] || ValueRenderer"
               :column="c"
-              :row="row"
+              :record="row"
+              :adminUser="coreStore.adminUser"
+              :resource="coreStore.resource"
             />
           </td>
           <td class=" items-center px-6 py-4">
