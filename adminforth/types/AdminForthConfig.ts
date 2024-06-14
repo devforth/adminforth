@@ -22,26 +22,26 @@ export interface AdminForthPluginType {
 export enum AdminForthMenuType {
   /**
    * HEADING is just a label in the menu.
-   * Respect `label` and `icon` property in @AdminForthConfigMenuItem
+   * Respect `label` and `icon` property in {@link AdminForthConfigMenuItem}
    */
   HEADING = 'heading',
 
   /**
    * GROUP is a group of menu items.
-   * Respects `label`, `icon` and `children` properties in @AdminForthConfigMenuItem
+   * Respects `label`, `icon` and `children` properties in {@link AdminForthConfigMenuItem}
    * use @AdminForthMenuType.open to set if group is open by default
    */
   GROUP = 'group',
 
   /**
    * RESOURCE is a link to a resource.
-   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in @AdminForthConfigMenuItem
+   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in {@link AdminForthConfigMenuItem}
    */
   RESOURCE = 'resource',
 
   /**
    * PAGE is a link to a custom page.
-   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in @AdminForthConfigMenuItem
+   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in {@link AdminForthConfigMenuItem}
    * 
    * Example:
    * 
@@ -68,6 +68,14 @@ export enum AdminForthMenuType {
    * DIVIDER is a divider between menu items.
    */
   DIVIDER = 'divider',
+}
+
+export enum AdminForthResourcePages {
+  LIST = 'list',
+  SHOW = 'show',
+  EDIT = 'edit',
+  CREATE = 'create',
+  FILTER = 'filter',
 }
 
 
@@ -152,18 +160,108 @@ export type AdminForthConfigMenuItem = {
     },
   }
   
-  
+
+/**
+ * Column describes one field in the table or collection in database.
+ */
 export type AdminForthResourceColumn = {
+    /**
+     * Column name in database.
+     */
     name: string,
+
+    /**
+     * How column can be labled in the admin panel.
+     * Use it for renaming columns. Defaulted to column name with Uppercased first letter.
+     */
     label?: string,
+
+    /**
+     * Type of data in column.
+     * AdminForth will use this information to render proper input fields in the admin panel.
+     * AdminForth tries to guess type of data from database column type automatically for typed databases like SQL-based.
+     * However you can explicitly set it to any value. E.g. set AdminForthDataTypes.DATETIME for your string column in SQLite, which stores ISO date strings.
+     */
     type?: AdminForthDataTypes,
+
+    /**
+     * Whether to use this column as record identifier.
+     * Only one column can be primary key.
+     * AdminForth tries to guess primary key automatically first.
+     */
     primaryKey?: boolean,
+
+    /**
+     * Whether AdminForth will require this field to be filled in create and edit forms.
+     * Can be set to boolean or object with create and edit properties.
+     * If boolean, it will be used for both create and edit forms.
+     */
     required?: boolean | { create: boolean, edit: boolean },
+
+    /**
+     * Whether AdminForth will show editing note near the field in edit/create form.
+     */
     editingNote?: string | { create: string, edit: string },
-    showIn?: Array<string>,
+
+    /**
+     * On which AdminForth pages this field will be shown. By default all.
+     * Example: if you want to show field only in create and edit pages, set it to 
+     * 
+     * ```ts
+     * showIn: [AdminForthResourcePages.CREATE, AdminForthResourcePages.EDIT]
+     * ```
+     * 
+     */
+    showIn?: Array<AdminForthResourcePages>,
+
+    /**
+     * Whether AdminForth will show this field in show view.
+     */
     fillOnCreate?: Function,
+
+    /**
+     * Whether AdminForth will request user to enter unique value during creating or editing record.
+     * This option causes AdminForth to make a request to database to check if value is unique. 
+     * (Constraints are not used, so for large-tables performance make sure you have unique index in database if you set this option to true)
+     */
     isUnique?: boolean,
+
+
+    /**
+     * Runtime validation Regexp rules for this field.
+     */
     validation?: Array<ValidationObject>,
+
+    /**
+     * Allows to make the field which does not exist in database table.
+     * Examples: add custom show field with user country flag:
+     * 
+     * ```ts
+     * {
+     *  label: 'Country',
+     *  type: AdminForthDataTypes.STRING,
+     *  virtual: true,
+     *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+     *  component: {
+     *    show: '@@/CountryFlag.vue',
+     *    list: '@@/CountryFlag.vue',
+     *   },
+     * }
+     * ```
+     * This field will be displayed in show and list views with custom component `CountryFlag.vue`. CountryFlag.vue should be placed in custom folder and can be next:
+     * 
+     * ```vue
+     * <template>
+     *  {{ getFlagEmojiFromIso(row.ipCountry) }}
+     * </template>
+     * 
+     * <script setup>
+     * function getFlagEmojiFromIso(iso) {
+     *    return iso.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+     * }
+     * </script>
+     * 
+     */
     virtual?: boolean,
     allowMinMaxQuery?: boolean,
     component?: AdminForthResourceColumnComponent
@@ -177,8 +275,12 @@ export type AdminForthResourceColumn = {
     foreignResource?:AdminForthResourceColumnForeignResource,
     sortable?: boolean,
     backendOnly?: boolean, // if true field will not be passed to UI under no circumstances, but will be presented in hooks
-  } 
+}
   
+/**
+ * Resource describes one table or collection in database.
+ * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
+ */
 export type AdminForthResource = {
     /**
      * Unique identifier of resource. By default it equals to table name in database. 
@@ -209,6 +311,7 @@ export type AdminForthResource = {
      */
     columns: Array<AdminForthResourceColumn>,
 
+    
     dataSourceColumns?: Array<AdminForthResourceColumn>,  // TODO, mark as private
 
     /**
@@ -217,20 +320,14 @@ export type AdminForthResource = {
      * Example:
      * 
      * ```ts
-     * itemLabel: (item) => `${item.name} - ${item.id}`,
+     * recordLabel: (record) => `${record.name} - ${item.id}`,
      * ```
      * 
      */
-    itemLabel?: Function,
+    recordLabel?: Function,
 
     /**
-     * Hook which allow you to modify item title
-     * 
-     * Example:
-     * 
-     * ```ts
-     * itemTitle: (item) => `${item.name} - ${item.id}`,
-     * ```
+     * Array of plugins which will be used to modify resource configuration.
      * 
      */
     plugins?: Array<AdminForthPluginType>,
@@ -286,8 +383,14 @@ export type AdminForthResource = {
        * }
        * ```
        * 
+       * 
        */
       pageInjections?: {
+        /**
+         * Custom components which can be injected into resource list page.
+         * 
+         * Component accepts next props: [resource, adminUser]
+         */
         list?: {
           beforeBreadcrumbs?: string | Array<string>,
           afterBreadcrumbs?: string | Array<string>,
@@ -312,10 +415,26 @@ export type AdminForthResource = {
     },
   }
   
+/**
+ * Data source describes database connection which will be used to fetch data for resources.
+ * Each resource should use one data source.
+ */
 export type AdminForthDataSource = {
-    id: string,
-    url: string,
+  /**
+   * ID of datasource which you will use in resources to specify from which database to fetch data from
+   */
+  id: string,
+
+  /**
+    * URL to database. Examples:
+    * 
+    * - MongoDB: `mongodb://<user>:<password>@<host>:<port>/<database>`
+    * - PostgreSQL: `postgresql://<user>:<password>@<host>:<port>/<database>`
+    * - SQLite: `sqlite://<path>`
+    */
+  url: string,
 }
+
 
 /**
  * Main configuration object for AdminForth
@@ -405,7 +524,7 @@ export type AdminForthConfig = {
      * Datasource is one database connection
      * 
      */
-    dataSources: Array<DataSource>,
+    dataSources: Array<AdminForthDataSource>,
 
     /**
      * Settings which allow you to customize AdminForth
@@ -540,21 +659,6 @@ export type ValidationObject = {
     message: string,
   }
 
-export type DataSource = {
-    /**
-     * ID of datasource which you will use in resources to specify from which database to fetch data from
-     */
-    id: string,
-
-    /**
-     * URL to database. Examples:
-     * 
-     * - MongoDB: `mongodb://<user>:<password>@<host>:<port>/<database>`
-     * - PostgreSQL: `postgresql://<user>:<password>@<host>:<port>/<database>`
-     * - SQLite: `sqlite://<path>`
-     */
-    url: string,
-}
 
 export type AdminForthResourceColumnComponent = {
     show?: string,    // rewrite value in show
