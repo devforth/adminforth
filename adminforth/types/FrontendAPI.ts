@@ -1,10 +1,6 @@
  
 export interface FrontendAPIInterface {
-    /**
-     * Initialize the frontend API
-     * 
-     */
-    init(): void;
+
     /**
      * Show a confirmation dialog
      * 
@@ -37,15 +33,38 @@ export interface FrontendAPIInterface {
 }
 
 type ConfirmParams = {
+    /**
+     * The message to display in the dialog
+     */
     message?: string;
+    /**
+     * The text to display in the "accept" button
+     */
     yes?: string;
+    /**
+     * The text to display in the "cancel" button
+     */
     no?: string;
    
 }
 
 type AlertParams = {
-    message: string;
-    variant: 'danger' | 'success' | 'warning' | 'info';
+    /**
+     * The message to display in the alert
+     */
+    message?: string;
+    /**
+     * The variant of the alert
+     */
+    variant?: AlertVariant;
 }
+
+enum AlertVariant {
+    Danger = 'danger',
+    Success = 'success',
+    Warning = 'warning',
+    Info = 'info'
+  }
+  
 
 
