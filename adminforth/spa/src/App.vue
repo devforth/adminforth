@@ -123,15 +123,43 @@
     </div>
   </div>
   <AcceptModal />
+  <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse">
+    <transition-group
+      name="fade"
+      tag="div"
+      class="flex flex-col-reverse gap-1"
+    >
+      <Toast :toast="t" @close="toastStore.removeToast(t)" v-for="(t,i) in toastStore.toasts" :key="`t-${t.id}`" ></Toast>
+    </transition-group>
+  </div>
 
   <div v-if="sideBarOpen" 
   @click="sideBarOpen = false"
   
   drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-30"></div>
 
+
+
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+
+  .fade-leave-active {
+    @apply transition-opacity duration-500;
+  }
+  .fade-leave-to {
+    @apply opacity-0;
+  }
+  .fade-enter-active {
+    @apply transition-opacity duration-500;
+  }
+  .fade-enter-from {
+    @apply opacity-0;
+  }
+  .fade-enter-to {
+    @apply opacity-100;
+  }
+
 </style>
 
 <script setup lang="ts">
@@ -140,6 +168,7 @@ import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
+import {useModalStore} from '@/stores/modal';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import AcceptModal from './components/AcceptModal.vue';
 import MenuLink from './components/MenuLink.vue';
@@ -148,33 +177,21 @@ import { getIcon } from '@/utils';
 import { useHead } from 'unhead'
 import { createHead } from 'unhead'
 import { loadFile } from './utils';
-
+import Toast from './components/Toast.vue';
+import {useToastStore} from '@/stores/toast';
+import { FrontendAPI } from '@/composables/useStores'
 // import { link } from 'fs';
 const coreStore = useCoreStore();
-
-
+const modalStore = useModalStore();
+const toastStore = useToastStore();
+const frontendApi = new FrontendAPI();
 const splitAtLast = (str: string, separator: string) => {
   const index = str.lastIndexOf(separator);
   return [str.slice(0, index), str.slice(index + 1)];
 }
-
-
-
 createHead()
-
-
 const sideBarOpen = ref(false);
-
-
-
 const route = useRoute();
-watch(route, () => {
-  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
-  useHead({
-    title: title.value,
-  })
-});
-
 const router = useRouter();
 const title = ref('');
 //create a ref to store the opened menu items with ts type;
@@ -225,6 +242,13 @@ async function loadMenu() {
     }
   });
 }
+
+watch(route, () => {
+  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
+  useHead({
+    title: title.value,
+  })
+});
 
 // initialize components based on data attribute selectors
 onMounted(async () => {
