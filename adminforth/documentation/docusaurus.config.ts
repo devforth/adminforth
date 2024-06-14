@@ -8,7 +8,7 @@ const config: Config = {
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
-  url: 'https://adminforth.devforth.io',
+  url: 'https://adminforth.dev',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -76,7 +76,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    // image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: 'AdminForth',
       logo: {
@@ -113,6 +113,10 @@ const config: Config = {
             {
               label: 'Tutorial',
               to: '/docs/Getting%20Started',
+            },
+            {
+              label: 'API',
+              to: '/docs/api',
             },
           ],
         },
@@ -158,7 +162,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} Devforth sp. z o.o.`,
     },
     prism: {
-      theme: prismThemes.vsLight,
+      theme: prismThemes.okaidia,
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,

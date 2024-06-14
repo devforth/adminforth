@@ -200,6 +200,14 @@ const admin = new AdminForth({
         }
       ],
       options:{
+        pageInjections: {
+          show: {
+            beforeBreadcrumbs: '@@/TopLine.vue',
+          },
+          list: {
+            bottom: '@@/TopLine.vue',
+          }
+        },
         listPageSize: 5,
         bulkActions: [{
           label: 'Mark as listed',
@@ -216,7 +224,7 @@ const admin = new AdminForth({
         allowedActions:{
           edit: true,
           delete: true,
-          show: false,
+          show: true,
           filter: true,
           create: true,
         },

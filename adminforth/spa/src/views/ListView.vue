@@ -9,6 +9,14 @@
       />
     </Teleport>
 
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
+
     <BreadcrumbsWithButtons>
       <button
         @click="()=>{checkboxes = []}"
@@ -63,6 +71,14 @@
           </span>
       </button>
     </BreadcrumbsWithButtons>
+
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
 
     <!-- table -->
     <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	overflow-y-hidden  rounded-default">
@@ -260,8 +276,7 @@
     </div>
     <!-- pagination -->
     <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center"
-         v-if="rows && totalRows >= pageSize && totalRows > 0"
-    >
+         v-if="rows && totalRows >= pageSize && totalRows > 0">
       <!-- Help text -->
       <span class="text-sm text-gray-700 dark:text-gray-400">
             Showing <span class="font-semibold text-gray-900 dark:text-white">
@@ -313,6 +328,15 @@
         </button>
       </div>
     </div>
+
+    <component 
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
+      :is="getCustomComponent(c)"
+      :record="coreStore.record"
+      :columns="coreStore.resourceColumns"
+      :adminUser="coreStore.adminUser"
+    />
+
   </div>
 </template>
 

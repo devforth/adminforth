@@ -260,8 +260,6 @@ class CodeInjector {
     }).join('\n');
 
     // for each custom component generate import statement
-    const customComponentsDir = this.adminforth.config.customization?.customComponentsDir;
-
     const customResourceComponents = [];
     this.adminforth.config.resources.forEach((resource) => {
       resource.columns.forEach((field) => {
@@ -273,6 +271,17 @@ class CodeInjector {
           });
         }
       });
+      (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
+        Object.values(injection).forEach((filePathes: string[]) => {
+          filePathes.forEach((filePath) => {
+            if (!customResourceComponents.includes(filePath)) {
+              customResourceComponents.push(filePath);
+            }
+          });
+        });
+      });
+
+
     });
 
     customResourceComponents.forEach((filePath) => {

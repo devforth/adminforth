@@ -243,6 +243,27 @@ class AdminForth implements AdminForthClass {
             return Object.assign(action, {id: uuid()});
           });
           bulkActions = newBulkActions;
+
+          // if pageInjection is a string, make array with one element. Also check file exists
+          const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
+          if(res.options.pageInjections) {
+            Object.entries(res.options.pageInjections).map(([key, value]) => {
+              Object.entries(value).map(([injection, target]) => {
+                if (possibleInjections.includes(injection)) {
+                  if (typeof target === 'string') {
+                    res.options.pageInjections[key][injection] = [target];
+                  }
+                  res.options.pageInjections[key][injection].forEach((target) => {
+                    errors.push(...this.checkCustomFileExists(target));
+                  });
+                } else {
+                  errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')}`);
+                }
+              });
+                  
+            })
+          }
+
         }
 
           //add default allowedActions to resources
