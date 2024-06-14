@@ -19,17 +19,130 @@ export interface AdminForthPluginType {
   componentPath(componentFile: string): string;
 }
 
+export enum AdminForthMenuType {
+  /**
+   * HEADING is just a label in the menu.
+   * Respect `label` and `icon` property in @AdminForthConfigMenuItem
+   */
+  HEADING = 'heading',
+
+  /**
+   * GROUP is a group of menu items.
+   * Respects `label`, `icon` and `children` properties in @AdminForthConfigMenuItem
+   * use @AdminForthMenuType.open to set if group is open by default
+   */
+  GROUP = 'group',
+
+  /**
+   * RESOURCE is a link to a resource.
+   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in @AdminForthConfigMenuItem
+   */
+  RESOURCE = 'resource',
+
+  /**
+   * PAGE is a link to a custom page.
+   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in @AdminForthConfigMenuItem
+   * 
+   * Example:
+   * 
+   * ```ts
+   * {
+   *  type: AdminForthMenuType.PAGE,
+   *  label: 'Custom Page',
+   *  icon: 'home',
+   *  path: '/dash',
+   *  component: '@@/Dashboard.vue',
+   *  homepage: true,
+   * }
+   * ```
+   * 
+   */
+  PAGE = 'page',
+
+  /**
+   * GAP ads some space between menu items.
+   */
+  GAP = 'gap',
+
+  /**
+   * DIVIDER is a divider between menu items.
+   */
+  DIVIDER = 'divider',
+}
+
 export type AdminForthConfigMenuItem = {
-    type?: 'heading' | 'group' | 'resource' | 'page' | 'gap' | 'divider',
+    type?: AdminForthMenuType,
+
+    /**
+     * Label for menu item which will be displayed in the admin panel.
+     */
     label?: string,
+
+    /**
+     * Icon for menu item which will be displayed in the admin panel.
+     * Supports iconify icons in format `<icon set name>:<icon name>`
+     * Browse available icons here: https://icon-sets.iconify.design/
+     * 
+     * Example:
+     * 
+     * ```ts
+     * icon: 'flowbite:brain-solid', 
+     * ```
+     * 
+     */
     icon?: string,
+
+    /**
+     * Path to custom component which will be displayed in the admin panel.
+     * 
+     */
     path?: string,
+
+    /**
+     * Component to be used for this menu item. Component should be placed in custom folder and referenced with `@@/` prefix.
+     * Supported for AdminForthMenuType.PAGE only!
+     * Example:
+     * 
+     * ```ts
+     * component: '@@/Dashboard.vue',
+     * ```
+     * 
+     */
     component?: string,
+
+    /**
+     * Resource ID which will be used to fetch data from.
+     * Supported for AdminForthMenuType.RESOURCE only!
+     * 
+     */
     resourceId?: string,
+
+    /**
+     * If true, group will be open by default after user login to the admin panel.
+     * Also will be used to redirect from root path.
+     */
     homepage?: boolean,
+
+    /**
+     * Where Group is open by default
+     * Supported for AdminForthMenuType.GROUP only!
+     * 
+     * */    
     open?: boolean,
+
+    /**
+     * Children menu items which will be displayed in this group.
+     * Supported for AdminForthMenuType.GROUP only!
+     */
     children?: Array<AdminForthConfigMenuItem>,
+
+    /**
+     * By default all pages are imported dynamically with lazy import().
+     * If you wish to import page statically, set this option to true.
+     * Homepage will be imported statically by default. but you can override it with this option.
+     */
     isStaticRoute?: boolean,
+
     meta?: {
       title?: string,
     },
@@ -148,7 +261,50 @@ export type AdminForthResource = {
         id?: string,
       }>,
       allowedActions?: AllowedActions,
+
+      /** 
+       * Page size for list view
+       */
       listPageSize?: number,
+
+      /** 
+       * Custom components which can be injected into AdminForth CRUD pages.
+       * Each injection is a path to a custom component which will be displayed in the admin panel.
+       * Can be also array to render multiple injections one after another.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * pageInjections: {
+       *  list: {
+       *   beforeBreadcrumbs: '@@/Announcement.vue',
+       *  }
+       * }
+       * ```
+       * 
+       */
+      pageInjections?: {
+        list?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        show?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        edit?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+        create?: {
+          beforeBreadcrumbs?: string | Array<string>,
+          afterBreadcrumbs?: string | Array<string>,
+          bottom?: string | Array<string>,
+        },
+      }
     },
   }
   
@@ -301,6 +457,7 @@ export type AdminForthConfig = {
        * component: {
        *  show: '@@/comp/my.vue',
        * }
+       * ```
        * 
        */
       customComponentsDir?: string,
