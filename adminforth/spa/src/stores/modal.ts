@@ -2,6 +2,13 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 
+ type ModalContentType = {
+  title?: string;
+  content?: string;
+  acceptText?: string;
+  cancelText?: string;
+ }
+
 
 export const useModalStore = defineStore('modal', () => {
   const modalContent = ref({
@@ -12,13 +19,17 @@ export const useModalStore = defineStore('modal', () => {
   });  
   const isOpened = ref(false);
   const onAcceptFunction: any = ref(()=>{});
+  const onCancelFunction: any = ref(()=>{});
   function togleModal() {
     isOpened.value = !isOpened.value;
   }
   function setOnAcceptFunction(func: Function) {
     onAcceptFunction.value = func;
   }
-  function setModalContent(content: string) {
+  function setOnCancelFunction(func: Function) {
+    onCancelFunction.value = func;
+  }
+  function setModalContent(content: ModalContentType) {
     modalContent.value = content;
   }
   function resetmodalState() {
@@ -33,6 +44,6 @@ export const useModalStore = defineStore('modal', () => {
 
   }
     
-  return {isOpened, setModalContent, togleModal,modalContent, setOnAcceptFunction, onAcceptFunction,resetmodalState} 
+  return {isOpened, setModalContent,onCancelFunction, togleModal,modalContent, setOnAcceptFunction, onAcceptFunction,resetmodalState,setOnCancelFunction} 
    
 })
