@@ -9,11 +9,14 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
-import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes } from './types/AdminForthConfig.js';
+import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
 import path from 'path';
 
-const AVAILABLE_SHOW_IN = ['list', 'edit', 'create', 'filter', 'show'];
+
+//get array from enum AdminForthResourcePages
+const AVAILABLE_SHOW_IN: Array<AdminForthResourcePages> = Object.values(AdminForthResourcePages);
+
 const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
 
@@ -151,12 +154,12 @@ class AdminForth implements AdminForthClass {
         if (!res.table) {
           errors.push(`Resource "${res.dataSource}" is missing table`);
         }
-        // if itemLabel is not callable, throw error
-        if (res.itemLabel && typeof res.itemLabel !== 'function') {
-          errors.push(`Resource "${res.dataSource}" itemLabel is not a function`);
+        // if recordLabel is not callable, throw error
+        if (res.recordLabel && typeof res.recordLabel !== 'function') {
+          errors.push(`Resource "${res.dataSource}" recordLabel is not a function`);
         }
-        if (!res.itemLabel) {
-          res.itemLabel = (item) => {
+        if (!res.recordLabel) {
+          res.recordLabel = (item) => {
             const pkVal = item[res.columns.find((col) => col.primaryKey).name];
             return `${res.label} ${pkVal}`;
           }
@@ -203,13 +206,11 @@ class AdminForth implements AdminForthClass {
             }
           }
 
-
-
           const wrongShowIn = col.showIn && col.showIn.find((c) => !AVAILABLE_SHOW_IN.includes(c));
           if (wrongShowIn) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${AVAILABLE_SHOW_IN.join(', ')}`);
           }
-          col.showIn = col.showIn?.map(c => c.toLowerCase()) || AVAILABLE_SHOW_IN;
+          col.showIn = col.showIn || AVAILABLE_SHOW_IN;
         })
 
         if (!res.options) {
@@ -696,7 +697,7 @@ class AdminForth implements AdminForthClass {
             });
             const targetDataMap = targetData.data.reduce((acc, item) => {
               acc[item[targetResourcePkField]] = {
-                label: targetResource.itemLabel(item),
+                label: targetResource.recordLabel(item),
                 pk: item[targetResourcePkField],
               }
               return acc;
@@ -728,7 +729,7 @@ class AdminForth implements AdminForthClass {
         });
 
         data.data.forEach((item) => {
-          item._label = resource.itemLabel(item);
+          item._label = resource.recordLabel(item);
         });
 
         return {
@@ -782,7 +783,7 @@ class AdminForth implements AdminForthClass {
         });
         const items = dbDataItems.data.map((item) => {
           const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
-          const labler = targetResource.itemLabel;
+          const labler = targetResource.recordLabel;
           return { 
             value: pk,
             label: labler(item),
