@@ -12,8 +12,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -75,8 +74,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -332,8 +330,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
       :is="getCustomComponent(c)"
-      :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
