@@ -46,14 +46,14 @@ export enum AdminForthMenuType {
    * Example:
    * 
    * ```ts
-   * {
+   * \{
    *  type: AdminForthMenuType.PAGE,
    *  label: 'Custom Page',
    *  icon: 'home',
    *  path: '/dash',
    *  component: '@@/Dashboard.vue',
    *  homepage: true,
-   * }
+   * \}
    * ```
    * 
    */
@@ -70,6 +70,10 @@ export enum AdminForthMenuType {
   DIVIDER = 'divider',
 }
 
+
+/**
+ * Menu item which displayed in the left sidebar of the admin panel.
+ */
 export type AdminForthConfigMenuItem = {
     type?: AdminForthMenuType,
 
@@ -127,7 +131,7 @@ export type AdminForthConfigMenuItem = {
      * Where Group is open by default
      * Supported for AdminForthMenuType.GROUP only!
      * 
-     * */    
+     */    
     open?: boolean,
 
     /**
