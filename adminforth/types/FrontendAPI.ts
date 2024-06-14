@@ -5,6 +5,7 @@ export interface FrontendAPIInterface {
      * Show a confirmation dialog
      * 
      * The dialog will be displayed to the user
+     * 
      * Example: 
      * 
      * ```ts
@@ -23,8 +24,10 @@ export interface FrontendAPIInterface {
      * 
      * The alert will be displayed to the user
      * 
+     * Example:
+     * 
      * ```ts
-     * Example: window.adminforth.alert({message: 'Hello', variant: 'success'})
+     *  window.adminforth.alert({message: 'Hello', variant: 'success'})
      * ```
      * 
      * @param params - The parameters of the alert
@@ -32,7 +35,7 @@ export interface FrontendAPIInterface {
     alert(params:AlertParams): void;
 }
 
-type ConfirmParams = {
+export type ConfirmParams = {
     /**
      * The message to display in the dialog
      */
@@ -48,7 +51,7 @@ type ConfirmParams = {
    
 }
 
-type AlertParams = {
+export type AlertParams = {
     /**
      * The message to display in the alert
      */
@@ -59,7 +62,7 @@ type AlertParams = {
     variant?: AlertVariant;
 }
 
-enum AlertVariant {
+export enum AlertVariant {
     Danger = 'danger',
     Success = 'success',
     Warning = 'warning',
