@@ -14,7 +14,7 @@ export interface GenericHttpServer {
 
   /**
    * Sets up HTTP server to serve AdminForth SPA.
-   * if hotReload is true, it should proxy all requests and headers to Vite dev server at http://localhost:5173${req.url}
+   * if hotReload is true, it should proxy all requests and headers to Vite dev server at `http://localhost:5173$\{req.url\}`
    * otherwise it should serve AdminForth SPA from dist folder. See Express for example.
    */
   setupSpaServer(): void;
@@ -37,10 +37,10 @@ export interface ExpressHttpServer extends GenericHttpServer {
    * Example:
    * 
    * ```ts
-   * expressApp.get('/myApi', authorize((req, res) => {
+   * expressApp.get('/myApi', authorize((req, res) => \{
    *  console.log('User is authorized', req.adminUser);
-   *  res.json({ message: 'Hello World' });
-   * }));
+   *  res.json(\{ message: 'Hello World' \});
+   * \}));
    * ``
    * 
    */
@@ -95,7 +95,7 @@ export interface AdminForthPluginType {
   componentPath(componentFile: string): string;
 }
 
-export enum AdminForthMenuType {
+export enum AdminForthMenuTypes {
   /**
    * HEADING is just a label in the menu.
    * Respect `label` and `icon` property in {@link AdminForthConfigMenuItem}
@@ -105,7 +105,7 @@ export enum AdminForthMenuType {
   /**
    * GROUP is a group of menu items.
    * Respects `label`, `icon` and `children` properties in {@link AdminForthConfigMenuItem}
-   * use @AdminForthMenuType.open to set if group is open by default
+   * use @AdminForthMenuTypes.open to set if group is open by default
    */
   group = 'group',
 
@@ -123,7 +123,7 @@ export enum AdminForthMenuType {
    * 
    * ```ts
    * \{
-   *  type: AdminForthMenuType.PAGE,
+   *  type: AdminForthMenuTypes.PAGE,
    *  label: 'Custom Page',
    *  icon: 'home',
    *  path: '/dash',
@@ -159,7 +159,7 @@ export enum AdminForthResourcePages {
  * Menu item which displayed in the left sidebar of the admin panel.
  */
 export type AdminForthConfigMenuItem = {
-    type?: AdminForthMenuType | keyof typeof AdminForthMenuType,
+    type?: AdminForthMenuTypes | keyof typeof AdminForthMenuTypes,
 
     /**
      * Label for menu item which will be displayed in the admin panel.
@@ -188,7 +188,7 @@ export type AdminForthConfigMenuItem = {
 
     /**
      * Component to be used for this menu item. Component should be placed in custom folder and referenced with `@@/` prefix.
-     * Supported for AdminForthMenuType.PAGE only!
+     * Supported for AdminForthMenuTypes.PAGE only!
      * Example:
      * 
      * ```ts
@@ -200,7 +200,7 @@ export type AdminForthConfigMenuItem = {
 
     /**
      * Resource ID which will be used to fetch data from.
-     * Supported for AdminForthMenuType.RESOURCE only!
+     * Supported for AdminForthMenuTypes.RESOURCE only!
      * 
      */
     resourceId?: string,
@@ -213,14 +213,14 @@ export type AdminForthConfigMenuItem = {
 
     /**
      * Where Group is open by default
-     * Supported for AdminForthMenuType.GROUP only!
+     * Supported for AdminForthMenuTypes.GROUP only!
      * 
      */    
     open?: boolean,
 
     /**
      * Children menu items which will be displayed in this group.
-     * Supported for AdminForthMenuType.GROUP only!
+     * Supported for AdminForthMenuTypes.GROUP only!
      */
     children?: Array<AdminForthConfigMenuItem>,
 
@@ -363,6 +363,11 @@ export type AdminForthResourceColumn = {
     foreignResource?:AdminForthForeignResource,
     sortable?: boolean,
     backendOnly?: boolean, // if true field will not be passed to UI under no circumstances, but will be presented in hooks
+
+    /**
+     * Masked fields will be displayed as `*****` on Edit and Create pages.
+     */
+    masked?: boolean,
 }
   
 /**

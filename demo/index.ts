@@ -99,19 +99,14 @@ const admin = new AdminForth({
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
-      recordLabel: (r) => `🏡 ${r.title}`,
-      hooks: {
-        afterDatasourceRequest: async ({ response, adminUser }) => {
-          console.log('afterDatasourceRequest', response);
-          return { ok: true, error: false }
-        }
-      },
+      recordLabel: (r: any) => `🏡 ${r.title}`,
       columns: [
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label
           showIn: ['filter', 'show'], // show in filter and in show page
           primaryKey: true,
+          // @ts-ignore
           fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
@@ -132,6 +127,8 @@ const admin = new AdminForth({
           type: AdminForth.Types.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
+
+          // @ts-ignore
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         { 
@@ -187,10 +184,13 @@ const admin = new AdminForth({
             resourceId: 'users',
             hooks: {
               dropdownList: {
-                beforeDatasourceRequest: async ({ query, adminUser }) => {
+                beforeDatasourceRequest: async ({ query, adminUser }: any) => {
+                  console.log('beforeDatasourceRequest', query, adminUser)
                   return { ok: true, error: false }
                 },
-                afterDatasourceResponse: async ({ response, adminUser }) => {
+                afterDatasourceResponse: async ({ response, adminUser }: any) => {
+                  console.log('beforeDatasourceRequest', response, adminUser)
+
                   return { ok: true, error: false }
                 }
               },
@@ -213,7 +213,7 @@ const admin = new AdminForth({
           // icon: 'typcn:archive',
           state:'active',
           confirm: 'Are you sure you want to mark all selected apartments as listed?',
-          action: function ({selectedIds, adminUser}) {
+          action: function ({selectedIds, adminUser}: any) {
             const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
             stmt.run(...selectedIds);
             return { ok: true, error: false, message: 'Marked as listed' }
@@ -245,7 +245,7 @@ const admin = new AdminForth({
         { 
           name: 'id', 
           primaryKey: true,
-          fillOnCreate: ({initialRecord, adminUser}) => uuid(),
+          fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
         },
         { 
@@ -263,7 +263,7 @@ const admin = new AdminForth({
           name: 'created_at', 
           type: AdminForth.Types.DATETIME,
           showIn: ['list', 'filter', 'show'],
-          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+          fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
         },
         // { 
         //   name: 'password_hash',
@@ -292,20 +292,20 @@ const admin = new AdminForth({
       ],
       hooks: {
         list: {
-          afterDatasourceResponse: async ({ query, adminUser }) => {
+          afterDatasourceResponse: async ({ query, adminUser }: any) => {
             console.log('321321312')
             return { ok: true, error: false }
           }
         },
         create: {
-          beforeSave: async ({ record, adminUser, resource }) => {
+          beforeSave: async ({ record, adminUser, resource }: any) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             return { ok:true, error: false };
             // if return 'error': , record will not be saved and error will be proxied
           }
         },
         edit: {
-          beforeSave: async ({ record, adminUser, resource}) => {
+          beforeSave: async ({ record, adminUser, resource}: any) => {
             if (record.password) {
               record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
@@ -343,8 +343,9 @@ const admin = new AdminForth({
         label: 'Games',
         columns: [
             {
-                name: 'id', readOnly: true, required: false, 
-                label: 'Identifier', fillOnCreate: ({initialRecord}) => uuid(),
+                name: 'id', 
+                readOnly: true, required: false, 
+                label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
                 showIn: ['list', 'filter', 'show'],  // the default is full set
             },
             { name: 'name', required: true, isUnique: true },
@@ -356,7 +357,7 @@ const admin = new AdminForth({
                     
                 ]
             },
-            { name: 'release_date', fillOnCreate: (initialRecord) => (new Date()).toISOString() },
+            { name: 'release_date', fillOnCreate: ({initialRecord}: any) => (new Date()).toISOString() },
             { name: 'release_date2' },
             { name: 'description' },
             { name: 'price' },
@@ -374,7 +375,7 @@ const admin = new AdminForth({
             { 
               name: 'id', 
               primaryKey: true,
-              fillOnCreate: ({initialRecord, adminUser}) => uuid(),
+              fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
               showIn: ['list', 'filter', 'show'],  // the default is full set
             },
             { 
@@ -387,7 +388,7 @@ const admin = new AdminForth({
               name: 'created_at', 
               type: AdminForth.Types.DATETIME,
               showIn: ['list', 'filter', 'show'],
-              fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+              fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
             },
             {
               name: 'role',
