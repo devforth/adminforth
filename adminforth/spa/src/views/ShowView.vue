@@ -142,14 +142,14 @@ onMounted(async () => {
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
 
   showComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.show) {
-          acc[column.name] = getCustomComponent(column.component.show);
+      if (column.components?.show) {
+          acc[column.name] = getCustomComponent(column.components.show);
       }
       return acc;
   }, {});
   showRowComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.showRow) {
-          acc[column.name] = getCustomComponent(column.component.showRow);
+      if (column.components?.showRow) {
+          acc[column.name] = getCustomComponent(column.components.showRow);
       }
       return acc;
   }, {});

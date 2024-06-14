@@ -101,8 +101,8 @@ onMounted(async () => {
     resourceId: route.params.resourceId
   });
   createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.create) {
-          acc[column.name] = getCustomComponent(column.component.create);
+      if (column.components?.create) {
+          acc[column.name] = getCustomComponent(column.components.create);
       }
       return acc;
     }, {});

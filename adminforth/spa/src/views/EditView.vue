@@ -117,8 +117,8 @@ onMounted(async () => {
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
 
   editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.component?.edit) {
-          acc[column.name] = getCustomComponent(column.component.edit);
+      if (column.components?.edit) {
+          acc[column.name] = getCustomComponent(column.components.edit);
       }
       return acc;
     }, {});

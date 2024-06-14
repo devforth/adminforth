@@ -10,7 +10,7 @@ import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 import { getComponentNameFromPath } from './utils.js';
 import { styles } from '../styles.js'
-
+import { CodeInjectorType } from '../types.js';
 
 
 
@@ -30,7 +30,7 @@ function hashify(obj) {
     ('sha256').update(JSON.stringify(obj)).digest('hex');
 }
 
-class CodeInjector {
+class CodeInjector implements CodeInjectorType {
 
   allWatchers = [];
   adminforth: AdminForth;
