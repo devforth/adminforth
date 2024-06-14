@@ -8,6 +8,8 @@ export const useCoreStore = defineStore('core', () => {
   const config = ref({});
   const record = ref({});
   const resourceColumns = ref(null);
+  const resource = ref(null);
+
   const resourceOptions = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
@@ -85,6 +87,7 @@ export const useCoreStore = defineStore('core', () => {
     } else {
       resourceColumns.value = res.resource.columns;
       resourceById.value[resourceId] = res.resource;
+      resource.value = res.resource;
       resourceOptions.value = res.resource.options;
     }
   }
@@ -129,6 +132,7 @@ export const useCoreStore = defineStore('core', () => {
     fetchResourceFull, 
     resourceColumnsError,
     resourceOptions,
-    logout
+    logout,
+    resource,
   }
 })

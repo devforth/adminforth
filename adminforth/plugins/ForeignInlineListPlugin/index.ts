@@ -1,4 +1,4 @@
-import { AdminForthResource } from "../../types/AdminForthConfig.js";
+import { AdminForthResource, AdminForthResourcePages } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import AdminForth from "../../index.js";
 
@@ -30,7 +30,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
       name: `foreignInlineList_${this.foreignResource.resourceId}`,
       label: 'Foreign Inline List',
       virtual: true,
-      showIn: ['show'],
+      showIn: [AdminForthResourcePages.SHOW],
       component: {
         showRow: this.componentPath('InlineList.vue'),
       },

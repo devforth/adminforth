@@ -99,7 +99,7 @@ const admin = new AdminForth({
       resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
-      itemLabel: (r) => `🏡 ${r.title}`,
+      recordLabel: (r) => `🏡 ${r.title}`,
       hooks: {
         afterDatasourceRequest: async ({ response, adminUser }) => {
           console.log('afterDatasourceRequest', response);
@@ -236,7 +236,7 @@ const admin = new AdminForth({
       table: 'users',
       resourceId: 'users',
       label: 'Users',  
-      itemLabel: (r) => `👤 ${r.email}`,
+      recordLabel: (r) => `👤 ${r.email}`,
       plugins: [
         new ForeignInlineListPlugin({
           foreignResourceId: 'apparts',
