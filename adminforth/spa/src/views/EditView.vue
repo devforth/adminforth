@@ -3,8 +3,8 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :record="editableRecord"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -30,7 +30,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -39,7 +39,8 @@
     <ResourceForm 
       v-else
       :record="editableRecord"
-      :resourceColumns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
+      :adminUser="coreStore.adminUser"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
@@ -51,7 +52,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 

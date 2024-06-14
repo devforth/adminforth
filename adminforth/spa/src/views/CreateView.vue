@@ -5,7 +5,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -34,7 +34,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
@@ -56,7 +56,7 @@
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom || []"
       :is="getCustomComponent(c)"
       :record="coreStore.record"
-      :columns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
