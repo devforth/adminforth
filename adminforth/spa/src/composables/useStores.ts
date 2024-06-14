@@ -14,8 +14,8 @@ declare global {
 }
 
 export class FrontendAPI implements FrontendAPIInterface {
-  toastStore:any
-  modalStore:any
+  private toastStore:any
+  private modalStore:any
   init() {
     if (window.adminforth) {
       throw new Error('adminforth already initialized');

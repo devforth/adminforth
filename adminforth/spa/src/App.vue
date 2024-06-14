@@ -185,6 +185,7 @@ const coreStore = useCoreStore();
 const modalStore = useModalStore();
 const toastStore = useToastStore();
 const frontendApi = new FrontendAPI();
+frontendApi.init();
 const splitAtLast = (str: string, separator: string) => {
   const index = str.lastIndexOf(separator);
   return [str.slice(0, index), str.slice(index + 1)];
