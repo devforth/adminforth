@@ -4,11 +4,11 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'AdminForth',
-  tagline: 'AdminForth Open-Source Vue-driven Next-Gen Admin Panel',
+  tagline: 'OpenSource Dashboard on Tailwind UI extendable with Vue3 ',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
-  url: 'https://adminforth.devforth.io',
+  url: 'https://adminforth.dev',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -16,7 +16,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'devforth', // Usually your GitHub org/user name.
-  projectName: 'adminforth', // Usually your repo name.
+  projectName: 'devforth.github.io', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -76,7 +76,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    // image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: 'AdminForth',
       logo: {
@@ -96,7 +96,7 @@ const config: Config = {
           position: 'left',
           label: 'API',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        // {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/devforth/adminforth',
           label: 'GitHub',
@@ -113,6 +113,10 @@ const config: Config = {
             {
               label: 'Tutorial',
               to: '/docs/Getting%20Started',
+            },
+            {
+              label: 'API',
+              to: '/docs/api',
             },
           ],
         },
@@ -136,9 +140,17 @@ const config: Config = {
         {
           title: 'More',
           items: [
+            // {
+            //   label: 'Blog',
+            //   to: '/blog',
+            // },
             {
-              label: 'Blog',
-              to: '/blog',
+              label: 'DevForth.io',
+              href: 'https://devforth.io',
+            },
+            {
+              label: 'We can develop dashboard for you',
+              href: 'https://devforth.io/contact',
             },
             {
               label: 'GitHub',
@@ -150,7 +162,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} Devforth sp. z o.o.`,
     },
     prism: {
-      theme: prismThemes.github,
+      theme: prismThemes.okaidia,
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
