@@ -1,6 +1,6 @@
 <template>
     
-    Hello from 🇺🇦 1  fsafs fsa111jjjj1 f ffsa s
+    Hello from 🇺🇦 1 
     "{{ column?.name }}" is not "{{ record?.id }}""
 </template>
 
