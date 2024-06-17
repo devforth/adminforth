@@ -73,13 +73,12 @@ export const useCoreStore = defineStore('core', () => {
     resourceColumns.value = null;
     resourceColumnsError.value = '';
     const res = await callAdminForthApi({
-      path: '/get_resource_columns',
+      path: '/get_resource',
       method: 'POST',
       body: {
         resourceId,
       }
-    }
-    );
+    });
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {

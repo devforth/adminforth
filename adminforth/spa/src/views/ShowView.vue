@@ -3,6 +3,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -26,6 +27,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -60,8 +62,9 @@
                 class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
               <component
-                v-if="showRowComponentsPerColumn[column.name]"
-                  :is="showRowComponentsPerColumn[column.name]"
+                v-if="column.components?.showRow"
+                  :is="getCustomComponent(column.components.showRow)"
+                  :meta="column.components.showRow.meta"
                   :column="column"
                   :resource="coreStore.resource"
                   :record="coreStore.record"
@@ -75,6 +78,7 @@
                     v-if="showComponentsPerColumn[column.name]"
                     :is="showComponentsPerColumn[column.name]"
                     :resource="coreStore.resource"
+                    :meta="column.components.show.meta"
                     :column="column"
                     :record="coreStore.record"
                   />
@@ -91,6 +95,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :column="column"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -110,7 +115,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
 import { useModalStore } from '@/stores/modal';
-import { getCustomComponent,checkAcessByAllowedActions } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
@@ -122,7 +127,6 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
 let showComponentsPerColumn = {};
-let showRowComponentsPerColumn = {};
 
 console.log(route.params,'showWiev');
 
@@ -147,13 +151,6 @@ onMounted(async () => {
       }
       return acc;
   }, {});
-  showRowComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
-      if (column.components?.showRow) {
-          acc[column.name] = getCustomComponent(column.components.showRow);
-      }
-      return acc;
-  }, {});
-
   loading.value = false;
 });
 

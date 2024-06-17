@@ -179,8 +179,8 @@ class CodeInjector implements CodeInjectorType {
         const src = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa', file);
         const dest = path.join(CodeInjector.SPA_TMP_PATH, file);
  
+        // overwrite:true can't be used to not destroy cache
         await fsExtra.copy(src, dest, {
-          overwrite: true,
           dereference: true, // needed to dereference types
         });
         if (process.env.HEAVY_DEBUG) {
@@ -200,15 +200,15 @@ class CodeInjector implements CodeInjectorType {
         // ignore
       }
 
+      // overwrite can't be used to not destroy cache
       await fsExtra.copy(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa'), CodeInjector.SPA_TMP_PATH, {
         filter: (src) => {
           if (process.env.HEAVY_DEBUG) {
             console.log('🪲 await fsExtra.copy filtering', src);
           }
 
-          return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist');
+          return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
         },
-        overwrite: true,
         dereference: true, // needed to dereference types
       });
 
@@ -264,18 +264,18 @@ class CodeInjector implements CodeInjectorType {
     this.adminforth.config.resources.forEach((resource) => {
       resource.columns.forEach((field) => {
         if (field.components) {
-          Object.values(field.components).forEach((filePath) => {
-            if (!customResourceComponents.includes(filePath)) {
-              customResourceComponents.push(filePath);
+          Object.values(field.components).forEach(({ file, meta }) => {
+            if (!customResourceComponents.includes(file)) {
+              customResourceComponents.push(file);
             }
           });
         }
       });
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: string[]) => {
-          filePathes.forEach((filePath) => {
-            if (!customResourceComponents.includes(filePath)) {
-              customResourceComponents.push(filePath);
+          filePathes.forEach(({ file, meta }) => {
+            if (!customResourceComponents.includes(file)) {
+              customResourceComponents.push(file);
             }
           });
         });
