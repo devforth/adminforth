@@ -9,7 +9,7 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
-import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages } from './types/AdminForthConfig.js';
+import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, AdminForthFieldComponentDeclaration } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
 import path from 'path';
 
@@ -77,6 +77,20 @@ class AdminForth implements AdminForthClass {
     return [];
   }
 
+  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>): AdminForthComponentDeclaration {
+    if (!component) {
+      return component;
+    }
+    let obj = component;
+    if (typeof obj === 'string') {
+      obj = { file: component, meta: {} };
+    }
+    errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
+    
+    return obj;
+  }
+
+
   validateConfig() {
     const errors = [];
 
@@ -135,9 +149,6 @@ class AdminForth implements AdminForthClass {
     if (this.config.customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
     }
-    
-
-
 
     if (!this.config.customization.datesFormat) {
       this.config.customization.datesFormat = 'MMM D, YYYY HH:mm:ss';
@@ -245,11 +256,12 @@ class AdminForth implements AdminForthClass {
             Object.entries(res.options.pageInjections).map(([key, value]) => {
               Object.entries(value).map(([injection, target]) => {
                 if (possibleInjections.includes(injection)) {
-                  if (typeof target === 'string') {
+                  if (!Array.isArray(res.options.pageInjections[key][injection])) {
+                    // not array
                     res.options.pageInjections[key][injection] = [target];
                   }
-                  res.options.pageInjections[key][injection].forEach((target) => {
-                    errors.push(...this.checkCustomFileExists(target));
+                  res.options.pageInjections[key][injection].forEach((target, i) => {
+                    res.options.pageInjections[key][injection][i] = this.validateComponent(target, errors);
                   });
                 } else {
                   errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')}`);
@@ -351,13 +363,18 @@ class AdminForth implements AdminForthClass {
     for (const resource of this.config.resources) {
       for (const column of resource.columns) {
           if (column.components) {
-            for (const [key, value] of Object.entries(column.components)) {
-                if (this.codeInjector.allComponentNames[value]) {
+            Object.entries(column.components).forEach(([key, comp]) => {
+              column.components[key] = this.validateComponent(comp, errors);
+            });
+            console.log('🔧🔧🔧 Validating components for resource', column.components);
+
+            for (const [key, { file, meta }] of Object.entries(column.components)) {
+                if (this.codeInjector.allComponentNames[file]) {
                   // not obvious, but if we are in this if, it means that this is plugin component
                   // and there is no sense to check if it exists in users folder
                   continue;
                 }
-                const path = value.replace('@@', this.config.customization.customComponentsDir);
+                const path = file.replace('@@', this.config.customization.customComponentsDir);
                 if (!fs.existsSync(path)) {
                     throw new Error(`Component file ${path} does not exist`);
                 }
@@ -589,7 +606,7 @@ class AdminForth implements AdminForthClass {
 
     server.endpoint({
       method: 'POST',
-      path: '/get_resource_columns',
+      path: '/get_resource',
       handler: async ({ body }) => {
         const { resourceId } = body;
         if (!this.statuses.dbDiscover) {

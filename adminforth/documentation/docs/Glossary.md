@@ -36,3 +36,7 @@ Hook is a optional async function which allows to inject in backend logic before
 ## component
 
 Component is a Vue component which is used to add or modify UI elements in AdminForth. It can be used as a full custom page with a link in menu or as a part of the existing AdminForth page
+
+## field
+
+Name of the column. To reduce glossary, in future we might rename it to `columnName`
