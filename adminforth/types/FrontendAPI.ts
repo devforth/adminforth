@@ -33,6 +33,8 @@ export interface FrontendAPIInterface {
      * @param params - The parameters of the alert
      */
     alert(params:AlertParams): void;
+
+    setListFilter(filter: any): void;
 }
 
 export type ConfirmParams = {
