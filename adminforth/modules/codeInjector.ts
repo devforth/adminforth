@@ -9,7 +9,7 @@ import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 import { getComponentNameFromPath } from './utils.js';
-import { styles } from '../styles.js'
+import { styles } from './styles.js'
 import { CodeInjectorType } from '../types/AdminForthConfig.js';
 
 

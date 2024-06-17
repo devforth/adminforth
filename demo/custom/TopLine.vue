@@ -9,7 +9,7 @@
  
     <pre v-if="show" class="text-xs full-width">
 {{ JSON.stringify(
-          { record, columns, adminUser }, null, 2)
+          { record, resource, adminUser }, null, 2)
       }}
     </pre>
 
@@ -24,7 +24,7 @@ const show = ref(false);
 
 const props = defineProps({
   record: Object,
-  columns: Array,
+  resource: Object,
   adminUser: Object,
 });
 </script>

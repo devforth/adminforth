@@ -13,7 +13,7 @@ export const useCoreStore = defineStore('core', () => {
   const resourceOptions = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
-  const user = ref(null);
+  const adminUser = ref(null);
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -29,10 +29,8 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
-    user.value = resp.user;
+    adminUser.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
-
-      
   }
 
   async function fetchRecord({ resourceId, primaryKey }) {
@@ -109,12 +107,12 @@ export const useCoreStore = defineStore('core', () => {
 
   const username = computed(() => {
     const usernameField = config.value.usernameField;
-    return user.value && user.value[usernameField];
+    return adminUser.value && adminUser.value[usernameField];
   });
 
   const userFullname = computed(() => {
     const userFullnameField = config.value.userFullnameField;
-    return user.value && user.value[userFullnameField];
+    return adminUser.value && adminUser.value[userFullnameField];
   })
 
 
@@ -134,5 +132,6 @@ export const useCoreStore = defineStore('core', () => {
     resourceOptions,
     logout,
     resource,
+    adminUser,
   }
 })
