@@ -59,7 +59,7 @@
 
     v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
 
-    id="logo-sidebar" class="fixed border-none top-0 left-0 z-50 w-64 h-screen  transition-transform bg-nav-menu-bg border-r border-  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
+    id="logo-sidebar" class="fixed border-none top-0 left-0 z-50 w-64 h-screen  transition-transform bg-nav-menu-bg border-r border-nav-menu-border  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
     :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
     aria-label="Sidebar"
   >
