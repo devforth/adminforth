@@ -1,19 +1,21 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
+import type { AdminForthResource, AdminForthResourceColumn } from '@/types/AdminForthConfig';
+import type { Ref } from 'vue'
 
 export const useCoreStore = defineStore('core', () => {
-  const resourceById = ref([]);
+  const resourceById: Ref<Object> = ref({});
   const menu = ref([]);
   const config = ref({});
   const record = ref({});
-  const resourceColumns = ref(null);
-  const resource = ref(null);
+  const resource: Ref<AdminForthResource | null> = ref(null);
+
   const resourceColumnsWithFilters = computed(() => {
-    if (!resourceColumns.value) {
+    if (!resource.value) {
       return [];
     }
-    return resourceColumns.value.filter((col) => col.showIn.includes('filter'));
+    return resource.value.columns.filter((col: AdminForthResourceColumn) => col.showIn?.includes('filter'));
   })
 
   const resourceOptions = ref(null);
@@ -30,7 +32,7 @@ export const useCoreStore = defineStore('core', () => {
       return
     }
     menu.value = resp.menu;
-    resourceById.value = resp.resources.reduce((acc, resource) => {
+    resourceById.value = resp.resources.reduce((acc: Object, resource: AdminForthResource) => {
       acc[resource.resourceId] = resource;
       return acc;
     }, {});
@@ -42,7 +44,7 @@ export const useCoreStore = defineStore('core', () => {
   async function fetchRecord({ resourceId, primaryKey }) {
     record.value = null;
     
-    if (!resourceColumns.value) {
+    if (!resource.value) {
       throw new Error('Columns not fetched yet');
     }
 
@@ -54,7 +56,7 @@ export const useCoreStore = defineStore('core', () => {
         resourceId: resourceId,
         filters: [
           {
-            field: resourceColumns.value.find((col) => col.primaryKey).name,
+            field: resource.value.columns.find((col: AdminForthResourceColumn) => col.primaryKey).name,
             operator: 'eq',
             value: primaryKey
           }
@@ -70,13 +72,12 @@ export const useCoreStore = defineStore('core', () => {
     resourceOptions.value = respData.options;
   }
 
-  async function fetchResourceFull({ resourceId }) {
-    if (resourceColumnsId.value === resourceId && resourceColumns.value) {
+  async function fetchResourceFull({ resourceId }: { resourceId: string }) {
+    if (resourceColumnsId.value === resourceId && resource.value) {
       // already fetched
       return;
     }
     resourceColumnsId.value = resourceId;
-    resourceColumns.value = null;
     resourceColumnsError.value = '';
     const res = await callAdminForthApi({
       path: '/get_resource',
@@ -88,7 +89,6 @@ export const useCoreStore = defineStore('core', () => {
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {
-      resourceColumns.value = res.resource.columns;
       resourceById.value[resourceId] = res.resource;
       resource.value = res.resource;
       resourceOptions.value = res.resource.options;
@@ -131,7 +131,6 @@ export const useCoreStore = defineStore('core', () => {
     fetchMenuAndResource, 
     fetchRecord, 
     record, 
-    resourceColumns, 
     fetchResourceFull, 
     resourceColumnsError,
     resourceOptions,

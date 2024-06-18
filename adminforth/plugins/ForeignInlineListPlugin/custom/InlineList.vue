@@ -3,13 +3,12 @@
     <!-- todo exclude foreign column-->
     <Filters
       v-if="listResource"
-      :columns="listResource.columns"  
+      :columns="listResource.columns.filter((c) => c.name !== listResourceRefColumn.name)"
       v-model:filters="filters"
       :columnsMinMax="columnsMinMax"
       :show="filtersShow"
       @hide="filtersShow = false"
     />
-    {{ listResource?.columns}}
   </Teleport>
     
   <td colspan="2">
@@ -56,23 +55,24 @@
           name: 'resource-create', 
           params: { resourceId: listResource.resourceId }, 
           query: { 
-            [listResourceRefColumn.name]: props.record[selfPrimaryKeyColumn.name]
-          }
+            values: encodeURIComponent(JSON.stringify({[listResourceRefColumn.name]: props.record[selfPrimaryKeyColumn.name]})),
+            returnTo: $route.fullPath,
+          },
        }"
-        class="flex items-center py-1 px-3  text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+        class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
       >
         <IconPlusOutline class="w-4 h-4 me-2"/>
         Create
       </RouterLink>
 
       <button
-        class="flex gap-1 items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+        class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
         @click="()=>{filtersShow = !filtersShow}"
       >
         <IconFilterOutline class="w-4 h-4 me-2"/>
         Filter
         <span
-          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
+          class="bg-red-100 text-red-800 text-xs font-medium  px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
           v-if="filters.length">
             {{ filters.length }}
           </span>
@@ -88,6 +88,7 @@
       @update:checkboxes="checkboxes = $event"
       :pageSize="pageSize"
       :totalRows="totalRows"
+      :checkboxes="checkboxes"
     />
   </td>
 </template>
@@ -96,12 +97,14 @@
 import { callAdminForthApi } from '@/utils';
 import { ref, onMounted, watch, computed  } from 'vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
-
+import Filters from '@/components/Filters.vue';
 import {
   IconBanOutline,
   IconFilterOutline,
   IconPlusOutline,
 } from '@iconify-prerendered/vue-flowbite';
+
+import { getIcon } from '@/utils';
 
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 
@@ -118,6 +121,7 @@ const totalRows = ref(0);
 
 const filters = ref([]);
 const filtersShow = ref(false);
+const columnsMinMax = ref(null);
 
 const listResourceRefColumn = computed(() => {
   if (!listResource.value) {
@@ -164,6 +168,28 @@ watch([sort], async () => {
   await getList();
 }, {deep: true});
 
+watch([filters], async () => {
+  page.value = 1;
+  checkboxes.value = [];
+  await getList();
+}, {deep: true});
+
+
+async function startBulkAction(actionId) {
+  const data = await callAdminForthApi({
+    path: '/start_bulk_action',
+    method: 'POST',
+    body: {
+      resourceId: listResource.value.resourceId,
+      actionId: actionId,
+      recordIds: checkboxes.value
+    }
+  });
+  if (data?.status === 'success') {
+    checkboxes.value = [];
+  }
+  await getList();
+}
 
 async function getList() {
   rows.value = null;
@@ -188,7 +214,6 @@ async function getList() {
   totalRows.value = data.total;
 }
 
-
 onMounted( async () => {
   loading.value = true;
   const foreighResourceId = props.meta.foreignResourceId;
@@ -197,6 +222,13 @@ onMounted( async () => {
       method: 'POST',
       body: {},
   })).resource;
+  columnsMinMax.value = await callAdminForthApi({
+    path: '/get_min_max_for_columns',
+    method: 'POST',
+    body: {
+      resourceId: foreighResourceId,
+    }
+  });
   loading.value = false;
   await getList();
 });

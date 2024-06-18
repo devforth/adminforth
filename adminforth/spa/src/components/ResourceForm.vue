@@ -152,7 +152,7 @@ const router = useRouter();
 
 const props = defineProps({
   loading: Boolean,
-  resourceColumns: Object,
+  resource: Object,
   record: Object,
   validating: Boolean,
   customComponentsPerColumn: Object,
@@ -228,7 +228,7 @@ onMounted(() => {
 
 const columnOptions = computedAsync(async () => { 
   return (await Promise.all(
-    Object.values(props.resourceColumns).map(async (column) => {
+    Object.values(props.resource.columns).map(async (column) => {
       if (column.foreignResource) {
         const list = await callAdminForthApi({
           method: 'POST',
@@ -251,7 +251,7 @@ const coreStore = useCoreStore();
 
 const editableColumns = computed(() => {
   const mode = props.record ? 'edit' : 'create';
-  return props.resourceColumns?.filter(column => column.showIn.includes(mode));
+  return props.resource?.columns?.filter(column => column.showIn.includes(mode));
 });
 
 const isValid = computed(() => {

@@ -4,6 +4,7 @@ import { useModalStore } from '../stores/modal';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
+import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
 
 
@@ -65,7 +66,7 @@ export class FrontendAPI implements FrontendAPIInterface {
     } else {
       if(!this.coreStore) this.coreStore = useCoreStore()
       console.log(this.coreStore.resourceColumnsWithFilters,'core store')
-      const filterField = this.coreStore.resourceColumnsWithFilters.find((col) => col.name === filter.field)
+      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumn) => col.name === filter.field)
       if(!filterField){
           throw new Error(`Field ${filter.field} is not available for filtering`)
         }
@@ -97,7 +98,7 @@ export class FrontendAPI implements FrontendAPIInterface {
   updateListFilter(filter: FilterParams): void {
     if(this.listFilterValidation(filter)){
       this.filtersStore = useFiltersStore()
-      const index = this.filtersStore.filters.findIndex((f) => f.field === filter.field)
+      const index = this.filtersStore.filters.findIndex((f: FilterParams) => f.field === filter.field)
       if(index === -1) {
         this.filtersStore.setFilter(filter)
       } else {
