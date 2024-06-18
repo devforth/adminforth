@@ -11,7 +11,7 @@ export const styles = () => `
     "header-logo-color": "#333333", // Dark grey logo
     "header-border-color": "rgb(229 231 235)", // Light grey border
 
-    "nav-menu-bg": "#FFFFFF", // Very light grey
+    "nav-menu-bg": "#f9fafb", // Very light grey
     "nav-menu-border": "rgb(229 231 235)",
     "nav-menu-bg-hover": "rgb(243 244 246)", // Light grey hover
     "nav-menu-bg-active": "rgb(233, 234, 236)", // Light grey active

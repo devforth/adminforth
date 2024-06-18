@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { callAdminForthApi } from '@/utils';
 
  type ModalContentType = {
   title?: string;

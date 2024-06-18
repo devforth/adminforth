@@ -1,7 +1,12 @@
-import type { FrontendAPIInterface, ConfirmParams, AlertParams } from '../types/FrontendAPI';
+import type { FrontendAPIInterface, ConfirmParams, AlertParams, FilterParams,Operator } from '../types/FrontendAPI';
 import { useToastStore } from '../stores/toast';
 import { useModalStore } from '../stores/modal';
+import { useCoreStore } from '@/stores/core';
+import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
+
+
+
 
 
 declare global {
@@ -10,13 +15,18 @@ declare global {
       confirm: (params: ConfirmParams) => Promise<void>;
       alert: (params: AlertParams) => void;
       setListFilter: (filter: any) => void;
+      updateListFilter: (filter: any) => void;
+      clearListFilters: () => void;
     };
   }
 }
 
 export class FrontendAPI implements FrontendAPIInterface {
+  private validOperators: Operator[] = ['lte', 'gte', 'in','ilike'];
   private toastStore:any
   private modalStore:any
+  private filtersStore:any  
+  private coreStore:any
   init() {
     if (window.adminforth) {
       throw new Error('adminforth already initialized');
@@ -28,6 +38,8 @@ export class FrontendAPI implements FrontendAPIInterface {
       confirm: this.confirm.bind(this),
       alert: this.alert.bind(this),
       setListFilter: this.setListFilter.bind(this),
+      updateListFilter: this.updateListFilter.bind(this),
+      clearListFilters: this.clearListFilters.bind(this),
     }
   }
 
@@ -47,15 +59,53 @@ export class FrontendAPI implements FrontendAPIInterface {
     })
   }
 
-  setListFilter(filter: any): void {
+  listFilterValidation(filter: FilterParams): boolean {
     if(router.currentRoute.value.meta.type !== 'list'){
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
+    } else {
+      if(!this.coreStore) this.coreStore = useCoreStore()
+      console.log(this.coreStore.resourceColumnsWithFilters,'core store')
+      const filterField = this.coreStore.resourceColumnsWithFilters.find((col) => col.name === filter.field)
+      if(!filterField){
+          throw new Error(`Field ${filter.field} is not available for filtering`)
+        }
+      if(filterField) {
+        if(!this.validOperators.includes(filter.operator)){
+          throw new Error(`Operator ${filter.operator} is not valid`)
+        } 
+      }
     }
-
-
+    return true
   }
+
+  setListFilter(filter: FilterParams): void {
+    if(this.listFilterValidation(filter)){
+      this.filtersStore = useFiltersStore()
+      if(this.filtersStore.filters.some((f) => {return f.field === filter.field && f.operator === filter.operator})){
+        throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
+      } else {
+      this.filtersStore.setFilter(filter)
+      }
+    }
+  }
+
+  clearListFilters(): void {
+    this.filtersStore = useFiltersStore()
+    this.filtersStore.clearFilters()
+  }
+
+  updateListFilter(filter: FilterParams): void {
+    if(this.listFilterValidation(filter)){
+      this.filtersStore = useFiltersStore()
+      const index = this.filtersStore.filters.findIndex((f) => f.field === filter.field)
+      if(index === -1) {
+        this.filtersStore.setFilter(filter)
+      } else {
+      this.filtersStore.setFilters([...this.filtersStore.filters.slice(0, index), filter, ...this.filtersStore.filters.slice(index + 1)])
+      }
+    }
+  }
+
+
+
 }
-
-
-
-
