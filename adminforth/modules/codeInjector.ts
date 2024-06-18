@@ -10,7 +10,7 @@ import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
 import { getComponentNameFromPath } from './utils.js';
 import { styles } from './styles.js'
-import { CodeInjectorType } from '../types/AdminForthConfig.js';
+import { AdminForthComponentDeclaration, CodeInjectorType } from '../types/AdminForthConfig.js';
 
 
 
@@ -264,7 +264,7 @@ class CodeInjector implements CodeInjectorType {
     this.adminforth.config.resources.forEach((resource) => {
       resource.columns.forEach((field) => {
         if (field.components) {
-          Object.values(field.components).forEach(({ file, meta }) => {
+          Object.values(field.components).forEach(({ file }: {file: string}) => {
             if (!customResourceComponents.includes(file)) {
               customResourceComponents.push(file);
             }
@@ -272,8 +272,8 @@ class CodeInjector implements CodeInjectorType {
         }
       });
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
-        Object.values(injection).forEach((filePathes: string[]) => {
-          filePathes.forEach(({ file, meta }) => {
+        Object.values(injection).forEach((filePathes: {file: string}[]) => {
+          filePathes.forEach(({ file }) => {
             if (!customResourceComponents.includes(file)) {
               customResourceComponents.push(file);
             }

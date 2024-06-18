@@ -30,18 +30,18 @@
                     />
                 </template>
                 <template v-else>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                    {{ column.label }}
-                    <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
-                        <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                        :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
-                        />
-                    </span>
-                    <div :id="`tooltip-show-${i}`"
-                        role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                        Required field
-                        <div class="tooltip-arrow" data-popper-arrow></div>
-                    </div>
+                    <td class="px-6 py-4 whitespace-nowrap "> <!--align-top-->
+                      {{ column.label }}
+                      <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
+                          <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
+                          :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
+                          />
+                      </span>
+                      <div :id="`tooltip-show-${i}`"
+                          role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                          Required field
+                          <div class="tooltip-arrow" data-popper-arrow></div>
+                      </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
 

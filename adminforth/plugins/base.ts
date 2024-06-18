@@ -3,16 +3,23 @@ import { getComponentNameFromPath } from '../modules/utils.js';
 import { currentFileDir } from '../modules/utils.js';
 import path from 'path';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class AdminForthPlugin implements AdminForthPluginType {
 
   adminforth: AdminForthClass;
   pluginDir: string;
   customFolderName: string = 'custom';
+  pluginInstanceId: string;
 
   constructor(pluginOptions: any, metaUrl: string) {
     // set up plugin here
     this.pluginDir = currentFileDir(metaUrl);
+    this.pluginInstanceId = uuidv4();
+  }
+
+  setupEndpoints(server: any) {
+    
   }
 
   modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {

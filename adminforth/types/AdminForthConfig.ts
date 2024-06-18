@@ -19,6 +19,17 @@ export interface GenericHttpServer {
    */
   setupSpaServer(): void;
 
+  /**
+   * Method which should register endpoint in HTTP server.
+   * 
+   * @param options : Object with method, path and handler properties.
+   */
+  endpoint(options: {
+    method: string,
+    path: string,
+    handler: Function,
+  }): void;
+
 }
 
 export interface ExpressHttpServer extends GenericHttpServer {
@@ -52,6 +63,7 @@ export interface AdminForthClass {
   config: AdminForthConfig;
   codeInjector: CodeInjectorType;
   express: GenericHttpServer;
+
 
   auth: {
 
@@ -91,8 +103,26 @@ export interface AdminForthPluginType {
   adminforth: AdminForthClass;
   pluginDir: string;
   customFolderName: string;
+  pluginInstanceId: string;
+
+  /**
+   * AdminForth plugins concept is based on modification of full AdminForth configuration
+   * to add some custom functionality. For example plugin might simply add custom field to resource by reusing 
+   * {@link AdminForthResourceColumn.components} object, then add some hook which will modify record before getting or saving it to database.
+   * 
+   * So this method is core of AdminForth plugins. It allows to modify full resource configuration.
+   * @param adminforth Instance of AdminForthClass
+   * @param resourceConfig Resource configuration object which will be modified by plugin
+   */
   modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource): void;
   componentPath(componentFile: string): string;
+
+  /**
+   * Here you can register custom endpoints for your plugin.
+   * 
+   * @param server 
+   */
+  setupEndpoints(server: GenericHttpServer): void;
 }
 
 export enum AdminForthMenuTypes {
@@ -450,9 +480,10 @@ export type AdminForthResource = {
       bulkActions?: Array<{
         label: string,
         state: string,
-        icon: string,
+        icon?: string,
         action: Function,
         id?: string,
+        confirm?: string,
       }>,
       allowedActions?: AllowedActions,
 

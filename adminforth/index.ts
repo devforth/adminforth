@@ -9,9 +9,11 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
-import { AdminForthConfig, AdminForthClass, AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, AdminForthFieldComponentDeclaration } from './types/AdminForthConfig.js';
+import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration,
+  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
 import path from 'path';
+import AdminForthPlugin from './plugins/base.js';
 
 
 //get array from enum AdminForthResourcePages
@@ -39,6 +41,7 @@ class AdminForth implements AdminForthClass {
   connectors: any;
   connectorClasses: any;
   runningHotReload: boolean;
+  activatedPlugins: Array<AdminForthPlugin>;
 
   statuses: {
     dbDiscover?: 'running' | 'done',
@@ -47,6 +50,7 @@ class AdminForth implements AdminForthClass {
   constructor(config: AdminForthConfig) {
     this.config = {...this.#defaultConfig,...config};
     this.codeInjector = new CodeInjector(this);
+    this.activatedPlugins = [];
     
     this.validateConfig();
     this.activatePlugins();
@@ -56,6 +60,7 @@ class AdminForth implements AdminForthClass {
     this.auth = new Auth();
     this.connectors = {};
     this.statuses = {};
+
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
 
@@ -63,6 +68,7 @@ class AdminForth implements AdminForthClass {
     for (let resource of this.config.resources) {
       for (let pluginInstance of resource.plugins || []) {
         pluginInstance.modifyResourceConfig(this, resource);
+        this.activatedPlugins.push(pluginInstance);
       }
     };
   }
@@ -81,9 +87,9 @@ class AdminForth implements AdminForthClass {
     if (!component) {
       return component;
     }
-    let obj = component;
+    let obj: AdminForthComponentDeclaration = component;
     if (typeof obj === 'string') {
-      obj = { file: component, meta: {} };
+      obj = { file: component, meta: {} } as AdminForthComponentDeclaration;
     }
     errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
     
@@ -368,7 +374,7 @@ class AdminForth implements AdminForthClass {
             });
             console.log('🔧🔧🔧 Validating components for resource', column.components);
 
-            for (const [key, { file, meta }] of Object.entries(column.components)) {
+            for (const [key, { file }] of Object.entries(column.components as {any})) {
                 if (this.codeInjector.allComponentNames[file]) {
                   // not obvious, but if we are in this if, it means that this is plugin component
                   // and there is no sense to check if it exists in users folder
@@ -1061,6 +1067,11 @@ class AdminForth implements AdminForthClass {
             }
         }
     })
+
+    // setup endpoints for all plugins
+    this.activatedPlugins.forEach((plugin) => {
+      plugin.setupEndpoints(server);
+    });
   }
 }
 

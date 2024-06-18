@@ -125,7 +125,7 @@
             <input
               id="checkbox-table-search-1"
               type="checkbox"
-              :checked="checkboxes.includes(row.id)"
+              :checked="checkboxesInternal.includes(row.id)"
               @change="(e)=>{addToCheckedValues(row.id)}"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
             <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
@@ -161,10 +161,12 @@
           </div>
 
           <RouterLink v-if="resource.options?.allowedActions.edit"
-            :to="{ name: 'resource-edit', params: { 
-              resourceId: resource.id,
-              primaryKey: row._primaryKeyValue 
-            } 
+            :to="{
+              name: 'resource-edit',
+              params: { 
+                resourceId: resource.id,
+                primaryKey: row._primaryKeyValue 
+              } 
             }"
             class="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
             :data-tooltip-target="`tooltip-edit-${rowI}`"
@@ -239,6 +241,7 @@
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page = totalPages" :disabled="page >= totalPages">
           {{ totalPages }}
+
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
@@ -253,6 +256,7 @@
           </svg>
         </button>
     </div>
+
   </div>
 </template>
 
@@ -287,6 +291,7 @@ const props = defineProps([
   'rows',
   'totalRows',
   'pageSize',
+  'checkboxes'
 ])
 
 // emits, update page
@@ -297,7 +302,7 @@ const emits = defineEmits([
 
 ]);
 
-const checkboxes = ref([]);
+const checkboxesInternal = ref([]);
 const page = ref(1);
 const sort = ref([]);
 
@@ -310,32 +315,41 @@ watch(() => sort.value, (newSort) => {
   emits('update:sort', newSort);
 });
 
-watch(() => checkboxes.value, (newCheckboxes) => {
+watch(() => checkboxesInternal.value, (newCheckboxes) => {
+  console.log('checkboxesInternal ch changed, emiting', newCheckboxes)
+
   emits('update:checkboxes', newCheckboxes);
 });
 
+watch(() => props.checkboxes, (newCheckboxes) => {
+  console.log('Props ch changed', newCheckboxes)
+  checkboxesInternal.value = newCheckboxes;
+});
+
 function addToCheckedValues(id) {
-  if (checkboxes.value.includes(id)) {
-    checkboxes.value = checkboxes.value.filter((item) => item !== id);
+  if (checkboxesInternal.value.includes(id)) {
+    checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
-    checkboxes.value.push(id);
+    checkboxesInternal.value.push(id);
   }
+  checkboxesInternal.value = [ ...checkboxesInternal.value ]
 }
 
 const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.includes('list')));
 
 async function selectAll(value) {
-  rows.value.forEach((r) => {
-    if (!checkboxes.value.includes(r.id)) {
-      checkboxes.value.push(r.id)
+  props.rows.forEach((r) => {
+    if (!checkboxesInternal.value.includes(r.id)) {
+      checkboxesInternal.value.push(r.id)
     } else {
-      checkboxes.value = checkboxes.value.filter((item) => item !== r.id)
+      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id)
     }
   });
+  checkboxesInternal.value = [ ...checkboxesInternal.value ]
   // checkboxes.value = rows.value.map((v) => v.id);
 }
 
-const totalPages = computed(() => Math.ceil(props.totalRows.value / props.pageSize.value));
+const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 
 const allFromThisPageChecked = computed(() => {
