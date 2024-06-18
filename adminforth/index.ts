@@ -83,7 +83,7 @@ class AdminForth implements AdminForthClass {
     return [];
   }
 
-  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>): AdminForthComponentDeclaration {
+  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>, ignoreExistsCheck: boolean): AdminForthComponentDeclaration {
     if (!component) {
       return component;
     }
@@ -93,7 +93,9 @@ class AdminForth implements AdminForthClass {
     } else {
       obj = component;
     }
-    errors.push(...this.checkCustomFileExists(obj.file));
+    if (!ignoreExistsCheck) {
+      errors.push(...this.checkCustomFileExists(obj.file));
+    }
     
     return obj;
   }
@@ -371,21 +373,16 @@ class AdminForth implements AdminForthClass {
     for (const resource of this.config.resources) {
       for (const column of resource.columns) {
           if (column.components) {
-            Object.entries(column.components).forEach(([key, comp]) => {
-              column.components[key] = this.validateComponent(comp, errors);
-            });
             console.log('🔧🔧🔧 Validating components for resource', column.components);
 
-            for (const [key, { file }] of Object.entries(column.components as {any})) {
-                if (this.codeInjector.allComponentNames[file]) {
+            for (const [key, comp] of Object.entries(column.components)) {
+              let ignoreExistsCheck = false;
+              if (this.codeInjector.allComponentNames[comp.file]) {
                   // not obvious, but if we are in this if, it means that this is plugin component
                   // and there is no sense to check if it exists in users folder
-                  continue;
-                }
-                const path = file.replace('@@', this.config.customization.customComponentsDir);
-                if (!fs.existsSync(path)) {
-                    throw new Error(`Component file ${path} does not exist`);
-                }
+                  ignoreExistsCheck = true;
+              }
+              column.components[key] = this.validateComponent(comp, errors, ignoreExistsCheck);
             }
         }
       }

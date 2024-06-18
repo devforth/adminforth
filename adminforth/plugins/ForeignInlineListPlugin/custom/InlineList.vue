@@ -90,6 +90,7 @@
       :totalRows="totalRows"
       :checkboxes="checkboxes"
     />
+
   </td>
 </template>
 
@@ -114,7 +115,7 @@ const loading = ref(true);
 const page = ref(1);
 const sort = ref([]);
 const checkboxes = ref([]);
-const pageSize = computed(() => props.meta.listPageSize || 10);
+const pageSize = computed(() => listResource.value?.options?.listPageSize || 10);
 
 const rows = ref(null);
 const totalRows = ref(0);

@@ -240,10 +240,10 @@ const admin = new AdminForth({
       plugins: [
         new ForeignInlineListPlugin({
           foreignResourceId: 'apparts',
-          listPageSize: 2,
           modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
             // hide column 'square_meter' from both 'list' and 'filter'
-            resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter').showIn = []
+            resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter').showIn = [];
+            resourceConfig.options!.listPageSize = 3;
           },
         }),
       ],
