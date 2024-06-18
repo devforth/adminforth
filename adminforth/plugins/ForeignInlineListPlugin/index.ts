@@ -1,11 +1,7 @@
 import { AdminForthResource, AdminForthResourcePages, AdminForthClass, GenericHttpServer } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
+import { PluginOptions } from "./types.js";
 
-type PluginOptions = {
-  foreignResourceId: string;
-  listPageSize?: number;
-  modifyTableResourceConfig?: (resourceConfig: AdminForthResource) => void;
-}
 
 export default class ForeignInlineListPlugin extends AdminForthPlugin {
   foreignResource: AdminForthResource;

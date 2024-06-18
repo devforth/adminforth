@@ -58,7 +58,11 @@ const config: Config = {
     [
       "docusaurus-plugin-typedoc",
       {
-        entryPoints: ["../types/AdminForthConfig.ts", "../types/FrontendAPI.ts"],
+        entryPoints: [
+          "../types/AdminForthConfig.ts", 
+          "../types/FrontendAPI.ts", 
+          "../plugins/ForeignInlineListPlugin/types.ts",
+        ],
         plugin: ["./typedoc-plugin.mjs"],
         readme: "none",
         indexFormat: "table",
