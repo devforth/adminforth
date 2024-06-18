@@ -9,6 +9,12 @@ export const useCoreStore = defineStore('core', () => {
   const record = ref({});
   const resourceColumns = ref(null);
   const resource = ref(null);
+  const resourceColumnsWithFilters = computed(() => {
+    if (!resourceColumns.value) {
+      return [];
+    }
+    return resourceColumns.value.filter((col) => col.showIn.includes('filter'));
+  })
 
   const resourceOptions = ref(null);
   const resourceColumnsError = ref('');
@@ -132,5 +138,6 @@ export const useCoreStore = defineStore('core', () => {
     logout,
     resource,
     adminUser,
+    resourceColumnsWithFilters
   }
 })

@@ -26,13 +26,13 @@
               v-if="c.foreignResource"
               :options="columnOptions[c.name] || []"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
-              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             <Dropdown
               v-else-if="c.type === 'boolean'"
               :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
-              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
             <Dropdown 
@@ -40,7 +40,7 @@
               :options="c.enum"
               :allowCustom="c.allowCustom"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
-              :modelValue="filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
            <input
@@ -54,9 +54,9 @@
            <CustomDateRangePicker
              v-else-if="['datetime'].includes(c.type)"
              :column="c"
-             :valueStart="filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
+             :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
              @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
-             :valueEnd="filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
+             :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
              @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
            />
 
@@ -101,7 +101,7 @@
 
    <div class="flex justify-end gap-2">
       <button 
-        :disabled="!filters.length"
+        :disabled="!filtersStore.filters.length"
         type="button" 
         class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear">Clear all</button>
@@ -122,6 +122,10 @@ import { callAdminForthApi } from '@/utils';
 import { useRouter } from 'vue-router';
 import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
+import { useFiltersStore } from '@/stores/filters';
+
+const filtersStore = useFiltersStore();
+
 
 // props: columns
 // add support for v-model:filers
@@ -180,28 +184,28 @@ watch(() => props.show, (show) => {
 
 function setFilterItem({ column, operator, value }) {
 
-  const index = props.filters.findIndex(f => f.field === column.name && f.operator === operator);
+  const index = filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
   if (value === undefined) {
     if (index !== -1) {
-      props.filters.splice(index, 1);
+      filtersStore.filters.splice(index, 1);
     }
-    emits('update:filters', [...props.filters]);
+    emits('update:filters', [...filtersStore.filters]);
     return;
   } else {
     if (index === -1) {
-      props.filters.push({ field: column.name, value, operator });
+      filtersStore.setFilter({ field: column.name, value, operator });
     } else {
-      props.filters[index].value = value;
+      filtersStore.setFilters([...filtersStore.filters.slice(0, index), { field: column.name, value, operator }, ...filtersStore.filters.slice(index + 1)])
     }
   }
-  emits('update:filters', [...props.filters]);
+  emits('update:filters', [...filtersStore.filters]);
 }
 
 function getFilterItem({ column, operator }) {
-  return props.filters.find(f => f.field === column.name && f.operator === operator)?.value || '';
+  return filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value || '';
 }
 
 async function clear() {
-  emits('update:filters', []);
+  filtersStore.clearFilters();
 }
 </script>

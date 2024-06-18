@@ -2,19 +2,20 @@ export const styles = () => `
 
   "colors": {
     "html-bg": "#FFFFFF", // Changed to white
-    "header-bg": "#EDEDED", // Light grey
+    "header-bg": "#FFFFFF", // Light grey
     "header-bg-hover": "#D3D3D3", // Light grey hover
     "header-text": "#333333", // Dark grey text
     "header-text-hover": "#333333", // Dark grey text hover
     "header-icons": "#333333", // Dark grey icons
     "header-icons-hover": "#333333", // Dark grey icons hover
     "header-logo-color": "#333333", // Dark grey logo
-    "header-border-color": "#CCCCCC", // Light grey border
+    "header-border-color": "rgb(229 231 235)", // Light grey border
 
-    "nav-menu-bg": "#F5F5F5", // Very light grey
-    "nav-menu-bg-hover": "#E0E0E0", // Light grey hover
-    "nav-menu-bg-active": "#CCCCCC", // Light grey active
-    "nav-menu-hover": "#E0E0E0", // Light grey hover
+    "nav-menu-bg": "#f9fafb", // Very light grey
+    "nav-menu-border": "rgb(229 231 235)",
+    "nav-menu-bg-hover": "rgb(243 244 246)", // Light grey hover
+    "nav-menu-bg-active": "rgb(233, 234, 236)", // Light grey active
+    "nav-menu-hover": "#rgb(209 213 219)", // Light grey hover
     "nav-menu-active": "#CCCCCC", // Light grey active
     "nav-menu-active-text": "#333333", // Dark grey active text
     "nav-menu-text": "#333333", // Dark grey text
