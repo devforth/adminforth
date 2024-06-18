@@ -145,7 +145,7 @@ const columnsMinMax = ref({});
 const sort = ref([]);
 
 const rows = ref(null);
-const totalRows = ref(0);\
+const totalRows = ref(0);
 const checkboxes = ref([]);
 
 const DEFAULT_PAGE_SIZE = 10;
