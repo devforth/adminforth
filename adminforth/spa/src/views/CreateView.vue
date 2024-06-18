@@ -46,7 +46,7 @@
     <ResourceForm 
       v-else
       :record="initalValues"
-      :resourceColumns="coreStore.resourceColumns"
+      :resource="coreStore.resource"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
@@ -95,7 +95,10 @@ let createComponentsPerColumn = {};
 const coreStore = useCoreStore();
 
 const initalValues = computed(() => {
-  return route.query || {};
+  if (!route.query.values) {
+    return {};
+  }
+  return JSON.parse(decodeURIComponent(route.query.values));
 });
 
 async function onUpdateRecord(newRecord) {
@@ -108,7 +111,7 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
-  createComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+  createComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
       if (column.components?.create) {
           acc[column.name] = getCustomComponent(column.components.create);
       }
@@ -135,11 +138,17 @@ async function saveRecord() {
     },
   });
   saving.value = false;
-  router.push({ name: 'resource-show', params: { 
-    resourceId: route.params.resourceId, 
-    primaryKey: response.newRecordId
-  
-  } });
+  if (route.query.returnTo) {
+    router.push(route.query.returnTo);
+  } else {
+    router.push({ 
+      name: 'resource-show', 
+      params: { 
+        resourceId: route.params.resourceId, 
+        primaryKey: response.newRecordId
+      } 
+    });
+  }
 }
 
 

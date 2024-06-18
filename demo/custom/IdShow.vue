@@ -1,7 +1,7 @@
 <template>
     
-    Hello from 🇺🇦 1 
-    "{{ column?.name }}" is not "{{ record?.id }}""
+    Appartment {{ record.title }}
+    Id: "{{ record?.id }}"
 </template>
 
 <script setup>

@@ -95,10 +95,10 @@ async function onUpdateRecord(newRecord) {
 
 const editableRecord = computed(() => {
   const newRecord = { ...coreStore.record };
-  if (!coreStore.resourceColumns) {
+  if (!coreStore.resource) {
     return {};
   }
-  coreStore.resourceColumns.forEach(column => {
+  coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
       newRecord[column.name] = newRecord[column.name]?.pk
     }
@@ -119,7 +119,7 @@ onMounted(async () => {
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
 
-  editComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+  editComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
       if (column.components?.edit) {
           acc[column.name] = getCustomComponent(column.components.edit);
       }
