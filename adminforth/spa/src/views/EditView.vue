@@ -3,6 +3,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -29,6 +30,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -51,6 +53,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"

@@ -482,45 +482,45 @@ export type AdminForthResource = {
         /**
          * Custom components which can be injected into resource list page.
          * 
-         * Component accepts next props: [resource, adminUser]
+         * Component accepts next props: [resource, adminUser, meta]
          */
         list?: {
-          beforeBreadcrumbs?: string | Array<string>,
-          afterBreadcrumbs?: string | Array<string>,
-          bottom?: string | Array<string>,
+          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
          * Custom components which can be injected into resource show page.
          * 
-         * Component accepts next props: [record, resource, adminUser]
+         * Component accepts next props: [record, resource, adminUser, meta]
          */
         show?: {
-          beforeBreadcrumbs?: string | Array<string>,
-          afterBreadcrumbs?: string | Array<string>,
-          bottom?: string | Array<string>,
+          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
          * Custom components which can be injected into resource edit page.
          * 
-         * Component accepts next props: [record, resource, adminUser]
+         * Component accepts next props: [record, resource, adminUser, meta]
          */
         edit?: {
-          beforeBreadcrumbs?: string | Array<string>,
-          afterBreadcrumbs?: string | Array<string>,
-          bottom?: string | Array<string>,
+          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
          * Custom components which can be injected into resource create page.
          * 
-         * Component accepts next props: [resource, adminUser]
+         * Component accepts next props: [resource, adminUser, meta]
          */
         create?: {
-          beforeBreadcrumbs?: string | Array<string>,
-          afterBreadcrumbs?: string | Array<string>,
-          bottom?: string | Array<string>,
+          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
       }
     },
@@ -771,11 +771,68 @@ export type ValidationObject = {
     message: string,
   }
 
+export type AdminForthComponentDeclaration = {
+  /**
+   * Path to custom component which will be used to render field in the admin panel.
+   * e.g. `@@/MyCustomComponent.vue`
+   */
+  file : string,
+
+  /**
+   * Optional Meta object which will be passed to custom component as props. For example used by plugins
+   * to pass plugin options to custom components.
+   * 
+   * Example:
+   * 
+   * ```ts
+   * {
+   *    name: 'Country Flag',
+   *    virtual: true,
+   *    showIn: [AdminForthResourcePages.SHOW],
+   *    components: {
+   *      show: {
+   *        file: '@@/Flag.vue',
+   *        meta: {
+   *          flagType: 'country',
+   *        },
+   *      },
+   *    },
+   * },
+   * {
+   *    name: 'Team Flag',
+   *    virtual: true,
+   *    showIn: [AdminForthResourcePages.SHOW],
+   *    components: {
+   *      show: {
+   *        file: '@@/Flag.vue',
+   *        meta: {
+   *          flagType: 'team',
+   *        },
+   *     },
+   *    },
+   * }
+   * ```
+   * 
+   * In Flag.vue you can access this meta object like this:
+   * 
+   * ```vue
+   * <template>
+   *  <img :src="loadFile(`@@/flags/${meta.flagType}/${meta.flagType === 'country' ? record.countryIso : record.teamCode}.png`)" />
+   * </template>
+   * 
+   * <script setup>
+   * import { loadFile } from '@/utils';
+   * defineProps(['meta', 'record']);
+   * </script>
+   * 
+   */
+  meta?: any,
+} | string;
 
 export type AdminForthFieldComponents = {
     /**
      * Show component is used to redefine cell which renders field value in show view.
-     * Component accepts next properties: [record, column, resource, adminUser].
+     * Component accepts next properties: [record, column, resource, adminUser, meta].
      * 
      * Example: `FullName.vue`
      * 
@@ -801,33 +858,32 @@ export type AdminForthFieldComponents = {
      * ```
      * 
      */
-    show?: string,
+    show?: AdminForthComponentDeclaration,
 
     /**
      * showRow component is similar to {@link AdminForthFieldComponent.show} but rewrites full table row (both \<td\> tags)
      * Accepts next properties: [record, column, resource, adminUser]
      */
-    showRow?: string, 
+    showRow?: AdminForthComponentDeclaration, 
 
     /**
      * Create component is used to redefine input field in create view.
      * Component accepts next properties: [record, column, resource, adminUser].
      */
-    create?: string,
+    create?: AdminForthComponentDeclaration,
 
     /**
      * Edit component is used to redefine input field in edit view.
      * Component accepts next properties: [record, column, resource, adminUser].
      */
-    edit?: string,
+    edit?: AdminForthComponentDeclaration,
 
     /**
      * List component is used to redefine cell which renders field value in list view.
      * Component accepts next properties: [record, column, resource, adminUser].
      * 
-     * Exa
      */
-    list?: string,
+    list?: AdminForthComponentDeclaration,
 }
 
 export enum AdminForthDataTypes {

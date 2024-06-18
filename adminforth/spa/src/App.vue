@@ -176,7 +176,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getIcon } from '@/utils';
 import { useHead } from 'unhead'
 import { createHead } from 'unhead'
-import { loadFile } from './utils';
+import { loadFile } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
 import { FrontendAPI } from '@/composables/useStores'

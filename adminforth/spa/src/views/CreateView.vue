@@ -4,6 +4,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -33,6 +34,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -55,6 +57,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom || []"
       :is="getCustomComponent(c)"
+      :meta="c.meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
