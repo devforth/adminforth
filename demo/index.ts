@@ -235,11 +235,12 @@ const admin = new AdminForth({
       table: 'users',
       resourceId: 'users',
       label: 'Users',  
-      recordLabel: (r) => `👤 ${r.email}`,
+      recordLabel: (r: any) => `👤 ${r.email}`,
       plugins: [
         new ForeignInlineListPlugin({
           foreignResourceId: 'apparts',
-        })
+          listPageSize: 2,
+        }),
       ],
       columns: [
         { 
@@ -254,7 +255,7 @@ const admin = new AdminForth({
           required:false,
           validation: [
             {
-              regExp:  /^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              regExp:  '^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
               message: 'Email is not valid, must be in format example@test.com'
             },
           ]

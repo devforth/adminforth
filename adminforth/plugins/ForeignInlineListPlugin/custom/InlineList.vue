@@ -1,9 +1,84 @@
 <template>
-  <td colspan="2">
-    <h4 v-if="listResource"
-        class="px-6 py-4"
+  <Teleport to="body">
+    <!-- todo exclude foreign column-->
+    <Filters
+      v-if="listResource"
+      :columns="listResource.columns"  
+      v-model:filters="filters"
+      :columnsMinMax="columnsMinMax"
+      :show="filtersShow"
+      @hide="filtersShow = false"
+    />
+    {{ listResource?.columns}}
+  </Teleport>
     
-    >{{ listResource.label }} inline records</h4>
+  <td colspan="2">
+    <div class="flex items-center gap-1">
+      <h4 v-if="listResource"
+          class="px-6 py-4"
+      >{{ listResource.label }} inline records</h4>
+
+      <button
+        @click="()=>{checkboxes = []}"
+        v-if="checkboxes.length"
+        data-tooltip-target="tooltip-remove-all"
+        data-tooltip-placement="bottom"
+        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+      >
+        <IconBanOutline class="w-5 h-5 "/>
+        <div id="tooltip-remove-all" role="tooltip"
+             class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+          Remove selection
+          <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
+      </button>
+
+      <button
+        v-if="checkboxes.length" 
+        v-for="(action,i) in listResource?.options?.bulkActions" 
+        :key="action.id"
+        @click="startBulkAction(action.id)"
+        class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        :class="{'bg-red-100 text-red-800 border-red-400 dark:bg-red-700 dark:text-red-400 dark:border-red-400':action.state==='danger', 'bg-green-100 text-green-800 border-green-400 dark:bg-green-700 dark:text-green-400 dark:border-green-400':action.state==='success',
+        'bg-blue-100 text-blue-800 border-blue-400 dark:bg-blue-700 dark:text-blue-400 dark:border-blue-400':action.state==='active',
+        }"
+      >
+        <component
+          v-if="action.icon"
+          :is="getIcon(action.icon)"
+          class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"></component>
+
+        {{ `${action.label} (${checkboxes.length})` }}
+      </button>
+
+      <RouterLink v-if="listResource?.options?.allowedActions?.create"
+        :to="{ 
+          name: 'resource-create', 
+          params: { resourceId: listResource.resourceId }, 
+          query: { 
+            [listResourceRefColumn.name]: props.record[selfPrimaryKeyColumn.name]
+          }
+       }"
+        class="flex items-center py-1 px-3  text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+      >
+        <IconPlusOutline class="w-4 h-4 me-2"/>
+        Create
+      </RouterLink>
+
+      <button
+        class="flex gap-1 items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+        @click="()=>{filtersShow = !filtersShow}"
+      >
+        <IconFilterOutline class="w-4 h-4 me-2"/>
+        Filter
+        <span
+          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
+          v-if="filters.length">
+            {{ filters.length }}
+          </span>
+      </button>
+
+    </div>
 
     <ResourceListTable
       :resource="listResource"
@@ -22,6 +97,12 @@ import { callAdminForthApi } from '@/utils';
 import { ref, onMounted, watch, computed  } from 'vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 
+import {
+  IconBanOutline,
+  IconFilterOutline,
+  IconPlusOutline,
+} from '@iconify-prerendered/vue-flowbite';
+
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 
 const listResource = ref(null);
@@ -30,31 +111,43 @@ const loading = ref(true);
 const page = ref(1);
 const sort = ref([]);
 const checkboxes = ref([]);
-const pageSize = computed(() => props.meta.pageSize || 10);
+const pageSize = computed(() => props.meta.listPageSize || 10);
 
 const rows = ref(null);
 const totalRows = ref(0);
 
+const filters = ref([]);
+const filtersShow = ref(false);
 
+const listResourceRefColumn = computed(() => {
+  if (!listResource.value) {
+    return null;
+  }
+  return listResource.value.columns.find(c => c.foreignResource?.resourceId === props.resource.resourceId);
+});
 
-const filters = computed(() => {
+const selfPrimaryKeyColumn = computed(() => {
+  return props.resource.columns.find(c => c.primaryKey);
+});
+
+const endFilters = computed(() => {
   if (!listResource.value) {
     return [];
   }
-  console.log('listResource', listResource.value)
   // get name of the column that is foreign key
-  const refColumn = listResource.value.columns.find(c => c.foreignResource?.resourceId === props.resource.resourceId);
+  const refColumn = listResourceRefColumn.value;
 
-  const primaryKeyColumn = listResource.value.columns.find(c => c.primaryKey);
+  const primaryKeyColumn = selfPrimaryKeyColumn.value;
 
   if (!refColumn) {
     window.adminforth.alert({
-      message: `Column with foreignResource.resourceId which is equal to ${props.resource.resourceId} not found in resource which is specified as foreighResourceId (${resource.resourceId})`,
-      variant: 'error',
+      message: `Column with foreignResource.resourceId which is equal to '${props.resource.resourceId}' not found in resource which is specified as foreighResourceId '${listResource.value.resourceId}'`,
+      variant: 'danger',
     });
     return [];
   }
   return [
+    ...filters.value,
     {
       field: refColumn.name,
       operator: 'eq',
@@ -83,7 +176,7 @@ async function getList() {
       resourceId: listResource.value.resourceId,
       limit: pageSize.value,
       offset: (page.value - 1) * pageSize.value,
-      filters: filters.value,
+      filters: endFilters.value,
       sort: sort.value,
     }
   });
@@ -100,11 +193,9 @@ onMounted( async () => {
   loading.value = true;
   const foreighResourceId = props.meta.foreignResourceId;
   listResource.value = (await callAdminForthApi({
-      path: '/get_resource',
+      path: `/plugin/${props.meta.pluginInstanceId}/get_resource`,
       method: 'POST',
-      body: {
-        resourceId: foreighResourceId,
-      }
+      body: {},
   })).resource;
   loading.value = false;
   await getList();

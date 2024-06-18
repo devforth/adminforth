@@ -3,7 +3,13 @@
 
 ## Prerequisites
 
-We recommend using Node v18 and higher
+We recommend using Node v18 and higher:
+
+```bash
+nvm install 18
+nvm alias default 18
+nvm use 18
+```
 
 ## Installation
 
@@ -28,11 +34,10 @@ For demo purposes we will use SQLite data source. You can use postgress, Mongo o
 npm install better-sqlite3@10.0.0
 ```
 
-You can use adminforth in pure Node, but we recommend using TypeScript for better development experience.
+You can use adminforth in pure Node, but we recommend using TypeScript for better development experience:
 
 ```bash
-npm install typescript@5.4.5 --save-dev
-npm install tsx@4.11.2 --save-dev
+npm install typescript@5.4.5 tsx@4.11.2 --save-dev
 ```
 
 # Philosophy
@@ -56,7 +61,7 @@ We will use schema with different column types for apartments to show many of Ad
 Check [AdminForthConfig](/docs/api/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
 
 
-# Setting up a demo
+# Setting up a first demo
 
 Open `package.json`, set `type` to `module` and add `start` script:
 
@@ -72,7 +77,7 @@ Open `package.json`, set `type` to `module` and add `start` script:
 ```
 
 
-Create `index.ts` file with following content:
+Create `index.ts` file in root directory with following content:
 
 ```typescript
 
@@ -197,7 +202,6 @@ const admin = new AdminForth({
             { value: 4, label: '4 rooms' },
             { value: 5, label: '5 rooms' },
           ],
-          allowCustomValue: true,
         },
         { 
           name: 'description',
