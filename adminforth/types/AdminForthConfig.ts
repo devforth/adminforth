@@ -802,7 +802,7 @@ export type ValidationObject = {
     message: string,
   }
 
-export type AdminForthComponentDeclaration = {
+export type AdminForthComponentDeclarationFull = {
   /**
    * Path to custom component which will be used to render field in the admin panel.
    * e.g. `@@/MyCustomComponent.vue`
@@ -858,7 +858,9 @@ export type AdminForthComponentDeclaration = {
    * 
    */
   meta?: any,
-} | string;
+}
+
+export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
 
 export type AdminForthFieldComponents = {
     /**

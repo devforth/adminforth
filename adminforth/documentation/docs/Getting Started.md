@@ -234,7 +234,7 @@ const admin = new AdminForth({
       options: {
         listPageSize: 12,
         allowedActions:{
-          edit: false,
+          edit: true,
           delete: true,
           show: true,
           filter: true,

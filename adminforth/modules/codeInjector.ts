@@ -48,20 +48,12 @@ class CodeInjector implements CodeInjectorType {
   constructor(adminforth) {
     this.adminforth = adminforth;
 
-    process.on('SIGINT', () => {
-      console.log('Received SIGINT.');
-      this.cleanup(); 
-    });
-    
-    process.on('SIGTERM', () => {
-      console.log('Received SIGTERM.');
-      this.cleanup();
-    });
+    ['SIGINT', 'SIGTERM', 'SIGQUIT']
+      .forEach(signal => process.on(signal, () => {
+        this.cleanup();
+        process.exit();
+      }));
 
-    process.on('exit', () => {
-      console.log('Exiting.');
-      this.cleanup();
-    });
   }
 
   // async runShell({command, verbose = false}) {
@@ -416,7 +408,7 @@ class CodeInjector implements CodeInjectorType {
     await this.runNpmShell({command: 'ci', verbose, cwd: CodeInjector.SPA_TMP_PATH});
 
     // get packages with version from customPackage
-    const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon'];
+    const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon', 'adminforth'];
     const customPackgeNames = [...Object.keys(usersPackage.dependencies), ...Object.keys(usersPackage.devDependencies || [])]
       .filter((packageName) => !IGNORE_PACKAGES.includes(packageName))
       .reduce(
