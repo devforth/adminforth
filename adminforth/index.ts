@@ -83,7 +83,7 @@ class AdminForth implements AdminForthClass {
     return [];
   }
 
-  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>, ignoreExistsCheck: boolean): AdminForthComponentDeclaration {
+  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>, ignoreExistsCheck: boolean = false): AdminForthComponentDeclaration {
     if (!component) {
       return component;
     }
@@ -375,7 +375,7 @@ class AdminForth implements AdminForthClass {
           if (column.components) {
             console.log('🔧🔧🔧 Validating components for resource', column.components);
 
-            for (const [key, comp] of Object.entries(column.components)) {
+            for (const [key, comp] of Object.entries(column.components as Record<string, AdminForthComponentDeclarationFull>)) {
               let ignoreExistsCheck = false;
               if (this.codeInjector.allComponentNames[comp.file]) {
                   // not obvious, but if we are in this if, it means that this is plugin component

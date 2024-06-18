@@ -282,7 +282,6 @@ class CodeInjector implements CodeInjectorType {
 
     });
 
-    console.log('🔧 🔧 Injecting code into Vue sources...', customResourceComponents);
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
       this.allComponentNames[filePath] = componentName;
