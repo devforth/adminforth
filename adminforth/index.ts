@@ -9,7 +9,7 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION } from './modules/utils.js';
-import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration,
+import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, AdminForthComponentDeclarationFull,
   AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages } from './types/AdminForthConfig.js';
 import { getFunctionList } from './modules/utils.js';
 import path from 'path';
@@ -87,11 +87,13 @@ class AdminForth implements AdminForthClass {
     if (!component) {
       return component;
     }
-    let obj: AdminForthComponentDeclaration = component;
-    if (typeof obj === 'string') {
-      obj = { file: component, meta: {} } as AdminForthComponentDeclaration;
+    let obj: AdminForthComponentDeclarationFull;
+    if (typeof component === 'string') {
+      obj = { file: component, meta: {} };
+    } else {
+      obj = component;
     }
-    errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
+    errors.push(...this.checkCustomFileExists(obj.file));
     
     return obj;
   }

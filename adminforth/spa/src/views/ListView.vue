@@ -2,7 +2,7 @@
   <div class="relative">
     <Teleport to="body">
       <Filters
-        :columns="coreStore.resource.columns"
+        :columns="coreStore.resource?.columns"
         :columnsMinMax="columnsMinMax" :show="filtersShow"
         @hide="filtersShow = false"
       />
