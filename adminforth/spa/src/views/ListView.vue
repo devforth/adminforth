@@ -3,7 +3,6 @@
     <Teleport to="body">
       <Filters
         :columns="coreStore.resourceColumns"
-        v-model:filters="filters"
         :columnsMinMax="columnsMinMax" :show="filtersShow"
         @hide="filtersShow = false"
       />
@@ -65,8 +64,8 @@
         Filter
         <span
           class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-          v-if="filters.length">
-            {{ filters.length }}
+          v-if="filtersStore.filters.length">
+            {{ filtersStore.filters.length }}
           </span>
       </button>
     </BreadcrumbsWithButtons>
@@ -343,6 +342,7 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { useCoreStore } from '@/stores/core';
 import { useModalStore } from '@/stores/modal';
+import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, getIcon } from '@/utils';
 import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -371,12 +371,13 @@ const filtersShow = ref(false);
 
 const coreStore = useCoreStore();
 const modalStore = useModalStore();
+const filtersStore = useFiltersStore();
 
 const route = useRoute();
 const checkboxes = ref([]);
 
 const page = ref(1);
-const filters = ref([]);
+const filters = filtersStore.filters;
 const columnsMinMax = ref({});
 const sort = ref([]);
 const fetchStatus = ref({pending: false, error: null, success: false});
@@ -416,7 +417,7 @@ watch([page], async () => {
   await init();
 });
 
-watch([filters], async () => {
+watch(()=>filtersStore.filters, async () => {
   page.value = 1;
   await getList();
 }, {deep: true});
@@ -452,7 +453,7 @@ async function getList() {
       resourceId: route.params.resourceId,
       limit: pageSize.value,
       offset: (page.value - 1) * pageSize.value,
-      filters: filters.value,
+      filters: filtersStore.filters,
       sort: sort.value,
     }
   });
@@ -558,7 +559,7 @@ onMounted(async () => {
 
 // on route param change 
 watch(() => route.params.resourceId, async () => {
-  filters.value = [];
+  filtersStore.setFilters([]);
   checkboxes.value = [];
   sort.value = [];
   await init();

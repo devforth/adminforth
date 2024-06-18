@@ -33,8 +33,35 @@ export interface FrontendAPIInterface {
      * @param params - The parameters of the alert
      */
     alert(params:AlertParams): void;
-
+    /**
+     * Add a filter to the list of filters
+     * 
+     * Example:
+     * 
+     * ```ts
+     * window.adminforth.updateListFilter({field: 'name', operator: 'ilike', value: 'john'})
+     * ```
+     * 
+     * @param filter - The filter to add
+     */
     setListFilter(filter: any): void;
+    /**
+     * Update a filter in the list of filters
+     * 
+     * Example:
+     * 
+     * ```ts
+     * window.adminforth.updateListFilter({field: 'name', operator: 'ilike', value: 'john'})
+     * ```
+     * 
+     * @param filter - The filter to update
+     */
+    updateListFilter(filter: any): void;
+    /**
+     * Clear all filters from the list
+     */
+    clearListFilters(): void;
+
 }
 
 export type ConfirmParams = {
@@ -64,12 +91,30 @@ export type AlertParams = {
     variant?: AlertVariant;
 }
 
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: Operator;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+}
+
 export enum AlertVariant {
     Danger = 'danger',
     Success = 'success',
     Warning = 'warning',
     Info = 'info'
   }
+
+export type Operator = 'in' | 'ilike' | 'gte' | 'lte'  ;
+  
   
 
 
