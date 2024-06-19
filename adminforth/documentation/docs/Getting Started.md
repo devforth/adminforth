@@ -58,7 +58,7 @@ Users table will be used to store a credentials for login into backoffice itself
 
 We will use schema with different column types for apartments to show many of AdminForth features.
 
-Check [AdminForthConfig](/docs/api/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
+Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
 
 
 # Setting up a first demo
@@ -234,7 +234,7 @@ const admin = new AdminForth({
       options: {
         listPageSize: 12,
         allowedActions:{
-          edit: false,
+          edit: true,
           delete: true,
           show: true,
           filter: true,

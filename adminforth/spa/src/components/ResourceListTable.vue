@@ -146,7 +146,13 @@
           <div class="flex">
           <RouterLink
             v-if="resource.options?.allowedActions.show"
-            :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: row._primaryKeyValue } }"
+            :to="{ 
+              name: 'resource-show', 
+              params: { 
+                resourceId: resource.resourceId, 
+                primaryKey: row._primaryKeyValue,
+              }
+            }"
             class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
             :data-tooltip-target="`tooltip-show-${rowI}`"
           >
@@ -164,7 +170,7 @@
             :to="{
               name: 'resource-edit',
               params: { 
-                resourceId: resource.id,
+                resourceId: resource.resourceId,
                 primaryKey: row._primaryKeyValue 
               } 
             }"

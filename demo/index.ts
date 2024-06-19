@@ -2,6 +2,7 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
+import { AdminForthResource, AdminForthResourceColumn } from '../adminforth/types.ts';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 
@@ -239,7 +240,11 @@ const admin = new AdminForth({
       plugins: [
         new ForeignInlineListPlugin({
           foreignResourceId: 'apparts',
-          listPageSize: 2,
+          modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+            // hide column 'square_meter' from both 'list' and 'filter'
+            resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter').showIn = [];
+            resourceConfig.options!.listPageSize = 3;
+          },
         }),
       ],
       columns: [

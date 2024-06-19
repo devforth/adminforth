@@ -58,7 +58,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="column in coreStore.resourceColumns?.filter(c => c.showIn.includes('show'))" :key="column.name"
+            <tr v-for="column in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
                 class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
               <component
@@ -145,7 +145,7 @@ onMounted(async () => {
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
 
-  showComponentsPerColumn = coreStore.resourceColumns.reduce((acc, column) => {
+  showComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
       if (column.components?.show) {
           acc[column.name] = getCustomComponent(column.components.show);
       }
