@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ResourceParent from '@/views/ResourceParent.vue'
+import { useUserStore } from '@/stores/user'
 /* IMPORTANT:ADMINFORTH ROUTES IMPORTS */
 
 const router = createRouter({
@@ -9,7 +10,15 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { title: 'login' }
+      meta: { title: 'login' },
+      beforeEnter: async (to, from, next) => {
+        const userStore = useUserStore()
+        if (await userStore.checkAuth(true)) {
+          next({ name: 'home' })
+        } else {
+          next()
+        }
+      }
     },
     {
       path: '/resource/:resourceId',
@@ -47,6 +56,9 @@ const router = createRouter({
     /* IMPORTANT:ADMINFORTH ROUTES */
   ]
 })
+
+
+
 
 
 export default router
