@@ -247,6 +247,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
+        
         new AccessControlPlugin({
           hasAccess: async (adminUser: AdminUser, action: AllowedActionsEnum) => {
             if (action === 'edit' && !adminUser.isRoot && AdminUser.dbUser.role === 'superadmin') {
