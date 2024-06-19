@@ -23,7 +23,8 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
           return { error: `Resource ${this.options.foreignResourceId} not found` };
         }
         // exclude "plugins" key
-        const resourceCopy = { ...resource, plugins: undefined };
+        const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
+        
         if (this.options.modifyTableResourceConfig) {
           this.options.modifyTableResourceConfig(resourceCopy);
         }
