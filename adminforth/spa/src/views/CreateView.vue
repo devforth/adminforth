@@ -137,6 +137,13 @@ async function saveRecord() {
       record: record.value,
     },
   });
+  if (response.error) {
+    window.adminforth.alert({
+      message: resp.error,
+      variant: 'danger',
+      timeout: 'unlimited',
+    })
+  }
   saving.value = false;
   if (route.query.returnTo) {
     router.push(route.query.returnTo);

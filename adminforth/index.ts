@@ -1,5 +1,5 @@
 
-import Auth from './auth.js';
+import AdminForthAuth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
@@ -25,7 +25,7 @@ class AdminForth implements AdminForthClass {
 
   static Utils = {
     generatePasswordHash: async (password) => {
-      return await Auth.generatePasswordHash(password);
+      return await AdminForthAuth.generatePasswordHash(password);
     }
   }
 
@@ -35,7 +35,7 @@ class AdminForth implements AdminForthClass {
 
   config: AdminForthConfig;
   express: ExpressServer;
-  auth: Auth;
+  auth: AdminForthAuth;
   codeInjector: CodeInjector;
   connectors: any;
   connectorClasses: any;
@@ -56,7 +56,7 @@ class AdminForth implements AdminForthClass {
     this.validateConfig(); // revalidate after plugins
 
     this.express = new ExpressServer(this);
-    this.auth = new Auth();
+    this.auth = new AdminForthAuth(this);
     this.connectors = {};
     this.statuses = {};
 
@@ -492,6 +492,23 @@ class AdminForth implements AdminForthClass {
     this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
+  async getUserByPk(pk: string) {
+    const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+    if (!resource) {
+      throw new Error('No auth resource found');
+    }
+    const users = await this.connectors[resource.dataSource].getData({
+      resource,
+      filters: [
+        { field: resource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: pk },
+      ],
+      limit: 1,
+      offset: 0,
+      sort: [],
+    });
+    return users.data[0] || null;
+  }
+
   setupEndpoints(server: GenericHttpServer) {
     server.endpoint({
       noAuth: true,
@@ -538,7 +555,7 @@ class AdminForth implements AdminForthClass {
 
           const passwordHash = userRecord[this.config.auth.passwordHashField];
           console.log('User record', userRecord, passwordHash)  // why does it has no hash?
-          const valid = await Auth.verifyPassword(password, passwordHash);
+          const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
             token = this.auth.issueJWT({ 
               username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
@@ -598,27 +615,14 @@ class AdminForth implements AdminForthClass {
       method: 'GET',
       path: '/get_base_config',
       handler: async ({input, adminUser, cookies}) => {
-        const cookieParsed = this.auth.verify(cookies['adminforth_jwt']);
         let username = ''
         let userFullName = ''
-        if (cookieParsed['pk'] == null) {
+        if (adminUser.isRoot) {
             username = this.config.rootUser.username;
         } else {
-            const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
-            const user = await this.connectors[userResource.dataSource].getData({
-              resource: userResource,
-              filters: [
-                { field: userResource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: cookieParsed['pk'] },
-              ],
-              limit: 1,
-              offset: 0,
-              sort: [],
-            });
-            if (!user.data.length) {
-              return { error: 'Unauthorized' };
-            }
-            username = user.data[0][this.config.auth.usernameField]; 
-            userFullName = user.data[0][this.config.auth.userFullNameField];
+            const dbUser = adminUser.dbUser;
+            username = dbUser[this.config.auth.usernameField]; 
+            userFullName =dbUser[this.config.auth.userFullNameField];
         }
 
         const userData = {

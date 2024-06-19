@@ -157,7 +157,7 @@ class ExpressServer implements ExpressHttpServer {
         res.status(401).send('Unauthorized by AdminForth');
         return
       }
-      const adminforthUser = this.adminforth.auth.verify(jwt);
+      const adminforthUser = await this.adminforth.auth.verify(jwt);
       if (!adminforthUser) {
         res.status(401).send('Unauthorized by AdminForth');
       } else {
@@ -201,7 +201,7 @@ class ExpressServer implements ExpressHttpServer {
           this.message = message;
         }
       };
-      const input = { body, query, headers, cookies, response, _raw_express_req: req, _raw_express_res: res};
+      const input = { body, query, headers, cookies, adminUser, response, _raw_express_req: req, _raw_express_res: res};
 
       let output;
       try {
