@@ -4,6 +4,7 @@ import type {  CoreConfig } from './spa_types/core';
 import router from "./router";
 import { useRouter } from 'vue-router';
 import { useCoreStore } from './stores/core';
+import { useUserStore } from './stores/user';
 
 export async function callApi({path, method, body=undefined} ) {
   const options = {
@@ -16,8 +17,8 @@ export async function callApi({path, method, body=undefined} ) {
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   const r = await fetch(fullPath, options);
   if (r.status == 401) {
-    console.log('router', router);
-    router.push({name: 'login'});
+    useUserStore().unauthorize();
+    router.push({ name: 'login' });
     return null;
   }
   return await r.json();

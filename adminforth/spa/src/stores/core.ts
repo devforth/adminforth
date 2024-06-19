@@ -103,12 +103,7 @@ export const useCoreStore = defineStore('core', () => {
     config.value = {...config.value, ...res};
   }
 
-  async function logout() {
-    await callAdminForthApi({
-      path: '/logout',
-      method: 'POST',
-    });
-  }
+ 
 
   const username = computed(() => {
     const usernameField = config.value.usernameField;
@@ -135,7 +130,6 @@ export const useCoreStore = defineStore('core', () => {
     fetchResourceFull, 
     resourceColumnsError,
     resourceOptions,
-    logout,
     resource,
     adminUser,
     resourceColumnsWithFilters
