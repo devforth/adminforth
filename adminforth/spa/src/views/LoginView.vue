@@ -81,6 +81,7 @@
 
 import { onMounted, ref, watchEffect } from 'vue';
 import { useCoreStore } from '@/stores/core';
+import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
@@ -91,6 +92,8 @@ const router = useRouter();
 const inProgress = ref(false);
 
 const coreStore = useCoreStore();
+const user = useUserStore();
+
 
 const showPw = ref(false);
 
@@ -115,6 +118,7 @@ async function login() {
       error.value = resp.error;
     } else {
       error.value = null;
+      user.authorize()
       router.push('/');
       await router.isReady();
       await coreStore.fetchMenuAndResource();
