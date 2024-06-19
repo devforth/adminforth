@@ -243,13 +243,13 @@ const admin = new AdminForth({
           foreignResourceId: 'apparts',
           modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
             // hide column 'square_meter' from both 'list' and 'filter'
-            resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter').showIn = [];
+            resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
             resourceConfig.options!.listPageSize = 3;
           },
         }),
         new AccessControlPlugin({
           hasAccess: async (adminUser: AdminUser, action: AllowedActionsEnum) => {
-            if (action === 'edit' && !adminUser.isRoot && AdminUser.dbUser.role === 'superadmin') {
+            if (action === 'edit' && !adminUser.isRoot && adminUser.dbUser.role === 'superadmin') {
               return `You don't have access to ${action} this resource. Contact admin for more information.`
             }
             return true;
