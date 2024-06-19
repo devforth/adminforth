@@ -571,6 +571,15 @@ class AdminForth implements AdminForthClass {
     });
 
     server.endpoint({
+      method: 'POST',
+      path: '/check_auth',
+      handler: async ({ adminUser }) => {
+        return { ok: true };
+      },
+    });
+
+    server.endpoint({
+        noAuth: true,
         method: 'POST',
         path: '/logout',
         handler: async ({ response }) => {
@@ -642,6 +651,8 @@ class AdminForth implements AdminForthClass {
         };
       },
     });
+
+   
 
     server.endpoint({
       method: 'POST',

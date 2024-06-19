@@ -64,7 +64,6 @@
     aria-label="Sidebar"
   >
     <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800 border-r">
-
       <div class="flex ms-2 md:me-24  m-4  ">
         <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
         <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
@@ -168,6 +167,7 @@ import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
+import { useUserStore } from '@/stores/user';
 import {useModalStore} from '@/stores/modal';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import AcceptModal from './components/AcceptModal.vue';
@@ -184,6 +184,7 @@ import { FrontendAPI } from '@/composables/useStores'
 const coreStore = useCoreStore();
 const modalStore = useModalStore();
 const toastStore = useToastStore();
+const userStore = useUserStore();
 const frontendApi = new FrontendAPI();
 frontendApi.init();
 const splitAtLast = (str: string, separator: string) => {
@@ -221,8 +222,9 @@ if (opened.value.includes(label)) {
 }
 
 async function logout() {
-  await coreStore.logout();
-  router.push({ name: 'login' });
+  userStore.unauthorize();
+  await userStore.logout();
+  router.push({ name: 'login' })
 }
 
 
@@ -243,6 +245,8 @@ async function loadMenu() {
     }
   });
 }
+
+
 
 watch(route, () => {
   title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
