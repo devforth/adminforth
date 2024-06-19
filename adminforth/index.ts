@@ -229,6 +229,21 @@ class AdminForth implements AdminForthClass {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${Object.keys(AdminForthResourcePages).join(', ')}`);
           }
           col.showIn = col.showIn || Object.values(AdminForthResourcePages);
+
+          if (col.foreignResource) {
+            const befHook = col.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest;
+            if (befHook) {
+              if (!Array.isArray(befHook)) {
+                col.foreignResource.hooks.dropdownList.beforeDatasourceRequest = [befHook];
+              }
+            }
+            const aftHook = col.foreignResource.hooks?.dropdownList?.afterDatasourceResponse;
+            if (aftHook) {
+              if (!Array.isArray(aftHook)) {
+                col.foreignResource.hooks.dropdownList.afterDatasourceResponse = [aftHook];
+              }
+            }
+          }
         })
 
         if (!res.options) {
