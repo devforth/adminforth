@@ -648,13 +648,49 @@ class AdminForth implements AdminForthClass {
             [this.config.auth.usernameField]: username,
             [this.config.auth.userFullNameField]: userFullName
         };
+        const checkIsMenuItemVisible = (menuItem) => {
+          if (typeof menuItem.visible === 'function') {
+            const toReturn = menuItem.visible( adminUser );
+            if (typeof toReturn !== 'boolean') {
+              throw new Error(`'visible' function of ${menuItem.label || menuItem.type }  must return boolean value`);
+            }
+            return toReturn;
+          }}
+        let newMenu = []
+        for (let menuItem of this.config.menu) {
+          let newMenuItem = {...menuItem,}
+          if (menuItem.visible){
+            if (!checkIsMenuItemVisible(menuItem)){
+              continue
+            }
+          }
+          if (menuItem.children){
+            let newChildren = []
+            for (let child of menuItem.children){
+              let newChild = {...child,}
+              if (child.visible){
+                if (!checkIsMenuItemVisible(child)){
+                  continue
+                }
+              }
+              newChildren.push(newChild)
+            }
+            newMenuItem = {...newMenuItem, children: newChildren}
+          }
+          newMenu.push(newMenuItem)
+        }
+         
+          
+
+
+
         return {
           user: userData,
           resources: this.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
           })),
-          menu: this.config.menu,
+          menu: newMenu,
           config: { 
             brandName: this.config.customization.brandName,
             brandLogo: this.config.customization.brandLogo,
