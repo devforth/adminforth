@@ -208,6 +208,17 @@ async function getList() {
     }
   });
 
+  if (data.error) {
+    window.adminforth.alert({
+      message: data.error,
+      variant: 'danger',
+      timeout: 'unlimited',
+    });
+    rows.value = [];
+    totalRows.value = 0;
+    return;
+  }
+
   rows.value = data.data?.map(row => {
     row._primaryKeyValue = row[listResource.value.columns.find(c => c.primaryKey).name];
     return row;

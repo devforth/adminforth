@@ -41,7 +41,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 
 const coreStore = useCoreStore();
-const  route = useRoute();
+const route = useRoute();
 
 
 dayjs.extend(utc);
