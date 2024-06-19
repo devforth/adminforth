@@ -2,7 +2,7 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
-import { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types.ts';
+import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 import AccessControlPlugin from '../adminforth/plugins/AccessControl/index.ts';
@@ -249,9 +249,8 @@ const admin = new AdminForth({
         }),
         new AccessControlPlugin({
           hasAccess: async (adminUser: AdminUser, action: AllowedActionsEnum) => {
-            console.log('hasAccess🔒', adminUser, action)
-            if (action === 'edit') {
-              return "You can't edit this resource. Contact admin for more information."
+            if (action === 'edit' && !adminUser.isRoot && AdminUser.dbUser.role === 'superadmin') {
+              return `You don't have access to ${action} this resource. Contact admin for more information.`
             }
             return true;
           },
