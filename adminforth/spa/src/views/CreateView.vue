@@ -139,7 +139,7 @@ async function saveRecord() {
   });
   if (response.error) {
     window.adminforth.alert({
-      message: resp.error,
+      message: response.error,
       variant: 'danger',
       timeout: 'unlimited',
     })
