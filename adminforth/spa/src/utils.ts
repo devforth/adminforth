@@ -20,7 +20,7 @@ export async function callApi({path, method, body=undefined} ) {
     useUserStore().unauthorize();
     router.push({ name: 'login' });
     return null;
-  }
+  } 
   return await r.json();
 }
 
