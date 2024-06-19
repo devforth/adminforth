@@ -34,14 +34,6 @@ export function getComponentNameFromPath(filePath) {
   return filePath.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
 }
 
-export function getFunctionList(param?: Function | Array<Function>) {
-  if (param) {
-    if (Array.isArray(param)) {
-      return param;
-    } else {
-      return [param];
-    }
-  } else {
-    return [];
-  }
+export function listify(param?: Array<Function>) {
+  return param || [];
 }

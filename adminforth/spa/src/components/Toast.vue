@@ -46,16 +46,18 @@ const props = defineProps<{
     toast:{message: string;
     variant: string;
     id: string;
-    duration?: number;}
+    timeout?: number|'unlimited';}
 }>();
 function closeToast() {
     emit('close');
 }
 
 onMounted(() => {
-    setTimeout(() => {
+    if(props.toast.timeout === 'unlimited')return;
+    else{setTimeout(() => {
      emit('close');   
-    }, props.toast.duration  || 5000 );
+    }, props.toast.timeout  || 10000 );}
+    
 });
 
 </script>

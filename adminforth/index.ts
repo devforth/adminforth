@@ -8,10 +8,9 @@ import { guessLabelFromName } from './modules/utils.js';
 import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
-import { ADMINFORTH_VERSION } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify } from './modules/utils.js';
 import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, AdminForthComponentDeclarationFull,
-  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages } from './types/AdminForthConfig.js';
-import { getFunctionList } from './modules/utils.js';
+  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, GenericHttpServer } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
 
@@ -237,7 +236,7 @@ class AdminForth implements AdminForthClass {
         if(res.options?.bulkActions){
           let bulkActions = res.options.bulkActions;
 
-          if(!Array.isArray(bulkActions)){
+          if (!Array.isArray(bulkActions)) {
             errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
             bulkActions = [];
           }
@@ -294,7 +293,40 @@ class AdminForth implements AdminForthClass {
         } else {
           res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
         }
-      })
+
+        // transform all hooks Functions to array of functions
+        if (res.hooks) {
+          for (const value of [res.hooks.show, res.hooks.list]) {
+            if (value) {
+              if (value.beforeDatasourceRequest) {
+                if (!Array.isArray(value.beforeDatasourceRequest)) {
+                  value.beforeDatasourceRequest = [value.beforeDatasourceRequest];
+                }
+              }
+              if (value.afterDatasourceResponse) {
+                if (!Array.isArray(value.afterDatasourceResponse)) {
+                  value.afterDatasourceResponse = [value.afterDatasourceResponse];
+                }
+              }
+            }
+          }
+          for (const value of [res.hooks.create, res.hooks.edit, res.hooks.delete]) {
+            if (value) {
+
+              if (value.beforeSave) {
+                if (!Array.isArray(value.beforeSave)) {
+                  value.beforeSave = [value.beforeSave];
+                }
+              }
+              if (value.afterSave) {
+                if (!Array.isArray(value.afterSave)) {
+                  value.afterSave = [value.afterSave];
+                }
+              }
+            }
+          }
+        }
+      });
     
 
 
@@ -373,7 +405,6 @@ class AdminForth implements AdminForthClass {
     for (const resource of this.config.resources) {
       for (const column of resource.columns) {
           if (column.components) {
-            console.log('🔧🔧🔧 Validating components for resource', column.components);
 
             for (const [key, comp] of Object.entries(column.components as Record<string, AdminForthComponentDeclarationFull>)) {
               let ignoreExistsCheck = false;
@@ -461,7 +492,7 @@ class AdminForth implements AdminForthClass {
     this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
-  setupEndpoints(server) {
+  setupEndpoints(server: GenericHttpServer) {
     server.endpoint({
       noAuth: true,
       method: 'POST',
@@ -524,7 +555,6 @@ class AdminForth implements AdminForthClass {
 
     server.endpoint({
       method: 'POST',
-      noAuth: false,
       path: '/check_auth',
       handler: async ({ adminUser }) => {
         return { ok: true };
@@ -658,7 +688,7 @@ class AdminForth implements AdminForthClass {
           return { error: `Resource ${resourceId} not found` };
         }
 
-        for (const hook of getFunctionList(resource.hooks?.[source]?.beforeDatasourceRequest)) {
+        for (const hook of listify(resource.hooks?.[source]?.beforeDatasourceRequest)) {
           const resp = await hook({ resource, query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -689,7 +719,7 @@ class AdminForth implements AdminForthClass {
               // nonsense
               return { data: [], total: 0 };
           }
-      }
+        }
 
         const data = await this.connectors[resource.dataSource].getData({
           resource,
@@ -734,7 +764,7 @@ class AdminForth implements AdminForthClass {
           })
         );
 
-        for (const hook of getFunctionList(resource.hooks?.[source]?.afterDatasourceResponse)) {
+        for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
           const resp = await hook({ resource, response: data.data, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -789,8 +819,8 @@ class AdminForth implements AdminForthClass {
         const targetResourceId = columnConfig.foreignResource.resourceId;
         const targetResource = this.config.resources.find((res) => res.resourceId == targetResourceId);
 
-        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest)) {
-          const resp = await hook({ query: body, adminUser });
+        for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest)) {
+          const resp = await hook({ query: body, adminUser, resource: targetResource });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -820,8 +850,8 @@ class AdminForth implements AdminForthClass {
           items
         };
 
-        for (const hook of getFunctionList(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse)) {
-          const resp = await hook({ response, adminUser });
+        for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse)) {
+          const resp = await hook({ response, adminUser, resource: targetResource });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -877,7 +907,7 @@ class AdminForth implements AdminForthClass {
             
             const record = body['record'];
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.create?.beforeSave)) {
+            for (const hook of listify(resource.hooks?.create?.beforeSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -923,7 +953,7 @@ class AdminForth implements AdminForthClass {
             const connector = this.connectors[resource.dataSource];
             await connector.createRecord({ resource, record });
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.create?.afterSave)) {
+            for (const hook of listify(resource.hooks?.create?.afterSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -958,7 +988,7 @@ class AdminForth implements AdminForthClass {
             const record = body['record'];
 
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.edit?.beforeSave)) {
+            for (const hook of listify(resource.hooks?.edit?.beforeSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -989,7 +1019,7 @@ class AdminForth implements AdminForthClass {
             }
             
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.edit?.afterSave)) {
+            for (const hook of listify(resource.hooks?.edit?.afterSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -1022,7 +1052,7 @@ class AdminForth implements AdminForthClass {
             }
 
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.delete?.beforeSave)) {
+            for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -1037,7 +1067,7 @@ class AdminForth implements AdminForthClass {
             await connector.deleteRecord({ resource, recordId: body['primaryKey']});
 
             // execute hook if needed
-            for (const hook of getFunctionList(resource.hooks?.delete?.afterSave)) {
+            for (const hook of listify(resource.hooks?.delete?.afterSave)) {
               const resp = await hook({ resource, record, adminUser });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
