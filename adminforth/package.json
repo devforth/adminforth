@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "rollout": "tsc && cp -r spa dist/spa && npm version patch  && npm publish && cd documentation && npm run build && npm run deploy",
+    "prepareDist": "cp -r spa dist/spa && find plugins -type f ! -name '*.ts' -exec cp --parents {} dist/plugins \\;",
+    "rollout": "tsc && npm run prepareDist && npm version patch  && npm publish && cd documentation && npm run build && npm run deploy",
     "docs": "typedoc"
   },
   "author": "devforth.io",

@@ -9,6 +9,11 @@ Import plugin:
 ```ts
 import ForeignInlineListPlugin from 'adminforth/plugins/ForeignInlineListPlugin';
 ```
+If yu are using pure Node without TypeScript, you can use the following code:
+
+```js
+import ForeignInlineListPlugin from 'adminforth/dist/plugins/ForeignInlineListPlugin/index.js';
+```
 
 In [Getting Started](<../Getting Started.md>) we created a `'apparts'` resource which has a field `'user_id'`.
 This field refers to record from `'users'` resource. This means that we can display a list of appartments in the user's show view.
