@@ -2,7 +2,7 @@
   <div class="relative">
     <Teleport to="body">
       <Filters
-        :columns="coreStore.resourceColumns"
+        :columns="coreStore.resource?.columns"
         :columnsMinMax="columnsMinMax" :show="filtersShow"
         @hide="filtersShow = false"
       />
@@ -159,6 +159,8 @@ watch([page], async () => {
 
 watch(()=>filtersStore.filters, async () => {
   page.value = 1;
+  checkboxes.value = [];
+
   await getList();
 }, {deep: true});
 
@@ -183,7 +185,7 @@ async function getList() {
   });
 
   rows.value = data.data?.map(row => {
-    row._primaryKeyValue = row[coreStore.resourceColumns.find(c => c.primaryKey).name];
+    row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
     return row;
   });
   totalRows.value = data.total;
