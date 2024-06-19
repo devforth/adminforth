@@ -1012,8 +1012,8 @@ export type AdminForthForeignResource = {
     resourceId: string,
     hooks?: {
       dropdownList?: {
-        beforeDatasourceRequest?: BeforeDataSourceRequestFunction,
-        afterDatasourceResponse?: AfterDataSourceResponseFunction,
+        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
     },
   }
