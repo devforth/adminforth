@@ -283,6 +283,12 @@ export type AdminForthConfigMenuItem = {
     meta?: {
       title?: string,
     },
+
+    /**
+     * Optional callback which will be called before rendering the menu for each item.
+     * You can use it to hide menu items depending on some user
+     */
+    visible?: (user: AdminUser) => boolean,
   }
   
 
