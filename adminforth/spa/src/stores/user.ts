@@ -7,10 +7,12 @@ export const useUserStore = defineStore('user', () => {
 
     function authorize() {
         isAuthorized.value = true;
+        localStorage.setItem('isAuthorized', 'true');
     }
 
     function unauthorize() {
         isAuthorized.value = false;
+        localStorage.setItem('isAuthorized', 'false');
     }
 
     async function logout() {
@@ -18,32 +20,34 @@ export const useUserStore = defineStore('user', () => {
           path: '/logout',
           method: 'POST',
         });
+        unauthorize();
       }
 
-    async function checkAuth( skipApiCall = false){
-        if(isAuthorized.value) return true;
-        else {
-            if(skipApiCall) return false;
-            const resp = await callAdminForthApi({
-                path: '/check_auth',
-                method: 'POST',
-            });
-            if (resp.status !== 401) {
-                authorize();
-                return true;
-            }
-            else {
-                unauthorize();
-                return false;}
-        }
+    // async function checkAuth( skipApiCall = false){
+    //      console.log('checkAuth', isAuthorized.value, skipApiCall)
+    //     if(isAuthorized.value) {
+    //         return true}
+    //     else {
+    //         if(skipApiCall) return false;
+    //         const resp = await callAdminForthApi({
+    //             path: '/check_auth',
+    //             method: 'POST',
+    //         });
+    //         if (resp.status !== 401) {
+    //             authorize();
+    //             return true;
+    //         }
+    //         else {
+    //             unauthorize();
+    //             return false;}
+    //     }
         
-    }
+    // }
 
     return {
         isAuthorized,
         authorize,
         unauthorize,
-        checkAuth,
         logout
     }
 
