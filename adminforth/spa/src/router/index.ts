@@ -13,8 +13,8 @@ const router = createRouter({
       meta: { title: 'login' },
       beforeEnter: async (to, from, next) => {
         const userStore = useUserStore()
-        if (await userStore.checkAuth(true)) {
-          next({ name: 'home' })
+        if(localStorage.getItem('isAuthorized') === 'true'){
+          next({name: 'home'})
         } else {
           next()
         }
