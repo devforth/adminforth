@@ -53,11 +53,10 @@ function closeToast() {
 }
 
 onMounted(() => {
-    if(props.toast.timeout === 'unlimited')return;
-    else{setTimeout(() => {
-     emit('close');   
-    }, props.toast.timeout  || 10000 );}
-    
+    if (props.toast.timeout === 'unlimited') return;
+    else { 
+      setTimeout(() => {emit('close');}, props.toast.timeout  || 10000 );
+    }
 });
 
 </script>
