@@ -45,7 +45,7 @@
     
     <ResourceForm 
       v-else
-      :record="initalValues"
+      :record="record"
       :resource="coreStore.resource"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
@@ -75,7 +75,7 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 
@@ -101,6 +101,8 @@ const initalValues = computed(() => {
   return JSON.parse(decodeURIComponent(route.query.values));
 });
 
+
+
 async function onUpdateRecord(newRecord) {
   console.log('newRecord', newRecord);
   record.value = newRecord;
@@ -108,6 +110,7 @@ async function onUpdateRecord(newRecord) {
 
 onMounted(async () => {
   loading.value = true;
+  record.value = initalValues.value;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
