@@ -26,6 +26,7 @@ export interface GenericHttpServer {
    */
   endpoint(options: {
     method: string,
+    noAuth?: boolean,
     path: string,
     handler: Function,
   }): void;
@@ -182,6 +183,7 @@ export enum AdminForthResourcePages {
   edit = 'edit',
   create = 'create',
   filter = 'filter',
+  
 }
 
 
@@ -400,6 +402,32 @@ export type AdminForthResourceColumn = {
     masked?: boolean,
 }
   
+
+/**
+ * Modify query to change how data is fetched from database.
+ * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
+ */
+export type BeforeDataSourceRequestFunction = (resource: AdminForthResource, adminUser: any, query: any) => Promise<{ok: boolean, error?: string}>;
+
+/**
+ * Modify response to change how data is returned after fetching from database.
+ * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
+ */
+export type AfterDataSourceResponseFunction = (resource: AdminForthResource, adminUser: any, response: any) => Promise<{ok: boolean, error?: string}>;
+
+/**
+ * Modify record to change how data is saved to database.
+ * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
+ */
+export type BeforeSaveFunction = (resource: AdminForthResource, adminUser: any, record: any) => Promise<{ok: boolean, error?: string}>;
+
+/**
+ * Modify record to change how data is saved to database.
+ * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
+ */
+export type AfterSaveFunction = (resource: AdminForthResource, adminUser: any, record: any) => Promise<{ok: boolean, error?: string}>;
+
+
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
@@ -456,24 +484,24 @@ export type AdminForthResource = {
     plugins?: Array<AdminForthPluginType>,
     hooks?: {
       show?: {
-        beforeDatasourceRequest?: Function | Array<Function>,
-        afterDatasourceResponse?: Function | Array<Function>,
+        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
       list?: {
-        beforeDatasourceRequest?: Function | Array<Function>,
-        afterDatasourceResponse?: Function | Array<Function>,
+        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
       create?: {
-        beforeSave?: Function | Array<Function>,
-        afterSave?: Function | Array<Function>,
+        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+        afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       edit?: {
-        beforeSave?: Function | Array<Function>,
-        afterSave?: Function | Array<Function>,
+        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+        afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       delete?: {
-        beforeSave?: Function | Array<Function>,
-        afterSave?: Function | Array<Function>,
+        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+        afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
       },
     },
     options?: {
@@ -770,14 +798,20 @@ export type AdminForthConfig = {
     deleteConfirmation?: boolean,
    
     styles?: Object,
-  }
+}
   
+
+export enum AllowedActionsEnum {
+  show = 'show',
+  list = 'list',
+  edit = 'edit',
+  create = 'create',
+  delete = 'delete'
+}
+
+
 export type AllowedActions = {
-    create?: boolean,
-    edit?: boolean,
-    show?: boolean,
-    delete?: boolean,
-    filter?: boolean,
+  [key in AllowedActionsEnum]?: boolean
 }
   
 export type ValidationObject = {
@@ -960,8 +994,8 @@ export type AdminForthForeignResource = {
     resourceId: string,
     hooks?: {
       dropdownList?: {
-        beforeDatasourceRequest?: Function,
-        afterDatasourceResponse?: Function,
+        beforeDatasourceRequest?: BeforeDataSourceRequestFunction,
+        afterDatasourceResponse?: AfterDataSourceResponseFunction,
       },
     },
   }
