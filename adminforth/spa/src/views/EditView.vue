@@ -145,7 +145,7 @@ async function saveRecord() {
     }
   }
 
-  await callAdminForthApi({
+  const resp = await callAdminForthApi({
     method: 'POST',
     path: `/update_record`,
     body: {
@@ -154,6 +154,13 @@ async function saveRecord() {
       record: updates,
     },
   });
+  if (resp.error) {
+    window.adminforth.alert({
+      message: resp.error,
+      variant: 'danger',
+      timeout: 'unlimited',
+    })
+  }
   saving.value = false;
   router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
 }
