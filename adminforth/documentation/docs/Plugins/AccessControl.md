@@ -9,14 +9,14 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 Import plugin:
 
 ```ts
-import AccessControl from 'adminforth/plugins/AccessControl';
+import AccessControlPlugin from 'adminforth/plugins/AccessControl';
 import type { AdminUser, AllowedActionsEnum } from 'adminforth/types/AdminForthConfig.js';
 
 ```
 If you are using pure Node without TypeScript, you can use the following code:
 
 ```js
-import AccessControl from 'adminforth/dist/plugins/AccessControl/index.js';
+import AccessControl from  'adminforth/dist/plugins/AccessControl/index.js';
 ```
 
 In [Getting Started](<../Getting Started.md>) we created a `'users'` resource which has a field `'role'`. During user creation 

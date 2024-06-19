@@ -497,6 +497,9 @@ const admin = new AdminForth({
           label: 'Games Users',
           icon: 'flowbite:user-solid',
           resourceId: 'games_users',
+          visible:(user)=>{
+            console.log('userqwwqbjrbrlbkevr ekl hrehtbkretkgrehgtlre !!!!!!', user)
+            return user.isRoot || user.dbUser.role === 'superadmin'}
         },
         {
           label: 'Casino Games',
@@ -520,6 +523,9 @@ const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
+      visible:(user)=>{
+        console.log('userqwwqbjrbrlbkevr ekl hrehtbkretkgrehgtlre !!!!!!', user)
+        return user.isRoot || user.dbUser.role === 'superadmin'}
     }
   ],
 })
