@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 
 import crypto from 'crypto';
+import AdminForth from './index.js';
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -19,6 +20,11 @@ function generateSalt(length = 16) {
 }
 
 class AdminForthAuth {
+  adminforth: AdminForth;
+
+  constructor(adminforth) {
+    this.adminforth = adminforth;
+  }
 
   issueJWT(payload) {
     // read ADMINFORH_SECRET from environment if not drop error
@@ -32,16 +38,16 @@ class AdminForthAuth {
     return jwt.sign(payload, secret, { expiresIn });
   }
 
-  verify(jwtToken) {
+  async verify(jwtToken) {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
       throw new Error('ADMINFORTH_SECRET environment not set');
     }
+    let decoded;
     try {
       // verify JWT token
-      const decoded = jwt.verify(jwtToken, secret);
-      return decoded;
+      decoded = jwt.verify(jwtToken, secret);
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
         console.error('Token expired:', err.message);
@@ -52,6 +58,14 @@ class AdminForthAuth {
       }
       return null;
     }
+    const { pk } = decoded;
+    if (pk === null) {
+      decoded.isRoot = true;
+    } else {
+      const dbUser = await this.adminforth.getUserByPk(pk);
+      decoded.dbUser = dbUser;
+    }
+    return decoded;
   }
 
   static async generatePasswordHash(password) {

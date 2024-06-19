@@ -2,7 +2,7 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
-import { AdminForthResource, AdminForthResourceColumn } from '../adminforth/types.ts';
+import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 import AccessControlPlugin from '../adminforth/plugins/AccessControl/index.ts';
@@ -188,12 +188,12 @@ const admin = new AdminForth({
               dropdownList: {
                 beforeDatasourceRequest: async ({ query, adminUser }: any) => {
                   console.log('beforeDatasourceRequest', query, adminUser)
-                  return { ok: true, error: false }
+                  return { ok: true, error: ""}
                 },
                 afterDatasourceResponse: async ({ response, adminUser }: any) => {
                   console.log('beforeDatasourceRequest', response, adminUser)
 
-                  return { ok: true, error: false }
+                  return { ok: true, error: "" }
                 }
               },
             }
@@ -248,12 +248,11 @@ const admin = new AdminForth({
           },
         }),
         new AccessControlPlugin({
-          hasAccess: async (adminUser: any, action: string) => {
-            console.log('hasAccess🔒', adminUser, action)
-            if (action === 'edit') {
-              return true;
+          hasAccess: async (adminUser: AdminUser, action: AllowedActionsEnum) => {
+            if (action === 'edit' && !adminUser.isRoot && AdminUser.dbUser.role === 'superadmin') {
+              return `You don't have access to ${action} this resource. Contact admin for more information.`
             }
-            return false;
+            return true;
           },
         }),
       ],
@@ -310,13 +309,13 @@ const admin = new AdminForth({
         list: {
           afterDatasourceResponse: async ({ query, adminUser }: any) => {
             console.log('321321312')
-            return { ok: true, error: false }
+            return { ok: true, error: "" }
           }
         },
         create: {
           beforeSave: async ({ record, adminUser, resource }: any) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            return { ok:true, error: false };
+            return { ok:true, error: "" };
             // if return 'error': , record will not be saved and error will be proxied
           }
         },
@@ -325,7 +324,7 @@ const admin = new AdminForth({
             if (record.password) {
               record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
-            return { ok: true, error: false }
+            return { ok: true, error: "" }
           },
           // beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
           //   return { ok: true, error: false }
@@ -542,14 +541,14 @@ const port = 3000;
 app.get(
   '/api/testtest/', 
   admin.express.authorize(
-    async (req, res, next,) => {
+    async (req, res, next) => {
         res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
     }
   )
 )
 
 // serve after you added all api
-admin.express.serve(app, express)
+admin.express.serve(app)
 admin.discoverDatabases();
 
 
