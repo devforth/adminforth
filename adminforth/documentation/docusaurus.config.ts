@@ -61,7 +61,7 @@ const config: Config = {
         entryPoints: [
           "../types/AdminForthConfig.ts", 
           "../types/FrontendAPI.ts", 
-          "../plugins/ForeignInlineListPlugin/types.ts",
+          "../plugins/**/types.ts",
         ],
         plugin: ["./typedoc-plugin.mjs"],
         readme: "none",

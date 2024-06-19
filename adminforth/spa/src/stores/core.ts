@@ -8,7 +8,7 @@ export const useCoreStore = defineStore('core', () => {
   const resourceById: Ref<Object> = ref({});
   const menu = ref([]);
   const config = ref({});
-  const record = ref({});
+  const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResource | null> = ref(null);
 
   const resourceColumnsWithFilters = computed(() => {
@@ -67,9 +67,17 @@ export const useCoreStore = defineStore('core', () => {
       }
     });
 
-    console.log('📦 record', respData);
-    record.value = respData.data[0];
-    resourceOptions.value = respData.options;
+    if (respData.error) {
+      window.adminforth.alert({
+        message: respData.error,
+        variant: 'danger',
+        timeout: 'unlimited'
+      });
+      record.value = {};
+    } else {
+      record.value = respData.data[0];
+    }
+
   }
 
   async function fetchResourceFull({ resourceId }: { resourceId: string }) {

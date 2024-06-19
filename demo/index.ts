@@ -5,6 +5,7 @@ import { v1 as uuid } from 'uuid';
 import { AdminForthResource, AdminForthResourceColumn } from '../adminforth/types.ts';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
+import AccessControlPlugin from '../adminforth/plugins/AccessControl/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -244,6 +245,15 @@ const admin = new AdminForth({
             // hide column 'square_meter' from both 'list' and 'filter'
             resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter').showIn = [];
             resourceConfig.options!.listPageSize = 3;
+          },
+        }),
+        new AccessControlPlugin({
+          hasAccess: async (adminUser: any, action: string) => {
+            console.log('hasAccess🔒', adminUser, action)
+            if (action === 'edit') {
+              return true;
+            }
+            return false;
           },
         }),
       ],

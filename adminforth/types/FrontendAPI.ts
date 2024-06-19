@@ -88,7 +88,13 @@ export type AlertParams = {
     /**
      * The variant of the alert
      */
-    variant?: AlertVariant;
+    variant?: AlertVariant | keyof typeof AlertVariant;
+
+    /**
+     * The timeout of the alert
+     */
+    timeout?: number | 'unlimited';
+    
 }
 
 export type FilterParams = {
@@ -107,10 +113,10 @@ export type FilterParams = {
 }
 
 export enum AlertVariant {
-    Danger = 'danger',
-    Success = 'success',
-    Warning = 'warning',
-    Info = 'info'
+    danger = 'danger',
+    success = 'success',
+    warning = 'warning',
+    info = 'info'
   }
 
 export type Operator = 'in' | 'ilike' | 'gte' | 'lte'  ;
