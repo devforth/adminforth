@@ -10,6 +10,8 @@ Import plugin:
 
 ```ts
 import AccessControl from 'adminforth/plugins/AccessControl';
+import type { AdminUser, AllowedActionsEnum } from 'adminforth/types/AdminForthConfig.js';
+
 ```
 If you are using pure Node without TypeScript, you can use the following code:
 
