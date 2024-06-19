@@ -28,9 +28,27 @@ export interface GenericHttpServer {
     method: string,
     noAuth?: boolean,
     path: string,
-    handler: Function,
+    handler: (body: any, adminUser: any, query: {[key: string]: string}, headers: {[key: string]: string}, cookies: {[key: string]: string}, response: {
+      setHeader: (key: string, value: string) => void,
+      setStatus: (code: number, message: string) => void,
+    }) => void,
   }): void;
 
+}
+
+export type AdminUser = {
+  /**
+   * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.resourceId}
+   * or null if it is user logged in as {@link AdminForthConfig.rootUser}
+   */
+  pk: string | null,
+
+  /**
+   * Username which takend from {@link AdminForthConfig.auth.usernameField} field in user resource {@link AdminForthConfig.auth.resourceId}
+   */
+  username: string,
+  isRoot: boolean,
+  dbUser: any,
 }
 
 export interface ExpressHttpServer extends GenericHttpServer {
@@ -68,14 +86,13 @@ export interface AdminForthClass {
 
   auth: {
 
-    verify(jwt : string): any;
+    verify(jwt : string): Promise<any>;
   }
 
   /**
    * Internal flag which indicates if AdminForth is running in hot reload mode.
    */
   runningHotReload: boolean;
-
 
   /**
    * Connects to databases defined in datasources and fetches described resource columns to find out data types and constraints.
@@ -407,25 +424,25 @@ export type AdminForthResourceColumn = {
  * Modify query to change how data is fetched from database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeDataSourceRequestFunction = (resource: AdminForthResource, adminUser: any, query: any) => Promise<{ok: boolean, error?: string}>;
+export type BeforeDataSourceRequestFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, query: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterDataSourceResponseFunction = (resource: AdminForthResource, adminUser: any, response: any) => Promise<{ok: boolean, error?: string}>;
+export type AfterDataSourceResponseFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, response: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeSaveFunction = (resource: AdminForthResource, adminUser: any, record: any) => Promise<{ok: boolean, error?: string}>;
+export type BeforeSaveFunction = (params:{resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterSaveFunction = (resource: AdminForthResource, adminUser: any, record: any) => Promise<{ok: boolean, error?: string}>;
+export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
 
 /**
@@ -806,7 +823,8 @@ export enum AllowedActionsEnum {
   list = 'list',
   edit = 'edit',
   create = 'create',
-  delete = 'delete'
+  delete = 'delete',
+  filter = 'filter',
 }
 
 
