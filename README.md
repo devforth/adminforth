@@ -1,5 +1,5 @@
 
-Learn how to [Get Started](#https://adminforth.dev/docs/Getting%20Started) with AdminForth.
+Learn how to [Get Started](#https://adminforth.dev/docs/gettingStarted) with AdminForth.
 
 Get full API reference [here](#https://adminforth.dev/docs/api/).
 
