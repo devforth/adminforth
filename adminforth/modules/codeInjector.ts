@@ -124,13 +124,13 @@ class CodeInjector implements CodeInjectorType {
               path: '${item.path}',
               name: '${item.path}',
               component: () => import('${item.component}'),
-              meta: { title: '${item?.meta?.title}'}
+              meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
             },\n`} else {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
-                meta: { title: '${item?.meta?.title}'}
+                meta: { title: '${item?.meta?.title|| item.path.replace('/', '')}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;
@@ -141,7 +141,7 @@ class CodeInjector implements CodeInjectorType {
                 path: '${item.path}',
                 name: '${item.path}',
                 component: ${getComponentNameFromPath(item.component)},
-                meta: { title: '${item?.meta?.title}'}
+                meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
               },\n`
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;}
@@ -150,7 +150,7 @@ class CodeInjector implements CodeInjectorType {
                 path: '${item.path}',
                 name: '${item.path}',
                 component: () => import('${item.component}'),
-                meta: { title: '${item?.meta?.title}'
+                meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
               },\n` 
               
             }
