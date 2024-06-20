@@ -247,15 +247,16 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
-        new AccessControlPlugin({
-          hasAccess: async (adminUser: AdminUser, action: AllowedActionsEnum) => {
-            if (action === 'edit' && !adminUser.isRoot && adminUser.dbUser.role === 'superadmin') {
-              return `You don't have access to ${action} this resource. Contact admin for more information.`
-            }
-            return true;
-          },
-        }),
       ],
+      options: {
+        allowedActions: {
+          create: async (adminUser: AdminUser, resource: AdminForthResource, meta: any) => {
+            console.log('create', adminUser, meta);
+            return false;
+          },
+          delete: false,
+        },
+      },
       columns: [
         { 
           name: 'id', 
