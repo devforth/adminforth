@@ -149,7 +149,7 @@ class CodeInjector implements CodeInjectorType {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
-                component: () => import('${item.component}'),}
+                component: () => import('${item.component}'),
                 meta: { title: '${item?.meta?.title}'
               },\n` 
               
