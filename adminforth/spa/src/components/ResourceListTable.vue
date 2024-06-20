@@ -190,7 +190,7 @@
           <button v-if="resource.options?.allowedActions.delete"
                   class="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                   :data-tooltip-target="`tooltip-delete-${rowI}`"
-                  @click="showDeleteModal(row)"
+                  @click="deleteRecord(row)"
           >
             <IconTrashBinSolid class="w-5 h-5 me-2"/>
           </button>
@@ -272,10 +272,12 @@
 import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { callAdminForthApi, getIcon } from '@/utils';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
+import { showSuccesTost } from '@/composables/useFrontendApi';
 
 import {
 IconInboxOutline,
@@ -305,6 +307,7 @@ const emits = defineEmits([
   'update:page',
   'update:sort',
   'update:checkboxes',
+  'update:records'
 
 ]);
 
@@ -358,9 +361,11 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 
+
+
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows.value) return false;
-  return props.rows.value.every((r) => checkboxes.value.includes(r.id));
+  if (!props.rows) return false;
+  return props.rows.every((r) => props.checkboxes.includes(r.id));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
@@ -379,5 +384,36 @@ function onSortButtonClick(field) {
     }
   }
 }
+
+async function deleteRecord(row) {
+  const data = await window.adminforth.confirm({
+    message: 'Are you sure you want to delete this item?',
+    yes: 'Delete',
+    no: 'Cancel',
+  });
+  if (data) {
+    try {
+      const res = await callAdminForthApi({
+      path: '/delete_record',
+      method: 'POST',
+      body: {
+        resourceId: props.resource.resourceId,
+        primaryKey: row._primaryKeyValue,
+      }});
+      if (!res.error){
+        emits('update:records', true)
+        showSuccesTost('Record deleted successfully')
+      } else {
+        console.error(res.error)
+      }
+
+    } catch (e) {
+      console.error(e);
+      };
+    }
+
+    
+}
+
 
 </script>

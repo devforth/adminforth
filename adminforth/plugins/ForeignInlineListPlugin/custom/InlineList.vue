@@ -104,6 +104,7 @@ import {
   IconFilterOutline,
   IconPlusOutline,
 } from '@iconify-prerendered/vue-flowbite';
+import { showErrorTost, showWarningTost, showSuccesTost} from '@/composables/useFrontendApi';
 
 import { getIcon } from '@/utils';
 
@@ -145,10 +146,7 @@ const endFilters = computed(() => {
   const primaryKeyColumn = selfPrimaryKeyColumn.value;
 
   if (!refColumn) {
-    window.adminforth.alert({
-      message: `Column with foreignResource.resourceId which is equal to '${props.resource.resourceId}' not found in resource which is specified as foreighResourceId '${listResource.value.resourceId}'`,
-      variant: 'danger',
-    });
+    showErrorTost(`Column with foreignResource.resourceId which is equal to '${props.resource.resourceId}' not found in resource which is specified as foreighResourceId '${listResource.value.resourceId}'`,10000);
     return [];
   }
   return [
@@ -209,11 +207,7 @@ async function getList() {
   });
 
   if (data.error) {
-    window.adminforth.alert({
-      message: data.error,
-      variant: 'danger',
-      timeout: 'unlimited',
-    });
+    showErrorTost(data.error);
     rows.value = [];
     totalRows.value = 0;
     return;
