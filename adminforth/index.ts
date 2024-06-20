@@ -14,14 +14,17 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   BeforeSaveFunction,
   AfterSaveFunction,
   BeforeDataSourceRequestFunction,
-  AfterDataSourceResponseFunction} from './types/AdminForthConfig.js';
+  AfterDataSourceResponseFunction, AllowedActionValue, AdminUser,
+  AdminForthResource,
+  AllowedActionsEnum
+} from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
+import { tr } from '@faker-js/faker';
 
 
 //get array from enum AdminForthResourcePages
 
-const DEFAULT_ALLOWED_ACTIONS = {create: true, edit: true, show: true, delete: true};
 
 
 class AdminForth implements AdminForthClass {
@@ -250,6 +253,32 @@ class AdminForth implements AdminForthClass {
           res.options = {bulkActions: [], allowedActions: {}};
         }
 
+        if (!res.options.allowedActions) {
+          res.options.allowedActions = {
+            all: true,
+          };
+        }
+
+
+        if (Object.keys(res.options.allowedActions).includes('all')) {
+          if (Object.keys(res.options.allowedActions).length > 1) {
+            errors.push(`Resource "${res.resourceId}" allowedActions cannot have "all" and other keys at same time: ${Object.keys(res.options.allowedActions).join(', ')}`);
+          }
+          for (const key of Object.keys(AllowedActionsEnum)) {
+            if (key !== 'all') {
+              res.options.allowedActions[key] = res.options.allowedActions.all;
+            }
+          }
+          delete res.options.allowedActions.all;
+        } else {
+          // by default allow all actions
+          for (const key of Object.keys(AllowedActionsEnum)) {
+            if (!Object.keys(res.options.allowedActions).includes(key)) {
+              res.options.allowedActions[key] = true;
+            }
+          }
+        }
+
 
         //check if resource has bulkActions
         if(res.options?.bulkActions){
@@ -301,17 +330,6 @@ class AdminForth implements AdminForthClass {
 
         }
 
-        //add default allowedActions to resources
-        if(res.options.allowedActions){
-          //check if allowedActions is an object
-          if(typeof res.options.allowedActions !== 'object'){
-            errors.push(`Resource "${res.resourceId}" allowedActions must be an object`);
-          }
-          const userAllowedActions = res.options.allowedActions 
-          res.options.allowedActions = Object.assign({}, DEFAULT_ALLOWED_ACTIONS, userAllowedActions);         
-        } else {
-          res.options.allowedActions = DEFAULT_ALLOWED_ACTIONS;
-        }
 
         // transform all hooks Functions to array of functions
         if (res.hooks) {
@@ -671,12 +689,31 @@ class AdminForth implements AdminForthClass {
       },
     });
 
+    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any) {
+      await Promise.all(
+        Object.entries(resource.options?.allowedActions || {}).map(
+          async ([key, value]: [string, AllowedActionValue]) => {
+          // if callable then call
+          if (typeof value === 'function') {
+            resource.options.allowedActions[key] = await value( adminUser, resource, meta );
+          }
+        })
+      );
+    }
+
+    function checkAccess(action: AllowedActionsEnum, resource: AdminForthResource): { allowed: boolean, error?: string } {
+      const allowed = (resource.options?.allowedActions[action] as boolean | string | undefined);
+        if (allowed !== true) {
+          return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed', allowed: false };
+        }
+        return { allowed: true };
+    }
    
 
     server.endpoint({
       method: 'POST',
       path: '/get_resource',
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const { resourceId } = body;
         if (!this.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -688,6 +725,9 @@ class AdminForth implements AdminForthClass {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+
+        await interpretResource(adminUser, resource, {});
+
         // exclude "plugins" key
         return { resource: { ...resource, plugins: undefined } };
       },
@@ -711,6 +751,14 @@ class AdminForth implements AdminForthClass {
           return { error: `Resource ${resourceId} not found` };
         }
 
+        await interpretResource(adminUser, resource, { requestBody: body });
+
+        const { allowed, error } = checkAccess(source as AllowedActionsEnum, resource);
+        console.log('allowed', allowed, error);
+        if (!allowed) {
+          return { error };
+        }
+
         for (const hook of listify(resource.hooks?.[source]?.beforeDatasourceRequest)) {
           const resp = await hook({ resource, query: body, adminUser });
           if (!resp || (!resp.ok && !resp.error)) {
@@ -723,6 +771,8 @@ class AdminForth implements AdminForthClass {
         }
         const { limit, offset, filters, sort } = body;
 
+        
+
         for (const filter of (filters || [])) {
           if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
               throw new Error(`Operator '${filter.operator}' is not allowed`);
@@ -734,7 +784,7 @@ class AdminForth implements AdminForthClass {
 
           if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
               if (!Array.isArray(filter.value)) {
-                  throw new Error(`Value for operator '${filter.operator}'' should be an array`);
+                  throw new Error(`Value for operator '${filter.operator}' should be an array`);
               }
           }
 
@@ -922,12 +972,17 @@ class AdminForth implements AdminForthClass {
         method: 'POST',
         path: '/create_record',
         handler: async ({ body, adminUser }) => {
-            console.log('create_record', body, this.config.resources);
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            
+            await interpretResource(adminUser, resource, { requestBody: body });
+
+            const { allowed, error } = checkAccess(AllowedActionsEnum.create, resource);
+            if (!allowed) {
+              return { error };
+            }
+
             const record = body['record'];
             // execute hook if needed
             for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
@@ -940,6 +995,8 @@ class AdminForth implements AdminForthClass {
                 return { error: resp.error };
               }
             }
+
+            
 
             for (const column of resource.columns) {
                 if (column.fillOnCreate) {
@@ -999,6 +1056,12 @@ class AdminForth implements AdminForthClass {
             const resource = this.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
+            }
+            await interpretResource(adminUser, resource, { requestBody: body });
+
+            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, resource);
+            if (!allowed) {
+              return { error };
             }
 
             const recordId = body['recordId'];
@@ -1072,6 +1135,13 @@ class AdminForth implements AdminForthClass {
             }
             if (resource.options.allowedActions.delete === false) {
                 return { error: `Resource '${resource.resourceId}' does not allow delete action` };
+            }
+
+            await interpretResource(adminUser, resource, { requestBody: body });
+
+            const { allowed, error } = checkAccess(AllowedActionsEnum.delete, resource);
+            if (!allowed) {
+              return { error };
             }
 
             // execute hook if needed
