@@ -1,7 +1,13 @@
 
+# Customization
 
+Here is how you can customize the AdminForth to fit your needs.
 
-# Limiting access to the resource actions
+## Customizing how AdminFOrth renders the cells with record values
+
+...
+
+## Limiting access to the resource actions
 
 
 
@@ -24,8 +30,11 @@ options: {
 If you want to disable creating and editing of new users for all users apart from users with role `superadmin`, but disable deletion for all users:
 
 ```ts
-async function canModifyUsers(adminUser: AdminUser, resource: AdminForthResource, meta: any) => {
-  return adminUser.role === 'superadmin';
+
+import type { AdminUser, AdminForthResource } from  'adminforth/types/AdminForthConfig.js';
+
+async function canModifyUsers(adminUser: AdminUser, resource: AdminForthResource, meta: any): boolean {
+  return  adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
 }
 ...
 resourceId: 'users',

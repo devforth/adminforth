@@ -7,6 +7,4 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 
 
 
-
-
 See [API Reference](/docs/api/plugins/AccessControl/types/type-aliases/PluginOptions) for more all options.
