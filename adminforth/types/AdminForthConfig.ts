@@ -833,9 +833,20 @@ export enum AllowedActionsEnum {
   filter = 'filter',
 }
 
+/**
+ * Defines whether user has access to an action, can statically be Boolean
+ * or function which returns Boolean or string with error message
+ * 
+ */
+export type AllowedActionValue = boolean | ((adminUser: AdminUser, resource: AdminForthResource, meta: any) => Promise<boolean | string>);
 
+/**
+ * Object which describes allowed actions for user.
+ */
 export type AllowedActions = {
-  [key in AllowedActionsEnum]?: boolean
+  [key in AllowedActionsEnum]?: AllowedActionValue
+} & {
+  all?: AllowedActionValue;
 }
   
 export type ValidationObject = {
