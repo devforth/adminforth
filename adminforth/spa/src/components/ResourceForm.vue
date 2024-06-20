@@ -44,14 +44,14 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
-
                     <Dropdown
                         single
                         v-if="column.foreignResource"
                         :options="columnOptions[column.name] || []"
+                        :placeholder = "columnOptions[column.name].length || 'There are no options available'"
                         :modelValue="currentValues[column.name]"
                         @update:modelValue="setCurrentValue(column.name, $event)"
-                    />
+                    ></Dropdown>
                     <Dropdown
                         single
                         v-else-if="column.enum"
