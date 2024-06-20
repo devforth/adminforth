@@ -474,7 +474,7 @@ const admin = new AdminForth({
       homepage: true,
       isStaticRoute:false,
       meta:{
-        
+        title: 'Dashboard',
       }
     },
     {
