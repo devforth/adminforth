@@ -358,9 +358,11 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 
+
+
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows.value) return false;
-  return props.rows.value.every((r) => checkboxes.value.includes(r.id));
+  if (!props.rows) return false;
+  return props.rows.every((r) => props.checkboxes.includes(r.id));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
