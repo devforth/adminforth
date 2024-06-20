@@ -135,7 +135,7 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
   ...
   options: {
     allowedActions: {
-      delete: async ({ adminUser }: { adminUser: AdminUser }) => Promise<boolean> {
+      delete: async ({ adminUser }: { adminUser: AdminUser }): Promise<boolean> => {
         // important: if adminUser.isRoot, the adminUser.dbUser is undefined
         return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
       }
@@ -195,11 +195,12 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
   }
   const { oldRecord, newRecord } = meta;
   if (oldRecord.user_id !== adminUser.dbUser.id) {
-    throw new Error("You are not assigned to this apartment and can't edit it");
+    return "You are not assigned to this apartment and can't edit it";
   }
   if (newRecord.user_id !== oldRecord.user_id) {
-    throw new Error("You can't change the owner of the apartment");
+    return "You can't change the owner of the apartment";
   }
+  return true;
 }
 
 

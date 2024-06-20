@@ -43,7 +43,6 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
     if (!this.foreignResource) {
       throw new Error(`ForeignInlineListPlugin: Resource with ID "${this.options.foreignResourceId}" not found`);
     }
-    console.log('🔌 ForeignInlineListPlugin', this.options);
     resourceConfig.columns.push({
       name: `foreignInlineList_${this.foreignResource.resourceId}`,
       label: 'Foreign Inline List',
