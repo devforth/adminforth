@@ -12,3 +12,15 @@ export function showErrorTost(message: string, timeout?: number) {
   window.adminforth.alert({ message, variant: 'danger', timeout: timeout || 'unlimited'});  
   return message;
 }
+
+
+const useFrontendApi = () => {
+    return {
+        showSuccesTost,
+        showWarningTost,
+        showErrorTost
+    }
+}
+
+
+export default useFrontendApi;
