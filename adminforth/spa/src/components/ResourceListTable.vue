@@ -109,7 +109,7 @@
         <td :colspan="resource?.columns.length + 2">
 
           <div id="toast-simple"
-              class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 bg-white divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
+              class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
               role="alert">
             <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400"/>
             <div class="ps-4 text-sm font-normal">No items here yet</div>
