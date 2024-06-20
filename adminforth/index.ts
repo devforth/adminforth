@@ -20,7 +20,6 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
-import { tr } from '@faker-js/faker';
 
 
 //get array from enum AdminForthResourcePages

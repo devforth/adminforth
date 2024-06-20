@@ -5,7 +5,6 @@ import { v1 as uuid } from 'uuid';
 import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
-import AccessControlPlugin from '../adminforth/plugins/AccessControl/index.ts';
 
 const ADMIN_BASE_URL = '';
 

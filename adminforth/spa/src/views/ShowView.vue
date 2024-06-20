@@ -16,7 +16,7 @@
         Edit
       </RouterLink>
 
-      <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="showDeleteModal"
+      <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
         class="flex items-center py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-red-500 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
         <IconTrashBinSolid class="w-4 h-4" />
@@ -120,6 +120,7 @@ import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbi
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
+import {showSuccesTost} from '@/composables/useFrontendApi';
 
 
 const item = ref(null);
@@ -154,40 +155,34 @@ onMounted(async () => {
   loading.value = false;
 });
 
-function showDeleteModal(row) {
-  if (!coreStore.config?.deleteConfirmation) {
-    return deleteRecord(row);
-  }
-  modalStore.setModalContent({
-    content: 'Are you sure you want to delete this item?',
-    acceptText: 'Delete',
-    cancelText: 'Cancel',
-  });
-  modalStore.setOnAcceptFunction(() => {
-    return deleteRecord(row)
-  })
-  modalStore.togleModal();
-  
-
-}
-
 async function deleteRecord(row) {
-  try{
-    await callAdminForthApi({
+  const data = await window.adminforth.confirm({
+    message: 'Are you sure you want to delete this item?',
+    yes: 'Delete',
+    no: 'Cancel',
+  });
+  if (data) {
+    try {
+      const res = await callAdminForthApi({
       path: '/delete_record',
       method: 'POST',
       body: {
         resourceId: route.params.resourceId,
         primaryKey: route.params.primaryKey,
-        recordId: route.params.primaryKey
+      }});
+      if (!res.error){
+        router.push({ name: 'resource-list', params: { resourceId: route.params.resourceId } });
+        showSuccesTost('Record deleted successfully')
+      } else {
+        console.error(res.error)
       }
-    });
-    router.push({ name: 'resource-list', params: { resourceId: route.params.resourceId } });
-  } catch (error) {
-    console.log(error);
-  }
 
-  modalStore.resetmodalState()
+    } catch (e) {
+      console.error(e);
+      };
+    }
+
+    
 }
 
 </script>
