@@ -253,7 +253,7 @@ const admin = new AdminForth({
             console.log('create', adminUser, meta);
             return false;
           },
-          delete: false,
+          delete: true,
         },
       },
       columns: [
