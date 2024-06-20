@@ -208,7 +208,7 @@
     </table>
   </div>
   <!-- pagination -->
-  <div class="flex flex-col items-center mt-4 xs:flex-row xs:justify-between xs:items-center"
+  <div class="flex flex-col items-center mt-4 mb-4 xs:flex-row xs:justify-between xs:items-center"
     v-if="rows && totalRows >= pageSize && totalRows > 0"
   >
     <!-- Help text -->
