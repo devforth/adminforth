@@ -16,7 +16,8 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   BeforeDataSourceRequestFunction,
   AfterDataSourceResponseFunction, AllowedActionValue, AdminUser,
   AdminForthResource,
-  AllowedActionsEnum
+  AllowedActionsEnum,
+  ActionCheckSource
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
@@ -696,10 +697,6 @@ class AdminForth implements AdminForthClass {
           }
           newMenu.push(newMenuItem)
         }
-         
-          
-
-
 
         return {
           user: userData,
@@ -724,13 +721,13 @@ class AdminForth implements AdminForthClass {
       },
     });
 
-    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any) {
+    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource) {
       await Promise.all(
         Object.entries(resource.options?.allowedActions || {}).map(
           async ([key, value]: [string, AllowedActionValue]) => {
           // if callable then call
           if (typeof value === 'function') {
-            resource.options.allowedActions[key] = await value( adminUser, resource, meta );
+            resource.options.allowedActions[key] = await value({ adminUser, resource, meta, source });
           }
         })
       );
@@ -761,7 +758,7 @@ class AdminForth implements AdminForthClass {
           return { error: `Resource ${resourceId} not found` };
         }
 
-        await interpretResource(adminUser, resource, {});
+        await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
 
         // exclude "plugins" key
         return { resource: { ...resource, plugins: undefined } };
@@ -786,7 +783,7 @@ class AdminForth implements AdminForthClass {
           return { error: `Resource ${resourceId} not found` };
         }
 
-        await interpretResource(adminUser, resource, { requestBody: body });
+        await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.DisplayButtons);
 
         const { allowed, error } = checkAccess(source as AllowedActionsEnum, resource);
         console.log('allowed', allowed, error);
@@ -1011,7 +1008,7 @@ class AdminForth implements AdminForthClass {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            await interpretResource(adminUser, resource, { requestBody: body });
+            await interpretResource(adminUser, resource, { requestBody: body}, ActionCheckSource.CreateRequest);
 
             const { allowed, error } = checkAccess(AllowedActionsEnum.create, resource);
             if (!allowed) {
@@ -1092,13 +1089,7 @@ class AdminForth implements AdminForthClass {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            await interpretResource(adminUser, resource, { requestBody: body });
-
-            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, resource);
-            if (!allowed) {
-              return { error };
-            }
-
+            
             const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
@@ -1107,6 +1098,13 @@ class AdminForth implements AdminForthClass {
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
             const record = body['record'];
+
+            await interpretResource(adminUser, resource, { requestBody: body, record, oldRecord}, ActionCheckSource.EditRequest);
+
+            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, resource);
+            if (!allowed) {
+              return { error };
+            }
 
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
@@ -1172,7 +1170,7 @@ class AdminForth implements AdminForthClass {
                 return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             }
 
-            await interpretResource(adminUser, resource, { requestBody: body });
+            await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.DeleteRequest);
 
             const { allowed, error } = checkAccess(AllowedActionsEnum.delete, resource);
             if (!allowed) {

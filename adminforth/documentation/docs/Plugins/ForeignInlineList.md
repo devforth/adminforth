@@ -37,7 +37,7 @@ Add to your `'users'` resource configuration (which we created in ), plugin inst
           // feel free to console.log and edit resourceConfig as you need
         },
       }),
-    ], 
+    ],
 }
 ```
 
