@@ -73,6 +73,7 @@ import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { showErrorTost } from '@/composables/useFrontendApi';
 
 const coreStore = useCoreStore();
 
@@ -155,11 +156,7 @@ async function saveRecord() {
     },
   });
   if (resp.error) {
-    window.adminforth.alert({
-      message: resp.error,
-      variant: 'danger',
-      timeout: 'unlimited',
-    })
+    showErrorTost(resp.error);
   }
   saving.value = false;
   router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });

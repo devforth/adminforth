@@ -87,6 +87,7 @@
       @update:page="page = $event"
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
+      @update:records="getList"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -113,6 +114,7 @@ import { callAdminForthApi, getIcon } from '@/utils';
 import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { showErrorTost } from '@/composables/useFrontendApi'
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
@@ -184,11 +186,7 @@ async function getList() {
     }
   });
   if (data.error) {
-    window.adminforth.alert({
-      message: data.error,
-      variant: 'danger',
-      timeout: 'unlimited',
-    });
+    showErrorTost(data.error);
     rows.value = [];
     totalRows.value = 0;
     return;
@@ -201,36 +199,9 @@ async function getList() {
 }
 
 
-function showDeleteModal(row) {
-  if (!coreStore.config?.deleteConfirmation) {
-    return deleteRecord(row);
-  }
-  modalStore.setModalContent({
-    content: 'Are you sure you want to delete this item?',
-    acceptText: 'Delete',
-    cancelText: 'Cancel',
-  });
-  modalStore.setOnAcceptFunction(() => {
-    return deleteRecord(row)
-  })
-  console.log('row', row);
-  modalStore.togleModal();
 
-}
 
-async function deleteRecord(row) {
-  await callAdminForthApi({
-    path: '/delete_record',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId,
-      primaryKey: row._primaryKeyValue,
-      recordId: row.id
-    }
-  });
-  await getList();
-  modalStore.resetmodalState()
-}
+
 
 async function startBulkAction(actionId) {
   const data = await callAdminForthApi({

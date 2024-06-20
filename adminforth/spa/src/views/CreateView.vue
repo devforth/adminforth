@@ -78,6 +78,7 @@ import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
+import { showErrorTost } from '@/composables/useFrontendApi';
 
 
 const isValid = ref(false);
@@ -141,11 +142,8 @@ async function saveRecord() {
     },
   });
   if (response.error) {
-    window.adminforth.alert({
-      message: response.error,
-      variant: 'danger',
-      timeout: 'unlimited',
-    })
+    showErrorTost(response.error);
+    
   }
   saving.value = false;
   if (route.query.returnTo) {
