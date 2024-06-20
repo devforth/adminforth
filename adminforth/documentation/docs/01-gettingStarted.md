@@ -1,5 +1,5 @@
 
-# Installation
+# Getting Started
 
 ## Prerequisites
 
@@ -40,13 +40,13 @@ You can use adminforth in pure Node, but we recommend using TypeScript for bette
 npm install typescript@5.4.5 tsx@4.11.2 --save-dev
 ```
 
-# Philosophy
+## Basic Philosophy
 
-AdminForth connects to existing databases and provide a backoffice for managing data including CRUD operations, filtering, sorting, and more.
+AdminForth connects to existing databases and provides a backoffice for managing data including CRUD operations, filtering, sorting, and more.
 
 Database should be already created by using any database management tool, ORM or migrator. AdminForth does not provide a way to create tables or columns in the database.
 
-Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in backoffice. For most DB AdminForth can guess column types and constraints (e.g. max-lenght) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB metadata.
+Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in backoffice. For most DB AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
 
 Also in AdminForth you can define in "Vue" way how each field will be rendered, and create own pages e.g. Dashboards.
 
@@ -54,14 +54,9 @@ In the demo we will create a simple database with 2 tables: `apartments` and `us
 
 Users table will be used to store a credentials for login into backoffice itself.
 
-## Possible configuration options
-
-We will use schema with different column types for apartments to show many of AdminForth features.
-
-Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
 
 
-# Setting up a first demo
+## Setting up a first demo
 
 Open `package.json`, set `type` to `module` and add `start` script:
 
@@ -376,3 +371,10 @@ Open http://localhost:3500 in your browser and login with credentials `adminfort
 
 After Login you should see:
 
+
+
+## Possible configuration options
+
+We will use schema with different column types for apartments to show many of AdminForth features.
+
+Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
