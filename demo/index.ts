@@ -498,7 +498,6 @@ const admin = new AdminForth({
           icon: 'flowbite:user-solid',
           resourceId: 'games_users',
           visible:(user)=>{
-            console.log('userqwwqbjrbrlbkevr ekl hrehtbkretkgrehgtlre !!!!!!', user)
             return user.isRoot || user.dbUser.role === 'superadmin'}
         },
         {
