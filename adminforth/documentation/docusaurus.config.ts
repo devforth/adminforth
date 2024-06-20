@@ -116,7 +116,7 @@ const config: Config = {
           items: [
             {
               label: 'Tutorial',
-              to: '/docs/Getting%20Started',
+              to: '/docs/gettingStarted',
             },
             {
               label: 'API',

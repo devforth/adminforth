@@ -19,7 +19,7 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/Getting%20Started">
+            to="/docs/gettingStarted">
             AdminForth Tutorial - 5min ⏱️
           </Link>
         </div>
