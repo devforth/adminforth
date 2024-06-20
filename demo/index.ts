@@ -249,7 +249,7 @@ const admin = new AdminForth({
       ],
       options: {
         allowedActions: {
-          create: async (adminUser: AdminUser, resource: AdminForthResource, meta: any) => {
+          create: async ({adminUser, meta}: {adminUser: AdminUser, meta: any}) => {
             console.log('create', adminUser, meta);
             return true;
           },

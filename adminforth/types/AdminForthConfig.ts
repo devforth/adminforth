@@ -838,7 +838,16 @@ export enum AllowedActionsEnum {
  * or function which returns Boolean or string with error message
  * 
  */
-export type AllowedActionValue = boolean | ((adminUser: AdminUser, resource: AdminForthResource, meta: any) => Promise<boolean | string>);
+export type AllowedActionValue = boolean | (({adminUser, resource, meta}: {
+  adminUser: AdminUser,
+  resource: AdminForthResource,
+
+  /**
+   * Meta object which will pass request information just in case, and source of the check
+   */
+  meta: any,
+
+}) => Promise<boolean | string>);
 
 /**
  * Object which describes allowed actions for user.
