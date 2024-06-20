@@ -696,10 +696,6 @@ class AdminForth implements AdminForthClass {
           }
           newMenu.push(newMenuItem)
         }
-         
-          
-
-
 
         return {
           user: userData,
@@ -730,7 +726,7 @@ class AdminForth implements AdminForthClass {
           async ([key, value]: [string, AllowedActionValue]) => {
           // if callable then call
           if (typeof value === 'function') {
-            resource.options.allowedActions[key] = await value( adminUser, resource, meta );
+            resource.options.allowedActions[key] = await value({ adminUser, resource, meta });
           }
         })
       );
@@ -1092,13 +1088,7 @@ class AdminForth implements AdminForthClass {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            await interpretResource(adminUser, resource, { requestBody: body });
-
-            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, resource);
-            if (!allowed) {
-              return { error };
-            }
-
+            
             const recordId = body['recordId'];
             const connector = this.connectors[resource.dataSource];
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
@@ -1107,6 +1097,13 @@ class AdminForth implements AdminForthClass {
                 return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
             }
             const record = body['record'];
+
+            await interpretResource(adminUser, resource, { requestBody: body, record, oldRecord });
+
+            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, resource);
+            if (!allowed) {
+              return { error };
+            }
 
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
