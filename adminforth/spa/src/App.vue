@@ -59,11 +59,11 @@
 
     v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
 
-    id="logo-sidebar" class="fixed border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-nav-menu-bg border-r border-nav-menu-border  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
+    id="logo-sidebar" class="fixed border-none top-0 left-0 z-20 w-64 h-screen  transition-transform  border-r border-nav-menu-border  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
     :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
     aria-label="Sidebar"
   >
-    <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800 border-r">
+    <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800 border-r">
       <div class="flex ms-2 md:me-24  m-4  ">
         <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
         <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">

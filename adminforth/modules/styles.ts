@@ -27,10 +27,10 @@ export const styles = () => `
 
     "list-view-bg": "#FFFFFF", // White background
     "list-view-table-bg": "#FFFFFF", // White table background
-    "list-view-table-heading": "#F5F5F5", // Very light grey heading
+    "list-view-table-heading": "rgb(249 250 251)", // Very light grey heading
     "list-view-table-heading-text": "#333333", // Dark grey heading text
     "list-view-table-text": "#333333", // Dark grey text
-    "list-view-table-row-hover": "#F0F0F0", // Very light grey row hover
+    "list-view-table-row-hover": "rgb(249 250 251)", // Very light grey row hover
     "list-view-bread-crumbs-text": "#666666", // Medium grey bread crumbs
     "list-view-border-color": "#DDDDDD", // Light grey border
 
