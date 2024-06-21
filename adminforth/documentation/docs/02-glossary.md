@@ -13,21 +13,36 @@ There might be several datasources in the system for various databases e.g. One 
 
 ## resource
 
-A Resource is a representation of a table or collection in AdminForth. One resource is one table in the database.
+A [Resource](/docs/api/types/AdminForthConfig/type-aliases/AdminForthResource.md) is a representation of a table or collection in AdminForth. One resource is one table in the database.
 It has a `name` which should match name in database, a datasource id, and a list of columns.
-Also it has various customization options.
+Also it has various customization options. 
 
 ## column
 
-A Column is a representation of a column in a table. It has a `name` which should be equal to name in database and various configuration options.
+A [Column](/docs/api/types/AdminForthConfig/type-aliases/AdminForthResourceColumn.md) is a representation of a column in a table. It has a `name` which should be equal to name in database and various configuration options.
 
 ## record
 
 A record is a row in a relational database table. Or Document in document database table.
 
+## action
+
+Action is one of operations which can be performed on the resource or it's records. 
+
+There are next [actions](/docs/api/types/AdminForthConfig/enumerations/AllowedActionsEnum.md):
+
+* create
+* edit
+* delete
+* list
+* show
+* filter
+
+
+
 ## adminUser
 
-Object which represents a user who logged in to the AdminForth
+[Object](/docs/api/types/AdminForthConfig/type-aliases/AdminUser.md) which represents a user who logged in to the AdminForth. 
 
 ## hook
 
