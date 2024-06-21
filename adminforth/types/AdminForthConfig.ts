@@ -755,9 +755,6 @@ export type AdminForthConfig = {
       favicon?: string,
 
       /**
-      favicon?: string,
-
-      /**
        * DayJS format string for all dates in the app
        */
       datesFormat?: string,
