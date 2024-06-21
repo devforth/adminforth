@@ -173,7 +173,7 @@ class AdminForth implements AdminForthClass {
       errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
     }
 
-    if (!this.config.customization.favicon) {
+    if (this.config.customization.favicon) {
       errors.push(...this.checkCustomFileExists(this.config.customization.favicon));
     }
 
