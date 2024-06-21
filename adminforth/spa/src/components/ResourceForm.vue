@@ -48,7 +48,7 @@
                         single
                         v-if="column.foreignResource"
                         :options="columnOptions[column.name] || []"
-                        :placeholder = "columnOptions[column.name].length || 'There are no options available'"
+                        :placeholder = "columnOptions[column.name]?.length || 'There are no options available'"
                         :modelValue="currentValues[column.name]"
                         @update:modelValue="setCurrentValue(column.name, $event)"
                     ></Dropdown>
