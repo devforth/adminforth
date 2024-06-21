@@ -119,7 +119,7 @@
       </tr>
 
       <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
-          class="bg-list-view-table-bg border-b dark:bg-gray-800 border-list-view-border-color dark:border-gray-700 hover:bg-list-view-table-row-hover dark:hover:bg-gray-600">
+          class="bg-list-view-table-bg border-b dark:bg-gray-800 border-list-view-border-color dark:border-gray-700 hover:bg-list-view-table-row-hover dark:hover:bg-gray-600 cursor-pointer">
         <td class="w-4 p-4">
           <div class="flex items center">
             <input
@@ -135,7 +135,6 @@
         <td v-for="c in columnsListed" class="px-6 py-4">
           <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
           <component
-            @click="(e)=>{e.stopPropagation()}"
             :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
             :meta="c?.components?.list.meta"
             :column="c"
