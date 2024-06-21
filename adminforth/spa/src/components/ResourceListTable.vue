@@ -29,7 +29,7 @@
         <th scope="col" class="p-4">
           <div v-if="rows && rows.length" class="flex items-center">
             <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
             <label for="checkbox-all-search" class="sr-only">checkbox</label>
           </div>
         </th>
@@ -120,15 +120,15 @@
 
       <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
           class="bg-list-view-table-bg border-b dark:bg-gray-800 border-list-view-border-color dark:border-gray-700 hover:bg-list-view-table-row-hover dark:hover:bg-gray-600 cursor-pointer">
-        <td class="w-4 p-4">
-          <div class="flex items center">
+        <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
+          <div class="flex items center ">
             <input
               @click="(e)=>{e.stopPropagation()}"
               id="checkbox-table-search-1"
               type="checkbox"
               :checked="checkboxesInternal.includes(row.id)"
               @change="(e)=>{addToCheckedValues(row.id)}"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
             <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
           </div>
         </td>
@@ -143,7 +143,7 @@
             :resource="resource"
           />
         </td>
-        <td class=" items-center px-6 py-4" @click="(e)=>{e.stopPropagation()}">
+        <td class=" items-center px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
           <div class="flex">
           <RouterLink
             v-if="resource.options?.allowedActions.show"
