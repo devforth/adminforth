@@ -49,6 +49,8 @@ class AdminForth implements AdminForthClass {
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
 
+  baseUrlSlashed: string;
+
   statuses: {
     dbDiscover?: 'running' | 'done',
   }
@@ -159,11 +161,20 @@ class AdminForth implements AdminForthClass {
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
+    if (!this.config.baseUrl.endsWith('/')) {
+      this.baseUrlSlashed = this.config.baseUrl + '/';
+    } else {
+      this.baseUrlSlashed = this.config.baseUrl;
+    }
     if (!this.config?.customization.brandName) {
       this.config.customization.brandName = 'AdminForth';
     }
     if (this.config.customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
+    }
+
+    if (!this.config.customization.favicon) {
+      errors.push(...this.checkCustomFileExists(this.config.customization.favicon));
     }
 
     if (!this.config.customization.datesFormat) {

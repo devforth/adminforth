@@ -209,6 +209,18 @@ class CodeInjector implements CodeInjectorType {
         this.srcFoldersToSync[this.adminforth.config.customization.customComponentsDir] = './'
       }
 
+      // if this.adminforth.config.customization.favicon is set, copy it to assets
+      const customFav = this.adminforth.config.customization?.favicon;
+      if (customFav) {
+
+        const faviconPath = path.join(this.adminforth.config.customization?.customComponentsDir, customFav.replace('@@/', ''));
+        const dest = path.join(CodeInjector.SPA_TMP_PATH, 'public', 'assets', customFav.replace('@@/', ''));
+        // make sure all folders in dest exist
+        await fsExtra.ensureDir(path.dirname(dest));
+
+        await fsExtra.copy(faviconPath, dest);
+      }
+
       for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
         const to = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', dest);
         if (process.env.HEAVY_DEBUG) {
@@ -343,7 +355,6 @@ class CodeInjector implements CodeInjectorType {
       await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     }
 
-
     const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
 
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
@@ -353,6 +364,13 @@ class CodeInjector implements CodeInjectorType {
     const indexHtmlPath = path.join(CodeInjector.SPA_TMP_PATH, 'index.html');
     let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
     indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization.title || 'AdminForth'}`);
+    
+    indexHtmlContent = indexHtmlContent.replace(
+      '/* IMPORTANT:ADMINFORTH FAVICON */',
+      this.adminforth.config.customization.favicon?.replace('@@/', `${this.adminforth.baseUrlSlashed}assets/`)
+          ||
+       `${this.adminforth.baseUrlSlashed}assets/favicon.png`
+    );
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
 
