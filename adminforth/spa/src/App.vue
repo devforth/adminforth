@@ -70,6 +70,7 @@
           {{ coreStore.config?.brandName }}
         </span>
       </div>
+
         <ul class="space-y-2 font-medium">
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-nav-menu-devider dark:border-gray-700"></div>
