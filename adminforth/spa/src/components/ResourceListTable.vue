@@ -390,10 +390,9 @@ function onSortButtonClick(field) {
 
 const clickTarget = ref(null);
 async function onClick(e,row) {
-  console.log(e,row)
   if(clickTarget.value === e.target) return;
   clickTarget.value = e.target;
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 300));
   if (window.getSelection().toString()) return;
   else {router.push({
     name: 'resource-show',
