@@ -733,14 +733,22 @@ class AdminForth implements AdminForthClass {
     });
 
     async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource) {
+      if (process.env.HEAVY_DEBUG) {
+        console.log('🪲Interpreting resource', resource.resourceId, source);
+      }
+
       await Promise.all(
         Object.entries(resource.options?.allowedActions || {}).map(
           async ([key, value]: [string, AllowedActionValue]) => {
-          // if callable then call
-          if (typeof value === 'function') {
-            resource.options.allowedActions[key] = await value({ adminUser, resource, meta, source });
-          }
-        })
+            if (process.env.HEAVY_DEBUG) {
+              console.log('🪲checking for allowed call', key, 'value:', value, 'typeof', typeof value);
+            }
+          
+            // if callable then call
+            if (typeof value === 'function') {
+              resource.options.allowedActions[key] = await value({ adminUser, resource, meta, source });
+            }
+          })
       );
     }
 
