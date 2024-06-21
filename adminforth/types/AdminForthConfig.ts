@@ -743,6 +743,21 @@ export type AdminForthConfig = {
       brandLogo?: string,
 
       /**
+       * Path to your app favicon
+       * 
+       * Example: 
+       * Place file `favicon.png` to `./custom` folder and set this option:
+       * 
+       * ```ts
+       * favicon: '@@/favicon.png',
+       * ```
+       */
+      favicon?: string,
+
+      /**
+      favicon?: string,
+
+      /**
        * DayJS format string for all dates in the app
        */
       datesFormat?: string,

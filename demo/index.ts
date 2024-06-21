@@ -78,6 +78,7 @@ const admin = new AdminForth({
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
     emptyFieldPlaceholder: '-',
+    favicon: '@@/pph.png',
   },
 
   dataSources: [
