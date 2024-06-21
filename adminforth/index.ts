@@ -786,7 +786,6 @@ class AdminForth implements AdminForthClass {
         await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.DisplayButtons);
 
         const { allowed, error } = checkAccess(source as AllowedActionsEnum, resource);
-        console.log('allowed', allowed, error);
         if (!allowed) {
           return { error };
         }
