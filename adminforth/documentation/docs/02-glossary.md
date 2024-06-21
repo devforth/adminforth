@@ -54,4 +54,4 @@ Component is a Vue component which is used to add or modify UI elements in Admin
 
 ## field
 
-Name of the column. To reduce glossary, in future we might rename it to `columnName`
+Value of the column in the record.

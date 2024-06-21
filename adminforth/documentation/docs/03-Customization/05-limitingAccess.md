@@ -83,9 +83,11 @@ More advanced case, allow to edit apartments only if user is owner of the apartm
 "You are not assigned to this apartment and can't edit it":
 
 ```ts
-import type { AdminUser, ActionCheckSource } from  'adminforth/types/AdminForthConfig.js';
+import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
+import { ActionCheckSource } from  'adminforth/types/AdminForthConfig.js';
 
-async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): boolean {
+
+async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): Promise<boolean | string> {
   if (source === ActionCheckSource.DisplayButtons) {
     // if check is done for displaying button - we show button to everyone
     return true; 
