@@ -42,8 +42,8 @@ Now you can use this component in the configuration of the resource:
       name: 'number_of_rooms',
       ...
       components: {
-        show: 'custom/RoomsCell.vue',
-        list: 'custom/RoomsCell.vue',
+        show: '@@/RoomsCell.vue',
+        list: '@@/RoomsCell.vue',
       }
     },
     ...
@@ -61,7 +61,7 @@ Hooks are used to:
 - execute something after data were saved or deleted
 - change the query before fetching items from the database
 - modify the fetched data before it is displayed in the list and show
-- prevent the request to db depending on some condition (Better use [allowedActions](##limiting-access-to-the-resource-actions) for this)
+- prevent the request to db depending on some condition (Better use [allowedActions](#limiting-access-to-the-resource-actions) for this)
 
 ### Modify the data before it is saved to the database
 
@@ -191,7 +191,7 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
     return true; 
   }
   if (adminUser.isRoot) {
-    return false;  //root user is not in db so can't be assigned
+    return "Root user can't create appartment, relogin as DB user"; 
   }
   const { oldRecord, newRecord } = meta;
   if (oldRecord.user_id !== adminUser.dbUser.id) {
