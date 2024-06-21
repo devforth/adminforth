@@ -28,7 +28,7 @@
       <tr>
         <th scope="col" class="p-4">
           <div v-if="rows && rows.length" class="flex items-center">
-            <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()"
+            <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
             <label for="checkbox-all-search" class="sr-only">checkbox</label>
           </div>
@@ -118,11 +118,12 @@
         </td>
       </tr>
 
-      <tr v-else v-for="(row, rowI) in rows" :key="row.id"
+      <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
           class="bg-list-view-table-bg border-b dark:bg-gray-800 border-list-view-border-color dark:border-gray-700 hover:bg-list-view-table-row-hover dark:hover:bg-gray-600">
         <td class="w-4 p-4">
           <div class="flex items center">
             <input
+              @click="(e)=>{e.stopPropagation()}"
               id="checkbox-table-search-1"
               type="checkbox"
               :checked="checkboxesInternal.includes(row.id)"
@@ -134,6 +135,7 @@
         <td v-for="c in columnsListed" class="px-6 py-4">
           <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
           <component
+            @click="(e)=>{e.stopPropagation()}"
             :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
             :meta="c?.components?.list.meta"
             :column="c"
@@ -142,7 +144,7 @@
             :resource="resource"
           />
         </td>
-        <td class=" items-center px-6 py-4">
+        <td class=" items-center px-6 py-4" @click="(e)=>{e.stopPropagation()}">
           <div class="flex">
           <RouterLink
             v-if="resource.options?.allowedActions.show"
@@ -291,6 +293,7 @@ IconFilterOutline,
 IconPenSolid,
 IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
+import router from '@/router';
 
 const coreStore = useCoreStore();
 
@@ -384,6 +387,31 @@ function onSortButtonClick(field) {
     }
   }
 }
+
+
+const clickTarget = ref(null);
+async function onClick(e,row) {
+  console.log(e,row)
+  if(clickTarget.value === e.target) return;
+  clickTarget.value = e.target;
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  if (window.getSelection().toString()) return;
+  else {router.push({
+    name: 'resource-show',
+    params: {
+      resourceId: props.resource.resourceId,
+      primaryKey: row._primaryKeyValue,
+    },
+  })}
+}
+  
+
+
+
+
+
+
+
 
 async function deleteRecord(row) {
   const data = await window.adminforth.confirm({
