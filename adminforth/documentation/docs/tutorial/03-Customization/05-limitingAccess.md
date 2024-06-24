@@ -45,7 +45,7 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 }
 ```
 
-> ℹ️ TIP: instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
+> 🫨 instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
 > However we recommend you to keep in mind that allowedActions callback is called on every request related to resource, so it should be fast.
 > So try to minimize requests to database as much as possible.
 
@@ -93,7 +93,7 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
     return true; 
   }
   if (adminUser.isRoot) {
-    return "Root user can't create appartment, relogin as DB user"; 
+    return "Root user can't edit appartment, relogin as DB user"; 
   }
   const { oldRecord, newRecord } = meta;
   if (oldRecord.user_id !== adminUser.dbUser.id) {

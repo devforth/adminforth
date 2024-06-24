@@ -799,7 +799,7 @@ export type AdminForthConfig = {
        * import HighchartsVue from 'highcharts-vue';
        * // import '@@/custom.scss'; // here is how you can import custom styles
        *
-       *  export default function (app) {
+       * export default function (app) {
        *    app.use(HighchartsVue);
        * }
        * ```
@@ -831,7 +831,10 @@ export type AdminForthConfig = {
     baseUrl?: string,
    
     deleteConfirmation?: boolean,
-   
+    
+    /** 
+     * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
+     */
     styles?: Object,
 }
   
