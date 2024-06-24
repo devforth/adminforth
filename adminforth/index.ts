@@ -1132,7 +1132,7 @@ class AdminForth implements AdminForthClass {
             }
             const record = body['record'];
 
-            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body, record, oldRecord}, ActionCheckSource.EditRequest);
+            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body, newRecord: record, oldRecord}, ActionCheckSource.EditRequest);
 
             const { allowed, error } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
