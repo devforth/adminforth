@@ -50,7 +50,7 @@
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
-      :customComponentsPerColumn="createComponentsPerColumn"
+      :source="'create'"
     >
     </ResourceForm>
 
@@ -91,7 +91,6 @@ const route = useRoute();
 const router = useRouter();
 
 const record = ref({});
-let createComponentsPerColumn = {};
 
 const coreStore = useCoreStore();
 
@@ -115,12 +114,6 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
-  createComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
-      if (column.components?.create) {
-          acc[column.name] = getCustomComponent(column.components.create);
-      }
-      return acc;
-    }, {});
   loading.value = false;
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'create');
 });
