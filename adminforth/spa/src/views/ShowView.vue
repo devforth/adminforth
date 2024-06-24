@@ -75,8 +75,8 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
                   <component
-                    v-if="showComponentsPerColumn[column.name]"
-                    :is="showComponentsPerColumn[column.name]"
+                    v-if="column?.components?.show"
+                    :is="getCustomComponent(column?.components?.show)"
                     :resource="coreStore.resource"
                     :meta="column.components.show.meta"
                     :column="column"
@@ -127,7 +127,6 @@ const item = ref(null);
 const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
-let showComponentsPerColumn = {};
 
 console.log(route.params,'showWiev');
 
@@ -145,13 +144,6 @@ onMounted(async () => {
     primaryKey: route.params.primaryKey,
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
-
-  showComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
-      if (column.components?.show) {
-          acc[column.name] = getCustomComponent(column.components.show);
-      }
-      return acc;
-  }, {});
   loading.value = false;
 });
 
