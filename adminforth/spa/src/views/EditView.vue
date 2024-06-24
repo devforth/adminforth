@@ -46,7 +46,7 @@
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
-      :customComponentsPerColumn="editComponentsPerColumn"
+      :source="'edit'"
     >
     </ResourceForm>
 
@@ -88,7 +88,6 @@ const loading = ref(false);
 const saving = ref(false);
 
 const record = ref({});
-let editComponentsPerColumn = {};
 
 async function onUpdateRecord(newRecord) {
   record.value = newRecord;
@@ -119,13 +118,6 @@ onMounted(async () => {
     primaryKey: route.params.primaryKey,
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
-
-  editComponentsPerColumn = coreStore.resource.columns.reduce((acc, column) => {
-      if (column.components?.edit) {
-          acc[column.name] = getCustomComponent(column.components.edit);
-      }
-      return acc;
-    }, {});
   loading.value = false;
 });
 
