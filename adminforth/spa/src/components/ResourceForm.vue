@@ -141,7 +141,7 @@
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
 import Dropdown from '@/components/Dropdown.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';
 import { initFlowbite } from 'flowbite';
@@ -155,8 +155,15 @@ const props = defineProps({
   resource: Object,
   record: Object,
   validating: Boolean,
-  customComponentsPerColumn: Object,
+  source: String,
 });
+
+const customComponentsPerColumn = props.resource?.columns.reduce((acc, column) => {
+    if (column.components?.[props.source]) {
+        acc[column.name] = getCustomComponent(column.components[props.source]);
+    }
+    return acc;
+}, {});
 
 
 const unmasked = ref({});
