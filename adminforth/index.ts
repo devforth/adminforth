@@ -293,12 +293,13 @@ class AdminForth implements AdminForthClass {
 
 
         //check if resource has bulkActions
-        if(res.options?.bulkActions){
-          let bulkActions = res.options.bulkActions;
+          let bulkActions = res?.options?.bulkActions || [];
+
           if (!Array.isArray(bulkActions)) {
             errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
             bulkActions = [];
           }
+         
           if(res.options?.allowedActions?.delete && !bulkActions.find((action) => action.label === 'Delete checked')){
             bulkActions.push({
               label: `Delete checked`,
@@ -316,8 +317,7 @@ class AdminForth implements AdminForthClass {
           const newBulkActions = bulkActions.map((action) => {
             return Object.assign(action, {id: uuid()});
           });
-          bulkActions = newBulkActions;
-        }
+          res.options.bulkActions = newBulkActions;
 
         // if pageInjection is a string, make array with one element. Also check file exists
         const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
