@@ -34,6 +34,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          sidebarCollapsible: false,
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
@@ -49,6 +50,10 @@ const config: Config = {
         // },
         theme: {
           customCss: './src/css/custom.css',
+        },
+        gtag: {
+          trackingID: 'G-7K99Q2BH04',
+          anonymizeIP: true,
         },
       } satisfies Preset.Options,
     ],
@@ -79,6 +84,7 @@ const config: Config = {
   ],
 
   themeConfig: {
+
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
     navbar: {
@@ -168,6 +174,12 @@ const config: Config = {
     prism: {
       theme: prismThemes.okaidia,
       darkTheme: prismThemes.dracula,
+    },
+    docs: {
+      sidebar: {
+        autoCollapseCategories: false,
+        
+      },
     },
   } satisfies Preset.ThemeConfig,
 };
