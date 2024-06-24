@@ -122,7 +122,7 @@ const config: Config = {
           items: [
             {
               label: 'Tutorial',
-              to: '/docs/gettingStarted',
+              to: '/docs/tutorial/gettingStarted',
             },
             {
               label: 'API',
@@ -159,7 +159,7 @@ const config: Config = {
               href: 'https://devforth.io',
             },
             {
-              label: 'We can develop dashboard for you',
+              label: 'We can develop dashboard and admin panel for your project',
               href: 'https://devforth.io/contact',
             },
             {
