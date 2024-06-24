@@ -21,9 +21,9 @@
                   class="bg-form-view-bg dark:bg-gray-800 border-b dark:border-gray-700"
               >
                 <!-- if column is in customComponentsPerColumn, use this component. If not, use this code -->
-                <template v-if="customComponentsPerColumn[column.name]">
+                <template v-if="column?.components?.[props.source]">
                     <component
-                        :is="customComponentsPerColumn[column.name]"
+                        :is="getCustomComponent(column.components[props.source])"
                         :column="column"
                         :value="currentValues[column.name]"
                         @update:value="setCurrentValue(column.name, $event)"
@@ -157,14 +157,6 @@ const props = defineProps({
   validating: Boolean,
   source: String,
 });
-
-const customComponentsPerColumn = props.resource?.columns.reduce((acc, column) => {
-    if (column.components?.[props.source]) {
-        acc[column.name] = getCustomComponent(column.components[props.source]);
-    }
-    return acc;
-}, {});
-
 
 const unmasked = ref({});
 
