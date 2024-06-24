@@ -109,7 +109,11 @@ class PostgresConnector {
                 field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'real';
 
-            } else if (baseType.includes('date') || baseType.includes('time')) {
+            } else if (baseType == 'date') {
+                field.type = AdminForthDataTypes.DATE;
+                field._underlineType = 'timestamp';
+
+            }  else if (baseType.includes('date') || baseType.includes('time')) {
                 field.type = AdminForthDataTypes.DATETIME;
                 field._underlineType = 'timestamp';
 
@@ -127,16 +131,23 @@ class PostgresConnector {
 
     getFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            return dayjs(value).toISOString();
-          } else if (field._underlineType == 'varchar') {
-            return dayjs(value).toISOString();
-          } else {
-            throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
-          }
+            if (!value) {
+                return null;
+            }
+            if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+                return dayjs(value).toISOString();
+            } else if (field._underlineType == 'varchar') {
+                return dayjs(value).toISOString();
+            } else {
+                throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+            }
+        }
+
+        if (field.type == AdminForthDataTypes.DATE) {
+            if (!value) {
+              return null;
+            }
+            return dayjs(value).toISOString().split('T')[0];
         }
 
         return value;
