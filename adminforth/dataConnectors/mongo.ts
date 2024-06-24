@@ -75,9 +75,17 @@ class MongoConnector {
           } else {
             throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
           }
+
+        } else if (field.type == AdminForthDataTypes.DATE) {
+            if (!value) {
+                return null;
+            }
+            return dayjs(value).toISOString().split('T')[0];
+
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return !!value;
         }
+
         return value;
       }
     
