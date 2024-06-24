@@ -35,8 +35,10 @@
         </th>
 
         <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
+         
           <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center " :class="{'cursor-pointer':c.sortable}">
             {{ c.label }}
+            
 
             <div v-if="c.sortable"
                 :style="{ 'color':ascArr.includes(c.name)?'green':descArr.includes(c.name)?'red':'currentColor'}">
@@ -52,6 +54,12 @@
                   d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
               </svg>
             </div>
+            <span
+             class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
+             v-if="sort.findIndex((s) => s.field === c.name) !== -1">
+            {{ sort.findIndex((s) => s.field === c.name) + 1 }}
+            </span>
+
           </div>
         </th>
 
@@ -376,7 +384,7 @@ const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').
 function onSortButtonClick(field) {
   const sortIndex = sort.value.findIndex((s) => s.field === field);
   if (sortIndex === -1) {
-    sort.value = [{field, direction: 'asc'}, ...sort.value];
+    sort.value = [...sort.value,{field, direction: 'asc'}];
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
