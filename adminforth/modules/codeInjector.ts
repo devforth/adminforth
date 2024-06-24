@@ -280,7 +280,6 @@ class CodeInjector implements CodeInjectorType {
       });
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: {file: string}[]) => {
-
           filePathes.forEach(({ file }) => {
             if (!customResourceComponents.includes(file)) {
               if (file === undefined) {

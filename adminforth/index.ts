@@ -295,7 +295,6 @@ class AdminForth implements AdminForthClass {
         //check if resource has bulkActions
         if(res.options?.bulkActions){
           let bulkActions = res.options.bulkActions;
-
           if (!Array.isArray(bulkActions)) {
             errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
             bulkActions = [];
@@ -318,30 +317,28 @@ class AdminForth implements AdminForthClass {
             return Object.assign(action, {id: uuid()});
           });
           bulkActions = newBulkActions;
-
-          // if pageInjection is a string, make array with one element. Also check file exists
-          const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
-          if(res.options.pageInjections) {
-            Object.entries(res.options.pageInjections).map(([key, value]) => {
-              Object.entries(value).map(([injection, target]) => {
-                if (possibleInjections.includes(injection)) {
-                  if (!Array.isArray(res.options.pageInjections[key][injection])) {
-                    // not array
-                    res.options.pageInjections[key][injection] = [target];
-                  }
-                  res.options.pageInjections[key][injection].forEach((target, i) => {
-                    res.options.pageInjections[key][injection][i] = this.validateComponent(target, errors);
-                  });
-                } else {
-                  errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')}`);
-                }
-              });
-                  
-            })
-          }
-
         }
 
+        // if pageInjection is a string, make array with one element. Also check file exists
+        const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
+        if(res.options.pageInjections) {
+          Object.entries(res.options.pageInjections).map(([key, value]) => {
+            Object.entries(value).map(([injection, target]) => {
+              if (possibleInjections.includes(injection)) {
+                if (!Array.isArray(res.options.pageInjections[key][injection])) {
+                  // not array
+                  res.options.pageInjections[key][injection] = [target];
+                }
+                res.options.pageInjections[key][injection].forEach((target, i) => {
+                  res.options.pageInjections[key][injection][i] = this.validateComponent(target, errors);
+                });
+              } else {
+                errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')}`);
+              }
+            });
+                
+          })
+        }
 
         // transform all hooks Functions to array of functions
         if (res.hooks) {
