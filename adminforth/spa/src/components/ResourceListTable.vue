@@ -144,7 +144,7 @@
           <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
           <component
             :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
-            :meta="c?.components?.list.meta"
+            :meta="c?.components?.list?.meta"
             :column="c"
             :record="row"
             :adminUser="coreStore.adminUser"
