@@ -111,17 +111,29 @@ const admin = new AdminForth({
           fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
-          name: 'title',
-          required: true,
-          showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
-          maxLength: 255,  // you can set max length for string fields
-          minLength: 3,  // you can set min length for string fields
-          components: {
-              show: '@@/IdShow.vue',
-              // edit: '@@/IdShow.vue',
-              list: '@@/IdShow.vue',
-              // create: '@@/IdShow.vue',
-          },
+            name: 'title',
+            required: true,
+            showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
+            maxLength: 255,  // you can set max length for string fields
+            minLength: 3,  // you can set min length for string fields
+            components: {
+                edit: {
+                    file: '@@/IdShow.vue',
+                    meta: {
+                        title: 'Title',
+                        description: 'This is title of apartment'
+                    }
+                },
+                // show: '@@/IdShow.vue',
+                create: {
+                    file: '@@/IdShow.vue',
+                    meta: {
+                        title: 'Title',
+                        description: 'This is title of apartment'
+                    }
+                }
+                // list: '@@/IdShow.vue',
+            },
         }, 
         {
           name: 'created_at',
