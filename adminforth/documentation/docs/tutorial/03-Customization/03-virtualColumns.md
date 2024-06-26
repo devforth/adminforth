@@ -7,8 +7,9 @@ Sometimes you need to visualize custom columns which do not exist in database.
 For doing this you can use `virtual` columns.
 
 ```ts
+import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth/types/AdminForthConfig.js';
 ...
-resourceId: 'apparts',
+resourceId: 'aparts',
 ...
 columns: [
   ...
@@ -16,7 +17,7 @@ columns: [
     label: 'Country',
     type: AdminForthDataTypes.STRING,
     virtual: true,
-    showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+    showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
     components: {
       show: '@@/CountryFlag.vue',
       list: '@@/CountryFlag.vue',
@@ -31,7 +32,7 @@ columns: [
  
  ```vue
  <template>
-  {{ getFlagEmojiFromIso(record.description.split(' ')[0]) }}
+  {{ getFlagEmojiFromIso(record?.country) }}
  </template>
  
  <script setup>
@@ -44,12 +45,14 @@ columns: [
  ```
 
  To test component open some apartment for edit and change `description` field to `US New York`.
+ Here is how it looks:
+ ![alt text](image-1.png)
 
 
 ## Virtual columns for editing.
 
 Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/01-gettingStarted.md) we used this feature to add `password` field to the `users` resource. 
-Thing is that password itself can't be stored in the database, but intead their hash is stored. 
+Thing is that password itself can't be stored in the database, but instead their hash is stored. 
 So we need to add `password` field to the `users` resource and make it `virtual` so it will not be stored in the database.
 
 ```ts
