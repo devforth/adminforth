@@ -71,7 +71,7 @@ docker run -p 3500:3500 \
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
 
 
-## Adding SSL (https) gateway
+## Adding SSL (https) to AdminForth
 
 There are lots of ways today to put your application behind SSL gateway. You might simply put AdminForth instance behind free Cloudflare CDN,
 change 3500 port to 80 and Cloudflare will automatically add SSL layer and faster CDN for your application.
