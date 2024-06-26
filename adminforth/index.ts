@@ -535,7 +535,7 @@ class AdminForth implements AdminForthClass {
   }
 
   async bundleNow({ hotReload=false, verbose=false }) {
-    this.codeInjector.bundleNow({ hotReload, verbose });
+    await this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
   async getUserByPk(pk: string) {
@@ -1162,7 +1162,6 @@ class AdminForth implements AdminForthClass {
               }
             } 
 
-            console.log('✅ newValues', newValues)
             if (Object.keys(newValues).length > 0) {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }
