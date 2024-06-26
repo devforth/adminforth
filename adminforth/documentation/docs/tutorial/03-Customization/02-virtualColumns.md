@@ -46,7 +46,7 @@ columns: [
  To test component open some apartment for edit and change `description` field to `US New York`.
 
 
-# Virtual columns for editing.
+## Virtual columns for editing.
 
 Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/01-gettingStarted.md) we used this feature to add `password` field to the `users` resource. 
 Thing is that password itself can't be stored in the database, but intead their hash is stored. 
