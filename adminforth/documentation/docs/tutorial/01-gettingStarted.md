@@ -84,7 +84,7 @@ let db;
 
 const ADMIN_BASE_URL = '';
 
-const admin = new AdminForth({
+export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   rootUser: {
     username: 'adminforth',  // use these as credentials to login

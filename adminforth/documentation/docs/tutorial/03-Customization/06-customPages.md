@@ -12,7 +12,7 @@ npm i vue-chartjs chart.js
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
-```vue
+```html
 
 <template>
   <div>

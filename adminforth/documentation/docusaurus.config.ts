@@ -174,6 +174,8 @@ const config: Config = {
     prism: {
       theme: prismThemes.okaidia,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['docker', 'bash', 'diff'],
+
     },
     docs: {
       sidebar: {

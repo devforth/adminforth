@@ -29,7 +29,7 @@ columns: [
  This field will be displayed in show and list views with custom component `CountryFlag.vue`.
  Create file `CountryFlag.vue` in `custom` folder of your project:
  
- ```vue
+ ```html
  <template>
   {{ getFlagEmojiFromIso(record.country) }}
  </template>
