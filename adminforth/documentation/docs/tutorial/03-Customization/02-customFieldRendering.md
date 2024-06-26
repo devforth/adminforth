@@ -7,7 +7,7 @@ We will render '🟨' for each room and then we will print `square_meter` at the
 
 Create directory `custom`. Create a file `RoomsCell.vue` in it:
 
-```vue
+```html
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">
@@ -19,8 +19,8 @@ Create directory `custom`. Create a file `RoomsCell.vue` in it:
 </template>
 
 <script setup>
-    defineProps({
-    record: Object
+defineProps({
+  record: Object
 });
 </script>
 ```
@@ -30,7 +30,7 @@ Now you can use this component in the configuration of the resource:
 ```ts
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   columns: [
     ...
@@ -63,7 +63,7 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 ```ts
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   columns: [
     ...
@@ -94,7 +94,7 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 
 Now our component can read `filler` from `meta` prop:
 
-```vue
+```html
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">

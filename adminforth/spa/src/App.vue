@@ -1,12 +1,12 @@
 <template>
   <nav 
     v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
-    class="fixed h-14 top-0 z-20 w-full  border-b shadow-sm bg-header-bg shadow-header-shadow dark:bg-header-bg-hover dark:border-nav-menu-devider">
+    class="fixed h-14 top-0 z-20 w-full  border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center justify-start rtl:justify-end">
           <button @click="sideBarOpen = !sideBarOpen"
-           type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-nav-menu-bg-hover focus:outline-none focus:ring-2 focus:ring-nav-menu-devider dark:text-nav-menu-icons dark:hover:bg-nav-menu-bg-hover dark:focus:ring-nav-menu-devider">
+           type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
               <span class="sr-only">Open sidebar</span>
               <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
@@ -17,25 +17,25 @@
         <div class="flex items-center">
           <div class="flex items-center ms-3 ">
             <div>
-              <button type="button" class="flex text-sm bg-header-bg-hover rounded-full focus:ring-4 focus:ring-nav-menu-devider dark:focus:ring-nav-menu-devider dark:bg-header-bg-hover" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+              <button type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                 <span class="sr-only">Open user menu</span>
-                <svg class="w-8 h-8 text-nav-menu-icons dark:text-header-icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 text-lightSidebarIcons dark:text-darkSidebarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                   <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
                 </svg>
               </button>
             </div>
-            <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-nav-menu-bg dark:divide-nav-menu-devider dark:shadow-black" id="dropdown-user">
+            <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-darkSidebar dark:divide-darkSidebarDevider dark:shadow-black" id="dropdown-user">
               <div class="px-4 py-3" role="none">
-                <p class="text-sm text-gray-900 dark:text-header-text" role="none" v-if="coreStore.userFullname">
+                <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                   {{ coreStore.userFullname }}
                 </p>
-                <p class="text-sm font-medium text-gray-900 truncate dark:text-nav-menu-text" role="none">
+                <p class="text-sm font-medium text-gray-900 truncate dark:text-darkSidebarText" role="none">
                   {{ coreStore.username }}
                 </p>
               </div>
               <ul class="py-1" role="none">
                 <li>
-                  <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html-bg dark:text-nav-menu-text-hover dark:hover:bg-nav-menu-hover dark:hover:text-nav-menu-text-active" role="menuitem">
+                  <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                     {{ theme === 'dark' ? 'Light' : 'Dark' }}
                     <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
                     <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
@@ -43,7 +43,7 @@
                   </span>
                 </li>
                 <li>
-                  <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html-bg dark:text-nav-menu-text-hover dark:hover:bg-nav-menu-hover dark:hover:text-nav-menu-text-active w-full" role="menuitem">Sign out</button>
+                  <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">Sign out</button>
                 </li>
               </ul>
             </div>
@@ -59,30 +59,30 @@
 
     v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
 
-    id="logo-sidebar" class="fixed border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-nav-menu-bg border-r border-nav-menu-border  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" 
+    id="logo-lightSidebar" class="fixed bg-lightSidebar border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder" 
     :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
     aria-label="Sidebar"
   >
-    <div class="h-full px-3 pb-4 overflow-y-auto bg-nav-menu-bg dark:bg-gray-800 border-r">
+    <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r dark:border-darkSidebarBorder">
       <div class="flex ms-2 md:me-24  m-4  ">
         <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
-        <span class="self-center text-header-text-size font-semibold sm:text-header-text-size whitespace-nowrap dark:text-header-text text-header-logo-color">
+        <span class="self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkNavbarText text-lightNavbarLogo">
           {{ coreStore.config?.brandName }}
         </span>
       </div>
 
         <ul class="space-y-2 font-medium">
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-            <div v-if="item.type === 'divider'" class="border-t border-nav-menu-devider dark:border-gray-700"></div>
+            <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-gray-400 dark:text-gray-400
             ">{{ item.label }}</div>
-            <li v-else-if="item.children">
-              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-nav-menu-text rounded-default transition duration-75  group hover:bg-nav-menu-bg-hover dark:text-white dark:hover:bg-gray-700" 
+            <li v-else-if="item.children" class="  ">
+              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover" 
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
-                <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400  dark:group-hover:text-white" ></component>
+                <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75   dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
                 <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
                 <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">

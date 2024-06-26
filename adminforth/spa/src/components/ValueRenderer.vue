@@ -18,9 +18,8 @@
     <span v-else-if="column.enum">
       {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label,route.meta.type) }}
     </span>
-    <span v-else-if="column.type === 'datetime'">
+    <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatDate(record[column.name]),route.meta.type) }}
-      
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}

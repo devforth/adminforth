@@ -1,30 +1,15 @@
 <template>
   <!-- table -->
-  <div class="relative overflow-x-auto shadow-list-table-shadow dark:shadow-black	overflow-y-hidden rounded-default">
+  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-black	overflow-y-hidden rounded-default">
 
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-      <div class="flex items-center justify-between h-16">
-        <div>
-          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-        </div>
-        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-      </div>
-
-      <div class="flex items-center justify-between  h-16 pt-4" v-for="i in new Array(10)">
-        <div>
-          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-        </div>
-        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-      </div>
-      <span class="sr-only">Loading...</span>
+      
     </div>
 
     <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
-      <thead class="text-xs text-view-table-heading-text bg-list-view-table-heading dark:bg-gray-700 dark:text-gray-400">
+      <thead class="text-xs text-view-table-heading-text bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
       <tr>
         <th scope="col" class="p-4">
           <div v-if="rows && rows.length" class="flex items-center">
@@ -69,51 +54,8 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-if="!rows" class="bg-list-view-table-bg border-b dark:bg-gray-800 dark:border-gray-700">
-        <td :colspan="resource?.columns.length + 2">
-
-          <div role="status"
-              class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-              </div>
-              <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-            </div>
-            <div class="flex items-center justify-between pt-4">
-              <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-              </div>
-              <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-            </div>
-            <div class="flex items-center justify-between pt-4">
-              <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-              </div>
-              <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-            </div>
-            <div class="flex items-center justify-between pt-4">
-              <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-              </div>
-              <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-            </div>
-            <div class="flex items-center justify-between pt-4">
-              <div>
-                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-              </div>
-              <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-            </div>
-            <span class="sr-only">Loading...</span>
-          </div>
-        </td>
-      </tr>
-      <tr v-else-if="rows.length === 0" class="bg-list-view-table-bg border-b dark:bg-gray-800 dark:border-gray-700">
+        <SkeleteLoader v-if="!rows?.length" :columns="10" :rows="10"/>  
+      <tr v-else-if="rows.length === 0" class="bg-lightListTable border-b dark:bg-darkListTable dark:border-darkListTableBorder">
         <td :colspan="resource?.columns.length + 2">
 
           <div id="toast-simple"
@@ -127,7 +69,7 @@
       </tr>
 
       <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
-          class="bg-list-view-table-bg border-b dark:bg-gray-800 border-list-view-border-color dark:border-gray-700 hover:bg-list-view-table-row-hover dark:hover:bg-gray-600 cursor-pointer">
+          class="bg-lightListTable border-b dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer">
         <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
           <div class="flex items center ">
             <input
@@ -287,6 +229,7 @@ import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost } from '@/composables/useFrontendApi';
+import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
 import {
 IconInboxOutline,

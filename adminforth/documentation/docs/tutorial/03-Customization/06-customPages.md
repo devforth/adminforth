@@ -7,12 +7,12 @@ In AdminForth creation of custom page is very simpl.
 Install CHart.js library into your main package (near `index.ts`):
 
 ```bash
-npm i vue-chartjs chart.js
+npm install apexcharts --save
 ```
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
-```vue
+```html
 
 <template>
   <div>
@@ -99,19 +99,49 @@ onMounted(() => {
 
 > 🫨 use https://flowbite.com/ to copy-paste pre-designed tailwind design blocks for your pages
 
+Now let's add this page to the AdminForth menu and make it homepage instead of Appartments page:
+
+```diff
+menu: [
++    {
++      label: 'Dashboard',
++      path: '/ovrerwiew',
++      homepage: true,
++      icon: 'flowbite:chart-pie-solid',
++      component: '@@/Dashboard.vue',
++    },
+    {
+      label: 'Core',
+      icon: 'flowbite:brain-solid',
+      open: true,
+      children: [
+        {
+-          homepage: true,  
+          label: 'Appartments',
+          icon: 'flowbite:home-solid',
+          resourceId: 'aparts',
+        },
+      ]
+    },
+```
+
+
+
+> 🫨 To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
+> ![alt text](image-1.png)
+
+
+.
+## Defining custom API for own page and components
 You might notice that in mounted hook page fetches custom endpoint '/api/dashboard-stats'. 
 
 We need to create this endpoint in the backend.
 
-Open `index.ts` file and add the following code:
+Open `index.ts` file and add the following code *BEFORE* `admin.express.serve()` !
 
 ```ts
 
 ....
-// serve after you added all api
-admin.express.serve(app, express)
-admin.discoverDatabases();
-
 
 app.get('/api/dashboard/',
   admin.express.authorize(
@@ -143,6 +173,11 @@ app.get('/api/dashboard/',
     }
   )
 );
+
+// serve after you added all api
+admin.express.serve(app, express)
+admin.discoverDatabases();
+
 
 ```
 

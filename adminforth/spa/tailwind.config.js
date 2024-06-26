@@ -9,7 +9,9 @@ export default {
 
   darkMode: 'class',
   plugins: [
-    require('flowbite/plugin'),
+    require('flowbite/plugin')({
+      charts: true,
+    }),
   ],
 }
 

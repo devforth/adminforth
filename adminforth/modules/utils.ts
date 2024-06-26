@@ -37,3 +37,51 @@ export function getComponentNameFromPath(filePath) {
 export function listify(param?: Array<Function>) {
   return param || [];
 }
+
+export function deepMerge(target, source) {
+  if (typeof target !== 'object' || target === null) {
+      return source;
+  }
+
+  for (let key in source) {
+      if (source.hasOwnProperty(key)) {
+          if (typeof source[key] === 'object' && source[key] !== null) {
+              if (!target[key]) {
+                  target[key] = {};
+              }
+              deepMerge(target[key], source[key]);
+          } else {
+              target[key] = source[key];
+          }
+      }
+  }
+
+  return target;
+}
+
+function toCamelCase(str) {
+  return str.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+}
+
+export function transformObject(obj, parentKey = '', result = {}) {
+  for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+          const camelCaseKey = toCamelCase(parentKey ? `${parentKey}_${key}` : key);
+          if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+              transformObject(obj[key], camelCaseKey, result);
+          } else {
+              result[camelCaseKey] = obj[key];
+          }
+      }
+  }
+  //remove 'Default' from keys
+  for (const key in result) {
+    if (key.includes('Main')) {
+      const newKey = key.replace('Main', '');
+      result[newKey] = result[key];
+      delete result[key];
+    }
+  }
+
+  return result;
+}
