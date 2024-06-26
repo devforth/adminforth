@@ -408,10 +408,13 @@ npm start
 
 Open http://localhost:3500 in your browser and login with credentials `adminforth` / `adminforth`.
 
-![alt text](image.png)
+
+![alt text](localhost_3500_login.png)
 
 
 After Login you should see:
+![alt text](localhost_3500_resource_apparts.png)
+
 
 
 
