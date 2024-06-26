@@ -34,7 +34,9 @@ export interface FrontendAPIInterface {
      */
     alert(params:AlertParams): void;
     /**
-     * Add a filter to the list of filters
+     * Add a filter to the list of filters.
+     * Works only when user located on the list page.
+     * Can be used to set filter from charts or other components in pageInjections.
      * 
      * Example:
      * 

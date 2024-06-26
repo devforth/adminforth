@@ -21,12 +21,13 @@
                   class="bg-form-view-bg dark:bg-gray-800 border-b dark:border-gray-700"
               >
                 <!-- if column is in customComponentsPerColumn, use this component. If not, use this code -->
-                <template v-if="column?.components?.[props.source]">
+                <template v-if="column?.components?.[props.source].file">
                     <component
                         :is="getCustomComponent(column.components[props.source])"
                         :column="column"
                         :value="currentValues[column.name]"
                         @update:value="setCurrentValue(column.name, $event)"
+                        :meta="column.components[props.source].meta"
                     />
                 </template>
                 <template v-else>
