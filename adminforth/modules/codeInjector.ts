@@ -7,10 +7,10 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH } from './utils.js';
-import { getComponentNameFromPath } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
 import { styles } from './styles.js'
 import { AdminForthComponentDeclaration, CodeInjectorType } from '../types/AdminForthConfig.js';
+import { StylesGenerator } from './styleGenerator.js';
 
 
 
@@ -290,8 +290,6 @@ class CodeInjector implements CodeInjectorType {
           });
         });
       });
-
-
     });
 
     customResourceComponents.forEach((filePath) => {
@@ -340,20 +338,14 @@ class CodeInjector implements CodeInjectorType {
     }
     await fs.promises.writeFile(appVuePath, appVueContent);
 
-    // generate tailwind extend styles 
-    if(this.adminforth.config?.styles){
-      const tailwindStyles = this.adminforth.config?.styles
-      const stylesText = JSON.stringify(tailwindStyles, null, 2).slice(1, -1);
-      let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
-      let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
-      tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
-      await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
-    } else {
-      let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
-      let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
-      tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */',styles());
-      await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
-    }
+    // generate tailwind extend styles
+    const stylesGenerator = new StylesGenerator(this.adminforth.config.customization?.styles); 
+    const  stylesText = JSON.stringify(stylesGenerator.mergeStyles(), null, 2).slice(1, -1);
+    let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
+    let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
+    tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+    await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
+    
 
     const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
 

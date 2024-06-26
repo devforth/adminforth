@@ -2,11 +2,11 @@
   <div class="rounded-default">
     
     <div 
-      class="relative shadow-resourse-form-shadow sm:rounded-lg dark:shadow-2xl dark:shadow-black rounded-default"
+      class="relative shadow-resourseFormShadow sm:rounded-lg dark:shadow-2xl dark:shadow-black rounded-default"
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
-          <thead class="text-xs text-gray-700 uppercase bg-form-view-heading dark:bg-gray-700 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-lightormHeading dark:bg-gray-700 dark:text-gray-400">
               <tr>
                   <th scope="col" class="px-6 py-3">
                       Field
@@ -18,7 +18,7 @@
           </thead>
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
-                  class="bg-form-view-bg dark:bg-gray-800 border-b dark:border-gray-700"
+                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
               >
                 <!-- if column is in customComponentsPerColumn, use this component. If not, use this code -->
                 <template v-if="column?.components?.[props.source].file">
