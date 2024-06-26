@@ -79,7 +79,7 @@ This will convert to the following TailwindCSS classes:
 'lightSidebarTextIconHover':'#ffffff',
 'lightSidebarTextIconActive':'#ffffff',
 ```
-So if you dont want to use long nested style object for changing just few prooerties you can use camelCase style object:
+So if you dont want to use long nested style object for changing just few properties you can use camelCase style object:
 
 ```ts
 const admin = new AdminForth({
@@ -132,7 +132,8 @@ Download it to `custom` directory, and just set it in the configuration:
 ```ts
 const admin = new AdminForth({
   ...
-  customization: {
+  auth: {
+  ...
     loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
   },
   ...
