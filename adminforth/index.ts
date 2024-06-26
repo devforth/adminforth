@@ -535,7 +535,7 @@ class AdminForth implements AdminForthClass {
   }
 
   async bundleNow({ hotReload=false, verbose=false }) {
-    this.codeInjector.bundleNow({ hotReload, verbose });
+    await this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
   async getUserByPk(pk: string) {

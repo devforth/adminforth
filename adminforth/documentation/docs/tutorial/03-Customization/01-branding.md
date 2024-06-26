@@ -33,7 +33,7 @@ You can use `@@/` prefix for all paths in the configuration and also import imag
 </template>
 ```
 
-# Theming
+## Theming
 
 AdminForth uses TailwindCSS for styling. You can customize the look of the application by changing the TailwindCSS configuration.
 
@@ -63,7 +63,7 @@ const admin = new AdminForth({
 ```
 
 
-# Square vs rounded buttons?
+## Square vs rounded buttons?
 
 Not an issue, just change:
 
@@ -74,3 +74,25 @@ styles: {
   }
 }
 ```
+
+## Login background
+
+Some why login background image matters.
+
+For example you might want to get [free sweet background](https://unsplash.com/s/photos/secure?license=free) from Unsplash like
+[Nate Watson's appartments view](https://images.unsplash.com/photo-1516501312919-d0cb0b7b60b8?q=80&w=3404&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D).
+
+Download it to `custom` directory, and just set it in the configuration:
+
+
+```ts
+const admin = new AdminForth({
+  ...
+  customization: {
+    loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
+  },
+  ...
+});
+```
+
+< screenshot here >
