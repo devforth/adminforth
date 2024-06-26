@@ -4,23 +4,23 @@
 In addition to ability to create custom pages and overwrite how fields are rendered, you can also inject larger parts of the page. 
 This is useful when you want to add some custom content to the page. 
 
-For example let's add a custom pie chart to the `list` page of the `apparts` resource. Pie chart will show the distribution of the rooms count and more over will allow to filter the list by the rooms count.
+For example let's add a custom pie chart to the `list` page of the `aparts` resource. Pie chart will show the distribution of the rooms count and more over will allow to filter the list by the rooms count.
 
 ```ts
 {
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   options: {
     pageInjections: {
       list: {
-        afterBreadcrumbs: '@@/AppartsPie.vue',
+        afterBreadcrumbs: '@@/ApartsPie.vue',
       }
     }
   }
 }
 ```
 
-Now create file `AppartsPie.vue` in the `custom` folder of your project:
+Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
 ```vue
 <template>

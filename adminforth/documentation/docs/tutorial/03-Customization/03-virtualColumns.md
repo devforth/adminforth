@@ -8,7 +8,7 @@ For doing this you can use `virtual` columns.
 
 ```ts
 ...
-resourceId: 'apparts',
+resourceId: 'aparts',
 ...
 columns: [
   ...
@@ -31,7 +31,7 @@ columns: [
  
  ```vue
  <template>
-  {{ getFlagEmojiFromIso(record.description.split(' ')[0]) }}
+  {{ getFlagEmojiFromIso(record.country) }}
  </template>
  
  <script setup>
