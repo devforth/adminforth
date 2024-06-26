@@ -2,7 +2,7 @@
 
 You might need to give admin users a feature to perform same action on multiple records at once. 
 
-For example you might want allow setting `listed` field to `false` for multiple appartment records at once. 
+For example you might want allow setting `listed` field to `false` for multiple apartment records at once. 
 
 AdminForth by default provides a checkbox in first column of the list view for this purposes.
  
@@ -14,7 +14,7 @@ To add custom bulk action quickly:
 ```ts
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   bulkActions: [
     {
