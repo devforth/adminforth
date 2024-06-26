@@ -16,19 +16,19 @@ Hooks are used to:
 
 ## Modify the data before it is saved to the database
 
-Let's add id to adminUser when user creates a new appartment:
+Let's add reference to `adminUser` when user creates a new apartment:
 
 ```ts
 import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   columns: [
     ...
     {
-      name: 'user_id',
+      name: 'realtor_id',
       ...
       showIn: ['list', 'show', 'edit'], // don't even show this field in create
       ...
@@ -42,7 +42,7 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
         if (adminUser.isRoot) {
           return { ok: false, error: "Root user can't create appartment, relogin as DB user" };
         }
-        record.user_id = adminUser.dbUser.id;
+        record.realtor_id = adminUser.dbUser.id;
         return { ok: true, record };
       }
     }

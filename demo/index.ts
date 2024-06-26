@@ -109,7 +109,7 @@ const admin = new AdminForth({
   resources: [
     {
       dataSource: 'maindb', table: 'apartments',
-      resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
+      resourceId: 'aparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r: any) => `🏡 ${r.title}`,
@@ -263,7 +263,7 @@ const admin = new AdminForth({
       recordLabel: (r: any) => `👤 ${r.email}`,
       plugins: [
         new ForeignInlineListPlugin({
-          foreignResourceId: 'apparts',
+          foreignResourceId: 'aparts',
           modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
             // hide column 'square_meter' from both 'list' and 'filter'
             resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
@@ -509,7 +509,7 @@ const admin = new AdminForth({
         {
           label: 'Appartments',
           icon: 'flowbite:home-solid',
-          resourceId: 'apparts',
+          resourceId: 'aparts',
         },
         {
           label: 'Games',

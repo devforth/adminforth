@@ -382,7 +382,7 @@ export type AdminForthResourceColumn = {
      * 
      * This field will be displayed in show and list views with custom component `CountryFlag.vue`. CountryFlag.vue should be placed in custom folder and can be next:
      * 
-     * ```vue
+     * ```html
      * <template>
      *  {{ getFlagEmojiFromIso(record.ipCountry) }}
      * </template>
@@ -953,7 +953,7 @@ export type AdminForthComponentDeclarationFull = {
    * 
    * In Flag.vue you can access this meta object like this:
    * 
-   * ```vue
+   * ```html
    * <template>
    *  <img :src="loadFile(`@@/flags/${meta.flagType}/${meta.flagType === 'country' ? record.countryIso : record.teamCode}.png`)" />
    * </template>
@@ -977,7 +977,7 @@ export type AdminForthFieldComponents = {
      * 
      * Example: `FullName.vue`
      * 
-     * ```vue
+     * ```html
      * <template>
      *   {{ record.firstName }} {{ record.lastName }}
      * </template>

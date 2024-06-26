@@ -7,14 +7,14 @@ We will render '🟨' for each room and then we will print `square_meter` at the
 
 Create directory `custom`. Create a file `RoomsCell.vue` in it:
 
-```vue
+```html
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">
       🟨
     </span>
       
-    {{ room.square_meter }} m²
+    {{ record.square_meter }} m²
   </div>
 </template>
 
@@ -30,7 +30,7 @@ Now you can use this component in the configuration of the resource:
 ```ts
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   columns: [
     ...
@@ -48,6 +48,8 @@ Now you can use this component in the configuration of the resource:
   ...
 }
 ```
+Here is how it looks:
+![alt text](image.png)
 
 In very similar way you can render how cell is rendered in `'edit'` and `'create'` view. 
 You can use it for creating custom editors for the fields. Check [component specs](/docs/api/types/AdminForthConfig/type-aliases/AdminForthFieldComponents#create) to understand which props are passed to the component
@@ -61,7 +63,7 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 ```ts
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   columns: [
     ...
@@ -92,7 +94,7 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 
 Now our component can read `filler` from `meta` prop:
 
-```vue
+```html
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">

@@ -74,53 +74,17 @@ Open `package.json`, set `type` to `module` and add `start` script:
 
 Create `index.ts` file in root directory with following content:
 
-```typescript
-
+```ts
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from 'adminforth';
 
-const dbFile = 'test.sqlite';
-const db = betterSqlite3(dbFile)
-  
-const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
-if (!tableExists) {
-  await db.prepare(`
-    CREATE TABLE apartments (
-        id VARCHAR(20) PRIMARY KEY NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        square_meter REAL,
-        price DECIMAL(10, 2) NOT NULL,
-        number_of_rooms INT,
-        description TEXT,
-        property_type VARCHAR(255) DEFAULT 'apartment',
-        listed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP,
-        user_id VARCHAR(255)
-    );`).run();
-
-  await db.prepare(`
-    CREATE TABLE users (
-        id VARCHAR(255) PRIMARY KEY NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at VARCHAR(255) NOT NULL,
-        role VARCHAR(255) NOT NULL
-    );`).run();
-
-  for (let i = 0; i < 50; i++) {
-    await db.prepare(`
-      INSERT INTO apartments (
-        id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
-      ) VALUES ('${i}', 'Apartment ${i}', ${Math.random() * 100}, ${Math.random() * 10000}, ${Math
-        .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
-      `).run();
-  }
-}
+const DB_FILE = 'test.sqlite';
+let db;
 
 const ADMIN_BASE_URL = '';
 
-const admin = new AdminForth({
+export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   rootUser: {
     username: 'adminforth',  // use these as credentials to login
@@ -140,14 +104,14 @@ const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: `sqlite://${dbFile}`
+      url: `sqlite://${DB_FILE}`
     },
   ],
   resources: [
     {
       dataSource: 'maindb', 
       table: 'apartments',
-      resourceId: 'apparts', // resourceId is defaulted to table name but you can change it e.g. 
+      resourceId: 'aparts', // resourceId is defaulted to table name but you can change it e.g. 
                              // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r) => `🏡 ${r.title}`,
@@ -201,15 +165,40 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
+          showIn: ['show', 'edit', 'create', 'filter'],
         },
         {
-          name: 'property_type',
+          name: 'country',
           enum: [{
-            value: 'house',
-            label: 'House'
+            value: 'US',
+            label: 'United States'
           }, {
-            value: 'apartment',
-            label: 'Apartment'
+            value: 'DE',
+            label: 'Germany'
+          }, {
+            value: 'FR',
+            label: 'France'
+          }, {
+            value: 'UK',
+            label: 'United Kingdom'
+          }, {
+            value:'NL',
+            label: 'Netherlands'
+          }, {
+            value: 'IT',
+            label: 'Italy'
+          }, {
+            value: 'ES',
+            label: 'Spain'
+          }, {
+            value: 'DK',
+            label: 'Denmark'
+          }, {
+            value: 'PL',
+            label: 'Poland'
+          }, {
+            value: 'UA',
+            label: 'Ukraine'
           }, {
             value: null,
             label: 'Not defined'
@@ -220,7 +209,7 @@ const admin = new AdminForth({
           required: true,  // will be required on create/edit
         },
         {
-          name: 'user_id',
+          name: 'realtor_id',
           foreignResource: {
             resourceId: 'users',
           }
@@ -288,7 +277,7 @@ const admin = new AdminForth({
         create: {
           beforeSave: async ({ record, adminUser, resource }) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            return { ok:true, error: false };
+            return { ok: true };
           }
         },
         edit: {
@@ -296,7 +285,7 @@ const admin = new AdminForth({
             if (record.password) {
               record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
-            return { ok: true, error: false }
+            return { ok: true }
           },
         },
       }
@@ -312,7 +301,7 @@ const admin = new AdminForth({
           homepage: true,
           label: 'Appartments',
           icon: 'flowbite:home-solid',
-          resourceId: 'apparts',
+          resourceId: 'aparts',
         },
       ]
     },
@@ -332,29 +321,82 @@ const admin = new AdminForth({
       resourceId: 'users',
     }
   ],
-})
-
-
-const app = express()
-app.use(express.json());
-const port = 3500;
-
-(async () => {
-    // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-    console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-})();
-
-
-// serve after you added all api
-admin.express.serve(app, express)
-admin.discoverDatabases();
-
-
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-  console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
 });
+
+
+async function initDataBase() {
+  db = betterSqlite3(DB_FILE);
+
+  const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
+  if (!tableExists) {
+    // if no table - create couple of tables and fill them with some mock data
+    await db.prepare(`
+      CREATE TABLE apartments (
+          id VARCHAR(20) PRIMARY KEY NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          square_meter REAL,
+          price DECIMAL(10, 2) NOT NULL,
+          number_of_rooms INT,
+          description TEXT,
+          country VARCHAR(2),
+          listed BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP,
+          realtor_id VARCHAR(255)
+      );`).run();
+
+    await db.prepare(`
+      CREATE TABLE users (
+          id VARCHAR(255) PRIMARY KEY NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          created_at VARCHAR(255) NOT NULL,
+          role VARCHAR(255) NOT NULL
+      );`).run();
+
+    for (let i = 0; i < 100; i++) {
+      await db.prepare(`
+        INSERT INTO apartments (
+          id, title, square_meter, price, 
+          number_of_rooms, description, 
+          created_at, listed, 
+          country
+        ) VALUES (
+         '${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, 
+         ${ Math.floor(Math.random() * 5) }, 'Next gen apartments', 
+         ${ Date.now() / 1000 - Math.random() * 1000 * 60 * 60 * 24 }, ${i % 2 == 0}, 
+         '${['US', 'DE', 'FR', 'UK', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}'
+        )`).run();
+    }
+  }
+}
+
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  // if script is executed directly e.g. node index.ts or npm start
+
+  await initDataBase();
+
+  const app = express()
+  app.use(express.json());
+  const port = 3500;
+
+  (async () => {
+      // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+      await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
+      console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+  })();
+
+
+  // serve after you added all api
+  admin.express.serve(app)
+  admin.discoverDatabases();
+
+
+  app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+    console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
+  });
+}
 ```
 
 
@@ -366,10 +408,13 @@ npm start
 
 Open http://localhost:3500 in your browser and login with credentials `adminforth` / `adminforth`.
 
-![alt text](image.png)
+
+![alt text](localhost_3500_login.png)
 
 
 After Login you should see:
+![alt text](localhost_3500_resource_apparts.png)
+
 
 
 

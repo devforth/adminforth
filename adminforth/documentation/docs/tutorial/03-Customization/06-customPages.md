@@ -12,7 +12,7 @@ npm i vue-chartjs chart.js
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
-```vue
+```html
 
 <template>
   <div>
@@ -23,10 +23,13 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
     </h2>
 
     <Bar
-      :options="chartOptions"
-      :data="chartData"
+      :options="chart1Options"
+      :data="chart1Data"
     />
-    
+    <Bubble
+      :options="chart2Options"
+      :data="chart2Data"
+    />
   </div>
 
 </template>
@@ -34,18 +37,34 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Bar } from 'vue-chartjs'
+import { Bubble } from 'vue-chartjs'
+
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 
-const chartData = ref({
+const chart1Data = ref({
   labels: [].
-  datasets: [
-  ]
+  datasets: []
 });
 
-const chartOptions = {
+const chart1Options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true
+    }
+  }
+}
+
+const chart2Data = ref({
+  labels: [].
+  datasets: []
+});
+
+const chart2Options = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -58,10 +77,10 @@ const chartOptions = {
 onMounted(() => {
   // Fetch data from the API
   // and set it to the chartData
-  const resp = await fetch('/api/dashboard-stats');
-  const data = (await resp.json()).squareByClassType;
+  const resp = await fetch('/api/dashboard/');
+  const data = (await resp.json());
 
-  chartData.value.labels = data.map(d => d.numberOfRooms);
+  chartData.value.labels = data.map(d => d.squareByClassType.numberOfRooms);
   chartData.value.datasets = [
     {
       label: 'Square meters',
@@ -69,8 +88,11 @@ onMounted(() => {
       backgroundColor: 'rgba(54, 162, 235, 0.2)',
       borderColor: 'rgba(54, 162, 235, 1)',
       borderWidth: 1
-    }
-  ]
+    },
+  ];
+
+  chart2Data.value.labels = data.map(d => d.numberOfRoomsPrice.numberOfRooms);
+
 })
 
 ```
@@ -91,12 +113,33 @@ admin.express.serve(app, express)
 admin.discoverDatabases();
 
 
-app.get('/api/dashboard-stats',
+app.get('/api/dashboard/',
   admin.express.authorize(
     async (req, res) => {
-      const stats = await db.query(
+      const squareByClassType = await db.query(
         'SELECT number_of_rooms as numberOfRooms, SUM(square_meters) as squareMeters FROM appartments GROUP BY number_of_rooms');
-      res.json({ squareByClassType: stats.map});
+
+      //get max and min price
+      const maxMinPrice = await db.query(
+        'SELECT MAX(price) as maxPrice, MIN(price) as minPrice FROM appartments');
+      
+      // divide price range into 10 buckets
+      const priceRange = (maxMinPrice.maxPrice - maxMinPrice.minPrice) / 10;
+
+      // generate data for bubble chart, where x is number of rooms, y is bucket of price range, and z is count of appartments
+      const numberOfRoomsPriceQuery = await db.query(
+        `SELECT number_of_rooms as numberOfRooms, 
+                (price - ${maxMinPrice.minPrice}) / ${priceRange} as priceBucket 
+                count(*) as count
+                GROUP BY numberOfRooms, priceBucket 
+         FROM appartments`);
+      const numberOfRoomsPrice = bubbleDataQuery.map(row => {
+        row.priceRange = `${Math.round(row.priceBucket * priceRange)} - ${Math.round((row.priceBucket + 1) * priceRange)}`;
+      })
+
+
+      res.json({ squareByClassType, numberOfRoomsPrice });
+
     }
   )
 );
