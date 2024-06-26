@@ -11,7 +11,7 @@ function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <>
-      <header className={clsx('hero hero--primary', styles.heroBanner)} style={{paddingBottom:500}}>
+      <header className={clsx('hero hero--primary', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
           <Heading as="h1" className="hero__title">
             {siteConfig.title}
@@ -27,12 +27,12 @@ function HomepageHeader() {
         </div>
       </header>
       <img src={require('@site/static/img/preview.png').default} alt="AdminForth" style={{
-        
         width: '100%',
-        maxWidth: 1000,
+        maxWidth: 1200,
         zIndex: 100,
         margin: '0 auto',
-        marginTop: -500,
+        marginTop: '-30vw',
+        // transform: 'translateY(10%)',
         marginBottom: 80,
       }} />
     </>

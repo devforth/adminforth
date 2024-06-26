@@ -1162,7 +1162,6 @@ class AdminForth implements AdminForthClass {
               }
             } 
 
-            console.log('✅ newValues', newValues)
             if (Object.keys(newValues).length > 0) {
                 await connector.updateRecord({ resource, recordId, record, newValues});
             }

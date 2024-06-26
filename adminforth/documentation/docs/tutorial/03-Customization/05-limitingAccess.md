@@ -31,7 +31,7 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   options: {
     allowedActions: {
@@ -79,7 +79,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean 
 
 ## Customizing the access control based on resource values
 
-More advanced case, allow to edit apartments only if user is owner of the apartment (defined as user_id), otherwise return error
+More advanced case, allow to edit apartments only if user is a realtor of the apartment (defined as realtor_id), otherwise return error
 "You are not assigned to this apartment and can't edit it":
 
 ```ts
@@ -96,10 +96,10 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
     return "Root user can't edit appartment, relogin as DB user"; 
   }
   const { oldRecord, newRecord } = meta;
-  if (oldRecord.user_id !== adminUser.dbUser.id) {
+  if (oldRecord.realtor_id !== adminUser.dbUser.id) {
     return "You are not assigned to this apartment and can't edit it";
   }
-  if (newRecord.user_id !== oldRecord.user_id) {
+  if (newRecord.realtor_id !== oldRecord.realtor_id) {
     return "You can't change the owner of the apartment";
   }
   return true;
@@ -108,7 +108,7 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
 
 {
   ...
-  resourceId: 'apparts',
+  resourceId: 'aparts',
   ...
   options: {
     allowedActions: {
