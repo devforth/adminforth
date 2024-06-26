@@ -22,7 +22,7 @@ For example let's add a custom pie chart to the `list` page of the `aparts` reso
 
 Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
-```vue
+```html
 <template>
   <Bubble 
 
