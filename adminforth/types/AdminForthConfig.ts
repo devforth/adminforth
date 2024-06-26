@@ -818,6 +818,10 @@ export type AdminForthConfig = {
        * 
        */
       vueUsesFile?: string,
+        /** 
+       * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
+       */
+      styles?: Object,
     },
 
     /**
@@ -832,10 +836,7 @@ export type AdminForthConfig = {
    
     deleteConfirmation?: boolean,
     
-    /** 
-     * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
-     */
-    styles?: Object,
+   
 }
   
 
@@ -965,6 +966,7 @@ export type AdminForthComponentDeclarationFull = {
    */
   meta?: any,
 }
+
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
 

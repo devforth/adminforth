@@ -35,7 +35,7 @@ You can use `@@/` prefix for all paths in the configuration and also import imag
 
 # Theming
 
-AdminForth uses TailwindCSS for styling. You can customize the look of the application by changing the TailwindCSS configuration.
+AdminForth uses TailwindCSS for styling. By default both black and light thems the same as for Tailwind, but you able to customize the look of the application by changing the TailwindCSS configuration.
 
 Use [styles.ts](https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts) file to see which variables are available for change.
 
@@ -44,24 +44,68 @@ Let's say your brand has a primary purple color and you wish to make navigation 
 In `index.ts` file set the `styles` property in the configuration:
 
 ```ts
-import { AdminForth } from 'adminforth';
 
 const admin = new AdminForth({
   ...
-  styles: {
-    colors: {
-      'nav-menu-bg': 'purple',
-      'nav-menu-text': 'white',
-      'nav-menu-active-text': 'white',
-      "nav-menu-icons": "white",
-      'nav-menu-active': 'rgb(180 76 232)',
-      "nav-menu-bg-hover": "rgb(194 99 242)",
-    },
+  customization:{
+    styles: {
+      colors: {
+        light: {
+          sidebar: {
+            main: 'purple',
+            border: '#ffffff',
+            text: {
+              icon: {
+              main: '#ffffff',//in this case main will be used for text color
+              hover: '#ffffff',
+              active: '#ffffff'
+              }
+            },
+          },
+        }
+      }
+    }
   },
   ...
 });
 ```
 
+This will convert to the following TailwindCSS classes:
+
+```ts
+'lightSidebar':'purple',
+'lightSidebarBorder':'#ffffff',
+'lightSidebarTextIcon':'#ffffff',
+'lightSidebarTextIconHover':'#ffffff',
+'lightSidebarTextIconActive':'#ffffff',
+```
+So if you dont want to use long nested style object for changing just few prooerties you can use camelCase style object:
+
+```ts
+const admin = new AdminForth({
+  ...
+  customization: {
+    styles: {
+      colors: {
+        lightSidebar: 'purple',
+        light: {
+          sidebarBorder: '#ffffff',
+        }
+        //or 
+        light: {
+          sidebar: {
+            border: '#ffffff'
+          }
+        lightSidebarTextIcon: '#ffffff',
+        lightSidebarTextIconHover: '#ffffff',
+        lightSidebarTextIconActive: '#ffffff',
+        }
+      }
+    },
+  ...
+  }
+});
+```
 
 # Square vs rounded buttons?
 

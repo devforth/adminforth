@@ -44,10 +44,10 @@
     </div>
     <div 
       v-else
-      class="relative overflow-x-auto shadow-resourse-form-shadow "
+      class="relative overflow-x-auto shadow-resourseFormShadow "
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
-        <thead class="text-xs text-gray-700 uppercase bg-form-view-heading dark:bg-gray-700 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-lightormHeading dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
                     Field
@@ -59,7 +59,7 @@
         </thead>
         <tbody>
             <tr v-for="column in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
-                class="bg-form-view-bg odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
+                class="bg-lightForm bg-darkForm odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
             >
               <component
                 v-if="column.components?.showRow"

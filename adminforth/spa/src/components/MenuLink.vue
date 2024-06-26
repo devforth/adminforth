@@ -1,16 +1,16 @@
 <template>
   <RouterLink 
       :to="{name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
-      class="flex items-center py-2 text-nav-menu-text rounded-default  hover:bg-nav-menu-bg-hover active:bg-nav-menu-bg-active" role="menuitem"
+      class="flex group items-center py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default  hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover active:bg-lightSidebarActive dark:active:bg-darkSidebarHover" role="menuitem"
       :class="{ 
         'px-4': isChild,
         'px-2': !isChild,
-        'bg-nav-menu-bg-active dark:bg-gray-700': item.resourceId ?
+        'bg-sidebarActive dark:bg-gray-700': item.resourceId ?
         ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
         ($route.name === item.path)
       }"
   >
-    <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" ></component>
+    <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons dark:text-darkSidebarIcons  transition duration-75  group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover" ></component>
     <span class="ms-3">{{ item.label }}</span>
   </RouterLink>
 </template>
