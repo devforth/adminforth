@@ -1,5 +1,5 @@
 <template>
-  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`">
+  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`" class="p-4">
     <RouterView/>
   </div>
 </template>
@@ -11,7 +11,6 @@
 
 
 import { useCoreStore } from '@/stores/core';
-import { onMounted } from 'vue';
 
 const coreStore = useCoreStore()
 
