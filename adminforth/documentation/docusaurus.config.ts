@@ -86,8 +86,8 @@ const config: Config = {
   themeConfig: {
     algolia: {
         appId: 'VSIPOF54AV',  // The application ID provided by Algolia
-        apiKey: 'adminforth',  // Public API key: it is safe to commit it
-        indexName: '1421d8647ca2005358fdd01a9ceb3565',
+        apiKey: '1421d8647ca2005358fdd01a9ceb3565',  // Public API key: it is safe to commit it
+        indexName: 'adminforth',
     },
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
