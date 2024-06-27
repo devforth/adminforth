@@ -54,7 +54,7 @@
       </tr>
       </thead>
       <tbody>
-        <SkeleteLoader v-if="!rows?.length" :columns="3" :rows="resource?.columns.length"/>  
+        <SkeleteLoader v-if="!rows" :columns="3" :rows="resource?.columns.length"/>  
       <tr v-else-if="rows.length === 0" class="bg-lightListTable border-b dark:bg-darkListTable dark:border-darkListTableBorder">
         <td :colspan="resource?.columns.length + 2">
 
