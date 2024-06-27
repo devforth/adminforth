@@ -81,7 +81,7 @@ const admin = new AdminForth({
     // styles:{
     //   colors: {
     //     light:{
-    //       sidebar: {main:'tomato',hover:'green', text:'black', textHover:'white', icons:'black', },
+    //       sidebar: {main:'tomato',hover:'green', text:'black'},
     //     },
     //     lightSidebar: "blue", // Very light grey
     //   }

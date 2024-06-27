@@ -84,16 +84,24 @@ const config: Config = {
   ],
 
   themeConfig: {
-
+    algolia: {
+        appId: 'VSIPOF54AV',  // The application ID provided by Algolia
+        apiKey: '1421d8647ca2005358fdd01a9ceb3565',  // Public API key: it is safe to commit it
+        indexName: 'adminforth',
+    },
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'AdminForth',
-      logo: {
-        alt: 'AdminForth Logo',
-        src: 'img/logo.svg',
-      },
+        title: 'AdminForth',
+        logo: {
+          alt: 'AdminForth Logo',
+          src: 'img/logo.svg',
+        },
       items: [
+        {
+          type: 'search',
+          position: 'right',
+        },
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',

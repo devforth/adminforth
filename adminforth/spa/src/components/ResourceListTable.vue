@@ -54,7 +54,7 @@
       </tr>
       </thead>
       <tbody>
-        <SkeleteLoader v-if="!rows?.length" :columns="10" :rows="10"/>  
+        <SkeleteLoader v-if="!rows" :columns="3" :rows="resource?.columns.length"/>  
       <tr v-else-if="rows.length === 0" class="bg-lightListTable border-b dark:bg-darkListTable dark:border-darkListTableBorder">
         <td :colspan="resource?.columns.length + 2">
 
@@ -300,15 +300,18 @@ function addToCheckedValues(id) {
 const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.includes('list')));
 
 async function selectAll(value) {
-  props.rows.forEach((r) => {
-    if (!checkboxesInternal.value.includes(r.id)) {
-      checkboxesInternal.value.push(r.id)
-    } else {
-      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id)
-    }
-  });
-  checkboxesInternal.value = [ ...checkboxesInternal.value ]
-  // checkboxes.value = rows.value.map((v) => v.id);
+  if (!allFromThisPageChecked.value) {
+    props.rows.forEach((r) => {
+      if (!checkboxesInternal.value.includes(r.id)) {
+        checkboxesInternal.value.push(r.id)
+      } 
+    });
+  }
+  else {
+    props.rows.forEach((r) => {
+      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id);
+    });
+  }
 }
 
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
@@ -318,7 +321,7 @@ const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
   if (!props.rows) return false;
-  return props.rows.every((r) => props.checkboxes.includes(r.id));
+  return props.rows.every((r) => checkboxesInternal.value.includes(r.id));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
