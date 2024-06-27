@@ -57,11 +57,10 @@ const admin = new AdminForth({
             text: {
               main: '#ffffff',//in this case main will be used for text color
               hover: '#ffffff',
-              active: '#ffffff'
             },
             icons: {
               main: '#ffffff',
-              active: '#ffffff'
+              hover: '#ffffff'
             }
           },
         }
