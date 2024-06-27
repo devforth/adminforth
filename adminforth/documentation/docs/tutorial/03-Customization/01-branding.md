@@ -139,5 +139,5 @@ const admin = new AdminForth({
   ...
 });
 ```
-
-< screenshot here >
+Here is how it looks:
+![alt text](Branding_and_Theming.png)
