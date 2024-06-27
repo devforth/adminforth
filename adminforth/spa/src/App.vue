@@ -107,9 +107,9 @@
   </aside>
   
 
-  <div class="p-4 sm:ml-64 dark:bg-gray-800" v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady">
+  <div class="sm:ml-64 dark:bg-gray-800" v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady">
     <div class="p-0 dark:border-gray-700 mt-14">
-        <RouterView/>     
+      <RouterView/>     
     </div>
   </div> 
 
