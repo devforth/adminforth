@@ -17,7 +17,7 @@ export const styles = () => ({
     lightSidebarBorder: "rgb(229 231 235)", // sidebar right border
     lightSidebarHover: "rgb(243 244 246)", // in development
     lightSidebarActive: "rgb(233, 234, 236)", // in development
-    lightSidebarItemHover: "rgb(243 244 246)", // sidebar list item hover
+    lightSidebarItemHover: "#f3f4f6", // sidebar list item hover
     lightSidebarItemActive: "rgb(233, 234, 236)", // sidebar list item active
     lightSidebarText: "#4b5563", // sidebar list item text
     lightSidebarTextHover: "#333333", // sidebar list item text hover
@@ -38,7 +38,8 @@ export const styles = () => ({
 
     lightForm: "#FFFFFF", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
-    lightFormHeading: "#EDEDED", // show view heading
+    lightFormHeading: "rgb(249 250 251)", // show view heading
+    
 
 
     // colors for dark theme
@@ -79,7 +80,7 @@ export const styles = () => ({
 
     darkForm: "#111111", 
     darkFormBorder: "#222222", 
-    darkFormHeading: "#333333" 
+    darkFormHeading: "#334155" 
 
   },
   boxShadow: {
