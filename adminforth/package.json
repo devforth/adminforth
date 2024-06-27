@@ -1,10 +1,6 @@
 {
   "name": "adminforth",
-<<<<<<< HEAD
-  "version": "1.1.50",
-=======
-  "version": "1.1.53",
->>>>>>> 30f9511c637a2d25413f72cb662e60a8f0500136
+  "version": "1.1.54",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
