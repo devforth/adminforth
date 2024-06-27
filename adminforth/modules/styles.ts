@@ -38,7 +38,7 @@ export const styles = () => ({
 
     lightForm: "#FFFFFF", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
-    lightFormHeading: "#EDEDED", // show view heading
+    lightFormHeading: "rgb(249 250 251)", // show view heading
 
 
     // colors for dark theme
@@ -79,7 +79,7 @@ export const styles = () => ({
 
     darkForm: "#111111", 
     darkFormBorder: "#222222", 
-    darkFormHeading: "#333333" 
+    darkFormHeading: "#334155" 
 
   },
   boxShadow: {
