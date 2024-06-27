@@ -300,15 +300,18 @@ function addToCheckedValues(id) {
 const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.includes('list')));
 
 async function selectAll(value) {
-  props.rows.forEach((r) => {
-    if (!checkboxesInternal.value.includes(r.id)) {
-      checkboxesInternal.value.push(r.id)
-    } else {
-      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id)
-    }
-  });
-  checkboxesInternal.value = [ ...checkboxesInternal.value ]
-  // checkboxes.value = rows.value.map((v) => v.id);
+  if (!allFromThisPageChecked.value) {
+    props.rows.forEach((r) => {
+      if (!checkboxesInternal.value.includes(r.id)) {
+        checkboxesInternal.value.push(r.id)
+      } 
+    });
+  }
+  else {
+    props.rows.forEach((r) => {
+      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id);
+    });
+  }
 }
 
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
