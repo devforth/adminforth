@@ -238,7 +238,7 @@ class PostgresConnector {
 
       const limitOffset = `LIMIT $${totalCounter} OFFSET $${totalCounter + 1}`; 
       const d = [...filterValues, limit, offset];
-      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const selectQuery = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`;
       if (process.env.HEAVY_DEBUG) {
         console.log('🪲 PG selectQuery:', selectQuery, 'params:', d);
