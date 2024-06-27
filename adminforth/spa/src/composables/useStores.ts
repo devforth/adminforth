@@ -23,7 +23,6 @@ declare global {
 }
 
 export class FrontendAPI implements FrontendAPIInterface {
-  private validOperators: Operator[] = ['lte', 'gte', 'in','ilike'];
   private toastStore:any
   private modalStore:any
   private filtersStore:any  
@@ -70,12 +69,8 @@ export class FrontendAPI implements FrontendAPIInterface {
       const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumn) => col.name === filter.field)
       if(!filterField){
           throw new Error(`Field ${filter.field} is not available for filtering`)
-        }
-      if(filterField) {
-        if(!this.validOperators.includes(filter.operator)){
-          throw new Error(`Operator ${filter.operator} is not valid`)
-        } 
       }
+      
     }
     return true
   }

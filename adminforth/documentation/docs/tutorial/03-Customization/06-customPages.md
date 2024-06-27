@@ -12,7 +12,7 @@ npm install apexcharts --save
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
-```html
+```html title="/custom/Dashboard.vue"
 <template>
   <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none h-screen">
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
@@ -316,8 +316,6 @@ const optionsC3 = {
 }
 
 
-
-
 onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
@@ -364,7 +362,7 @@ onMounted(async () => {
 
 Now let's add this page to the AdminForth menu and make it homepage instead of Appartments page:
 
-```diff
+```diff title="/index.ts"
 menu: [
 +    {
 +      label: 'Dashboard',
@@ -391,7 +389,7 @@ menu: [
 
 
 > 🫨 To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
-> ![alt text](image-1.png)
+![Iconify icon select](image-icon-select.png)
 
 
 .
@@ -402,7 +400,7 @@ We need to create this endpoint in the backend.
 
 Open `index.ts` file and add the following code *BEFORE* `admin.express.serve()` !
 
-```ts
+```ts title="/index.ts"
 
 ....
 
