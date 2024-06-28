@@ -23,6 +23,7 @@
     "unhead": "^1.9.12",
     "uuid": "^10.0.0",
     "vue": "^3.4.21",
+    "vue-diff": "^1.2.4",
     "vue-router": "^4.3.0",
     "vue-slider-component": "^4.1.0-beta.7"
   },
