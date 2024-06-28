@@ -98,7 +98,13 @@ export class FrontendAPI implements FrontendAPIInterface {
       if(index === -1) {
         this.filtersStore.setFilter(filter)
       } else {
-      this.filtersStore.setFilters([...this.filtersStore.filters.slice(0, index), filter, ...this.filtersStore.filters.slice(index + 1)])
+        const filters = [...this.filtersStore.filters];
+        if (filter.value === undefined) {
+          filters.splice(index, 1);
+        } else {
+          filters[index] = filter;
+        }
+        this.filtersStore.setFilters(filters);
       }
     }
   }
