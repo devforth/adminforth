@@ -725,9 +725,10 @@ class AdminForth implements AdminForthClass {
         let userFullName = ''
         if (adminUser.isRoot) {
             username = this.config.rootUser.username;
+            console.log(username, 'this is the root')
         } else {
             const dbUser = adminUser.dbUser;
-            console.log(dbUser)
+            console.log(dbUser,'this is the db user',adminUser,'this is the admin user')
             username = dbUser[this.config.auth.usernameField]; 
             userFullName =dbUser[this.config.auth.userFullNameField];
         }
