@@ -5,6 +5,7 @@ import { v1 as uuid } from 'uuid';
 import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
+import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -107,6 +108,36 @@ const admin = new AdminForth({
     }
   ],
   resources: [
+    {
+        dataSource: 'db2', table: 'audit_logs',
+        columns: [
+            { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
+            { name: 'created_at', required: false },
+            { name: 'resource_id', required: false },
+            { name: 'user_id', required: false },
+            { name: 'action', required: false },
+            { name: 'diff', required: false },
+            { name: 'record_id', required: false },
+        ],
+        options: {
+            allowedActions: {
+                edit: false,
+                delete: false,
+            }
+        },
+        plugins: [
+            new AuditLogPlugin({
+                resourceColumns: {
+                    resourceIdColumnName: 'resource_id',
+                    resourceActionColumnName: 'action',
+                    resourceDataColumnName: 'diff',
+                    resourceUserIdColumnName: 'user_id',
+                    resourceRecordIdColumnName: 'record_id',
+                    resourceCreatedColumnName: 'created_at'
+                }
+            }),
+          ],
+    },
     {
       dataSource: 'maindb', table: 'apartments',
       resourceId: 'aparts', // resourceId is defaulted to table name but you can change it e.g. 
@@ -332,7 +363,6 @@ const admin = new AdminForth({
       hooks: {
         list: {
           afterDatasourceResponse: async ({ query, adminUser }: any) => {
-            console.log('321321312')
             return { ok: true, error: "" }
           }
         },
@@ -527,7 +557,11 @@ const admin = new AdminForth({
           label: 'Casino Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'game',
-
+        },
+        {
+          label: 'Logs',
+          icon: 'flowbite:search-outline',
+          resourceId: 'audit_logs',
         }
       ]
     },
