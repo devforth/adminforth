@@ -3,7 +3,8 @@ import {
   AdminForthResource, AdminForthClass, BeforeDataSourceRequestFunction,
   AllowedActionsEnum,
   BeforeSaveFunction,
-  AdminUser
+  AdminUser,
+  AdminForthDataTypes
 } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import { PluginOptions } from "./types.js";
@@ -53,6 +54,25 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         }
 
         if (this.auditLogResource === resource.resourceId) {
+            let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
+            if (!diffColumn) {
+                diffColumn = {
+                    name: this.options.resourceColumns.resourceDataColumnName,
+                    components: {},
+                    // type: AdminForthDataTypes.STRING
+                }
+            }
+        
+            diffColumn.components = {
+                showRow: { 
+                    file: this.componentPath('AuditLogView.vue'),
+                    meta: {
+                    ...this.options, 
+                    pluginInstanceId: this.pluginInstanceId
+                    }
+                }
+            }
+            resource.columns.push(diffColumn);
             return;
         }
 
