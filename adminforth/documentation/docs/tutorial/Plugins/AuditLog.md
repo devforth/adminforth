@@ -7,4 +7,4 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 
 
 
-See [API Reference](/docs/api/plugins/AuditLog/types/type-aliases/PluginOptions) for more all options.
+See [API Reference](/docs/api/plugins/AuditLogPlugin/types/type-aliases/PluginOptions.md) for more all options.
