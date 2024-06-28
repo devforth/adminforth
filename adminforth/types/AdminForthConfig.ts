@@ -374,7 +374,7 @@ export type AdminForthResourceColumn = {
      * 
      * ```ts
      * {
-     *  label: 'Country',
+     *  label: 'Country Flag',
      *  type: AdminForthDataTypes.STRING,
      *  virtual: true,
      *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
