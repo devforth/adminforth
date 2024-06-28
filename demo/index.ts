@@ -276,11 +276,11 @@ const admin = new AdminForth({
         // }
         // ],
         allowedActions:{
-          edit: false,
+          edit: true,
           delete: false,
           show: true,
           filter: true,
-          create: true,
+          create: false,
         },
       }
 
