@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import csscololors from 'css-color-names/css-color-names.json'
+var csscolors = require('css-color-names');
 
 
 
@@ -120,8 +120,8 @@ function hexToRGBA(hex,opacity){
   else if (color.startsWith("#")) {
     return hexToRGBA(color, opacity);
   }
-  else if (csscololors[color]) {
-    return hexToRGBA(csscololors[color], opacity);
+  else if (csscolors[color]) {
+    return hexToRGBA(csscolors[color], opacity);
   }
   else {
     return color;
