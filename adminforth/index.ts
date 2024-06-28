@@ -727,6 +727,7 @@ class AdminForth implements AdminForthClass {
             username = this.config.rootUser.username;
         } else {
             const dbUser = adminUser.dbUser;
+            console.log(dbUser)
             username = dbUser[this.config.auth.usernameField]; 
             userFullName =dbUser[this.config.auth.userFullNameField];
         }
@@ -766,6 +767,7 @@ class AdminForth implements AdminForthClass {
           }
           newMenu.push(newMenuItem)
         }
+        console.log(userData,'this is the user data')
 
         return {
           user: userData,
