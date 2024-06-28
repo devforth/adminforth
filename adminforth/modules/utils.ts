@@ -1,11 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+// @ts-ignore-next-line
 import csscolors from 'css-color-names';
-
-
-
-
 
 
 export function guessLabelFromName(name) {
