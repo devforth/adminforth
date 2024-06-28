@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-var csscolors = require('css-color-names');
+import csscolors from 'css-color-names';
 
 
 
