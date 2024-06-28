@@ -21,7 +21,7 @@
                   class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
               >
                 <!-- if column is in customComponentsPerColumn, use this component. If not, use this code -->
-                <template v-if="column?.components?.[props.source].file">
+                <template v-if="column?.components?.[props.source]?.file">
                     <component
                         :is="getCustomComponent(column.components[props.source])"
                         :column="column"

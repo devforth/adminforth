@@ -168,13 +168,13 @@ const admin = new AdminForth({
                     }
                 },
                 // show: '@@/IdShow.vue',
-                create: {
-                    file: '@@/IdShow.vue',
-                    meta: {
-                        title: 'Title',
-                        description: 'This is title of apartment'
-                    }
-                }
+                // create: {
+                //     file: '@@/IdShow.vue',
+                //     meta: {
+                //         title: 'Title',
+                //         description: 'This is title of apartment'
+                //     }
+                // }
                 // list: '@@/IdShow.vue',
             },
         }, 
@@ -277,7 +277,7 @@ const admin = new AdminForth({
         // }
         // ],
         allowedActions:{
-          edit: true,
+          edit: false,
           delete: false,
           show: true,
           filter: true,
@@ -550,8 +550,9 @@ const admin = new AdminForth({
           label: 'Games Users',
           icon: 'flowbite:user-solid',
           resourceId: 'games_users',
-          visible:(user)=>{
-            return user.isRoot || user.dbUser.role === 'superadmin'}
+          visible:(user) => {
+            return user.isRoot || user.dbUser.role === 'superadmin'
+          }
         },
         {
           label: 'Casino Games',
@@ -579,8 +580,9 @@ const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
-      visible:(user)=>{
-        return user.isRoot || user.dbUser.role === 'superadmin'}
+      visible:(user) => {
+        return user.isRoot || user.dbUser.role === 'superadmin'
+      }
     }
   ],
 })

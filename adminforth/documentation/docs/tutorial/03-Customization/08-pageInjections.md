@@ -23,7 +23,7 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
 ```html title="/custom/ApartsPie.vue"
 <template>
-  <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 mb-5">
+  <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-4 mb-5">
     <div id="pie-chart"></div>
   </div>
 </template>
@@ -37,16 +37,21 @@ const data: Ref<any[]> = ref([]);
 const POSSIBLE_COLORS = ["#1C64F2", "#16BDCA", "#9061F9", "#F0A936", "#F55252", "#3B82F6", "#10B981", "#F472B6", "#6B7280"];
 
 const chatOptions = {
-  series: [52.8, 26.8, 20.4],
+  series: [],
   colors: POSSIBLE_COLORS,
   chart: {
-    height: 420,
+    height: 200,
     width: "100%",
     type: "pie",
     events: {
       dataPointSelection: function (event, chartContext, config) {
-        const selectedRoomsCount = data.value[config.dataPointIndex].rooms;
-        window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+        if (config.selectedDataPoints[0].length) {
+          const selectedRoomsCount = data.value[config.dataPointIndex].rooms;
+          window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+        } else {
+          // clear filter
+          window.adminforth.updateListFilter({field: 'number_of_rooms', value: undefined});
+        }
       }
     },
   },

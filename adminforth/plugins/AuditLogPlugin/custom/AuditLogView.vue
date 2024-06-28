@@ -1,4 +1,4 @@
-<script>
+<script setup>
 import VueDiff from 'vue-diff';
 import { ref } from 'vue';
 import 'vue-diff/dist/index.css';
