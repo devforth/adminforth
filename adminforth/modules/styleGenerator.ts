@@ -22,7 +22,7 @@ export class StylesGenerator {
       return plainCustomStyles;
     }
    
-    private changeAlias(str:string, mergedStyles:any){
+    private changeAlias(str:any, mergedStyles:any){
       const {aliasMatch,opacityMatch,darkenMatch,lightenMatch} = parseColorForAliases(str);
       if (!aliasMatch) {
         return str;
