@@ -78,14 +78,13 @@ const admin = new AdminForth({
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
     emptyFieldPlaceholder: '-',
-    // styles:{
-    //   colors: {
-    //     light:{
-    //       sidebar: {main:'tomato',hover:'green', text:'black'},
-    //     },
-    //     lightSidebar: "blue", // Very light grey
-    //   }
-    // } 
+    styles:{
+      colors: {
+        light: {
+          sidebar: {main:'#571e58', text:'white'},
+        },
+      }
+    } 
 
     
   // },

@@ -1,16 +1,13 @@
-import { transformObject,deepMerge } from "./utils.js";
+import { transformObject,deepMerge,createRGBA,parseColorForAliases,darkenRGBA, lightenRGBA } from "./utils.js";
 import { styles } from "./styles.js";
 
-const aliasObject ={ lightSidebarText:'lightSidebarIcons',darkSidebarText:'darkSidebarIcons',lightSidebarTextHover:'lightSidebarIconsHover',darkSidebarTextHover:'darkSidebarIconsHover'}
 
 export class StylesGenerator {
     styleConfig: any;
     defaultStyles: any;
   
     constructor(styleConfig: any) {
-      if (!styleConfig) {
-        console.log("No styles provided using default styles.");
-      }
+     
       this.styleConfig = styleConfig;
       this.defaultStyles = styles();
     }
@@ -24,22 +21,32 @@ export class StylesGenerator {
       }
       return plainCustomStyles;
     }
-    private changeAliases(plateStyles: any) {
-      if (!plateStyles || !plateStyles.colors) {
-        return plateStyles;
+   
+    private changeAlias(str:string, mergedStyles:any){
+      const {aliasMatch,opacityMatch,darkenMatch,lightenMatch} = parseColorForAliases(str);
+      if (!aliasMatch) {
+        return str;
+      } else {
+        const alias = aliasMatch[1];
+        let opacity = opacityMatch ? parseFloat(opacityMatch[1]) : 1;
+        const color = mergedStyles[alias];
+        if (darkenMatch) {
+          return darkenRGBA(createRGBA(color, opacity))
+        }
+        if  (lightenMatch){
+          return lightenRGBA(createRGBA(color, opacity))
+        }
+        return createRGBA(color, opacity);
       }
-      let colors = plateStyles.colors;
-      Object.keys(aliasObject).forEach((aliasName) => {
-        if (colors[aliasObject[aliasName]]) return;
-        if (!colors[aliasName]) return;
-        colors[aliasObject[aliasName]] = colors[aliasName];
-      })
-      return plateStyles;
-    }
+    }  
   
     mergeStyles() {
-      let mergedStyles = deepMerge(this.defaultStyles, this.changeAliases(this.generatePlainStyles(this.styleConfig)));
+      let mergedStyles = deepMerge(this.defaultStyles, this.generatePlainStyles(this.styleConfig));
+      let colors = mergedStyles.colors;
+      Object.entries(colors).forEach(([key,value])=>{
+
+        colors[key] =  this.changeAlias(value,colors)
+      })
       return mergedStyles;
     }
-  
   }
