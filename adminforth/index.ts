@@ -18,7 +18,7 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AdminForthResource,
   AllowedActionsEnum,
   AllowedActions,
-  ActionCheckSource
+  ActionCheckSource,
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
@@ -555,6 +555,66 @@ class AdminForth implements AdminForthClass {
     return users.data[0] || null;
   }
 
+  async createResourceRecord({ resource, record, adminUser }: { resource: AdminForthResource, record: any, adminUser: AdminUser }) {
+    for (const column of resource.columns) {
+        if (column.fillOnCreate) {
+            if (record[column.name] === undefined) {
+                record[column.name] = column.fillOnCreate({
+                    initialRecord: record, adminUser
+                 });
+            }
+        }
+        if ((column.required as {create?: boolean, edit?: boolean}) ?.create && record[column.name] === undefined) {
+            return { error: `Column '${column.name}' is required` };
+        }
+
+        if (column.isUnique) {
+            const existingRecord = await this.connectors[resource.dataSource].getData({
+                resource,
+                filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value: record[column.name] }],
+                limit: 1,
+                sort: [],
+                offset: 0
+            });
+            if (existingRecord.data.length > 0) {
+                return { error: `Record with ${column.name} ${record[column.name]} already exists` };
+            }
+        }
+    }
+
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
+        const resp = await hook({ resource, record, adminUser });
+        if (!resp || (!resp.ok && !resp.error)) {
+          throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+        }
+
+        if (resp.error) {
+          return { error: resp.error };
+        }
+      }
+
+    // remove virtual columns from record
+    for (const column of resource.columns.filter((col) => col.virtual)) {
+        if (record[column.name]) {
+          delete record[column.name];
+        }
+    }
+    const connector = this.connectors[resource.dataSource];
+    await connector.createRecord({ resource, record });
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
+      const resp = await hook({ resource, record, adminUser });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+      }
+
+      if (resp.error) {
+        return { error: resp.error };
+      }
+    }
+}
+
   setupEndpoints(server: GenericHttpServer) {
     server.endpoint({
       noAuth: true,
@@ -1029,7 +1089,6 @@ class AdminForth implements AdminForthClass {
         return item;
       },
     });
-
     server.endpoint({
         method: 'POST',
         path: '/create_record',
@@ -1045,66 +1104,8 @@ class AdminForth implements AdminForthClass {
               return { error };
             }
 
-            const record = body['record'];
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
-
-            
-
-            for (const column of resource.columns) {
-                if (column.fillOnCreate) {
-                    if (body['record'][column.name] === undefined) {
-                        body['record'][column.name] = column.fillOnCreate({
-                            initialRecord: body['record'], adminUser
-                         });
-                    }
-                }
-                if ((column.required as {create?: boolean, edit?: boolean}) ?.create && body['record'][column.name] === undefined) {
-                    return { error: `Column '${column.name}' is required` };
-                }
-
-                if (column.isUnique) {
-                    const existingRecord = await this.connectors[resource.dataSource].getData({
-                        resource,
-                        filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value: body['record'][column.name] }],
-                        limit: 1,
-                        sort: [],
-                        offset: 0
-                    });
-                    if (existingRecord.data.length > 0) {
-                        return { error: `Record with ${column.name} ${body['record'][column.name]} already exists` };
-                    }
-                }
-            }
-
-            // remove virtual columns from record
-            for (const column of resource.columns.filter((col) => col.virtual)) {
-                if (record[column.name]) {
-                  delete record[column.name];
-                }
-            }
+            await this.createResourceRecord({ resource, record: body['record'], adminUser });
             const connector = this.connectors[resource.dataSource];
-            await connector.createRecord({ resource, record });
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
 
             return {
               newRecordId: body['record'][connector.getPrimaryKey(resource)]
