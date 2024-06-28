@@ -83,6 +83,11 @@ export interface AdminForthClass {
   codeInjector: CodeInjectorType;
   express: GenericHttpServer;
 
+  connectors: {
+    [key: string]: AdminForthDataSource
+  };
+
+  createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
 
   auth: {
 
@@ -461,7 +466,7 @@ export type AdminForthResource = {
      * If you wish you can explicitly set it to any string.
      * We added to support cases when 2 datasources have tables with the same name.
      */
-    resourceId: string,
+    resourceId?: string,
 
     /**
      * Label for resource which will be displayed in the admin panel.

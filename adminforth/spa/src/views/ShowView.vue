@@ -126,7 +126,7 @@ import {showSuccesTost} from '@/composables/useFrontendApi';
 const item = ref(null);
 const route = useRoute();
 const router = useRouter();
-const loading = ref(false);
+const loading = ref(true);
 
 console.log(route.params,'showWiev');
 
