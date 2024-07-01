@@ -163,7 +163,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, defineComponent } from 'vue';
+import { computed, onMounted, ref, watch, defineComponent, onBeforeMount } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 import { initFlowbite } from 'flowbite'
 import './index.scss'
@@ -211,6 +211,8 @@ const theme = ref('light');
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   document.documentElement.classList.toggle('dark');
+  window.localStorage.setItem('theme', theme.value);
+
 }
 
 function clickOnMenuItem (label: string) {
@@ -237,14 +239,8 @@ async function initRouter() {
 }
 
 async function loadMenu() {
-  await coreStore.fetchMenuAndResource()
+  await coreStore.fetchMenuAndResource();
   loginRedirectCheckIsReady.value = true;
-  
-  coreStore.menu.forEach((item, i) => {
-    if (item.open) {
-      opened.value.push(i);
-    }
-  });
 }
 
 
@@ -256,16 +252,32 @@ watch(route, () => {
   })
 });
 
+watch (()=>coreStore.menu, () => {
+    coreStore.menu.forEach((item, i) => {
+    if (item.open) {
+      opened.value.push(i);
+    };
+  });
+})
+
+watch([loggedIn,  routerIsReady, loginRedirectCheckIsReady], ([l,r,lr]) => {
+  if (l && r && lr) {
+    setTimeout(() => {
+    initFlowbite();
+  }); 
+  }
+})
+
 // initialize components based on data attribute selectors
 onMounted(async () => {
   loadMenu(); // run this in async mode
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter()
-  setTimeout(() => {
-    initFlowbite();
-  }); 
+})
 
-
+onBeforeMount(()=>{
+  theme.value = window.localStorage.getItem('theme') || 'light';
+  document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
 
 </script>
