@@ -263,18 +263,18 @@ const admin = new AdminForth({
           }
         },
         listPageSize: 5,
-        // bulkActions: [{
-        //   label: 'Mark as listed',
-        //   // icon: 'typcn:archive',
-        //   state:'active',
-        //   confirm: 'Are you sure you want to mark all selected apartments as listed?',
-        //   action: function ({selectedIds, adminUser}: any) {
-        //     const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
-        //     stmt.run(...selectedIds);
-        //     return { ok: true, error: false, message: 'Marked as listed' }
-        //   }
-        // }
-        // ],
+        bulkActions: [{
+          label: 'Mark as listed',
+          // icon: 'typcn:archive',
+          state:'active',
+          confirm: 'Are you sure you want to mark all selected apartments as listed?',
+          action: function ({selectedIds, adminUser}: any) {
+            const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+            stmt.run(...selectedIds);
+            return { ok: true, error: false, message: 'Marked as listed' }
+          }
+        }
+        ],
         allowedActions:{
           edit: true,
           delete: false,
