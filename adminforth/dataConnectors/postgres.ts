@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 
 const { Client } = pkg;
 
 
-class PostgresConnector {
+class PostgresConnector implements AdminForthDataSourceConnector {
 
     db: any;
 

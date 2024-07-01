@@ -77,6 +77,20 @@ export interface ExpressHttpServer extends GenericHttpServer {
   authorize(callable: Function): void;
 }
 
+export class AdminForthDataSourceConnector {
+
+  constructor({ url }: { url: string }) {
+    throw new Error('Method not implemented.');
+  }
+  
+  /**
+   * Function which will be called to fetch record from database.
+   */
+  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  };
+
+}
 
 export interface AdminForthClass {
   config: AdminForthConfig;
@@ -84,7 +98,7 @@ export interface AdminForthClass {
   express: GenericHttpServer;
 
   connectors: {
-    [key: string]: AdminForthDataSource
+    [key: string]: AdminForthDataSourceConnector,
   };
 
   createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
@@ -715,7 +729,9 @@ export type AdminForthConfig = {
      * If you want use custom DataSource which is not supported by AdminForth yet, you can define it's class here
      * 
      */
-    databaseConnectors?: any,  // TODO Define interface for database connector
+    databaseConnectors?: {
+        [key: string]: AdminForthDataSourceConnector,
+    }, 
 
     /**
      * List of data sources which will be used to fetch data for resources.
