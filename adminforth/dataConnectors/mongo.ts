@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 
-class MongoConnector {
+class MongoConnector implements AdminForthDataSourceConnector {
     db: MongoClient
 
-    constructor({ url }) {
+    constructor({ url }: { url: string }) {
         this.db = new MongoClient(url);
         (async () => {
             try {
@@ -65,16 +65,10 @@ class MongoConnector {
 
     getFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            return dayjs.unix(+value).toISOString();
-          } else if (field._underlineType == 'varchar') {
-            return dayjs.unix(+value).toISOString();
-          } else {
-            throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
-          }
+        if (!value) {
+        return null;
+        }
+        return dayjs.unix(value).toISOString();
 
         } else if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
