@@ -77,19 +77,16 @@ export interface ExpressHttpServer extends GenericHttpServer {
   authorize(callable: Function): void;
 }
 
-export class AdminForthDataSourceConnector {
-
-  constructor({ url }: { url: string }) {
-    throw new Error('Method not implemented.');
-  }
+export interface AdminForthDataSourceConnector {
   
   /**
    * Function which will be called to fetch record from database.
    */
-  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any> {
-    throw new Error('Method not implemented.');
-  };
+  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+}
 
+export interface AdminForthDataSourceConnectorConstructor {
+  new ({ url }: { url: string }): AdminForthDataSourceConnector;
 }
 
 export interface AdminForthClass {
@@ -548,6 +545,7 @@ export type AdminForthResource = {
     },
     options?: {
       bulkActions?: Array<{
+        id?: string,
         label: string,
         state: string,
         icon?: string,
@@ -729,7 +727,7 @@ export type AdminForthConfig = {
      * 
      */
     databaseConnectors?: {
-        [key: string]: AdminForthDataSourceConnector,
+        [key: string]: AdminForthDataSourceConnectorConstructor,
     }, 
 
     /**
