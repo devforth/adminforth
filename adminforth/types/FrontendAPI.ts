@@ -99,20 +99,7 @@ export type AlertParams = {
     
 }
 
-export type FilterParams = {
-    /**
-     * Field of resource to filter
-     */
-    field: string;
-    /**
-     * Operator of filter
-     */
-    operator: Operator;
-    /**
-     * Value of filter
-     */
-    value: string | number | boolean ;
-}
+
 
 export enum AlertVariant {
     danger = 'danger',
@@ -121,7 +108,6 @@ export enum AlertVariant {
     info = 'info'
   }
 
-export type Operator = 'in' | 'ilike' | 'gte' | 'lte'  ;
   
   
 
