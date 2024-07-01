@@ -19,6 +19,7 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AllowedActionsEnum,
   AllowedActions,
   ActionCheckSource,
+  AdminForthDataSourceConnector,
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
@@ -45,7 +46,7 @@ class AdminForth implements AdminForthClass {
   express: ExpressServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
-  connectors: any;
+  connectors;
   connectorClasses: any;
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
@@ -496,7 +497,8 @@ class AdminForth implements AdminForthClass {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});
+      // @ts-ignore
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
@@ -1172,7 +1174,7 @@ class AdminForth implements AdminForthClass {
             
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
+              const resp = await hook({ resource, record, adminUser, oldRecord });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
               }
