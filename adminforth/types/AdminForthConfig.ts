@@ -552,7 +552,6 @@ export type AdminForthResource = {
         state: string,
         icon?: string,
         action: Function,
-        id?: string,
         confirm?: string,
       }>,
       allowedActions?: AllowedActions,

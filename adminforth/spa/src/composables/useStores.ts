@@ -1,4 +1,5 @@
-import type { FrontendAPIInterface, ConfirmParams, AlertParams, FilterParams,Operator } from '../types/FrontendAPI';
+import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '../types/FrontendAPI';
+import type { AdminForthFilterOperators } from '@/types/AdminForthConfig';
 import { useToastStore } from '../stores/toast';
 import { useModalStore } from '../stores/modal';
 import { useCoreStore } from '@/stores/core';
@@ -6,9 +7,20 @@ import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
 import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
-
-
-
+ type FilterParams = {
+  /**
+   * Field of resource to filter
+   */
+  field: string;
+  /**
+   * Operator of filter
+   */
+  operator: AdminForthFilterOperators;
+  /**
+   * Value of filter
+   */
+  value: string | number | boolean ;
+}
 
 declare global {
   interface Window {
