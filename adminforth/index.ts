@@ -497,7 +497,6 @@ class AdminForth implements AdminForthClass {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      // @ts-ignore
       this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
     });
 
