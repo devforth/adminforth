@@ -101,8 +101,9 @@ export interface AdminForthClass {
   createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
 
   auth: {
+    verify(jwt : string, mustHaveType: string): Promise<any>;
 
-    verify(jwt : string): Promise<any>;
+    issueJWT(payload: Object, type: string): string;
   }
 
   /**

@@ -626,7 +626,7 @@ class AdminForth implements AdminForthClass {
         const { username, password } = body;
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
-          token = this.auth.issueJWT({ username, pk: null  });
+          this.auth.setAuthCookie({ response, username, pk: null });
         } else {
           // get resource from db
           if (!this.config.auth) {
@@ -664,15 +664,11 @@ class AdminForth implements AdminForthClass {
           console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
-            token = this.auth.issueJWT({ 
-              username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
-            });
+            this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
           } else {
             return { error: INVALID_MESSAGE };
           }
         }
-
-        response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
         return { ok: true };
       },
     });
@@ -690,7 +686,7 @@ class AdminForth implements AdminForthClass {
         method: 'POST',
         path: '/logout',
         handler: async ({ response }) => {
-          response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+          this.auth.removeAuthCookie({ response });
           return { ok: true };
         },
     })
