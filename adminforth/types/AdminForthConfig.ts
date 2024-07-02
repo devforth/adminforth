@@ -826,7 +826,15 @@ export type AdminForthConfig = {
        * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
        */
       styles?: Object,
-    },
+      /**
+       * Description of custom pages which will let register custom pages for custom routes in AdminForth.
+       */
+
+      customPages?: Array<{
+        path: string,
+        component: AdminForthComponentDeclaration,
+      }>,
+    }
 
     /**
      * If you want to Serve AdminForth from a subdirectory, e.g. on example.com/backoffice, you can specify it like:

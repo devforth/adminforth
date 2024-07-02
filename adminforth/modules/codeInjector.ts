@@ -118,14 +118,15 @@ class CodeInjector implements CodeInjectorType {
         }
         
         if (item.component) {
-          if(Object.keys(item).includes('isStaticRoute')){
-            if(!item.isStaticRoute){
-            routes += `{
-              path: '${item.path}',
-              name: '${item.path}',
-              component: () => import('${item.component}'),
-              meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
-            },\n`} else {
+          if(Object.keys(item).includes('isStaticRoute')) {
+            if(!item.isStaticRoute) {
+              routes += `{
+                path: '${item.path}',
+                name: '${item.path}',
+                component: () => import('${item.component}'),
+                meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
+              },\n`
+            } else {
               routes += `{
                 path: '${item.path}',
                 name: '${item.path}',
@@ -135,34 +136,44 @@ class CodeInjector implements CodeInjectorType {
               const componentName = `${getComponentNameFromPath(item.component)}`;
               routerComponents += `import ${componentName} from '${item.component}';\n`;
             }
-          } else{
-            if(item.homepage){
-              routes += `{
-                path: '${item.path}',
-                name: '${item.path}',
-                component: ${getComponentNameFromPath(item.component)},
-                meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
-              },\n`
-              const componentName = `${getComponentNameFromPath(item.component)}`;
-              routerComponents += `import ${componentName} from '${item.component}';\n`;}
-              else {
-              routes += `{
-                path: '${item.path}',
-                name: '${item.path}',
-                component: () => import('${item.component}'),
-                meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
-              },\n` 
-              
-            }
-            
+          } else {
+              if (item.homepage) {
+                routes += `{
+                  path: '${item.path}',
+                  name: '${item.path}',
+                  component: ${getComponentNameFromPath(item.component)},
+                  meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
+                },\n`
+                const componentName = `${getComponentNameFromPath(item.component)}`;
+                routerComponents += `import ${componentName} from '${item.component}';\n`;
+              } else {
+                routes += `{
+                  path: '${item.path}',
+                  name: '${item.path}',
+                  component: () => import('${item.component}'),
+                  meta: { title: '${item?.meta?.title || item.path.replace('/', '')}'}
+                },\n` 
+                }
           }
-          
         }
         if (item.children) {
           collectAssetsFromMenu(item.children);
         }
       });
     };
+    const registerCustomPages = (config) => {
+      if (config.customization.customPages) {
+        config.customization.customPages.forEach((page) => {
+          routes += `{
+            path: '${page.path}',
+            name: '${page.path}',
+            component: () => import('${page?.component?.file || page.component}'),
+            meta: { title: '${page.meta?.title || page.path.replace('/', '')}',customLayout:${page?.component?.meta?.customLayout }}
+          },`})
+        
+    }}
+
+    registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
 
     if (filesUpdated) {

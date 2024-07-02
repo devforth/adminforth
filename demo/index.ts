@@ -6,6 +6,7 @@ import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedAc
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
+import TwoFactorsAuthPlugin from '../adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -73,6 +74,16 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
+    customPages:[{
+      path : '/login2',
+      component: {
+        file:'@@/login2.vue',
+        meta: {
+          customLayout: true,
+      }}
+     
+    
+    }],
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My App',
     datesFormat: 'D MMM YY HH:mm:ss',
@@ -85,10 +96,8 @@ const admin = new AdminForth({
           sidebar: {main:'#571e58', text:'white'},
         },
       }
-    } 
+    },
 
-    
-  // },
   },
  
 
@@ -300,6 +309,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
+        new TwoFactorsAuthPlugin({}), 
       ],
       options: {
         allowedActions: {

@@ -158,6 +158,30 @@ class AdminForth implements AdminForthClass {
       this.config.customization = {};
     }
 
+    if (!this.config.customization.customComponentsDir) {
+      this.config.customization.customComponentsDir = './custom';
+    }
+
+    try {
+      // check customComponentsDir exists
+      fs.accessSync(this.config.customization.customComponentsDir, fs.constants.R_OK);
+    } catch (e) {
+      this.config.customization.customComponentsDir = undefined;
+    }
+
+    if (this.config.customization.customPages){
+      this.config.customization.customPages.forEach((page,i) => {
+        //validate component if its not plugin injection
+        if (this.codeInjector.allComponentNames[page.component]) {
+        const validatedPage =  this.validateComponent(page.component, errors,true);
+
+        }
+        
+        
+      })
+    }
+      
+
 
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
