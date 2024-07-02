@@ -34,8 +34,8 @@ class MongoConnector implements AdminForthDataSourceConnector {
     };
 
     SortDirectionsMap = {
-        [AdminForthSortDirections.ASC]: 1,
-        [AdminForthSortDirections.DESC]: -1,
+        [AdminForthSortDirections.asc]: 1,
+        [AdminForthSortDirections.desc]: -1,
     };
 
     async discoverFields(resource) {
