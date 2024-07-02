@@ -91,6 +91,7 @@ export interface AdminForthClass {
 
   auth: {
 
+    issueJWT(payload: any): string ;
     verify(jwt : string): Promise<any>;
   }
 
@@ -455,11 +456,17 @@ export type BeforeSaveFunction = (params:{resource: AdminForthResource, adminUse
  */
 export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
+/**
+ * Allow to get user data before login confirmation, will triger when user try to login.
+ */
+export type BeforeLoginConfirmationFunction = (params: { adminUser: AdminUser, }) => Promise<{}>;
 
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
+
+
 export type AdminForthResource = {
     /**
      * Unique identifier of resource. By default it equals to table name in database. 
@@ -688,6 +695,13 @@ export type AdminForthConfig = {
        * ```
        */
       loginBackgroundImage?: string,
+
+      /**
+       * Function or functions  which will be called before user try to login.
+       * Each function will resive User object as an argument
+       */
+
+      beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
 
       /**
        * Optionally if your users table has a field(column) with full name, you can set it here.
