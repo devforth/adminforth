@@ -95,4 +95,4 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](Branding_and_Theming.png)
+![alt text](<localhost_3500_resource_aparts (1).png>)
