@@ -387,18 +387,17 @@ menu: [
 ```
 
 
-
 > 🫨 To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
 ![Iconify icon select](image-icon-select.png)
 
-
-.
-## Defining custom API for own page and components
 You might notice that in mounted hook page fetches custom endpoint '/api/dashboard-stats'. 
+Now we have to define this endpoint in the backend to make our page work:
 
-We need to create this endpoint in the backend.
 
-Open `index.ts` file and add the following code *BEFORE* `admin.express.serve()` !
+## Defining custom API for own page and components
+
+
+Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` !
 
 ```ts title="/index.ts"
 
