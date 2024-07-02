@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 
 import crypto from 'crypto';
 import AdminForth from './index.js';
-import { th } from '@faker-js/faker';
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
