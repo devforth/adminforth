@@ -9,7 +9,7 @@ Import plugin:
 ```ts
 import ForeignInlineListPlugin from 'adminforth/plugins/ForeignInlineListPlugin';
 ```
-If yu are using pure Node without TypeScript, you can use the following code:
+If you are using pure Node without TypeScript, you can use the following code:
 
 ```js
 import ForeignInlineListPlugin from 'adminforth/dist/plugins/ForeignInlineListPlugin/index.js';
