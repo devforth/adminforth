@@ -37,8 +37,8 @@ class PostgresConnector implements AdminForthDataSourceConnector {
       };
   
       SortDirectionsMap = {
-        [AdminForthSortDirections.ASC]: 'ASC',
-        [AdminForthSortDirections.DESC]: 'DESC',
+        [AdminForthSortDirections.asc]: 'ASC',
+        [AdminForthSortDirections.desc]: 'DESC',
       };
 
     async discoverFields(resource) {

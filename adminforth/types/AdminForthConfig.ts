@@ -545,6 +545,10 @@ export type AdminForthResource = {
       },
     },
     options?: {
+      defaultSort?: {
+        columnName: string,
+        direction: AdminForthSortDirections | string,
+      }
       bulkActions?: Array<{
         id?: string,
         label: string,
@@ -1073,8 +1077,8 @@ export enum AdminForthFilterOperators {
 };
 
 export enum AdminForthSortDirections {
-  ASC = 'asc',
-  DESC = 'desc',
+  asc = 'asc',
+  desc = 'desc',
 };
 
 
