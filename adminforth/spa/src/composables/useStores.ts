@@ -1,4 +1,5 @@
-import type { FrontendAPIInterface, ConfirmParams, AlertParams, FilterParams,Operator } from '../types/FrontendAPI';
+import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '../types/FrontendAPI';
+import type { AdminForthFilterOperators } from '@/types/AdminForthConfig';
 import { useToastStore } from '../stores/toast';
 import { useModalStore } from '../stores/modal';
 import { useCoreStore } from '@/stores/core';
@@ -6,9 +7,20 @@ import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
 import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
-
-
-
+ type FilterParams = {
+  /**
+   * Field of resource to filter
+   */
+  field: string;
+  /**
+   * Operator of filter
+   */
+  operator: AdminForthFilterOperators;
+  /**
+   * Value of filter
+   */
+  value: string | number | boolean ;
+}
 
 declare global {
   interface Window {
@@ -23,7 +35,6 @@ declare global {
 }
 
 export class FrontendAPI implements FrontendAPIInterface {
-  private validOperators: Operator[] = ['lte', 'gte', 'in','ilike'];
   private toastStore:any
   private modalStore:any
   private filtersStore:any  
@@ -70,12 +81,8 @@ export class FrontendAPI implements FrontendAPIInterface {
       const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumn) => col.name === filter.field)
       if(!filterField){
           throw new Error(`Field ${filter.field} is not available for filtering`)
-        }
-      if(filterField) {
-        if(!this.validOperators.includes(filter.operator)){
-          throw new Error(`Operator ${filter.operator} is not valid`)
-        } 
       }
+      
     }
     return true
   }
@@ -103,7 +110,13 @@ export class FrontendAPI implements FrontendAPIInterface {
       if(index === -1) {
         this.filtersStore.setFilter(filter)
       } else {
-      this.filtersStore.setFilters([...this.filtersStore.filters.slice(0, index), filter, ...this.filtersStore.filters.slice(index + 1)])
+        const filters = [...this.filtersStore.filters];
+        if (filter.value === undefined) {
+          filters.splice(index, 1);
+        } else {
+          filters[index] = filter;
+        }
+        this.filtersStore.setFilters(filters);
       }
     }
   }

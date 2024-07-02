@@ -77,16 +77,33 @@ export interface ExpressHttpServer extends GenericHttpServer {
   authorize(callable: Function): void;
 }
 
+export interface AdminForthDataSourceConnector {
+  
+  /**
+   * Function which will be called to fetch record from database.
+   */
+  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+}
+
+export interface AdminForthDataSourceConnectorConstructor {
+  new ({ url }: { url: string }): AdminForthDataSourceConnector;
+}
 
 export interface AdminForthClass {
   config: AdminForthConfig;
   codeInjector: CodeInjectorType;
   express: GenericHttpServer;
 
+  connectors: {
+    [key: string]: AdminForthDataSourceConnector,
+  };
+
+  createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
 
   auth: {
+    verify(jwt : string, mustHaveType: string): Promise<any>;
 
-    verify(jwt : string): Promise<any>;
+    issueJWT(payload: Object, type: string): string;
   }
 
   /**
@@ -369,7 +386,7 @@ export type AdminForthResourceColumn = {
      * 
      * ```ts
      * {
-     *  label: 'Country',
+     *  label: 'Country Flag',
      *  type: AdminForthDataTypes.STRING,
      *  virtual: true,
      *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
@@ -461,7 +478,7 @@ export type AdminForthResource = {
      * If you wish you can explicitly set it to any string.
      * We added to support cases when 2 datasources have tables with the same name.
      */
-    resourceId: string,
+    resourceId?: string,
 
     /**
      * Label for resource which will be displayed in the admin panel.
@@ -528,12 +545,16 @@ export type AdminForthResource = {
       },
     },
     options?: {
+      defaultSort?: {
+        columnName: string,
+        direction: AdminForthSortDirections | string,
+      }
       bulkActions?: Array<{
+        id?: string,
         label: string,
         state: string,
         icon?: string,
         action: Function,
-        id?: string,
         confirm?: string,
       }>,
       allowedActions?: AllowedActions,
@@ -710,7 +731,9 @@ export type AdminForthConfig = {
      * If you want use custom DataSource which is not supported by AdminForth yet, you can define it's class here
      * 
      */
-    databaseConnectors?: any,  // TODO Define interface for database connector
+    databaseConnectors?: {
+        [key: string]: AdminForthDataSourceConnectorConstructor,
+    }, 
 
     /**
      * List of data sources which will be used to fetch data for resources.
@@ -1054,8 +1077,8 @@ export enum AdminForthFilterOperators {
 };
 
 export enum AdminForthSortDirections {
-  ASC = 'asc',
-  DESC = 'desc',
+  asc = 'asc',
+  desc = 'desc',
 };
 
 

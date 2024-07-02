@@ -1,9 +1,9 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 
 import dayjs from 'dayjs';
 
-class SQLiteConnector {
+class SQLiteConnector implements AdminForthDataSourceConnector {
 
     db: any;
 
@@ -141,8 +141,8 @@ class SQLiteConnector {
     };
 
     SortDirectionsMap = {
-      [AdminForthSortDirections.ASC]: 'ASC',
-      [AdminForthSortDirections.DESC]: 'DESC',
+      [AdminForthSortDirections.asc]: 'ASC',
+      [AdminForthSortDirections.desc]: 'DESC',
     };
     
 
