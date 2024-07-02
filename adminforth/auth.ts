@@ -71,7 +71,8 @@ class AdminForthAuth {
     }
     const { pk, t } = decoded;
     if (t !== mustHaveType) {
-      throw new Error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
+      console.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
+      return null;
     }
     if (pk === null) {
       decoded.isRoot = true;
