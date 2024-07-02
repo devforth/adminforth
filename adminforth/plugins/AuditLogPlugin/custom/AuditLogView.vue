@@ -2,19 +2,20 @@
 import VueDiff from 'vue-diff';
 import { ref } from 'vue';
 import 'vue-diff/dist/index.css';
-
-const props = defineProps(['prev', 'current', 'meta']);
+import { app } from '@/main';
 
 app.use(VueDiff);
+
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 </script>
 
 <template>
     <Diff
       :mode="'split'"
       :theme="'light'"
-      :language="'plaintext'"
-      :prev="props.prev"
-      :current="props.current"
+      :language="'JSON'"
+      :prev="JSON.stringify(JSON.parse(props.record[props.meta.resourceColumns.resourceDataColumnName]).oldRecord, null, 2)"
+      :current="JSON.stringify(JSON.parse(props.record[props.meta.resourceColumns.resourceDataColumnName]).newRecord, null, 2)"
     />
-  </template>
+</template>
   

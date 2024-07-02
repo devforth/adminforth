@@ -5,17 +5,24 @@ In addition to ability to create custom pages and overwrite how fields are rende
 
 For example let's add a custom pie chart to the `list` page of the `aparts` resource. Pie chart will show the distribution of the rooms count and more over will allow to filter the list by the rooms count.
 
-```diff title="/index.ts"
+```ts title="/index.ts"
 {
   resourceId: 'aparts',
   ...
-+  options: {
-+    pageInjections: {
-+      list: {
-+        afterBreadcrumbs: '@@/ApartsPie.vue',
-+      }
-+    }
-+  }
+//diff-add
+  options: {
+//diff-add
+    pageInjections: {
+//diff-add
+      list: {
+//diff-add
+        afterBreadcrumbs: '@@/ApartsPie.vue',
+//diff-add
+      }
+//diff-add
+    }   
+//diff-add
+  }
 }
 ```
 
@@ -170,4 +177,5 @@ Also we have to add an Api to get percentages:
 
 > 🫨 Please note that we are using `window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
-< screenshot >
+Here is how it looks:
+![alt text](<localhost_3500_resource_aparts (2).png>)

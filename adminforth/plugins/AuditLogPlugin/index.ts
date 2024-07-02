@@ -4,7 +4,10 @@ import {
   AllowedActionsEnum,
   BeforeSaveFunction,
   AdminUser,
-  AdminForthDataTypes
+  AdminForthDataTypes,
+  AdminForthResourcePages,
+  AdminForthFilterOperators,
+  AdminForthSortDirections
 } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import { PluginOptions } from "./types.js";
@@ -24,19 +27,52 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
-  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum, data: Object, user: AdminUser) => {
+  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum, data: Object, user: AdminUser, oldRecord: Object) => {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
-    const recordId = data[recordIdFieldName];
+    const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
+    const connector = this.adminforth.connectors[resource.dataSource];
+
+    const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
+    if (action !== AllowedActionsEnum.delete) {
+        oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
+    } else {
+        oldRecord = data
+    }
+
+    if (action !== AllowedActionsEnum.delete) {
+        const columnsNamesList = resource.columns.map((c) => c.name);
+        columnsNamesList.forEach((key) => {
+            if (JSON.stringify(oldRecord[key]) == JSON.stringify(newRecord[key])) {
+                delete oldRecord[key];
+                delete newRecord[key];
+            }
+        });
+    }
+
+    const backendOnlyColumns = resource.columns.filter((c) => c.backendOnly);
+    backendOnlyColumns.forEach((c) => {
+        if (JSON.stringify(oldRecord[c.name]) != JSON.stringify(newRecord[c.name])) {
+            if (action !== AllowedActionsEnum.delete) {
+                newRecord[c.name] = '<hidden value after>'
+            }
+            if (action !== AllowedActionsEnum.create) {
+                oldRecord[c.name] = '<hidden value before>'
+            }
+        } else {
+            delete oldRecord[c.name];
+            delete newRecord[c.name];
+        }
+    });
+
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resource.resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: action,
-      [this.options.resourceColumns.resourceDataColumnName]: data,
+      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldRecord || {}, 'newRecord': newRecord },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: new Date()
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
-    console.log('rec', record);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
     return {ok: true};
   }
@@ -60,9 +96,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             // type: AdminForthDataTypes.STRING
           }
         }
-      
+     
+        diffColumn.showIn = ['show']
         diffColumn.components = {
-          showRow: { 
+          show: { 
             file: this.componentPath('AuditLogView.vue'),
             meta: {
               ...this.options, 
@@ -70,13 +107,16 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             }
           }
         }
-        resource.columns.push(diffColumn);
+        resource.options.defaultSort = {
+            columnName: this.options.resourceColumns.resourceCreatedColumnName,
+            direction: AdminForthSortDirections.desc
+        }
         return;
       }
 
       const defaultHooks = {
-        create: { beforeSave: [] },
-        edit: { beforeSave: [] },
+        create: { afterSave: [] },
+        edit: { afterSave: [] },
         delete: { beforeSave: [] }
       }
 
@@ -87,11 +127,12 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
 
       Object.keys(resource.hooks).forEach((hook) => {
-        if(!Array.isArray(resource.hooks[hook].beforeSave)){
-          resource.hooks[hook].beforeSave = [resource.hooks[hook].beforeSave]
+        const hookToUse = hook == AllowedActionsEnum.delete ? 'beforeSave' : 'afterSave';
+        if(!Array.isArray(resource.hooks[hook][hookToUse])){
+          resource.hooks[hook][hookToUse] = [resource.hooks[hook][hookToUse]]
         }
-        resource.hooks[hook].beforeSave.push(async ({resource, record, adminUser}) => {
-          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser)
+        resource.hooks[hook][hookToUse].push(async ({resource, record, adminUser, oldRecord}) => {
+          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord)
         })
       })
     })
