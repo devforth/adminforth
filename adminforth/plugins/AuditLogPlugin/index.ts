@@ -95,7 +95,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             // type: AdminForthDataTypes.STRING
           }
         }
-
+     
+        diffColumn.showIn = ['show']
         diffColumn.components = {
           show: { 
             file: this.componentPath('AuditLogView.vue'),
@@ -105,6 +106,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             }
           }
         }
+        console.log('diffColumn', diffColumn)
         return;
       }
 
