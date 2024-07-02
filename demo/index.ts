@@ -492,7 +492,7 @@ const admin = new AdminForth({
         dataSource: 'db3', table: 'game',
         columns: [
             { name: '_id', primaryKey: true, "type": "string", "maxLength": 255,  "required": true, "default": "" },
-            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false },
+            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false, backendOnly: true },
             { name: 'bb_rank', "type": "integer", "required": false, "default": 0 },
             {
                 name: 'blocked_countries',

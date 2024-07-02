@@ -19,6 +19,7 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AllowedActionsEnum,
   AllowedActions,
   ActionCheckSource,
+  AdminForthDataSourceConnector,
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
@@ -45,7 +46,7 @@ class AdminForth implements AdminForthClass {
   express: ExpressServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
-  connectors: any;
+  connectors;
   connectorClasses: any;
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
@@ -520,7 +521,7 @@ class AdminForth implements AdminForthClass {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
@@ -649,7 +650,7 @@ class AdminForth implements AdminForthClass {
         const { username, password } = body;
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
-          token = this.auth.issueJWT({ username, pk: null  });
+          this.auth.setAuthCookie({ response, username, pk: null });
         } else {
           // get resource from db
           if (!this.config.auth) {
@@ -687,15 +688,11 @@ class AdminForth implements AdminForthClass {
           console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
-            token = this.auth.issueJWT({ 
-              username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name]
-            });
+            this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
           } else {
             return { error: INVALID_MESSAGE };
           }
         }
-
-        response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
         return { ok: true };
       },
     });
@@ -713,7 +710,7 @@ class AdminForth implements AdminForthClass {
         method: 'POST',
         path: '/logout',
         handler: async ({ response }) => {
-          response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+          this.auth.removeAuthCookie({ response });
           return { ok: true };
         },
     })
@@ -1194,7 +1191,7 @@ class AdminForth implements AdminForthClass {
             
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
+              const resp = await hook({ resource, record, adminUser, oldRecord });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
               }

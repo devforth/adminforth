@@ -25,12 +25,17 @@ console.log('Bundling AdminForth done.');
 
 Now completely Remove bundleNow call from `index.ts` file:
 
-```diff
-- (async () => {
--      // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
--      await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
--      console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-- })();
+```ts title='./index.ts'
+//diff-remove
+(async () => {
+//diff-remove
+      // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+//diff-remove
+  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
+//diff-remove
+  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+//diff-remove
+})();
 ```
 
 In root directory create file `.dockerignore`:
@@ -147,16 +152,22 @@ should do the following:
 
 1) Open `index.ts` file and change `ADMIN_BASE_URL` constant to your subpath:
 
-```diff
--const ADMIN_BASE_URL = '';
-+const ADMIN_BASE_URL = '/admin';
+```ts title='./index.ts'
+//diff-remove
+const ADMIN_BASE_URL = '';
+//diff-add
+const ADMIN_BASE_URL = '/admin';
 ```
 
 2) Open `compose.yml` file and change `traefik.http.routers.adminforth.rule` to your subpath:
 
-```diff
--      - "traefik.http.routers.adminforth.rule=PathPrefix(`/`)"
-+      - "traefik.http.routers.adminforth.rule=PathPrefix(`/admin`)"
+```yml title='./compose.yml'
+      ...
+       - "traefik.http.routers.adminforth.tls.certresolver=myresolver"
+//diff-remove
+      - "traefik.http.routers.adminforth.rule=PathPrefix(`/`)"
+//diff-add
+      - "traefik.http.routers.adminforth.rule=PathPrefix(`/admin`)"
 ```
 
 Now you can access your AdminForth application by going to `https://mydomain.com/admin`.

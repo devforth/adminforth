@@ -77,6 +77,17 @@ export interface ExpressHttpServer extends GenericHttpServer {
   authorize(callable: Function): void;
 }
 
+export interface AdminForthDataSourceConnector {
+  
+  /**
+   * Function which will be called to fetch record from database.
+   */
+  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+}
+
+export interface AdminForthDataSourceConnectorConstructor {
+  new ({ url }: { url: string }): AdminForthDataSourceConnector;
+}
 
 export interface AdminForthClass {
   config: AdminForthConfig;
@@ -84,15 +95,15 @@ export interface AdminForthClass {
   express: GenericHttpServer;
 
   connectors: {
-    [key: string]: AdminForthDataSource
+    [key: string]: AdminForthDataSourceConnector,
   };
 
   createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
 
   auth: {
+    verify(jwt : string, mustHaveType: string): Promise<any>;
 
-    issueJWT(payload: any): string ;
-    verify(jwt : string): Promise<any>;
+    issueJWT(payload: Object, type: string): string;
   }
 
   /**
@@ -540,7 +551,12 @@ export type AdminForthResource = {
       },
     },
     options?: {
+      defaultSort?: {
+        columnName: string,
+        direction: AdminForthSortDirections | string,
+      }
       bulkActions?: Array<{
+        id?: string,
         label: string,
         state: string,
         icon?: string,
@@ -728,7 +744,9 @@ export type AdminForthConfig = {
      * If you want use custom DataSource which is not supported by AdminForth yet, you can define it's class here
      * 
      */
-    databaseConnectors?: any,  // TODO Define interface for database connector
+    databaseConnectors?: {
+        [key: string]: AdminForthDataSourceConnectorConstructor,
+    }, 
 
     /**
      * List of data sources which will be used to fetch data for resources.
@@ -1080,8 +1098,8 @@ export enum AdminForthFilterOperators {
 };
 
 export enum AdminForthSortDirections {
-  ASC = 'asc',
-  DESC = 'desc',
+  asc = 'asc',
+  desc = 'desc',
 };
 
 

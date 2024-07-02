@@ -26,7 +26,18 @@ class AdminForthAuth {
     this.adminforth = adminforth;
   }
 
-  issueJWT(payload) {
+  removeAuthCookie(response) {
+    response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+  }
+
+  setAuthCookie({ response, username, pk}: {
+    response: any, username: string, pk: string | null
+  }) {
+    const token = this.issueJWT({ username, pk, }, 'auth');
+    response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+  }
+
+  issueJWT(payload: Object, type: string) {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -35,10 +46,10 @@ class AdminForthAuth {
 
     // issue JWT token
     const expiresIn = process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h';
-    return jwt.sign(payload, secret, { expiresIn });
+    return jwt.sign({...payload, t: type}, secret, { expiresIn });
   }
 
-  async verify(jwtToken) {
+  async verify(jwtToken: string, mustHaveType: string): Promise<Object> {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -58,7 +69,11 @@ class AdminForthAuth {
       }
       return null;
     }
-    const { pk } = decoded;
+    const { pk, t } = decoded;
+    if (t !== mustHaveType) {
+      console.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
+      return null;
+    }
     if (pk === null) {
       decoded.isRoot = true;
     } else {

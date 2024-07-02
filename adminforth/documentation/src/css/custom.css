@@ -28,3 +28,43 @@
   --ifm-color-primary-lightest: #248eff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+
+.code-block-diff-add-line {
+  background-color: #00FF3C33;
+  display: block;
+  margin: 0 -40px;
+  padding: 0 40px;
+}
+
+.code-block-diff-add-line::before {
+  position: absolute;
+  left: 8px;
+  padding-right: 8px;
+  content: '+';
+}
+
+.code-block-diff-remove-line {
+  background-color: #FF150033;
+  display: block;
+  margin: 0 -40px;
+  padding: 0 40px;
+}
+
+.code-block-diff-remove-line::before {
+  position: absolute;
+  left: 8px;
+  padding-right: 8px;
+  content: '-';
+}
+
+/**
+ * use magic comments to mark diff blocks
+ */
+pre code:has(.code-block-diff-add-line) {
+  padding-left: 40px!important;
+}
+
+pre code:has(.code-block-diff-remove-line) {
+  padding-left: 40px!important;
+}
