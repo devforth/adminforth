@@ -6,7 +6,8 @@ import {
   AdminUser,
   AdminForthDataTypes,
   AdminForthResourcePages,
-  AdminForthFilterOperators
+  AdminForthFilterOperators,
+  AdminForthSortDirections
 } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import { PluginOptions } from "./types.js";
@@ -106,7 +107,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             }
           }
         }
-        console.log('diffColumn', diffColumn)
+        resource.options.defaultSort = {
+            columnName: this.options.resourceColumns.resourceCreatedColumnName,
+            direction: AdminForthSortDirections.desc
+        }
         return;
       }
 
