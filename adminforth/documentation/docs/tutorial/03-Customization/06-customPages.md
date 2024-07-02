@@ -362,15 +362,22 @@ onMounted(async () => {
 
 Now let's add this page to the AdminForth menu and make it homepage instead of Appartments page:
 
-```diff title="/index.ts"
+```ts title="/index.ts"
 menu: [
-+    {
-+      label: 'Dashboard',
-+      path: '/ovrerwiew',
-+      homepage: true,
-+      icon: 'flowbite:chart-pie-solid',
-+      component: '@@/Dashboard.vue',
-+    },
+//diff-add
+    {
+//diff-add
+      label: 'Dashboard',
+//diff-add
+      path: '/ovrerwiew',
+//diff-add
+      homepage: true,
+//diff-add
+      icon: 'flowbite:chart-pie-solid',
+//diff-add
+      component: '@@/Dashboard.vue',
+//diff-add
+    },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid',

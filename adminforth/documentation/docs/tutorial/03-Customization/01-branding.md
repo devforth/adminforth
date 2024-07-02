@@ -12,16 +12,24 @@ Also place your favicon into the `custom` directory e.g. (`favicon.png`)
 
 Then you can change the branding of the application in the configuration:
 
-```ts
+```ts title='./index.ts'
 
 const admin = new AdminForth({
   ...
+//diff-add
   customization: {
+//diff-add
     brandName: 'My App',  // used in header
+//diff-add
     title: 'My App Admin',  // used to set the title (HTML title tag in your pages)
+//diff-add
     brandLogo: '@@/logo.svg',
+//diff-add
     favicon: '@@/favicon.png',
+//diff-add
   },
+  ...
+});
 ```
 
 Please note that `@@/` is a special prefix which tells AdminForth to look for the file in the `custom` directory. 
@@ -43,18 +51,27 @@ Let's say your brand has a primary purple color and you wish to make side bar pu
 
 In `index.ts` file set the `styles` property in the configuration:
 
-```ts
+```ts title='./index.ts'
 
 const admin = new AdminForth({
   ...
+//diff-add
   customization:{
-   styles:{
+//diff-add
+    styles:{
+//diff-add
       colors: {
+//diff-add
         light: {
+//diff-add
           sidebar: {main:'#571e58', text:'white'},
+//diff-add
         },
+//diff-add
       }
+//diff-add
     } 
+//diff-add
   },
   ...
 });
@@ -66,10 +83,13 @@ const admin = new AdminForth({
 
 Not an issue, just change:
 
-```ts
+```ts title='./index.ts'
 styles: {
+//diff-add
   borderRadius: {
+//diff-add
     "default": "0px"
+//diff-add
   }
 }
 ```
@@ -84,11 +104,12 @@ For example you might want to get [free sweet background](https://unsplash.com/s
 Download it to `custom` directory, and just set it in the configuration:
 
 
-```ts
+```ts title='./index.ts'
 const admin = new AdminForth({
   ...
   auth: {
-  ...
+    ...
+//diff-add
     loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
   },
   ...
