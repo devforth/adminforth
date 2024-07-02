@@ -36,7 +36,6 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         'oldRecord': oldRecord || {},
         'newRecord': newRecord
     }
-    // console.log('newData', newData)
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resource.resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: action,

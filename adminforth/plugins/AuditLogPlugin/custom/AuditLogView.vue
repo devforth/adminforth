@@ -14,8 +14,8 @@ const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser'])
       :mode="'split'"
       :theme="'light'"
       :language="'JSON'"
-      :prev="props.record[props.meta.resourceColumns.resourceDataColumnName].oldRecord"
-      :current="props.record[props.meta.resourceColumns.resourceDataColumnName].newRecord"
+      :prev="JSON.stringify(JSON.parse(props.record[props.meta.resourceColumns.resourceDataColumnName]).oldRecord, null, 2)"
+      :current="JSON.stringify(JSON.parse(props.record[props.meta.resourceColumns.resourceDataColumnName]).newRecord, null, 2)"
     />
 </template>
   
