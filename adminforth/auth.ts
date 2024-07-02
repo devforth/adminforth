@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import crypto from 'crypto';
 import AdminForth from './index.js';
+import { th } from '@faker-js/faker';
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -26,7 +27,18 @@ class AdminForthAuth {
     this.adminforth = adminforth;
   }
 
-  issueJWT(payload) {
+  removeAuthCookie(response) {
+    response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+  }
+
+  setAuthCookie({ response, username, pk}: {
+    response: any, username: string, pk: string | null
+  }) {
+    const token = this.issueJWT({ username, pk, }, 'auth');
+    response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+  }
+
+  issueJWT(payload: Object, type: string) {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -35,10 +47,10 @@ class AdminForthAuth {
 
     // issue JWT token
     const expiresIn = process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h';
-    return jwt.sign(payload, secret, { expiresIn });
+    return jwt.sign({...payload, t: type}, secret, { expiresIn });
   }
 
-  async verify(jwtToken) {
+  async verify(jwtToken: string, mustHaveType: string): Promise<Object> {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -58,7 +70,10 @@ class AdminForthAuth {
       }
       return null;
     }
-    const { pk } = decoded;
+    const { pk, type } = decoded;
+    if (type !== mustHaveType) {
+      throw new Error(`Invalid token type during verification: ${type}, must be ${mustHaveType}`);
+    }
     if (pk === null) {
       decoded.isRoot = true;
     } else {
