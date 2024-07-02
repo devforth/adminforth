@@ -68,13 +68,13 @@ class MongoConnector implements AdminForthDataSourceConnector {
         if (!value) {
         return null;
         }
-        return dayjs.unix(value).toISOString();
+        return dayjs(Date.parse(value)).toISOString();
 
         } else if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
                 return null;
             }
-            return dayjs(value).toISOString().split('T')[0];
+            return dayjs(Date.parse(value)).toISOString().split('T')[0];
 
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return !!value;
