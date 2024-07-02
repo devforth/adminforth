@@ -180,6 +180,16 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} Devforth sp. z o.o.`,
     },
     prism: {
+      magicComments: [
+        {
+          className: 'code-block-diff-add-line',
+          line: 'diff-add'
+        },
+        {
+          className: 'code-block-diff-remove-line',
+          line: 'diff-remove'
+        }
+      ],
       theme: prismThemes.okaidia,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['docker', 'bash', 'diff'],

@@ -7,7 +7,7 @@ We will render '🟨' for each room and then we will print `square_meter` at the
 
 Create directory `custom`. Create a file `RoomsCell.vue` in it:
 
-```html
+```html title='./custom/RoomsCell.vue'
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">
@@ -27,21 +27,23 @@ defineProps({
 
 Now you can use this component in the configuration of the resource:
 
-```ts
+```ts title='./index.ts'
 {
   ...
   resourceId: 'aparts',
-  ...
   columns: [
     ...
     {
       ...
       name: 'number_of_rooms',
-      ...
-      components: {
-        show: '@@/RoomsCell.vue',
-        list: '@@/RoomsCell.vue',
-      }
+//diff-add
+     components: {
+//diff-add
+       show: '@@/RoomsCell.vue',
+//diff-add
+       list: '@@/RoomsCell.vue',
+//diff-add
+     }
     },
     ...
   ],
@@ -60,30 +62,46 @@ Sometimes you need to render same component with different parameters.
 You can use [full component declaration](/docs/api/types/AdminForthConfig/type-aliases/AdminForthComponentDeclarationFull.md)
 
 
-```ts
+```ts title='./index.ts'
+
 {
   ...
   resourceId: 'aparts',
-  ...
   columns: [
     ...
     {
       ...
       name: 'number_of_rooms',
-      ...
       components: {
-        show: {
-          file: '@@/RoomsCell.vue',
-          meta: {
-            filler: '🟨',
+//diff-remove
+       show: '@@/RoomsCell.vue',
+//diff-add
+       show: {
+//diff-add
+         file: '@@/RoomsCell.vue',
+//diff-add
+         meta: {
+//diff-add
+           filler: '🟨',
+//diff-add
+         },
+//diff-add
+       },
+//diff-remove
+       list: '@@/RoomsCell.vue',
+//diff-add
+       list: {
+//diff-add
+         file: '@@/RoomsCell.vue',
+//diff-add
+         meta: {
+//diff-add
+           filler: '🟦',
+//diff-add
           },
-        },
-        list: {
-          file: '@@/RoomsCell.vue',
-          meta: {
-            filler: '🟦',
-          },
+//diff-add
         }
+//diff-add
       }
     },
     ...
@@ -94,13 +112,13 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 
 Now our component can read `filler` from `meta` prop:
 
-```html
+```diff-html title='./custom/RoomsCell.vue'
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">
-      {{ meta.filler }}
+-     🟨
++     {{ meta.filler }}
     </span>
-      
     {{ room.square_meter }} m²
   </div>
 </template>
@@ -108,7 +126,7 @@ Now our component can read `filler` from `meta` prop:
 <script setup>
 defineProps({
   record: Object,
-  meta: Object
++ meta: Object
 });
 </script>
 ```

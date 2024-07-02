@@ -18,34 +18,34 @@ Hooks are used to:
 
 Let's add reference to `adminUser` when user creates a new apartment:
 
-```ts
+```ts title='./index.ts'
+// diff-add
 import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
 {
   ...
   resourceId: 'aparts',
-  ...
   columns: [
     ...
     {
       name: 'realtor_id',
       ...
-      showIn: ['list', 'show', 'edit'], // don't even show this field in create
++      showIn: ['list', 'show', 'edit'], // don't even show this field in create
       ...
     },
     ...
   ],
   ...
-  hooks: {
-    create: {
-      beforeSave: async ({ adminUser, record }: { adminUser: AdminUser, record: any }) => {
-        if (adminUser.isRoot) {
-          return { ok: false, error: "Root user can't create appartment, relogin as DB user" };
-        }
-        record.realtor_id = adminUser.dbUser.id;
-        return { ok: true, record };
-      }
-    }
-  }
++  hooks: {
++    create: {
++      beforeSave: async ({ adminUser, record }: { adminUser: AdminUser, record: any }) => {
++        if (adminUser.isRoot) {
++          return { ok: false, error: "Root user can't create appartment, relogin as DB user" };
++        }
++        record.realtor_id = adminUser.dbUser.id;
++        return { ok: true, record };
++      }
++    }
++  }
 }
 ```
