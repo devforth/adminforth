@@ -103,6 +103,8 @@ onMounted(() => {
     coreStore.getPublicConfig()
 });
 
+
+
 async function login() {
     inProgress.value = true;
     const resp = await callAdminForthApi({
