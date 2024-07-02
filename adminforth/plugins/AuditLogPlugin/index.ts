@@ -30,16 +30,43 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
     const connector = this.adminforth.connectors[resource.dataSource];
-    const newRecord = await connector.getRecordByPrimaryKey(resource, recordId);
 
-    let newData = {
-        'oldRecord': oldRecord || {},
-        'newRecord': newRecord
+    const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
+    if (action !== AllowedActionsEnum.delete) {
+        oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
+    } else {
+        oldRecord = data
     }
+
+    if (action !== AllowedActionsEnum.delete) {
+        const columnsNamesList = resource.columns.map((c) => c.name);
+        columnsNamesList.forEach((key) => {
+            if (JSON.stringify(oldRecord[key]) == JSON.stringify(newRecord[key])) {
+                delete oldRecord[key];
+                delete newRecord[key];
+            }
+        });
+    }
+
+    const backendOnlyColumns = resource.columns.filter((c) => c.backendOnly);
+    backendOnlyColumns.forEach((c) => {
+        if (JSON.stringify(oldRecord[c.name]) != JSON.stringify(newRecord[c.name])) {
+            if (action !== AllowedActionsEnum.delete) {
+                newRecord[c.name] = '<hidden value after>'
+            }
+            if (action !== AllowedActionsEnum.create) {
+                oldRecord[c.name] = '<hidden value before>'
+            }
+        } else {
+            delete oldRecord[c.name];
+            delete newRecord[c.name];
+        }
+    });
+
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resource.resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: action,
-      [this.options.resourceColumns.resourceDataColumnName]: newData,
+      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldRecord || {}, 'newRecord': newRecord },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: new Date()
@@ -84,7 +111,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       const defaultHooks = {
         create: { afterSave: [] },
         edit: { afterSave: [] },
-        delete: { afterSave: [] }
+        delete: { beforeSave: [] }
       }
 
       if ( !resource.hooks ) {
@@ -94,10 +121,11 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
 
       Object.keys(resource.hooks).forEach((hook) => {
-        if(!Array.isArray(resource.hooks[hook].afterSave)){
-          resource.hooks[hook].afterSave = [resource.hooks[hook].afterSave]
+        const hookToUse = hook == AllowedActionsEnum.delete ? 'beforeSave' : 'afterSave';
+        if(!Array.isArray(resource.hooks[hook][hookToUse])){
+          resource.hooks[hook][hookToUse] = [resource.hooks[hook][hookToUse]]
         }
-        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord}) => {
+        resource.hooks[hook][hookToUse].push(async ({resource, record, adminUser, oldRecord}) => {
           return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord)
         })
       })
