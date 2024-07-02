@@ -5,6 +5,7 @@ import { v1 as uuid } from 'uuid';
 import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
+import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -78,14 +79,13 @@ const admin = new AdminForth({
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
     emptyFieldPlaceholder: '-',
-    // styles:{
-    //   colors: {
-    //     light:{
-    //       sidebar: {main:'tomato',hover:'green', text:'black'},
-    //     },
-    //     lightSidebar: "blue", // Very light grey
-    //   }
-    // } 
+    styles:{
+      colors: {
+        light: {
+          sidebar: {main:'#571e58', text:'white'},
+        },
+      }
+    } 
 
     
   // },
@@ -107,6 +107,36 @@ const admin = new AdminForth({
     }
   ],
   resources: [
+    {
+        dataSource: 'db2', table: 'audit_logs',
+        columns: [
+            { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
+            { name: 'created_at', required: false },
+            { name: 'resource_id', required: false },
+            { name: 'user_id', required: false },
+            { name: 'action', required: false },
+            { name: 'diff', required: false },
+            { name: 'record_id', required: false },
+        ],
+        options: {
+            allowedActions: {
+                edit: false,
+                delete: false,
+            }
+        },
+        plugins: [
+            new AuditLogPlugin({
+                resourceColumns: {
+                    resourceIdColumnName: 'resource_id',
+                    resourceActionColumnName: 'action',
+                    resourceDataColumnName: 'diff',
+                    resourceUserIdColumnName: 'user_id',
+                    resourceRecordIdColumnName: 'record_id',
+                    resourceCreatedColumnName: 'created_at'
+                }
+            }),
+          ],
+    },
     {
       dataSource: 'maindb', table: 'apartments',
       resourceId: 'aparts', // resourceId is defaulted to table name but you can change it e.g. 
@@ -137,13 +167,13 @@ const admin = new AdminForth({
                     }
                 },
                 // show: '@@/IdShow.vue',
-                create: {
-                    file: '@@/IdShow.vue',
-                    meta: {
-                        title: 'Title',
-                        description: 'This is title of apartment'
-                    }
-                }
+                // create: {
+                //     file: '@@/IdShow.vue',
+                //     meta: {
+                //         title: 'Title',
+                //         description: 'This is title of apartment'
+                //     }
+                // }
                 // list: '@@/IdShow.vue',
             },
         }, 
@@ -233,24 +263,24 @@ const admin = new AdminForth({
           }
         },
         listPageSize: 5,
-        // bulkActions: [{
-        //   label: 'Mark as listed',
-        //   // icon: 'typcn:archive',
-        //   state:'active',
-        //   confirm: 'Are you sure you want to mark all selected apartments as listed?',
-        //   action: function ({selectedIds, adminUser}: any) {
-        //     const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
-        //     stmt.run(...selectedIds);
-        //     return { ok: true, error: false, message: 'Marked as listed' }
-        //   }
-        // }
-        // ],
+        bulkActions: [{
+          label: 'Mark as listed',
+          // icon: 'typcn:archive',
+          state:'active',
+          confirm: 'Are you sure you want to mark all selected apartments as listed?',
+          action: function ({selectedIds, adminUser}: any) {
+            const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+            stmt.run(...selectedIds);
+            return { ok: true, error: false, message: 'Marked as listed' }
+          }
+        }
+        ],
         allowedActions:{
           edit: true,
           delete: false,
           show: true,
           filter: true,
-          create: true,
+          create: false,
         },
       }
 
@@ -332,7 +362,6 @@ const admin = new AdminForth({
       hooks: {
         list: {
           afterDatasourceResponse: async ({ query, adminUser }: any) => {
-            console.log('321321312')
             return { ok: true, error: "" }
           }
         },
@@ -453,7 +482,7 @@ const admin = new AdminForth({
         dataSource: 'db3', table: 'game',
         columns: [
             { name: '_id', primaryKey: true, "type": "string", "maxLength": 255,  "required": true, "default": "" },
-            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false },
+            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false, backendOnly: true },
             { name: 'bb_rank', "type": "integer", "required": false, "default": 0 },
             {
                 name: 'blocked_countries',
@@ -520,14 +549,19 @@ const admin = new AdminForth({
           label: 'Games Users',
           icon: 'flowbite:user-solid',
           resourceId: 'games_users',
-          visible:(user)=>{
-            return user.isRoot || user.dbUser.role === 'superadmin'}
+          visible:(user) => {
+            return user.isRoot || user.dbUser.role === 'superadmin'
+          }
         },
         {
           label: 'Casino Games',
           icon: 'flowbite:caret-right-solid',
           resourceId: 'game',
-
+        },
+        {
+          label: 'Logs',
+          icon: 'flowbite:search-outline',
+          resourceId: 'audit_logs',
         }
       ]
     },
@@ -545,8 +579,9 @@ const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
-      visible:(user)=>{
-        return user.isRoot || user.dbUser.role === 'superadmin'}
+      visible:(user) => {
+        return user.isRoot || user.dbUser.role === 'superadmin'
+      }
     }
   ],
 })

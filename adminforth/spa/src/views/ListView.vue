@@ -89,6 +89,7 @@
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
       @update:records="getList"
+      :sort="sort"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -229,6 +230,15 @@ async function init() {
     resourceId: route.params.resourceId
   });
 
+  if (coreStore.resource.options?.defaultSort) {
+    sort.value = [{
+        field: coreStore.resource.options.defaultSort.columnName,
+        direction: coreStore.resource.options.defaultSort.direction
+    }];
+  } else {
+    sort.value = [];
+  }
+
   await getList();
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
@@ -250,7 +260,6 @@ onMounted(async () => {
 watch(() => route.params.resourceId, async () => {
   filtersStore.setFilters([]);
   checkboxes.value = [];
-  sort.value = [];
   await init();
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.1.54",
+  "version": "1.1.66",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,6 +17,7 @@
   "dependencies": {
     "better-sqlite3": "^10.0.0",
     "crypto": "^1.0.1",
+    "css-color-names": "^1.0.1",
     "dayjs": "^1.11.11",
     "express": "^4.19.2",
     "filewatcher": "^3.0.1",

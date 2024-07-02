@@ -252,7 +252,8 @@ const props = defineProps([
   'rows',
   'totalRows',
   'pageSize',
-  'checkboxes'
+  'checkboxes',
+  'sort'
 ])
 
 // emits, update page
@@ -286,6 +287,10 @@ watch(() => checkboxesInternal.value, (newCheckboxes) => {
 watch(() => props.checkboxes, (newCheckboxes) => {
   console.log('Props ch changed', newCheckboxes)
   checkboxesInternal.value = newCheckboxes;
+});
+
+watch(() => props.sort, (newSort) => {
+  sort.value = newSort;
 });
 
 function addToCheckedValues(id) {

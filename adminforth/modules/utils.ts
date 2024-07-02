@@ -1,6 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+// @ts-ignore-next-line
+import csscolors from 'css-color-names';
 
 
 export function guessLabelFromName(name) {
@@ -85,3 +87,91 @@ export function transformObject(obj, parentKey = '', result = {}) {
 
   return result;
 }
+
+
+function hexToRGBA(hex,opacity){
+  var c;
+  if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+      c= hex.substring(1).split('');
+      if(c.length== 3){
+          c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+      }
+      c= '0x'+c.join('');
+      return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + opacity + ')';
+  }
+  throw new Error('Bad Hex');
+}
+
+ export function createRGBA(color:string, opacity:number) {
+  if(!color) return
+  else if (color.startsWith("rgba")) {
+    //add opacity to existing rgba color
+    const rgb = color.match(/[\d.]+/g);
+    console.log('rgb',rgb)
+    return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${Number(rgb[3]) * opacity})`;
+  }
+  else if (color.startsWith("rgb")) {
+    const rgb = color.match(/\d+/g);
+    return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
+  }
+  else if (color.startsWith("#")) {
+    return hexToRGBA(color, opacity);
+  }
+  else if (csscolors[color]) {
+    return hexToRGBA(csscolors[color], opacity);
+  }
+  else {
+    return color;
+  }
+}
+
+export function parseColorForAliases(str){
+  const aliasRegex = /alias:([^ ]+)/;
+  const opacityRegex = /opacity:([0-9.]+)/;
+  const darkenRegex = /darken/;
+  const lightenRegex = /lighten/;
+
+  // Extract alias and properties
+  const aliasMatch = str.match(aliasRegex);
+  const opacityMatch = str.match(opacityRegex)
+  const darkenMatch = str.match(darkenRegex)
+  const lightenMatch = str.match(lightenRegex)
+  return {aliasMatch,opacityMatch,darkenMatch,lightenMatch}
+}
+
+export function darkenRGBA(rgba) {
+  let amount = 0.2
+  // Extract the RGBA components
+  let [r, g, b, a] = rgba.match(/\d+/g).map(Number);
+
+  // Ensure amount is between 0 and 1
+  amount = Math.max(0, Math.min(1, amount));
+
+  // Calculate the new RGB values
+  r = Math.max(0, r * (1 - amount));
+  g = Math.max(0, g * (1 - amount));
+  b = Math.max(0, b * (1 - amount));
+
+  // Return the new RGBA color
+  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${a})`;
+}
+
+export function lightenRGBA(rgba) {
+  let amount = 0.2
+  // Extract the RGBA components
+  let [r, g, b, a] = rgba.match(/\d+/g).map(Number);
+
+  // Ensure amount is between 0 and 1
+  amount = Math.max(0, Math.min(1, amount));
+
+  // Calculate the new RGB values
+  r = Math.min(255, r * (1 + amount));
+  g = Math.min(255, g * (1 + amount));
+  b = Math.min(255, b * (1 + amount));
+
+  // Return the new RGBA color
+  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${a})`;
+}
+
+
+

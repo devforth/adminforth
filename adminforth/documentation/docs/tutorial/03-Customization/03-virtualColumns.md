@@ -14,7 +14,7 @@ resourceId: 'aparts',
 columns: [
   ...
   {
-    label: 'Country',
+    label: 'Country Flag',
     type: AdminForthDataTypes.STRING,
     virtual: true,
     showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
