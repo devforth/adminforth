@@ -60,12 +60,14 @@ Users table will be used to store a credentials for login into backoffice itself
 
 Open `package.json`, set `type` to `module` and add `start` script:
 
-```json
+```json title="./package.json"
 {
   ...
+//diff-add
   "type": "module",
   "scripts": {
     ...
+//diff-add
     "start": "ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION NODE_ENV=development tsx watch index.ts"
   },
 }
@@ -74,7 +76,7 @@ Open `package.json`, set `type` to `module` and add `start` script:
 
 Create `index.ts` file in root directory with following content:
 
-```ts
+```ts title="./index.ts"
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from 'adminforth';
