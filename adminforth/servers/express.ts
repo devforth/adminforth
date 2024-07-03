@@ -190,11 +190,11 @@ class ExpressServer implements ExpressHttpServer {
       const cookies = await parseExpressCookie(req);
 
       const response = {
-        headers: {},
+        headers: [],
         status: 200,
         message: undefined,
         setHeader(name, value) {
-          this.headers[name] = value;
+          this.headers.push([name, value]);
         },
         setStatus(code, message) {
           this.status = code;
@@ -214,9 +214,9 @@ class ExpressServer implements ExpressHttpServer {
         res.status(500).send('Internal server error');
         return;
       }
-      Object.keys(response.headers).forEach((name) => {
-        res.setHeader(name, response.headers[name]);
-      })
+      response.headers.forEach(([name, value]) => {
+        res.setHeader(name, value);
+      });
       const resp = res.status(response.status);
       if (response.message) {
         resp.send(response.message);

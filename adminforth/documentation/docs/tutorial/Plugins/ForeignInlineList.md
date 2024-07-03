@@ -21,22 +21,32 @@ This field refers to record from `'users'` resource. This means that we can disp
 Add to your `'users'` resource configuration (which we created in ), plugin instance:
 
 
-```ts
+```ts title="./index.ts"
 { 
     ...
     resourceId: 'users',
     ...
+//diff-add
     plugins: [
+//diff-add
       new ForeignInlineListPlugin({
+//diff-add
         foreignResourceId: 'aparts',
+//diff-add
         modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+//diff-add
           // hide column 'square_meter' from both 'list' and 'filter'
+//diff-add
           const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
+//diff-add
           resourceConfig.options!.listPageSize = 1;
-
+//diff-add
           // feel free to console.log and edit resourceConfig as you need
+//diff-add
         },
+//diff-add
       }),
+//diff-add
     ],
 }
 ```
