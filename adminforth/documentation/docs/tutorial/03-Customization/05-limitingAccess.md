@@ -8,16 +8,20 @@ You can use `options.allowedActions` on resource to limit access to the resource
 
 If you want to disable deletion of the resource records for all users:
 
-```ts
+```ts title="./index.ts"
 {
   ...
   resourceId: 'users',
   ...
+//diff-add
   options: {
+//diff-add
     allowedActions: {
+//diff-add
       delete: false
+//diff-add
     }
-    ...
+//diff-add
   }
 }
 ```
@@ -27,6 +31,7 @@ If you want to disable deletion of the resource records for all users:
 If you want to disable deletion of apartments for all users apart from users with role `superadmin`:
 
 ```ts
+//diff-add
 import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
 {
@@ -34,11 +39,17 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
   resourceId: 'aparts',
   ...
   options: {
+//diff-add
     allowedActions: {
+//diff-add
       delete: async ({ adminUser }: { adminUser: AdminUser }): Promise<boolean> => {
-        // important: if adminUser.isRoot, the adminUser.dbUser is undefined
+//diff-add
+        // important: if adminUser.isRoot, then adminUser.dbUser is undefined
+//diff-add
         return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+//diff-add
       }
+//diff-add
     }
     ...
   }
@@ -53,13 +64,17 @@ import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
 Let's disable creating and editing of new users for all users apart from users with role `superadmin`, and at the same time disable deletion for all users:
 
-```ts
-
+```ts title="./index.ts"
+//diff-add
 import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 
+//diff-add
 async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean {
+//diff-add
   // important: if adminUser.isRoot, the adminUser.dbUser is undefined
+//diff-add
   return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+//diff-add
 }
 
 {
@@ -68,7 +83,9 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean 
   ...
   options: {
     allowedActions: {
+//diff-add
       create: canModifyUsers,
+//diff-add
       edit: canModifyUsers,
       delete: false
     }
@@ -82,7 +99,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean 
 More advanced case, allow to edit apartments only if user is a realtor of the apartment (defined as realtor_id), otherwise return error
 "You are not assigned to this apartment and can't edit it":
 
-```ts
+```ts title="./index.ts"
 import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
 import { ActionCheckSource } from  'adminforth/types/AdminForthConfig.js';
 
