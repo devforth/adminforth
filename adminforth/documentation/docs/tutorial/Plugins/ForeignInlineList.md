@@ -43,6 +43,6 @@ Add to your `'users'` resource configuration (which we created in ), plugin inst
 
 You can use `modifyTableResourceConfig` callback to modify what columns to show in the list and filter of the foreign table.
 
-![alt text](localhost_3500_resource_users_show_maf3gn.png)
+![alt text](localhost_3500_resource_users_show_08dpfh.png)
 
 See [API Reference](/docs/api/plugins/ForeignInlineListPlugin/types/type-aliases/PluginOptions) for more all options.

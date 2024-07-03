@@ -6,31 +6,42 @@
 Sometimes you need to visualize custom columns which do not exist in database. 
 For doing this you can use `virtual` columns.
 
-```ts
+```diff title='./index.ts'
+//diff-add
 import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth/types/AdminForthConfig.js';
+
 ...
 resourceId: 'aparts',
-...
 columns: [
   ...
+//diff-add
   {
+//diff-add
     label: 'Country Flag',
+//diff-add
     type: AdminForthDataTypes.STRING,
+//diff-add
     virtual: true,
+//diff-add
     showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
+//diff-add
     components: {
+//diff-add
       show: '@@/CountryFlag.vue',
+//diff-add
       list: '@@/CountryFlag.vue',
+//diff-add
     },
+//diff-add
   }
   ...
 ]
- ```
+```
  
  This field will be displayed in show and list views with custom component `CountryFlag.vue`.
  Create file `CountryFlag.vue` in `custom` folder of your project:
  
- ```html
+ ```html title="./custom/CountryFlag.vue"
  <template>
   {{ getFlagEmojiFromIso(record?.country) }}
  </template>
@@ -55,7 +66,7 @@ Another usecase of `virtual` columns is to add new fields in edit and create vie
 Thing is that password itself can't be stored in the database, but instead their hash is stored. 
 So we need to add `password` field to the `users` resource and make it `virtual` so it will not be stored in the database.
 
-```ts
+```ts title="./index.ts"
 ...
 resourceId: 'users',
 ...
@@ -78,7 +89,7 @@ columns: [
  Now to handle virtual `password` field we use hooks:
  
 
- ```ts
+ ```ts title="./index.ts"
  hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }) => {
