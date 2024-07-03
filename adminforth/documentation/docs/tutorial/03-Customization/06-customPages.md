@@ -12,7 +12,7 @@ npm install apexcharts --save
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
-```html title="/custom/Dashboard.vue"
+```html title="./custom/Dashboard.vue"
 <template>
   <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none h-screen">
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
@@ -315,7 +315,6 @@ const optionsC3 = {
   },
 }
 
-
 onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
@@ -352,9 +351,7 @@ onMounted(async () => {
   optionsC3.xaxis.categories = data.value.listedVsUnlistedPriceByDays.map((item) => dayjs(item.day).format('DD MMM'));
   const chart3 = new ApexCharts(document.getElementById("size-chart"), optionsC3);
   chart3.render();
-
 })
-
 </script>
 ```
 
