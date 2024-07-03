@@ -194,6 +194,8 @@ class ExpressServer implements ExpressHttpServer {
         status: 200,
         message: undefined,
         setHeader(name, value) {
+          if (this.headers[name] !== undefined) {
+            thi
           this.headers[name] = value;
         },
         setStatus(code, message) {

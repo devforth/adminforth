@@ -102,7 +102,6 @@ export interface AdminForthClass {
 
   auth: {
     verify(jwt : string, mustHaveType: string): Promise<any>;
-
     issueJWT(payload: Object, type: string): string;
   }
 
@@ -470,7 +469,7 @@ export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUse
 /**
  * Allow to get user data before login confirmation, will triger when user try to login.
  */
-export type BeforeLoginConfirmationFunction = (params: { adminUser: AdminUser, }) => Promise<{}>;
+export type BeforeLoginConfirmationFunction = (params?: { userRecord: AdminUser }) => Promise<{ok:boolean, error?:string, body:{}}>;
 
 /**
  * Resource describes one table or collection in database.
