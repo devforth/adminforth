@@ -27,7 +27,7 @@ class AdminForthAuth {
   }
 
   removeAuthCookie(response) {
-    response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+    response.response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
   setAuthCookie({ response, username, pk}: {
