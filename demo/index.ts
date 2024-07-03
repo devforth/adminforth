@@ -35,6 +35,7 @@ if (!tableExists) {
     CREATE TABLE users (
         id VARCHAR(255) PRIMARY KEY NOT NULL,
         email VARCHAR(255) NOT NULL,
+        secret2fa VARCHAR(255) ,
         password_hash VARCHAR(255) NOT NULL,
         created_at VARCHAR(255) NOT NULL,
         role VARCHAR(255) NOT NULL
@@ -309,7 +310,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
-        new TwoFactorsAuthPlugin({}), 
+        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'},), 
       ],
       options: {
         allowedActions: {
@@ -326,6 +327,12 @@ const admin = new AdminForth({
           primaryKey: true,
           fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
+        },
+        {
+          name: 'secret2fa',
+          type: AdminForth.Types.STRING,
+          showIn: [],
+          backendOnly: true,
         },
         { 
           name: 'email', 

@@ -23,6 +23,7 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
+import { BeforeLoginFunction } from 'path/to/module';
 
 
 //get array from enum AdminForthResourcePages
@@ -629,6 +630,7 @@ class AdminForth implements AdminForthClass {
     await connector.createRecord({ resource, record });
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
+      console.log('Executing hook', hook)
       const resp = await hook({ resource, record, adminUser });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -646,11 +648,14 @@ class AdminForth implements AdminForthClass {
       method: 'POST',
       path: '/login',
       handler: async ({ body, response }) => {
+       
         const INVALID_MESSAGE = 'Invalid username or password';
         const { username, password } = body;
+        let adminUser: AdminUser;
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
           this.auth.setAuthCookie({ response, username, pk: null });
+          adminUser = { isRoot: true, dbUser: null, pk: null, username: this.config.rootUser.username};
         } else {
           // get resource from db
           if (!this.config.auth) {
@@ -689,13 +694,33 @@ class AdminForth implements AdminForthClass {
           const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
             this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+            console.log('response', response) 
           } else {
             return { error: INVALID_MESSAGE };
           }
+          adminUser = { 
+            isRoot: false, dbUser: userRecord,
+            pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
+            username };
         }
-        return { ok: true };
-      },
-    });
+        let toReturn:{ok:boolean,redirectTo?:string} = { ok: true };
+        const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginFunction[];
+        if (beforeLoginConfirmation.length){
+          for (const hook of beforeLoginConfirmation) {
+            const resp = await hook({ adminUser });
+            if (resp?.body?.setCookie){
+              resp?.body?.setCookie.forEach((cookie) => {
+                this.auth.setCustomCookie({response,payload:cookie})});
+            }
+            if (resp?.body?.redirectTo) {
+              toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo};
+              break;
+            }
+          }
+        }
+        return toReturn;
+    }
+  });
 
     server.endpoint({
       method: 'POST',
@@ -710,7 +735,7 @@ class AdminForth implements AdminForthClass {
         method: 'POST',
         path: '/logout',
         handler: async ({ response }) => {
-          this.auth.removeAuthCookie({ response });
+          this.auth.removeAuthCookie( response );
           return { ok: true };
         },
     })

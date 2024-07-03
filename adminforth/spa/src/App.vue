@@ -1,6 +1,5 @@
 <template>
   <div v-if="defaultLayout" >
-    {{defaultLayout}}
 
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
