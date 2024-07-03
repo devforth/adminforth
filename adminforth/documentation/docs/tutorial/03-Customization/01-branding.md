@@ -76,6 +76,8 @@ const admin = new AdminForth({
   ...
 });
 ```
+Here is how it looks:
+![alt text](image-4.png)
 
 
 
@@ -116,4 +118,4 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](<localhost_3500_resource_aparts (1).png>)
+![alt text](<localhost_3500_login (2).png>)
