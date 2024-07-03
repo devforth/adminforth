@@ -28,7 +28,7 @@ For example let's add a custom pie chart to the `list` page of the `aparts` reso
 
 Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
-```html title="/custom/ApartsPie.vue"
+```html title="./custom/ApartsPie.vue"
 <template>
   <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-4 mb-5">
     <div id="pie-chart"></div>
@@ -111,7 +111,6 @@ const chatOptions = {
   }, 
 }
 
-
 onMounted(async () => {
   try {
     const resp = await fetch('/api/aparts-by-room-percentages');
@@ -142,7 +141,7 @@ onMounted(async () => {
 
 Also we have to add an Api to get percentages:
 
-```ts title="/index.ts"
+```ts title="./index.ts"
   app.get('/api/aparts-by-room-percentages/',
     admin.express.authorize(
       async (req, res) => {
