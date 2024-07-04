@@ -272,7 +272,7 @@ class PostgresConnector extends AdminForthBaseConnector implements AdminForthDat
         await this.db.query(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`, values);
     }
 
-    async updateRecord({ resource, recordId, newValues }) {
+    async updateRecord({ resource, recordId, record, newValues }) {
         const values = [...Object.values(newValues), recordId];
         const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `"${col}" = $${i + 1}`).join(', ');
         await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`, values);
