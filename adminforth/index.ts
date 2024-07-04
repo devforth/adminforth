@@ -483,6 +483,10 @@ class AdminForth implements AdminForthClass {
         column.required = { create: column.required, edit: column.required };
       }
 
+      if (!column.required) {
+        column.required = { create: false, edit: false };
+      }
+
       // same for editingNote
       if (typeof column.editingNote === 'string') {
         column.editingNote = { create: column.editingNote, edit: column.editingNote };
