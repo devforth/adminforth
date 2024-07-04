@@ -241,7 +241,7 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
         this.db.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`).run(values);
     }
 
-    async updateRecord({ resource, recordId, record, newValues }) {
+    async updateRecord({ resource, recordId,  newValues }) {
         const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
         const values = [...Object.values(newValues), recordId];
 
