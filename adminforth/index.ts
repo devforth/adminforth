@@ -630,7 +630,6 @@ class AdminForth implements AdminForthClass {
     await connector.createRecord({ resource, record });
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
-      console.log('Executing hook', hook)
       const resp = await hook({ resource, record, adminUser });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -652,6 +651,8 @@ class AdminForth implements AdminForthClass {
         const INVALID_MESSAGE = 'Invalid username or password';
         const { username, password } = body;
         let adminUser: AdminUser;
+        let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
+
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
           this.auth.setAuthCookie({ response, username, pk: null });
@@ -690,34 +691,36 @@ class AdminForth implements AdminForthClass {
           }
 
           const passwordHash = userRecord[this.config.auth.passwordHashField];
-          console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
-            this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
-            console.log('response', response) 
+            adminUser = { 
+              isRoot: false, dbUser: userRecord,
+              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
+              username
+            };
+            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginFunction[];
+            if (beforeLoginConfirmation.length){
+              for (const hook of beforeLoginConfirmation) {
+                const resp = await hook({ adminUser, });
+                if (resp?.body?.setCookie){
+                  resp?.body?.setCookie.forEach((cookie) => {
+                    this.auth.setCustomCookie({response,payload:cookie})});
+                }
+                if (resp?.body?.redirectTo) {
+                  toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
+                  break;
+                }
+              }
+            }
+            if (toReturn.allowedLogin){
+              this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+            } 
           } else {
             return { error: INVALID_MESSAGE };
           }
-          adminUser = { 
-            isRoot: false, dbUser: userRecord,
-            pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
-            username };
+          
         }
-        let toReturn:{ok:boolean,redirectTo?:string} = { ok: true };
-        const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginFunction[];
-        if (beforeLoginConfirmation.length){
-          for (const hook of beforeLoginConfirmation) {
-            const resp = await hook({ adminUser });
-            if (resp?.body?.setCookie){
-              resp?.body?.setCookie.forEach((cookie) => {
-                this.auth.setCustomCookie({response,payload:cookie})});
-            }
-            if (resp?.body?.redirectTo) {
-              toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo};
-              break;
-            }
-          }
-        }
+        
         return toReturn;
     }
   });
@@ -812,7 +815,6 @@ class AdminForth implements AdminForthClass {
           }
           newMenu.push(newMenuItem)
         }
-        console.log(userData,'this is the user data')
 
         return {
           user: userData,
@@ -1211,7 +1213,7 @@ class AdminForth implements AdminForthClass {
             } 
 
             if (Object.keys(newValues).length > 0) {
-                await connector.updateRecord({ resource, recordId, record, newValues});
+                await connector.updateRecord({ resource, recordId, newValues});
             }
             
             // execute hook if needed

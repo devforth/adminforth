@@ -54,6 +54,8 @@ if (!tableExists) {
         .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
       `).run();
   }
+
+ 
 }
 
 const admin = new AdminForth({
@@ -134,18 +136,7 @@ const admin = new AdminForth({
                 delete: false,
             }
         },
-        plugins: [
-            new AuditLogPlugin({
-                resourceColumns: {
-                    resourceIdColumnName: 'resource_id',
-                    resourceActionColumnName: 'action',
-                    resourceDataColumnName: 'diff',
-                    resourceUserIdColumnName: 'user_id',
-                    resourceRecordIdColumnName: 'record_id',
-                    resourceCreatedColumnName: 'created_at'
-                }
-            }),
-          ],
+       
     },
     {
       dataSource: 'maindb', table: 'apartments',
@@ -338,12 +329,7 @@ const admin = new AdminForth({
           name: 'email', 
           isUnique: true,
           required:false,
-          validation: [
-            {
-              regExp:  '^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com'
-            },
-          ]
+          
         },
         { 
           name: 'created_at', 
@@ -370,7 +356,7 @@ const admin = new AdminForth({
           required: { create: true }, // to show only in create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
-          minLength: 8,
+          // minLength: 8,
           type: AdminForth.Types.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field
