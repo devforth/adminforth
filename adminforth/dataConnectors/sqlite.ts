@@ -1,19 +1,19 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
-
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig.js';
+import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 
-class SQLiteConnector implements AdminForthDataSourceConnector {
+class SQLiteConnector extends AdminForthBaseConnector implements AdminForthDataSourceConnector {
 
     db: any;
 
-    constructor({ url }) {
+    constructor({ url }: { url: string }) {
+      super();
       // create connection here
-
       this.db = betterSqlite3(url.replace('sqlite://', ''));
     }
 
-    async discoverFields(resource) {
+    async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
         const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
@@ -59,15 +59,7 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
         return fieldTypes;
     }
 
-    getPrimaryKey(resource) {
-        for (const col of resource.dataSourceColumns) {
-            if (col.primaryKey) {
-                return col.name;
-            }
-        }
-    }
-
-    getFieldValue(field, value) {
+    getFieldValue(field: AdminForthResourceColumn, value: any): any {
       if (field.type == AdminForthDataTypes.DATETIME) {
         if (!value) {
           return null;
@@ -93,7 +85,7 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
       return value;
     }
 
-    async getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, key: any): Promise<any> {
         const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
         const tableName = resource.table;
         const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = ?`);
@@ -103,12 +95,12 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
         }
         const newRow = {};
         for (const [key, value] of Object.entries(row)) {
-            newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
+            newRow[key] = value;
         }
         return newRow;
     }
 
-    setFieldValue(field, value) {
+    setFieldValue(field: AdminForthResourceColumn, value: any): any {
       if (field.type == AdminForthDataTypes.DATETIME) {
         if (!value) {
           return null;
@@ -146,7 +138,13 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
     };
     
 
-    getData({ resource, limit, offset, sort, filters }) {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
+        resource: AdminForthResource, 
+        limit: number, 
+        offset: number, 
+        sort: { field: string, direction: AdminForthSortDirections }[], 
+        filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    }): Promise<{ data: any[], total: number }> {
       const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
       const tableName = resource.table;
 
@@ -165,17 +163,11 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
         return `${field} ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
 
-
       const filterValues = [];
       
       filters.length ? filters.forEach((f) => {
         // for arrays do set in map
-        let v;
-        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          v = f.value.map((val) => this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), val));
-        } else {
-          v = this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), f.value);
-        }
+        const v = f.value;
 
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
           filterValues.push(`%${v}%`);
@@ -196,15 +188,17 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
       if (process.env.HEAVY_DEBUG) {
         console.log('🪲 SQLITE Query', q, 'params:', d);
       }
-      const rows = stmt.all(d);
+      const rows = await stmt.all(d);
 
-      const total = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])['COUNT(*)'];
-      // run all fields via getFieldValue
+      const total = (
+        await this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])
+      )['COUNT(*)'];
+
       return {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
-            newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
+            newRow[key] = value;
           }
           return newRow;
         }),
@@ -212,50 +206,45 @@ class SQLiteConnector implements AdminForthDataSourceConnector {
       };
     }
 
-    async getMinMaxForColumns({ resource, columns }) {
+    async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
       const tableName = resource.table;
       const result = {};
       await Promise.all(columns.map(async (col) => {
         const stmt = await this.db.prepare(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
         const { min, max } = stmt.get();
         result[col.name] = {
-          min: this.getFieldValue(col, min),
-          max: this.getFieldValue(col, max),
+          min, max,
         };
       }))
       return result;
     }
 
-    async createRecord({ resource, record }) {
-        const tableName = resource.table;
-        const columns = Object.keys(record);
-        const placeholders = columns.map(() => '?').join(', ');
-        const values = columns.map((colName) => {
-          const col = resource.dataSourceColumns.find((col) => col.name == colName);
-          if (col) {
-            return this.setFieldValue(col, record[colName])
-          } else {
-            return record[colName];
-          }
-        });
-        this.db.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`).run(values);
+    async createRecord({ resource, record }: { resource: AdminForthResource, record: any }) {
+      const tableName = resource.table;
+      const columns = Object.keys(record);
+      const placeholders = columns.map(() => '?').join(', ');
+      const values = columns.map((colName) => record[colName]);
+      const q = this.db.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`)
+      await q.run(values);
     }
 
-    async updateRecord({ resource, recordId, record, newValues }) {
-        const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
-        const values = [...Object.values(newValues), recordId];
+    async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
+      const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
+      const values = [...Object.values(newValues), recordId];
 
-        this.db.prepare(
-            `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
-        ).run(values);
+      const q = this.db.prepare(
+          `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
+      )
+      await q.run(values);
     }
 
-    async deleteRecord({ resource, recordId }) {
-        this.db.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`).run(recordId);
+    async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }) {
+      const q = this.db.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`);
+      await q.run(recordId);
     }
 
     close() {
-        this.db.close();
+      this.db.close();
     }
 }
 

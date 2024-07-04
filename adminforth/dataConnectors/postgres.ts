@@ -1,15 +1,16 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
-
+import AdminForthBaseConnector from './baseConnector.js';
 const { Client } = pkg;
 
 
-class PostgresConnector implements AdminForthDataSourceConnector {
+class PostgresConnector extends AdminForthBaseConnector implements AdminForthDataSourceConnector {
 
     db: any;
 
     constructor({ url }) {
+        super();
         this.db = new Client({
             connectionString: url
         });
@@ -34,12 +35,12 @@ class PostgresConnector implements AdminForthDataSourceConnector {
         [AdminForthFilterOperators.ILIKE]: 'ILIKE',
         [AdminForthFilterOperators.IN]: 'IN',
         [AdminForthFilterOperators.NIN]: 'NOT IN',
-      };
+    };
   
-      SortDirectionsMap = {
+    SortDirectionsMap = {
         [AdminForthSortDirections.asc]: 'ASC',
         [AdminForthSortDirections.desc]: 'DESC',
-      };
+    };
 
     async discoverFields(resource) {
         const tableName = resource.table;
@@ -125,8 +126,8 @@ class PostgresConnector implements AdminForthDataSourceConnector {
             field.default = row.dflt_value;
             field.required = row.notnull && !row.dflt_value;
             fieldTypes[row.name] = field
-            });
-            return fieldTypes;
+        });
+        return fieldTypes;
     }
 
     getFieldValue(field, value) {
@@ -153,15 +154,8 @@ class PostgresConnector implements AdminForthDataSourceConnector {
         return value;
       }
 
-    getPrimaryKey(resource) {
-        for (const col of resource.dataSourceColumns) {
-            if (col.primaryKey) {
-                return col.name;
-            }
-        }
-    }
 
-    async getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKeyWithOriginalTypes(resource, key) {
         const tableName = resource.table;
         const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
         const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key]);
@@ -171,7 +165,7 @@ class PostgresConnector implements AdminForthDataSourceConnector {
         }
         const newRow = {};
         for (const [key_1, value] of Object.entries(row)) {
-            newRow[key_1] = this.getFieldValue(resource.dataSourceColumns.find((col_1) => col_1.name == key_1), value);
+            newRow[key_1] = value;
         }
         return newRow;
     }
@@ -192,7 +186,7 @@ class PostgresConnector implements AdminForthDataSourceConnector {
         return value;
       }
     
-    async getData({ resource, limit, offset, sort, filters }) {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }) {
       const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
       const tableName = resource.table;
       
@@ -220,12 +214,7 @@ class PostgresConnector implements AdminForthDataSourceConnector {
       const filterValues = [];
       filters.length ? filters.forEach((f) => {
         // for arrays do set in map
-        let v;
-        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          v = f.value.map((val) => this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), val));
-        } else {
-          v = this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), f.value);
-        }
+        let v = f.value;
 
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
           filterValues.push(`%${v}%`);
@@ -247,12 +236,11 @@ class PostgresConnector implements AdminForthDataSourceConnector {
       const rows = stmt.rows;
       
       const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
-      // run all fields via getFieldValue
       return {
         data: rows.map((row) => {
           const newRow = {};
           for (const [key, value] of Object.entries(row)) {
-              newRow[key] = this.getFieldValue(resource.dataSourceColumns.find((col) => col.name == key), value);
+              newRow[key] = value;
           }
           return newRow;
         }),
@@ -260,15 +248,14 @@ class PostgresConnector implements AdminForthDataSourceConnector {
       };
     }
   
-    async getMinMaxForColumns({ resource, columns }) {
+    async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const result = {};
         await Promise.all(columns.map(async (col) => {
             const stmt = await this.db.query(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
             const { min, max } = stmt.rows[0];
             result[col.name] = {
-                min: this.getFieldValue(col, min),
-                max: this.getFieldValue(col, max),
+                min, max,
             };
         }))
         return result;
@@ -278,14 +265,7 @@ class PostgresConnector implements AdminForthDataSourceConnector {
         const tableName = resource.table;
         const columns = Object.keys(record);
         const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-        const values = columns.map((colName) => {
-            const col = resource.dataSourceColumns.find((col) => col.name == colName);
-            if (col) {
-                return this.setFieldValue(col, record[colName])
-            } else {
-                return record[colName];
-            }
-        });
+        const values = columns.map((colName) => record[colName]);
         for (let i = 0; i < columns.length; i++) {
             columns[i] = `"${columns[i]}"`;
         }

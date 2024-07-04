@@ -83,7 +83,7 @@ class MongoConnector implements AdminForthDataSourceConnector {
         return value;
       }
     
-    async getRecordByPrimaryKey(resource, key) {
+    async getRecordByPrimaryKeyWithOriginalTypes(resource, key) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
         const row = await collection.findOne({ [this.getPrimaryKey(resource)]: key });
@@ -97,7 +97,7 @@ class MongoConnector implements AdminForthDataSourceConnector {
                 continue; // should I continue or throw an error?
                 throw new Error(`Resource '${resource.table}' has no column '${key_1}' defined`);
             }
-            newRow[key_1] = this.getFieldValue(dbKey, value);
+            newRow[key_1] = value;
         }
         console.log('newRow', newRow);
         return newRow;
@@ -121,7 +121,7 @@ class MongoConnector implements AdminForthDataSourceConnector {
         return value;
       }
     
-    async getData({ resource, limit, offset, sort, filters }) {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }) {
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
 
@@ -140,7 +140,7 @@ class MongoConnector implements AdminForthDataSourceConnector {
         return { data: result, total }
     }
 
-    async getMinMaxForColumns({ resource, columns }) {
+    async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
         const result = {};
@@ -160,18 +160,12 @@ class MongoConnector implements AdminForthDataSourceConnector {
         const columns = Object.keys(record);
         const newRecord = {};
         for (const colName of columns) {
-            const col = resource.dataSourceColumns.find((col) => col.name == colName);
-            if (col) {
-                newRecord[colName] = this.setFieldValue(col, record[colName]);
-            } else {
-                newRecord[colName] = record[colName];
-            }
+            newRecord[colName] = record[colName];
         }
-
         await collection.insertOne(newRecord);
     }
 
-    async updateRecord({ resource, recordId, record, newValues }) {
+    async updateRecord({ resource, recordId, newValues }) {
         const collection = this.db.db().collection(resource.table);
         await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }
