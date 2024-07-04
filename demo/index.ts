@@ -304,7 +304,7 @@ const admin = new AdminForth({
       options: {
         allowedActions: {
           create: async ({adminUser, meta}: {adminUser: AdminUser, meta: any}) => {
-            console.log('create', adminUser, meta);
+            // console.log('create', adminUser, meta);
             return true;
           },
           delete: true,
