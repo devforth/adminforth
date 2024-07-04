@@ -34,9 +34,9 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
     const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
     if (action !== AllowedActionsEnum.delete) {
-        oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
+      oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
     } else {
-        oldRecord = data
+      oldRecord = data
     }
 
     if (action !== AllowedActionsEnum.delete) {
@@ -114,24 +114,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         return;
       }
 
-      const defaultHooks = {
-        create: { afterSave: [] },
-        edit: { afterSave: [] },
-        delete: { beforeSave: [] }
-      }
-
-      if ( !resource.hooks ) {
-        resource.hooks = defaultHooks; 
-      } else {
-         resource.hooks = {...defaultHooks, ...resource.hooks}
-      }
-
-      Object.keys(resource.hooks).forEach((hook) => {
-        const hookToUse = hook == AllowedActionsEnum.delete ? 'beforeSave' : 'afterSave';
-        if(!Array.isArray(resource.hooks[hook][hookToUse])){
-          resource.hooks[hook][hookToUse] = [resource.hooks[hook][hookToUse]]
-        }
-        resource.hooks[hook][hookToUse].push(async ({resource, record, adminUser, oldRecord}) => {
+      ['edit', 'create', 'delete'].forEach((hook) => {
+        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord}) => {
           return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord)
         })
       })
