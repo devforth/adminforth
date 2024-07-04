@@ -1102,7 +1102,15 @@ class AdminForth implements AdminForthClass {
               return { error };
             }
 
-            await this.createResourceRecord({ resource, record: body['record'], adminUser });
+            const { record } = body;
+            // call setFieldValue for each column
+            for (const column of resource.columns) {
+              if (record[column.name] !== undefined) {
+                record[column.name] = this.connectors[resource.dataSource].setFieldValue(column, record[column.name]);
+              }
+            }
+
+            await this.createResourceRecord({ resource, record, adminUser });
             const connector = this.connectors[resource.dataSource];
 
             return {
