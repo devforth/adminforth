@@ -20,7 +20,7 @@ export type PluginOptions = {
    * This plugin creates a virtual column on edit and create views
    * where the user can upload a file. This is the label of that column
    * 
-   * Defaulted to 'Upload <Name of the column defined in {@link pathColumnName}>'
+   * Defaulted to 'Upload \<Name of the column defined in {@link pathColumnName}\>'
    */
   uploadColumnLabel: string,
 
