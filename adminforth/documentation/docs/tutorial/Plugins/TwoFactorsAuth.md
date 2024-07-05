@@ -16,13 +16,19 @@ Plugin required some aditional setup, to make it work properly. It should be add
 ```ts title='./index.ts'
 {   
     //... other resource configurations
-    auth:{resourceId: 'users'
+    auth: {resourceId: 'users'
     //... other resource configurations
     }
     dataSource: 'maindb',
     table: 'users',
     plugins: [
         new TwoFactorsAuthPlugin ({ twoFaSecretFieldName: 'secret2fa' }),
+    ],
+    columns: [
+        name: 'secret2fa',
+        type: String,
+        showIn: [],
+        backendOnly: true,
     ],
 }
 ```
