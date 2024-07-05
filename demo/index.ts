@@ -301,7 +301,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
-        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'},), 
+        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'}), 
       ],
       options: {
         allowedActions: {

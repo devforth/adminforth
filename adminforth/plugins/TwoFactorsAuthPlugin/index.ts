@@ -1,21 +1,20 @@
-import { ok } from "assert";
 import { AdminForthResource, AdminForthResourcePages, AdminForthClass, GenericHttpServer } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import twofactor from 'node-2fa';
 import  AdminForthAuth  from "../../auth.js";
+import  { PluginOptions } from "./types.js"
 
 
 export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
-  options: any;
+  options: PluginOptions;
   adminforth: AdminForthClass;
   authResource: AdminForthResource;
   connectors: any;
   adminForthAuth: AdminForthAuth  ;
 
-  constructor(options: any,   ) {
+  constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
-   
   }
 
   modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {
@@ -25,16 +24,16 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
     const customPages = this.adminforth.config.customization.customPages
     customPages.push({
       path:'/confirm2fa',
-      component: this.componentPath('TwoFactorsConfirmation.vue')
+      component: { file: this.componentPath('TwoFactorsConfirmation.vue'), meta: { customLayout: true }}
     })
     customPages.push({
       path:'/setup2fa',
-      component: {file:this.componentPath('TwoFactorsSetup.vue'),meta:{title:'Setup 2FA',customLayout:true}}
+      component: { file: this.componentPath('TwoFactorsSetup.vue'), meta: { title: 'Setup 2FA', customLayout: true }}
     })
-    this.activate(resourceConfig,adminforth)
+    this.activate( resourceConfig,adminforth )
   }
 
-  activate(resourceConfig: AdminForthResource,adminforth: AdminForthClass){
+  activate ( resourceConfig: AdminForthResource, adminforth: AdminForthClass ){
     if (!this.options.twoFaSecretFieldName){
       throw new Error('twoFaSecretFieldName is required')
     }
@@ -120,7 +119,6 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return {status:'error',message:'Invalid token'}
         }
         if (decoded.newSecret) {
-          // if secret is passed - means user finishes setup, writes secret to db
           const verified = twofactor.verifyToken(decoded.newSecret, body.code);
           if (verified) { 
             this.connectors = this.adminforth.connectors
@@ -134,7 +132,6 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           }
         } else {
          // user already has secret, get it
-          
           this.connectors = this.adminforth.connectors
           const connector = this.connectors[this.authResource.dataSource];
           const user = await connector.getRecordByPrimaryKey(this.authResource, decoded.pk)

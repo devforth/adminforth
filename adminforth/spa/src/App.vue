@@ -53,7 +53,7 @@
           </div>
         </div>
       </div>
-  </nav>
+   </nav>
 
 
 
@@ -145,6 +145,16 @@
   <div v-else>
     <div v-if="routerIsReady && loginRedirectCheckIsReady">
       <RouterView/>
+    </div>
+    <AcceptModal />
+    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse">
+      <transition-group
+        name="fade"
+        tag="div"
+        class="flex flex-col-reverse gap-1"
+      >
+        <Toast :toast="t" @close="toastStore.removeToast(t)" v-for="(t,i) in toastStore.toasts" :key="`t-${t.id}`" ></Toast>
+      </transition-group>
     </div>  
   </div>
 </template>
