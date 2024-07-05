@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-We recommend using Node v18 and higher:
+AdminForth requires Node v18 or higher:
 
 ```bash
 nvm install 18
@@ -21,20 +21,18 @@ npm install adminforth
 
 AdminForth does not provide own HTTP server, but can add own listeners over exisitng [Express](https://expressjs.com/) server (Fastify support is planned in future). This allows to create custom APIs for backoffice in a way you know.
 
-Let's install express:
-
 ```bash
 npm install express@4.19.2
 ```
 
-For demo purposes we will use SQLite data source. You can use postgress, Mongo or Clickhouse as well. 
+For demo purposes we will use SQLite data source. You can use Postgres, Mongo or Clickhouse as well, or create own data source by [implementing DataSource Connector interface](/docs/api/types/AdminForthConfig/interfaces/AdminForthDataSourceConnector).
 
 
 ```bash
 npm install better-sqlite3@10.0.0
 ```
 
-You can use adminforth in pure Node, but we recommend using TypeScript for better development experience:
+You can use AdminForth in pure Node, but we recommend using TypeScript for better development experience:
 
 ```bash
 npm install typescript@5.4.5 tsx@4.11.2 --save-dev
@@ -46,17 +44,19 @@ AdminForth connects to existing databases and provides a backoffice for managing
 
 Database should be already created by using any database management tool, ORM or migrator. AdminForth does not provide a way to create tables or columns in the database.
 
-Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in backoffice. For most DB AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
+Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in backoffice. For most DBs AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
 
-Also in AdminForth you can define in "Vue" way how each field will be rendered, and create own pages e.g. Dashboards.
+Also in AdminForth you can define in "Vue" way:
+* how each field will be rendered
+* create own pages e.g. Dashboards
+* insert injections into standard pages (e.g. add diagram to list view)
+
+
+## Setting up a first demo
 
 In the demo we will create a simple database with 2 tables: `apartments` and `users`. We will just use plain SQL to create tables and insert some fake data.
 
 Users table will be used to store a credentials for login into backoffice itself.
-
-
-
-## Setting up a first demo
 
 Open `package.json`, set `type` to `module` and add `start` script:
 
@@ -72,7 +72,6 @@ Open `package.json`, set `type` to `module` and add `start` script:
   },
 }
 ```
-
 
 Create `index.ts` file in root directory with following content:
 
@@ -401,6 +400,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 ```
 
+> 🫨 For simplicity we defined whole configuration in one file. Normally once configuration grows you should 
+> move each resource configuration to separate file and organize them to folder and import them in `index.ts`.
 
 Now you can run your app:
 
@@ -419,9 +420,6 @@ After Login you should see:
 
 
 
-
 ## Possible configuration options
-
-We will use schema with different column types for apartments to show many of AdminForth features.
 
 Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
