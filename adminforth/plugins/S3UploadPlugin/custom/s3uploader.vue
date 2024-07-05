@@ -61,7 +61,7 @@ const maxFileSizeHumanized = computed(() => {
   return `${maxFileSize.toFixed(2)} ${units[i]}`
 })
 
-const onFileChange = (e) => {
+const onFileChange = async (e) => {
   const file = e.target.files[0]
   if (!file) {
     imgPreview.value = null;
