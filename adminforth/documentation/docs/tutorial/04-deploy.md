@@ -16,7 +16,7 @@ Create file `bundleNow.ts` in the root directory of your project:
 
 and put the following code:
 
-```ts
+```ts title='./bundleNow.ts'
 import { admin } from './index.js';
 
 await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
@@ -40,7 +40,7 @@ Now completely Remove bundleNow call from `index.ts` file:
 
 In root directory create file `.dockerignore`:
 
-```
+```bash title='./.dockerignore'
 node_modules
 *.sqlite
 ```
@@ -48,7 +48,7 @@ node_modules
 
 In root directory create file `Dockerfile`:
 
-```Dockerfile
+```Dockerfile title='./Dockerfile'
 FROM node:18
 ADD package.json package-lock.json ./
 RUN npm ci
@@ -92,7 +92,7 @@ mv * app
 
 In root directory create file `compose.yml`:
 
-```yaml
+```yaml title='./compose.yml'
 version: '3.8'
 
 services:
