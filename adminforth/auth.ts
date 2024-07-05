@@ -37,6 +37,20 @@ class AdminForthAuth {
     response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
   }
 
+  removeCustomCookie({response, name}) {
+    response.setHeader('Set-Cookie', `adminforth_test'='2'; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+  }
+
+  setCustomCookie({ response, payload }: {
+    response: any, payload: {name: string, value: string, expiry: number, httpOnly: boolean}
+  }) {
+    const {name,value,expiry,httpOnly} = payload
+    response.setHeader('Set-Cookie', `adminforth_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
+  }
+
+ 
+
+
   issueJWT(payload: Object, type: string) {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;

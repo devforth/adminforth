@@ -118,7 +118,10 @@ async function login() {
     inProgress.value = false;
     if (resp.error) {
       error.value = resp.error;
-    } else {
+    } else if (resp.redirectTo) {
+      router.push(resp.redirectTo);
+    }
+     else {
       error.value = null;
       user.authorize()
       router.push('/');
