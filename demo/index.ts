@@ -6,6 +6,8 @@ import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedAc
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
+import TwoFactorsAuthPlugin from '../adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
+import S3UploadPlugin from '../adminforth/plugins/S3UploadPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -34,6 +36,7 @@ if (!tableExists) {
     CREATE TABLE users (
         id VARCHAR(255) PRIMARY KEY NOT NULL,
         email VARCHAR(255) NOT NULL,
+        secret2fa VARCHAR(255) ,
         password_hash VARCHAR(255) NOT NULL,
         created_at VARCHAR(255) NOT NULL,
         role VARCHAR(255) NOT NULL
@@ -52,6 +55,14 @@ if (!tableExists) {
         .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
       `).run();
   }
+
+}
+
+// check column appartment_image in aparts table
+const columns = await db.prepare('PRAGMA table_info(apartments);').all();
+const columnExists = columns.some((c) => c.name === 'appartment_image');
+if (!columnExists) {
+  await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
 }
 
 const admin = new AdminForth({
@@ -73,6 +84,16 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
+    customPages:[{
+      path : '/login2',
+      component: {
+        file:'@@/login2.vue',
+        meta: {
+          customLayout: true,
+      }}
+     
+    
+    }],
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My App',
     datesFormat: 'D MMM YY HH:mm:ss',
@@ -85,10 +106,8 @@ const admin = new AdminForth({
           sidebar: {main:'#571e58', text:'white'},
         },
       }
-    } 
+    },
 
-    
-  // },
   },
  
 
@@ -124,18 +143,7 @@ const admin = new AdminForth({
                 delete: false,
             }
         },
-        plugins: [
-            new AuditLogPlugin({
-                resourceColumns: {
-                    resourceIdColumnName: 'resource_id',
-                    resourceActionColumnName: 'action',
-                    resourceDataColumnName: 'diff',
-                    resourceUserIdColumnName: 'user_id',
-                    resourceRecordIdColumnName: 'record_id',
-                    resourceCreatedColumnName: 'created_at'
-                }
-            }),
-          ],
+       
     },
     {
       dataSource: 'maindb', table: 'apartments',
@@ -185,6 +193,10 @@ const admin = new AdminForth({
 
           // @ts-ignore
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+        },
+        {
+          name: 'appartment_image',
+          showIn: ['list', 'show'],
         },
         { 
           name: 'price',
@@ -253,6 +265,23 @@ const admin = new AdminForth({
           }
         }
       ],
+      plugins: [
+        new S3UploadPlugin({
+          pathColumnName: 'appartment_image',
+          uploadColumnLabel: 'Upload preview', // label of upload field
+          s3Bucket: 'my-bucket',
+          s3Region: 'us-east-1',
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'],
+          maxFileSize: 1024 * 1024 * 5, // 5MB
+          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: 'public-read', // ACL which will be set to uploaded file
+          s3Path: ({originalFilename, originalExtension, contentType}) => `/aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
+    
+          // Used to display preview (if it is image) in list and show views
+          // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
+        }),
+      ],
       options:{
         pageInjections: {
           show: {
@@ -280,8 +309,9 @@ const admin = new AdminForth({
           delete: false,
           show: true,
           filter: true,
-          create: false,
+          create: true,
         },
+        
       }
 
     },
@@ -300,6 +330,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
+        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'}), 
       ],
       options: {
         allowedActions: {
@@ -317,16 +348,17 @@ const admin = new AdminForth({
           fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
         },
+        {
+          name: 'secret2fa',
+          type: AdminForth.Types.STRING,
+          showIn: [],
+          backendOnly: true,
+        },
         { 
           name: 'email', 
           isUnique: true,
           required:false,
-          validation: [
-            {
-              regExp:  '^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com'
-            },
-          ]
+          
         },
         { 
           name: 'created_at', 
@@ -353,7 +385,7 @@ const admin = new AdminForth({
           required: { create: true }, // to show only in create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
-          minLength: 8,
+          // minLength: 8,
           type: AdminForth.Types.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field

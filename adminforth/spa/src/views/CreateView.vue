@@ -136,7 +136,6 @@ async function saveRecord() {
   });
   if (response.error) {
     showErrorTost(response.error);
-    
   }
   saving.value = false;
   if (route.query.returnTo) {
