@@ -20,6 +20,7 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AllowedActions,
   ActionCheckSource,
   AdminForthDataSourceConnector,
+  BeforeLoginConfirmationFunction
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
@@ -159,7 +160,25 @@ class AdminForth implements AdminForthClass {
       this.config.customization = {};
     }
 
+    if (!this.config.customization.customComponentsDir) {
+      this.config.customization.customComponentsDir = './custom';
+    }
 
+    try {
+      // check customComponentsDir exists
+      fs.accessSync(this.config.customization.customComponentsDir, fs.constants.R_OK);
+    } catch (e) {
+      this.config.customization.customComponentsDir = undefined;
+    }
+
+    if (this.config.customization.customPages) {
+      this.config.customization.customPages.forEach((page, i) => {
+        // validate component if it's not plugin injection
+        if (this.codeInjector.allComponentNames.hasOwnProperty(page.component as PropertyKey)) {
+          const validatedPage = this.validateComponent(page.component, errors, true);
+        }
+      });
+    }
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
@@ -636,11 +655,16 @@ class AdminForth implements AdminForthClass {
       method: 'POST',
       path: '/login',
       handler: async ({ body, response }) => {
+       
         const INVALID_MESSAGE = 'Invalid username or password';
         const { username, password } = body;
+        let adminUser: AdminUser;
+        let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
+
         let token;
         if (username === this.config.rootUser.username && password === this.config.rootUser.password) {
           this.auth.setAuthCookie({ response, username, pk: null });
+          adminUser = { isRoot: true, dbUser: null, pk: null, username: this.config.rootUser.username};
         } else {
           // get resource from db
           if (!this.config.auth) {
@@ -675,17 +699,39 @@ class AdminForth implements AdminForthClass {
           }
 
           const passwordHash = userRecord[this.config.auth.passwordHashField];
-          console.log('User record', userRecord, passwordHash)  // why does it has no hash?
           const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
           if (valid) {
-            this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+            adminUser = { 
+              isRoot: false, dbUser: userRecord,
+              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
+              username
+            };
+            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[];
+            if (beforeLoginConfirmation.length){
+              for (const hook of beforeLoginConfirmation) {
+                const resp = await hook({ userRecord:adminUser});
+                if (resp?.body?.setCookie){
+                  resp?.body?.setCookie.forEach((cookie) => {
+                    this.auth.setCustomCookie({response,payload:cookie})});
+                }
+                if (resp?.body?.redirectTo) {
+                  toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
+                  break;
+                }
+              }
+            }
+            if (toReturn.allowedLogin){
+              this.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+            } 
           } else {
             return { error: INVALID_MESSAGE };
           }
+          
         }
-        return { ok: true };
-      },
-    });
+        
+        return toReturn;
+    }
+  });
 
     server.endpoint({
       method: 'POST',
@@ -700,7 +746,7 @@ class AdminForth implements AdminForthClass {
         method: 'POST',
         path: '/logout',
         handler: async ({ response }) => {
-          this.auth.removeAuthCookie({ response });
+          this.auth.removeAuthCookie( response );
           return { ok: true };
         },
     })
@@ -777,7 +823,6 @@ class AdminForth implements AdminForthClass {
           }
           newMenu.push(newMenuItem)
         }
-        console.log(userData,'this is the user data')
 
         return {
           user: userData,
@@ -1184,7 +1229,7 @@ class AdminForth implements AdminForthClass {
             } 
 
             if (Object.keys(newValues).length > 0) {
-                await connector.updateRecord({ resource, recordId, record, newValues});
+                await connector.updateRecord({ resource, recordId, newValues});
             }
             
             // execute hook if needed

@@ -6,6 +6,7 @@ import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedAc
 
 import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
+import TwoFactorsAuthPlugin from '../adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
 import S3UploadPlugin from '../adminforth/plugins/S3UploadPlugin/index.ts';
 
 const ADMIN_BASE_URL = '';
@@ -35,6 +36,7 @@ if (!tableExists) {
     CREATE TABLE users (
         id VARCHAR(255) PRIMARY KEY NOT NULL,
         email VARCHAR(255) NOT NULL,
+        secret2fa VARCHAR(255) ,
         password_hash VARCHAR(255) NOT NULL,
         created_at VARCHAR(255) NOT NULL,
         role VARCHAR(255) NOT NULL
@@ -82,6 +84,16 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
+    customPages:[{
+      path : '/login2',
+      component: {
+        file:'@@/login2.vue',
+        meta: {
+          customLayout: true,
+      }}
+     
+    
+    }],
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My App',
     datesFormat: 'D MMM YY HH:mm:ss',
@@ -94,10 +106,8 @@ const admin = new AdminForth({
           sidebar: {main:'#571e58', text:'white'},
         },
       }
-    } 
+    },
 
-    
-  // },
   },
  
 
@@ -133,18 +143,7 @@ const admin = new AdminForth({
                 delete: false,
             }
         },
-        plugins: [
-            new AuditLogPlugin({
-                resourceColumns: {
-                    resourceIdColumnName: 'resource_id',
-                    resourceActionColumnName: 'action',
-                    resourceDataColumnName: 'diff',
-                    resourceUserIdColumnName: 'user_id',
-                    resourceRecordIdColumnName: 'record_id',
-                    resourceCreatedColumnName: 'created_at'
-                }
-            }),
-          ],
+       
     },
     {
       dataSource: 'maindb', table: 'apartments',
@@ -331,7 +330,7 @@ const admin = new AdminForth({
             resourceConfig.options!.listPageSize = 3;
           },
         }),
-
+        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'}), 
       ],
       options: {
         allowedActions: {
@@ -349,16 +348,17 @@ const admin = new AdminForth({
           fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
         },
+        {
+          name: 'secret2fa',
+          type: AdminForth.Types.STRING,
+          showIn: [],
+          backendOnly: true,
+        },
         { 
           name: 'email', 
           isUnique: true,
           required:false,
-          validation: [
-            {
-              regExp:  '^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com'
-            },
-          ]
+          
         },
         { 
           name: 'created_at', 
@@ -385,7 +385,7 @@ const admin = new AdminForth({
           required: { create: true }, // to show only in create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
-          minLength: 8,
+          // minLength: 8,
           type: AdminForth.Types.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field
