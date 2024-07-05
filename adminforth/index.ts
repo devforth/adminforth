@@ -361,35 +361,44 @@ class AdminForth implements AdminForthClass {
         }
 
         // transform all hooks Functions to array of functions
-        if (res.hooks) {
-          for (const value of [res.hooks.show, res.hooks.list]) {
-            if (value) {
-              if (value.beforeDatasourceRequest) {
-                if (!Array.isArray(value.beforeDatasourceRequest)) {
-                  value.beforeDatasourceRequest = [value.beforeDatasourceRequest];
-                }
-              }
-              if (value.afterDatasourceResponse) {
-                if (!Array.isArray(value.afterDatasourceResponse)) {
-                  value.afterDatasourceResponse = [value.afterDatasourceResponse];
-                }
-              }
-            }
+        if (!res.hooks) {
+          res.hooks = {};
+        }
+        for (const hookName of ['show', 'list']) {
+          if (!res.hooks[hookName]) {
+            res.hooks[hookName] = {};
           }
-          for (const value of [res.hooks.create, res.hooks.edit, res.hooks.delete]) {
-            if (value) {
+          if (!res.hooks[hookName].beforeDatasourceRequest) {
+            res.hooks[hookName].beforeDatasourceRequest = [];
+          }
+          
+          if (!Array.isArray(res.hooks[hookName].beforeDatasourceRequest)) {
+            res.hooks[hookName].beforeDatasourceRequest = [res.hooks[hookName].beforeDatasourceRequest];
+          }
+          
+          if (!res.hooks[hookName].afterDatasourceResponse) {
+            res.hooks[hookName].afterDatasourceResponse = [];
+          }
 
-              if (value.beforeSave) {
-                if (!Array.isArray(value.beforeSave)) {
-                  value.beforeSave = [value.beforeSave];
-                }
-              }
-              if (value.afterSave) {
-                if (!Array.isArray(value.afterSave)) {
-                  value.afterSave = [value.afterSave];
-                }
-              }
-            }
+          if (!Array.isArray(res.hooks[hookName].afterDatasourceResponse)) {
+            res.hooks[hookName].afterDatasourceResponse = [res.hooks[hookName].afterDatasourceResponse];
+          }
+        }
+        for (const hookName of ['create', 'edit', 'delete']) {
+          if (!res.hooks[hookName]) {
+            res.hooks[hookName] = {};
+          }
+          if (!res.hooks[hookName].beforeSave) {
+            res.hooks[hookName].beforeSave = [];
+          }
+          if (!Array.isArray(res.hooks[hookName].beforeSave)) {
+            res.hooks[hookName].beforeSave = [res.hooks[hookName].beforeSave];
+          }
+          if (!res.hooks[hookName].afterSave) {
+            res.hooks[hookName].afterSave = [];
+          }
+          if (!Array.isArray(res.hooks[hookName].afterSave)) {
+            res.hooks[hookName].afterSave = [res.hooks[hookName].afterSave];
           }
         }
       });
@@ -491,6 +500,10 @@ class AdminForth implements AdminForthClass {
       // if db/user says column is required in boolean, exapd
       if (typeof column.required === 'boolean') {
         column.required = { create: column.required, edit: column.required };
+      }
+
+      if (!column.required) {
+        column.required = { create: false, edit: false };
       }
 
       // same for editingNote
@@ -624,6 +637,7 @@ class AdminForth implements AdminForthClass {
     await connector.createRecord({ resource, record });
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
+      console.log('Hook afterSave', hook);
       const resp = await hook({ resource, record, adminUser });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -1147,7 +1161,15 @@ class AdminForth implements AdminForthClass {
               return { error };
             }
 
-            await this.createResourceRecord({ resource, record: body['record'], adminUser });
+            const { record } = body;
+            // call setFieldValue for each column
+            for (const column of resource.columns) {
+              if (record[column.name] !== undefined) {
+                record[column.name] = this.connectors[resource.dataSource].setFieldValue(column, record[column.name]);
+              }
+            }
+
+            await this.createResourceRecord({ resource, record, adminUser });
             const connector = this.connectors[resource.dataSource];
 
             return {

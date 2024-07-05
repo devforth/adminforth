@@ -15,9 +15,7 @@ To add custom bulk action quickly:
 {
   ...
   resourceId: 'aparts',
-  ...
-  bulkActions: [
-    {
+     ...
      options: {
         bulkActions: [
           {
@@ -33,8 +31,6 @@ To add custom bulk action quickly:
           }
         ],
       }
-    }
-  ]
 }
 ```
 

@@ -82,8 +82,112 @@ export interface AdminForthDataSourceConnector {
   /**
    * Function which will be called to fetch record from database.
    */
-  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+  getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, recordId: string): Promise<any>;
+
+
+  /**
+   * Function should go over all columns of table defined in resource.table and try to guess
+   * data and constraints for each columns. 
+   * Type should be saved to:
+   * -  {@link AdminForthResourceColumn.type}
+   * Constraints:
+   *  - {@link AdminForthResourceColumn.required}
+   *  - {@link AdminForthResourceColumn.primaryKey}
+   * For string fields:
+   *  - {@link AdminForthResourceColumn.maxLength}
+   * For numbers:
+   *  - {@link AdminForthResourceColumn.min}
+   *  - {@link AdminForthResourceColumn.max}
+   *  - {@link AdminForthResourceColumn.minValue}, {@link AdminForthResourceColumn.maxValue}, {@link AdminForthResourceColumn.enum}, {@link AdminForthResourceColumn.foreignResource}, {@link AdminForthResourceColumn.sortable}, {@link AdminForthResourceColumn.backendOnly}, {@link AdminForthResourceColumn.masked}, {@link AdminForthResourceColumn.virtual}, {@link AdminForthResourceColumn.components}, {@link AdminForthResourceColumn.allowMinMaxQuery}, {@link AdminForthResourceColumn.editingNote}, {@link AdminForthResourceColumn.showIn}, {@link AdminForthResourceColumn.isUnique}, {@link AdminForthResourceColumn.validation})
+   * Also you can additionally save original column type to {@link AdminForthResourceColumn._underlineType}. This might be later used
+   * in {@link AdminForthDataSourceConnector.getFieldValue} and {@link AdminForthDataSourceConnector.setFieldValue} methods.
+   * 
+   * 
+   * @param resource 
+   */
+  discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}>;
+
+
+  /**
+   * Used to transform record after fetching from database.
+   * According to AdminForth convention, if {@link AdminForthResourceColumn.type} is set to {@link AdminForthDataTypes.DATETIME} then it should be transformed to ISO string.
+   * @param field 
+   * @param value 
+   */
+  getFieldValue(field: AdminForthResourceColumn, value: any): any;
+
+  /**
+   * Used to transform record before saving to database. Should perform operation inverse to {@link AdminForthDataSourceConnector.getFieldValue}
+   * @param field 
+   * @param value 
+   */
+  setFieldValue(field: AdminForthResourceColumn, value: any): any;
+
+  /**
+   * Used to fetch data from database.
+   * This method is reused both to list records and show one record (by passing limit 1 and offset 0) .
+   * 
+   * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link AdminForthDataSourceConnector.getFieldValue}
+   */
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+    resource: AdminForthResource,
+    limit: number,
+    offset: number,
+    sort: { field: string, direction: AdminForthSortDirections }[], 
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+  }): Promise<{data: Array<any>, total: number}>;
+
+
+  /**
+   * Optional method which used to get min and max values for columns in resource.
+   * Called only for columns which have {@link AdminForthResourceColumn.allowMinMaxQuery} set to true.
+   * 
+   * Internally should call {@link AdminForthDataSourceConnector.getFieldValue} for both min and max values.
+   */
+  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+
+
+  /**
+   * Used to create record in database.
+   */
+  createRecord({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
+
+  /**
+   * Used to update record in database.
+   * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}
+   * newValues is array of fields which should be updated (might be not all fields in record, but only changed fields).
+   */
+  updateRecord({ resource, recordId, newValues }:
+    { resource: AdminForthResource, recordId: string, newValues: any }
+  ): Promise<void>;
+  
+  /**
+   * Used to delete record in database.
+   */
+  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<void>;
 }
+
+
+/**
+ * Interface that exposes methods to interact with AdminForth in standard way
+ */
+export interface AdminForthDataSourceConnectorBase extends AdminForthDataSourceConnector {
+
+  getPrimaryKey(resource: AdminForthResource): string;
+
+  getData({ resource, limit, offset, sort, filters }: {
+    resource: AdminForthResource,
+    limit: number,
+    offset: number,
+    sort: { field: string, direction: AdminForthSortDirections }[],
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+  }): Promise<{ data: Array<any>, total: number }>;
+
+  getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+
+  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+}
+
 
 export interface AdminForthDataSourceConnectorConstructor {
   new ({ url }: { url: string }): AdminForthDataSourceConnector;
@@ -95,7 +199,7 @@ export interface AdminForthClass {
   express: GenericHttpServer;
 
   connectors: {
-    [key: string]: AdminForthDataSourceConnector,
+    [key: string]: AdminForthDataSourceConnectorBase;
   };
 
   createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
@@ -424,21 +528,57 @@ export type AdminForthResourceColumn = {
      * Custom components which will be used to render this field in the admin panel.
      */
     components?: AdminForthFieldComponents
+
+    /**
+     * Maximum length of string that can be entered in this field.
+     */
     maxLength?: number, 
+
+    /**
+     * Minimum length of string that can be entered in this field.
+     */
     minLength?: number,
+
     min?: number,
     max?: number,
+
+    /**
+     * Minimum value that can be entered in this field.
+     */
     minValue?: number,
+
+    /**
+     * Maximum value that can be entered in this field.
+     */
     maxValue?: number,
+
+    /**
+     * Enum of possible values for this field.
+     */
     enum?: Array<AdminForthColumnEnumItem>,
+
+    /**
+     * Foreign resource which has pk column with values same that written in this column.
+     */
     foreignResource?:AdminForthForeignResource,
+
     sortable?: boolean,
-    backendOnly?: boolean, // if true field will not be passed to UI under no circumstances, but will be presented in hooks
+
+    /**
+     * if true field will !not be passed to UI under no circumstances, but will be presented in hooks
+     */
+    backendOnly?: boolean,
 
     /**
      * Masked fields will be displayed as `*****` on Edit and Create pages.
      */
     masked?: boolean,
+
+
+    /**
+     * Internal type which indicates original type of column in database.
+     */
+    _underlineType?: string,
 }
   
 
