@@ -27,7 +27,6 @@
     "node-2fa": "^2.0.3",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
-    "request": "^2.88.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
