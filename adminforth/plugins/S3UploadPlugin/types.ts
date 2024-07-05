@@ -72,5 +72,5 @@ export type PluginOptions = {
    * ```
    * 
    */ 
-  previewUrl?: ({s3path}) => string,
+  previewUrl?: ({s3Path}) => string,
 }

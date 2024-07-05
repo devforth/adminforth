@@ -47,7 +47,7 @@ const allowedExtensionsLabel = computed(() => {
 });
 
 const maxFileSizeHumanized = computed(() => {
-  const maxFileSize = props.meta.maxFileSize || 0
+  let maxFileSize = props.meta.maxFileSize || 0
   if (maxFileSize === 0) {
     return ''
   }
@@ -106,12 +106,13 @@ const onFileChange = (e) => {
     progress.value += 1;
   }, 20);
 
-  // call /
-
   await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
       method: 'POST',
-      body: {},
+      body: {
+        originalFilename: name,
+        contentType, size, originalExtension 
+      },
   });
 }
 
