@@ -252,12 +252,9 @@ const admin = new AdminForth({
             hooks: {
               dropdownList: {
                 beforeDatasourceRequest: async ({ query, adminUser }: any) => {
-                  console.log('beforeDatasourceRequest', query, adminUser)
                   return { ok: true, error: ""}
                 },
                 afterDatasourceResponse: async ({ response, adminUser }: any) => {
-                  console.log('beforeDatasourceRequest', response, adminUser)
-
                   return { ok: true, error: "" }
                 }
               },
