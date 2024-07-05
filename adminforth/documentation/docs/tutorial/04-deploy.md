@@ -49,13 +49,30 @@ node_modules
 In root directory create file `Dockerfile`:
 
 ```Dockerfile
-FROM node:18
-ADD package.json package-lock.json ./
-RUN npm ci
-ADD . .
-RUN tsx bundleNow.ts
-CMD ["npm", "start"]
+# use the same nove devsion which you used during dev
+FROM node:20 
+WORKDIR /code/
+ADD package.json package-lock.json /code/
+RUN npm ci  
+ADD . /code/
+RUN npm run bundleNow
+CMD ["npm", "run", "startLive"]
 ```
+
+Add `bundleNow` and `startLive` to `package.json`
+```ts title='./package.json'
+{
+    "type": "module",
+    "scripts": {
+        "start": "ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION NODE_ENV=development tsx watch index.ts",
+//diff-add
+        "bundleNow": "tsx bundleNow.ts",
+//diff-add
+        "startLive": "NODE_ENV=production tsx index.ts"
+    },
+}
+```
+
 
 Now you can build your image:
 
