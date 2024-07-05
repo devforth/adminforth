@@ -196,6 +196,7 @@ class ExpressServer implements ExpressHttpServer {
         setHeader(name, value) {
           this.headers.push([name, value]);
         },
+        
         setStatus(code, message) {
           this.status = code;
           this.message = message;

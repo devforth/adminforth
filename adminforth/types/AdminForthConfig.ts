@@ -206,7 +206,6 @@ export interface AdminForthClass {
 
   auth: {
     verify(jwt : string, mustHaveType: string): Promise<any>;
-
     issueJWT(payload: Object, type: string): string;
   }
 
@@ -607,11 +606,17 @@ export type BeforeSaveFunction = (params:{resource: AdminForthResource, adminUse
  */
 export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
+/**
+ * Allow to get user data before login confirmation, will triger when user try to login.
+ */
+export type BeforeLoginConfirmationFunction = (params?: { userRecord: AdminUser }) => Promise<{ok:boolean, error?:string, body:{setCookie?:[], redirectTo?: 'string', allowedLogin?: boolean   }}>;
 
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
+
+
 export type AdminForthResource = {
     /**
      * Unique identifier of resource. By default it equals to table name in database. 
@@ -847,6 +852,13 @@ export type AdminForthConfig = {
       loginBackgroundImage?: string,
 
       /**
+       * Function or functions  which will be called before user try to login.
+       * Each function will resive User object as an argument
+       */
+
+      beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
+
+      /**
        * Optionally if your users table has a field(column) with full name, you can set it here.
        * This field will be used to display user name in the top right corner of the admin panel.
        */
@@ -985,7 +997,15 @@ export type AdminForthConfig = {
        * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
        */
       styles?: Object,
-    },
+      /**
+       * Description of custom pages which will let register custom pages for custom routes in AdminForth.
+       */
+
+      customPages?: Array<{
+        path: string,
+        component: AdminForthComponentDeclaration,
+      }>,
+    }
 
     /**
      * If you want to Serve AdminForth from a subdirectory, e.g. on example.com/backoffice, you can specify it like:
@@ -1236,3 +1256,4 @@ export type AdminForthForeignResource = {
       },
     },
   }
+
