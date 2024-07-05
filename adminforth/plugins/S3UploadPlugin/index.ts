@@ -23,7 +23,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
     const pluginFrontendOptions = {
       allowedExtensions: this.options.allowedFileExtensions,
       maxFileSize: this.options.maxFileSize,
-      pluginInstanceId: this.pluginInstanceIdб
+      pluginInstanceId: this.pluginInstanceId,
     };
     const virtualColumn = {
       virtual: true,
@@ -68,8 +68,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_s3_upload_url`,
       handler: async ({ body }) => {
-        const { originalFilename, contentType } = body;
-        const originalExtension = originalFilename.split('.').pop();
+        const { originalFilename, contentType, size, originalExtension } = body;
 
         if (this.options.allowedFileExtensions && !this.options.allowedFileExtensions.includes(originalExtension)) {
           throw new Error(`File extension "${originalExtension}" is not allowed, allowed extensions are: ${this.options.allowedFileExtensions.join(', ')}`);
