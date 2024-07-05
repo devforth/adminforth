@@ -217,7 +217,9 @@ class CodeInjector implements CodeInjectorType {
 
       // copy whole custom directory
       if (this.adminforth.config.customization?.customComponentsDir) {
-        this.srcFoldersToSync[this.adminforth.config.customization.customComponentsDir] = './'
+        // resolve customComponentsDir to absolute path, so ./aa will be resolved to /path/to/current/dir/aa
+        const customCompAbsPath = path.resolve(this.adminforth.config.customization.customComponentsDir);
+        this.srcFoldersToSync[customCompAbsPath] = './'
       }
 
       // if this.adminforth.config.customization.favicon is set, copy it to assets
@@ -461,7 +463,10 @@ async watchForReprepare({ verbose }) {
     const collectDirectories = async (dir) => {
       const files = await fs.promises.readdir(dir, { withFileTypes: true });
       for (const file of files) {
-        if (file.isDirectory() && ['node_modules', 'dist'].indexOf(file.name) === -1) {
+        if (['node_modules', 'dist'].includes(file.name)) {
+          continue;
+        }
+        if (file.isDirectory()) {
           directories.push(path.join(dir, file.name));
           await collectDirectories(path.join(dir, file.name));
         }
@@ -469,10 +474,9 @@ async watchForReprepare({ verbose }) {
     };
     await collectDirectories(spaPath);
 
-    if (verbose) {
+    if (process.env.HEAVY_DEBUG) {
       console.log('🔎 Watching for changes in:', directories.join(','));
     }
-
 
     const watcher = filewatcher();
     directories.forEach((dir) => {
@@ -481,16 +485,15 @@ async watchForReprepare({ verbose }) {
 
     watcher.on(
       'change',
-      async (file) => {
-        console.log(`File ${file} changed, preparing sources...`);
+      async (file, x) => {
+        console.log(`File ${file} changed ${x}, preparing sources...`);
         await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
     this.allWatchers.push(watcher);
   }
 
-  async watchCustomComponentsForCopy({ verbose }) {
-    const customComponentsDir = this.adminforth.config.customization.customComponentsDir;
+  async watchCustomComponentsForCopy({ verbose, customComponentsDir, destination }) {
     if (!customComponentsDir) {
       return;
     }
@@ -506,39 +509,57 @@ async watchForReprepare({ verbose }) {
 
     // get all subdirs
     const directories = [];
+    const files = []
     const collectDirectories = async (dir) => {
       directories.push(dir);
 
-      const files = await fs.promises.readdir(dir, { withFileTypes: true });
-      for (const file of files) {
-        if (file.isDirectory()) {
-          await collectDirectories(path.join(dir, file.name));
-        }
-      }
+      const filesAndDirs = await fs.promises.readdir(dir, { withFileTypes: true });
+      await Promise.all(
+        filesAndDirs.map(
+          async (file) => {
+            const isDir = fs.lstatSync(path.join(dir, file.name)).isDirectory();
+            if (isDir) {
+              await collectDirectories(path.join(dir, file.name));
+            } else {
+              files.push(path.join(dir, file.name));
+            }
+          }
+        )
+      )
     };
 
     await collectDirectories(customComponentsDir);
 
     const watcher = filewatcher();
-    directories.forEach((dir) => {
-      watcher.add(dir);
+    files.forEach((file) => {
+      process.env.HEAVY_DEBUG && console.log(`🔎 Watching for changes in file ${file}`);
+      watcher.add(file);
     });
 
-    if (verbose) {
+    if (process.env.HEAVY_DEBUG) {
       console.log('🔎 Watching for changes in:', directories.join(','));
     }
     
     watcher.on(
       'change',
-      async (file) => {
+      async (fileOrDir) => {
         // copy one file
-        // TODO: non optimal, copy only changed file, test on both nested and parent dir
-        if (verbose) {
-          console.log(`🔎 File ${file} changed, copying to spa_tmp...`);
+        const relativeFilename = fileOrDir.replace(customComponentsDir + '/', '');
+        if (process.env.HEAVY_DEBUG) {
+          console.log(`🔎 fileOrDir ${fileOrDir} changed`);
+          console.log(`🔎 relativeFilename ${relativeFilename}`);
+          console.log(`🔎 customComponentsDir ${customComponentsDir}`);
+          console.log(`🔎 destination ${destination}`);
         }
-        await fsExtra.copy(this.adminforth.config.customization.customComponentsDir, path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom'), {
-          recursive: true,
-        });
+        const isFile = fs.lstatSync(fileOrDir).isFile();
+        if (isFile) {
+          const destPath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', destination, relativeFilename);
+          process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
+          await fsExtra.copy(fileOrDir, destPath);
+          return;
+        } else {
+          // for now do nothing
+        }
       }
     )
     this.allWatchers.push(watcher);
@@ -550,8 +571,17 @@ async watchForReprepare({ verbose }) {
     await this.prepareSources({ verbose });
 
     if (hotReload) {
-      await this.watchForReprepare({ verbose });
-      await this.watchCustomComponentsForCopy({ verbose });
+      await Promise.all([
+        this.watchForReprepare({ verbose }),
+        ...Object.entries(this.srcFoldersToSync).map(async ([src, dest]) => {
+
+          await this.watchCustomComponentsForCopy({ 
+            verbose, 
+            customComponentsDir: src,
+            destination: dest,
+          });
+        }),
+      ]);
     }
 
     console.log('AdminForth bundling');

@@ -111,7 +111,9 @@ const onFileChange = async (e) => {
       method: 'POST',
       body: {
         originalFilename: name,
-        contentType, size, originalExtension 
+        contentType,
+        size,
+        originalExtension,
       },
   });
 }
