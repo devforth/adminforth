@@ -469,7 +469,7 @@ export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUse
 /**
  * Allow to get user data before login confirmation, will triger when user try to login.
  */
-export type BeforeLoginConfirmationFunction = (params?: { userRecord: AdminUser }) => Promise<{ok:boolean, error?:string, body:{}}>;
+export type BeforeLoginConfirmationFunction = (params?: { userRecord: AdminUser }) => Promise<{ok:boolean, error?:string, body:{setCookie?:[], redirectTo?: 'string', allowedLogin?: boolean   }}>;
 
 /**
  * Resource describes one table or collection in database.
@@ -1116,3 +1116,4 @@ export type AdminForthForeignResource = {
       },
     },
   }
+

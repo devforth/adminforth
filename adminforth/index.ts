@@ -20,10 +20,10 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AllowedActions,
   ActionCheckSource,
   AdminForthDataSourceConnector,
+  BeforeLoginConfirmationFunction
 } from './types/AdminForthConfig.js';
 import path from 'path';
 import AdminForthPlugin from './plugins/base.js';
-import { BeforeLoginFunction } from 'path/to/module';
 
 
 //get array from enum AdminForthResourcePages
@@ -171,20 +171,14 @@ class AdminForth implements AdminForthClass {
       this.config.customization.customComponentsDir = undefined;
     }
 
-    if (this.config.customization.customPages){
-      this.config.customization.customPages.forEach((page,i) => {
-        //validate component if its not plugin injection
-        if (this.codeInjector.allComponentNames[page.component]) {
-        const validatedPage =  this.validateComponent(page.component, errors,true);
-
+    if (this.config.customization.customPages) {
+      this.config.customization.customPages.forEach((page, i) => {
+        // validate component if it's not plugin injection
+        if (this.codeInjector.allComponentNames.hasOwnProperty(page.component as PropertyKey)) {
+          const validatedPage = this.validateComponent(page.component, errors, true);
         }
-        
-        
-      })
+      });
     }
-      
-
-
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
     }
@@ -698,10 +692,10 @@ class AdminForth implements AdminForthClass {
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
               username
             };
-            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginFunction[];
+            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[];
             if (beforeLoginConfirmation.length){
               for (const hook of beforeLoginConfirmation) {
-                const resp = await hook({ adminUser, });
+                const resp = await hook({ userRecord:adminUser});
                 if (resp?.body?.setCookie){
                   resp?.body?.setCookie.forEach((cookie) => {
                     this.auth.setCustomCookie({response,payload:cookie})});
