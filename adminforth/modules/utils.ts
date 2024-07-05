@@ -2,7 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 // @ts-ignore-next-line
-import csscolors from 'css-color-names';
+import csscolors from 'css-color-names/css-color-names.json';
 
 
 export function guessLabelFromName(name) {
