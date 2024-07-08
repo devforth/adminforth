@@ -87,13 +87,14 @@ export type AlertParams = {
      * The message to display in the alert
      */
     message?: string;
+
     /**
      * The variant of the alert
      */
     variant?: AlertVariant | keyof typeof AlertVariant;
 
     /**
-     * The timeout of the alert
+     * The timeout of the alert in seconds or 'unlimited' to keep the alert open until the user closes it
      */
     timeout?: number | 'unlimited';
     
