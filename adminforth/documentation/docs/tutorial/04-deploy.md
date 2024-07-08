@@ -51,6 +51,7 @@ In root directory create file `Dockerfile`:
 ```Dockerfile
 # use the same nove devsion which you used during dev
 FROM node:20 
+RUN --mount=type=cache,target=/tmp
 WORKDIR /code/
 ADD package.json package-lock.json /code/
 RUN npm ci  
