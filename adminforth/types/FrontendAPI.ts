@@ -94,7 +94,8 @@ export type AlertParams = {
     variant?: AlertVariant | keyof typeof AlertVariant;
 
     /**
-     * The timeout of the alert in seconds or 'unlimited' to keep the alert open until the user closes it
+     * The timeout of the alert in seconds or 'unlimited' to keep the alert open until the user closes it.
+     * Default is 10 seconds;
      */
     timeout?: number | 'unlimited';
     

@@ -55,7 +55,7 @@ function closeToast() {
 onMounted(() => {
     if (props.toast.timeout === 'unlimited') return;
     else { 
-      setTimeout(() => {emit('close');}, props.toast.timeout  || 10000 );
+      setTimeout(() => {emit('close');}, (props.toast.timeout || 10) * 1e3 );
     }
 });
 
