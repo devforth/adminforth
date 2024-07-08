@@ -84,8 +84,7 @@ And run container with:
 
 ```bash
 docker run -p 3500:3500 \
-  -e NODE_ENV=production \
-  -e ADMINFORTH_SECRET=!CHANGEME!\
+  -e NODE_ENV=production -e ADMINFORTH_SECRET=CHANGEME\
   myadminapp
 ```
 
@@ -104,7 +103,7 @@ First move all contents of your root folder (which contains index.ts and other f
 
 ```bash
 mkdir app
-mv * app
+mv {.,}*  app
 ```
 
 In root directory create file `compose.yml`:
@@ -173,7 +172,7 @@ should do the following:
 //diff-remove
 const ADMIN_BASE_URL = '';
 //diff-add
-const ADMIN_BASE_URL = '/admin';
+const ADMIN_BASE_URL = '/admin/';
 ```
 
 2) Open `compose.yml` file and change `traefik.http.routers.adminforth.rule` to your subpath:
@@ -184,8 +183,10 @@ const ADMIN_BASE_URL = '/admin';
 //diff-remove
       - "traefik.http.routers.adminforth.rule=PathPrefix(`/`)"
 //diff-add
-      - "traefik.http.routers.adminforth.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.adminforth.rule=PathPrefix(`/admin/`)"
 ```
+
+Redeploy compose.
 
 Now you can access your AdminForth application by going to `https://mydomain.com/admin`.
 

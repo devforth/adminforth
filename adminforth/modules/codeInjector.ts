@@ -30,6 +30,12 @@ function hashify(obj) {
     ('sha256').update(JSON.stringify(obj)).digest('hex');
 }
 
+function notifyWatcherIssue(limit) {
+  console.log('Ran out of file handles after watching %s files.', limit);
+  console.log('Falling back to polling which uses more CPU.');
+  console.log('Run ulimit -n 10000 to increase the limit for open files.');
+}
+
 class CodeInjector implements CodeInjectorType {
 
   allWatchers = [];
@@ -490,6 +496,7 @@ async watchForReprepare({ verbose }) {
         await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
+    watcher.on('fallback', notifyWatcherIssue);
     this.allWatchers.push(watcher);
   }
 
@@ -561,7 +568,10 @@ async watchForReprepare({ verbose }) {
           // for now do nothing
         }
       }
-    )
+    );
+
+    watcher.on('fallback', notifyWatcherIssue);
+
     this.allWatchers.push(watcher);
   }
 
