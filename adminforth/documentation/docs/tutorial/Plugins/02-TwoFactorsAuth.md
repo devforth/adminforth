@@ -8,7 +8,7 @@ The Two-Factor Authentication Plugin provides an additional layer of security to
 Plugin is already installed into adminforth, to import:
     
 ```ts
-import TwoFactorsAuthPlugin from '../adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
+import TwoFactorsAuthPlugin from 'adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
 ``` 
 
 Plugin required some additional setup, to make it work properly. It should be added to the resource auth resource. In our example we will add it to the user resource .
@@ -35,8 +35,6 @@ export const admin = new AdminForth({
         {
 //diff-add
             name: 'secret2fa',
-//diff-add
-            type: String,
 //diff-add
             showIn: [],
 //diff-add
