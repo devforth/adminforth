@@ -26,6 +26,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { callAdminForthApi } from '@/utils' 
 
 const props = defineProps({
   meta: String
@@ -111,9 +112,9 @@ const onFileChange = async (e) => {
       method: 'POST',
       body: {
         originalFilename: name,
-        contentType,
+        contentType: type,
         size,
-        originalExtension,
+        originalExtension: extension,
       },
   });
 }
