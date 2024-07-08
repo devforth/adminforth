@@ -706,7 +706,7 @@ class AdminForth implements AdminForthClass {
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
               username
             };
-            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction?[];
+            const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
             if (beforeLoginConfirmation?.length){
               for (const hook of beforeLoginConfirmation) {
                 const resp = await hook({ userRecord:adminUser});
