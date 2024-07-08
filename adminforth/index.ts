@@ -187,7 +187,7 @@ class AdminForth implements AdminForthClass {
     } else {
       this.baseUrlSlashed = this.config.baseUrl;
     }
-    if (!this.config?.customization.brandName) {
+    if (this.config?.customization.brandName === undefined) {
       this.config.customization.brandName = 'AdminForth';
     }
     if (this.config.customization.brandLogo) {

@@ -41,6 +41,15 @@ You can use `@@/` prefix for all paths in the configuration and also import imag
 </template>
 ```
 
+To completely remove brand name from sidebar and header, set it to empty string:
+
+```ts title='./index.ts'
+//diff-remove
+brandName: 'My App',
+//diff-add
+brandName: '',
+```
+
 ## Theming
 
 AdminForth uses TailwindCSS for styling. By default both black and light thems the same as for Tailwind, but you able to customize the look of the application by changing the TailwindCSS configuration.
