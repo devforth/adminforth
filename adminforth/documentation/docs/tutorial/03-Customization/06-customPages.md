@@ -76,6 +76,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
+import { callApi } from '@/utils';
 
 const data = ref({});
 
@@ -319,12 +320,7 @@ onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
   try {
-    const resp = await fetch('/api/dashboard/');
-    if (resp.status === 401) {
-      // user will be redirected to login page automatically so no need to handle anything here
-      return;
-    }
-    data.value = await resp.json();
+    data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     window.adminforth.alert({
       message: `Error fetching data: ${error.message}`,
@@ -407,7 +403,7 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 ....
 
-app.get('/api/dashboard/',
+app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
       const days = req.body.days || 7;
@@ -480,6 +476,19 @@ admin.discoverDatabases();
 > 🫨 AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
 mongoose, or just use raw SQL queries against your tables.
 
+
+> 🫨 To call API from frontend component we use Adminforth's callApi method.
+> However this is not mandatory. Alternatively you can just use plain fetch:
+>
+> ```ts
+> //diff-remove
+>   data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
+> //diff-add
+>   const response = await fetch('/api/dashboard/');
+> //diff-add
+>   data.value = await response.json();
+> ```
+> however, the callApi function will handle path prefixing(you can change baseUrl and it will take this into account) and 401 redirect to login when user is logged out
 
 Demo:
 

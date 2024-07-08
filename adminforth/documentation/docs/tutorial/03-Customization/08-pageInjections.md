@@ -38,6 +38,8 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 <script setup lang="ts">
 import { onMounted, ref, Ref } from 'vue';
 import ApexCharts from 'apexcharts';
+import { callApi } from '@/utils';
+
 
 const data: Ref<any[]> = ref([]);
 
@@ -113,12 +115,7 @@ const chatOptions = {
 
 onMounted(async () => {
   try {
-    const resp = await fetch('/api/aparts-by-room-percentages');
-    if (resp.status === 401) {
-      // user will be redirected to login page automatically so no need to handle anything here
-      return;
-    }
-    data.value = await resp.json();
+    data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
   } catch (error) {
     window.adminforth.alert({
       message: `Error fetching data: ${error.message}`,

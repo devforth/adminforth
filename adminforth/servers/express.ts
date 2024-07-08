@@ -20,16 +20,21 @@ async function proxyTo(url, res) {
   actual.body.pipe(res);
 }
 
-async function parseExpressCookie(req) {
+async function parseExpressCookie(req): Promise<
+  Array<{
+    key: string, 
+    value: string
+  }>
+> {
   const cookies = req.headers.cookie;
   if (!cookies) {
-    return {};
+    return [];
   }
   const parts = cookies.split('; ');
-  const result = {};
+  const result = [];
   parts.forEach(part => {
     const [key, value] = part.split('=');
-    result[key] = value;
+    result.push({key, value});
   });
   return result;
 }
@@ -152,7 +157,19 @@ class ExpressServer implements ExpressHttpServer {
   authorize(handler) {
     return async (req, res, next) => {
       const cookies = await parseExpressCookie(req);
-      const jwt = cookies['adminforth_jwt'];
+
+      // check if multiple adminforth_jwt providerd and show warning
+      const jwts = cookies.filter(({key}) => key === 'adminforth_jwt');
+      if (jwts.length > 1) {
+        console.error('Multiple adminforth_jwt cookies provided');
+        jwts.forEach(({key}) => {
+          res.setHeader('Set-Cookie', `${key}=; HttpOnly; SameSite=Strict; Expires=${new Date(0).toUTCString()}`);
+        });
+        res.status(401).send(`Unauthorized by AdminForth. Too many JWT cookies found (${jwts.length} instead of 1). Expected to get only one cookie with name 'adminforth_jwt'.`);
+      }
+
+      const jwt = jwts[0]?.value;
+
       if (!jwt) {
         res.status(401).send('Unauthorized by AdminForth');
         return
