@@ -75,7 +75,7 @@ class CodeInjector implements CodeInjectorType {
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
 
     const env = {
-      VUE_APP_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
+      VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
     };
@@ -607,7 +607,7 @@ async watchForReprepare({ verbose }) {
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
-        VUE_APP_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
+        VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };

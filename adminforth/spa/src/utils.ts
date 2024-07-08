@@ -6,7 +6,10 @@ import { useRouter } from 'vue-router';
 import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
 
-export async function callApi({path, method, body=undefined} ) {
+export async function callApi({path, method, body=undefined}: {
+  path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
+  body?: any
+}): Promise<any> {
   const options = {
     method,
     headers: {
