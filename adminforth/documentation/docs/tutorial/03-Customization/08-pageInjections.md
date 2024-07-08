@@ -139,7 +139,7 @@ onMounted(async () => {
 Also we have to add an Api to get percentages:
 
 ```ts title="./index.ts"
-  app.get('/api/aparts-by-room-percentages/',
+  app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
     admin.express.authorize(
       async (req, res) => {
         const roomPercentages = await db.prepare(
