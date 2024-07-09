@@ -103,11 +103,9 @@ const onFileChange = async (e) => {
     }
     reader.readAsDataURL(file);
   }
-  setInterval(() => {
-    progress.value += 1;
-  }, 20);
+  
 
-  await callAdminForthApi({
+  const { url, previewUrl, s3Path } = await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
       method: 'POST',
       body: {
@@ -117,6 +115,28 @@ const onFileChange = async (e) => {
         originalExtension: extension,
       },
   });
+
+  console.log('S3 upload URL:', url);
+
+  const formData = new FormData();
+  for (const key in s3Path.fields) {
+    formData.append(key, s3Path.fields[key]);
+  }
+  formData.append('file', file);
+  // upload as multipart request and update upload progress
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: (progressEvent) => {
+      progress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+    }
+  });
+  const data = await response.json();
+  console.log('S3 upload response:', data);
+
 }
 
 

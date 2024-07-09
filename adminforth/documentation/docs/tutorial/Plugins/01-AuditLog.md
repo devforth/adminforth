@@ -6,15 +6,14 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 ## Installation
 
 
-Plugin is already installed into adminforth, to import:
-
-```ts
-import AuditLogPlugin from 'adminforth/plugins/AuditLogPlugin';
+```bash
+npm i @adminforth/audit-log
 ```
-If yu are using pure Node without TypeScript, you can use the following code:
 
-```js
-import AuditLogPlugin from 'adminforth/dist/plugins/AuditLogPlugin/index.ts';
+Import:
+
+```ts title='./index.ts'
+import AuditLogPlugin from '@adminforth/audit-log';
 ```
 
 [Getting Started](<../01-gettingStarted.md>) will be used as base for this example.
@@ -68,6 +67,10 @@ Logger sets up for all the resources by default. But you can exclude unwanted re
 Also, it excludes itself to avoid infinte logging loop.
 
 ```ts title='./index.ts'
+//diff-add
+import { v4 as uuid } from 'uuid';
+import { AdminForthDataTypes }
+...
   resources: [
   ...
 //diff-add
@@ -89,7 +92,7 @@ Also, it excludes itself to avoid infinte logging loop.
 //diff-add
         { name: 'action', required: false },
 //diff-add
-        { name: 'diff', required: false },
+        { name: 'diff', required: false, type: AdminForth.Types.JSON },
 //diff-add
         { name: 'record_id', required: false },
 //diff-add
@@ -161,4 +164,4 @@ That's it! Now you can see the logs in the table
 < replace this screenshot, make same but "Audit Logs" should be in menu >
 ![alt text](localhost_3500_resource_audit_logs.png)
 
-See [API Reference](/docs/api/plugins/AuditLogPlugin/types/type-aliases/PluginOptions.md) for more all options.
+See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options.

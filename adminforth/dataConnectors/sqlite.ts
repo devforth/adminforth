@@ -1,9 +1,9 @@
 import betterSqlite3 from 'better-sqlite3';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 
-class SQLiteConnector extends AdminForthBaseConnector implements AdminForthDataSourceConnector {
+class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     db: any;
 
@@ -80,6 +80,12 @@ class SQLiteConnector extends AdminForthBaseConnector implements AdminForthDataS
 
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return !!value;
+      } else if (field.type == AdminForthDataTypes.JSON) {
+        if (field._underlineType == 'text' || field._underlineType == 'varchar') {
+          return JSON.parse(value);
+        } else {
+          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+        }
       }
 
       return value;
@@ -114,6 +120,13 @@ class SQLiteConnector extends AdminForthBaseConnector implements AdminForthDataS
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value ? 1 : 0;
+      } else if (field.type == AdminForthDataTypes.JSON) {
+        // check underline type is text or string
+        if (field._underlineType == 'text' || field._underlineType == 'varchar') {
+          return JSON.stringify(value);
+        } else {
+          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+        }
       }
 
       return value;
@@ -219,7 +232,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements AdminForthDataS
       return result;
     }
 
-    async createRecord({ resource, record }: { resource: AdminForthResource, record: any }) {
+    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }) {
       const tableName = resource.table;
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');

@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 
-class MongoConnector implements AdminForthDataSourceConnector {
+class MongoConnector implements IAdminForthDataSourceConnector {
     db: MongoClient
 
     constructor({ url }: { url: string }) {
@@ -154,7 +154,7 @@ class MongoConnector implements AdminForthDataSourceConnector {
         return result;
     }
 
-    async createRecord({ resource, record }) {
+    async createRecordOriginalValues({ resource, record }) {
         const tableName = resource.table;
         const collection = this.db.db().collection(tableName);
         const columns = Object.keys(record);

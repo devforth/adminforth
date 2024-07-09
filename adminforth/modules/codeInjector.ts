@@ -9,7 +9,7 @@ import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
 import { styles } from './styles.js'
-import { AdminForthComponentDeclaration, CodeInjectorType } from '../types/AdminForthConfig.js';
+import { AdminForthComponentDeclaration, ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
 
 
@@ -36,7 +36,7 @@ function notifyWatcherIssue(limit) {
   console.log('Run ulimit -n 10000 to increase the limit for open files.');
 }
 
-class CodeInjector implements CodeInjectorType {
+class CodeInjector implements ICodeInjector {
 
   allWatchers = [];
   adminforth: AdminForth;
@@ -576,6 +576,7 @@ async watchForReprepare({ verbose }) {
   }
 
   async bundleNow({hotReload = false, verbose = false}: {hotReload: boolean, verbose: boolean}) {
+    console.log(`AdminForth bundling ${hotReload ? ' and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources({ verbose });

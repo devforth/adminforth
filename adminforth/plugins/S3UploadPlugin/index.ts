@@ -1,19 +1,19 @@
 
-import { AdminForthClass, GenericHttpServer } from "../../types/AdminForthConfig.js";
+import { IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
 import AdminForthPlugin from "../base.js";
 import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
 
 export default class S3UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
   }
 
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: any) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
@@ -63,7 +63,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
     }
   }
 
-  setupEndpoints(server: GenericHttpServer) {
+  setupEndpoints(server: IHttpServer) {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_s3_upload_url`,

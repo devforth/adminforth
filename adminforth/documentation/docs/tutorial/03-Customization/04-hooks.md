@@ -12,7 +12,7 @@ Hooks are used to:
 - execute something after data were saved or deleted
 - change the query before fetching items from the database
 - modify the fetched data before it is displayed in the list and show
-- prevent the request to db depending on some condition (Better use [allowedActions](#limiting-access-to-the-resource-actions) for this)
+- prevent the request to db depending on some condition (Better use [allowedActions](./05-limitingAccess.md) for this)
 
 ## Modify the data before it is saved to the database
 

@@ -25,7 +25,7 @@ AdminForth does not provide own HTTP server, but can add own listeners over exis
 npm install express@4.19.2
 ```
 
-For demo purposes we will use SQLite data source. You can use Postgres, Mongo or Clickhouse as well, or create own data source by [implementing DataSource Connector interface](/docs/api/types/AdminForthConfig/interfaces/AdminForthDataSourceConnector).
+For demo purposes we will use SQLite data source. You can use Postgres, Mongo or Clickhouse as well, or create own data source by [implementing DataSource Connector interface](/docs/api/types/AdminForthConfig/interfaces/IAdminForthDataSourceConnector).
 
 
 ```bash
@@ -381,11 +381,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.use(express.json());
   const port = 3500;
 
-  (async () => {
-      // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-      await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-      console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-  })();
+  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
+  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 
   // serve after you added all api

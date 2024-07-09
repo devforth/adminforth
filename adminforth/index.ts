@@ -9,8 +9,8 @@ import ExpressServer from './servers/express.js';
 import {v1 as uuid} from 'uuid';
 import fs from 'fs';
 import { ADMINFORTH_VERSION, listify } from './modules/utils.js';
-import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, AdminForthComponentDeclarationFull,
-  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, GenericHttpServer, 
+import { AdminForthConfig, IAdminForth, AdminForthComponentDeclaration, AdminForthComponentDeclarationFull,
+  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
   BeforeDataSourceRequestFunction,
@@ -19,18 +19,19 @@ import { AdminForthConfig, AdminForthClass, AdminForthComponentDeclaration, Admi
   AllowedActionsEnum,
   AllowedActions,
   ActionCheckSource,
-  AdminForthDataSourceConnector,
+  IAdminForthDataSourceConnector,
   BeforeLoginConfirmationFunction
 } from './types/AdminForthConfig.js';
 import path from 'path';
-import AdminForthPlugin from './plugins/base.js';
+import AdminForthPlugin from './basePlugin.js';
 
 
 //get array from enum AdminForthResourcePages
 
+export { AdminForthPlugin };
 
 
-class AdminForth implements AdminForthClass {
+class AdminForth implements IAdminForth {
   static Types = AdminForthDataTypes;
 
   static Utils = {
@@ -123,7 +124,7 @@ class AdminForth implements AdminForthClass {
         throw new Error('rootUser.password is required');
       }
 
-      console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config before going to production\n');
+      console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config ASAP when you are in production\n');
     }
     
     if (!this.config.customization.customComponentsDir) {
@@ -178,6 +179,8 @@ class AdminForth implements AdminForthClass {
           const validatedPage = this.validateComponent(page.component, errors, true);
         }
       });
+    } else {
+      this.config.customization.customPages = [];
     }
     if (!this.config.baseUrl) {
       this.config.baseUrl = '';
@@ -568,6 +571,7 @@ class AdminForth implements AdminForthClass {
   }
 
   async bundleNow({ hotReload=false, verbose=false }) {
+    
     await this.codeInjector.bundleNow({ hotReload, verbose });
   }
 
@@ -649,7 +653,7 @@ class AdminForth implements AdminForthClass {
     }
 }
 
-  setupEndpoints(server: GenericHttpServer) {
+  setupEndpoints(server: IHttpServer) {
     server.endpoint({
       noAuth: true,
       method: 'POST',
@@ -1162,12 +1166,6 @@ class AdminForth implements AdminForthClass {
             }
 
             const { record } = body;
-            // call setFieldValue for each column
-            for (const column of resource.columns) {
-              if (record[column.name] !== undefined) {
-                record[column.name] = this.connectors[resource.dataSource].setFieldValue(column, record[column.name]);
-              }
-            }
 
             await this.createResourceRecord({ resource, record, adminUser });
             const connector = this.connectors[resource.dataSource];

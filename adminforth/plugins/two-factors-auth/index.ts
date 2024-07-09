@@ -1,26 +1,26 @@
-import { AdminForthResource, AdminForthResourcePages, AdminForthClass, GenericHttpServer } from "../../types/AdminForthConfig.js";
-import AdminForthPlugin from "../base.js";
+import { AdminForthResource } from "adminforth/types/AdminForthConfig.js";
+import type { IAdminForth, IHttpServer, IAdminForthAuth } from "adminforth/types/AdminForthConfig.js";
+import { AdminForthPlugin } from "adminforth/index.js";
 import twofactor from 'node-2fa';
-import  AdminForthAuth  from "../../auth.js";
 import  { PluginOptions } from "./types.js"
 
 
 export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
   options: PluginOptions;
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
   authResource: AdminForthResource;
   connectors: any;
-  adminForthAuth: AdminForthAuth  ;
+  adminForthAuth: IAdminForthAuth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
   }
 
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
-    this.adminForthAuth = new AdminForthAuth(adminforth)
+    this.adminForthAuth = adminforth.auth;
     const customPages = this.adminforth.config.customization.customPages
     customPages.push({
       path:'/confirm2fa',
@@ -30,10 +30,10 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
       path:'/setup2fa',
       component: { file: this.componentPath('TwoFactorsSetup.vue'), meta: { title: 'Setup 2FA', customLayout: true }}
     })
-    this.activate( resourceConfig,adminforth )
+    this.activate( resourceConfig, adminforth )
   }
 
-  activate ( resourceConfig: AdminForthResource, adminforth: AdminForthClass ){
+  activate ( resourceConfig: AdminForthResource, adminforth: IAdminForth ){
     if (!this.options.twoFaSecretFieldName){
       throw new Error('twoFaSecretFieldName is required')
     }
@@ -94,7 +94,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
     })
   }
 
-  setupEndpoints(server: GenericHttpServer): void {
+  setupEndpoints(server: IHttpServer): void {
     server.endpoint({
       method: 'POST',
       path: `/plugin/twofa/initSetup`,

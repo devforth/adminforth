@@ -1,13 +1,13 @@
-import { AdminForthResource, AdminForthPluginType, AdminForthClass } from '../types/AdminForthConfig.js';
-import { getComponentNameFromPath } from '../modules/utils.js';
-import { currentFileDir } from '../modules/utils.js';
+import { AdminForthResource, IAdminForthPlugin, IAdminForth } from './types/AdminForthConfig.js';
+import { getComponentNameFromPath } from './modules/utils.js';
+import { currentFileDir } from './modules/utils.js';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
-export default class AdminForthPlugin implements AdminForthPluginType {
+export default class AdminForthPlugin implements IAdminForthPlugin {
 
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
   pluginDir: string;
   customFolderName: string = 'custom';
   pluginInstanceId: string;
@@ -22,7 +22,7 @@ export default class AdminForthPlugin implements AdminForthPluginType {
     
   }
 
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     this.adminforth = adminforth;
   }
 

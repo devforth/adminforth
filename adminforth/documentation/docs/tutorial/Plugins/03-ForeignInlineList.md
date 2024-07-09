@@ -6,14 +6,14 @@ Foreign inline list plugin allows to display a list (table) of items from a fore
 
 Import plugin:
 
-```ts
-import ForeignInlineListPlugin from 'adminforth/plugins/ForeignInlineListPlugin';
+```bash
+npm i @adminforth/foreign-inline-list
 ```
-If you are using pure Node without TypeScript, you can use the following code:
 
-```js
-import ForeignInlineListPlugin from 'adminforth/dist/plugins/ForeignInlineListPlugin/index.js';
+```ts title="./index.ts"
+import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 ```
+
 
 In [Getting Started](<../01-gettingStarted.md>) we created a `'aparts'` resource which has a field `'realtor_id'`.
 This field refers to record from `'users'` resource. This means that we can display a list of appartments in the user's show view.
@@ -55,4 +55,4 @@ You can use `modifyTableResourceConfig` callback to modify what columns to show 
 
 ![alt text](localhost_3500_resource_users_show_08dpfh.png)
 
-See [API Reference](/docs/api/plugins/ForeignInlineListPlugin/types/type-aliases/PluginOptions) for more all options.
+See [API Reference](/docs/api/plugins/foreign-inline-list/types/type-aliases/PluginOptions) for more all options.
