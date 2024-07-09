@@ -19,7 +19,7 @@ and put the following code:
 ```ts title='./bundleNow.ts'
 import { admin } from './index.js';
 
-await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
+await admin.bundleNow({ hotReload: false});
 console.log('Bundling AdminForth done.');
 ```
 
@@ -27,15 +27,19 @@ Now completely Remove bundleNow call from `index.ts` file:
 
 ```ts title='./index.ts'
 //diff-remove
-(async () => {
-//diff-remove
-      // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
 //diff-remove
   await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
 //diff-remove
   console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-//diff-remove
-})();
+//diff-add
+  if (process.env.NODE_ENV === 'development') {
+//diff-add
+    await admin.bundleNow({ hotReload: true});
+//diff-add
+    console.log('Bundling AdminForth done');
+//diff-add
+  }
 ```
 
 In root directory create file `.dockerignore`:

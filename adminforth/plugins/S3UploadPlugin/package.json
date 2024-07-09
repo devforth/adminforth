@@ -1,5 +1,5 @@
 {
-  "name": "s3uploadplugin",
+  "name": "@adminforth/s3upload",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

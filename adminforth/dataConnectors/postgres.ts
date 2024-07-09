@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 import AdminForthBaseConnector from './baseConnector.js';
 const { Client } = pkg;
 
 
-class PostgresConnector extends AdminForthBaseConnector implements AdminForthDataSourceConnector {
+class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     db: any;
 
@@ -261,7 +261,7 @@ class PostgresConnector extends AdminForthBaseConnector implements AdminForthDat
         return result;
     }
 
-    async createRecord({ resource, record }) {
+    async createRecordOriginalValues({ resource, record }) {
         const tableName = resource.table;
         const columns = Object.keys(record);
         const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');

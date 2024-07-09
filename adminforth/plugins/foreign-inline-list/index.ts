@@ -1,19 +1,19 @@
-import { AdminForthResource, AdminForthResourcePages, AdminForthClass, GenericHttpServer } from "../../types/AdminForthConfig.js";
-import AdminForthPlugin from "../base.js";
+import { AdminForthResource, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth/types/AdminForthConfig.js";
+import { AdminForthPlugin } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 
 export default class ForeignInlineListPlugin extends AdminForthPlugin {
   foreignResource: AdminForthResource;
   options: PluginOptions;
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
   }
 
-  setupEndpoints(server: GenericHttpServer) {
+  setupEndpoints(server: IHttpServer) {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_resource`,
@@ -34,7 +34,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
 
   }
 
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
 

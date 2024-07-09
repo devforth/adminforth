@@ -1,7 +1,7 @@
-import { AdminForthResource, AdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn } from "../types/AdminForthConfig.js";
+import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn } from "../types/AdminForthConfig.js";
 
 
-export default class AdminForthBaseConnector implements AdminForthDataSourceConnectorBase {
+export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
   getPrimaryKey(resource: AdminForthResource): string {
     for (const col of resource.dataSourceColumns) {
         if (col.primaryKey) {
@@ -40,8 +40,17 @@ export default class AdminForthBaseConnector implements AdminForthDataSourceConn
     throw new Error('Method not implemented.');
   }
 
-  createRecord({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  createRecord({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
+    // transform value using setFieldValue and call createRecordOriginalValues
+    const newRecord = {...record};
+    for (const col of resource.dataSourceColumns) {
+        newRecord[col.name] = this.setFieldValue(col, record[col.name]);
+    }
+    return this.createRecordOriginalValues({ resource, record: newRecord });
   }
 
   updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {

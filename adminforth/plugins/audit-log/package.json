@@ -1,0 +1,17 @@
+{
+  "name": "@adminforth/audit-log",
+  "version": "1.0.27",
+  "description": "AdminForth plugin for logging all actions (who did what and when)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public"
+  },
+  "author": "devforth",
+  "license": "ISC",
+  "dependencies": {
+    "adminforth": "^1.1.96",
+    "dayjs": "^1.11.11"
+  }
+}

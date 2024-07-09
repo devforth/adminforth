@@ -1,6 +1,6 @@
 import { Express } from 'express';
 
-export interface CodeInjectorType {
+export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
 }
@@ -8,9 +8,9 @@ export interface CodeInjectorType {
 /**
  * Implement this interface to create custom HTTP server adapter for AdminForth.
  */
-export interface GenericHttpServer {
+export interface IHttpServer {
 
-  // constructor(adminforth: AdminForthClass): void;
+  // constructor(adminforth: IAdminForth): void;
 
   /**
    * Sets up HTTP server to serve AdminForth SPA.
@@ -51,7 +51,7 @@ export type AdminUser = {
   dbUser: any,
 }
 
-export interface ExpressHttpServer extends GenericHttpServer {
+export interface IExpressHttpServer extends IHttpServer {
 
   /**
    * Call this method to serve AdminForth SPA from Express instance.
@@ -77,7 +77,7 @@ export interface ExpressHttpServer extends GenericHttpServer {
   authorize(callable: Function): void;
 }
 
-export interface AdminForthDataSourceConnector {
+export interface IAdminForthDataSourceConnector {
   
   /**
    * Function which will be called to fetch record from database.
@@ -100,7 +100,7 @@ export interface AdminForthDataSourceConnector {
    *  - {@link AdminForthResourceColumn.max}
    *  - {@link AdminForthResourceColumn.minValue}, {@link AdminForthResourceColumn.maxValue}, {@link AdminForthResourceColumn.enum}, {@link AdminForthResourceColumn.foreignResource}, {@link AdminForthResourceColumn.sortable}, {@link AdminForthResourceColumn.backendOnly}, {@link AdminForthResourceColumn.masked}, {@link AdminForthResourceColumn.virtual}, {@link AdminForthResourceColumn.components}, {@link AdminForthResourceColumn.allowMinMaxQuery}, {@link AdminForthResourceColumn.editingNote}, {@link AdminForthResourceColumn.showIn}, {@link AdminForthResourceColumn.isUnique}, {@link AdminForthResourceColumn.validation})
    * Also you can additionally save original column type to {@link AdminForthResourceColumn._underlineType}. This might be later used
-   * in {@link AdminForthDataSourceConnector.getFieldValue} and {@link AdminForthDataSourceConnector.setFieldValue} methods.
+   * in {@link IAdminForthDataSourceConnector.getFieldValue} and {@link IAdminForthDataSourceConnector.setFieldValue} methods.
    * 
    * 
    * @param resource 
@@ -117,7 +117,7 @@ export interface AdminForthDataSourceConnector {
   getFieldValue(field: AdminForthResourceColumn, value: any): any;
 
   /**
-   * Used to transform record before saving to database. Should perform operation inverse to {@link AdminForthDataSourceConnector.getFieldValue}
+   * Used to transform record before saving to database. Should perform operation inverse to {@link IAdminForthDataSourceConnector.getFieldValue}
    * @param field 
    * @param value 
    */
@@ -127,7 +127,7 @@ export interface AdminForthDataSourceConnector {
    * Used to fetch data from database.
    * This method is reused both to list records and show one record (by passing limit 1 and offset 0) .
    * 
-   * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link AdminForthDataSourceConnector.getFieldValue}
+   * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
   getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
     resource: AdminForthResource,
@@ -142,7 +142,7 @@ export interface AdminForthDataSourceConnector {
    * Optional method which used to get min and max values for columns in resource.
    * Called only for columns which have {@link AdminForthResourceColumn.allowMinMaxQuery} set to true.
    * 
-   * Internally should call {@link AdminForthDataSourceConnector.getFieldValue} for both min and max values.
+   * Internally should call {@link IAdminForthDataSourceConnector.getFieldValue} for both min and max values.
    */
   getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 
@@ -150,7 +150,7 @@ export interface AdminForthDataSourceConnector {
   /**
    * Used to create record in database.
    */
-  createRecord({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
 
   /**
    * Used to update record in database.
@@ -171,7 +171,7 @@ export interface AdminForthDataSourceConnector {
 /**
  * Interface that exposes methods to interact with AdminForth in standard way
  */
-export interface AdminForthDataSourceConnectorBase extends AdminForthDataSourceConnector {
+export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourceConnector {
 
   getPrimaryKey(resource: AdminForthResource): string;
 
@@ -189,25 +189,31 @@ export interface AdminForthDataSourceConnectorBase extends AdminForthDataSourceC
 }
 
 
-export interface AdminForthDataSourceConnectorConstructor {
-  new ({ url }: { url: string }): AdminForthDataSourceConnector;
+export interface IAdminForthDataSourceConnectorConstructor {
+  new ({ url }: { url: string }): IAdminForthDataSourceConnector;
 }
 
-export interface AdminForthClass {
+export interface IAdminForthAuth {
+  verify(jwt : string, mustHaveType: string): Promise<any>;
+  issueJWT(payload: Object, type: string): string;
+
+  removeCustomCookie({response, name}: {response: any, name: string}): void;
+
+  setAuthCookie({response, username, pk,}: {response: any, username: string, pk: string}): void;
+}
+
+export interface IAdminForth {
   config: AdminForthConfig;
-  codeInjector: CodeInjectorType;
-  express: GenericHttpServer;
+  codeInjector: ICodeInjector;
+  express: IHttpServer;
 
   connectors: {
-    [key: string]: AdminForthDataSourceConnectorBase;
+    [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
   createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
 
-  auth: {
-    verify(jwt : string, mustHaveType: string): Promise<any>;
-    issueJWT(payload: Object, type: string): string;
-  }
+  auth: IAdminForthAuth;
 
   /**
    * Internal flag which indicates if AdminForth is running in hot reload mode.
@@ -233,12 +239,12 @@ export interface AdminForthClass {
   /**
    * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
    */
-  setupEndpoints(server: GenericHttpServer): void;
+  setupEndpoints(server: IHttpServer): void;
 }
 
 
-export interface AdminForthPluginType {
-  adminforth: AdminForthClass;
+export interface IAdminForthPlugin {
+  adminforth: IAdminForth;
   pluginDir: string;
   customFolderName: string;
   pluginInstanceId: string;
@@ -249,10 +255,10 @@ export interface AdminForthPluginType {
    * {@link AdminForthResourceColumn.components} object, then add some hook which will modify record before getting or saving it to database.
    * 
    * So this method is core of AdminForth plugins. It allows to modify full resource configuration.
-   * @param adminforth Instance of AdminForthClass
+   * @param adminforth Instance of IAdminForth
    * @param resourceConfig Resource configuration object which will be modified by plugin
    */
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource): void;
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
   componentPath(componentFile: string): string;
 
   /**
@@ -260,7 +266,7 @@ export interface AdminForthPluginType {
    * 
    * @param server 
    */
-  setupEndpoints(server: GenericHttpServer): void;
+  setupEndpoints(server: IHttpServer): void;
 }
 
 export enum AdminForthMenuTypes {
@@ -666,7 +672,7 @@ export type AdminForthResource = {
      * Array of plugins which will be used to modify resource configuration.
      * 
      */
-    plugins?: Array<AdminForthPluginType>,
+    plugins?: Array<IAdminForthPlugin>,
     hooks?: {
       show?: {
         beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
@@ -884,7 +890,7 @@ export type AdminForthConfig = {
      * 
      */
     databaseConnectors?: {
-        [key: string]: AdminForthDataSourceConnectorConstructor,
+        [key: string]: IAdminForthDataSourceConnectorConstructor,
     }, 
 
     /**

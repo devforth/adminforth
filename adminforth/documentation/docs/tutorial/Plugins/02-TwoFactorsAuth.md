@@ -5,10 +5,14 @@ The Two-Factor Authentication Plugin provides an additional layer of security to
 ## Installation
 
 
+```
+npm i @adminforth/two-factors-auth --save
+```
+
 Plugin is already installed into adminforth, to import:
     
 ```ts
-import TwoFactorsAuthPlugin from 'adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
+import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
 ``` 
 
 Plugin required some additional setup, to make it work properly. It should be added to the resource auth resource. In our example we will add it to the user resource .

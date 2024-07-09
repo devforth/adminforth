@@ -4,7 +4,7 @@ import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { AdminForthClass, ExpressHttpServer } from '../types/AdminForthConfig.js';
+import { IAdminForth, IExpressHttpServer } from '../types/AdminForthConfig.js';
 
 
 function replaceAtStart(string, substring) {
@@ -80,12 +80,12 @@ const respondNoServer = (title, explanation) => {
     </body>
     `;
 }
-class ExpressServer implements ExpressHttpServer {
+class ExpressServer implements IExpressHttpServer {
 
   expressApp: Express;
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
 
-  constructor(adminforth: AdminForthClass) {
+  constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
   }
 

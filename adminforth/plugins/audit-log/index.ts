@@ -1,23 +1,24 @@
-import AdminForth from "../../index.js";
-import { 
-  AdminForthResource, AdminForthClass, BeforeDataSourceRequestFunction,
-  AllowedActionsEnum,
-  BeforeSaveFunction,
+import type { 
+  AdminForthResource, 
+  IAdminForth,
   AdminUser,
-  AdminForthDataTypes,
-  AdminForthResourcePages,
-  AdminForthFilterOperators,
-  AdminForthSortDirections
-} from "../../types/AdminForthConfig.js";
-import AdminForthPlugin from "../base.js";
+} from "adminforth/types/AdminForthConfig.js";
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js';
+
+import { AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth/types/AdminForthConfig.js";
+
+import { AdminForthPlugin } from "adminforth/index.js";
+
 import { PluginOptions } from "./types.js";
 
+dayjs.extend(utc);
 
 
 export default class AuditLogPlugin extends AdminForthPlugin {
  
   options: PluginOptions;
-  adminforth: AdminForthClass;
+  adminforth: IAdminForth;
   auditLogResource: string;
 
   constructor(options: PluginOptions) {
@@ -70,14 +71,15 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldRecord || {}, 'newRecord': newRecord },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
-      [this.options.resourceColumns.resourceCreatedColumnName]: new Date()
+      // utc iso string
+      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format()
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
     return {ok: true};
   }
 
-  modifyResourceConfig(adminforth: AdminForthClass, resourceConfig: AdminForthResource) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
     this.auditLogResource = resourceConfig.resourceId;
@@ -90,11 +92,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       if (this.auditLogResource === resource.resourceId) {
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
         if (!diffColumn) {
-          diffColumn = {
-            name: this.options.resourceColumns.resourceDataColumnName,
-            components: {},
-            // type: AdminForthDataTypes.STRING
-          }
+          throw new Error(`Column ${this.options.resourceColumns.resourceDataColumnName} not found in ${resource.label}`)
+        }
+        if (diffColumn.type !== AdminForthDataTypes.JSON) {
+          throw new Error(`Column ${this.options.resourceColumns.resourceDataColumnName} must be of type 'json'`)
         }
      
         diffColumn.showIn = ['show']
