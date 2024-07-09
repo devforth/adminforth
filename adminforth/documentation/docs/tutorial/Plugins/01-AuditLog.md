@@ -7,7 +7,7 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 
 
 ```bash
-npm i @adminforth/audit-log
+npm i @adminforth/audit-log --save
 ```
 
 Import:
