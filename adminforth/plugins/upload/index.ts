@@ -1,8 +1,9 @@
 
 import { IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
-import AdminForthPlugin from "../base.js";
 import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
+import { AdminForthPlugin } from "adminforth";
+
 
 export default class S3UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;

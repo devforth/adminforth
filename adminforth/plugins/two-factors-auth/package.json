@@ -11,7 +11,7 @@
   "author": "devforth",
   "license": "ISC",
   "dependencies": {
-    "adminforth": "^1.1.95",
+    "adminforth": "^1.1.104",
     "node-2fa": "^2.0.3"
   }
 }

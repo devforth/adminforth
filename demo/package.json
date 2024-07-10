@@ -15,7 +15,6 @@
     "adminforth": "^1.0.52",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2",
-    "highcharts-vue": "^2.0.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

@@ -43,7 +43,7 @@
         <span class="sr-only">Loading...</span>
     </div>
     <div 
-      v-else
+      v-else-if="coreStore.record"
       class="relative overflow-x-auto shadow-resourseFormShadow "
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
@@ -90,7 +90,12 @@
               </template>
             </tr>
         </tbody>
-    </table>
+     </table>
+    </div>
+
+    <div v-else class="text-center text-gray-500 dark:text-gray-400 mt-10">
+      Ooops. Record not found
+    </div>
 
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
@@ -101,7 +106,6 @@
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
-</div>
 
 
   </div>

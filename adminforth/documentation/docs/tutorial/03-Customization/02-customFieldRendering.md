@@ -56,7 +56,7 @@ Here is how it looks:
 In very similar way you can render how cell is rendered in `'edit'` and `'create'` view. 
 You can use it for creating custom editors for the fields. Check [component specs](/docs/api/types/AdminForthConfig/type-aliases/AdminForthFieldComponents#create) to understand which props are passed to the component
 
-# Parametrizing the custom components
+## Parametrizing the custom components
 
 Sometimes you need to render same component with different parameters.
 You can use [full component declaration](/docs/api/types/AdminForthConfig/type-aliases/AdminForthComponentDeclarationFull.md)
@@ -130,3 +130,19 @@ defineProps({
 });
 </script>
 ```
+
+## Using 3rd-party npm packages in the components
+
+To install 3rd-party npm packages you should create npm package in the `custom` directory:
+
+```bash
+cd custom
+npm init -y
+```
+
+And simply do `npm install` for the package you need:
+
+```bash
+npm install <some package> --save-dev
+```
+
