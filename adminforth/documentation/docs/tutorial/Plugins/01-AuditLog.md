@@ -7,7 +7,7 @@ Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/Admin
 
 
 ```bash
-npm i @adminforth/audit-log
+npm i @adminforth/audit-log --save
 ```
 
 Import:
@@ -161,7 +161,6 @@ menu: [
 
 That's it! Now you can see the logs in the table 
 
-< replace this screenshot, make same but "Audit Logs" should be in menu >
-![alt text](localhost_3500_resource_audit_logs.png)
+![alt text](image.png)
 
 See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options.
