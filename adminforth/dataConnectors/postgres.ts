@@ -151,6 +151,18 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             return dayjs(value).toISOString().split('T')[0];
         }
 
+        if (field.type == AdminForthDataTypes.JSON) {
+            if (typeof value == 'string') {
+                return JSON.parse(value);
+            } else if (typeof value == 'object') {
+                return value;
+            } else {
+                console.error('JSON field value is not string or object, but has type:',  typeof value);
+                console.error('Field:', field);
+                return {}
+            }
+        }
+
         return value;
       }
 
