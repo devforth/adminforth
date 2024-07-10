@@ -13,18 +13,20 @@ Plugin is already installed into adminforth, to import:
     
 ```ts
 import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
-``` 
+```
 
 Plugin required some additional setup, to make it work properly. It should be added to the resource auth resource. In our example we will add it to the user resource .
 
 ```ts title='./index.ts'
 
 export const admin = new AdminForth({
-    //... other resource configurations
-    auth: {
-        resourceId: 'users'
-        //... other resource configurations
-    },
+  //... other resource configurations
+  auth: {
+      resourceId: 'users'
+      //... other resource configurations
+  },
+  ...
+  {
     dataSource: 'maindb',
     table: 'users',
 //diff-add
@@ -46,6 +48,7 @@ export const admin = new AdminForth({
 //diff-add
         }
     ],
+  }
 }
 
 //diff-add
