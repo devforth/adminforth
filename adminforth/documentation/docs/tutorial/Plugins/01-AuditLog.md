@@ -92,7 +92,7 @@ import { AdminForthDataTypes }
 //diff-add
         { name: 'action', required: false },
 //diff-add
-        { name: 'diff', required: false, type: AdminForth.Types.JSON },
+        { name: 'diff', required: false, type: AdminForth.Types.JSON, showIn: ['show'] },
 //diff-add
         { name: 'record_id', required: false },
 //diff-add

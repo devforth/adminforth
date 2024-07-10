@@ -5,6 +5,11 @@ export interface ICodeInjector {
   allComponentNames: Object;
 }
 
+export interface IConfigValidator {
+  validateConfig(config: AdminForthConfig)
+  postProcessAfterDiscovery(config: any): void;
+}
+
 export interface IAdminForthHttpResponse {
     setHeader: (key: string, value: string) => void,
     setStatus: (code: number, message: string) => void,
@@ -208,12 +213,20 @@ export interface IAdminForthAuth {
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
   setAuthCookie({response, username, pk,}: {response: any, username: string, pk: string}): void;
+  
+  removeAuthCookie(response: any): void;
 }
 
 export interface IAdminForth {
   config: AdminForthConfig;
   codeInjector: ICodeInjector;
   express: IHttpServer;
+
+  activatedPlugins: Array<IAdminForthPlugin>;
+
+  statuses: {
+    dbDiscover: 'pending' | 'done';
+  };
 
   connectors: {
     [key: string]: IAdminForthDataSourceConnectorBase;
