@@ -54,11 +54,12 @@ class AdminForth implements IAdminForth {
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
   configValidator: IConfigValidator;
+  restApi: AdminForthRestAPI;
 
   baseUrlSlashed: string;
 
   statuses: {
-    dbDiscover?: 'running' | 'done',
+    dbDiscover: 'running' | 'done',
   }
 
   constructor(config: AdminForthConfig) {
@@ -75,7 +76,9 @@ class AdminForth implements IAdminForth {
     this.express = new ExpressServer(this);
     this.auth = new AdminForthAuth(this);
     this.connectors = {};
-    this.statuses = {};
+    this.statuses = {
+      dbDiscover: 'running',
+    };
 
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
