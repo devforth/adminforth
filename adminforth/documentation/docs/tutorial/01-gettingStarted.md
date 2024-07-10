@@ -272,7 +272,8 @@ export const admin = new AdminForth({
           type: AdminForth.Types.STRING,
           showIn: ['create', 'edit'], // to show field only on create and edit pages
           masked: true, // to show stars in input field
-        }
+        },
+        { name: 'password_hash', backendOnly: true, showIn: []}
       ],
       hooks: {
         create: {
