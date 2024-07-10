@@ -4,10 +4,12 @@ Most Admin Panels should have some Dashboards or custom pages.
 
 In AdminForth creation of custom page is very simpl.
 
-Install CHart.js library into your main package (near `index.ts`):
+To add custom package to SPA bundle you have to initialize npm in `custom` directory and install required packages:
 
 ```bash
-npm install apexcharts --save
+cd ./custom
+npm init -y
+npm install apexcharts --save-dev
 ```
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:

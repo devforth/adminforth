@@ -6,10 +6,9 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth/types/AdminForthConfig.js";
+import { AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth/dist/types/AdminForthConfig.js";
 
-import { AdminForthPlugin } from "adminforth/index.js";
-
+import { AdminForthPlugin } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);

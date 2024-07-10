@@ -7,7 +7,7 @@ Foreign inline list plugin allows to display a list (table) of items from a fore
 Import plugin:
 
 ```bash
-npm i @adminforth/foreign-inline-list
+npm i @adminforth/foreign-inline-list --save
 ```
 
 ```ts title="./index.ts"

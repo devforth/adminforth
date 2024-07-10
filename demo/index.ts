@@ -4,10 +4,10 @@ import AdminForth from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
 import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
-import ForeignInlineListPlugin from '../adminforth/plugins/ForeignInlineListPlugin/index.ts';
-import AuditLogPlugin from '../adminforth/plugins/AuditLogPlugin/index.ts';
-import TwoFactorsAuthPlugin from '../adminforth/plugins/TwoFactorsAuthPlugin/index.ts';
-import S3UploadPlugin from '../adminforth/plugins/S3UploadPlugin/index.ts';
+import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.ts';
+import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
+import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
+import S3UploadPlugin from '../adminforth/plugins/upload/index.ts';
 
 const ADMIN_BASE_URL = '';
 
@@ -363,12 +363,11 @@ const admin = new AdminForth({
           showIn: ['list', 'filter', 'show'],
           fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
         },
-        // { 
-        //   name: 'password_hash',
-        //   type: AdminForth.Types.STRING,
-        //   showIn: [],
-        //   backendOnly: true,  // will never go to frontend
-        // },
+        { 
+          name: 'password_hash',
+          showIn: [],
+          backendOnly: true,  // will never go to frontend
+        },
         {
           name: 'role',
           enum: [
