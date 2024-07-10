@@ -17,6 +17,8 @@ columns: [
 //diff-add
   {
 //diff-add
+    name: 'Country Flag',
+//diff-add
     label: 'Country Flag',
 //diff-add
     type: AdminForthDataTypes.STRING,
