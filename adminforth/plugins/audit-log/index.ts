@@ -2,17 +2,15 @@ import type {
   AdminForthResource, 
   IAdminForth,
   AdminUser,
-} from "adminforth/types/AdminForthConfig.js";
+} from "adminforth";
+
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth/dist/types/AdminForthConfig.js";
-
-import { AdminForthPlugin } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
-
 
 export default class AuditLogPlugin extends AdminForthPlugin {
  

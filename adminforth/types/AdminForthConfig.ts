@@ -645,7 +645,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
   ok:boolean, 
   error?:string, 
   body: {
-    redirectTo?: 'string', 
+    redirectTo?: string, 
     allowedLogin?: boolean,
   }
 }>;
