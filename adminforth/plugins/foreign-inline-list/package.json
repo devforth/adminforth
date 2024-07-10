@@ -1,7 +1,7 @@
 {
   "name": "@adminforth/foreign-inline-list",
-  "version": "1.0.0",
-  "description": "AdminForth plugin for logging all actions (who did what and when)",
+  "version": "1.0.1",
+  "description": "AdminForth plugin for adding list of children items to the parent item show page",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",

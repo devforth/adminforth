@@ -74,7 +74,7 @@ export const loadFile = (file: string) => {
   return baseUrl;
 }
 
-export function checkEmptyValues(value: any, viewType:'show' | 'list' ) {
+export function checkEmptyValues(value: any, viewType: 'show' | 'list' ) {
   const config: CoreConfig | {} = useCoreStore().config;
   let emptyFieldPlaceholder = '';
   if (config.emptyFieldPlaceholder) {

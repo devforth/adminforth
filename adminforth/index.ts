@@ -155,6 +155,10 @@ class AdminForth implements IAdminForth {
       if (!userResource) {
         throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
       }
+
+      if (!this.config.auth.beforeLoginConfirmation) {
+        this.config.auth.beforeLoginConfirmation = [];
+      }
     }
 
     if (!this.config.customization) {
@@ -601,7 +605,11 @@ class AdminForth implements IAdminForth {
                  });
             }
         }
-        if ((column.required as {create?: boolean, edit?: boolean}) ?.create && record[column.name] === undefined) {
+        if (
+            (column.required as {create?: boolean, edit?: boolean}) ?.create &&
+            record[column.name] === undefined &&
+            column.showIn.includes(AdminForthResourcePages.create)
+        ) {
             return { error: `Column '${column.name}' is required` };
         }
 
@@ -621,15 +629,15 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
-        const resp = await hook({ resource, record, adminUser });
-        if (!resp || (!resp.ok && !resp.error)) {
-          throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-        }
-
-        if (resp.error) {
-          return { error: resp.error };
-        }
+      const resp = await hook({ resource, record, adminUser });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
       }
+
+      if (resp.error) {
+        return { error: resp.error };
+      }
+    }
 
     // remove virtual columns from record
     for (const column of resource.columns.filter((col) => col.virtual)) {
@@ -638,6 +646,7 @@ class AdminForth implements IAdminForth {
         }
     }
     const connector = this.connectors[resource.dataSource];
+    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record createResourceRecord', record);
     await connector.createRecord({ resource, record });
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
@@ -651,6 +660,8 @@ class AdminForth implements IAdminForth {
         return { error: resp.error };
       }
     }
+
+    return { ok: true };
 }
 
   setupEndpoints(server: IHttpServer) {
@@ -708,16 +719,13 @@ class AdminForth implements IAdminForth {
             adminUser = { 
               isRoot: false, dbUser: userRecord,
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
-              username
+              username,
             };
             const beforeLoginConfirmation = this.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
             if (beforeLoginConfirmation?.length){
               for (const hook of beforeLoginConfirmation) {
-                const resp = await hook({ userRecord:adminUser});
-                if (resp?.body?.setCookie){
-                  resp?.body?.setCookie.forEach((cookie) => {
-                    this.auth.setCustomCookie({response,payload:cookie})});
-                }
+                const resp = await hook({ adminUser, response });
+                
                 if (resp?.body?.redirectTo) {
                   toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
                   break;
@@ -1167,11 +1175,14 @@ class AdminForth implements IAdminForth {
 
             const { record } = body;
 
-            await this.createResourceRecord({ resource, record, adminUser });
+            const response = await this.createResourceRecord({ resource, record, adminUser });
+            if (response.error) {
+              return { error: response.error };
+            }
             const connector = this.connectors[resource.dataSource];
 
             return {
-              newRecordId: body['record'][connector.getPrimaryKey(resource)]
+              newRecordId: record[connector.getPrimaryKey(resource)]
             }
         }
     });

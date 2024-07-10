@@ -248,6 +248,7 @@ class CodeInjector implements ICodeInjector {
 
         await fsExtra.copy(src, to, {
           recursive: true,
+          dereference: true,
         });
       }
     }
@@ -271,7 +272,7 @@ class CodeInjector implements ICodeInjector {
     const collections = new Set(icons.map((icon) => icon.split(':')[0]));
 
     // package names @iconify-prerendered/vue-<collection name>
-    const packageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
+    const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
 
     // for each icon generate import statement
     const iconImports = uniqueIcons.map((icon) => {
@@ -411,16 +412,30 @@ class CodeInjector implements ICodeInjector {
     const spaLockHash = hashify(spaPackageLock);
 
     /* customPackageLock */
-    const usersPackagePath = path.join('./package.json');
-    const usersPackage = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+    let usersLockHash = '';
+    let usersLock = null;
+    if (this.adminforth.config.customization?.customComponentsDir) {
+      const usersPackagePath = path.join(this.adminforth.config.customization.customComponentsDir, 'package.json');
+      let usersPackage = null;
+      try {
+        usersPackage = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+      } catch (e) {
+        // user package.json does not exist, user does not have custom components
+      }
+      if (usersPackage) {
+        const usersLockPath = path.join(this.adminforth.config.customization.customComponentsDir, 'package-lock.json');
+        try {
+          usersLock = JSON.parse(await fs.promises.readFile(usersLockPath, 'utf-8'));
+        } catch (e) {
+          throw new Error(`Custom package-lock.json does not exist in ${this.adminforth.config.customization.customComponentsDir}, but package.json does. 
+            We can't determine version of packages without package-lock.json. Please run npm install in ${this.adminforth.config.customization.customComponentsDir}`);
+        }
+        usersLockHash = hashify(usersLock);
+      }
 
-    const usersLockPath = path.join('./package-lock.json');
-    const usersLock = JSON.parse(await fs.promises.readFile(usersLockPath, 'utf-8'));
-    const usersLockHash = hashify(usersLock);
+    const iconPackagesNamesHash = hashify(iconPackageNames);
 
-    const packagesNamesHash = hashify(packageNames);
-
-    const fullHash = `${spaLockHash}::${packagesNamesHash}::${usersLockHash}`;
+    const fullHash = `${spaLockHash}::${iconPackagesNamesHash}::${usersLockHash}`;
     const hashPath = path.join(CodeInjector.SPA_TMP_PATH, 'node_modules', '.adminforth_hash');
 
     try {
@@ -442,25 +457,29 @@ class CodeInjector implements ICodeInjector {
 
     await this.runNpmShell({command: 'ci', verbose, cwd: CodeInjector.SPA_TMP_PATH});
 
-    // get packages with version from customPackage
-    const IGNORE_PACKAGES = ['tsx', 'typescript', 'express', 'nodemon', 'adminforth'];
-    const customPackgeNames = [...Object.keys(usersPackage.dependencies), ...Object.keys(usersPackage.devDependencies || [])]
-      .filter((packageName) => !IGNORE_PACKAGES.includes(packageName))
-      .reduce(
-        (acc, packageName) => {
-          const version = usersLock.packages[`node_modules/${packageName}`].version;
-          acc.push(`${packageName}@${version}`);
-          return acc;
-        }, []);
+    let customPackgeNames = [];
+    if (usersPackage && usersLock) {
+      customPackgeNames = [
+        ...Object.keys(usersPackage.dependencies || []),
+        ...Object.keys(usersPackage.devDependencies || [])
+      ].reduce(
+          (acc, packageName) => {
+            const version = usersLock.packages[`node_modules/${packageName}`].version;
+            acc.push(`${packageName}@${version}`);
+            return acc;
+          }, []
+      );
+    }
 
-    if (packageNames.length) {
-      const npmInstallCommand = `install ${[...packageNames, ...customPackgeNames].join(' ')}`;
+    if (iconPackageNames.length) {
+      const npmInstallCommand = `install ${[...iconPackageNames, ...customPackgeNames].join(' ')}`;
       await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
 
   }
+}
 
 async watchForReprepare({ verbose }) {
     const spaPath = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
