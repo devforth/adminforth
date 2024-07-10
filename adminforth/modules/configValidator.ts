@@ -1,4 +1,12 @@
-import { AdminForthConfig, AdminForthResource, IAdminForth, IConfigValidator, AdminForthComponentDeclaration , AdminForthResourcePages, AllowedActionsEnum} from "../types/AdminForthConfig";
+import { 
+  AdminForthConfig, 
+  AdminForthResource, 
+  IAdminForth, IConfigValidator, 
+  AdminForthComponentDeclaration , 
+  AdminForthResourcePages, AllowedActionsEnum,
+  type AdminForthComponentDeclarationFull,
+} from "../types/AdminForthConfig.js";
+
 import fs from 'fs';
 import path from 'path';
 import { guessLabelFromName } from './utils.js';
@@ -258,7 +266,7 @@ export default class ConfigValidator implements IConfigValidator {
             state: 'danger',
             icon: 'flowbite:trash-bin-outline',
             action: async ({ selectedIds }) => {
-              const connector = this.connectors[res.dataSource];
+              const connector = this.adminforth.connectors[res.dataSource];
               await Promise.all(selectedIds.map(async (recordId) => {
                 await connector.deleteRecord({ resource: res, recordId });
               }));

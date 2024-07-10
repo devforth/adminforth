@@ -6,8 +6,8 @@ export interface ICodeInjector {
 }
 
 export interface IConfigValidator {
-  validateConfig(config: AdminForthConfig)
-  postProcessAfterDiscovery(config: any): void;
+  validateConfig()
+  postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
 export interface IAdminForthHttpResponse {
@@ -224,8 +224,10 @@ export interface IAdminForth {
 
   activatedPlugins: Array<IAdminForthPlugin>;
 
+  baseUrlSlashed: string;
+
   statuses: {
-    dbDiscover: 'pending' | 'done';
+    dbDiscover: 'running' | 'done',
   };
 
   connectors: {
