@@ -134,7 +134,7 @@ const admin = new AdminForth({
             { name: 'resource_id', required: false },
             { name: 'user_id', required: false },
             { name: 'action', required: false },
-            { name: 'diff', required: false },
+            { name: 'diff', required: false, type: AdminForth.Types.JSON },
             { name: 'record_id', required: false },
         ],
         options: {
@@ -143,6 +143,18 @@ const admin = new AdminForth({
                 delete: false,
             }
         },
+        plugins: [
+            new AuditLogPlugin({
+                resourceColumns: {
+                    resourceUserIdColumnName: 'user_id',
+                    resourceRecordIdColumnName: 'record_id',
+                    resourceActionColumnName: 'action',
+                    resourceDataColumnName: 'diff',
+                    resourceCreatedColumnName: 'created_at',
+                    resourceIdColumnName: 'resource_id',
+                },
+            }),
+        ],
        
     },
     {
