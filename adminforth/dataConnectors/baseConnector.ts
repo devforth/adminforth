@@ -50,6 +50,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     for (const col of resource.dataSourceColumns) {
         newRecord[col.name] = this.setFieldValue(col, record[col.name]);
     }
+    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', newRecord);
     return this.createRecordOriginalValues({ resource, record: newRecord });
   }
 

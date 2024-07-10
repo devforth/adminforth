@@ -1,5 +1,5 @@
 import { AdminForthResource } from "adminforth/types/AdminForthConfig.js";
-import type { IAdminForth, IHttpServer, IAdminForthAuth } from "adminforth/types/AdminForthConfig.js";
+import type { IAdminForth, IHttpServer, IAdminForthAuth, BeforeLoginConfirmationFunction, IAdminForthHttpResponse } from "adminforth/types/AdminForthConfig.js";
 import { AdminForthPlugin } from "adminforth/index.js";
 import twofactor from 'node-2fa';
 import  { PluginOptions } from "./types.js"
@@ -44,54 +44,46 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
     if(!this.authResource.columns.some((col)=>col.name === this.options.twoFaSecretFieldName)){
       throw new Error(`Column ${this.options.twoFaSecretFieldName} not found in ${this.authResource.label}`)
     }
-    const beforeLoginConfirmation = this.adminforth.config.auth as any
-    if (!beforeLoginConfirmation.beforeLoginConfirmation){
-      beforeLoginConfirmation.beforeLoginConfirmation = []
-    } 
-    beforeLoginConfirmation.beforeLoginConfirmation.push(async({adminUser})=>{
-      if(adminUser.isRoot){
-        return { body: {loginAllowed: true}, ok: true}
-      }
-      const secret = adminUser.dbUser[this.options.twoFaSecretFieldName]
-      const userName = adminUser.dbUser[adminforth.config.auth.usernameField]
-      const brandName = adminforth.config.customization.brandName
-      const authResource = adminforth.config.resources.find((res)=>res.resourceId === adminforth.config.auth.resourceId )
-      const authPk = authResource.columns.find((col)=>col.primaryKey).name
-      const userPk = adminUser.dbUser[authPk]
-      let newSecret = null
-      if (!secret){
-        const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
-        newSecret = tempSecret.secret
-      } else {
-        return {
+    (this.adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).push(
+      async({ adminUser, response }: { adminUser: AdminUser, response: IAdminForthHttpResponse} )=> {
+        if(adminUser.isRoot){
+          return { body: {loginAllowed: true}, ok: true}
+        }
+        const secret = adminUser.dbUser[this.options.twoFaSecretFieldName]
+        const userName = adminUser.dbUser[adminforth.config.auth.usernameField]
+        const brandName = adminforth.config.customization.brandName
+        const authResource = adminforth.config.resources.find((res)=>res.resourceId === adminforth.config.auth.resourceId )
+        const authPk = authResource.columns.find((col)=>col.primaryKey).name
+        const userPk = adminUser.dbUser[authPk]
+        let newSecret = null
+        if (!secret){
+          const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
+          newSecret = tempSecret.secret
+        } else {
+          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk },'tempTotp');
+          response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + '1h').toUTCString() } `);
+
+          return {
+            body:{
+              loginAllowed: false,
+              redirectTo: '/confirm2fa',
+             
+            },
+            ok: true
+            
+          }
+        }
+        const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk },'tempTotp', ) 
+        response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${totpTemporaryJWT}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + '1h').toUTCString() } `);
+        
+        return { 
           body:{
             loginAllowed: false,
-            redirectTo: '/confirm2fa',
-            setCookie: [{
-              name: 'totpTemporaryJWT', 
-              value: this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk },'tempTotp', ),
-              expiry: '1h',
-              httpOnly: true
-            },]
+            redirectTo: secret ? '/confirm2fa' : '/setup2fa', 
           },
           ok: true
-          
         }
-      }
-      const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk },'tempTotp', ) 
-      return { 
-        body:{
-          loginAllowed: false,
-          redirectTo: secret ? '/confirm2fa' : '/setup2fa', 
-          setCookie: [{
-            name: 'totpTemporaryJWT', 
-            value: totpTemporaryJWT,
-            expiry: '1h',
-            httpOnly: true
-          },]},
-        ok: true
-      }
-    })
+      })
   }
 
   setupEndpoints(server: IHttpServer): void {

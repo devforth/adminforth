@@ -5,6 +5,11 @@ export interface ICodeInjector {
   allComponentNames: Object;
 }
 
+export interface IAdminForthHttpResponse {
+    setHeader: (key: string, value: string) => void,
+    setStatus: (code: number, message: string) => void,
+};
+
 /**
  * Implement this interface to create custom HTTP server adapter for AdminForth.
  */
@@ -28,10 +33,13 @@ export interface IHttpServer {
     method: string,
     noAuth?: boolean,
     path: string,
-    handler: (body: any, adminUser: any, query: {[key: string]: string}, headers: {[key: string]: string}, cookies: {[key: string]: string}, response: {
-      setHeader: (key: string, value: string) => void,
-      setStatus: (code: number, message: string) => void,
-    }) => void,
+    handler: (
+      body: any, 
+      adminUser: any, 
+      query: {[key: string]: string}, 
+      headers: {[key: string]: string}, cookies: {[key: string]: string}, 
+      response: IAdminForthHttpResponse,
+    ) => void,
   }): void;
 
 }
@@ -615,7 +623,17 @@ export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUse
 /**
  * Allow to get user data before login confirmation, will triger when user try to login.
  */
-export type BeforeLoginConfirmationFunction = (params?: { userRecord: AdminUser }) => Promise<{ok:boolean, error?:string, body:{setCookie?:[], redirectTo?: 'string', allowedLogin?: boolean   }}>;
+export type BeforeLoginConfirmationFunction = (params?: { 
+    adminUser: AdminUser,
+    response: IAdminForthHttpResponse,
+}) => Promise<{
+  ok:boolean, 
+  error?:string, 
+  body: {
+    redirectTo?: 'string', 
+    allowedLogin?: boolean,
+  }
+}>;
 
 /**
  * Resource describes one table or collection in database.
@@ -985,9 +1003,11 @@ export type AdminForthConfig = {
        * }
        * ```
        * 
-       * Install HighCharts:
+       * Install HighCharts into custom folder:
        * 
-       * ```bash
+       * ```bashcreating rec
+       * cd custom
+       * npm init -y
        * npm install highcharts highcharts-vue
        * ```
        * 
