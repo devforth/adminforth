@@ -27,7 +27,6 @@ export const admin = new AdminForth({
   },
   ...
   {
-    dataSource: 'maindb',
     table: 'users',
 //diff-add
     plugins: [
