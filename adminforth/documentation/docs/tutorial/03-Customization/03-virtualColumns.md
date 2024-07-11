@@ -45,16 +45,16 @@ columns: [
  
  ```html title="./custom/CountryFlag.vue"
  <template>
-  {{ getFlagEmojiFromIso(record?.country) }}
- </template>
- 
- <script setup>
- const props = defineProps(['record']);
- 
- function getFlagEmojiFromIso(iso) {
-    return iso.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
- }
- </script>
+    {{ getFlagEmojiFromIso(record.country) }}
+</template>
+   
+<script setup>
+   const props = defineProps(['record']);
+   
+   function getFlagEmojiFromIso(iso) {
+      return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+   }
+</script>
  ```
 
  To test component open some apartment for edit and change `description` field to `US New York`.
