@@ -162,10 +162,6 @@ class ExpressServer implements IExpressHttpServer {
       const jwts = cookies.filter(({key}) => key === 'adminforth_jwt');
       if (jwts.length > 1) {
         console.error('Multiple adminforth_jwt cookies provided');
-        jwts.forEach(({key}) => {
-          res.setHeader('Set-Cookie', `${key}=; HttpOnly; SameSite=Strict; Expires=${new Date(0).toUTCString()}`);
-        });
-        res.status(401).send(`Unauthorized by AdminForth. Too many JWT cookies found (${jwts.length} instead of 1). Expected to get only one cookie with name 'adminforth_jwt'.`);
       }
 
       const jwt = jwts[0]?.value;

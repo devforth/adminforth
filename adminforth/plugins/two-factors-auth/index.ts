@@ -1,9 +1,7 @@
-import { AdminForthResource } from "adminforth/types/AdminForthConfig.js";
-import type { IAdminForth, IHttpServer, IAdminForthAuth, BeforeLoginConfirmationFunction, IAdminForthHttpResponse } from "adminforth/types/AdminForthConfig.js";
-import { AdminForthPlugin } from "adminforth/index.js";
+import {  AdminForthPlugin } from "adminforth";
+import type { AdminForthResource, AdminUser, IAdminForth, IHttpServer, IAdminForthAuth, BeforeLoginConfirmationFunction, IAdminForthHttpResponse } from "adminforth";
 import twofactor from 'node-2fa';
 import  { PluginOptions } from "./types.js"
-
 
 export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
   options: PluginOptions;

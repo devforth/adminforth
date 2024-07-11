@@ -1,5 +1,5 @@
 
-import { AdminForthResource } from '../../types/AdminForthConfig.js';
+import { AdminForthResource } from 'adminforth';
 
 export type PluginOptions = {
 

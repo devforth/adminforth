@@ -1,5 +1,12 @@
-import { AdminForthResource, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth/types/AdminForthConfig.js";
-import { AdminForthPlugin } from "adminforth/index.js";
+
+import type { 
+  AdminForthResource, 
+  IAdminForth,
+  IHttpServer,
+  
+} from "adminforth";
+
+import { AdminForthPlugin, AdminForthResourcePages } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 
