@@ -1,7 +1,7 @@
 
 > 🫸This plugin is under development and not yet released
 
-# S3 Upload
+# Upload
 
 This plugin allows you to upload files to Amazon S3 bucket.
 

@@ -5,30 +5,23 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
-import {v1 as uuid} from 'uuid';
-import fs from 'fs';
 import { ADMINFORTH_VERSION, listify } from './modules/utils.js';
-import { AdminForthConfig, IAdminForth, IConfigValidator, AdminForthComponentDeclaration, AdminForthComponentDeclarationFull,
+import { 
+  type AdminForthConfig, 
+  type IAdminForth, 
+  type IConfigValidator,
   AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
-  BeforeDataSourceRequestFunction,
-  AfterDataSourceResponseFunction, AllowedActionValue, AdminUser,
+  AdminUser,
   AdminForthResource,
-  AllowedActionsEnum,
-  AllowedActions,
-  ActionCheckSource,
-  IAdminForthDataSourceConnector,
-  BeforeLoginConfirmationFunction
 } from './types/AdminForthConfig.js';
-import path from 'path';
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI from './modules/restApi.js';
 
-
-//get array from enum AdminForthResourcePages
-
+// exports
+export * from './types/AdminForthConfig.js'; 
 export { AdminForthPlugin };
 
 
