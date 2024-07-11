@@ -89,7 +89,6 @@ import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
-import { initFlowbite } from 'flowbite'
 import { showErrorTost } from '@/composables/useFrontendApi';
 
 
@@ -180,9 +179,9 @@ async function sendCode () {
     }
   })
   if (resp.allowedLogin){
-      router.push('/');
-    } else {
-      showErrorTost('Invalid code');
-    }
+    await user.finishLogin()
+  } else {
+    showErrorTost('Invalid code');
   }
+}
 </script>

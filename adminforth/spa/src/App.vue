@@ -294,8 +294,8 @@ watch (()=>coreStore.menu, () => {
 watch([loggedIn,  routerIsReady, loginRedirectCheckIsReady], ([l,r,lr]) => {
   if (l && r && lr) {
     setTimeout(() => {
-    initFlowbite();
-  }); 
+      initFlowbite();
+    }); 
   }
 })
 

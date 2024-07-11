@@ -207,6 +207,7 @@ class ExpressServer implements IExpressHttpServer {
         status: 200,
         message: undefined,
         setHeader(name, value) {
+          process.env.HEAVY_DEBUG && console.log(' 🪲Setting header', name, value);
           this.headers.push([name, value]);
         },
         

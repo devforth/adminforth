@@ -1,6 +1,12 @@
-import {ref} from 'vue';
-import {defineStore} from 'pinia';
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
 import { callAdminForthApi } from '@/utils';
+import { initFlowbite } from 'flowbite'
+import { useRouter } from 'vue-router';
+import { useCoreStore } from './core';
+import router from '@/router';
+
+
 
 export const useUserStore = defineStore('user', () => {
     const isAuthorized = ref(false);
@@ -13,6 +19,19 @@ export const useUserStore = defineStore('user', () => {
     function unauthorize() {
         isAuthorized.value = false;
         localStorage.setItem('isAuthorized', 'false');
+    }
+
+    async function finishLogin() {
+        const coreStore = useCoreStore();
+        authorize(); // TODO not sure we need this approach with localStorage
+        await router.push('/');
+        await router.isReady();
+        await coreStore.fetchMenuAndResource();
+        setTimeout(() => {
+            debugger;
+                initFlowbite();
+
+        }); 
     }
 
     async function logout() {
@@ -48,7 +67,8 @@ export const useUserStore = defineStore('user', () => {
         isAuthorized,
         authorize,
         unauthorize,
-        logout
+        logout,
+        finishLogin
     }
 
 });        

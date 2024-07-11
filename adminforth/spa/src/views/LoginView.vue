@@ -85,7 +85,6 @@ import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
-import { initFlowbite } from 'flowbite'
 
 
 const router = useRouter();
@@ -120,17 +119,9 @@ async function login() {
       error.value = resp.error;
     } else if (resp.redirectTo) {
       router.push(resp.redirectTo);
-    }
-     else {
+    } else {
       error.value = null;
-      user.authorize()
-      router.push('/');
-      await router.isReady();
-      await coreStore.fetchMenuAndResource();
-      setTimeout(() => {
-        initFlowbite();
-      }); 
-
+      await user.finishLogin();
     }
 
 }
