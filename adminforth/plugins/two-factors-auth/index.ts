@@ -59,7 +59,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           newSecret = tempSecret.secret
         } else {
           const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk },'tempTotp');
-          response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + '1h').toUTCString() } `);
+          response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; max-age=3600; `);
 
           return {
             body:{
@@ -91,7 +91,8 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
       noAuth: true,
       handler: async (server) => {
         const toReturn = {totpJWT:null,status:'ok',}
-        const totpTemporaryJWT = server.cookies['adminforth_totpTemporaryJWT']
+
+        const totpTemporaryJWT = server.cookies.find((cookie)=>cookie.key === 'adminforth_totpTemporaryJWT')?.value;
         if (totpTemporaryJWT){
           toReturn.totpJWT = totpTemporaryJWT
         }
