@@ -70,7 +70,6 @@
   
   
   
-  
   const router = useRouter();
   const inProgress = ref(false);
   
@@ -143,10 +142,10 @@
       }
     })
     if (resp.allowedLogin){
-        router.push('/');
-      } else {
-        showErrorTost('Invalid code');
-      }
+      await user.finishLogin();
+    } else {
+      showErrorTost('Invalid code');
     }
+  }
   </script>
   

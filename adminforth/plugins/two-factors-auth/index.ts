@@ -104,7 +104,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
       path: `/plugin/twofa/confirmSetup`,
       noAuth: true,
       handler: async ({ body, adminUser, response, cookies  }) => {
-        const totpTemporaryJWT = cookies['adminforth_totpTemporaryJWT']
+        const totpTemporaryJWT = cookies.find((cookie)=>cookie.key === 'adminforth_totpTemporaryJWT')?.value;
         const decoded = await this.adminforth.auth.verify(totpTemporaryJWT, 'tempTotp');
         if ( !decoded ) {
           return {status:'error',message:'Invalid token'}
@@ -115,9 +115,9 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
             this.connectors = this.adminforth.connectors
             const connector = this.connectors[this.authResource.dataSource];
             await connector.updateRecord({resource:this.authResource, recordId:decoded.pk, newValues:{[this.options.twoFaSecretFieldName]: decoded.newSecret}})
-            this.adminForthAuth.removeCustomCookie({response, name:'totpTemporaryJWT'})
-            this.adminForthAuth.setAuthCookie({response, username:decoded.userName, pk:decoded.pk})
-            return { status: 'ok',allowedLogin: true }
+            this.adminforth.auth.removeCustomCookie({response, name:'totpTemporaryJWT'})
+            this.adminforth.auth.setAuthCookie({response, username:decoded.userName, pk:decoded.pk})
+            return { status: 'ok', allowedLogin: true }
           } else {
             return {error: 'Wrong or expired OTP code'}
           }
@@ -128,9 +128,9 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           const user = await connector.getRecordByPrimaryKey(this.authResource, decoded.pk)
           const verified = twofactor.verifyToken(user[this.options.twoFaSecretFieldName], body.code);
           if (verified) { 
-            this.adminForthAuth.removeCustomCookie({response, name:'totpTemporaryJWT'})
-            this.adminForthAuth.setAuthCookie({response, username:decoded.userName, pk:decoded.pk})
-            return { status: 'ok',allowedLogin: true }
+            this.adminforth.auth.removeCustomCookie({response, name:'totpTemporaryJWT'})
+            this.adminforth.auth.setAuthCookie({response, username:decoded.userName, pk:decoded.pk})
+            return { status: 'ok', allowedLogin: true }
           } else {
             return {error: 'Wrong or expired OTP code'}
           }

@@ -315,7 +315,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           edit: true,
-          delete: false,
+          delete: true,
           show: true,
           filter: true,
           create: true,

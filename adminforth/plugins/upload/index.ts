@@ -89,7 +89,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
           ACL: this.options.s3ACL
         };
 
-        const url = s3.getSignedUrl('putObject', params);
+        const uploadUrl = await s3.getSignedUrl('putObject', params);
 
         let previewUrl;
         if (this.options.previewUrl) {
@@ -102,7 +102,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
           });
         }
         return {
-          url,
+          uploadUrl,
           s3Path,
           previewUrl
         };
