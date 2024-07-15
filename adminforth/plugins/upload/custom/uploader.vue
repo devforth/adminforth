@@ -7,15 +7,25 @@
               <svg v-else class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
               </svg>
-              <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${maxFileSizeHumanized})` : '' }}
-              </p>
 
-              <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-2 mb-2" v-if="progress > 0">
+              <template v-if="!uploaded">
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${maxFileSizeHumanized})` : '' }}
+                </p>
+              </template>
+
+              <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1 mb-2" v-if="progress > 0 && !uploaded">
                 <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" 
                   :style="{width: `${progress}%`}">{{ progress }}%
                 </div>
+              </div>
+
+              <div v-else-if="uploaded" class="flex items-center justify-center w-full mt-1">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <p class="ml-2 text-sm text-green-600 dark:text-green-400">File uploaded</p>
               </div>
           </div>
           <input id="dropzone-file" type="file" class="hidden" @change="onFileChange" />
@@ -32,8 +42,13 @@ const props = defineProps({
   meta: String
 })
 
+const emit = defineEmits(['update:value']);
+
 const imgPreview = ref(null);
 const progress = ref(0);
+
+const uploadedPath = ref(null);
+const uploaded = ref(false);
 
 const allowedExtensionsLabel = computed(() => {
   const allowedExtensions = props.meta.allowedExtensions || []
@@ -67,6 +82,7 @@ const onFileChange = async (e) => {
   if (!file) {
     imgPreview.value = null;
     progress.value = 0;
+    uploaded.value = false;
     return
   }
   console.log('File selected:', file);
@@ -104,8 +120,7 @@ const onFileChange = async (e) => {
     reader.readAsDataURL(file);
   }
   
-
-  const { url, previewUrl, s3Path } = await callAdminForthApi({
+  const { uploadUrl, previewUrl, s3Path } = await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
       method: 'POST',
       body: {
@@ -116,28 +131,39 @@ const onFileChange = async (e) => {
       },
   });
 
-  console.log('S3 upload URL:', url);
+  console.log('S3 upload URL:', uploadUrl);
 
   const formData = new FormData();
   for (const key in s3Path.fields) {
     formData.append(key, s3Path.fields[key]);
   }
   formData.append('file', file);
-  // upload as multipart request and update upload progress
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    onUploadProgress: (progressEvent) => {
-      progress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-    }
+  
+  const xhr = new XMLHttpRequest();
+  const success = await new Promise((resolve) => {
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        progress.value = Math.round((e.loaded / e.total) * 100);
+      }
+    };
+    xhr.addEventListener('loadend', () => {
+      resolve(xhr.readyState === 4 && xhr.status === 200);
+    });
+    xhr.open('PUT', uploadUrl, true);
+    xhr.setRequestHeader('Content-Type', type);
+    xhr.send(formData);
   });
-  const data = await response.json();
-  console.log('S3 upload response:', data);
-
+  if (!success) {
+    window.adminforth.alert({
+      message: 'Sorry but the file was not be uploaded. Please try again.',
+      variant: 'danger'
+    });
+    return;
+  }
+  uploaded.value = true;
+  emit('update:value', s3Path);
 }
+
 
 
 </script>

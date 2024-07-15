@@ -38,6 +38,12 @@ You can use AdminForth in pure Node, but we recommend using TypeScript for bette
 npm install typescript@5.4.5 tsx@4.11.2 --save-dev
 ```
 
+Also we will store secret for JWTs in .env file:
+
+```bash
+npm install dotenv --save-dev
+```
+
 ## Basic Philosophy
 
 AdminForth connects to existing databases and provides a backoffice for managing data including CRUD operations, filtering, sorting, and more.
@@ -68,10 +74,21 @@ Open `package.json`, set `type` to `module` and add `start` script:
   "scripts": {
     ...
 //diff-add
-    "start": "ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION NODE_ENV=development tsx watch index.ts"
+    "start": "tsx watch index.ts"
   },
 }
+``
+
+Create `.env` file in root directory with following content:
+
+```bash title="./.env"
+ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION
+NODE_ENV=development 
 ```
+
+> 🫨 In production you should set `NODE_ENV` to `production` and `ADMINFORTH_SECRET` to a strong secret.
+
+> 🫨 If you are using Git, to follow best practices, we recommend to add `.env` into `.gitignore` and also create `.env.sample` as template for other repository users.
 
 Create `index.ts` file in root directory with following content:
 
@@ -79,6 +96,10 @@ Create `index.ts` file in root directory with following content:
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth from 'adminforth';
+
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const DB_FILE = 'test.sqlite';
 let db;

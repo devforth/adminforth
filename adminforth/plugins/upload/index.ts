@@ -4,6 +4,7 @@ import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
 import { AdminForthPlugin } from "adminforth";
 
+const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-not-yet-used';
 
 export default class S3UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;
@@ -14,11 +15,69 @@ export default class S3UploadPlugin extends AdminForthPlugin {
     this.options = options;
   }
 
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
+  async setupLifecycleRule() {
+    // check that lifecyle rule "adminforth-unused-cleaner" exists
+    const CLEANUP_RULE_ID = 'adminforth-unused-cleaner';
+    const s3 = new AWS.S3({
+      accessKeyId: this.options.s3AccessKeyId,
+      secretAccessKey: this.options.s3SecretAccessKey,
+      region: this.options.s3Region
+    });
+    // check bucket exists
+    const bucketExists = s3.headBucket({ Bucket: this.options.s3Bucket }).promise()
+    if (!bucketExists) {
+      throw new Error(`Bucket ${this.options.s3Bucket} does not exist`);
+    }
+
+    // check that lifecycle rule exists
+    let ruleExists = false;
+
+    try {
+        const lifecycleConfig = await s3.getBucketLifecycleConfiguration({ Bucket: this.options.s3Bucket }).promise();
+        ruleExists = lifecycleConfig.Rules.some((rule: any) => rule.ID === CLEANUP_RULE_ID);
+    } catch (e) {
+      if (e.code !== 'NoSuchLifecycleConfiguration') {
+        throw e;
+      } else {
+        ruleExists = null;
+      }
+    }
+
+    if (!ruleExists) {
+      // create
+      // rule deletes object has tag adminforth-not-yet-used = true after 2 days
+      const params = {
+        Bucket: this.options.s3Bucket,
+        LifecycleConfiguration: {
+          Rules: [
+            {
+              ID: CLEANUP_RULE_ID,
+              Status: 'Enabled',
+              Filter: {
+                Tag: {
+                  Key: ADMINFORTH_NOT_YET_USED_TAG,
+                  Value: 'true'
+                }
+              },
+              Expiration: {
+                Days: 2
+              }
+            }
+          ]
+        }
+      };
+
+      await s3.putBucketLifecycleConfiguration(params).promise();
+    }
+  }
+
+  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
+    this.setupLifecycleRule();
+
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
-    // use component s3uploader.vue
+    // use component uploader.vue
     const { pathColumnName, uploadColumnLabel } = this.options;
 
     const pluginFrontendOptions = {
@@ -28,22 +87,23 @@ export default class S3UploadPlugin extends AdminForthPlugin {
     };
     const virtualColumn = {
       virtual: true,
-      name: `s3uploader_${this.pluginInstanceId}`,
+      name: `uploader_${this.pluginInstanceId}`,
       label: uploadColumnLabel,
       components: {
         edit: {
-          file: this.componentPath('s3uploader.vue'),
+          file: this.componentPath('uploader.vue'),
           meta: pluginFrontendOptions,
         },
         create: {
-          file: this.componentPath('s3uploader.vue'),
+          file: this.componentPath('uploader.vue'),
+          meta: pluginFrontendOptions,
+        },
+        show: {
+          file: this.componentPath('preview.vue'),
           meta: pluginFrontendOptions,
         }
       },
-      onlyIn: ['edit', 'create'],
-      options: {
-        pathColumnName
-      }
+      showIn: ['edit', 'create', 'show'],
     };
 
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
@@ -62,6 +122,58 @@ export default class S3UploadPlugin extends AdminForthPlugin {
     if (pathColumn.showIn && (pathColumn.showIn.includes('create') || pathColumn.showIn.includes('edit'))) {
       pathColumn.showIn = pathColumn.showIn.filter((view: string) => !['create', 'edit'].includes(view));
     }
+
+    // add beforeSave hook to save virtual column to path column
+    resourceConfig.hooks.create.beforeSave.push(async ({ record }: { record: any }) => {
+      if (record[virtualColumn.name]) {
+        record[pathColumnName] = record[virtualColumn.name];
+        delete record[virtualColumn.name];
+      }
+      return { ok: true };
+    });
+
+    // in afterSave hook, aremove tag adminforth-not-yet-used from the file
+    resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
+      if (record[pathColumnName]) {
+        const s3 = new AWS.S3({
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+          region: this.options.s3Region
+        });
+
+        await s3.putObjectTagging({
+          Bucket: this.options.s3Bucket,
+          Key: record[pathColumnName],
+          Tagging: {
+            TagSet: []
+          }
+        }).promise();
+      }
+      return { ok: true };
+    });
+
+    // add show hook to get presigned URL
+    resourceConfig.hooks.show.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
+      const record = response[0];
+      if (!record) {
+        return { ok: true };
+      }
+      if (record[pathColumnName]) {
+        const s3 = new AWS.S3({
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+          region: this.options.s3Region
+        });
+
+        const previewUrl = s3.getSignedUrl('getObject', {
+          Bucket: this.options.s3Bucket,
+          Key: record[pathColumnName],
+        });
+
+        record[`previewUrl_${this.pluginInstanceId}`] = previewUrl; // todo not updating
+      }
+      return { ok: true };
+    });
   }
 
   setupEndpoints(server: IHttpServer) {
@@ -76,6 +188,9 @@ export default class S3UploadPlugin extends AdminForthPlugin {
         }
 
         const s3Path: string = this.options.s3Path({ originalFilename, originalExtension, contentType });
+        if (s3Path.startsWith('/')) {
+          throw new Error('s3Path should not start with /, please adjust s3path function to not return / at the start of the path');
+        }
         const s3 = new AWS.S3({
           accessKeyId: this.options.s3AccessKeyId,
           secretAccessKey: this.options.s3SecretAccessKey,
@@ -86,10 +201,11 @@ export default class S3UploadPlugin extends AdminForthPlugin {
           Bucket: this.options.s3Bucket,
           Key: s3Path,
           ContentType: contentType,
-          ACL: this.options.s3ACL
+          ACL: this.options.s3ACL || 'private',
+          Tagging: `${ADMINFORTH_NOT_YET_USED_TAG}=true`,
         };
 
-        const uploadUrl = await s3.getSignedUrl('putObject', params);
+        const uploadUrl = await s3.getSignedUrl('putObject', params,)
 
         let previewUrl;
         if (this.options.previewUrl) {
@@ -98,7 +214,7 @@ export default class S3UploadPlugin extends AdminForthPlugin {
           // generate presigned url for reading the file
           previewUrl = s3.getSignedUrl('getObject', {
             Bucket: this.options.s3Bucket,
-            Key: s3Path
+            Key: s3Path,
           });
         }
         return {
