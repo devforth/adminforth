@@ -28,9 +28,7 @@ export const useUserStore = defineStore('user', () => {
         await router.isReady();
         await coreStore.fetchMenuAndResource();
         setTimeout(() => {
-            debugger;
-                initFlowbite();
-
+            initFlowbite();
         }); 
     }
 

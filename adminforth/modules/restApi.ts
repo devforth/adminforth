@@ -391,17 +391,6 @@ export default class AdminForthRestAPI {
           })
         );
 
-        for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
-          const resp = await hook({ resource, response: data.data, adminUser });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
-          }
-        }
-
         // remove all columns which are not defined in resources, or defined but backendOnly
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
@@ -414,6 +403,18 @@ export default class AdminForthRestAPI {
         data.data.forEach((item) => {
           item._label = resource.recordLabel(item);
         });
+
+        // only after adminforth made all post processing, give user ability to edit it
+        for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
+          const resp = await hook({ resource, response: data.data, adminUser });
+          if (!resp || (!resp.ok && !resp.error)) {
+            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          }
+
+          if (resp.error) {
+            return { error: resp.error };
+          }
+        }
 
         return {
           ...data, 

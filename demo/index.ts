@@ -9,6 +9,10 @@ import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
 import S3UploadPlugin from '../adminforth/plugins/upload/index.ts';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
+
 const ADMIN_BASE_URL = '';
 
 
@@ -278,14 +282,14 @@ const admin = new AdminForth({
         new S3UploadPlugin({
           pathColumnName: 'appartment_image',
           uploadColumnLabel: 'Upload preview', // label of upload field
-          s3Bucket: 'my-bucket',
-          s3Region: 'us-east-1',
+          s3Bucket: 'tmpbucket-adminforth',
+          s3Region: 'eu-central-1',
           allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'],
-          maxFileSize: 1024 * 1024 * 5, // 5MB
+          maxFileSize: 1024 * 1024 * 20, // 5MB
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `/aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
+          // s3ACL: 'public-read', // ACL which will be set to uploaded file
+          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
     
           // Used to display preview (if it is image) in list and show views
           // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
