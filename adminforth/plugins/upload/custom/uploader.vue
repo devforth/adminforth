@@ -133,12 +133,6 @@ const onFileChange = async (e) => {
 
   console.log('S3 upload URL:', uploadUrl);
 
-  const formData = new FormData();
-  for (const key in s3Path.fields) {
-    formData.append(key, s3Path.fields[key]);
-  }
-  formData.append('file', file);
-  
   const xhr = new XMLHttpRequest();
   const success = await new Promise((resolve) => {
     xhr.upload.onprogress = (e) => {
@@ -151,7 +145,7 @@ const onFileChange = async (e) => {
     });
     xhr.open('PUT', uploadUrl, true);
     xhr.setRequestHeader('Content-Type', type);
-    xhr.send(formData);
+    xhr.send(file);
   });
   if (!success) {
     window.adminforth.alert({

@@ -11,6 +11,7 @@ import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, d
 import { styles } from './styles.js'
 import { AdminForthComponentDeclaration, ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
+import { string } from 'zod';
 
 
 
@@ -101,6 +102,47 @@ class CodeInjector implements ICodeInjector {
     } catch (e) {
       // ignore
     }
+  }
+
+  async packagesFromNpm(dir: string): Promise<[string, string[]]> {
+    const usersPackagePath = path.join(dir, 'package.json');
+    let packageContent: { dependencies: any, devDependencies: any } = null;
+    let lockHash: string = '';
+    let packages: string[] = [];
+    try {
+      packageContent = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+    } catch (e) {
+      // user package.json does not exist, user does not have custom components
+    }
+    if (packageContent) {
+      const lockPath = path.join(dir, 'package-lock.json');
+      let lock = null;
+      try {
+        lock = JSON.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+      } catch (e) {
+        throw new Error(`Custom package-lock.json does not exist in ${dir}, but package.json does. 
+          We can't determine version of packages without package-lock.json. Please run npm install in ${dir}`);
+      }
+      lockHash = hashify(lock);
+
+      packages = [
+        ...Object.keys(packageContent.dependencies || []),
+        ...Object.keys(packageContent.devDependencies || [])
+      ].reduce(
+          (acc, packageName) => {
+            const pack = lock.packages[`node_modules/${packageName}`];
+            if (!pack) {
+              throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
+            }
+            const version = pack.version;
+
+            acc.push(`${packageName}@${version}`);
+            return acc;
+          }, []
+      );
+      
+    }
+    return [lockHash, packages];
   }
 
   async prepareSources({ filesUpdated }: { filesUpdated?: string[] }) {
@@ -409,32 +451,37 @@ class CodeInjector implements ICodeInjector {
     const spaLockHash = hashify(spaPackageLock);
 
     /* customPackageLock */
-    let usersLockHash = '';
-    let usersLock = null;
-    let usersPackage = null;
+    let usersLockHash: string = '';
+    let usersPackages: string[] = [];
+
 
     if (this.adminforth.config.customization?.customComponentsDir) {
-      const usersPackagePath = path.join(this.adminforth.config.customization.customComponentsDir, 'package.json');
-      try {
-        usersPackage = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
-      } catch (e) {
-        // user package.json does not exist, user does not have custom components
-      }
-      if (usersPackage) {
-        const usersLockPath = path.join(this.adminforth.config.customization.customComponentsDir, 'package-lock.json');
-        try {
-          usersLock = JSON.parse(await fs.promises.readFile(usersLockPath, 'utf-8'));
-        } catch (e) {
-          throw new Error(`Custom package-lock.json does not exist in ${this.adminforth.config.customization.customComponentsDir}, but package.json does. 
-            We can't determine version of packages without package-lock.json. Please run npm install in ${this.adminforth.config.customization.customComponentsDir}`);
-        }
-        usersLockHash = hashify(usersLock);
+      [usersLockHash, usersPackages] = await this.packagesFromNpm(this.adminforth.config.customization.customComponentsDir);
+    }
+
+    const pluginPackages: {
+        pluginName: string,
+        lockHash: string,
+        packages: string[],
+    }[] = [];
+
+    // for every installed plugin generate packages
+    for (const plugin of this.adminforth.activatedPlugins) {
+      const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
+      if (packages.length) {
+        pluginPackages.push({
+          pluginName: plugin.constructor.name,
+          lockHash,
+          packages,
+        });
       }
     }
+    // form string "pluginName:lockHash::pLugin2Name:lockHash"
+    const pluginsLockHash = pluginPackages.map(({ pluginName, lockHash }) => `${pluginName}>${lockHash}`).join('::');
 
     const iconPackagesNamesHash = hashify(iconPackageNames);
 
-    const fullHash = `${spaLockHash}::${iconPackagesNamesHash}::${usersLockHash}`;
+    const fullHash = `spa>${spaLockHash}::icons>${iconPackagesNamesHash}::user/custom>${usersLockHash}::${pluginsLockHash}`;
     const hashPath = path.join(CodeInjector.SPA_TMP_PATH, 'node_modules', '.adminforth_hash');
 
     try {
@@ -452,29 +499,20 @@ class CodeInjector implements ICodeInjector {
 
     await this.runNpmShell({command: 'ci', cwd: CodeInjector.SPA_TMP_PATH});
 
-    let customPackgeNames = [];
-    if (usersPackage && usersLock) {
-      customPackgeNames = [
-        ...Object.keys(usersPackage.dependencies || []),
-        ...Object.keys(usersPackage.devDependencies || [])
-      ].reduce(
-          (acc, packageName) => {
-            const version = usersLock.packages[`node_modules/${packageName}`].version;
-            acc.push(`${packageName}@${version}`);
-            return acc;
-          }, []
-      );
-    }
-
+    
     if (iconPackageNames.length) {
-      const npmInstallCommand = `install ${[...iconPackageNames, ...customPackgeNames].join(' ')}`;
+      const npmInstallCommand = `install ${[
+        ...iconPackageNames,
+        ...usersPackages, 
+        ...pluginPackages.map(({ packages }) => packages)
+      ].join(' ')}`;
       await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
   }
 
-async watchForReprepare({}) {
+  async watchForReprepare({}) {
     const spaPath = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
     // get list of all subdirectories in spa recursively
     const directories = [];
@@ -528,6 +566,9 @@ async watchForReprepare({}) {
     const directories = [];
     const files = []
     const collectDirectories = async (dir) => {
+      if (['node_modules', 'dist'].includes(path.basename(dir))) {
+        return;
+      }
       directories.push(dir);
 
       const filesAndDirs = await fs.promises.readdir(dir, { withFileTypes: true });

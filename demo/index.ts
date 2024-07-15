@@ -7,7 +7,7 @@ import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedAc
 import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
-import S3UploadPlugin from '../adminforth/plugins/upload/index.ts';
+import UploadPlugin from '../adminforth/plugins/upload/index.ts';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -279,7 +279,7 @@ const admin = new AdminForth({
         }
       ],
       plugins: [
-        new S3UploadPlugin({
+        new UploadPlugin({
           pathColumnName: 'appartment_image',
           uploadColumnLabel: 'Upload preview', // label of upload field
           s3Bucket: 'tmpbucket-adminforth',

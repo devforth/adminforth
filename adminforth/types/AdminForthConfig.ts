@@ -271,6 +271,7 @@ export interface IAdminForthPlugin {
   pluginDir: string;
   customFolderName: string;
   pluginInstanceId: string;
+  customFolderPath: string;
 
   /**
    * AdminForth plugins concept is based on modification of full AdminForth configuration
@@ -728,9 +729,36 @@ export type AdminForthResource = {
         afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
       },
     },
+
+    /**
+     * General options for resource.
+     */
     options?: {
+
+      /**
+       * Default sort for list view.
+       * Example:
+       * 
+       * ```ts
+       * defaultSort: {
+       *   columnName: 'created_at',
+       *   direction: AdminForthSortDirections.ASC, 
+       *   // or
+       *   // direction: 'asc' // if you are using non-typescript
+       * }
+       * ```
+       * 
+       */
       defaultSort?: {
+        
+        /**
+         * Column name which will be used to sort records.
+         */
         columnName: string,
+
+        /**
+         * Direction of sorting. Can be 'asc' or 'desc'.
+         */
         direction: AdminForthSortDirections | string,
       }
       bulkActions?: Array<{
