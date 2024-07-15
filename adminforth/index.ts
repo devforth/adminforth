@@ -138,8 +138,8 @@ class AdminForth implements IAdminForth {
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
-  async bundleNow({ hotReload=false, verbose=false }) {
-    await this.codeInjector.bundleNow({ hotReload, verbose });
+  async bundleNow({ hotReload=false }) {
+    await this.codeInjector.bundleNow({ hotReload });
   }
 
   async getUserByPk(pk: string) {

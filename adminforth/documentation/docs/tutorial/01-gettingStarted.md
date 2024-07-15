@@ -16,6 +16,7 @@ nvm use 18
 ```bash
 mkdir myadmin
 cd myadmin
+npm init -y
 npm install adminforth
 ```
 
@@ -77,7 +78,7 @@ Open `package.json`, set `type` to `module` and add `start` script:
     "start": "tsx watch index.ts"
   },
 }
-``
+```
 
 Create `.env` file in root directory with following content:
 
