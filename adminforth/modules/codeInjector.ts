@@ -62,7 +62,7 @@ class CodeInjector implements ICodeInjector {
 
   }
 
-  // async runShell({command, verbose = false}) {
+  // async runShell({ command }) {
   //   console.log(`⚙️ Running shell ${command}...`);
   //   console.time(`${command} done in`);
   //   const { stdout: out, stderr: err } = await execAsync(command);
@@ -70,7 +70,7 @@ class CodeInjector implements ICodeInjector {
   //   console.log(`Command ${command} output:`, out, err);
   // }
 
-  async runNpmShell({command, verbose = false, cwd}) {
+  async runNpmShell({command, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
 
@@ -80,7 +80,7 @@ class CodeInjector implements ICodeInjector {
       ...process.env,
     };
 
-    console.log(`⚙️ Running npm ${command}...`);
+    console.log(`⚙️ exec: npm ${command}...`);
     console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
@@ -88,11 +88,9 @@ class CodeInjector implements ICodeInjector {
     });
     console.timeEnd(`npm ${command} done in`);
 
-    if (verbose) {
-      console.log(`npm ${command} output:`, out);
-    }
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
     if (err) {
-      console.error(`npm ${command} errors/warnings:`, err);
+      process.env.HEAVY_DEBUG && console.error(`🪲npm ${command} errors/warnings:`, err);
     }
   }
 
@@ -105,7 +103,7 @@ class CodeInjector implements ICodeInjector {
     }
   }
 
-  async prepareSources({ filesUpdated, verbose = false }: { filesUpdated?: string[], verbose?: boolean }) {
+  async prepareSources({ filesUpdated }: { filesUpdated?: string[] }) {
     // check SPA_TMP_PATH exists and create if not
     try {
       await fs.promises.access(CodeInjector.SPA_TMP_PATH, fs.constants.F_OK);
@@ -386,7 +384,6 @@ class CodeInjector implements ICodeInjector {
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
 
-
     /* generate custom routes */
     const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
     let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
@@ -414,9 +411,10 @@ class CodeInjector implements ICodeInjector {
     /* customPackageLock */
     let usersLockHash = '';
     let usersLock = null;
+    let usersPackage = null;
+
     if (this.adminforth.config.customization?.customComponentsDir) {
       const usersPackagePath = path.join(this.adminforth.config.customization.customComponentsDir, 'package.json');
-      let usersPackage = null;
       try {
         usersPackage = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
       } catch (e) {
@@ -432,6 +430,7 @@ class CodeInjector implements ICodeInjector {
         }
         usersLockHash = hashify(usersLock);
       }
+    }
 
     const iconPackagesNamesHash = hashify(iconPackageNames);
 
@@ -441,21 +440,17 @@ class CodeInjector implements ICodeInjector {
     try {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       if (existingHash === fullHash) {
-        console.log('Hashes match, skipping npm ci/install');
+        process.env.HEAVY_DEBUG && console.log(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        if (verbose) {
-          console.log(`Hashes do not match: existing ${existingHash} new ${fullHash}, proceeding with npm ci/install`);
-        }
+        process.env.HEAVY_DEBUG && console.log(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
       }
     } catch (e) {
       // ignore
-      if (verbose) {
-        console.log('Hash file does not exist, proceeding with npm ci/install');
-      }
+      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
     }
 
-    await this.runNpmShell({command: 'ci', verbose, cwd: CodeInjector.SPA_TMP_PATH});
+    await this.runNpmShell({command: 'ci', cwd: CodeInjector.SPA_TMP_PATH});
 
     let customPackgeNames = [];
     if (usersPackage && usersLock) {
@@ -477,11 +472,9 @@ class CodeInjector implements ICodeInjector {
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
-
   }
-}
 
-async watchForReprepare({ verbose }) {
+async watchForReprepare({}) {
     const spaPath = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
     // get list of all subdirectories in spa recursively
     const directories = [];
@@ -519,7 +512,7 @@ async watchForReprepare({ verbose }) {
     this.allWatchers.push(watcher);
   }
 
-  async watchCustomComponentsForCopy({ verbose, customComponentsDir, destination }) {
+  async watchCustomComponentsForCopy({ customComponentsDir, destination }) {
     if (!customComponentsDir) {
       return;
     }
@@ -527,9 +520,7 @@ async watchForReprepare({ verbose }) {
     try {
       await fs.promises.access(customComponentsDir, fs.constants.F_OK);
     } catch (e) {
-      if (verbose) {
-        console.log(`Custom components dir ${customComponentsDir} does not exist, skipping watching`);
-      }
+      process.env.HEAVY_DEBUG && console.log(`🪲Custom components dir ${customComponentsDir} does not exist, skipping watching`);
       return;
     }
 
@@ -594,19 +585,18 @@ async watchForReprepare({ verbose }) {
     this.allWatchers.push(watcher);
   }
 
-  async bundleNow({hotReload = false, verbose = false}: {hotReload: boolean, verbose: boolean}) {
+  async bundleNow({ hotReload = false }: { hotReload: boolean }) {
     console.log(`AdminForth bundling ${hotReload ? ' and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
-    await this.prepareSources({ verbose });
+    await this.prepareSources({});
 
     if (hotReload) {
       await Promise.all([
-        this.watchForReprepare({ verbose }),
+        this.watchForReprepare({}),
         ...Object.entries(this.srcFoldersToSync).map(async ([src, dest]) => {
 
           await this.watchCustomComponentsForCopy({ 
-            verbose, 
             customComponentsDir: src,
             destination: dest,
           });
@@ -620,10 +610,10 @@ async watchForReprepare({ verbose }) {
 
     if (!hotReload) {
       // probably add option to build with tsh check (plain 'build')
-      await this.runNpmShell({command: 'run build-only', verbose, cwd});
+      await this.runNpmShell({command: 'run build-only', cwd});
     } else {
       const command = 'run dev';
-      console.log(`⚙️ Running npm ${command}...`);
+      console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {

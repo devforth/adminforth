@@ -64,7 +64,8 @@ RUN npm run bundleNow
 CMD ["npm", "run", "startLive"]
 ```
 
-Add `bundleNow` and `startLive` to `package.json`
+Add `bundleNow` and `startLive` to `package.json`:
+
 ```ts title='./package.json'
 {
     "type": "module",
