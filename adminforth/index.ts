@@ -77,6 +77,7 @@ class AdminForth implements IAdminForth {
   }
 
   activatePlugins() {
+    process.env.HEAVY_DEBUG && console.log('🔌🔌🔌 Activating plugins');
     for (let resource of this.config.resources) {
       for (let pluginInstance of resource.plugins || []) {
         pluginInstance.modifyResourceConfig(this, resource);

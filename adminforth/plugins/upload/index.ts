@@ -6,12 +6,13 @@ import { AdminForthPlugin } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-not-yet-used';
 
-export default class S3UploadPlugin extends AdminForthPlugin {
+export default class UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;
   adminforth: IAdminForth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
+
     this.options = options;
   }
 
