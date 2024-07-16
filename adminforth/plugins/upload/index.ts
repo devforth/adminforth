@@ -4,7 +4,7 @@ import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
 import { AdminForthPlugin } from "adminforth";
 
-const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-not-yet-used';
+const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
 export default class UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;
@@ -46,7 +46,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
     if (!ruleExists) {
       // create
-      // rule deletes object has tag adminforth-not-yet-used = true after 2 days
+      // rule deletes object has tag adminforth-candidate-for-cleanup = true after 2 days
       const params = {
         Bucket: this.options.s3Bucket,
         LifecycleConfiguration: {
@@ -204,6 +204,31 @@ export default class UploadPlugin extends AdminForthPlugin {
         return { ok: true };
       })
     }
+
+    // add delete hook which sets tag adminforth-candidate-for-cleanup to true
+    resourceConfig.hooks.delete.beforeSave.push(async ({ record }: { record: any }) => {
+      if (record[pathColumnName]) {
+        const s3 = new AWS.S3({
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+          region: this.options.s3Region
+        });
+
+        await s3.putObjectTagging({
+          Bucket: this.options.s3Bucket,
+          Key: record[pathColumnName],
+          Tagging: {
+            TagSet: [
+              {
+                Key: ADMINFORTH_NOT_YET_USED_TAG,
+                Value: 'true'
+              }
+            ]
+          }
+        }).promise();
+      }
+      return { ok: true };
+    });
 
     
   }

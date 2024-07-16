@@ -95,8 +95,6 @@ const admin = new AdminForth({
         meta: {
           customLayout: true,
       }}
-     
-    
     }],
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My App',
@@ -323,7 +321,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           edit: true,
-          delete: async () => false,
+          // delete: async () => false,
           show: true,
           filter: true,
           create: true,
