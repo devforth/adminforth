@@ -6,9 +6,9 @@
 Sometimes you need to visualize custom columns which do not exist in database. 
 For doing this you can use `virtual` columns.
 
-```diff title='./index.ts'
+```ts title='./index.ts'
 //diff-add
-import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth/types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth';
 
 ...
 resourceId: 'aparts',
