@@ -231,7 +231,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     });
 
     // add edit postSave hook to delete old file and write new field
-     
+    
 
     
   }
