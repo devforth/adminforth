@@ -32,7 +32,7 @@ If you want to disable deletion of apartments for all users apart from users wit
 
 ```ts
 //diff-add
-import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
+import type { AdminUser } from  'adminforth';
 
 {
   ...
@@ -66,7 +66,7 @@ Let's disable creating and editing of new users for all users apart from users w
 
 ```ts title="./index.ts"
 //diff-add
-import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
+import type { AdminUser } from  'adminforth';
 
 //diff-add
 async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean {
@@ -100,8 +100,8 @@ More advanced case, allow to edit apartments only if user is a realtor of the ap
 "You are not assigned to this apartment and can't edit it":
 
 ```ts title="./index.ts"
-import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
-import { ActionCheckSource } from  'adminforth/types/AdminForthConfig.js';
+import type { AdminUser } from  'adminforth';
+import { ActionCheckSource } from  'adminforth';
 
 
 async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): Promise<boolean | string> {
