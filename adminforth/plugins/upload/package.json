@@ -1,10 +1,10 @@
 {
   "name": "@adminforth/s3upload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public"
   },
   "type": "module",
   "author": "",
