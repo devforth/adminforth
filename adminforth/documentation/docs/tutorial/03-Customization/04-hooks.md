@@ -20,7 +20,7 @@ Let's add reference to `adminUser` when user creates a new apartment:
 
 ```ts title='./index.ts'
 // diff-add
-import type { AdminUser } from  'adminforth/types/AdminForthConfig.js';
+import type { AdminUser } from  'adminforth';
 
 {
   ...
