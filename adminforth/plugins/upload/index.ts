@@ -72,6 +72,15 @@ export default class UploadPlugin extends AdminForthPlugin {
     }
   }
 
+  async genPreviewUrl(record: any, s3: AWS.S3) {
+    const previewUrl = await s3.getSignedUrl('getObject', {
+      Bucket: this.options.s3Bucket,
+      Key: record[this.options.pathColumnName],
+    });
+
+    record[`previewUrl_${this.pluginInstanceId}`] = previewUrl; // todo not updating
+  }
+
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
     this.setupLifecycleRule();
 
@@ -102,9 +111,17 @@ export default class UploadPlugin extends AdminForthPlugin {
         show: {
           file: this.componentPath('preview.vue'),
           meta: pluginFrontendOptions,
-        }
+        },
+        ...(
+          this.options.preview?.showInList ? {
+            list: {
+              file: this.componentPath('preview.vue'),
+              meta: pluginFrontendOptions,
+            }
+          } : {}
+        ),
       },
-      showIn: ['edit', 'create', 'show'],
+      showIn: ['edit', 'create', 'show', ...(this.options.preview?.showInList ? ['list'] : [])],
     };
 
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
@@ -166,16 +183,32 @@ export default class UploadPlugin extends AdminForthPlugin {
           region: this.options.s3Region
         });
 
-        const previewUrl = s3.getSignedUrl('getObject', {
-          Bucket: this.options.s3Bucket,
-          Key: record[pathColumnName],
-        });
-
-        record[`previewUrl_${this.pluginInstanceId}`] = previewUrl; // todo not updating
+        await this.genPreviewUrl(record, s3);
       }
       return { ok: true };
     });
+
+    if (this.options.preview?.showInList) {
+      resourceConfig.hooks.list.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
+        const s3 = new AWS.S3({
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+          region: this.options.s3Region
+        });
+  
+       await Promise.all(response.map(async (record: any) => {
+          if (record[this.options.pathColumnName]) {
+            await this.genPreviewUrl(record, s3);
+          }
+        }));
+        return { ok: true };
+      })
+    }
+
+    
   }
+
+ 
 
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
@@ -208,20 +241,10 @@ export default class UploadPlugin extends AdminForthPlugin {
 
         const uploadUrl = await s3.getSignedUrl('putObject', params,)
 
-        let previewUrl;
-        if (this.options.previewUrl) {
-          previewUrl = this.options.previewUrl({ s3Path });
-        } else {
-          // generate presigned url for reading the file
-          previewUrl = s3.getSignedUrl('getObject', {
-            Bucket: this.options.s3Bucket,
-            Key: s3Path,
-          });
-        }
+        
         return {
           uploadUrl,
           s3Path,
-          previewUrl
         };
       }
     });
