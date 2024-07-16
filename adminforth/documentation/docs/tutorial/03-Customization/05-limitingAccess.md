@@ -1,5 +1,5 @@
 
-# Disabling actions
+# Limiting actions access
 
 
 ## Statically disable some action
