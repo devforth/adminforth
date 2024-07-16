@@ -379,7 +379,8 @@ menu: [
       open: true,
       children: [
         {
--          homepage: true,  
+//diff-remove
+          homepage: true,  
           label: 'Appartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
