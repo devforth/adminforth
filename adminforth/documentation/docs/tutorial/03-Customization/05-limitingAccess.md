@@ -69,7 +69,7 @@ Let's disable creating and editing of new users for all users apart from users w
 import type { AdminUser } from  'adminforth';
 
 //diff-add
-async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): boolean {
+async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
 //diff-add
   // important: if adminUser.isRoot, the adminUser.dbUser is undefined
 //diff-add
