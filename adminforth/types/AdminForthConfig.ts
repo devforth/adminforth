@@ -740,17 +740,19 @@ export type AdminForthResource = {
        * Example:
        * 
        * ```ts
+       * import { AdminForthSortDirections } from 'adminforth';
+       * 
+       * ...
+       * 
        * defaultSort: {
        *   columnName: 'created_at',
        *   direction: AdminForthSortDirections.ASC, 
-       *   // or
-       *   // direction: 'asc' // if you are using non-typescript
        * }
        * ```
        * 
        */
       defaultSort?: {
-        
+
         /**
          * Column name which will be used to sort records.
          */
@@ -761,6 +763,10 @@ export type AdminForthResource = {
          */
         direction: AdminForthSortDirections | string,
       }
+
+      /**
+       * Custom bulk actions list
+       */
       bulkActions?: Array<{
         id?: string,
         label: string,
@@ -768,7 +774,87 @@ export type AdminForthResource = {
         icon?: string,
         action: Function,
         confirm?: string,
+
+        /**
+         * Allowed callback called to check whether action is allowed for user.
+         * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
+         * 2. This same callback called second time when user clicks an action button. If callback returns false, action will not be executed.
+         * In second time recordIds will be passed to callback (because checkbox for items are selected), so you can use this to make additional 
+         * checks ( for example to check if user has permission for certain records ).
+         * 
+         * Example:
+         * 
+         * ```ts
+         * allowed: async ({ resource, adminUser, recordIds }) => {
+         *   if (adminUser.isRoot || adminUser.dbUser.role !== 'superadmin') {
+         *    return false;
+         *   } 
+         *   return true;
+         * }
+         * ```
+         * 
+         */
+        allowed?: ({ resource, adminUser, recordIds }: {
+
+          /**
+           * recordIds will be passed only once user tries to perform bulk action by clicking on button
+           */
+          recordIds?: Array<any>,
+          resource: AdminForthResource,
+
+          /**
+           * Admin user object
+           */
+          adminUser: AdminUser,
+
+          /**
+           * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
+           * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
+           * might want to allow it only for users who have "edit" action allowed:
+           * 
+           * Example:
+           * 
+           * ```ts
+           * 
+           * options: {
+           *   bulkActions: [
+           *     {
+           *       label: 'Mark as read',
+           *       action: async ({ resource, recordIds }) => {
+           *         await markAsRead(recordIds);
+           *       },
+           *       allowed: ({ allowedActions }) => allowedActions.edit,
+           *     }
+           *   ],
+           *   allowedActions: {
+           *     edit: ({ resource, adminUser, recordIds }) => {
+           *       return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+           *     }
+           *   }
+           * }
+           * ```
+           * 
+           */
+          allowedActions: AllowedActionsResolved,
+         }) => Promise<boolean>,
       }>,
+
+      /**
+       * Allowed actions for resource.
+       * 
+       * Example: 
+       * 
+       * ```ts
+       * allowedActions: {
+       *  create: ({ resource, adminUser }) => {
+       *    // Allow only superadmin or root user to create records
+       *    return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+       *  },
+       *  delete: false, // disable delete action for all users
+       * }
+       * ```
+       * 
+       */
       allowedActions?: AllowedActions,
 
       /** 
@@ -1128,6 +1214,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
+  BulkActionRequest = 'bulkActionRequest',
 }
 
 /**
@@ -1139,6 +1226,10 @@ export type AllowedActions = {
   all?: AllowedActionValue;
 }
   
+export type AllowedActionsResolved = {
+  [key in AllowedActionsEnum]?: boolean
+}
+
 export type ValidationObject = {
     /**
      * Should be pure string (not RegExp string)

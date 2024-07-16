@@ -291,8 +291,11 @@ const admin = new AdminForth({
           // s3ACL: 'public-read', // ACL which will be set to uploaded file
           s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
     
-          // Used to display preview (if it is image) in list and show views
-          // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
+          preview: {
+            // Used to display preview (if it is image) in list and show views
+            // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
+            showInList: true,
+          }
         }),
       ],
       options:{
@@ -305,21 +308,22 @@ const admin = new AdminForth({
           }
         },
         listPageSize: 5,
-        bulkActions: [{
-          label: 'Mark as listed',
-          // icon: 'typcn:archive',
-          state:'active',
-          confirm: 'Are you sure you want to mark all selected apartments as listed?',
-          action: function ({selectedIds, adminUser}: any) {
-            const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
-            stmt.run(...selectedIds);
-            return { ok: true, error: false, message: 'Marked as listed' }
+        bulkActions: [
+          {
+            label: 'Mark as listed',
+            // icon: 'typcn:archive',
+            state:'active',
+            confirm: 'Are you sure you want to mark all selected apartments as listed?',
+            action: function ({selectedIds, adminUser}: any) {
+              const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+              stmt.run(...selectedIds);
+              return { ok: true, error: false, message: 'Marked as listed' }
+            }
           }
-        }
         ],
         allowedActions:{
           edit: true,
-          delete: true,
+          delete: async () => false,
           show: true,
           filter: true,
           create: true,

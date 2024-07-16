@@ -260,11 +260,12 @@ export default class ConfigValidator implements IConfigValidator {
           bulkActions = [];
         }
 
-        if (res.options?.allowedActions?.delete && !bulkActions.find((action) => action.label === 'Delete checked')) {
+        if (!bulkActions.find((action) => action.label === 'Delete checked')) {
           bulkActions.push({
             label: `Delete checked`,
             state: 'danger',
             icon: 'flowbite:trash-bin-outline',
+            allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
             action: async ({ selectedIds }) => {
               const connector = this.adminforth.connectors[res.dataSource];
               await Promise.all(selectedIds.map(async (recordId) => {

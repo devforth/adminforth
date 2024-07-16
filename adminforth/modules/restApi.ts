@@ -12,7 +12,8 @@ import {
   BeforeSaveFunction,
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
-  AfterSaveFunction
+  AfterSaveFunction,
+  AllowedActionsResolved
 
 } from "../types/AdminForthConfig.js";
 
@@ -223,7 +224,7 @@ export default class AdminForthRestAPI {
       },
     });
 
-    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActions}> {
+    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
       if (process.env.HEAVY_DEBUG) {
         console.log('🪲Interpreting resource', resource.resourceId, source);
       }
@@ -274,13 +275,28 @@ export default class AdminForthRestAPI {
 
         const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
 
+
+        const allowedBulkActions = [];
+        await Promise.all(
+          resource.options.bulkActions.map(async (action) => {
+            if (action.allowed) {
+              const res = await action.allowed({ adminUser, resource, allowedActions });
+              console.log('🪲🪲🪲🪲checking for allowedActions', allowedActions, 'res', res);
+              if (res) {
+                allowedBulkActions.push(action);
+              }
+            }
+          })
+        );
+
         // exclude "plugins" key
         return { 
           resource: { 
-            ...resource, 
+            ...resource,
             plugins: undefined, 
             options: {
               ...resource.options,
+              bulkActions: allowedBulkActions,
               allowedActions,
             } 
           }
@@ -680,24 +696,29 @@ export default class AdminForthRestAPI {
         method: 'POST',
         path: '/start_bulk_action',
         handler: async ({ body }) => {
-            const { resourceId, actionId, recordIds } = body;
+            const { resourceId, actionId, recordIds, adminUser } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
                 return { error: `Resource '${resourceId}' not found` };
             }
+            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.BulkActionRequest);
+
             const action = resource.options.bulkActions.find((act) => act.id == actionId);
             if (!action) {
-                return { error: `Action '${actionId}' not found` };
-            } else{
-              await action.action({selectedIds:recordIds})
-
+              return { error: `Action '${actionId}' not found` };
+            } 
+            
+            const execAllowed = await action.allowed({ adminUser, resource, recordIds, allowedActions });
+            if (!execAllowed) {
+              return { error: `Action '${actionId}' is not allowed` };
             }
+            await action.action({selectedIds:recordIds})
+            
             return {
               actionId,
               recordIds,
               resourceId,
-              status:'success'
-              
+              status: 'success'
             }
         }
     })

@@ -44,6 +44,12 @@ There are next [actions](/docs/api/types/AdminForthConfig/enumerations/AllowedAc
 
 [Object](/docs/api/types/AdminForthConfig/type-aliases/AdminUser.md) which represents a user who logged in to the AdminForth. 
 
+## root user
+
+Root user is adminUser who logged in by using [rootuser credentials](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig#rootuser).
+Root user should be used only by developer during development or to create user on the production for himself.
+After creating normal user we recommend completely remove Root user credentials from the config and redeploy the app.
+
 ## hook
 
 Hook is a optional async function which allows to inject in backend logic before executing the datasource query or after it

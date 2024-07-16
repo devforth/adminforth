@@ -1,7 +1,11 @@
 <template>
   <div>
-    <img v-if="url" :src="url" class="rounded-md" 
-    data-zoomable/>
+    <img v-if="url" :src="url" 
+      class="rounded-md" 
+      ref="img"
+      data-zoomable
+      @click.stop="zoom.open()"  
+    />
   </div>
 </template>
 
@@ -17,10 +21,17 @@
     filter: grayscale(1)
   } 
 </style>
+
+<style scoped>
+  img {
+    min-width: 200px;
+  }
+</style>
 <script setup>
 import { ref, computed , onMounted, watch} from 'vue'
 import mediumZoom from 'medium-zoom'
 
+const img = ref(null);
 
 const props = defineProps({
   record: Object,
@@ -32,12 +43,14 @@ const url = computed(() => {
   return props.record[`previewUrl_${props.meta.pluginInstanceId}`];
 });
 
+const zoom = ref(null);
 
 onMounted(() => {
-  mediumZoom('[data-zoomable]', {
+  zoom.value = mediumZoom(img.value, {
     margin: 24,
     // container: '#app',
-  })
+  });
+  console.log('mounted', props.meta)
 });
 
 </script>
