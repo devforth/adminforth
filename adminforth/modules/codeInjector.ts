@@ -8,11 +8,8 @@ import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
-import { styles } from './styles.js'
-import { AdminForthComponentDeclaration, ICodeInjector } from '../types/AdminForthConfig.js';
+import { ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
-import { string } from 'zod';
-
 
 
 let TMP_DIR;

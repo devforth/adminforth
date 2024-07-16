@@ -10,5 +10,8 @@
     "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public"
   },
   "author": "devforth",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "adminforth": "file:../../"
+  }
 }
