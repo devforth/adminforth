@@ -77,7 +77,7 @@ export const admin = new AdminForth({
   plugins: [
     ...
 //diff-add
-    new S3UploadPlugin({
+    new UploadPlugin({
 //diff-add
       pathColumnName: 'appartment_image',
 //diff-add
