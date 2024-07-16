@@ -293,8 +293,6 @@ class CodeInjector implements ICodeInjector {
       }
     }
 
-
-
     //collect all 'icon' fields from resources bulkActions
     this.adminforth.config.resources.forEach((resource) => {
       if (resource.options?.bulkActions) {
