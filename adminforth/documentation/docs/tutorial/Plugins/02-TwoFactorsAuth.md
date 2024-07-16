@@ -69,5 +69,5 @@ async function initDataBase() {
 ```
 
 Thats it! Two-Factor Authentication is now enabled 
-< Please add screnshots of the 2FA setup and login page here >
+![alt text](image-1.png)
  
