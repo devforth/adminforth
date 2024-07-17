@@ -42,6 +42,7 @@
                             :value="currentValues[column.name]"
                             @update:value="setCurrentValue(column.name, $event)"
                             :meta="column.components[props.source].meta"
+                            :record="props.record"
                         />
                     </template>
                     <template v-else>
@@ -182,7 +183,10 @@ const columnError = (column) => {
       }
     }
     if ( ['integer', 'decimal', 'float'].includes(column.type) ) {
-      if ( column.minValue !== undefined && currentValues.value[column.name] < column.minValue ) {
+      if ( column.minValue !== undefined 
+        && currentValues.value[column.name] !== null 
+        && currentValues.value[column.name] < column.minValue 
+      ) {
         return `This field must be greater than ${column.minValue}`;
       }
       if ( column.maxValue !== undefined && currentValues.value[column.name] > column.maxValue ) {

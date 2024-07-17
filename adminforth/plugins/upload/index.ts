@@ -78,7 +78,7 @@ export default class UploadPlugin extends AdminForthPlugin {
       Key: record[this.options.pathColumnName],
     });
 
-    record[`previewUrl_${this.pluginInstanceId}`] = previewUrl; // todo not updating
+    record[`previewUrl_${this.pluginInstanceId}`] = previewUrl;
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
@@ -141,6 +141,8 @@ export default class UploadPlugin extends AdminForthPlugin {
       pathColumn.showIn = pathColumn.showIn.filter((view: string) => !['create', 'edit'].includes(view));
     }
 
+    // ** HOOKS FOR CREATE **//
+
     // add beforeSave hook to save virtual column to path column
     resourceConfig.hooks.create.beforeSave.push(async ({ record }: { record: any }) => {
       if (record[virtualColumn.name]) {
@@ -170,6 +172,9 @@ export default class UploadPlugin extends AdminForthPlugin {
       return { ok: true };
     });
 
+    // ** HOOKS FOR SHOW **//
+
+
     // add show hook to get presigned URL
     resourceConfig.hooks.show.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
       const record = response[0];
@@ -188,6 +193,9 @@ export default class UploadPlugin extends AdminForthPlugin {
       return { ok: true };
     });
 
+    // ** HOOKS FOR LIST **//
+
+
     if (this.options.preview?.showInList) {
       resourceConfig.hooks.list.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
         const s3 = new AWS.S3({
@@ -204,6 +212,8 @@ export default class UploadPlugin extends AdminForthPlugin {
         return { ok: true };
       })
     }
+
+    // ** HOOKS FOR DELETE **//
 
     // add delete hook which sets tag adminforth-candidate-for-cleanup to true
     resourceConfig.hooks.delete.beforeSave.push(async ({ record }: { record: any }) => {
@@ -230,8 +240,62 @@ export default class UploadPlugin extends AdminForthPlugin {
       return { ok: true };
     });
 
-    // add edit postSave hook to delete old file and write new field
-    
+
+    // ** HOOKS FOR EDIT **//
+
+    // beforeSave
+    resourceConfig.hooks.edit.beforeSave.push(async ({ record }: { record: any }) => {
+      // null is when value is removed
+      if (record[virtualColumn.name] || record[virtualColumn.name] === null) {
+        record[pathColumnName] = record[virtualColumn.name];
+      }
+      return { ok: true };
+    })
+
+
+    // add edit postSave hook to delete old file and remove tag from new file
+    resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
+      console.log('💡 record', record);
+      console.log('💡 virtualColumn', virtualColumn.name);
+
+
+      if (record[virtualColumn.name] || record[virtualColumn.name] === null) {
+        const s3 = new AWS.S3({
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+          region: this.options.s3Region
+        });
+
+        console.log('💡 oldRecord', oldRecord);
+        console.log('💡 pathColumnName', pathColumnName);
+        if (oldRecord[pathColumnName]) {
+          // put tag
+          await s3.putObjectTagging({
+            Bucket: this.options.s3Bucket,
+            Key: oldRecord[pathColumnName],
+            Tagging: {
+              TagSet: [
+                {
+                  Key: ADMINFORTH_NOT_YET_USED_TAG,
+                  Value: 'true'
+                }
+              ]
+            }
+          }).promise();
+        }
+        if (record[virtualColumn.name] !== null) {
+          // remove tag from new file
+          await s3.putObjectTagging({
+            Bucket: this.options.s3Bucket,
+            Key: record[pathColumnName],
+            Tagging: {
+              TagSet: []
+            }
+          }).promise();
+        }
+      }
+      return { ok: true };
+    });
 
     
   }
