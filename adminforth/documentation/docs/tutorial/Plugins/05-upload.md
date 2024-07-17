@@ -129,6 +129,12 @@ async function initDataBase() {
 }
 ```
 
+
+< screen with image >
+
+< screen with video >
+
+
 This setup will upload files to S3 bucket with private ACL and save path to file (relative to bucket root) in `appartment_image` column.
 
 Once you will go to show or list view of `aparts` resource you will see preview of uploaded file by using presigned temporary URLs
