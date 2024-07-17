@@ -146,16 +146,16 @@ const admin = new AdminForth({
             }
         },
         plugins: [
-            // new AuditLogPlugin({
-            //     resourceColumns: {
-            //         resourceUserIdColumnName: 'user_id',
-            //         resourceRecordIdColumnName: 'record_id',
-            //         resourceActionColumnName: 'action',
-            //         resourceDataColumnName: 'diff',
-            //         resourceCreatedColumnName: 'created_at',
-            //         resourceIdColumnName: 'resource_id',
-            //     },
-            // }),
+          new AuditLogPlugin({
+              resourceColumns: {
+                  resourceUserIdColumnName: 'user_id',
+                  resourceRecordIdColumnName: 'record_id',
+                  resourceActionColumnName: 'action',
+                  resourceDataColumnName: 'diff',
+                  resourceCreatedColumnName: 'created_at',
+                  resourceIdColumnName: 'resource_id',
+              },
+          }),
         ],
        
     },
@@ -211,6 +211,8 @@ const admin = new AdminForth({
         {
           name: 'appartment_image',
           showIn: ['list', 'show'],
+          required: true,
+          editingNote: 'Upload image of apartment',
         },
         { 
           name: 'price',
@@ -279,10 +281,9 @@ const admin = new AdminForth({
       plugins: [
         new UploadPlugin({
           pathColumnName: 'appartment_image',
-          uploadColumnLabel: 'Upload preview', // label of upload field
           s3Bucket: 'tmpbucket-adminforth',
           s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'],
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'exe'],
           maxFileSize: 1024 * 1024 * 20, // 5MB
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,

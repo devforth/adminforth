@@ -88,7 +88,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
     // use component uploader.vue
-    const { pathColumnName, uploadColumnLabel } = this.options;
+    const { pathColumnName, uploadColumn } = this.options;
 
     const pluginFrontendOptions = {
       allowedExtensions: this.options.allowedFileExtensions,
@@ -98,7 +98,6 @@ export default class UploadPlugin extends AdminForthPlugin {
     const virtualColumn = {
       virtual: true,
       name: `uploader_${this.pluginInstanceId}`,
-      label: uploadColumnLabel,
       components: {
         edit: {
           file: this.componentPath('uploader.vue'),
@@ -124,6 +123,8 @@ export default class UploadPlugin extends AdminForthPlugin {
       showIn: ['edit', 'create', 'show', ...(this.options.preview?.showInList ? ['list'] : [])],
     };
 
+   
+
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
     if (pathColumnIndex === -1) {
       throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
@@ -140,6 +141,14 @@ export default class UploadPlugin extends AdminForthPlugin {
     if (pathColumn.showIn && (pathColumn.showIn.includes('create') || pathColumn.showIn.includes('edit'))) {
       pathColumn.showIn = pathColumn.showIn.filter((view: string) => !['create', 'edit'].includes(view));
     }
+
+    if (!virtualColumn.label) {
+      virtualColumn.label = `Upload ${pathColumn.label}`;
+    }
+
+    virtualColumn.required = pathColumn.required;
+    virtualColumn.label = pathColumn.label;
+    virtualColumn.editingNote = pathColumn.editingNote;
 
     // ** HOOKS FOR CREATE **//
 
