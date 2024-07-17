@@ -218,6 +218,10 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
 
   preview: {
       showInList: true,
+//diff-remove
+      previewUrl: ({s3Path}) => `https://my-bucket.s3.us-east-1.amazonaws.com/${s3Path}`,
+
+//diff-add
       previewUrl: ({s3Path}) => `https://static.my-domain.com/${s3Path}`,
   }
 ```
