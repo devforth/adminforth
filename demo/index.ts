@@ -146,16 +146,16 @@ const admin = new AdminForth({
             }
         },
         plugins: [
-            new AuditLogPlugin({
-                resourceColumns: {
-                    resourceUserIdColumnName: 'user_id',
-                    resourceRecordIdColumnName: 'record_id',
-                    resourceActionColumnName: 'action',
-                    resourceDataColumnName: 'diff',
-                    resourceCreatedColumnName: 'created_at',
-                    resourceIdColumnName: 'resource_id',
-                },
-            }),
+            // new AuditLogPlugin({
+            //     resourceColumns: {
+            //         resourceUserIdColumnName: 'user_id',
+            //         resourceRecordIdColumnName: 'record_id',
+            //         resourceActionColumnName: 'action',
+            //         resourceDataColumnName: 'diff',
+            //         resourceCreatedColumnName: 'created_at',
+            //         resourceIdColumnName: 'resource_id',
+            //     },
+            // }),
         ],
        
     },
@@ -287,7 +287,7 @@ const admin = new AdminForth({
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
           // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
+          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
     
           preview: {
             // Used to display preview (if it is image) in list and show views
