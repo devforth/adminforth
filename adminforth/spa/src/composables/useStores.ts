@@ -67,6 +67,7 @@ export class FrontendAPI implements FrontendAPIInterface {
   alert(params: AlertParams): void {
     this.toastStore.addToast({
       message: params.message,
+      messageHtml: params.messageHtml,
       variant: params.variant,
       timeout: params.timeout  
     })

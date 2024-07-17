@@ -168,7 +168,9 @@ const onFileChange = async (e) => {
         }
       };
       xhr.addEventListener('loadend', () => {
-        resolve(xhr.readyState === 4 && xhr.status === 200);
+        const success = xhr.readyState === 4 && xhr.status === 200;
+        // try to read response
+        resolve(success);
       });
       xhr.open('PUT', uploadUrl, true);
       xhr.setRequestHeader('Content-Type', type);
@@ -177,9 +179,16 @@ const onFileChange = async (e) => {
     });
     if (!success) {
       window.adminforth.alert({
-        message: 'Sorry but the file was not be uploaded. Please try again.',
-        variant: 'danger'
+        messageHtml: `<div>Sorry but the file was not be uploaded because of S3 Request Error: </div>
+        <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
+          xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        }</pre>`,
+        variant: 'danger',
+        timeout: 30,
       });
+      imgPreview.value = null;
+      uploaded.value = false;
+      progress.value = 0;
       return;
     }
     uploaded.value = true;
@@ -187,9 +196,12 @@ const onFileChange = async (e) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     window.adminforth.alert({
-      message: 'Sorry but the file was not be uploaded. Please try again: ${error.message}',
+      message: `Sorry but the file was not be uploaded. Please try again: ${error.message}`,
       variant: 'danger'
     });
+    imgPreview.value = null;
+    uploaded.value = false;
+    progress.value = 0;
   } finally {
     emit('update:inValidity', false);
   }

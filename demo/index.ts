@@ -283,7 +283,7 @@ const admin = new AdminForth({
           pathColumnName: 'appartment_image',
           s3Bucket: 'tmpbucket-adminforth',
           s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'exe'],
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
           maxFileSize: 1024 * 1024 * 20, // 5MB
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
@@ -292,7 +292,7 @@ const admin = new AdminForth({
     
           preview: {
             // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
+            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
             showInList: true,
           }
         }),
