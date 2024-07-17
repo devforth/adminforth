@@ -1,5 +1,4 @@
 
-> 🫸This plugin is under development and not yet released
 
 # Upload
 
