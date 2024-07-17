@@ -20,15 +20,16 @@
               <tr v-for="column, i in editableColumns" :key="column.name"
                   class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
               >
-                    <td class="px-6 py-4 whitespace-nowrap "> <!--align-top-->
+                    <td class="px-6 py-4 whitespace-nowrap flex items-center"> <!--align-top-->
                       {{ column.label }}
-                      <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
+                      <span :data-tooltip-target="`tooltip-show-${i}`" class="ml-1 relative inline-block">
                           <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
                           :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
                           />
                       </span>
                       <div :id="`tooltip-show-${i}`"
-                          role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                          role="tooltip" 
+                          class="ml-1 absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                           Required field
                           <div class="tooltip-arrow" data-popper-arrow></div>
                       </div>

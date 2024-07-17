@@ -2,7 +2,8 @@
 export type PluginOptions = {
 
   /**
-   * the name of the column where the path to the uploaded file is stored
+   * The name of the column where the path to the uploaded file is stored.
+   * On place of this column, a file upload field will be shown.
    */
   pathColumnName: string;
 
@@ -53,14 +54,6 @@ export type PluginOptions = {
    * 
    */
   s3Path: ({originalFilename, originalExtension, contentType}) => string,
-
-  /**
-   * This plugin creates a virtual column on edit and create views
-   * where the user can upload a file. This is the label of that column
-   * 
-   * Defaulted to 'Upload \<Name of the column defined in {@link pathColumnName}\>'
-   */
-  uploadColumnLabel: string,
 
 
   preview: {
