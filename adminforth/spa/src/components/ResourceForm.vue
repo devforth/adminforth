@@ -34,16 +34,16 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
-
                     <template v-if="column?.components?.[props.source]?.file">
-                        <component
-                            :is="getCustomComponent(column.components[props.source])"
-                            :column="column"
-                            :value="currentValues[column.name]"
-                            @update:value="setCurrentValue(column.name, $event)"
-                            :meta="column.components[props.source].meta"
-                            :record="props.record"
-                        />
+                      <component
+                        :is="getCustomComponent(column.components[props.source])"
+                        :column="column"
+                        :value="currentValues[column.name]"
+                        @update:value="setCurrentValue(column.name, $event)"
+                        :meta="column.components[props.source].meta"
+                        :record="props.record"
+                        @update:inValidity="customComponentsInValidity[column.name] = $event"
+                      />
                     </template>
                     <template v-else>
                       <Dropdown
@@ -123,10 +123,11 @@
                           <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
                           <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
                       </button>
-                      <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
-
-                      <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
                     </template>
+                    <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
+
+                    <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
+
                 </td>
               </tr>
               
@@ -168,9 +169,15 @@ const emit = defineEmits(['update:record', 'update:isValid']);
 
 const currentValues = ref({});
 
+const customComponentsInValidity = ref({});
+
 
 const columnError = (column) => {
   const val = computed(() => {
+    if (customComponentsInValidity.value[column.name]) {
+      return customComponentsInValidity.value[column.name];
+    }
+
     if ( column.required[mode.value] && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
       return 'This field is required';
     }
@@ -193,7 +200,7 @@ const columnError = (column) => {
         return `This field must be less than ${column.maxValue}`;
       }
     }
-    if ( column.validation && column.validation.length ){
+    if ( column.validation && column.validation.length ) {
       const validationArray = column.validation;
       for (let i = 0; i < validationArray.length; i++) {
         if (validationArray[i].regExp) {

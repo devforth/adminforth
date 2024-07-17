@@ -53,7 +53,7 @@ const props = defineProps({
   record: Object,
 })
 
-const emit = defineEmits(['update:value']);
+const emit = defineEmits(['update:value', 'update:inValidity']);
 
 const imgPreview = ref(null);
 const progress = ref(0);
@@ -63,7 +63,6 @@ const uploadedSize = ref(0);
 
 onMounted(() => {
   const previewColumnName = `previewUrl_${props.meta.pluginInstanceId}`;
-  console.log('Record:', props.record, previewColumnName);
   if (props.record[previewColumnName]) {
     imgPreview.value = props.record[previewColumnName];
     uploaded.value = true;
@@ -138,50 +137,62 @@ const onFileChange = async (e) => {
     });
     return;
   }
-  // supports preview
-  if (type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imgPreview.value = e.target.result;
-    }
-    reader.readAsDataURL(file);
-  }
-  
-  const { uploadUrl, s3Path } = await callAdminForthApi({
-      path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
-      method: 'POST',
-      body: {
-        originalFilename: nameNoExtension,
-        contentType: type,
-        size,
-        originalExtension: extension,
-      },
-  });
 
-  const xhr = new XMLHttpRequest();
-  const success = await new Promise((resolve) => {
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        progress.value = Math.round((e.loaded / e.total) * 100);
+  emit('update:inValidity', 'Upload in progress...');
+  try {
+    // supports preview
+    if (type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgPreview.value = e.target.result;
       }
-    };
-    xhr.addEventListener('loadend', () => {
-      resolve(xhr.readyState === 4 && xhr.status === 200);
+      reader.readAsDataURL(file);
+    }
+    
+    const { uploadUrl, s3Path } = await callAdminForthApi({
+        path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
+        method: 'POST',
+        body: {
+          originalFilename: nameNoExtension,
+          contentType: type,
+          size,
+          originalExtension: extension,
+        },
     });
-    xhr.open('PUT', uploadUrl, true);
-    xhr.setRequestHeader('Content-Type', type);
-    xhr.setRequestHeader('x-amz-tagging', (new URL(uploadUrl)).searchParams.get('x-amz-tagging'));
-    xhr.send(file);
-  });
-  if (!success) {
+
+    const xhr = new XMLHttpRequest();
+    const success = await new Promise((resolve) => {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          progress.value = Math.round((e.loaded / e.total) * 100);
+        }
+      };
+      xhr.addEventListener('loadend', () => {
+        resolve(xhr.readyState === 4 && xhr.status === 200);
+      });
+      xhr.open('PUT', uploadUrl, true);
+      xhr.setRequestHeader('Content-Type', type);
+      xhr.setRequestHeader('x-amz-tagging', (new URL(uploadUrl)).searchParams.get('x-amz-tagging'));
+      xhr.send(file);
+    });
+    if (!success) {
+      window.adminforth.alert({
+        message: 'Sorry but the file was not be uploaded. Please try again.',
+        variant: 'danger'
+      });
+      return;
+    }
+    uploaded.value = true;
+    emit('update:value', s3Path);
+  } catch (error) {
+    console.error('Error uploading file:', error);
     window.adminforth.alert({
-      message: 'Sorry but the file was not be uploaded. Please try again.',
+      message: 'Sorry but the file was not be uploaded. Please try again: ${error.message}',
       variant: 'danger'
     });
-    return;
+  } finally {
+    emit('update:inValidity', false);
   }
-  uploaded.value = true;
-  emit('update:value', s3Path);
 }
 
 
