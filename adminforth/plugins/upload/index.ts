@@ -73,6 +73,10 @@ export default class UploadPlugin extends AdminForthPlugin {
   }
 
   async genPreviewUrl(record: any, s3: AWS.S3) {
+    if (this.options.preview?.previewUrl) {
+      record[`previewUrl_${this.pluginInstanceId}`] = this.options.preview.previewUrl({ s3Path: record[this.options.pathColumnName] });
+      return;
+    }
     const previewUrl = await s3.getSignedUrl('getObject', {
       Bucket: this.options.s3Bucket,
       Key: record[this.options.pathColumnName],

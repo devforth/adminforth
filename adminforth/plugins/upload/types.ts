@@ -38,9 +38,10 @@ export type PluginOptions = {
   s3SecretAccessKey: string,
 
   /**
-   * ACL which will be set to uploaded file, e.g. 'public-read'
+   * ACL which will be set to uploaded file, e.g. 'public-read'.
+   * If you want to use 'public-read', it is your responsibility to set the "ACL Enabled" to true in the S3 bucket policy and Uncheck "Block all public access" in the bucket settings.
    */
-  s3ACL: string,
+  s3ACL?: string,
 
   /**
    * The path where the file will be uploaded to the S3 bucket, same path will be stored in the database
