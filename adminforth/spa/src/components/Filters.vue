@@ -189,8 +189,6 @@ function setFilterItem({ column, operator, value }) {
     if (index !== -1) {
       filtersStore.filters.splice(index, 1);
     }
-    emits('update:filters', [...filtersStore.filters]);
-    return;
   } else {
     if (index === -1) {
       filtersStore.setFilter({ field: column.name, value, operator });
@@ -207,5 +205,6 @@ function getFilterItem({ column, operator }) {
 
 async function clear() {
   filtersStore.clearFilters();
+  emits('update:filters', [...filtersStore.filters]);
 }
 </script>
