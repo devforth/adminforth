@@ -101,7 +101,7 @@ Create `index.ts` file in root directory with following content:
 ```ts title="./index.ts"
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth from 'adminforth';
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -160,7 +160,7 @@ export const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
-          type: AdminForth.Types.DATETIME ,
+          type: AdminForthDataTypes.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
@@ -279,7 +279,7 @@ export const admin = new AdminForth({
         },
         { 
           name: 'created_at', 
-          type: AdminForth.Types.DATETIME,
+          type: AdminForthDataTypes.DATETIME,
           showIn: ['list', 'filter', 'show'],
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
@@ -296,7 +296,7 @@ export const admin = new AdminForth({
           required: { create: true }, // make required only on create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
           minLength: 8,
-          type: AdminForth.Types.STRING,
+          type: AdminForthDataTypes.STRING,
           showIn: ['create', 'edit'], // to show field only on create and edit pages
           masked: true, // to show stars in input field
         },

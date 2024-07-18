@@ -1,14 +1,13 @@
 
-import { IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
+import { AdminForthResourcePages, IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
 import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
-import { AdminForthPlugin } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
 export default class UploadPlugin extends AdminForthPlugin {
   options: PluginOptions;
-  adminforth: IAdminForth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -31,16 +30,16 @@ export default class UploadPlugin extends AdminForthPlugin {
     }
 
     // check that lifecycle rule exists
-    let ruleExists = false;
+    let ruleExists: boolean = false;
 
     try {
-        const lifecycleConfig = await s3.getBucketLifecycleConfiguration({ Bucket: this.options.s3Bucket }).promise();
+        const lifecycleConfig: any = await s3.getBucketLifecycleConfiguration({ Bucket: this.options.s3Bucket }).promise();
         ruleExists = lifecycleConfig.Rules.some((rule: any) => rule.ID === CLEANUP_RULE_ID);
-    } catch (e) {
+    } catch (e: any) {
       if (e.code !== 'NoSuchLifecycleConfiguration') {
         throw e;
       } else {
-        ruleExists = null;
+        ruleExists = false;
       }
     }
 
@@ -92,14 +91,14 @@ export default class UploadPlugin extends AdminForthPlugin {
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
     // use component uploader.vue
-    const { pathColumnName, uploadColumn } = this.options;
+    const { pathColumnName } = this.options;
 
     const pluginFrontendOptions = {
       allowedExtensions: this.options.allowedFileExtensions,
       maxFileSize: this.options.maxFileSize,
       pluginInstanceId: this.pluginInstanceId,
     };
-    const virtualColumn = {
+    const virtualColumn: AdminForthResourceColumn = {
       virtual: true,
       name: `uploader_${this.pluginInstanceId}`,
       components: {
@@ -124,7 +123,9 @@ export default class UploadPlugin extends AdminForthPlugin {
           } : {}
         ),
       },
-      showIn: ['edit', 'create', 'show', ...(this.options.preview?.showInList ? ['list'] : [])],
+      showIn: ['edit', 'create', 'show', ...(this.options.preview?.showInList ? [
+        AdminForthResourcePages.list
+      ] : [])],
     };
 
    
@@ -144,10 +145,6 @@ export default class UploadPlugin extends AdminForthPlugin {
     const pathColumn = resourceConfig.columns[pathColumnIndex];
     if (pathColumn.showIn && (pathColumn.showIn.includes('create') || pathColumn.showIn.includes('edit'))) {
       pathColumn.showIn = pathColumn.showIn.filter((view: string) => !['create', 'edit'].includes(view));
-    }
-
-    if (!virtualColumn.label) {
-      virtualColumn.label = `Upload ${pathColumn.label}`;
     }
 
     virtualColumn.required = pathColumn.required;
@@ -268,9 +265,6 @@ export default class UploadPlugin extends AdminForthPlugin {
 
     // add edit postSave hook to delete old file and remove tag from new file
     resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
-      console.log('💡 record', record);
-      console.log('💡 virtualColumn', virtualColumn.name);
-
 
       if (record[virtualColumn.name] || record[virtualColumn.name] === null) {
         const s3 = new AWS.S3({
@@ -279,10 +273,8 @@ export default class UploadPlugin extends AdminForthPlugin {
           region: this.options.s3Region
         });
 
-        console.log('💡 oldRecord', oldRecord);
-        console.log('💡 pathColumnName', pathColumnName);
         if (oldRecord[pathColumnName]) {
-          // put tag
+          // put tag to delete old file
           await s3.putObjectTagging({
             Bucket: this.options.s3Bucket,
             Key: oldRecord[pathColumnName],

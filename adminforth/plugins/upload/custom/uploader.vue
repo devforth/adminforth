@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils' 
 
 const props = defineProps({
@@ -53,7 +53,11 @@ const props = defineProps({
   record: Object,
 })
 
-const emit = defineEmits(['update:value', 'update:inValidity']);
+const emit = defineEmits([
+  'update:value',
+  'update:inValidity',
+  'update:emptiness',
+]);
 
 const imgPreview = ref(null);
 const progress = ref(0);
@@ -61,11 +65,16 @@ const progress = ref(0);
 const uploaded = ref(false);
 const uploadedSize = ref(0);
 
+watch(() => uploaded, (value) => {
+  emit('update:emptiness', !value);
+});
+
 onMounted(() => {
   const previewColumnName = `previewUrl_${props.meta.pluginInstanceId}`;
   if (props.record[previewColumnName]) {
     imgPreview.value = props.record[previewColumnName];
     uploaded.value = true;
+    emit('update:emptiness', false);
   }
 });
 

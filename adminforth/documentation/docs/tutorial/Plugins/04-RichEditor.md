@@ -1,9 +1,9 @@
 
 > 🫸This plugin is under development and not yet released
 
-# Quill editor
+# Rich editor
 
-Quill is a free, open source WYSIWYG editor built for the modern web.
+Under the hood this plugin uses [Quill](https://quilljs.com/). Quill is a free, open source WYSIWYG editor built for the modern web.
 
 This plugin allows you to use Quill editor in your AdminForth application.
 
@@ -12,12 +12,13 @@ This plugin allows you to use Quill editor in your AdminForth application.
 Import plugin:
 
 ```ts title="./index.ts"
-import QuillEditorPlugin from 'adminforth/plugins/QuillEditorPlugin';
+import RichEditorPlugin from 'adminforth/plugins/RichEditorPlugin';
 ```
 
 Now instantiate the plugin and add it to the configuration:
 
 ```ts title="./index.ts"
+
 {
   ...
   resourceId: 'aparts',

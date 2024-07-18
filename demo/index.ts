@@ -1,8 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth from '../adminforth/index.ts';
+import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes } from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
-import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
@@ -136,7 +135,7 @@ const admin = new AdminForth({
             { name: 'resource_id', required: false },
             { name: 'user_id', required: false },
             { name: 'action', required: false },
-            { name: 'diff', required: false, type: AdminForth.Types.JSON },
+            { name: 'diff', required: false, type: AdminForthDataTypes.JSON },
             { name: 'record_id', required: false },
         ],
         options: {
@@ -201,7 +200,7 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
-          type: AdminForth.Types.DATETIME ,
+          type: AdminForthDataTypes.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
 
@@ -210,7 +209,7 @@ const admin = new AdminForth({
         },
         {
           name: 'appartment_image',
-          showIn: ['list', 'show'],
+          showIn: [],
           required: true,
           editingNote: 'Upload image of apartment',
         },
@@ -242,6 +241,7 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
+          type: AdminForthDataTypes.RICHTEXT
         },
         {
           name: 'property_type',
@@ -366,7 +366,7 @@ const admin = new AdminForth({
         },
         {
           name: 'secret2fa',
-          type: AdminForth.Types.STRING,
+          type: AdminForthDataTypes.STRING,
           showIn: [],
           backendOnly: true,
         },
@@ -378,7 +378,7 @@ const admin = new AdminForth({
         },
         { 
           name: 'created_at', 
-          type: AdminForth.Types.DATETIME,
+          type: AdminForthDataTypes.DATETIME,
           showIn: ['list', 'filter', 'show'],
           fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
         },
@@ -401,7 +401,7 @@ const admin = new AdminForth({
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
           // minLength: 8,
-          type: AdminForth.Types.STRING,
+          type: AdminForthDataTypes.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field
         }
@@ -501,7 +501,7 @@ const admin = new AdminForth({
             },
             { 
               name: 'created_at', 
-              type: AdminForth.Types.DATETIME,
+              type: AdminForthDataTypes.DATETIME,
               showIn: ['list', 'filter', 'show'],
               fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
             },
@@ -519,7 +519,7 @@ const admin = new AdminForth({
               editingNote: { edit: 'Leave empty to keep password unchanged' },
     
               minLength: 8,
-              type: AdminForth.Types.STRING,
+              type: AdminForthDataTypes.STRING,
               showIn: ['create', 'edit'], // to show in create and edit pages
               masked: true, // to show stars in input field
             }

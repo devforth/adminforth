@@ -80,7 +80,7 @@ columns: [
     required: { create: true }, // make required only on create page
     editingNote: { edit: 'Leave empty to keep password unchanged' },
     minLength: 8,
-    type: AdminForth.Types.STRING,
+    type: AdminForthDataTypes.STRING,
     showIn: ['create', 'edit'], // to show field only on create and edit pages
     masked: true, // to show stars in input field
   }
@@ -126,7 +126,7 @@ it will never pass this field to frontend.
 ```ts
 {     
   name: 'password_hash',
-  type: AdminForth.Types.STRING,
+  type: AdminForthDataTypes.STRING,
   showIn: [],
   backendOnly: true,  // will never go to frontend
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="rounded-default">
-    
     <div 
       class="relative shadow-resourseFormShadow sm:rounded-lg dark:shadow-2xl dark:shadow-black rounded-default"
     >
@@ -44,6 +43,7 @@
                         :meta="column.components[props.source].meta"
                         :record="props.record"
                         @update:inValidity="customComponentsInValidity[column.name] = $event"
+                        @update:emptiness="customComponentsEmptiness[column.name] = $event"
                       />
                     </template>
                     <template v-else>
@@ -171,6 +171,7 @@ const emit = defineEmits(['update:record', 'update:isValid']);
 const currentValues = ref({});
 
 const customComponentsInValidity = ref({});
+const customComponentsEmptiness = ref({});
 
 
 const columnError = (column) => {
@@ -179,7 +180,14 @@ const columnError = (column) => {
       return customComponentsInValidity.value[column.name];
     }
 
-    if ( column.required[mode.value] && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
+    if ( 
+      column.required[mode.value] && 
+      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') && 
+      // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
+      // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
+      (customComponentsEmptiness.value[column.name] !== false)
+    
+    ) {
       return 'This field is required';
     }
     if ( column.type === 'string' || column.type === 'text' ) {
