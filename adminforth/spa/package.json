@@ -20,6 +20,7 @@
     "flowbite": "^2.3.0",
     "flowbite-datepicker": "^1.2.6",
     "pinia": "^2.1.7",
+    "sanitize-html": "^2.13.0",
     "unhead": "^1.9.12",
     "uuid": "^10.0.0",
     "vue": "^3.4.21",

@@ -1385,7 +1385,11 @@ export type AdminForthFieldComponents = {
     /**
      * List component is used to redefine cell which renders field value in list view.
      * Component accepts next properties: [record, column, resource, adminUser].
-     * 
+     * Component can emit events:
+     * - `update:value` - to update record value.
+     * - `update:inValidity` - emit true once entered value became not valid (e.g. emit('update:inValidity', true) ). Emit false once entered value became valid. Emit default value in mounted hook.
+     * - `update:emptiness` - emit true once entered value became empty (e.g. emit('update:emptiness', true) ). Emit false once entered value became not empty. Emit default value in mounted hook.
+     * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
      */
     list?: AdminForthComponentDeclaration,
 }

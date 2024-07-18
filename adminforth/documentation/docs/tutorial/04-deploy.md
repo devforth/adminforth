@@ -167,7 +167,7 @@ Now pull this compose file and all directories to your server and run:
 docker compose -p stack-my-app -f compose.yml up -d --build --remove-orphans --wait
 ```
 
-> 🫨 You can also test this compose stack locally on your machine but SSL will nto work, 
+> 🫨 You can also test this compose stack locally on your machine but SSL will not work, 
 > so locally you can ignore Chrome warning about SSL and test your AdminForth application.
 
 ## Subpath deployment

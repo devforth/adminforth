@@ -68,7 +68,7 @@ export const admin = new AdminForth({
 //diff-add
       name: 'appartment_image',
 //diff-add
-      showIn: ['list', 'show'], // if you will try to show it in edit/create view, plugin will disable it anyway
+      showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
 //diff-add
     }
     ...
@@ -129,6 +129,9 @@ async function initDataBase() {
 }
 ```
 
+> 🫨 If you will try to set 'create' or 'edit' in showIn of column which defined by plugin.options.pathColumnName, plugin
+> will still prevent column from showing in these views. This is because plugin will handle file upload and you should not 
+> allow user to set path manually.
 
 < screen with image >
 
