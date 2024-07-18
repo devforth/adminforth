@@ -20,6 +20,9 @@
     <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatDate(record[column.name]),route.meta.type) }}
     </span>
+    <span v-else-if="column.type === 'richtext'">
+      <div v-html="protectAgainstXSS(record[column.name])"></div>
+    </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
     </span>
@@ -34,6 +37,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import {checkEmptyValues} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
+import sanitizeHtml from 'sanitize-html';
 
 
 import { useCoreStore } from '@/stores/core';
@@ -49,6 +53,10 @@ const props = defineProps({
   column: Object,
   record: Object
 });
+
+function protectAgainstXSS(value) {
+  return sanitizeHtml(value);
+}
 
 
 function formatDate(date) {
