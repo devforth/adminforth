@@ -12,6 +12,7 @@ npm i @adminforth/foreign-inline-list --save
 
 ```ts title="./index.ts"
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
+import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 ```
 
 
