@@ -69,7 +69,6 @@ Also, it excludes itself to avoid infinte logging loop.
 ```ts title='./index.ts'
 //diff-add
 import { v4 as uuid } from 'uuid';
-import { AdminForthDataTypes }
 ...
   resources: [
   ...
@@ -92,7 +91,7 @@ import { AdminForthDataTypes }
 //diff-add
         { name: 'action', required: false },
 //diff-add
-        { name: 'diff', required: false, type: AdminForth.Types.JSON, showIn: ['show'] },
+        { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
 //diff-add
         { name: 'record_id', required: false },
 //diff-add

@@ -6,12 +6,12 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public"
+    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public",
+    "postinstall": "npm link adminforth"
   },
   "author": "devforth",
   "license": "ISC",
   "dependencies": {
-    "node-2fa": "^2.0.3",
-    "adminforth": "file:../../"
+    "node-2fa": "^2.0.3"
   }
 }

@@ -1,8 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth from '../adminforth/index.ts';
+import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes } from '../adminforth/index.ts';
 import { v1 as uuid } from 'uuid';
-import type { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum } from '../adminforth/types/AdminForthConfig.js';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.ts';
 import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
@@ -136,7 +135,7 @@ const admin = new AdminForth({
             { name: 'resource_id', required: false },
             { name: 'user_id', required: false },
             { name: 'action', required: false },
-            { name: 'diff', required: false, type: AdminForth.Types.JSON },
+            { name: 'diff', required: false, type: AdminForthDataTypes.JSON },
             { name: 'record_id', required: false },
         ],
         options: {
@@ -146,16 +145,16 @@ const admin = new AdminForth({
             }
         },
         plugins: [
-            new AuditLogPlugin({
-                resourceColumns: {
-                    resourceUserIdColumnName: 'user_id',
-                    resourceRecordIdColumnName: 'record_id',
-                    resourceActionColumnName: 'action',
-                    resourceDataColumnName: 'diff',
-                    resourceCreatedColumnName: 'created_at',
-                    resourceIdColumnName: 'resource_id',
-                },
-            }),
+          new AuditLogPlugin({
+              resourceColumns: {
+                  resourceUserIdColumnName: 'user_id',
+                  resourceRecordIdColumnName: 'record_id',
+                  resourceActionColumnName: 'action',
+                  resourceDataColumnName: 'diff',
+                  resourceCreatedColumnName: 'created_at',
+                  resourceIdColumnName: 'resource_id',
+              },
+          }),
         ],
        
     },
@@ -201,7 +200,7 @@ const admin = new AdminForth({
         }, 
         {
           name: 'created_at',
-          type: AdminForth.Types.DATETIME ,
+          type: AdminForthDataTypes.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
 
@@ -210,7 +209,9 @@ const admin = new AdminForth({
         },
         {
           name: 'appartment_image',
-          showIn: ['list', 'show'],
+          showIn: [],
+          required: true,
+          editingNote: 'Upload image of apartment',
         },
         { 
           name: 'price',
@@ -240,6 +241,7 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
+          type: AdminForthDataTypes.RICHTEXT
         },
         {
           name: 'property_type',
@@ -279,19 +281,18 @@ const admin = new AdminForth({
       plugins: [
         new UploadPlugin({
           pathColumnName: 'appartment_image',
-          uploadColumnLabel: 'Upload preview', // label of upload field
           s3Bucket: 'tmpbucket-adminforth',
           s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'],
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
           maxFileSize: 1024 * 1024 * 20, // 5MB
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
           // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}.${originalExtension}`,
+          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
     
           preview: {
             // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({record, path}) => `https://my-bucket.s3.amazonaws.com/${path}`,
+            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
             showInList: true,
           }
         }),
@@ -365,7 +366,7 @@ const admin = new AdminForth({
         },
         {
           name: 'secret2fa',
-          type: AdminForth.Types.STRING,
+          type: AdminForthDataTypes.STRING,
           showIn: [],
           backendOnly: true,
         },
@@ -377,7 +378,7 @@ const admin = new AdminForth({
         },
         { 
           name: 'created_at', 
-          type: AdminForth.Types.DATETIME,
+          type: AdminForthDataTypes.DATETIME,
           showIn: ['list', 'filter', 'show'],
           fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
         },
@@ -400,7 +401,7 @@ const admin = new AdminForth({
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
           // minLength: 8,
-          type: AdminForth.Types.STRING,
+          type: AdminForthDataTypes.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field
         }
@@ -500,7 +501,7 @@ const admin = new AdminForth({
             },
             { 
               name: 'created_at', 
-              type: AdminForth.Types.DATETIME,
+              type: AdminForthDataTypes.DATETIME,
               showIn: ['list', 'filter', 'show'],
               fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
             },
@@ -518,7 +519,7 @@ const admin = new AdminForth({
               editingNote: { edit: 'Leave empty to keep password unchanged' },
     
               minLength: 8,
-              type: AdminForth.Types.STRING,
+              type: AdminForthDataTypes.STRING,
               showIn: ['create', 'edit'], // to show in create and edit pages
               masked: true, // to show stars in input field
             }

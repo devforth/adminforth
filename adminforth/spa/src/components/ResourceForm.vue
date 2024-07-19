@@ -1,6 +1,5 @@
 <template>
   <div class="rounded-default">
-    
     <div 
       class="relative shadow-resourseFormShadow sm:rounded-lg dark:shadow-2xl dark:shadow-black rounded-default"
     >
@@ -20,29 +19,32 @@
               <tr v-for="column, i in editableColumns" :key="column.name"
                   class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
               >
-                    <td class="px-6 py-4 whitespace-nowrap "> <!--align-top-->
+                    <td class="px-6 py-4 whitespace-nowrap flex items-center"> <!--align-top-->
                       {{ column.label }}
-                      <span :data-tooltip-target="`tooltip-show-${i}`" class="relative inline-block">
+                      <span :data-tooltip-target="`tooltip-show-${i}`" class="ml-1 relative inline-block">
                           <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
                           :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
                           />
                       </span>
                       <div :id="`tooltip-show-${i}`"
-                          role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                          role="tooltip" 
+                          class="ml-1 absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                           Required field
                           <div class="tooltip-arrow" data-popper-arrow></div>
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
-
                     <template v-if="column?.components?.[props.source]?.file">
-                        <component
-                            :is="getCustomComponent(column.components[props.source])"
-                            :column="column"
-                            :value="currentValues[column.name]"
-                            @update:value="setCurrentValue(column.name, $event)"
-                            :meta="column.components[props.source].meta"
-                        />
+                      <component
+                        :is="getCustomComponent(column.components[props.source])"
+                        :column="column"
+                        :value="currentValues[column.name]"
+                        @update:value="setCurrentValue(column.name, $event)"
+                        :meta="column.components[props.source].meta"
+                        :record="props.record"
+                        @update:inValidity="customComponentsInValidity[column.name] = $event"
+                        @update:emptiness="customComponentsEmptiness[column.name] = $event"
+                      />
                     </template>
                     <template v-else>
                       <Dropdown
@@ -122,10 +124,11 @@
                           <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]" />
                           <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
                       </button>
-                      <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
-
-                      <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
                     </template>
+                    <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
+
+                    <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
+
                 </td>
               </tr>
               
@@ -167,10 +170,24 @@ const emit = defineEmits(['update:record', 'update:isValid']);
 
 const currentValues = ref({});
 
+const customComponentsInValidity = ref({});
+const customComponentsEmptiness = ref({});
+
 
 const columnError = (column) => {
   const val = computed(() => {
-    if ( column.required[mode.value] && (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') ) {
+    if (customComponentsInValidity.value[column.name]) {
+      return customComponentsInValidity.value[column.name];
+    }
+
+    if ( 
+      column.required[mode.value] && 
+      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') && 
+      // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
+      // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
+      (customComponentsEmptiness.value[column.name] !== false)
+    
+    ) {
       return 'This field is required';
     }
     if ( column.type === 'string' || column.type === 'text' ) {
@@ -182,14 +199,17 @@ const columnError = (column) => {
       }
     }
     if ( ['integer', 'decimal', 'float'].includes(column.type) ) {
-      if ( column.minValue !== undefined && currentValues.value[column.name] < column.minValue ) {
+      if ( column.minValue !== undefined 
+        && currentValues.value[column.name] !== null 
+        && currentValues.value[column.name] < column.minValue 
+      ) {
         return `This field must be greater than ${column.minValue}`;
       }
       if ( column.maxValue !== undefined && currentValues.value[column.name] > column.maxValue ) {
         return `This field must be less than ${column.maxValue}`;
       }
     }
-    if ( column.validation && column.validation.length ){
+    if ( column.validation && column.validation.length ) {
       const validationArray = column.validation;
       for (let i = 0; i < validationArray.length; i++) {
         if (validationArray[i].regExp) {

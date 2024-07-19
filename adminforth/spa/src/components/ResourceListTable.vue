@@ -311,12 +311,12 @@ async function selectAll(value) {
         checkboxesInternal.value.push(r.id)
       } 
     });
-  }
-  else {
+  } else {
     props.rows.forEach((r) => {
       checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id);
     });
   }
+  checkboxesInternal.value = [ ...checkboxesInternal.value ];
 }
 
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
