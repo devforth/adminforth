@@ -2,7 +2,8 @@
 export type PluginOptions = {
 
   /**
-   * the name of the column where the path to the uploaded file is stored
+   * The name of the column where the path to the uploaded file is stored.
+   * On place of this column, a file upload field will be shown.
    */
   pathColumnName: string;
 
@@ -37,9 +38,10 @@ export type PluginOptions = {
   s3SecretAccessKey: string,
 
   /**
-   * ACL which will be set to uploaded file, e.g. 'public-read'
+   * ACL which will be set to uploaded file, e.g. 'public-read'.
+   * If you want to use 'public-read', it is your responsibility to set the "ACL Enabled" to true in the S3 bucket policy and Uncheck "Block all public access" in the bucket settings.
    */
-  s3ACL: string,
+  s3ACL?: string,
 
   /**
    * The path where the file will be uploaded to the S3 bucket, same path will be stored in the database
@@ -53,14 +55,6 @@ export type PluginOptions = {
    * 
    */
   s3Path: ({originalFilename, originalExtension, contentType}) => string,
-
-  /**
-   * This plugin creates a virtual column on edit and create views
-   * where the user can upload a file. This is the label of that column
-   * 
-   * Defaulted to 'Upload \<Name of the column defined in {@link pathColumnName}\>'
-   */
-  uploadColumnLabel: string,
 
 
   preview: {

@@ -12,24 +12,41 @@ By default AdminForth provides only one bulk action `delete` which allows to del
 To add custom bulk action quickly:
 
 ```ts
+//diff-add
+import { AdminUser } from 'adminforth';
+
 {
   ...
   resourceId: 'aparts',
      ...
      options: {
+//diff-add
         bulkActions: [
+//diff-add
           {
+//diff-add
             label: 'Mark as listed',
+//diff-add
             icon: 'flowbite:eye-solid',
+//diff-add
             state:'active',
+//diff-add
             confirm: 'Are you sure you want to mark all selected apartments as listed?',
-            action: function ({selectedIds, adminUser}: any) {
+//diff-add
+            action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
+//diff-add
               const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+//diff-add
               stmt.run(...selectedIds);
+//diff-add
               return { ok: true, error: false, message: 'Marked as listed' }
+//diff-add
             },
+//diff-add
           }
+//diff-add
         ],
+//diff-add
       }
 }
 ```
@@ -43,3 +60,12 @@ Action code is called on the server side only and allowed to only authorized use
 
 Here is how it looks:
 ![alt text](image-3.png)
+
+
+## Limiting access to bulk actions
+
+You might want to allow only certain users to perform your custom bulk action. 
+
+To implement this limitation use `allowed`:
+
+< todo >

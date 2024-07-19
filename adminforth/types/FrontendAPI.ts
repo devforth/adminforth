@@ -89,6 +89,11 @@ export type AlertParams = {
     message?: string;
 
     /**
+     * The message to display in the alert as HTML (can be used instead of message)
+     */
+    messageHtml?: string;
+    
+    /**
      * The variant of the alert
      */
     variant?: AlertVariant | keyof typeof AlertVariant;

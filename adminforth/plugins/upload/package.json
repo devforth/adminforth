@@ -1,16 +1,16 @@
 {
   "name": "@adminforth/s3upload",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public"
+    "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public",
+    "postinstall": "npm link adminforth"
   },
   "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1654.0",
-    "adminforth": "file:../../"
+    "aws-sdk": "^2.1654.0"
   }
 }

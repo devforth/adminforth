@@ -651,12 +651,101 @@ export type BeforeLoginConfirmationFunction = (params?: {
   }
 }>;
 
+
+export type AdminForthBulkAction = {
+  id?: string,
+
+  /**
+   * Label for action button which will be displayed in the list view
+   */
+  label: string,
+  state: string,
+
+  /**
+   * Icon for action button which will be displayed in the list view
+   */
+  icon?: string,
+
+  /**
+   * Callback which will be called on backend when user clicks on action button.
+   * It should return Promise which will be resolved when action is done.
+   */
+  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<void>,
+
+  /**
+   * Confirmation message which will be displayed to user before action is executed.
+   */
+  confirm?: string,
+
+  /**
+   * Allowed callback called to check whether action is allowed for user.
+   * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
+   * 2. This same callback called second time when user clicks an action button. If callback returns false, action will not be executed.
+   * In second time selectedIds will be passed to callback (because checkbox for items are selected), so you can use this to make additional 
+   * checks ( for example to check if user has permission for certain records ).
+   * 
+   * Example:
+   * 
+   * ```ts
+   * allowed: async ({ resource, adminUser, selectedIds }) => {
+   *   if (adminUser.isRoot || adminUser.dbUser.role !== 'superadmin') {
+   *    return false;
+   *   } 
+   *   return true;
+   * }
+   * ```
+   * 
+   */
+  allowed?: ({ resource, adminUser, selectedIds, allowedActions }: {
+
+    /**
+     * recordIds will be passed only once user tries to perform bulk action by clicking on button
+     */
+    selectedIds?: Array<any>,
+    resource: AdminForthResource,
+
+    /**
+     * Admin user object
+     */
+    adminUser: AdminUser,
+
+    /**
+     * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
+     * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
+     * might want to allow it only for users who have "edit" action allowed:
+     * 
+     * Example:
+     * 
+     * ```ts
+     * 
+     * options: \{
+     *   bulkActions: [
+     *     \{
+     *       label: 'Mark as read',
+     *       action: async (\{ resource, recordIds \}) => \{
+     *         await markAsRead(recordIds);
+     *       \},
+     *       allowed: (\{ allowedActions \}) => allowedActions.edit,
+     *     \}
+     *   ],
+     *   allowedActions: \{
+     *     edit: (\{ resource, adminUser, recordIds \}) => \{
+     *       return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+     *     \}
+     *   \}
+     * \}
+     * ```
+     * 
+     */
+    allowedActions: AllowedActionsResolved,
+    }) => Promise<boolean>,
+}
+
+
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
-
-
 export type AdminForthResource = {
     /**
      * Unique identifier of resource. By default it equals to table name in database. 
@@ -764,80 +853,11 @@ export type AdminForthResource = {
         direction: AdminForthSortDirections | string,
       }
 
-      /**
-       * Custom bulk actions list
+      /** 
+       * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
+       * using checkboxes.
        */
-      bulkActions?: Array<{
-        id?: string,
-        label: string,
-        state: string,
-        icon?: string,
-        action: Function,
-        confirm?: string,
-
-        /**
-         * Allowed callback called to check whether action is allowed for user.
-         * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
-         * 2. This same callback called second time when user clicks an action button. If callback returns false, action will not be executed.
-         * In second time recordIds will be passed to callback (because checkbox for items are selected), so you can use this to make additional 
-         * checks ( for example to check if user has permission for certain records ).
-         * 
-         * Example:
-         * 
-         * ```ts
-         * allowed: async ({ resource, adminUser, recordIds }) => {
-         *   if (adminUser.isRoot || adminUser.dbUser.role !== 'superadmin') {
-         *    return false;
-         *   } 
-         *   return true;
-         * }
-         * ```
-         * 
-         */
-        allowed?: ({ resource, adminUser, recordIds }: {
-
-          /**
-           * recordIds will be passed only once user tries to perform bulk action by clicking on button
-           */
-          recordIds?: Array<any>,
-          resource: AdminForthResource,
-
-          /**
-           * Admin user object
-           */
-          adminUser: AdminUser,
-
-          /**
-           * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
-           * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
-           * might want to allow it only for users who have "edit" action allowed:
-           * 
-           * Example:
-           * 
-           * ```ts
-           * 
-           * options: {
-           *   bulkActions: [
-           *     {
-           *       label: 'Mark as read',
-           *       action: async ({ resource, recordIds }) => {
-           *         await markAsRead(recordIds);
-           *       },
-           *       allowed: ({ allowedActions }) => allowedActions.edit,
-           *     }
-           *   ],
-           *   allowedActions: {
-           *     edit: ({ resource, adminUser, recordIds }) => {
-           *       return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
-           *     }
-           *   }
-           * }
-           * ```
-           * 
-           */
-          allowedActions: AllowedActionsResolved,
-         }) => Promise<boolean>,
-      }>,
+      bulkActions?: AdminForthBulkAction[],
 
       /**
        * Allowed actions for resource.
@@ -1365,7 +1385,11 @@ export type AdminForthFieldComponents = {
     /**
      * List component is used to redefine cell which renders field value in list view.
      * Component accepts next properties: [record, column, resource, adminUser].
-     * 
+     * Component can emit events:
+     * - `update:value` - to update record value.
+     * - `update:inValidity` - emit true once entered value became not valid (e.g. emit('update:inValidity', true) ). Emit false once entered value became valid. Emit default value in mounted hook.
+     * - `update:emptiness` - emit true once entered value became empty (e.g. emit('update:emptiness', true) ). Emit false once entered value became not empty. Emit default value in mounted hook.
+     * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
      */
     list?: AdminForthComponentDeclaration,
 }
@@ -1381,6 +1405,7 @@ export enum AdminForthDataTypes {
   TIME = 'time',
   TEXT = 'text',
   JSON = 'json',
+  RICHTEXT = 'richtext',
 }
 
 export enum AdminForthFilterOperators {
