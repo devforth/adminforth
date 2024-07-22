@@ -4,6 +4,12 @@
 
 This plugin allows you to upload files to Amazon S3 bucket.
 
+## Installation
+
+```
+npm i @adminforth/upload --save
+```
+
 ## S3
 
 1. Go to https://aws.amazon.com and login.
@@ -40,13 +46,14 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
 > Every character matters, so don't forget to add `http://` or `https://`!
 
 4. Go to Services -> IAM and create a new user. Put in user name e.g. `my-reality-user`.
-5. Attach existing policies directly -> `AmazonS3FullAccess`.
+5. Attach existing policies directly -> `AmazonS3FullAccess`. Go to your user -> `Add permissions` -> `Attach policies directly` -> `AmazonS3FullAccess`
 6. Go to Security credentials and create a new access key. Save `Access key ID` and `Secret access key`.
 7. Add credentials in your `.env` file:
 
 ```bash title=".env"
 ...
 NODE_ENV=development 
+
 //diff-add
 AWS_ACCESS_KEY_ID=your_access_key_id
 //diff-add
@@ -57,6 +64,8 @@ AWS_SECRET_ACCESS_KEY=your_secret_access_key
 Add column to `aparts` resource configuration:
 
 ```ts title="./index.ts"
+//diff-add
+import UploadPlugin from '@adminforth/upload';
 
 export const admin = new AdminForth({
   ...
@@ -80,9 +89,9 @@ export const admin = new AdminForth({
 //diff-add
       pathColumnName: 'appartment_image',
 //diff-add
-      s3Bucket: 'my-bucket',
+      s3Bucket: 'my-bucket', // ❗ Your bucket name
 //diff-add
-      s3Region: 'us-east-1',
+      s3Region: 'us-east-1', // ❗ Selected region
 //diff-add
       s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
 //diff-add
@@ -93,6 +102,7 @@ export const admin = new AdminForth({
       maxFileSize: 1024 * 1024 * 20, // 5MB
 //diff-add
       s3Path: ({originalFilename, originalExtension, contentType}) => 
+//diff-add
             `/aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
 //diff-add
       // You can use next to change preview URLs (if it is image) in list and show views
