@@ -66,6 +66,8 @@ Add column to `aparts` resource configuration:
 ```ts title="./index.ts"
 //diff-add
 import UploadPlugin from '@adminforth/upload';
+//diff-add
+import { v4 as uuid } from 'uuid';
 
 export const admin = new AdminForth({
   ...
@@ -103,7 +105,7 @@ export const admin = new AdminForth({
 //diff-add
       s3Path: ({originalFilename, originalExtension, contentType}) => 
 //diff-add
-            `/aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+            `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
 //diff-add
       // You can use next to change preview URLs (if it is image) in list and show views
 //diff-add
@@ -195,7 +197,7 @@ Then you can change ACL in plugin configuration:
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm'],
         maxFileSize: 1024 * 1024 * 20, // 5MB
         s3Path: ({originalFilename, originalExtension, contentType}) => 
-                  `/aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+                  `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
         preview: {
             showInList: true,
         }
