@@ -27,7 +27,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
             "PUT"
         ],
         "AllowedOrigins": [
-            "http://localhost:3000"
+            "http://localhost:3500"
         ],
         "ExposeHeaders": []
     }
@@ -40,7 +40,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
 > ```json
 > [
 >      "https://example.com",
->      "http://localhost:3000"
+>      "http://localhost:3500"
 > ]
 > ```
 > Every character matters, so don't forget to add `http://` or `https://`!
