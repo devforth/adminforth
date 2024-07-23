@@ -209,7 +209,7 @@ Now every uploaded file will be public so in your custom app you can easily conc
 
 ```ts
 export async function getPublicUrl(s3Path: string): string {
-  return `https://my-bucket.s3.${region}.amazonaws.com/${s3Path}`,
+  return `https://my-bucket.s3.${region}.amazonaws.com/${s3Path}`
 }
 ```
 
