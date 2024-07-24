@@ -327,23 +327,25 @@ const admin = new AdminForth({
         }
       ],
       plugins: [
-        new UploadPlugin({
-          pathColumnName: 'appartment_image',
-          s3Bucket: 'tmpbucket-adminforth',
-          s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
-          maxFileSize: 1024 * 1024 * 20, // 5MB
-          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
-    
-          preview: {
-            // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-            showInList: true,
-          }
-        }),
+        ...(process.env.AWS_ACCESS_KEY_ID ? [
+          new UploadPlugin({
+            pathColumnName: 'appartment_image',
+            s3Bucket: 'tmpbucket-adminforth',
+            s3Region: 'eu-central-1',
+            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+      
+            preview: {
+              // Used to display preview (if it is image) in list and show views
+              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+              showInList: true,
+            }
+          }),
+        ]: []),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'title',

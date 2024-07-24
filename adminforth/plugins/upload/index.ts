@@ -225,7 +225,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     // ** HOOKS FOR DELETE **//
 
     // add delete hook which sets tag adminforth-candidate-for-cleanup to true
-    resourceConfig.hooks.delete.beforeSave.push(async ({ record }: { record: any }) => {
+    resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }) => {
       if (record[pathColumnName]) {
         const s3 = new AWS.S3({
           accessKeyId: this.options.s3AccessKeyId,
