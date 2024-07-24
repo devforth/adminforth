@@ -1,10 +1,7 @@
-import betterSqlite3 from 'better-sqlite3';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
-import { createClient, ClickHouseLogLevel } from '@clickhouse/client' // or '@clickhouse/client-web'
-import { isObject } from 'util';
-import { date } from 'zod';
+import { createClient } from '@clickhouse/client'
 
 
 
@@ -12,6 +9,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
     client: any;
     dbName: string;
+    url: string;
 
     /**
      * url: http[s]://[username:password@]hostname:port[/database][?param1=value1&param2=value2]
@@ -20,6 +18,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     constructor({ url }: { url: string }) {
       super();
       this.dbName = new URL(url).pathname.replace('/', '');
+      this.url = url;;
       // create connection here
       this.client = createClient({ 
         url: url.replace('clickhouse://', 'http://'),
@@ -36,15 +35,23 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         //   level: ClickHouseLogLevel.TRACE,
         // }
       });
+      
     }
 
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
-        const q = await this.client.query({
-          query: `SELECT * FROM system.columns WHERE table = '${tableName}' and database = '${this.dbName}'`,
-          format: 'JSONEachRow',
-        });
-        const rows = await q.json();
+
+        let rows;
+        try {
+          const q = await this.client.query({
+            query: `SELECT * FROM system.columns WHERE table = '${tableName}' and database = '${this.dbName}'`,
+            format: 'JSONEachRow',
+          });
+          rows = await q.json();
+        } catch (e) {
+          console.error(` 🛑Error connecting to datasource URL ${this.url}:`, e);
+          return null;
+        }
 
         const fieldTypes = {};
         rows.forEach((row) => {
