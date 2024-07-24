@@ -164,23 +164,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
 
         return value;
-      }
-
-
-    async getRecordByPrimaryKeyWithOriginalTypes(resource, key) {
-        const tableName = resource.table;
-        const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
-        const stmt = await this.db.query(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = $1`, [key]);
-        const row = stmt.rows[0];
-        if (!row) {
-            return null;
-        }
-        const newRow = {};
-        for (const [key_1, value] of Object.entries(row)) {
-            newRow[key_1] = value;
-        }
-        return newRow;
     }
+
 
     setFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
@@ -198,7 +183,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return value;
       }
     
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }) {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }) {
       const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
       const tableName = resource.table;
       
@@ -246,8 +231,10 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
       }
       const stmt = await this.db.query(selectQuery, d);
       const rows = stmt.rows;
-      
-      const total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
+      let total = 0;
+      if (getTotals) {
+        total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
+      }
       return {
         data: rows.map((row) => {
           const newRow = {};

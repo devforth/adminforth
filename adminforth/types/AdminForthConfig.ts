@@ -93,7 +93,10 @@ export interface IExpressHttpServer extends IHttpServer {
 export interface IAdminForthDataSourceConnector {
   
   /**
-   * Function which will be called to fetch record from database.
+   * Optional.
+   * You an redefine this function to define how one record should be fetched from database.
+   * You you will not redefine it, AdminForth will use {@link IAdminForthDataSourceConnector.getData} with limit 1 and offset 0 and
+   * filter by primary key. 
    */
   getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, recordId: string): Promise<any>;
 
@@ -142,12 +145,13 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    getTotals?: boolean
   }): Promise<{data: Array<any>, total: number}>;
 
 
@@ -284,6 +288,12 @@ export interface IAdminForthPlugin {
    */
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
   componentPath(componentFile: string): string;
+
+  /**
+   * Optional method which will be called after AdminForth discovers all resources and their columns.
+   * Can be used to validate types of columns, check if some columns are missing, etc.
+   */
+  validateConfigAfterDiscover?(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
 
   /**
    * Here you can register custom endpoints for your plugin.

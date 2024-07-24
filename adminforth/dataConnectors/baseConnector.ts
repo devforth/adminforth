@@ -10,16 +10,25 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
-  getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, id: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, id: string): Promise<any> {
+    const data = await this.getDataWithOriginalTypes({ 
+      resource, 
+      limit: 1, 
+      offset: 0,
+      sort: [], 
+      filters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }],
+      getTotals: false
+    });
+    return data.data.length > 0 ? data.data[0] : null;
   }
 
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: { 
     resource: AdminForthResource, 
     limit: number, 
     offset: number, 
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    getTotals?: boolean
   }): Promise<{ data: any[], total: number }> {
     throw new Error('Method not implemented.');
   }
@@ -68,7 +77,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     limit: number, 
     offset: number, 
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
       filters.map((f) => {
@@ -80,7 +89,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       });
     }
 
-    const d = await this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters });
+    const d = await this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals: true });
     // call getFieldValue for each field
     d.data.map((record) => {
       for (const col of resource.dataSourceColumns) {

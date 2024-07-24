@@ -7,6 +7,7 @@ import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/i
 import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
 import UploadPlugin from '../adminforth/plugins/upload/index.ts';
+import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.ts';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -124,9 +125,48 @@ const admin = new AdminForth({
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
+    },
+    {
+      id: 'ch',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
+
     }
   ],
   resources: [
+
+
+    // CREATE TABLE demo.clicks
+    // (
+    //     `clickid` UUID,
+    //     `element` String,
+    //     `clientX` Int32,
+    //     `created_at` DateTime,
+    //     `aggressiveness` Float32
+    // )
+    // ENGINE = MergeTree
+    // ORDER BY clickid
+    // SETTINGS index_granularity = 8192
+    {
+      dataSource: 'ch', table: 'clicks',
+      columns: [
+        { 
+          name: 'clickid', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
+          showIn: ['list', 'filter', 'show'],
+        },
+        { name: 'element', 
+          type: AdminForthDataTypes.STRING,
+          required: false },
+        { name: 'clientX', 
+          type: AdminForthDataTypes.INTEGER,
+          required: false },
+        { name: 'created_at', 
+          type: AdminForthDataTypes.DATETIME,
+          required: false },
+        { name: 'aggressiveness', 
+          type: AdminForthDataTypes.FLOAT,
+          required: false },
+      ],
+    },
     {
         dataSource: 'db2', table: 'audit_logs',
         columns: [
@@ -241,7 +281,7 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
-          type: AdminForthDataTypes.RICHTEXT
+          type: AdminForthDataTypes.TEXT,
         },
         {
           name: 'property_type',
@@ -296,6 +336,15 @@ const admin = new AdminForth({
             showInList: true,
           }
         }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'title',
+        }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'description',
+          model: 'gpt-4o',
+        }),
       ],
       options:{
         pageInjections: {
@@ -322,7 +371,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           edit: true,
-          // delete: async () => false,
+          delete: async (p) => { console.log('🧠🧠🧠🧠 delete', p); return true; },
           show: true,
           filter: true,
           create: true,
@@ -609,7 +658,12 @@ const admin = new AdminForth({
           label: 'Logs',
           icon: 'flowbite:search-outline',
           resourceId: 'audit_logs',
-        }
+        },
+        {
+          label: 'Clicks',
+          icon: 'flowbite:search-outline',
+          resourceId: 'clicks',
+        },
       ]
     },
     {
