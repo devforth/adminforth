@@ -215,7 +215,6 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         limit,
         offset,
       };
-      console.log('🪲 Clickhouse Query', q, 'params:', d);
 
       const stmt = await this.client.query({
         query: q,
@@ -223,9 +222,6 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         query_params: d,
       });
 
-      if (process.env.HEAVY_DEBUG) {
-        console.log('🪲 Clickhouse Query', q, 'params:', d);
-      }
       const rows = await stmt.json();
 
       let total = 0;
@@ -236,7 +232,6 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           query_params: d,
         });
         const countResp = await countQ.json()
-        console.log('🪲 Clickhouse Query count', countResp);
         total = countResp[0]['COUNT()'];
       }
 
