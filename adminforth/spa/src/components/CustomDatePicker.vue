@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
+    <div class="grid w-40 gap-4 mb-2">
       <div>
         <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
@@ -17,7 +17,7 @@
     </div>
 
     <div>
-      <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
+      <div class="grid w-40 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
