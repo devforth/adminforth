@@ -1,6 +1,17 @@
 <template>
   <div class="flex items-center justify-center w-full">
-      <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+      <label for="dropzone-file" 
+        class="flex flex-col items-center justify-center w-full h-64 border-2  border-dashed rounded-lg cursor-pointer  dark:hover:bg-gray-800 hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
+        @dragover.prevent="() => dragging = true"
+        @dragleave.prevent="() => dragging = false"
+        @drop.prevent="onFileChange"  
+        :class="{
+          'border-blue-600 dark:border-blue-400': dragging,
+          'border-gray-300 dark:border-gray-600': !dragging,
+          'bg-blue-50 dark:bg-blue-800': dragging,
+          'bg-gray-50 dark:bg-gray-800': !dragging,
+        }"
+      >
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
               <img v-if="imgPreview" :src="imgPreview" class="w-100 mt-4 rounded-lg h-40 object-contain" />
 
@@ -58,6 +69,8 @@ const emit = defineEmits([
   'update:inValidity',
   'update:emptiness',
 ]);
+
+const dragging = ref(false);
 
 const imgPreview = ref(null);
 const progress = ref(0);
@@ -117,7 +130,7 @@ const onFileChange = async (e) => {
   progress.value = 0;
   uploaded.value = false;
   
-  const file = e.target.files[0]
+  const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
 
   // get filename, extension, size, mimeType
   const { name, size, type } = file;
