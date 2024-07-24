@@ -61,10 +61,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
             field.type = AdminForthDataTypes.STRING;
           } else if (baseType.startsWith('Decimal')) {
             field.type = AdminForthDataTypes.DECIMAL;
-            // const [precision, scale] = baseType.match(/\d+/g);
-            // TODO
-            // field.precision = parseInt(precision);
-            // field.scale = parseInt(scale);
+            const [precision, scale] = baseType.match(/\d+/g);
+            field.precision = parseInt(precision);
+            field.scale = parseInt(scale);
           } else if (baseType.startsWith('Float')) {
             field.type = AdminForthDataTypes.FLOAT;
           } else if (baseType == 'DateTime64' || baseType == 'DateTime') {
@@ -257,53 +256,42 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       const tableName = resource.table;
       const result = {};
       await Promise.all(columns.map(async (col) => {
-        // const stmt = await this.db.prepare(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
-        // const { min, max } = stmt.get();
-        // result[col.name] = {
-        //   min, max,
-        // };
+        const stmt = await this.client.query({
+          query: `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`,
+          format: 'JSONEachRow',
+        });
+        const rows = await stmt.json();
+        result[col.name] = {
+          min: rows[0].min,
+          max: rows[0].max,
+        };
+
       }))
       return result;
     }
     async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }) {
       const tableName = resource.table;
       const columns = Object.keys(record);
-      
-      // const q = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${columns.map((colName) => {
-      //   const colType = resource.dataSourceColumns.find((col) => col.name == colName)._underlineType;
-      //   if (colType.startsWith('Int') || colType.startsWith('UInt') || colType.startsWith('Float')) {
-      //     return record[colName];
-      //   } else {
-      //     return "'"+record[colName]+"'"
-      //   }
-      // }).join(', ')  })`;
-      // console.log('🪲 Clickhouse Query', q) ;
-      // await this.client.command({
-      //   query: q,
-
-      // });
-
-      console.log('🪲 Clickhouse Insert', record);
-
       await this.client.insert({
         database: this.dbName,
         table: tableName,
         columns: columns,
         values: [Object.values(record)],
       });
-
-      console.log('🪲 Clickhouse Query done');
-      
     }
 
     async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
-      const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
+      const columnsWithPlaceholders = Object.keys(newValues).map((col) => {
+        return `${col} = {${col}:${resource.dataSourceColumns.find((c) => c.name == col)._underlineType}}`
+      });
       const values = [...Object.values(newValues), recordId];
 
-      // const q = this.db.prepare(
-      //     `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
-      // )
-      // await q.run(values);
+      await this.client.command(
+        { 
+          query: `ALTER TABLE ${this.dbName}.${resource.table} UPDATE ${columnsWithPlaceholders.join(', ')} WHERE ${this.getPrimaryKey(resource)} = {recordId:${resource.dataSourceColumns.find((c) => c.primaryKey)._underlineType}}`, 
+          query_params: { ...newValues, recordId },
+      }
+      );
     }
 
     async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }) {

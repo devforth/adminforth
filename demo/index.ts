@@ -146,6 +146,8 @@ const admin = new AdminForth({
     // ENGINE = MergeTree
     // ORDER BY clickid
     // SETTINGS index_granularity = 8192
+    // add field click_price decimal:
+    // ALTER TABLE demo.clicks ADD COLUMN click_price Decimal(10, 2) AFTER aggressiveness 
     {
       dataSource: 'ch', table: 'clicks',
       columns: [
@@ -158,13 +160,19 @@ const admin = new AdminForth({
           required: false },
         { name: 'clientX', 
           type: AdminForthDataTypes.INTEGER,
+          allowMinMaxQuery: true,
           required: false },
         { name: 'created_at', 
           type: AdminForthDataTypes.DATETIME,
           required: false },
         { name: 'aggressiveness', 
+          allowMinMaxQuery: true,
           type: AdminForthDataTypes.FLOAT,
-          required: false },
+          required: false
+        },
+        {
+          name: 'click_price',
+        }
       ],
     },
     {
