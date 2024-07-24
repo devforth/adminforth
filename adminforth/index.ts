@@ -19,6 +19,7 @@ import {
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI from './modules/restApi.js';
+import ClickhouseConnector from './dataConnectors/clickhouse.js';
 
 // exports
 export * from './types/AdminForthConfig.js'; 
@@ -92,6 +93,7 @@ class AdminForth implements IAdminForth {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
       'mongodb': MongoConnector,
+      'clickhouse': ClickhouseConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};

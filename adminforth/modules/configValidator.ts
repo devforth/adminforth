@@ -449,5 +449,10 @@ export default class ConfigValidator implements IConfigValidator {
       }
     })
     resource.dataSourceColumns = resource.columns.filter((col) => !col.virtual);
+    (resource.plugins || []).forEach((plugin) => {
+      if (plugin.validateConfigAfterDiscover) {
+        plugin.validateConfigAfterDiscover(this.adminforth, resource);
+      }
+    });
   }
 }

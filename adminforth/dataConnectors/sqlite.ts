@@ -91,21 +91,6 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       return value;
     }
 
-    async getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, key: any): Promise<any> {
-        const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
-        const tableName = resource.table;
-        const stmt = this.db.prepare(`SELECT ${columns} FROM ${tableName} WHERE ${this.getPrimaryKey(resource)} = ?`);
-        const row = stmt.get(key);
-        if (!row) {
-            return null;
-        }
-        const newRow = {};
-        for (const [key, value] of Object.entries(row)) {
-            newRow[key] = value;
-        }
-        return newRow;
-    }
-
     setFieldValue(field: AdminForthResourceColumn, value: any): any {
       if (field.type == AdminForthDataTypes.DATETIME) {
         if (!value) {
@@ -151,13 +136,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     };
     
 
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
-        resource: AdminForthResource, 
-        limit: number, 
-        offset: number, 
-        sort: { field: string, direction: AdminForthSortDirections }[], 
-        filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
-    }): Promise<{ data: any[], total: number }> {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }): Promise<{ data: any[], total: number }> {
       const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
       const tableName = resource.table;
 
@@ -203,9 +182,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       }
       const rows = await stmt.all(d);
 
-      const total = (
-        await this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`).get([...filterValues])
-      )['COUNT(*)'];
+      let total = 0;
+      if (getTotals) {
+        const totalStmt = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`);
+        total = totalStmt.get([...filterValues])['COUNT(*)'];
+      }
 
       return {
         data: rows.map((row) => {

@@ -1,8 +1,7 @@
 
-import { AdminForthResourcePages, IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
 import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
-import { AdminForthPlugin, AdminForthResourceColumn } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 

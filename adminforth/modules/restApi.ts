@@ -226,7 +226,7 @@ export default class AdminForthRestAPI {
 
     async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
       if (process.env.HEAVY_DEBUG) {
-        console.log('🪲Interpreting resource', resource.resourceId, source);
+        console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
       }
       const allowedActions = {};
 
@@ -695,8 +695,8 @@ export default class AdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body }) => {
-            const { resourceId, actionId, recordIds, adminUser } = body;
+        handler: async ({ body, adminUser }) => {
+            const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
                 return { error: `Resource '${resourceId}' not found` };
