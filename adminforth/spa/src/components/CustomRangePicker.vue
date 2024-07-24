@@ -21,7 +21,7 @@
       @click="clear">Clear
     </button>
 
-    <div class="w-full">
+    <div class="w-full px-2.5">
       <vue-slider
         class="custom-slider"
         :dot-size="20"
