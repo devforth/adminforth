@@ -680,7 +680,7 @@ export type AdminForthBulkAction = {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<void>,
+  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string }>,
 
   /**
    * Confirmation message which will be displayed to user before action is executed.

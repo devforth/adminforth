@@ -269,20 +269,40 @@ export default class ConfigValidator implements IConfigValidator {
             allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
             action: async ({ selectedIds, adminUser }) => {
               const connector = this.adminforth.connectors[res.dataSource];
-              await Promise.all(selectedIds.map(async (recordId) => {
-                const record = await connector.getRecordByPrimaryKey(res, recordId);
+              let error = null;
 
-                await connector.deleteRecord({ resource: res, recordId });
-                // call afterDelete hook
-                await Promise.all(
-                  (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
-                    async (hook) => {
-                      await hook({ resource: res, record, adminUser }); 
-                    }
+              await Promise.all(
+                selectedIds.map(async (recordId) => {
+                  const record = await connector.getRecordByPrimaryKey(res, recordId);
+
+                  await Promise.all(
+                    (res.hooks.delete.beforeSave as AfterSaveFunction[]).map(
+                      async (hook) => {
+                        const resp = await hook({ resource: res, record, adminUser }); 
+                        if (!error && resp.error) {
+                          error = resp.error;
+                        }
+                      }
+                    )
                   )
-                )
-                
-              }));
+                  
+                  await connector.deleteRecord({ resource: res, recordId });
+                  // call afterDelete hook
+                  await Promise.all(
+                    (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
+                      async (hook) => {
+                        await hook({ resource: res, record, adminUser }); 
+                      }
+                    )
+                  )
+                  
+                })
+              );
+
+              if (error) {
+                return { error, ok: false };
+              }
+              return { ok: true };
             }
           });
         }
