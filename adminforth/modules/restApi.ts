@@ -251,10 +251,10 @@ export default class AdminForthRestAPI {
 
     function checkAccess(action: AllowedActionsEnum, allowedActions: AllowedActions): { allowed: boolean, error?: string } {
       const allowed = (allowedActions[action] as boolean | string | undefined);
-        if (allowed !== true) {
-          return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed', allowed: false };
-        }
-        return { allowed: true };
+      if (allowed !== true) {
+        return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed', allowed: false };
+      }
+      return { allowed: true };
     }
    
     server.endpoint({

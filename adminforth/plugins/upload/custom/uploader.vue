@@ -201,7 +201,7 @@ const onFileChange = async (e) => {
     });
     if (!success) {
       window.adminforth.alert({
-        messageHtml: `<div>Sorry but the file was not be uploaded because of S3 Request Error: </div>
+        messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
         <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
           xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
         }</pre>`,

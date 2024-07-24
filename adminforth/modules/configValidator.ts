@@ -5,6 +5,7 @@ import {
   AdminForthComponentDeclaration , 
   AdminForthResourcePages, AllowedActionsEnum,
   type AdminForthComponentDeclarationFull,
+  type AfterSaveFunction,
 } from "../types/AdminForthConfig.js";
 
 import fs from 'fs';
@@ -143,7 +144,7 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (this.config.resources) {
-      this.config.resources.forEach((res) => {
+      this.config.resources.forEach((res: AdminForthResource) => {
         if (!res.table) {
           errors.push(`Resource "${res.dataSource}" is missing table`);
         }
@@ -266,10 +267,21 @@ export default class ConfigValidator implements IConfigValidator {
             state: 'danger',
             icon: 'flowbite:trash-bin-outline',
             allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-            action: async ({ selectedIds }) => {
+            action: async ({ selectedIds, adminUser }) => {
               const connector = this.adminforth.connectors[res.dataSource];
               await Promise.all(selectedIds.map(async (recordId) => {
+                const record = await connector.getRecordByPrimaryKey(res, recordId);
+
                 await connector.deleteRecord({ resource: res, recordId });
+                // call afterDelete hook
+                await Promise.all(
+                  (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
+                    async (hook) => {
+                      await hook({ resource: res, record, adminUser }); 
+                    }
+                  )
+                )
+                
               }));
             }
           });
