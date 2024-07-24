@@ -111,10 +111,13 @@ class AdminForth implements IAdminForth {
         throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
       }
       const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
-      if (!Object.keys(fieldTypes).length) {
+      if (fieldTypes !== null && !Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
-
+      if (fieldTypes === null) {
+        console.error(`DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        return;
+      }
       if (!res.columns) {
         res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
       }
