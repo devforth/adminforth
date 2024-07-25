@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-wrap gap-2">
     <input
+      :min="minFormatted"
+      :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       placeholder="From"
@@ -8,6 +10,8 @@
     >
 
     <input
+      :min="minFormatted"
+      :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       placeholder="To"
@@ -21,7 +25,7 @@
       @click="clear">Clear
     </button>
 
-    <div class="w-full px-2.5">
+    <div v-if="min && max" class="w-full px-2.5">
       <vue-slider
         class="custom-slider"
         :dot-size="20"
@@ -47,12 +51,8 @@ const props = defineProps({
   valueEnd: {
     default: '',
   },
-  min: {
-    default: 0,
-  },
-  max: {
-    default: 10,
-  },
+  min: {},
+  max: {},
 });
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
@@ -106,6 +106,10 @@ watch(start, () => {
 watch(end, () => {
   console.log('⚡ emit', end.value)
   emit('update:valueEnd', end.value);
+})
+
+watch([minFormatted,maxFormatted], () => {
+  setSliderValues(minFormatted.value, maxFormatted.value)
 })
 
 const clear = () => {
