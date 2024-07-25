@@ -70,8 +70,8 @@
 
            <CustomRangePicker
              v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
-             :min="c.min"
-             :max="c.max"
+             :min="getFilterMinValue(c.name)"
+             :max="getFilterMaxValue(c.name)"
              :valueStart="getFilterItem({ column: c, operator: 'gte' })"
              @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
              :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
@@ -206,5 +206,13 @@ function getFilterItem({ column, operator }) {
 async function clear() {
   filtersStore.clearFilters();
   emits('update:filters', [...filtersStore.filters]);
+}
+
+function getFilterMinValue(columnName) {
+  return props.columnsMinMax[columnName]?.min
+}
+
+function getFilterMaxValue(columnName) {
+  return props.columnsMinMax[columnName]?.max
 }
 </script>
