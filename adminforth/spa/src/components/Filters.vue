@@ -209,10 +209,14 @@ async function clear() {
 }
 
 function getFilterMinValue(columnName) {
-  return props.columnsMinMax[columnName]?.min
+  if(props.columnsMinMax && props.columnsMinMax[columnName]) {
+    return props.columnsMinMax[columnName]?.min
+  }
 }
 
 function getFilterMaxValue(columnName) {
-  return props.columnsMinMax[columnName]?.max
+  if(props.columnsMinMax && props.columnsMinMax[columnName]) {
+    return props.columnsMinMax[columnName]?.max
+  }
 }
 </script>
