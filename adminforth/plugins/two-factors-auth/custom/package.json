@@ -1,0 +1,15 @@
+{
+  "name": "custom",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@loltech/vue3-2fa-code-input": "^1.1.0"
+  }
+}
