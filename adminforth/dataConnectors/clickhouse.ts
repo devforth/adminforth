@@ -190,7 +190,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         let field = f.field;
         let operator = this.OperatorsMap[f.operator];
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          placeholder = `(${f.value.map((_, j) => `p${i}_${j}`).join(', ')})`;
+          placeholder = `(${f.value.map((_, j) => `{p${i}_${j}:${
+            column._underlineType
+          }}`).join(', ')})`;
         }
 
         return `${field} ${operator} ${placeholder}`

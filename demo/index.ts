@@ -157,7 +157,13 @@ const admin = new AdminForth({
         },
         { name: 'element', 
           type: AdminForthDataTypes.STRING,
-          required: false },
+          required: false,
+          enum: [
+            { value: 'button', label: 'Button' },
+            { value: 'link', label: 'Link' },
+            { value: 'image', label: 'Image' },
+          ]
+        },
         { name: 'clientX', 
           type: AdminForthDataTypes.INTEGER,
           allowMinMaxQuery: true,
@@ -350,11 +356,11 @@ const admin = new AdminForth({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'title',
         }),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          fieldName: 'description',
-          model: 'gpt-4o',
-        }),
+        // new ChatGptPlugin({
+        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //   fieldName: 'description',
+        //   model: 'gpt-4o',
+        // }),
       ],
       options:{
         pageInjections: {
