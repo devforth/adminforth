@@ -74,6 +74,9 @@ const url = computed(() => {
 // since we have no way to know the content type of the file, we will try to guess it from extension
 // for better experience probably we should check whether user saves content type in the database and use it here
 const contentType = computed(() => {
+  if (!url.value) {
+    return null;
+  }
   const u = new URL(url.value);
   return guessContentType(u.pathname);
 });

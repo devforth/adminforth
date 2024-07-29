@@ -115,12 +115,12 @@ const ADMIN_BASE_URL = '';
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   rootUser: {
-    username: 'adminforth',  // use these as credentials to login
+    username: 'adminforth',  // use these as credentials for first login
     password: 'adminforth',
   },
   auth: {
-    resourceId: 'users',  // resource for getting user
-    usernameField: 'email',
+    resourceId: 'users',  // resource to get user during login
+    usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
   },
   customization: {
@@ -139,22 +139,22 @@ export const admin = new AdminForth({
     {
       dataSource: 'maindb', 
       table: 'apartments',
-      resourceId: 'aparts', // resourceId is defaulted to table name but you can change it e.g. 
-                             // in case of same table names from different data sources
+      resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
+                            // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r) => `🏡 ${r.title}`,
       columns: [
         { 
           name: 'id', 
-          label: 'Identifier',  // if you wish you can redefine label
-          showIn: ['filter', 'show'], // show in filter and in show page
+          label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
+          showIn: ['filter', 'show'], // show column in filter and in show page
           primaryKey: true,
-          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
+          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
           name: 'title',
           required: true,
-          showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
+          showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
           maxLength: 255,  // you can set max length for string fields
           minLength: 3,  // you can set min length for string fields
         }, 
