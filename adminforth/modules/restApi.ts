@@ -712,13 +712,13 @@ export default class AdminForthRestAPI {
             if (!execAllowed) {
               return { error: `Action '${actionId}' is not allowed` };
             }
-            await action.action({selectedIds: recordIds, adminUser, resource});
+            const response = await action.action({selectedIds: recordIds, adminUser, resource});
             
             return {
               actionId,
               recordIds,
               resourceId,
-              status: 'success'
+              ...response
             }
         }
     })

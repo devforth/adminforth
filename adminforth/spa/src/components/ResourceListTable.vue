@@ -228,7 +228,7 @@ import { callAdminForthApi, getIcon } from '@/utils';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
-import { showSuccesTost } from '@/composables/useFrontendApi';
+import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
 import {
@@ -368,22 +368,24 @@ async function deleteRecord(row) {
   if (data) {
     try {
       const res = await callAdminForthApi({
-      path: '/delete_record',
-      method: 'POST',
-      body: {
-        resourceId: props.resource.resourceId,
-        primaryKey: row._primaryKeyValue,
-      }});
+        path: '/delete_record',
+        method: 'POST',
+        body: {
+          resourceId: props.resource.resourceId,
+          primaryKey: row._primaryKeyValue,
+        }
+      });
       if (!res.error){
         emits('update:records', true)
         showSuccesTost('Record deleted successfully')
       } else {
-        console.error(res.error)
+        showErrorTost(res.error)
       }
 
     } catch (e) {
+      showErrorTost(`Something went wrong, please try again later`);
       console.error(e);
-      };
-    }
+    };
+  }
 }
 </script>
