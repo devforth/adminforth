@@ -269,6 +269,8 @@ export default class ConfigValidator implements IConfigValidator {
             allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
             action: async ({ selectedIds, adminUser }) => {
               const connector = this.adminforth.connectors[res.dataSource];
+
+              // for now if at least one error, stop and return error
               let error = null;
 
               await Promise.all(
@@ -285,6 +287,10 @@ export default class ConfigValidator implements IConfigValidator {
                       }
                     )
                   )
+
+                  if (error) {
+                    return;
+                  }
                   
                   await connector.deleteRecord({ resource: res, recordId });
                   // call afterDelete hook

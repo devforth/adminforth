@@ -262,13 +262,11 @@ async function loadMenu() {
 }
 
 function handleCustomLayout() {
-  console.log(route)
   if (route.meta?.customLayout) {
     defaultLayout.value = false;
   } else {
     defaultLayout.value = true;
   }
-  console.log(defaultLayout.value,route);
 }
 
 
