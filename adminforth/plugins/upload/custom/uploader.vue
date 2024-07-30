@@ -22,7 +22,7 @@
               <template v-if="!uploaded">
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${maxFileSizeHumanized})` : '' }}
+                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${humanifySize(meta.maxFileSize)})` : '' }}
                 </p>
               </template>
 
@@ -60,7 +60,7 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils' 
 
 const props = defineProps({
-  meta: String,
+  meta: Object,
   record: Object,
 })
 

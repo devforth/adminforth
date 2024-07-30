@@ -81,7 +81,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
         } else {
           content = `Fill text/string field "${this.options.fieldName}" in the table "${resLabel}"\n` +
               (Object.keys(recordNoField).length > 0 ? `Record has values for the context: ${JSON.stringify(recordNoField)}\n` : '') +
-              "Be short, clear and precise. Don't talk to me. Just write text\n";
+              "Be short, clear and precise. No quotes. Don't talk to me. Just write text\n";
         }
 
         console.log('prompt 🧠', content);

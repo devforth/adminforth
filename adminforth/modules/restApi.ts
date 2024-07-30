@@ -225,9 +225,9 @@ export default class AdminForthRestAPI {
     });
 
     async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
-      if (process.env.HEAVY_DEBUG) {
-        console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
-      }
+      // if (process.env.HEAVY_DEBUG) {
+      //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
+      // }
       const allowedActions = {};
 
       await Promise.all(
@@ -281,7 +281,6 @@ export default class AdminForthRestAPI {
           resource.options.bulkActions.map(async (action) => {
             if (action.allowed) {
               const res = await action.allowed({ adminUser, resource, allowedActions });
-              console.log('🪲🪲🪲🪲checking for allowedActions', allowedActions, 'res', res);
               if (res) {
                 allowedBulkActions.push(action);
               }

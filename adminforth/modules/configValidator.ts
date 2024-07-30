@@ -11,7 +11,9 @@ import {
 import fs from 'fs';
 import path from 'path';
 import { guessLabelFromName } from './utils.js';
-import { v4 as uuid } from 'uuid';
+
+// @ts-ignore
+import sha256 from 'crypto-js/sha256';
 
 export default class ConfigValidator implements IConfigValidator {
 
@@ -313,10 +315,12 @@ export default class ConfigValidator implements IConfigValidator {
           });
         }
 
-        const newBulkActions = bulkActions.map((action) => {
-          return Object.assign(action, { id: uuid() });
+        bulkActions.map((action) => {
+          if (!action.id) {
+            action.id = sha256(action.label).toString();
+          }
         });
-        res.options.bulkActions = newBulkActions;
+        res.options.bulkActions = bulkActions;
 
         // if pageInjection is a string, make array with one element. Also check file exists
         const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
