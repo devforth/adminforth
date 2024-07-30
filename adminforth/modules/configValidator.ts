@@ -12,8 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { guessLabelFromName } from './utils.js';
 
-// @ts-ignore
-import sha256 from 'crypto-js/sha256';
+import crypto from 'crypto';
 
 export default class ConfigValidator implements IConfigValidator {
 
@@ -317,7 +316,9 @@ export default class ConfigValidator implements IConfigValidator {
 
         bulkActions.map((action) => {
           if (!action.id) {
-            action.id = sha256(action.label).toString();
+            action.id = crypto.createHash('sha256').update(
+              action.label,
+            ).digest('hex');
           }
         });
         res.options.bulkActions = bulkActions;

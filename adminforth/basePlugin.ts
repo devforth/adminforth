@@ -4,8 +4,7 @@ import { currentFileDir } from './modules/utils.js';
 import path from 'path';
 import fs from 'fs';
 
-// @ts-ignore
-import sha256 from 'crypto-js/sha256';
+import crypto from 'crypto';
 
 
 export default class AdminForthPlugin implements IAdminForthPlugin {
@@ -33,10 +32,10 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   }
 
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    this.pluginInstanceId = sha256(
+    this.pluginInstanceId = crypto.createHash('sha256').update(
       `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${this.instanceUniqueRepresentation(this.pluginOptions)}`
-    ).toString();
-    console.log(`5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣ Plugin instance id: ${this.pluginInstanceId}`);
+    ).digest('hex')
+      
     this.adminforth = adminforth;
   }
 
