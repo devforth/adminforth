@@ -67,10 +67,10 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     getFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
-        if (!value) {
-        return null;
-        }
-        return dayjs(Date.parse(value)).toISOString();
+            if (!value) {
+                return null;
+            }
+            return dayjs(Date.parse(value)).toISOString();
 
         } else if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
@@ -80,6 +80,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return !!value;
+        } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            return parseFloat(value['$numberDecimal'])
         }
 
         return value;
