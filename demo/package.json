@@ -11,12 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@adminforth/audit-log": "file:../adminforth/plugins/audit-log",
-    "@adminforth/chat-gpt": "file:../adminforth/plugins/chat-gpt",
-    "@adminforth/foreign-inline-list": "file:../adminforth/plugins/foreign-inline-list",
-    "@adminforth/two-factors-auth": "file:../adminforth/plugins/two-factors-auth",
-    "@adminforth/upload": "file:../adminforth/plugins/upload",
-    "adminforth": "^1.2.37",
     "better-sqlite3": "^10.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
