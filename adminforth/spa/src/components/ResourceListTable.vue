@@ -41,7 +41,7 @@
             </div>
             <span
              class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-             v-if="sort.findIndex((s) => s.field === c.name) !== -1">
+             v-if="sort.findIndex((s) => s.field === c.name) !== -1 && sort?.length > 1">
             {{ sort.findIndex((s) => s.field === c.name) + 1 }}
             </span>
 
@@ -228,7 +228,7 @@ import { callAdminForthApi, getIcon } from '@/utils';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
-import { showSuccesTost } from '@/composables/useFrontendApi';
+import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
 import {
@@ -321,9 +321,6 @@ async function selectAll(value) {
 
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
-
-
-
 const allFromThisPageChecked = computed(() => {
   if (!props.rows) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r.id));
@@ -361,14 +358,6 @@ async function onClick(e,row) {
     },
   })}
 }
-  
-
-
-
-
-
-
-
 
 async function deleteRecord(row) {
   const data = await window.adminforth.confirm({
@@ -379,26 +368,24 @@ async function deleteRecord(row) {
   if (data) {
     try {
       const res = await callAdminForthApi({
-      path: '/delete_record',
-      method: 'POST',
-      body: {
-        resourceId: props.resource.resourceId,
-        primaryKey: row._primaryKeyValue,
-      }});
+        path: '/delete_record',
+        method: 'POST',
+        body: {
+          resourceId: props.resource.resourceId,
+          primaryKey: row._primaryKeyValue,
+        }
+      });
       if (!res.error){
         emits('update:records', true)
         showSuccesTost('Record deleted successfully')
       } else {
-        console.error(res.error)
+        showErrorTost(res.error)
       }
 
     } catch (e) {
+      showErrorTost(`Something went wrong, please try again later`);
       console.error(e);
-      };
-    }
-
-    
+    };
+  }
 }
-
-
 </script>

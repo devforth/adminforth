@@ -42,7 +42,6 @@ export async function callAdminForthApi({ path, method, body=undefined }: {
 
 export function getCustomComponent({ file, meta }: { file: string, meta: any }) {
   const name = file.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
-  console.log('resolving name', name);
   return resolveComponent(name);
 }
 

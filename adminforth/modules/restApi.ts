@@ -225,9 +225,9 @@ export default class AdminForthRestAPI {
     });
 
     async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
-      if (process.env.HEAVY_DEBUG) {
-        console.log('🪲Interpreting resource', resource.resourceId, source);
-      }
+      // if (process.env.HEAVY_DEBUG) {
+      //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
+      // }
       const allowedActions = {};
 
       await Promise.all(
@@ -251,10 +251,10 @@ export default class AdminForthRestAPI {
 
     function checkAccess(action: AllowedActionsEnum, allowedActions: AllowedActions): { allowed: boolean, error?: string } {
       const allowed = (allowedActions[action] as boolean | string | undefined);
-        if (allowed !== true) {
-          return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed', allowed: false };
-        }
-        return { allowed: true };
+      if (allowed !== true) {
+        return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed', allowed: false };
+      }
+      return { allowed: true };
     }
    
     server.endpoint({
@@ -281,7 +281,6 @@ export default class AdminForthRestAPI {
           resource.options.bulkActions.map(async (action) => {
             if (action.allowed) {
               const res = await action.allowed({ adminUser, resource, allowedActions });
-              console.log('🪲🪲🪲🪲checking for allowedActions', allowedActions, 'res', res);
               if (res) {
                 allowedBulkActions.push(action);
               }
@@ -695,8 +694,8 @@ export default class AdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body }) => {
-            const { resourceId, actionId, recordIds, adminUser } = body;
+        handler: async ({ body, adminUser }) => {
+            const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
                 return { error: `Resource '${resourceId}' not found` };
@@ -712,13 +711,13 @@ export default class AdminForthRestAPI {
             if (!execAllowed) {
               return { error: `Action '${actionId}' is not allowed` };
             }
-            await action.action({selectedIds: recordIds, adminUser, resource});
+            const response = await action.action({selectedIds: recordIds, adminUser, resource});
             
             return {
               actionId,
               recordIds,
               resourceId,
-              status: 'success'
+              ...response
             }
         }
     })

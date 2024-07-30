@@ -7,6 +7,7 @@ import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/i
 import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
 import UploadPlugin from '../adminforth/plugins/upload/index.ts';
+import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.ts';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -124,9 +125,62 @@ const admin = new AdminForth({
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
+    },
+    {
+      id: 'ch',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
+
     }
   ],
   resources: [
+
+
+    // CREATE TABLE demo.clicks
+    // (
+    //     `clickid` UUID,
+    //     `element` String,
+    //     `clientX` Int32,
+    //     `created_at` DateTime,
+    //     `aggressiveness` Float32
+    // )
+    // ENGINE = MergeTree
+    // ORDER BY clickid
+    // SETTINGS index_granularity = 8192
+    // add field click_price decimal:
+    // ALTER TABLE demo.clicks ADD COLUMN click_price Decimal(10, 2) AFTER aggressiveness 
+    {
+      dataSource: 'ch', table: 'clicks',
+      columns: [
+        { 
+          name: 'clickid', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
+          showIn: ['list', 'filter', 'show'],
+        },
+        { name: 'element', 
+          type: AdminForthDataTypes.STRING,
+          required: false,
+          enum: [
+            { value: 'button', label: 'Button' },
+            { value: 'link', label: 'Link' },
+            { value: 'image', label: 'Image' },
+          ]
+        },
+        { name: 'clientX', 
+          type: AdminForthDataTypes.INTEGER,
+          allowMinMaxQuery: true,
+          required: false },
+        { name: 'created_at', 
+          type: AdminForthDataTypes.DATETIME,
+          required: false },
+        { name: 'aggressiveness', 
+          allowMinMaxQuery: true,
+          type: AdminForthDataTypes.FLOAT,
+          required: false
+        },
+        {
+          name: 'click_price',
+        }
+      ],
+    },
     {
         dataSource: 'db2', table: 'audit_logs',
         columns: [
@@ -180,13 +234,13 @@ const admin = new AdminForth({
             maxLength: 255,  // you can set max length for string fields
             minLength: 3,  // you can set min length for string fields
             components: {
-                edit: {
-                    file: '@@/IdShow.vue',
-                    meta: {
-                        title: 'Title',
-                        description: 'This is title of apartment'
-                    }
-                },
+                // edit: {
+                //     file: '@@/IdShow.vue',
+                //     meta: {
+                //         title: 'Title',
+                //         description: 'This is title of apartment'
+                //     }
+                // },
                 // show: '@@/IdShow.vue',
                 // create: {
                 //     file: '@@/IdShow.vue',
@@ -215,8 +269,6 @@ const admin = new AdminForth({
         },
         { 
           name: 'price',
-          min: 10,
-          max: 10000.12,
           allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
           editingNote: 'Price is in USD',  // you can appear note on editing or creating page
         },
@@ -241,7 +293,7 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
-          type: AdminForthDataTypes.RICHTEXT
+          type: AdminForthDataTypes.TEXT,
         },
         {
           name: 'property_type',
@@ -279,25 +331,45 @@ const admin = new AdminForth({
         }
       ],
       plugins: [
-        new UploadPlugin({
-          pathColumnName: 'appartment_image',
-          s3Bucket: 'tmpbucket-adminforth',
-          s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
-          maxFileSize: 1024 * 1024 * 20, // 5MB
-          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
-    
-          preview: {
-            // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-            showInList: true,
-          }
+        ...(process.env.AWS_ACCESS_KEY_ID ? [
+          new UploadPlugin({
+            pathColumnName: 'appartment_image',
+            s3Bucket: 'tmpbucket-adminforth',
+            s3Region: 'eu-central-1',
+            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+      
+            preview: {
+              // Used to display preview (if it is image) in list and show views
+              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+              showInList: true,
+            }
+          }),
+        ]: []),
+        // new ChatGptPlugin({
+        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //   fieldName: 'title',
+        // }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'description',
+          model: 'gpt-4o',
         }),
       ],
+      hooks: {
+        delete: {
+          beforeSave: async ({ record, adminUser, resource }: any) => {
+            return { ok: false, error: "Sorry, error here" }
+          }
+        },
+      },
+
       options:{
+          
         pageInjections: {
           show: {
             beforeBreadcrumbs: '@@/TopLine.vue',
@@ -322,7 +394,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           edit: true,
-          // delete: async () => false,
+          delete: async (p) => { return true; },
           show: true,
           filter: true,
           create: true,
@@ -609,7 +681,12 @@ const admin = new AdminForth({
           label: 'Logs',
           icon: 'flowbite:search-outline',
           resourceId: 'audit_logs',
-        }
+        },
+        {
+          label: 'Clicks',
+          icon: 'flowbite:search-outline',
+          resourceId: 'clicks',
+        },
       ]
     },
     {

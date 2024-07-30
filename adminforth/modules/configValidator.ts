@@ -5,12 +5,14 @@ import {
   AdminForthComponentDeclaration , 
   AdminForthResourcePages, AllowedActionsEnum,
   type AdminForthComponentDeclarationFull,
+  type AfterSaveFunction,
 } from "../types/AdminForthConfig.js";
 
 import fs from 'fs';
 import path from 'path';
 import { guessLabelFromName } from './utils.js';
-import { v4 as uuid } from 'uuid';
+
+import crypto from 'crypto';
 
 export default class ConfigValidator implements IConfigValidator {
 
@@ -143,7 +145,7 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (this.config.resources) {
-      this.config.resources.forEach((res) => {
+      this.config.resources.forEach((res: AdminForthResource) => {
         if (!res.table) {
           errors.push(`Resource "${res.dataSource}" is missing table`);
         }
@@ -266,19 +268,60 @@ export default class ConfigValidator implements IConfigValidator {
             state: 'danger',
             icon: 'flowbite:trash-bin-outline',
             allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-            action: async ({ selectedIds }) => {
+            action: async ({ selectedIds, adminUser }) => {
               const connector = this.adminforth.connectors[res.dataSource];
-              await Promise.all(selectedIds.map(async (recordId) => {
-                await connector.deleteRecord({ resource: res, recordId });
-              }));
+
+              // for now if at least one error, stop and return error
+              let error = null;
+
+              await Promise.all(
+                selectedIds.map(async (recordId) => {
+                  const record = await connector.getRecordByPrimaryKey(res, recordId);
+
+                  await Promise.all(
+                    (res.hooks.delete.beforeSave as AfterSaveFunction[]).map(
+                      async (hook) => {
+                        const resp = await hook({ resource: res, record, adminUser }); 
+                        if (!error && resp.error) {
+                          error = resp.error;
+                        }
+                      }
+                    )
+                  )
+
+                  if (error) {
+                    return;
+                  }
+                  
+                  await connector.deleteRecord({ resource: res, recordId });
+                  // call afterDelete hook
+                  await Promise.all(
+                    (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
+                      async (hook) => {
+                        await hook({ resource: res, record, adminUser }); 
+                      }
+                    )
+                  )
+                  
+                })
+              );
+
+              if (error) {
+                return { error, ok: false };
+              }
+              return { ok: true };
             }
           });
         }
 
-        const newBulkActions = bulkActions.map((action) => {
-          return Object.assign(action, { id: uuid() });
+        bulkActions.map((action) => {
+          if (!action.id) {
+            action.id = crypto.createHash('sha256').update(
+              action.label,
+            ).digest('hex');
+          }
         });
-        res.options.bulkActions = newBulkActions;
+        res.options.bulkActions = bulkActions;
 
         // if pageInjection is a string, make array with one element. Also check file exists
         const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
@@ -449,5 +492,10 @@ export default class ConfigValidator implements IConfigValidator {
       }
     })
     resource.dataSourceColumns = resource.columns.filter((col) => !col.virtual);
+    (resource.plugins || []).forEach((plugin) => {
+      if (plugin.validateConfigAfterDiscover) {
+        plugin.validateConfigAfterDiscover(this.adminforth, resource);
+      }
+    });
   }
 }

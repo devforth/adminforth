@@ -19,6 +19,7 @@ import {
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI from './modules/restApi.js';
+import ClickhouseConnector from './dataConnectors/clickhouse.js';
 
 // exports
 export * from './types/AdminForthConfig.js'; 
@@ -92,6 +93,7 @@ class AdminForth implements IAdminForth {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
       'mongodb': MongoConnector,
+      'clickhouse': ClickhouseConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
@@ -109,10 +111,13 @@ class AdminForth implements IAdminForth {
         throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
       }
       const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
-      if (!Object.keys(fieldTypes).length) {
+      if (fieldTypes !== null && !Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
-
+      if (fieldTypes === null) {
+        console.error(`DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        return;
+      }
       if (!res.columns) {
         res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
       }

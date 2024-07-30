@@ -119,6 +119,7 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
+  console.log('saveRecord isValid', isValid.value);
   if (!isValid.value) {
     validating.value = true;
     return;

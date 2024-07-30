@@ -93,7 +93,10 @@ export interface IExpressHttpServer extends IHttpServer {
 export interface IAdminForthDataSourceConnector {
   
   /**
-   * Function which will be called to fetch record from database.
+   * Optional.
+   * You an redefine this function to define how one record should be fetched from database.
+   * You you will not redefine it, AdminForth will use {@link IAdminForthDataSourceConnector.getData} with limit 1 and offset 0 and
+   * filter by primary key. 
    */
   getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, recordId: string): Promise<any>;
 
@@ -142,12 +145,13 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    getTotals?: boolean
   }): Promise<{data: Array<any>, total: number}>;
 
 
@@ -272,6 +276,7 @@ export interface IAdminForthPlugin {
   customFolderName: string;
   pluginInstanceId: string;
   customFolderPath: string;
+  pluginOptions: any;
 
   /**
    * AdminForth plugins concept is based on modification of full AdminForth configuration
@@ -284,6 +289,23 @@ export interface IAdminForthPlugin {
    */
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
   componentPath(componentFile: string): string;
+
+  /**
+   * If plugin should support multiple installations per one resource, this function that should return unique string for each instance of plugin.
+   * For example if plugin is installed for one column and this column defined as
+   * `targetColumn` in plugin options, then this method should return `${pluginOptions.targetColumn}`.
+   * 
+   * If plugin should support only one installation per resource, option can return  'single'
+   * @param pluginOptions - options of plugin
+   */
+  instanceUniqueRepresentation(pluginOptions: any) : string;
+
+
+  /**
+   * Optional method which will be called after AdminForth discovers all resources and their columns.
+   * Can be used to validate types of columns, check if some columns are missing, etc.
+   */
+  validateConfigAfterDiscover?(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
 
   /**
    * Here you can register custom endpoints for your plugin.
@@ -670,7 +692,7 @@ export type AdminForthBulkAction = {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<void>,
+  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string }>,
 
   /**
    * Confirmation message which will be displayed to user before action is executed.

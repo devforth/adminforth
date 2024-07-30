@@ -25,7 +25,7 @@ export const styles = () => ({
 
     lightList: "#FFFFFF", // list view background
     lightListTable: "#FFFFFF", // list view table background
-    lightListTableHeading: "rgb(249 250 251)", // list view table heading
+    lightListTableHeading: "alias:lightListTableHeadingText opacity:0.04", // list view table heading
     lightListTableHeadingText: "#333333", // list view table heading text
     lightListTableText: "#333333", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
@@ -42,7 +42,7 @@ export const styles = () => ({
 
     lightForm: "#FFFFFF", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
-    lightFormHeading: "rgb(249 250 251)", // show view heading
+    lightFormHeading: "alias:lightListTableHeading", // show view heading
 
     lightButtons: "#FFFFFF", // button background
     lightButtonsBorder: "#DDDDDD", // button border
@@ -90,7 +90,7 @@ export const styles = () => ({
 
     darkForm: "#111111", 
     darkFormBorder: "#222222", 
-    darkFormHeading: "#334155" 
+    darkFormHeading: "alias:darkListTableHeading" 
 
   },
   boxShadow: {

@@ -1,18 +1,15 @@
 {
-  "name": "@adminforth/upload",
-  "version": "1.0.9",
+  "name": "rich-editor",
+  "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public",
-    "postinstall": "npm link adminforth",
-    "build": "tsc"
+    "postinstall": "npm link adminforth"
   },
-  "type": "module",
+  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "aws-sdk": "^2.1654.0"
-  }
+  "license": "ISC"
 }
