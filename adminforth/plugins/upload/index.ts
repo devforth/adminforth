@@ -10,8 +10,11 @@ export default class UploadPlugin extends AdminForthPlugin {
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
-
     this.options = options;
+  }
+
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `${pluginOptions.pathColumnName}`;
   }
 
   async setupLifecycleRule() {

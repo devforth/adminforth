@@ -124,11 +124,7 @@ import { getCustomComponent } from '@/utils';
 
 import {
   IconBanOutline,
-  IconEyeSolid,
   IconFilterOutline,
-  IconPenSolid,
-  IconTrashBinSolid,
-  IconInboxOutline,
   IconPlusOutline
 } from '@iconify-prerendered/vue-flowbite';
 
@@ -137,13 +133,11 @@ import Filters from '@/components/Filters.vue';
 const filtersShow = ref(false);
 
 const coreStore = useCoreStore();
-const modalStore = useModalStore();
 const filtersStore = useFiltersStore();
 
 const route = useRoute();
 
 const page = ref(1);
-const filters = filtersStore.filters;
 const columnsMinMax = ref({});
 const sort = ref([]);
 

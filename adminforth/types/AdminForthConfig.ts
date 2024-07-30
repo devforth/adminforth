@@ -276,6 +276,7 @@ export interface IAdminForthPlugin {
   customFolderName: string;
   pluginInstanceId: string;
   customFolderPath: string;
+  pluginOptions: any;
 
   /**
    * AdminForth plugins concept is based on modification of full AdminForth configuration
@@ -288,6 +289,17 @@ export interface IAdminForthPlugin {
    */
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
   componentPath(componentFile: string): string;
+
+  /**
+   * If plugin should support multiple installations per one resource, this function that should return unique string for each instance of plugin.
+   * For example if plugin is installed for one column and this column defined as
+   * `targetColumn` in plugin options, then this method should return `${pluginOptions.targetColumn}`.
+   * 
+   * If plugin should support only one installation per resource, option can return  'single'
+   * @param pluginOptions - options of plugin
+   */
+  instanceUniqueRepresentation(pluginOptions: any) : string;
+
 
   /**
    * Optional method which will be called after AdminForth discovers all resources and their columns.

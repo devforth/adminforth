@@ -2,7 +2,7 @@
 
 ## dataSource
 
-A DataSource is a connection to one database. Datasources has id for references from resources and URL which follows the standard URI format. For example `mysql://user:password@localhost:3306/database`.
+A DataSource is a connection to one database. Datasources have id for references from resources and URL which follows the standard URI format. For example `mysql://user:password@localhost:3306/database`.
 It used to:
 
 * Discover the columns in the database

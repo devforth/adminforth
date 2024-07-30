@@ -189,10 +189,13 @@ async function startBulkAction(actionId) {
       recordIds: checkboxes.value
     }
   });
-  if (data?.status === 'success') {
+  if (data?.ok) {
     checkboxes.value = [];
+    await getList();
   }
-  await getList();
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
 }
 
 async function getList() {

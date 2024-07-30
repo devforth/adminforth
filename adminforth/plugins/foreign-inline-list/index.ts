@@ -20,7 +20,12 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
     this.options = options;
   }
 
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `${this.options.foreignResourceId}`;
+  }
+
   setupEndpoints(server: IHttpServer) {
+    process.env.HEAVY_DEBUG && console.log(`🪲 ForeignInlineListPlugin.setupEndpoints, registering: '/plugin/${this.pluginInstanceId}/get_resource'`);
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_resource`,

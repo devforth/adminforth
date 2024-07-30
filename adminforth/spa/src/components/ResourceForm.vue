@@ -41,7 +41,7 @@
                         :value="currentValues[column.name]"
                         @update:value="setCurrentValue(column.name, $event)"
                         :meta="column.components[props.source].meta"
-                        :record="props.record"
+                        :record="currentValues"
                         @update:inValidity="customComponentsInValidity[column.name] = $event"
                         @update:emptiness="customComponentsEmptiness[column.name] = $event"
                       />
@@ -238,6 +238,8 @@ const setCurrentValue = (key, value) => {
   } else {
     currentValues.value[key] = value;
   }
+  currentValues.value = { ...currentValues.value };
+  console.log('3️⃣ setCurrentValue', key, value);
   emit('update:record', currentValues.value);
 };
 

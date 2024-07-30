@@ -3,7 +3,10 @@ import { getComponentNameFromPath } from './modules/utils.js';
 import { currentFileDir } from './modules/utils.js';
 import path from 'path';
 import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+
+// @ts-ignore
+import sha256 from 'crypto-js/sha256';
+
 
 export default class AdminForthPlugin implements IAdminForthPlugin {
 
@@ -12,19 +15,28 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   customFolderName: string = 'custom';
   pluginInstanceId: string;
   customFolderPath: string;
+  pluginOptions: any;
 
   constructor(pluginOptions: any, metaUrl: string) {
     // set up plugin here
     this.pluginDir = currentFileDir(metaUrl);
-    this.pluginInstanceId = uuidv4();
     this.customFolderPath = path.join(this.pluginDir, this.customFolderName);
+    this.pluginOptions = pluginOptions;
   }
 
   setupEndpoints(server: any) {
     
   }
 
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return 'non-uniquely-identified';
+  }
+
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    this.pluginInstanceId = sha256(
+      `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${this.instanceUniqueRepresentation(this.pluginOptions)}`
+    ).toString();
+    console.log(`5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣5️⃣ Plugin instance id: ${this.pluginInstanceId}`);
     this.adminforth = adminforth;
   }
 
