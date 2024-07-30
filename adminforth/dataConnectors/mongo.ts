@@ -41,7 +41,7 @@ class MongoConnector implements IAdminForthDataSourceConnector {
     async discoverFields(resource) {
         return resource.columns.reduce((acc, col) => {
             if (!col.type) {
-                throw new Error(`Type is not defined for column ${col.name}`);
+                throw new Error(`Type is not defined for column ${col.name} in resource ${resource.table}`);
             }
 
             acc[col.name] = {
