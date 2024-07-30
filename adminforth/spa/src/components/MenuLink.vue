@@ -5,7 +5,7 @@
       :class="{ 
         'px-4': isChild,
         'px-2': !isChild,
-        'bg-sidebarActive dark:bg-gray-700': item.resourceId ?
+        'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': item.resourceId ?
         ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
         ($route.name === item.path)
       }"

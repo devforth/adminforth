@@ -23,6 +23,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     this.options = options;
   }
 
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `single`;
+  }
+
   static defaultError = 'Sorry, you do not have access to this resource.'
 
   createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum, data: Object, user: AdminUser, oldRecord: Object) => {

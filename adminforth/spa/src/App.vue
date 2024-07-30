@@ -84,7 +84,7 @@
                     :aria-controls="`dropdown-example${i}`"
                     :data-collapse-toggle="`dropdown-example${i}`"
                 >
-                  <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75   dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
+                  <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
                   <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
                   <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
@@ -262,13 +262,11 @@ async function loadMenu() {
 }
 
 function handleCustomLayout() {
-  console.log(route)
   if (route.meta?.customLayout) {
     defaultLayout.value = false;
   } else {
     defaultLayout.value = true;
   }
-  console.log(defaultLayout.value,route);
 }
 
 

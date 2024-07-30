@@ -15,6 +15,10 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
     this.options = options;
   }
 
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `single`;
+  }
+
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;

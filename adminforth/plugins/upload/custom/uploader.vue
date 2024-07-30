@@ -1,6 +1,17 @@
 <template>
   <div class="flex items-center justify-center w-full">
-      <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+      <label for="dropzone-file" 
+        class="flex flex-col items-center justify-center w-full h-64 border-2  border-dashed rounded-lg cursor-pointer  dark:hover:bg-gray-800 hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
+        @dragover.prevent="() => dragging = true"
+        @dragleave.prevent="() => dragging = false"
+        @drop.prevent="onFileChange"  
+        :class="{
+          'border-blue-600 dark:border-blue-400': dragging,
+          'border-gray-300 dark:border-gray-600': !dragging,
+          'bg-blue-50 dark:bg-blue-800': dragging,
+          'bg-gray-50 dark:bg-gray-800': !dragging,
+        }"
+      >
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
               <img v-if="imgPreview" :src="imgPreview" class="w-100 mt-4 rounded-lg h-40 object-contain" />
 
@@ -11,7 +22,7 @@
               <template v-if="!uploaded">
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${maxFileSizeHumanized})` : '' }}
+                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${humanifySize(meta.maxFileSize)})` : '' }}
                 </p>
               </template>
 
@@ -49,7 +60,7 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils' 
 
 const props = defineProps({
-  meta: String,
+  meta: Object,
   record: Object,
 })
 
@@ -58,6 +69,8 @@ const emit = defineEmits([
   'update:inValidity',
   'update:emptiness',
 ]);
+
+const dragging = ref(false);
 
 const imgPreview = ref(null);
 const progress = ref(0);
@@ -117,7 +130,7 @@ const onFileChange = async (e) => {
   progress.value = 0;
   uploaded.value = false;
   
-  const file = e.target.files[0]
+  const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
 
   // get filename, extension, size, mimeType
   const { name, size, type } = file;
@@ -188,7 +201,7 @@ const onFileChange = async (e) => {
     });
     if (!success) {
       window.adminforth.alert({
-        messageHtml: `<div>Sorry but the file was not be uploaded because of S3 Request Error: </div>
+        messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
         <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
           xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
         }</pre>`,

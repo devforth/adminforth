@@ -462,6 +462,7 @@ class CodeInjector implements ICodeInjector {
 
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
+      console.log('🔧 Checking packages for plugin', plugin.customFolderPath);
       const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({

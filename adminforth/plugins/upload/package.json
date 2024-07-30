@@ -1,11 +1,13 @@
 {
-  "name": "@adminforth/s3upload",
-  "version": "1.0.2",
+  "name": "@adminforth/upload",
+  "version": "1.0.9",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public",
-    "postinstall": "npm link adminforth"
+    "postinstall": "npm link adminforth",
+    "build": "tsc"
   },
   "type": "module",
   "author": "",

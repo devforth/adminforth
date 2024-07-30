@@ -5,7 +5,7 @@
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
-          <thead class="text-xs text-gray-700 uppercase bg-lightormHeading dark:bg-gray-700 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
               <tr>
                   <th scope="col" class="px-6 py-3">
                       Field
@@ -41,7 +41,7 @@
                         :value="currentValues[column.name]"
                         @update:value="setCurrentValue(column.name, $event)"
                         :meta="column.components[props.source].meta"
-                        :record="props.record"
+                        :record="currentValues"
                         @update:inValidity="customComponentsInValidity[column.name] = $event"
                         @update:emptiness="customComponentsEmptiness[column.name] = $event"
                       />
@@ -95,7 +95,7 @@
                           @input="setCurrentValue(column.name, $event.target.value)"
                       />
                       <textarea
-                          v-else-if="['text'].includes(column.type)"
+                          v-else-if="['text', 'richtext'].includes(column.type)"
                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                           placeholder="Text"
                           :value="currentValues[column.name]"
@@ -232,8 +232,14 @@ const columnError = (column) => {
 
 
 const setCurrentValue = (key, value) => {
-  currentValues.value[key] = value;
-
+  const col = props.resource.columns.find((column) => column.name === key);
+  if (['integer', 'float'].includes(col.type) && (value || value === 0)) {
+    currentValues.value[key] = +value;
+  } else {
+    currentValues.value[key] = value;
+  }
+  currentValues.value = { ...currentValues.value };
+  console.log('3️⃣ setCurrentValue', key, value);
   emit('update:record', currentValues.value);
 };
 
@@ -242,8 +248,7 @@ onMounted(() => {
     currentValues.value[key] = props.record[key];
   });
   initFlowbite();
-
-  
+  emit('update:isValid', isValid.value);
 });
 
 const columnOptions = computedAsync(async () => { 
@@ -267,7 +272,6 @@ const columnOptions = computedAsync(async () => {
 
 }, {});
 
-const coreStore = useCoreStore();
 
 const editableColumns = computed(() => {
   const mode = props.record ? 'edit' : 'create';

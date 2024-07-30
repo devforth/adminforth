@@ -22,17 +22,23 @@
                 </div>
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
-                    <form class="space-y-4"  @submit.prevent>
+                    <form class="space-y-4" @submit.prevent>
                         <div>
                             <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
-                            <input type="username" name="username" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
+                            <input type="username" name="username" id="username" 
+                              ref="usernameInput"
+                              @keydown.enter="passwordInput.focus()"
+                              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
                         </div>
                         <div class="relative">
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-                            <input :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                            <input 
+                              ref="passwordInput"
+                              @keydown.enter="login"
+                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
                             <button type="button" @click="showPw = !showPw" class="absolute top-12 right-3 -translate-y-1/2 text-gray-400 dark:text-gray-300">
-                                <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
-                                <IconEyeSlashSolid class="w-5 h-5" v-else />
+                              <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
+                              <IconEyeSlashSolid class="w-5 h-5" v-else />
                             </button>
                         </div>
                         <!-- <div class="flex justify-between">
@@ -86,6 +92,8 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
 
+const passwordInput = ref(null);
+const usernameInput = ref(null);
 
 const router = useRouter();
 const inProgress = ref(false);
@@ -99,31 +107,36 @@ const showPw = ref(false);
 const error = ref(null);
 
 onMounted(() => {
-    coreStore.getPublicConfig()
+    coreStore.getPublicConfig();
+    usernameInput.value.focus();
 });
 
 
-
 async function login() {
-    inProgress.value = true;
-    const resp = await callAdminForthApi({
-      path: '/login',
-      method: 'POST',
-      body: {
-        username: document.getElementById('username').value,
-        password: document.getElementById('password').value,
-      }
-    });
-    inProgress.value = false;
-    if (resp.error) {
-      error.value = resp.error;
-    } else if (resp.redirectTo) {
-      router.push(resp.redirectTo);
-    } else {
-      error.value = null;
-      await user.finishLogin();
-    }
+  const username = usernameInput.value.value;
+  const password = passwordInput.value.value;
 
+  if (!username || !password) {
+    return;
+  }
+  inProgress.value = true;
+  const resp = await callAdminForthApi({
+    path: '/login',
+    method: 'POST',
+    body: {
+      username,
+      password,
+    }
+  });
+  inProgress.value = false;
+  if (resp.error) {
+    error.value = resp.error;
+  } else if (resp.redirectTo) {
+    router.push(resp.redirectTo);
+  } else {
+    error.value = null;
+    await user.finishLogin();
+  }
 }
 
 

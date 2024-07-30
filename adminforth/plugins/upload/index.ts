@@ -1,8 +1,7 @@
 
-import { AdminForthResourcePages, IAdminForth, IHttpServer } from "../../types/AdminForthConfig.js";
 import { PluginOptions } from './types.js';
 import AWS from 'aws-sdk';
-import { AdminForthPlugin, AdminForthResourceColumn } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
@@ -11,8 +10,11 @@ export default class UploadPlugin extends AdminForthPlugin {
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
-
     this.options = options;
+  }
+
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `${pluginOptions.pathColumnName}`;
   }
 
   async setupLifecycleRule() {
@@ -226,7 +228,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     // ** HOOKS FOR DELETE **//
 
     // add delete hook which sets tag adminforth-candidate-for-cleanup to true
-    resourceConfig.hooks.delete.beforeSave.push(async ({ record }: { record: any }) => {
+    resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }) => {
       if (record[pathColumnName]) {
         const s3 = new AWS.S3({
           accessKeyId: this.options.s3AccessKeyId,

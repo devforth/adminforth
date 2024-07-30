@@ -1,11 +1,13 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import AdminForthBaseConnector from './baseConnector.js';
 
-class MongoConnector implements IAdminForthDataSourceConnector {
+class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
     db: MongoClient
 
     constructor({ url }: { url: string }) {
+        super();
         this.db = new MongoClient(url);
         (async () => {
             try {
@@ -81,27 +83,8 @@ class MongoConnector implements IAdminForthDataSourceConnector {
         }
 
         return value;
-      }
-    
-    async getRecordByPrimaryKeyWithOriginalTypes(resource, key) {
-        const tableName = resource.table;
-        const collection = this.db.db().collection(tableName);
-        const row = await collection.findOne({ [this.getPrimaryKey(resource)]: key });
-        if (!row) {
-            return null;
-        }
-        const newRow = {};
-        for (const [key_1, value] of Object.entries(row)) {
-            const dbKey = resource.dataSourceColumns.find((col) => col.name == key_1);
-            if (!dbKey) {
-                continue; // should I continue or throw an error?
-                throw new Error(`Resource '${resource.table}' has no column '${key_1}' defined`);
-            }
-            newRow[key_1] = value;
-        }
-        console.log('newRow', newRow);
-        return newRow;
     }
+
 
     setFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
@@ -121,7 +104,7 @@ class MongoConnector implements IAdminForthDataSourceConnector {
         return value;
       }
     
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }) {
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }) {
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
 
@@ -130,7 +113,10 @@ class MongoConnector implements IAdminForthDataSourceConnector {
         for (const filter of filters) {
             query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
         }
-        const total = await collection.countDocuments(query);
+        let total = 0;
+        if (getTotals) {
+            total = await collection.countDocuments(query);
+        }
         const result = await collection.find(query)
             .sort(sort)
             .skip(offset)

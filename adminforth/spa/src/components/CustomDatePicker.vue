@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
+    <div class="grid w-40 gap-4 mb-2">
       <div>
         <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
@@ -11,13 +11,13 @@
 
           <input ref="datepickerStartEl" type="text"
                  class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                 placeholder="Start date">
+                 placeholder="Select date">
         </div>
       </div>
     </div>
 
     <div>
-      <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
+      <div class="grid w-40 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
