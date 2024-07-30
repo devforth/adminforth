@@ -234,13 +234,13 @@ const admin = new AdminForth({
             maxLength: 255,  // you can set max length for string fields
             minLength: 3,  // you can set min length for string fields
             components: {
-                edit: {
-                    file: '@@/IdShow.vue',
-                    meta: {
-                        title: 'Title',
-                        description: 'This is title of apartment'
-                    }
-                },
+                // edit: {
+                //     file: '@@/IdShow.vue',
+                //     meta: {
+                //         title: 'Title',
+                //         description: 'This is title of apartment'
+                //     }
+                // },
                 // show: '@@/IdShow.vue',
                 // create: {
                 //     file: '@@/IdShow.vue',
@@ -350,17 +350,26 @@ const admin = new AdminForth({
             }
           }),
         ]: []),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          fieldName: 'title',
-        }),
         // new ChatGptPlugin({
         //   openAiApiKey: process.env.OPENAI_API_KEY as string,
-        //   fieldName: 'description',
-        //   model: 'gpt-4o',
+        //   fieldName: 'title',
         // }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'description',
+          model: 'gpt-4o',
+        }),
       ],
+      hooks: {
+        delete: {
+          beforeSave: async ({ record, adminUser, resource }: any) => {
+            return { ok: false, error: "Sorry, error here" }
+          }
+        },
+      },
+
       options:{
+          
         pageInjections: {
           show: {
             beforeBreadcrumbs: '@@/TopLine.vue',
@@ -385,7 +394,7 @@ const admin = new AdminForth({
         ],
         allowedActions:{
           edit: true,
-          delete: async (p) => { console.log('🧠🧠🧠🧠 delete', p); return true; },
+          delete: async (p) => { return true; },
           show: true,
           filter: true,
           create: true,
