@@ -60,7 +60,7 @@ Now create plugin boilerplate in `index.ts`:
 
 ```ts title='./af-plugin-chatgpt/index.ts'
 
-import { AdminForthResourcePages, IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResourceColumn  } from "adminforth";
+import { AdminForthResourcePages, IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResourceColumn, AdminForthResource, AdminForthDataTypes  } from "adminforth";
 import { PluginOptions } from './types.js';
 
 
@@ -198,7 +198,7 @@ export interface PluginOptions {
 //diff-add
     maxTokens?: number;
 //diff-add
-  },
+  }
 
 
 }
@@ -494,6 +494,8 @@ Finally, since we want to support multiple installations on one resource (e.g. o
   instanceUniqueRepresentation(pluginOptions: any) : string {
 //diff-add
     return `${pluginOptions.fieldName}`;
+//diff-remove
+    return `single`;
   }
 ```
 
