@@ -197,7 +197,7 @@ export interface PluginOptions {
 //diff-add
     maxTokens?: number;
 //diff-add
-  },
+  }
 
 
 }
