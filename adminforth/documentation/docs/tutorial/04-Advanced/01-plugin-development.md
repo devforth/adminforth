@@ -225,7 +225,7 @@ npm i --save-dev vue-suggestion-input
 
 Create file `completionInput.vue`:
 
-```vue title='./af-plugin-chatgpt/custom/completionInput.vue'
+```html title='./af-plugin-chatgpt/custom/completionInput.vue'
 <template>
   <SuggestionInput 
     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 
@@ -515,8 +515,6 @@ cd af-plugin-chatgpt
 npm link
 ```
 
-
-
 Then enter your AdminForth project and run:
 
 ```bash
@@ -549,7 +547,13 @@ import ChatGptPlugin from 'af-plugin-chatgpt';
 
 ```
 
-Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new secret key. Paste value in your .env file OPENAI_API_KEY=your_key
+Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new secret key. Paste value in your `.env` file OPENAI_API_KEY=your_key
+
+> 🫨 Using `npm link` approach still requires `npm run build` in plugin dir after each change because plugin entry point is defined as `dist/index.js` in
+> `package.json` file. To speed up plugin development you can also don't use `npm link` and just import plugin main file from your demo file:
+> ```
+> import ChatGptPlugin from '<path to af plugin>/af-plugin-chatgpt/index.js';
+> ```
 
 
 > 🎓 Homework: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
