@@ -6,13 +6,17 @@ import { PluginOptions } from './types.js';
 export default class ChatGptPlugin extends AdminForthPlugin {
   options: PluginOptions;
 
-  resourceConfig: AdminForthResource;
+  resourceConfig!: AdminForthResource;
 
-  columnType: AdminForthDataTypes;
+  columnType!: AdminForthDataTypes;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
+  }
+
+  instanceUniqueRepresentation(pluginOptions: any) : string {
+    return `${pluginOptions.fieldName}`;
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
@@ -106,14 +110,11 @@ export default class ChatGptPlugin extends AdminForthPlugin {
           })
         });
         const data = await resp.json();
-        console.log('data response 🧠', JSON.stringify(data.choices))
         let suggestion = data.choices[0].message.content + (
           data.choices[0].finish_reason === 'stop' ? (
             stop[0] === '.' && stop.length === 1 && this.columnType === AdminForthDataTypes.TEXT ? '. ' : ''
           ) : ''
         );
-        console.log(111222,JSON.stringify(suggestion))
-        console.log(333444,JSON.stringify(currentVal))
 
         if (suggestion.startsWith(currentVal)) {
           suggestion = suggestion.slice(currentVal.length);
