@@ -147,7 +147,7 @@ async function initDataBase() {
 
 ![alt text](localhost_3500_resource_aparts_show_16.png)
 
-< screen with video >
+![alt text](Untitleddesign-ezgif.com-crop.gif)
 
 
 This setup will upload files to S3 bucket with private ACL and save path to file (relative to bucket root) in `appartment_image` column.
