@@ -494,6 +494,8 @@ Finally, since we want to support multiple installations on one resource (e.g. o
   instanceUniqueRepresentation(pluginOptions: any) : string {
 //diff-add
     return `${pluginOptions.fieldName}`;
+//diff-remove
+    return `single`;
   }
 ```
 
