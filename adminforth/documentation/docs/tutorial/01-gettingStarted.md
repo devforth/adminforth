@@ -167,14 +167,14 @@ export const admin = new AdminForth({
         },
         { 
           name: 'price',
-          allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
-          editingNote: 'Price is in USD',  // you can appear note on editing or creating page
+          allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
+          editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
         },
         { 
           name: 'square_meter', 
           label: 'Square', 
           allowMinMaxQuery: true,
-          minValue: 1,  // you can set min /max value for number fields
+          minValue: 1,  // you can set min /max value for number columns so users will not be able to enter more/less
           maxValue: 1000,
         },
         { 

@@ -21,7 +21,7 @@ const admin = new AdminForth({
 //diff-add
     brandName: 'My App',  // used in header
 //diff-add
-    title: 'My App Admin',  // used to set the title (HTML title tag in your pages)
+    title: 'My App Admin',  // used to set HTML title tag
 //diff-add
     brandLogo: '@@/logo.svg',
 //diff-add
