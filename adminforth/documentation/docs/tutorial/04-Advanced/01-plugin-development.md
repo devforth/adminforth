@@ -24,6 +24,7 @@ mkdir -p af-plugin-chatgpt
 cd af-plugin-chatgpt
 npm init -y
 touch index.ts
+npm i tsc typescript --save-dev
 ```
 
 Edit `package.json`:
