@@ -397,8 +397,8 @@ Let's define API endpoint in our plugin:
         return { completion: suggestion };
 //diff-add
       }
-    });
-  }
+      })
+    }
 ```
 
 Now we have to set custom input on create and edit pages for field which user defined in fieldName:
