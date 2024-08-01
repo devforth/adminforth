@@ -24,7 +24,7 @@ mkdir -p af-plugin-chatgpt
 cd af-plugin-chatgpt
 npm init -y
 touch index.ts
-npm i tsc typescript --save-dev
+npm i --save-dev typescript @types/node
 ```
 
 Edit `package.json`:
@@ -44,7 +44,7 @@ Edit `package.json`:
 //diff-remove
     "test": "echo \"Error: no test specified\" && exit 1",
 //diff-add
-    "build": "tsc && cp -rf custom dist/",
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
   },
 }
 ```
@@ -139,7 +139,7 @@ Now let's implement plugin logic.
 
 First of all we want one plugin installation to be able to set custom Vue component on create and edit pages.
 
-In plugin options we will pass field name and OPENAI_API_KEY.
+In plugin options we will pass field name and `OPENAI_API_KEY`.
 
 
 
@@ -347,7 +347,6 @@ Let's define API endpoint in our plugin:
               "Be short, clear and precise. No quotes. Don't talk to me. Just write text\n";
 //diff-add
         }
-
 //diff-add
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
 //diff-add
