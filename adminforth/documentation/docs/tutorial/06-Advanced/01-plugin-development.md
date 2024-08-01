@@ -378,6 +378,12 @@ Let's define API endpoint in our plugin:
 //diff-add
         const data = await resp.json();
 //diff-add
+        if (!data.choices) {
+//diff-add
+              throw new Error(`Wrong response from OpenAI ${JSON.stringify(data)}`)
+//diff-add
+        }
+//diff-add
         let suggestion = data.choices[0].message.content + (
 //diff-add
           data.choices[0].finish_reason === 'stop' ? (
