@@ -294,6 +294,7 @@ const admin = new AdminForth({
           name: 'description',
           sortable: false,
           type: AdminForthDataTypes.TEXT,
+          showIn: ['filter', 'show', 'edit'],
         },
         {
           name: 'property_type',

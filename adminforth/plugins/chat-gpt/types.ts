@@ -33,10 +33,36 @@ export interface PluginOptions {
     temperature?: number;
 
     /**
-     * Maximum number of last characters which will be used for completion. Default is 500.
-     * Higher value will give better context but will cost more.
+     * Maximum number of last characters which will be used for completion for target field. Default is 500.
+     * Higher value will give better context but will cost more. 
      */
-    promptLimit?: number;
+    promptInputLimit?: number;
+
+    /**
+     * When completion is made, this plugin passes non-empty fields of the record to the LLM model for record context understanding.
+     */
+    recordContext?: {
+      /**
+       * Using this field you can limit number of fields passed to the model. 
+       * Default is 5. 
+       * Completion field is not included in this limit.
+       * Set to 0 to disable context passing at all.
+       * If count of fields exceeds this number, longest fields will be selected.
+       * If some of values will exceed maxFieldLength, it will be smartly truncated by splitting ito splitParts, taking their 
+       * starting substring and joining back with '...'.
+       */
+      maxFields?: number;
+
+      /**
+       * Limit of input field value. Default is 300. If field is longer, it will be truncated.
+       */
+      maxFieldLength?: number;
+
+      /**
+       * How many parts to split field value if it exceeds maxFieldLength. Default is 5.
+       */
+      splitParts?: number;
+    };
 
     /**
      * Debounce time in ms. Default is 300. Time after user stopped typing before request will be sent.
