@@ -310,10 +310,6 @@ Let's define API endpoint in our plugin:
 //diff-add
         const { record } = body;
 //diff-add
-        const recordNoField = {...record};
-//diff-add
-        delete recordNoField[this.options.fieldName];
-//diff-add
         let currentVal = record[this.options.fieldName];
 //diff-add
         const promptLimit = 500;
@@ -332,8 +328,6 @@ Let's define API endpoint in our plugin:
 //diff-add
           content = `Continue writing for text/string field "${this.options.fieldName}" in the table "${resLabel}"\n` +
 //diff-add
-              (Object.keys(recordNoField).length > 0 ? `Record has values for the context: ${JSON.stringify(recordNoField)}\n` : '') +
-//diff-add
               `Current field value: ${currentVal}\n` +
 //diff-add
               "Don't talk to me. Just write text. No quotes. Don't repeat current field value, just write completion\n";
@@ -341,8 +335,6 @@ Let's define API endpoint in our plugin:
         } else {
 //diff-add
           content = `Fill text/string field "${this.options.fieldName}" in the table "${resLabel}"\n` +
-//diff-add
-              (Object.keys(recordNoField).length > 0 ? `Record has values for the context: ${JSON.stringify(recordNoField)}\n` : '') +
 //diff-add
               "Be short, clear and precise. No quotes. Don't talk to me. Just write text\n";
 //diff-add
@@ -558,4 +550,7 @@ Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new se
 > ```
 
 
-> 🎓 Homework: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
+> 🎓 Homework 1: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
+
+> 🎓 Homework 2: Plugin does not pass record other values to Chat GPT which can help to create better prompts with context understanding.
+> Try to adjust prompt to include other record values. Keep in mind that longer prompts can be more expensive and slower, so should smartly limit prompt length.

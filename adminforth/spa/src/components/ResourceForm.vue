@@ -17,6 +17,7 @@
           </thead>
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
+                  v-if="currentValues !== null"
                   class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
               >
                     <td class="px-6 py-4 whitespace-nowrap flex items-center"> <!--align-top-->
@@ -168,7 +169,7 @@ const mode = computed(() => props.record  && Object.keys(props.record).length ? 
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
-const currentValues = ref({});
+const currentValues = ref(null);
 
 const customComponentsInValidity = ref({});
 const customComponentsEmptiness = ref({});
@@ -176,6 +177,9 @@ const customComponentsEmptiness = ref({});
 
 const columnError = (column) => {
   const val = computed(() => {
+    if (!currentValues.value) {
+      return null;
+    }
     if (customComponentsInValidity.value[column.name]) {
       return customComponentsInValidity.value[column.name];
     }
@@ -244,9 +248,8 @@ const setCurrentValue = (key, value) => {
 };
 
 onMounted(() => {
-  Object.keys(props.record).forEach((key) => {
-    currentValues.value[key] = props.record[key];
-  });
+  currentValues.value = Object.assign({}, props.record);
+  console.log('2️⃣ currentValues', JSON.stringify(currentValues.value));
   initFlowbite();
   emit('update:isValid', isValid.value);
 });
