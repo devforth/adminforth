@@ -161,9 +161,13 @@ export default class ChatGptPlugin extends AdminForthPlugin {
         if (suggestion.startsWith(currentVal)) {
           suggestion = suggestion.slice(currentVal.length);
         }
+        const wordsList = suggestion.split(' ').map((w, i) => {
+          return (i === suggestion.split(' ').length - 1) ? w : w + ' ';
+        });
+
         // remove quotes from start and end
         return {
-          completion: suggestion
+          completion: wordsList
         };
       }
     });

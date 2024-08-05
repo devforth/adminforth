@@ -43,12 +43,12 @@ watch(() => props.record, (value) => {
   currentValue.value = value[props.column.name] || '';
 });
 
-async function complete() {
+async function complete(textBeforeCursor: string) {
   const res = await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/doComplete`,
       method: 'POST',
       body: {
-        record: props.record
+        record: {...props.record, [props.column.name]: textBeforeCursor},
       },
   });
 

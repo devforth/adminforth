@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "vue-suggestion-input": "^0.0.8"
+  "devDependencies": {
+    "vue-suggestion-input": "^0.0.12"
   }
 }

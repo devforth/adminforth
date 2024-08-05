@@ -5,22 +5,24 @@
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
-          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 block md:table-row-group">
               <tr>
-                  <th scope="col" class="px-6 py-3">
+                  <th scope="col" class="px-6 py-3 hidden md:table-cell">
                       Field
                   </th>
-                  <th scope="col" class="px-6 py-3 w-4/6">
+                  <th scope="col" class="px-6 py-3 w-4/6 hidden md:table-cell">
                       Value
                   </th>
+
+                 
               </tr>
           </thead>
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
                   v-if="currentValues !== null"
-                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
+                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700 block md:table-row"
               >
-                    <td class="px-6 py-4 whitespace-nowrap flex items-center"> <!--align-top-->
+                    <td class="px-6 py-4 sm:pb-0 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
                       {{ column.label }}
                       <span :data-tooltip-target="`tooltip-show-${i}`" class="ml-1 relative inline-block">
                           <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
@@ -34,7 +36,7 @@
                           <div class="tooltip-arrow" data-popper-arrow></div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
+                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell">
                     <template v-if="column?.components?.[props.source]?.file">
                       <component
                         :is="getCustomComponent(column.components[props.source])"
