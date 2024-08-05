@@ -270,18 +270,17 @@ watch(() => props.record, (value) => {
   currentValue.value = value[props.column.name] || '';
 });
 
-async function complete() {
+async function complete(textBeforeCursor: string) {
   const res = await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/doComplete`,
       method: 'POST',
       body: {
-        record: props.record
+        record: {...props.record, [props.column.name]: textBeforeCursor},
       },
   });
 
   return res.completion;
 }
-
 </script>
 
 ```
@@ -386,7 +385,19 @@ Let's define API endpoint in our plugin:
 //diff-add
         }
 //diff-add
-        return { completion: suggestion };
+        if (suggestion.startsWith(currentVal)) {
+//diff-add
+          suggestion = suggestion.slice(currentVal.length);
+//diff-add
+        }
+//diff-add
+        const wordsList = suggestion.split(' ').map((w, i) => {
+//diff-add
+          return (i === suggestion.split(' ').length - 1) ? w : w + ' ';
+//diff-add
+        });
+//diff-add
+        return { completion: wordsList };
 //diff-add
       }
       })
