@@ -1,8 +1,8 @@
 
 
-# Upload
+# Chat-GPT
 
-This plugin allows you to auto-complete text and string fields using OpenAI CHat GPT models.
+This plugin allows you to auto-complete text and string fields using OpenAI Chat GPT models.
 
 ## Installation
 
@@ -10,7 +10,7 @@ This plugin allows you to auto-complete text and string fields using OpenAI CHat
 npm i @adminforth/chat-gpt --save
 ```
 
-Go to https://platform.openai.com/, open Dashboard -> API keys -> Create new secret key. Paste value in your `.env` file:
+Go to https://platform.openai.com/, open `Dashboard` -> `API keys` -> `Create new secret key`. Paste value in your `.env` file:
 
 ```text title=.env
 ...
@@ -18,7 +18,9 @@ OPENAI_API_KEY=your_key
 ```
 
 
-Add plugin installation to any text or string column. We will add it for title and description in `aparts` resource configuration:
+Add plugin installation to any text or string column. 
+
+For example let's add it for title and description in `aparts` resource configuration which we created in [Getting Started](../01-gettingStarted.md) tutorial.
 
 ```ts title="./index.ts"
 //diff-add
@@ -71,4 +73,4 @@ export const admin = new AdminForth({
 });
 
 
-Check all plugin options in the [API reference](https://adminforth.com/docs/api/plugins/chat-gpt).
+Check all plugin options in the [API reference](https://adminforth.dev/docs/api/plugins/chat-gpt/types/interfaces/PluginOptions).
