@@ -354,11 +354,17 @@ const admin = new AdminForth({
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'title',
+          expert: {
+            debounceTime: 250,
+          }
         }),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'description',
-          // model: 'gpt-4o',
+          model: 'gpt-4o',
+          expert: {
+            debounceTime: 250,
+          }
         }),
       ],
       hooks: {
@@ -375,9 +381,9 @@ const admin = new AdminForth({
           show: {
             beforeBreadcrumbs: '@@/TopLine.vue',
           },
-          list: {
-            bottom: '@@/TopLine.vue',
-          }
+          // list: {
+          //   bottom: '@@/TopLine.vue',
+          // }
         },
         listPageSize: 5,
         bulkActions: [
@@ -660,29 +666,25 @@ const admin = new AdminForth({
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },
-        {
-          label: 'Games',
-          icon: 'flowbite:caret-right-solid',
-          resourceId: 'games',
-        },
-        {
-          label: 'Games Users',
-          icon: 'flowbite:user-solid',
-          resourceId: 'games_users',
-          visible:(user) => {
-            return user.isRoot || user.dbUser.role === 'superadmin'
-          }
-        },
-        {
-          label: 'Casino Games',
-          icon: 'flowbite:caret-right-solid',
-          resourceId: 'game',
-        },
-        {
-          label: 'Logs',
-          icon: 'flowbite:search-outline',
-          resourceId: 'audit_logs',
-        },
+        // {
+        //   label: 'Games',
+        //   icon: 'flowbite:caret-right-solid',
+        //   resourceId: 'games',
+        // },
+        // {
+        //   label: 'Games Users',
+        //   icon: 'flowbite:user-solid',
+        //   resourceId: 'games_users',
+        //   visible:(user) => {
+        //     return user.isRoot || user.dbUser.role === 'superadmin'
+        //   }
+        // },
+        // {
+        //   label: 'Casino Games',
+        //   icon: 'flowbite:caret-right-solid',
+        //   resourceId: 'game',
+        // },
+
         {
           label: 'Clicks',
           icon: 'flowbite:search-outline',
@@ -707,7 +709,12 @@ const admin = new AdminForth({
       visible:(user) => {
         return user.isRoot || user.dbUser.role === 'superadmin'
       }
-    }
+    },
+    {
+      label: 'Logs',
+      icon: 'flowbite:search-outline',
+      resourceId: 'audit_logs',
+    },
   ],
 })
 
