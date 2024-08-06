@@ -4,6 +4,8 @@
 
 This plugin allows you to auto-complete text and string fields using OpenAI Chat GPT models.
 
+![Demo AdminForth Chat-GPT](./demoChatGpt.gif)
+
 ## Installation
 
 ```
@@ -12,7 +14,7 @@ npm i @adminforth/chat-gpt --save
 
 Go to https://platform.openai.com/, open `Dashboard` -> `API keys` -> `Create new secret key`. Paste value in your `.env` file:
 
-```text title=.env
+```env title=.env
 ...
 OPENAI_API_KEY=your_key
 ```
@@ -71,6 +73,8 @@ export const admin = new AdminForth({
   ...
 
 });
+```
+
 
 
 Check all plugin options in the [API reference](https://adminforth.dev/docs/api/plugins/chat-gpt/types/interfaces/PluginOptions).
