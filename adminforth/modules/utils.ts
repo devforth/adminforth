@@ -259,7 +259,6 @@ function hexToRGBA(hex,opacity){
   else if (color.startsWith("rgba")) {
     //add opacity to existing rgba color
     const rgb = color.match(/[\d.]+/g);
-    console.log('rgb',rgb)
     return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${Number(rgb[3]) * opacity})`;
   }
   else if (color.startsWith("rgb")) {

@@ -5,21 +5,24 @@
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
-          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 block md:table-row-group">
               <tr>
-                  <th scope="col" class="px-6 py-3">
+                  <th scope="col" class="px-6 py-3 hidden md:table-cell">
                       Field
                   </th>
-                  <th scope="col" class="px-6 py-3 w-4/6">
+                  <th scope="col" class="px-6 py-3 w-4/6 hidden md:table-cell">
                       Value
                   </th>
+
+                 
               </tr>
           </thead>
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
-                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700"
+                  v-if="currentValues !== null"
+                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700 block md:table-row"
               >
-                    <td class="px-6 py-4 whitespace-nowrap flex items-center"> <!--align-top-->
+                    <td class="px-6 py-4 sm:pb-0 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
                       {{ column.label }}
                       <span :data-tooltip-target="`tooltip-show-${i}`" class="ml-1 relative inline-block">
                           <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
@@ -33,7 +36,7 @@
                           <div class="tooltip-arrow" data-popper-arrow></div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative">
+                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell">
                     <template v-if="column?.components?.[props.source]?.file">
                       <component
                         :is="getCustomComponent(column.components[props.source])"
@@ -168,7 +171,7 @@ const mode = computed(() => props.record  && Object.keys(props.record).length ? 
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
-const currentValues = ref({});
+const currentValues = ref(null);
 
 const customComponentsInValidity = ref({});
 const customComponentsEmptiness = ref({});
@@ -176,6 +179,9 @@ const customComponentsEmptiness = ref({});
 
 const columnError = (column) => {
   const val = computed(() => {
+    if (!currentValues.value) {
+      return null;
+    }
     if (customComponentsInValidity.value[column.name]) {
       return customComponentsInValidity.value[column.name];
     }
@@ -244,9 +250,8 @@ const setCurrentValue = (key, value) => {
 };
 
 onMounted(() => {
-  Object.keys(props.record).forEach((key) => {
-    currentValues.value[key] = props.record[key];
-  });
+  currentValues.value = Object.assign({}, props.record);
+  console.log('2️⃣ currentValues', JSON.stringify(currentValues.value));
   initFlowbite();
   emit('update:isValid', isValid.value);
 });

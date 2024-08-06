@@ -270,18 +270,17 @@ watch(() => props.record, (value) => {
   currentValue.value = value[props.column.name] || '';
 });
 
-async function complete() {
+async function complete(textBeforeCursor: string) {
   const res = await callAdminForthApi({
       path: `/plugin/${props.meta.pluginInstanceId}/doComplete`,
       method: 'POST',
       body: {
-        record: props.record
+        record: {...props.record, [props.column.name]: textBeforeCursor},
       },
   });
 
   return res.completion;
 }
-
 </script>
 
 ```
@@ -310,10 +309,6 @@ Let's define API endpoint in our plugin:
 //diff-add
         const { record } = body;
 //diff-add
-        const recordNoField = {...record};
-//diff-add
-        delete recordNoField[this.options.fieldName];
-//diff-add
         let currentVal = record[this.options.fieldName];
 //diff-add
         const promptLimit = 500;
@@ -332,8 +327,6 @@ Let's define API endpoint in our plugin:
 //diff-add
           content = `Continue writing for text/string field "${this.options.fieldName}" in the table "${resLabel}"\n` +
 //diff-add
-              (Object.keys(recordNoField).length > 0 ? `Record has values for the context: ${JSON.stringify(recordNoField)}\n` : '') +
-//diff-add
               `Current field value: ${currentVal}\n` +
 //diff-add
               "Don't talk to me. Just write text. No quotes. Don't repeat current field value, just write completion\n";
@@ -341,8 +334,6 @@ Let's define API endpoint in our plugin:
         } else {
 //diff-add
           content = `Fill text/string field "${this.options.fieldName}" in the table "${resLabel}"\n` +
-//diff-add
-              (Object.keys(recordNoField).length > 0 ? `Record has values for the context: ${JSON.stringify(recordNoField)}\n` : '') +
 //diff-add
               "Be short, clear and precise. No quotes. Don't talk to me. Just write text\n";
 //diff-add
@@ -400,7 +391,19 @@ Let's define API endpoint in our plugin:
 //diff-add
         }
 //diff-add
-        return { completion: suggestion };
+        if (suggestion.startsWith(currentVal)) {
+//diff-add
+          suggestion = suggestion.slice(currentVal.length);
+//diff-add
+        }
+//diff-add
+        const wordsList = suggestion.split(' ').map((w, i) => {
+//diff-add
+          return (i === suggestion.split(' ').length - 1) ? w : w + ' ';
+//diff-add
+        });
+//diff-add
+        return { completion: wordsList };
 //diff-add
       }
       })
@@ -564,4 +567,7 @@ Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new se
 > ```
 
 
-> 🎓 Homework: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
+> 🎓 Homework 1: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
+
+> 🎓 Homework 2: Plugin does not pass record other values to Chat GPT which can help to create better prompts with context understanding.
+> Try to adjust prompt to include other record values. Keep in mind that longer prompts can be more expensive and slower, so should smartly limit prompt length.

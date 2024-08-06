@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "vue-suggestion-input": "^0.0.6"
+    "vue-suggestion-input": "^0.0.16"
   }
 }

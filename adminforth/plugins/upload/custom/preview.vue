@@ -47,7 +47,7 @@
 
 <style scoped>
   img {
-    min-width: 200px;
+    min-width: 150px;
   }
   video {
     min-width: 200px;
