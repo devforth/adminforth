@@ -99,11 +99,13 @@ const start = computed(() => {
   return date.utc().toISOString();
 })
 
-function updateFromProps() {
+async function updateFromProps() {
   if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   } else {
+    // wait ref to initialize
+    await (new Promise(resolve => setTimeout(resolve, 0)));
     datepickerObject.value.setDate(dayjs(props.valueStart).format('DD MMM YYYY'));
     startTime.value = dayjs(props.valueStart).format('HH:mm:ss')
   }
