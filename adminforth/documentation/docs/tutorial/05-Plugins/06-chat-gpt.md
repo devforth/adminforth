@@ -67,7 +67,7 @@ export const admin = new AdminForth({
       // }
 //diff-add
     }),
-//diff-add
+
   ]
   
   ...
