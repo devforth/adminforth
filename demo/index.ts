@@ -47,20 +47,32 @@ if (!tableExists) {
     );`).run();
 
   
-  await db.prepare(`
-    INSERT INTO apartments (id, title, square_meter, price, number_of_rooms, description) VALUES ('123', 'Zhashkiv high residense', 50.8, 10000.12, 2, 'Nice apartment at the city center');
-  `).run();
-
   for (let i = 0; i < 50; i++) {
     await db.prepare(`
       INSERT INTO apartments (
         id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
-      ) VALUES ('${i}', 'Apartment ${i}', ${Math.random() * 100}, ${Math.random() * 10000}, ${Math
+      ) VALUES ('${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
         .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
       `).run();
   }
 
 }
+
+const tableExists2 = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_log';`).get();
+if (!tableExists2) {
+  await db.prepare(`
+    CREATE TABLE audit_log (
+      id uuid NOT NULL,  -- identifier of applied change record 
+      created_at timestamp without time zone, -- timestamp of applied change
+      resource_id varchar(255), -- identifier of resource where change were applied
+      user_id uuid, -- identifier of user who made the changes
+      "action" varchar(255), -- type of change (create, edit, delete)
+      diff text, -- delta betwen before/after versions
+      record_id varchar, -- identifier of record that been changed
+      PRIMARY KEY(id)
+    );`).run();
+}
+
 
 // check column appartment_image in aparts table
 const columns = await db.prepare('PRAGMA table_info(apartments);').all();
@@ -83,8 +95,8 @@ const admin = new AdminForth({
     usernameField: 'email',
     passwordHashField: 'password_hash',
     userFullNameField: 'fullName', // optional
-    // loginBackgroundImage: 'https://images.unsplash.com/photo-1502214380024-fec72aa40e76?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    loginBackgroundImage: '@@/pho.jpg',
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1499988921418-b7df40ff03f9?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    // loginBackgroundImage: '@@/pho.jpg',
   },
   customization: {
     customComponentsDir: './custom',
@@ -182,7 +194,7 @@ const admin = new AdminForth({
       ],
     },
     {
-        dataSource: 'db2', table: 'audit_logs',
+        dataSource: 'maindb', table: 'audit_log',
         columns: [
             { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
             { name: 'created_at', required: false },
@@ -269,6 +281,7 @@ const admin = new AdminForth({
         },
         { 
           name: 'price',
+          showIn: ['create', 'edit', 'filter', 'show'],
           allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
           editingNote: 'Price is in USD',  // you can appear note on editing or creating page
         },
@@ -289,6 +302,7 @@ const admin = new AdminForth({
             { value: 4, label: '4 rooms' },
             { value: 5, label: '5 rooms' },
           ],
+          showIn: ['filter', 'show', 'edit'],
         },
         { 
           name: 'description',
@@ -316,6 +330,7 @@ const admin = new AdminForth({
         },
         {
           name: 'user_id',
+          showIn: [ 'filter', 'show', 'edit'],
           foreignResource: {
             resourceId: 'users',
             hooks: {
@@ -337,7 +352,7 @@ const admin = new AdminForth({
             pathColumnName: 'appartment_image',
             s3Bucket: 'tmpbucket-adminforth',
             s3Region: 'eu-central-1',
-            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe'],
+            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
             maxFileSize: 1024 * 1024 * 20, // 5MB
             s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
             s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
@@ -347,7 +362,7 @@ const admin = new AdminForth({
             preview: {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-              showInList: true,
+              showInList: false,
             }
           }),
         ]: []),
@@ -377,14 +392,14 @@ const admin = new AdminForth({
 
       options:{
           
-        pageInjections: {
-          show: {
-            beforeBreadcrumbs: '@@/TopLine.vue',
-          },
-          // list: {
-          //   bottom: '@@/TopLine.vue',
-          // }
-        },
+        // pageInjections: {
+        //   show: {
+        //     beforeBreadcrumbs: '@@/TopLine.vue',
+        //   },
+        //   // list: {
+        //   //   bottom: '@@/TopLine.vue',
+        //   // }
+        // },
         listPageSize: 5,
         bulkActions: [
           {
@@ -713,7 +728,7 @@ const admin = new AdminForth({
     {
       label: 'Logs',
       icon: 'flowbite:search-outline',
-      resourceId: 'audit_logs',
+      resourceId: 'audit_log',
     },
   ],
 })
@@ -741,6 +756,65 @@ app.get(
     }
   )
 )
+
+app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
+  admin.express.authorize(
+    async (req, res) => {
+      const days = req.body.days || 7;
+      const apartsByDays = await db.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY day 
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+
+      const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
+
+      // add listed, unlisted, listedPrice, unlistedPrice
+      const listedVsUnlistedByDays = await db.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          SUM(listed) as listed, 
+          COUNT(*) - SUM(listed) as unlisted,
+          SUM(listed * price) as listedPrice,
+          SUM((1 - listed) * price) as unlistedPrice
+        FROM apartments
+        GROUP BY day
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+
+      const listedVsUnlistedPriceByDays = await db.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          SUM(listed * price) as listedPrice,
+          SUM((1 - listed) * price) as unlistedPrice
+        FROM apartments
+        GROUP BY day
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+        
+      const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { listedPrice }) => acc + listedPrice, 0));
+      const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { unlistedPrice }) => acc + unlistedPrice, 0));
+
+      res.json({ 
+        apartsByDays,
+        totalAparts,
+        listedVsUnlistedByDays,
+        totalListedPrice,
+        totalUnlistedPrice,
+        listedVsUnlistedPriceByDays,
+      });
+    }
+  )
+);
 
 // serve after you added all api
 admin.express.serve(app)

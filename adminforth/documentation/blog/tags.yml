@@ -1,16 +1,9 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+chatgpt:
+  label: ChatGPT
+  permalink: /chatgpt
+  description: ChatGPT is a conversational AI model that can generate human-like responses to text inputs.
+
+plugin:
+  label: Plugin
+  permalink: /plugin
+  description: Plugins are extensions that add new features or functionality to a AdminForth.

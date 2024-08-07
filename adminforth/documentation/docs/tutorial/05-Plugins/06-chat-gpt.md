@@ -4,8 +4,6 @@
 
 This plugin allows you to auto-complete text and string fields using OpenAI Chat GPT models.
 
-![Demo AdminForth Chat-GPT](./demoChatGpt.gif)
-
 ## Installation
 
 ```
@@ -60,7 +58,7 @@ export const admin = new AdminForth({
 //diff-add
         // temperature: 0.7, // Model temperature, 0.7
 //diff-add
-        // promptLimit: 500, // Limit in characters of each field length to be passed to Model. 500 is default value
+        // promptInputLimit: 500, // Limit in characters of edited field to be passed to Model. 500 is default value
 //diff-add
         // debounceTime: 300, // Debounce time in milliseconds. 300 is default value
 //diff-add
@@ -75,6 +73,8 @@ export const admin = new AdminForth({
 });
 ```
 
+Here is how it looks:
 
+![Demo AdminForth Chat-GPT](./demoChatGpt.gif)
 
 Check all plugin options in the [API reference](https://adminforth.dev/docs/api/plugins/chat-gpt/types/interfaces/PluginOptions).
