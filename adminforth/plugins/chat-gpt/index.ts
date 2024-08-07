@@ -139,7 +139,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
             'Authorization': `Bearer ${this.options.openAiApiKey}`
           },
           body: JSON.stringify({
-            model: this.options.model || 'gpt-3.5-turbo',
+            model: this.options.model || 'gpt-4o-mini',
             messages: [
               {
                 role: 'user', 

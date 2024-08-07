@@ -12,5 +12,8 @@
   "devDependencies": {
     "highcharts-vue": "^2.0.1",
     "vue-suggestion-input": "^0.0.12"
+  },
+  "dependencies": {
+    "apexcharts": "^3.52.0"
   }
 }

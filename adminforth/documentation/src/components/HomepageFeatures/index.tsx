@@ -14,8 +14,7 @@ const FeatureList: FeatureItem[] = [
     img: require('@site/static/img/db2.png').default,
     description: (
       <>
-        Initialize AdminForth with your database URL and get a full-fledged admin panel to
-        List, Create, Update, Filter and Delete data with ease.
+        Initialize AdminForth with your database URL and get a full-fledged admin panel.
       </>
     ),
   },

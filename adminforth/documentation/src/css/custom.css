@@ -68,3 +68,12 @@ pre code:has(.code-block-diff-add-line) {
 pre code:has(.code-block-diff-remove-line) {
   padding-left: 40px!important;
 }
+
+.image-gallery-image {
+  max-width: 800px !important;
+}
+
+.image-gallery-description {
+  font-size: 2rem;
+  color: #FFFFFF;
+}

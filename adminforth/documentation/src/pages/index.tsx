@@ -7,6 +7,54 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+import ImageGallery from "react-image-gallery";
+// import stylesheet if you're not already using CSS @import
+import "react-image-gallery/styles/css/image-gallery.css";
+
+const images = [
+  {
+    original: require('@site/static/img/previews/login_form.png').default,
+    thumbnail: require('@site/static/img/previews/login_form.png').default,
+    description: 'Sign in form'
+  },
+  {
+    original: require('@site/static/img/previews/users_management.png').default,
+    thumbnail: require('@site/static/img/previews/users_management.png').default,
+    description: 'Users management'
+  },
+  {
+    original: require('@site/static/img/previews/ai_complete.png').default,
+    thumbnail: require('@site/static/img/previews/ai_complete.png').default,
+    description: 'AI autocomplete Plugin - write with ChatGPT'
+  },
+  {
+    original: require('@site/static/img/previews/auditlog.png').default,
+    thumbnail: require('@site/static/img/previews/auditlog.png').default,
+    description: 'Audit log Plugin - know who did what'
+  },
+  {
+    original: require('@site/static/img/previews/2fa_plugin.png').default,
+    thumbnail: require('@site/static/img/previews/2fa_plugin.png').default,
+    description: '2FA Plugin - secure your admin panel'
+  },
+  {
+    original: require('@site/static/img/previews/dark.png').default,
+    thumbnail: require('@site/static/img/previews/dark.png').default,
+    description: 'Dark mode out of the box'
+  },
+  {
+    original: require('@site/static/img/previews/upload.png').default,
+    thumbnail: require('@site/static/img/previews/upload.png').default,
+    description: 'Upload Plugin - upload files'
+  },
+  {
+    original: require('@site/static/img/previews/dashboard.png').default,
+    thumbnail: require('@site/static/img/previews/dashboard.png').default,
+    description: 'Custom Pages and Dashboards'
+  }
+];
+
+
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -28,10 +76,10 @@ function HomepageHeader() {
       </header>
       <img src={require('@site/static/img/preview.png').default} alt="AdminForth" style={{
         width: '100%',
-        maxWidth: 1200,
+        maxWidth: 1000,
         zIndex: 100,
         margin: '0 auto',
-        marginTop: '-30vw',
+        marginTop: '-28vw',
         // transform: 'translateY(10%)',
         marginBottom: 80,
       }} />
@@ -49,6 +97,18 @@ export default function Home(): JSX.Element {
       <main>
         <HomepageFeatures />
       </main>
+
+      
+
+      <ImageGallery 
+        items={images} 
+        showFullscreenButton={false} 
+        showPlayButton={false}
+        autoPlay={true}
+        slideInterval={7000}
+      />;
+      
+
     </Layout>
   );
 }

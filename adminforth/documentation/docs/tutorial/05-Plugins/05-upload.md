@@ -99,7 +99,7 @@ export const admin = new AdminForth({
 //diff-add
       s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 //diff-add
-      allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm'],
+      allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
 //diff-add
       maxFileSize: 1024 * 1024 * 20, // 5MB
 //diff-add
