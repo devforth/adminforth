@@ -112,12 +112,14 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
 
 Now our component can read `filler` from `meta` prop:
 
-```diff-html title='./custom/RoomsCell.vue'
+```ts title='./custom/RoomsCell.vue'
 <template>
   <div class="flex items-center">
     <span v-for="room in record.number_of_rooms">
--     🟨
-+     {{ meta.filler }}
+//diff-remove
+     🟨
+//diff-add
+     {{ meta.filler }}
     </span>
     {{ room.square_meter }} m²
   </div>
@@ -126,7 +128,8 @@ Now our component can read `filler` from `meta` prop:
 <script setup>
 defineProps({
   record: Object,
-+ meta: Object
+//diff-add
+  meta: Object
 });
 </script>
 ```
