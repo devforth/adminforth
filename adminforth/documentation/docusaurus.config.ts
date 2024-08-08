@@ -13,6 +13,8 @@ const config: Config = {
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
+  trailingSlash: true,
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'devforth', // Usually your GitHub org/user name.
@@ -87,9 +89,19 @@ const config: Config = {
         enumMembersFormat: "table",
       },
     ],
+    // [
+    //   '@docusaurus/plugin-sitemap',
+    //   {
+    //     id: 'default',
+    //     changefreq: 'daily',
+    //     priority: 0.5,
+    //     trailingSlash: true,
+    //   },
+    // ],
   ],
 
   themeConfig: {
+    image: "img/og.jpg",
     algolia: {
         appId: 'VSIPOF54AV',  // The application ID provided by Algolia
         apiKey: '1421d8647ca2005358fdd01a9ceb3565',  // Public API key: it is safe to commit it

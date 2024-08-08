@@ -14,6 +14,7 @@ Hooks are used to:
 - modify the fetched data before it is displayed in the list and show
 - prevent the request to db depending on some condition (Better use [allowedActions](./05-limitingAccess.md) for this)
 
+
 ## Modify the data before it is saved to the database
 
 Let's add reference to `adminUser` when user creates a new apartment:
@@ -61,3 +62,8 @@ import type { AdminUser } from  'adminforth';
   }
 }
 ```
+
+
+## All hooks
+
+Check all hooks in the [API reference](https://adminforth.dev/docs/api/types/AdminForthConfig/type-aliases/AdminForthResource).
