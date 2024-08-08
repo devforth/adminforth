@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import ResourceParent from '@/views/ResourceParent.vue'
-import { useUserStore } from '@/stores/user'
+import { createRouter, createWebHistory } from 'vue-router';
+import ResourceParent from '@/views/ResourceParent.vue';
+import { useFiltersStore } from '@/stores/filters';
 /* IMPORTANT:ADMINFORTH ROUTES IMPORTS */
 
 const router = createRouter({
@@ -51,13 +51,17 @@ const router = createRouter({
 
         },
       ]
-    }, 
+    },
     /* IMPORTANT:ADMINFORTH ROUTES */
   ]
 })
 
-
-
-
+router.beforeEach((to, from, next) => {
+  const filterStore = useFiltersStore();
+  if (to.path.startsWith('/resource/')) {
+    filterStore.clearFilters();
+  }
+  next()
+})
 
 export default router
