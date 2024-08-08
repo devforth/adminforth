@@ -12,7 +12,7 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [List](https://adminforth.dev/docs/tutorial/gettingStarted):
 
-![AdminForth preview 1](https://adminforth.dev/assets/images/image-4-9ee3b7567732ddbfee0c1c6236aff16e.png)
+![AdminForth preview 1](https://adminforth.dev/assets/images/image-4-mage-4-9ee3b7567732ddbfee0c1.png)
 
 [Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
