@@ -50,7 +50,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
 6. Go to Security credentials and create a new access key. Save `Access key ID` and `Secret access key`.
 7. Add credentials in your `.env` file:
 
-```bash title=".env"
+```ts title=".env"
 ...
 NODE_ENV=development 
 
@@ -220,9 +220,10 @@ For preview in AdminForth plugin will still use presigned URLs, but you can chan
   preview: {
       showInList: true,
 //diff-add
-      previewUrl: ({s3Path}) => `https://my-bucket.s3.us-east-1.amazonaws.com/${s3Path}`,
+      previewUrl: ({s3Path}) => `https://my-bucket.s3.us-east-1.amazonaws.com/${s3Path}`, 
   }
 ```
+> Make sure that you change "my-bucket" and "us-east-1" to your own settings.
 
 
 Also you might want to put CDN in front of your bucket, for example [CloudFlare](https://developers.cloudflare.com/support/third-party-software/others/configuring-an-amazon-web-services-static-site-to-use-cloudflare/). In this case
