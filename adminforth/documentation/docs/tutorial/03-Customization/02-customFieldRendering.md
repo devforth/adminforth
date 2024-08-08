@@ -119,7 +119,7 @@ Now our component can read `filler` from `meta` prop:
 //diff-remove
      🟨
 //diff-add
-     {{ meta.filler }}
+    {{ meta.filler }}
     </span>
     {{ room.square_meter }} m²
   </div>

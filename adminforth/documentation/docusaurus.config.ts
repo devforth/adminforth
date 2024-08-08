@@ -13,6 +13,8 @@ const config: Config = {
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
+  trailingSlash: true,
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'devforth', // Usually your GitHub org/user name.
@@ -20,6 +22,12 @@ const config: Config = {
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
+
+  scripts: [
+    {
+      src: '/scripts/adminforth.js',
+    },
+  ],
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -41,13 +49,13 @@ const config: Config = {
           // editUrl:
           //   'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
-        // blog: {
-        //   showReadingTime: true,
+        blog: {
+           showReadingTime: true,
         //   // Please change this to your repo.
         //   // Remove this to remove the "edit this page" links.
         //   // editUrl:
         //   //   'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-        // },
+        },
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -81,9 +89,19 @@ const config: Config = {
         enumMembersFormat: "table",
       },
     ],
+    // [
+    //   '@docusaurus/plugin-sitemap',
+    //   {
+    //     id: 'default',
+    //     changefreq: 'daily',
+    //     priority: 0.5,
+    //     trailingSlash: true,
+    //   },
+    // ],
   ],
 
   themeConfig: {
+    image: "img/og.jpg",
     algolia: {
         appId: 'VSIPOF54AV',  // The application ID provided by Algolia
         apiKey: '1421d8647ca2005358fdd01a9ceb3565',  // Public API key: it is safe to commit it
@@ -114,7 +132,7 @@ const config: Config = {
           position: 'left',
           label: 'API',
         },
-        // {to: '/blog', label: 'Blog', position: 'left'},
+        { to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/devforth/adminforth',
           label: 'GitHub',
@@ -136,6 +154,14 @@ const config: Config = {
               label: 'API',
               to: '/docs/api',
             },
+            {
+              label: 'Blog Archive',
+              to: '/blog/archive/',
+            },
+            {
+              label: 'Find anything',
+              to: '/search/'
+            }
           ],
         },
         // {
