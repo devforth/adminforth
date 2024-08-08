@@ -154,6 +154,14 @@ const config: Config = {
               label: 'API',
               to: '/docs/api',
             },
+            {
+              label: 'Blog Archive',
+              to: '/blog/archive/',
+            },
+            {
+              label: 'Find anything',
+              to: '/search/'
+            }
           ],
         },
         // {
