@@ -18,7 +18,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 <template>
   <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none h-screen">
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
-        class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Appartments</span>
+        class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
       Statistics.</h1>
 
     <div class="grid grid-cols-3 gap-4">
@@ -126,7 +126,7 @@ const optionsC1 = {
   },
   series: [
     {
-      name: "Added appartments",
+      name: "Added apartments",
       data: [],
       color: "#1A56DB",
     },
@@ -355,7 +355,7 @@ onMounted(async () => {
 
 > 🫨 use https://flowbite.com/ to copy-paste pre-designed tailwind design blocks for your pages
 
-Now let's add this page to the AdminForth menu and make it homepage instead of Appartments page:
+Now let's add this page to the AdminForth menu and make it homepage instead of Apartments page:
 
 ```ts title="/index.ts"
 menu: [
@@ -381,7 +381,7 @@ menu: [
         {
 //diff-remove
           homepage: true,  
-          label: 'Appartments',
+          label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },

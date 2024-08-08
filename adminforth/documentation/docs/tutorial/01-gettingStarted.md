@@ -326,7 +326,7 @@ export const admin = new AdminForth({
       children: [
         {
           homepage: true,
-          label: 'Appartments',
+          label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },
