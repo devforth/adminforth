@@ -11,7 +11,8 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 ## Previews
 
 [List](https://adminforth.dev/docs/tutorial/gettingStarted):
-![MacBook Pro Mockup Front view label](https://github.com/user-attachments/assets/faf26c8c-3dbb-4ebc-9ef5-b2ea05986cb9)
+
+![image](https://github.com/user-attachments/assets/ea8a415a-f4b1-4f6a-ab3e-a82cbbafd23a)
 
 
 
