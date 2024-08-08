@@ -52,7 +52,7 @@ if (!tableExists) {
       INSERT INTO apartments (
         id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
       ) VALUES ('${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
-        .floor(Math.random() * 5) }, 'Next gen appartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
+        .floor(Math.random() * 5) }, 'Next gen apartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
       `).run();
   }
 
@@ -677,7 +677,7 @@ const admin = new AdminForth({
       open: true,
       children: [
         {
-          label: 'Appartments',
+          label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },
