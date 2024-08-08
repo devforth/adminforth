@@ -13,7 +13,7 @@ export interface PluginOptions {
 
   /**
    * Model name. Go to https://platform.openai.com/docs/models, select model and copy name.
-   * Default is `gpt-3.5-turbo`. Use e.g. more expensive `gpt-4o` for more powerful model.
+   * Default is `gpt-4o-mini`. Use e.g. more expensive `gpt-4o` for more powerful model.
    */
   model?: string;
 
