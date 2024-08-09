@@ -248,7 +248,7 @@ export const admin = new AdminForth({
   menu: [
     {
         label: 'Dashboard',
-        path: '/ovrerwiew',
+        path: '/overview',
         homepage: true,
         icon: 'flowbite:chart-pie-solid',
         component: '@@/Dashboard.vue',

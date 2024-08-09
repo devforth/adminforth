@@ -364,7 +364,7 @@ menu: [
 //diff-add
       label: 'Dashboard',
 //diff-add
-      path: '/ovrerwiew',
+      path: '/overview',
 //diff-add
       homepage: true,
 //diff-add
