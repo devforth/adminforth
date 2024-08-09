@@ -1,0 +1,26 @@
+{
+  "type": "module",
+  "name": "app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx watch index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bundleNow": "tsx bundleNow.ts",
+    "startLive": "NODE_ENV=production tsx index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "adminforth": "^1.2.50",
+    "better-sqlite3": "^10.0.0",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "tsx": "^4.11.2",
+    "typescript": "^5.4.5"
+  }
+}
