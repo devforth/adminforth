@@ -13,8 +13,10 @@ let db;
 const ADMIN_BASE_URL = '';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
-    record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-    return { ok: true };
+  if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+    return { ok: false, error: "You can't do this on demo.adminforth.dev" }
+  }
+  return { ok: true };
 }
 
 export const admin = new AdminForth({
