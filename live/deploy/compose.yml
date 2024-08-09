@@ -17,4 +17,4 @@ networks:
     driver: bridge
 
 volumes:
-  af-db
+  af-db:
