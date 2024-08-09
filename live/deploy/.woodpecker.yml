@@ -1,0 +1,20 @@
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      partial: false
+      depth: 5
+
+pipeline:
+  build:
+    image: devforth/drone-builder
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - cd deploy && /bin/bash build.sh
+
+    secrets:
+      - VAULT_MAIN_CA_PEM_KEY
+      - VAULT_MAIN_KEY_PEM_KEY
+      - VAULT_MAIN_CERT_PEM_KEY
+      - VAULT_AF_SECRET

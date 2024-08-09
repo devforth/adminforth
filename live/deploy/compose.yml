@@ -1,0 +1,13 @@
+services:
+
+  adminforth:
+    build: ../app
+    network_mode: host
+    environment:
+      - NODE_ENV=production
+      - ADMINFORTH_SECRET=${VAULT_AF_SECRET}
+   
+
+networks:
+  default:
+    driver: bridge
