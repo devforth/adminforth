@@ -55,6 +55,22 @@ export const admin = new AdminForth({
             return { ok: true };
           },
         },
+        edit: {
+            beforeSave: async ({ record, adminUser, resource }) => {
+              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+              }
+              return { ok: true };
+            },
+          },
+          create: {
+            beforeSave: async ({ record, adminUser, resource }) => {
+              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+              }
+              return { ok: true };
+            },
+          },
       },
       columns: [
         {
