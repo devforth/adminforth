@@ -201,6 +201,32 @@ export const admin = new AdminForth({
       resourceId: 'users',
       label: 'Users',  
       recordLabel: (r) => `👤 ${r.email}`,
+      hooks: {
+        delete: {
+            beforeSave: async ({ record, adminUser, resource }) => {
+            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+            }
+            return { ok: true };
+          },
+        },
+        edit: {
+            beforeSave: async ({ record, adminUser, resource }) => {
+              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+              }
+              return { ok: true };
+            },
+          },
+        create: {
+            beforeSave: async ({ record, adminUser, resource }) => {
+              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+              }
+              return { ok: true };
+            },
+          },
+      },
       columns: [
         { 
           name: 'id', 
