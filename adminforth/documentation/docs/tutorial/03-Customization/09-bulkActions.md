@@ -53,10 +53,10 @@ import { AdminUser } from 'adminforth';
 
 Action code is called on the server side only and allowed to only authorized users. 
 
-> 🫨 AdminForth provides no way to update the data, it is your responsibility to manage the data by selectedIds. You can use any ORM system
+> ☝️ AdminForth provides no way to update the data, it is your responsibility to manage the data by selectedIds. You can use any ORM system
 > or write raw queries to update the data.
 
-> 🫨 You can use `adminUser` object to check whether user is allowed to perform bulk action
+> ☝️ You can use `adminUser` object to check whether user is allowed to perform bulk action
 
 Here is how it looks:
 ![alt text](image-3.png)
