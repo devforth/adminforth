@@ -375,6 +375,7 @@ async function deleteRecord(row) {
           primaryKey: row._primaryKeyValue,
         }
       });
+      console.log('safsa', res)
       if (!res.error){
         emits('update:records', true)
         showSuccesTost('Record deleted successfully')

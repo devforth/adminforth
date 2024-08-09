@@ -147,6 +147,8 @@ export default class AdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           title: this.adminforth.config.customization?.title,
+          demoCredentials: this.adminforth.config.auth.demoCredentials,
+          loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
         };
       },
     });
