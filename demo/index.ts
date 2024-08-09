@@ -81,6 +81,13 @@ if (!columnExists) {
   await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
 }
 
+const demoChecker = async ({ record, adminUser, resource }) => {
+  if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+    return { ok: false, error: "You can't do this on demo.adminforth.dev" }
+  }
+  return { ok: true };
+}
+
 const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   // For changing favicon put your favicon.ico in public folder
@@ -234,12 +241,7 @@ const admin = new AdminForth({
       recordLabel: (r: any) => `🏡 ${r.title}`,
       hooks: {
         delete: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-            }
-            return { ok: true };
-          },
+          beforeSave: demoChecker,
         },
       },
       columns: [
