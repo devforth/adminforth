@@ -4,6 +4,8 @@
 <a href="https://adminforth.dev"><img src="https://img.shields.io/badge/website-adminforth.dev-blue" style="height:24px"/></a> <a href="https://adminforth.dev"><img src="https://img.shields.io/npm/dw/adminforth" style="height:24px"/></a> <a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" style="height:28px"/></a>
 
 
+[TRY LIVE DEMO](https://demo.adminforth.dev/)  (Read-only mode)
+
 [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth.
 
 Full API reference [here](https://adminforth.dev/docs/api/).

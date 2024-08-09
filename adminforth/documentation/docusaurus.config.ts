@@ -134,6 +134,11 @@ const config: Config = {
         },
         { to: '/blog', label: 'Blog', position: 'left'},
         {
+          href: 'https://demo.adminforth.dev/',
+          label: 'Live Demo',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/devforth/adminforth',
           label: 'GitHub',
           position: 'right',
@@ -150,6 +155,10 @@ const config: Config = {
               label: 'Tutorial',
               to: '/docs/tutorial/gettingStarted',
             },
+            {
+              label: 'Live Demo',
+              to: 'https://demo.adminforth.dev/',
+            }
             {
               label: 'API',
               to: '/docs/api',
