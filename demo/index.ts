@@ -123,13 +123,13 @@ const admin = new AdminForth({
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
     emptyFieldPlaceholder: '-',
-    styles:{
-      colors: {
-        light: {
-          sidebar: {main:'#571e58', text:'white'},
-        },
-      }
-    },
+    // styles:{
+    //   colors: {
+    //     light: {
+    //       sidebar: {main:'#571e58', text:'white'},
+    //     },
+    //   }
+    // },
 
   },
  

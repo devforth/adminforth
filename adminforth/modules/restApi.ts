@@ -42,7 +42,10 @@ export default class AdminForthRestAPI {
         let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
 
         let token;
-        if (username === this.adminforth.config.rootUser.username && password === this.adminforth.config.rootUser.password) {
+        if (this.adminforth.config.rootUser 
+            && username === this.adminforth.config.rootUser.username 
+            && password === this.adminforth.config.rootUser?.password
+        ) {
           this.adminforth.auth.setAuthCookie({ response, username, pk: null });
           adminUser = { isRoot: true, dbUser: null, pk: null, username: this.adminforth.config.rootUser.username};
         } else {
