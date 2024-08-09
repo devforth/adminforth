@@ -34,7 +34,7 @@ export const admin = new AdminForth({
     brandName: 'My Admin',
     datesFormat: 'D MMM YY HH:mm:ss',
     emptyFieldPlaceholder: '-',
-    title: 'My App Admin',  // used to set HTML title tag
+    title: 'My App Admin',  // used to set HTML meta title tag
     // brandLogo: '@@/logo.svg',
     // favicon: '@@/favicon.png',
   },

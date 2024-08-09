@@ -68,6 +68,10 @@ async function initDataBase() {
 }
 ```
 
-Thats it! Two-Factor Authentication is now enabled 
+> ☝️ 2FA plugin will not show up for rootUser logins due to security reason! 
+> We will remind you that rootUser should be used only for first backoffice login, 
+> then you have to create a user and remove rootUser from config
+
+Thats it! Two-Factor Authentication is now enabled: 
 ![alt text](image-1.png)
  

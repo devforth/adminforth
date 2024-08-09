@@ -5,16 +5,17 @@ clone:
       partial: false
       depth: 5
 
-pipeline:
+steps:
   build:
-    image: devforth/drone-builder
+    image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - cd deploy && /bin/bash build.sh
+      - cd live/deploy && /bin/sh build.sh
 
     secrets:
       - VAULT_MAIN_CA_PEM_KEY
       - VAULT_MAIN_KEY_PEM_KEY
       - VAULT_MAIN_CERT_PEM_KEY
       - VAULT_AF_SECRET
+      - VAULT_HARBOR_KEY
