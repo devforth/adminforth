@@ -1,7 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -21,10 +20,6 @@ const blockDemoUsers = async ({ record, adminUser, resource }) => {
 
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
-  rootUser: {
-    username: 'adminforth',  // use these as credentials for first login
-    password: 'adminforth',
-  },
   auth: {
     resourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
@@ -67,17 +62,6 @@ export const admin = new AdminForth({
         },
       },
       columns: [
-        {
-            name: 'Country Flag',
-            label: 'Country Flag',
-            type: AdminForthDataTypes.STRING,
-            virtual: true,
-            showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
-            components: {
-              show: '@@/CountryFlag.vue',
-              list: '@@/CountryFlag.vue',
-            },
-          },
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
@@ -113,10 +97,6 @@ export const admin = new AdminForth({
         },
         { 
           name: 'number_of_rooms',
-          components: {
-            show: '@@/RoomsCell.vue',
-            list: '@@/RoomsCell.vue',
-          },
           allowMinMaxQuery: true,
           enum: [
             { value: 1, label: '1 room' },
