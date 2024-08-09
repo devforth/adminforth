@@ -200,3 +200,37 @@ Redeploy compose.
 Now you can access your AdminForth application by going to `https://mydomain.com/admin`.
 
 If you want to automate the deployment process with CI follow [our docker - traefik guide](https://devforth.io/blog/onlogs-open-source-simplified-web-logs-viewer-for-dockers/)
+
+
+# Nginx version
+
+If you are using Nginx instead of traefik, here is siple proxy pass config:
+
+
+```
+server {
+  listen 80;
+  server_name demo.adminforth.dev;
+
+  charset utf-8;
+  client_max_body_size 75M;
+
+  gzip on;
+  gzip_disable "msie6";
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 8;
+  gzip_buffers 16 8k;
+  gzip_http_version 1.1;
+  gzip_min_length 2000;
+  gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/vnd.ms-fontobject application/x-font-ttf font/opentype image/svg+xml image/x-icon;
+
+  location / {
+      proxy_read_timeout 220s;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://127.0.0.1:3500;
+  }
+}
+```
