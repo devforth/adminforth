@@ -127,7 +127,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=demo@devforth.io" #  ⚠️ replace with your email
+      - "--certificatesresolvers.myresolver.acme.email=demo@devforth.io" #  ☝️ replace with your email
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -146,7 +146,7 @@ services:
     build: ./app
     environment:
       - NODE_ENV=production
-      - ADMINFORTH_SECRET=!CHANGEME! # ⚠️ replace with your secret
+      - ADMINFORTH_SECRET=!CHANGEME! # ☝️ replace with your secret
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminforth.tls=true"
@@ -167,7 +167,7 @@ Now pull this compose file and all directories to your server and run:
 docker compose -p stack-my-app -f compose.yml up -d --build --remove-orphans --wait
 ```
 
-> 🫨 You can also test this compose stack locally on your machine but SSL will not work, 
+> ☝️ You can also test this compose stack locally on your machine but SSL will not work, 
 > so locally you can ignore Chrome warning about SSL and test your AdminForth application.
 
 ## Subpath deployment

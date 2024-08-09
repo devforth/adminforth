@@ -560,7 +560,7 @@ import ChatGptPlugin from 'af-plugin-chatgpt';
 
 Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new secret key. Paste value in your `.env` file OPENAI_API_KEY=your_key
 
-> 🫨 Using `npm link` approach still requires `npm run build` in plugin dir after each change because plugin entry point is defined as `dist/index.js` in
+> ☝️ Using `npm link` approach still requires `npm run build` in plugin dir after each change because plugin entry point is defined as `dist/index.js` in
 > `package.json` file. To speed up plugin development you can also don't use `npm link` and just import plugin main file from your demo file:
 > ```
 > import ChatGptPlugin from '<path to af plugin>/af-plugin-chatgpt/index.js';

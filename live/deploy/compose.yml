@@ -1,6 +1,7 @@
 services:
 
   adminforth:
+    image: harbor.devforth.io/adminforth-demo/app
     build: ../app
     network_mode: host
     environment:
