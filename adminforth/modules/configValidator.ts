@@ -59,7 +59,7 @@ export default class ConfigValidator implements IConfigValidator {
         throw new Error('rootUser.password is required');
       }
 
-      console.log('\n ⚠️⚠️⚠️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config ASAP when you are in production\n');
+      console.log('\n ☝️☝️☝️ [INSECURE ALERT] config.rootUser is set, please create a new user and remove config.rootUser from config ASAP when you are in production\n');
     }
 
     if (!this.config.customization.customComponentsDir) {

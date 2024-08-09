@@ -353,7 +353,7 @@ onMounted(async () => {
 </script>
 ```
 
-> 🫨 use https://flowbite.com/ to copy-paste pre-designed tailwind design blocks for your pages
+> ☝️ use https://flowbite.com/ to copy-paste pre-designed tailwind design blocks for your pages
 
 Now let's add this page to the AdminForth menu and make it homepage instead of Apartments page:
 
@@ -390,7 +390,7 @@ menu: [
 ```
 
 
-> 🫨 To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
+> ☝️ To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
 ![Iconify icon select](image-icon-select.png)
 
 You might notice that in mounted hook page fetches custom endpoint '/api/dashboard-stats'. 
@@ -472,15 +472,15 @@ admin.discoverDatabases();
 ```
 
 
-> 🫨 Please note that we are using `admin.express.authorize` middleware to check if the user is logged in. If you want to make this endpoint public, you can remove this middleware. If user is not logged in, the request will return 401 Unauthorized status code, and protect our statistics from leak.
+> ☝️ Please note that we are using `admin.express.authorize` middleware to check if the user is logged in. If you want to make this endpoint public, you can remove this middleware. If user is not logged in, the request will return 401 Unauthorized status code, and protect our statistics from leak.
 
-> 🫨 Moreover if you wrap your endpoint with `admin.express.authorize` middleware, you can access `req.adminUser` object in your endpoint to get the current user information.
+> ☝️ Moreover if you wrap your endpoint with `admin.express.authorize` middleware, you can access `req.adminUser` object in your endpoint to get the current user information.
 
-> 🫨 AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
+> ☝️ AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
 mongoose, or just use raw SQL queries against your tables.
 
 
-> 🫨 To call API from frontend component we use Adminforth's callApi method.
+> ☝️ To call API from frontend component we use Adminforth's callApi method.
 > However this is not mandatory. Alternatively you can just use plain fetch:
 >
 > ```ts

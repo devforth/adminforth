@@ -56,7 +56,7 @@ import type { AdminUser } from  'adminforth';
 }
 ```
 
-> 🫨 instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
+> ☝️ instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
 > However we recommend you to keep in mind that allowedActions callback is called on every request related to resource, so it should be fast.
 > So try to minimize requests to database as much as possible.
 

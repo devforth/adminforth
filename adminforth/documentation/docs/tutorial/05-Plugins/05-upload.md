@@ -34,7 +34,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
 ]
 ```
 
-> 🫨 In AllowedOrigins add all your domains. For example if you will searve adming on `https://example.com/admin` you should add 
+> ☝️ In AllowedOrigins add all your domains. For example if you will searve adming on `https://example.com/admin` you should add 
 > `"https://example.com"` to AllowedOrigins:
 >
 > ```json
@@ -141,7 +141,7 @@ async function initDataBase() {
 }
 ```
 
-> 🫨 If you will try to set 'create' or 'edit' in showIn of column which defined by plugin.options.pathColumnName, plugin
+> ☝️ If you will try to set 'create' or 'edit' in showIn of column which defined by plugin.options.pathColumnName, plugin
 > will still prevent column from showing in these views. This is because plugin will handle file upload and you should not 
 > allow user to set path manually.
 

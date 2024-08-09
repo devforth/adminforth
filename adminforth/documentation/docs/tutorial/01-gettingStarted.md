@@ -87,12 +87,12 @@ ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION
 NODE_ENV=development 
 ```
 
-> 🫨 In production:
+> ☝️ In production:
 > 1) you should set `NODE_ENV` to `production` so it will not waste extra resources on hot reload.
 > 2) You should autogenerate `ADMINFORTH_SECRET`
 
 
-> 🫨 If you are using Git, obviously you should make sure you will never commit `.env` file to the repository, because
+> ☝️ If you are using Git, obviously you should make sure you will never commit `.env` file to the repository, because
 it might contain your own sensitive secrets. So to follow best practices, we recommend to add `.env` into `.gitignore` and create `.env.sample` as template for other repository users.
 > During deployment you should set `ADMINFORTH_SECRET` in environment variables of Docker image or in other way without using `.env` file.
 
@@ -424,7 +424,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 ```
 
-> 🫨 For simplicity we defined whole configuration in one file. Normally once configuration grows you should 
+> ☝️ For simplicity we defined whole configuration in one file. Normally once configuration grows you should 
 > move each resource configuration to separate file and organize them to folder and import them in `index.ts`.
 
 Now you can run your app:
