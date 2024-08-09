@@ -158,7 +158,7 @@ const config: Config = {
             {
               label: 'Live Demo',
               to: 'https://demo.adminforth.dev/',
-            }
+            },
             {
               label: 'API',
               to: '/docs/api',
