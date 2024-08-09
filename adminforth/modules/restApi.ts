@@ -163,7 +163,8 @@ export default class AdminForthRestAPI {
         let username = ''
         let userFullName = ''
         if (adminUser.isRoot) {
-            username = this.adminforth.config.rootUser.username;
+          // isRoot can be in JWT token still when rootUser deleted, so we check for rootUser?"
+          username = this.adminforth.config.rootUser?.username || 'RootUser';
         } else {
             const dbUser = adminUser.dbUser;
             username = dbUser[this.adminforth.config.auth.usernameField]; 
