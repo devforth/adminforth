@@ -3,13 +3,6 @@ set -e
 HOST_DOMAIN=3.127.41.171
 mkdir -p ~/.docker/$HOST_DOMAIN
 
-# read env from .env
-set -a
-source .env
-set +a
-
-echo "$VAULT_MAIN_CA_PEM_KEY" 
-
 echo "$VAULT_MAIN_CA_PEM_KEY" > ~/.docker/$HOST_DOMAIN/ca.pem
 echo "$VAULT_MAIN_KEY_PEM_KEY" > ~/.docker/$HOST_DOMAIN/key.pem
 echo "$VAULT_MAIN_CERT_PEM_KEY" > ~/.docker/$HOST_DOMAIN/cert.pem
