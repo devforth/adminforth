@@ -22,6 +22,8 @@ export const admin = new AdminForth({
     resourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
+    demoCredentials: "demo@adminforth.dev:demo",  // never use it for production
+    loginPromptHTML: "Use email <b>demo@adminforth.dev</b> and password <b>demo</b> to login",
   },
   customization: {
     brandName: 'My Admin',
