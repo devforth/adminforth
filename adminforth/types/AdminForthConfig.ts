@@ -1058,6 +1058,17 @@ export type AdminForthConfig = {
        * This field will be used to display user name in the top right corner of the admin panel.
        */
       userFullNameField?: string,
+
+      /**
+       * Pair of login and pass substitution for demo mode. Split by ':'
+       * ! This option is for demo purposes only, never use it for your projects
+       */
+      demoCredentials?: string,
+
+      /**
+       * Any prompt to show users on login. Supports HTML.
+       */
+      loginPromptHTML?: string,
     },
      /**
       * Array of resources which will be displayed in the admin panel.

@@ -124,7 +124,7 @@ import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbi
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
-import {showSuccesTost} from '@/composables/useFrontendApi';
+import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 
 
 const item = ref(null);
@@ -170,7 +170,7 @@ async function deleteRecord(row) {
         router.push({ name: 'resource-list', params: { resourceId: route.params.resourceId } });
         showSuccesTost('Record deleted successfully')
       } else {
-        console.error(res.error)
+        showErrorTost(res.error)
       }
 
     } catch (e) {
