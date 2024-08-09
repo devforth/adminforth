@@ -12,6 +12,11 @@ let db;
 
 const ADMIN_BASE_URL = '';
 
+const blockDemoUsers = async ({ record, adminUser, resource }) => {
+    record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+    return { ok: true };
+}
+
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   rootUser: {
@@ -50,28 +55,13 @@ export const admin = new AdminForth({
       recordLabel: (r) => `🏡 ${r.title}`,
       hooks: {
         delete: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-            }
-            return { ok: true };
-          },
+          beforeSave: blockDemoUsers,
         },
         edit: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-            }
-            return { ok: true };
-          },
+          beforeSave: blockDemoUsers,
         },
         create: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-            }
-            return { ok: true };
-          },
+          beforeSave: blockDemoUsers,
         },
       },
       columns: [
@@ -203,32 +193,6 @@ export const admin = new AdminForth({
       resourceId: 'users',
       label: 'Users',  
       recordLabel: (r) => `👤 ${r.email}`,
-      hooks: {
-        delete: {
-            beforeSave: async ({ record, adminUser, resource }) => {
-            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-            }
-            return { ok: true };
-          },
-        },
-        edit: {
-            beforeSave: async ({ record, adminUser, resource }) => {
-              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-              }
-              return { ok: true };
-            },
-          },
-        create: {
-            beforeSave: async ({ record, adminUser, resource }) => {
-              if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
-                return { ok:false, error: "You can't do this on demo.adminforth.dev" }
-              }
-              return { ok: true };
-            },
-          },
-      },
       columns: [
         { 
           name: 'id', 
@@ -274,18 +238,27 @@ export const admin = new AdminForth({
       ],
       hooks: {
         create: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            return { ok: true };
-          }
+          beforeSave: [
+            blockDemoUsers,
+            async ({ record, adminUser, resource }) => {
+                record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+                return { ok: true };
+            }
+          ],
         },
         edit: {
-          beforeSave: async ({ record, adminUser, resource}) => {
-            if (record.password) {
-              record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            }
-            return { ok: true }
-          },
+          beforeSave: [
+            blockDemoUsers,
+            async ({ record, adminUser, resource}) => {
+                if (record.password) {
+                    record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+                }
+                return { ok: true }
+            },
+          ]
+        },
+        delete: {
+            beforeSave: blockDemoUsers,
         },
       }
     },
