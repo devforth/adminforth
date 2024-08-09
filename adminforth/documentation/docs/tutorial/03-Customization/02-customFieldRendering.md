@@ -101,7 +101,6 @@ You can use [full component declaration](/docs/api/types/AdminForthConfig/type-a
           },
 //diff-add
         }
-//diff-add
       }
     },
     ...
