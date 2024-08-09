@@ -1,6 +1,7 @@
 services:
 
   adminforth:
+    image: adminforth-demo
     build: ../app
     network_mode: host
     environment:
