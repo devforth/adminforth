@@ -97,7 +97,10 @@ export const styles = () => ({
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
     headerShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
     listTableShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
-    resourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // Lighter shadow
+    darkListTableShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Lighter shadow
+    resourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
+    darkResourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Lighter shadow
+
   },
   fontSize: {
     "headerText-size": "1rem"

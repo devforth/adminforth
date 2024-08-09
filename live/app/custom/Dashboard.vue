@@ -4,7 +4,7 @@
           class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
         Statistics.</h1>
   
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
           <div class="flex justify-between">
             <div>
@@ -17,7 +17,7 @@
   
         </div>
   
-        <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 row-span-2 col-span-2" v-if="data">
+        <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 md:row-span-2 md:col-span-2" v-if="data">
   
           <div class="grid grid-cols-2 py-3">
             <dl>
