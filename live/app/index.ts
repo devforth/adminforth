@@ -1,6 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -46,6 +47,17 @@ export const admin = new AdminForth({
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r) => `🏡 ${r.title}`,
       columns: [
+        {
+            name: 'Country Flag',
+            label: 'Country Flag',
+            type: AdminForthDataTypes.STRING,
+            virtual: true,
+            showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
+            components: {
+              show: '@@/CountryFlag.vue',
+              list: '@@/CountryFlag.vue',
+            },
+          },
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
@@ -81,6 +93,10 @@ export const admin = new AdminForth({
         },
         { 
           name: 'number_of_rooms',
+          components: {
+            show: '@@/RoomsCell.vue',
+            list: '@@/RoomsCell.vue',
+          },
           allowMinMaxQuery: true,
           enum: [
             { value: 1, label: '1 room' },
@@ -195,7 +211,7 @@ export const admin = new AdminForth({
           virtual: true,  // field will not be persisted into db
           required: { create: true }, // make required only on create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
-          minLength: 8,
+          minLength: 4,
           type: AdminForthDataTypes.STRING,
           showIn: ['create', 'edit'], // to show field only on create and edit pages
           masked: true, // to show stars in input field
@@ -222,12 +238,18 @@ export const admin = new AdminForth({
   ],
   menu: [
     {
+        label: 'Dashboard',
+        path: '/ovrerwiew',
+        homepage: true,
+        icon: 'flowbite:chart-pie-solid',
+        component: '@@/Dashboard.vue',
+      },
+    {
       label: 'Core',
       icon: 'flowbite:brain-solid', // any icon from iconify supported in format <setname>:<icon>, e.g. from here https://icon-sets.iconify.design/flowbite/
       open: true,
       children: [
         {
-          homepage: true,
           label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
