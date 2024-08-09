@@ -46,6 +46,16 @@ export const admin = new AdminForth({
                             // in case of same table names from different data sources
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r) => `🏡 ${r.title}`,
+      hooks: {
+        delete: {
+          beforeSave: async ({ record, adminUser, resource }) => {
+            if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+              return { ok:false, error: "You can't do this on demo.adminforth.dev" }
+            }
+            return { ok: true };
+          },
+        },
+      },
       columns: [
         {
             name: 'Country Flag',
