@@ -7,6 +7,9 @@ services:
     environment:
       - NODE_ENV=production
       - ADMINFORTH_SECRET=${VAULT_AF_SECRET}
+      - OPENAI_API_KEY=${VAULT_OPENAI_API_KEY}
+      - AWS_ACCESS_KEY_ID=${VAULT_AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${VAULT_AWS_SECRET_ACCESS_KEY}
     volumes:
       - af-db:/code/db/
       
