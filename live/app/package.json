@@ -17,12 +17,12 @@
     "@adminforth/audit-log": "^1.0.36",
     "@adminforth/chat-gpt": "^1.0.10",
     "@adminforth/foreign-inline-list": "^1.0.9",
+    "@adminforth/upload": "^1.0.11",
     "adminforth": "^1.2.53",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
   "devDependencies": {
-    "@adminforth/upload": "^1.0.11",
     "dotenv": "^16.4.5",
     "tsx": "^4.11.2",
     "typescript": "^5.4.5"
