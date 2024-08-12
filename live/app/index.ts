@@ -14,7 +14,6 @@ dotenv.config();
 try { fs.mkdirSync('db') } catch (e) {} 
 const DB_FILE = 'db/test.sqlite';
 
-
 let db;
 
 const ADMIN_BASE_URL = '';
