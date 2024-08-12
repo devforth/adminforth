@@ -2,9 +2,10 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import dotenv from 'dotenv';
-
+import fs from 'fs';
 dotenv.config();
 
+try { fs.mkdirSync('db') } catch (e) {} 
 const DB_FILE = 'test.sqlite';
 
 let db;
