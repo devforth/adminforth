@@ -12,7 +12,6 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - cd live/deploy && /bin/sh build.sh
-
     secrets:
       - VAULT_MAIN_CA_PEM_KEY
       - VAULT_MAIN_KEY_PEM_KEY
