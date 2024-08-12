@@ -70,7 +70,7 @@ function HomepageHeader() {
     <>
       <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
-          <Heading as="h1" className={clsx('hero', styles.heroBanner className="hero__title">
+          <Heading as="h1" className={clsx('hero__title', styles.heroBanner)} >
             {siteConfig.title}
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>

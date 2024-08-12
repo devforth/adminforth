@@ -87,7 +87,6 @@ export default class UploadPlugin extends AdminForthPlugin {
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
-    this.setupLifecycleRule();
 
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
@@ -307,7 +306,10 @@ export default class UploadPlugin extends AdminForthPlugin {
     
   }
 
- 
+  validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: any) {
+    // called here because modifyResourceConfig can be called in build time where there is no environment and AWS secrets
+    this.setupLifecycleRule();
+  }
 
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
