@@ -14,11 +14,15 @@
   --ifm-color-primary-lighter: rgba(60, 129, 255, 1); /* Even Lighter */
   --ifm-color-primary-lightest: rgba(84, 153, 255, 1); /* Lightest Shade */
   --ifm-code-font-size: 95%;
+  /* --ifm-color-secondary: rgb(144 144 144);  */
+
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='dark'] {
   --ifm-color-primary: rgba(36, 104, 255, 1); /* Slightly Brighter Blue for Dark Mode */
+ /* --ifm-color-secondary: rgb(152 152 152); /* White */
+  
   --ifm-color-primary-dark: rgba(31, 90, 219, 1); /* Darker Blue */
   --ifm-color-primary-darker: rgba(27, 79, 194, 1); /* Even Darker */
   --ifm-color-primary-darkest: rgba(21, 60, 146, 1); /* Darkest Blue */
