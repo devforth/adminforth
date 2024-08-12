@@ -6,7 +6,7 @@ import fs from 'fs';
 dotenv.config();
 
 try { fs.mkdirSync('db') } catch (e) {} 
-const DB_FILE = 'test.sqlite';
+const DB_FILE = 'db/test.sqlite';
 
 let db;
 
