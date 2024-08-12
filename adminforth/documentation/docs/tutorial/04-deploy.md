@@ -93,7 +93,10 @@ dotenv.config();
 
 //diff-add
 try { fs.mkdirSync('db') } catch (e) {} 
+//diff-remove
 const DB_FILE = 'test.sqlite';
+//diff-add
+const DB_FILE = 'db/test.sqlite';
 ```
 
 
