@@ -8,18 +8,17 @@ import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
 import UploadPlugin from '../adminforth/plugins/upload/index.ts';
 import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.ts';
-
+import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
 
 const ADMIN_BASE_URL = '';
 
-
 // create test1.db
+try { fs.mkdirSync('db') } catch (e) {} 
+const db = betterSqlite3('db/test1.sqlite')
 
-const db = betterSqlite3('test1.sqlite')
-  
 const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
 if (!tableExists) {
   await db.prepare(`
@@ -96,7 +95,6 @@ const admin = new AdminForth({
     username: 'adminforth',
     password: 'adminforth',
   },
-  
   auth: {
     resourceId: 'users',  // resource for getting user
     usernameField: 'email',
@@ -123,13 +121,13 @@ const admin = new AdminForth({
     title: 'My App Admin',
     brandLogo: '@@/logo.svg',
     emptyFieldPlaceholder: '-',
-    styles:{
-      colors: {
-        light: {
-          sidebar: {main:'#571e58', text:'white'},
-        },
-      }
-    },
+    // styles:{
+    //   colors: {
+    //     light: {
+    //       sidebar: {main:'#571e58', text:'white'},
+    //     },
+    //   }
+    // },
 
   },
  

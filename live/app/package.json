@@ -14,7 +14,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "adminforth": "^1.2.51",
+    "@adminforth/audit-log": "^1.0.36",
+    "@adminforth/chat-gpt": "^1.0.9",
+    "@adminforth/foreign-inline-list": "^1.0.9",
+    "@adminforth/upload": "^1.0.9",
+    "adminforth": "^1.2.53",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
