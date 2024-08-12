@@ -28,6 +28,10 @@ export const admin = new AdminForth({
     demoCredentials: "demo@adminforth.dev:demo",  // never use it for production
     loginPromptHTML: "Use email <b>demo@adminforth.dev</b> and password <b>demo</b> to login",
   },
+  rootUser: {
+    username: 'adminforth',
+    password: 'adminforth',
+  },
   customization: {
     brandName: 'My Admin',
     datesFormat: 'D MMM YY HH:mm:ss',

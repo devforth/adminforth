@@ -79,6 +79,26 @@ Add `bundleNow` and `startLive` to `package.json`:
 }
 ```
 
+## Persisting SQLite db volume
+
+If you are still using SQLite database like in our demo you might want to persist it between container restarts.
+To do this we will put our db into `db` folder to be able to mount it in volume:
+
+```ts title='./index.ts'
+import dotenv from 'dotenv';
+//diff-add
+import fs from 'fs';
+
+dotenv.config();
+
+//diff-add
+try { fs.mkdirSync('db') } catch (e) {} 
+const DB_FILE = 'test.sqlite';
+```
+
+
+## Building the image
+
 
 Now you can build your image:
 
@@ -91,6 +111,7 @@ And run container with:
 ```bash
 docker run -p 3500:3500 \
   -e NODE_ENV=production -e ADMINFORTH_SECRET=CHANGEME\
+  -v $(pwd)/db:/code/db \
   myadminapp
 ```
 
@@ -154,7 +175,13 @@ services:
       - "traefik.http.routers.adminforth.rule=PathPrefix(`/`)"
       - "traefik.http.services.adminforth.loadbalancer.server.port=3500"
       - "traefik.http.routers.adminforth.priority=1"
-   
+    # needed only if you are using SQLite
+    volumes:
+      - db:/code/db
+
+# needed only if you are using SQLite
+volumes:
+  db:
 
 networks:
   default:

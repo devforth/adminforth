@@ -6,29 +6,27 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #0070a3;
-  --ifm-color-primary-dark: #006593;
-  --ifm-color-primary-darker: #005f8b;
-  --ifm-color-primary-darkest: #004e72;
-  --ifm-color-primary-light: #007bb3;
-  --ifm-color-primary-lighter: #0081bb;
-  --ifm-color-primary-lightest: #0092d4;
+  --ifm-color-primary: rgba(26, 86, 219, 1); /* Base Blue */
+  --ifm-color-primary-dark: rgba(21, 70, 179, 1); /* Darker Shade */
+  --ifm-color-primary-darker: rgba(18, 60, 153, 1); /* Even Darker */
+  --ifm-color-primary-darkest: rgba(13, 43, 110, 1); /* Darkest Shade */
+  --ifm-color-primary-light: rgba(36, 104, 255, 1); /* Lighter Shade */
+  --ifm-color-primary-lighter: rgba(60, 129, 255, 1); /* Even Lighter */
+  --ifm-color-primary-lightest: rgba(84, 153, 255, 1); /* Lightest Shade */
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.05);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #006ce0;
-  --ifm-color-primary-dark: #0061ca;
-  --ifm-color-primary-darker: #005cbe;
-  --ifm-color-primary-darkest: #004c9d;
-  --ifm-color-primary-light: #0077f6;
-  --ifm-color-primary-lighter: #037cff;
-  --ifm-color-primary-lightest: #248eff;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: rgba(36, 104, 255, 1); /* Slightly Brighter Blue for Dark Mode */
+  --ifm-color-primary-dark: rgba(31, 90, 219, 1); /* Darker Blue */
+  --ifm-color-primary-darker: rgba(27, 79, 194, 1); /* Even Darker */
+  --ifm-color-primary-darkest: rgba(21, 60, 146, 1); /* Darkest Blue */
+  --ifm-color-primary-light: rgba(42, 120, 255, 1); /* Lighter Blue */
+  --ifm-color-primary-lighter: rgba(66, 143, 255, 1); /* Even Lighter */
+  --ifm-color-primary-lightest: rgba(89, 167, 255, 1); /* Lightest Blue */
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
 }
-
 
 .code-block-diff-add-line {
   background-color: #00FF3C33;

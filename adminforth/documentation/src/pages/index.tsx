@@ -59,7 +59,7 @@ function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <>
-      <header className={clsx('hero hero--primary', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
+      <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
           <Heading as="h1" className="hero__title">
             {siteConfig.title}
@@ -69,7 +69,13 @@ function HomepageHeader() {
             <Link
               className="button button--secondary button--lg"
               to="/docs/tutorial/gettingStarted">
-              AdminForth Tutorial - 5min ⏱️
+              Get started - 5min ⏱️
+            </Link>
+
+            <Link
+              className="button button--primary button--lg"
+              to="https://demo.adminforth.dev/">
+              Live Demo
             </Link>
           </div>
         </div>
