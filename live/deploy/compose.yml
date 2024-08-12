@@ -8,7 +8,7 @@ services:
       - NODE_ENV=production
       - ADMINFORTH_SECRET=${VAULT_AF_SECRET}
     volumes:
-      - af-db:/code/vol/
+      - af-db:/code/test.sqlite
       
    
 

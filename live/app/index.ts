@@ -1,12 +1,12 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-
 import dotenv from 'dotenv';
+
 dotenv.config();
 
+const DB_FILE = 'test.sqlite';
 
-const DB_FILE = 'vol/test.sqlite';
 let db;
 
 const ADMIN_BASE_URL = '';
