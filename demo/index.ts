@@ -95,7 +95,6 @@ const admin = new AdminForth({
     username: 'adminforth',
     password: 'adminforth',
   },
-  
   auth: {
     resourceId: 'users',  // resource for getting user
     usernameField: 'email',

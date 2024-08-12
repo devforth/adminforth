@@ -8,7 +8,6 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  background-color: #48C5FF;
 }
 
 @media screen and (max-width: 996px) {
@@ -21,5 +20,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
 }
 
