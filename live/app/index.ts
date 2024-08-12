@@ -1,12 +1,20 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-
+import AuditLogPlugin from '@adminforth/audit-log';
+import { v4 as uuid } from 'uuid';
+import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
+import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
+import UploadPlugin from '@adminforth/upload';
+import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
+import fs from 'fs';
 dotenv.config();
 
+try { fs.mkdirSync('db') } catch (e) {} 
+const DB_FILE = 'db/test.sqlite';
 
-const DB_FILE = 'vol/test.sqlite';
+
 let db;
 
 const ADMIN_BASE_URL = '';
@@ -45,6 +53,39 @@ export const admin = new AdminForth({
   resources: [
     {
       dataSource: 'maindb', 
+      table: 'audit_logs',
+      columns: [
+        { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
+        { name: 'created_at', required: false },
+        { name: 'resource_id', required: false },
+        { name: 'user_id', required: false },
+        { name: 'action', required: false },
+        { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
+        { name: 'record_id', required: false },
+      ],
+      options: {
+        allowedActions: {
+            edit: false,
+            delete: false,
+        }
+      },
+      plugins: [
+        new AuditLogPlugin({
+            // if you want to exclude some resources from logging
+            //excludeResourceIds: ['users'],
+            resourceColumns: {
+                resourceIdColumnName: 'resource_id',
+                resourceActionColumnName: 'action',
+                resourceDataColumnName: 'diff',
+                resourceUserIdColumnName: 'user_id',
+                resourceRecordIdColumnName: 'record_id',
+                resourceCreatedColumnName: 'created_at'
+            }
+        }),
+      ],
+    },
+    {
+      dataSource: 'maindb', 
       table: 'apartments',
       resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
                             // in case of same table names from different data sources
@@ -62,6 +103,10 @@ export const admin = new AdminForth({
         },
       },
       columns: [
+        {
+          name: 'appartment_image',
+          showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+        },
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
@@ -159,6 +204,38 @@ export const admin = new AdminForth({
           }
         }
       ],
+      plugins: [
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'title',
+        }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'description',
+          model: 'gpt-4o',
+          // expert: {
+            // maxTokens: 50, // token limit to generate for each completion. 50 is default
+            // temperature: 0.7, // Model temperature, 0.7
+            // promptInputLimit: 500, // Limit in characters of edited field to be passed to Model. 500 is default value
+            // debounceTime: 300, // Debounce time in milliseconds. 300 is default value
+          // }
+        }),
+        new UploadPlugin({
+          pathColumnName: 'appartment_image',
+          s3Bucket: 'adminforth-demo', // ❗ Your bucket name
+          s3Region: 'eu-north-1', // ❗ Selected region
+          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+          maxFileSize: 1024 * 1024 * 20, // 5MB
+          s3Path: ({originalFilename, originalExtension, contentType}) => 
+                `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+          // You can use next to change preview URLs (if it is image) in list and show views
+          preview: {
+            showInList: true,
+          }
+        })
+      ],
       options: {
         listPageSize: 12,
         allowedActions:{
@@ -175,6 +252,17 @@ export const admin = new AdminForth({
       resourceId: 'users',
       label: 'Users',  
       recordLabel: (r) => `👤 ${r.email}`,
+      plugins: [
+        new ForeignInlineListPlugin({
+          foreignResourceId: 'aparts',
+          modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+            // hide column 'square_meter' from both 'list' and 'filter'
+            const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
+            resourceConfig.options!.listPageSize = 1;
+            // feel free to console.log and edit resourceConfig as you need
+          },
+        }),
+      ],
       columns: [
         { 
           name: 'id', 
@@ -247,8 +335,13 @@ export const admin = new AdminForth({
   ],
   menu: [
     {
+      label: 'Audit Logs',
+      icon: 'flowbite:search-outline',
+      resourceId: 'audit_logs',
+    },
+    {
         label: 'Dashboard',
-        path: '/ovrerwiew',
+        path: '/overview',
         homepage: true,
         icon: 'flowbite:chart-pie-solid',
         component: '@@/Dashboard.vue',
@@ -286,6 +379,27 @@ export const admin = new AdminForth({
 
 async function initDataBase() {
   db = betterSqlite3(DB_FILE);
+
+  const columns = await db.prepare('PRAGMA table_info(apartments);').all();
+  const columnExists = columns.some((c) => c.name === 'appartment_image');
+  if (!columnExists) {
+    await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
+  }
+
+  const auditTableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs';`).get();
+  if (!auditTableExists) {
+    await db.prepare(`
+      CREATE TABLE audit_logs (
+        id uuid NOT NULL,  -- identifier of applied change record 
+        created_at timestamp without time zone, -- timestamp of applied change
+        resource_id varchar(255), -- identifier of resource where change were applied
+        user_id uuid, -- identifier of user who made the changes
+        "action" varchar(255), -- type of change (create, edit, delete)
+        diff text, -- delta betwen before/after versions
+        record_id varchar, -- identifier of record that been changed
+        PRIMARY KEY(id)
+      );`).run();
+  }
 
   const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
   if (!tableExists) {

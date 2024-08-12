@@ -11,11 +11,11 @@ export const styles = () => ({
     lightNavbarTextActive: "alias:lightNavbarText darken", // navbar text active
     lightNavbarIcons: "alias:lightNavbarText opacity:0.7", // navbar icons
 
-    lightSidebar: "#ffffff", // sidebar background
-    lightSidebarBorder: "alias:lightSidebarText opacity:0.3", // sidebar right border
-    lightSidebarItemHover: "alias:lightSidebarText opacity:0.1", // sidebar list item hover
-    lightSidebarItemActive: "alias:lightSidebarText opacity:0.4", // sidebar list item active
-    lightSidebarText: "#1f2937", // sidebar list item text
+    lightSidebar: "#f9fafb", // sidebar background
+    lightSidebarBorder: "alias:lightSidebarText opacity:0.05", // sidebar right border
+    lightSidebarItemHover: "alias:lightSidebarText opacity:0.05", // sidebar list item hover
+    lightSidebarItemActive: "alias:lightSidebarText opacity:0.05", // sidebar list item active
+    lightSidebarText: "#213045", // sidebar list item text
     lightSidebarTextHover: "alias:lightSidebarText darken", // sidebar list item text hover
     lightSidebarTextActive: "alias:lightSidebarText darken", // sidebar list item text active
     lightSidebarDevider: "alias:lightSidebarText opacity:0.3", // sidebar devider
@@ -26,7 +26,7 @@ export const styles = () => ({
     lightList: "#FFFFFF", // list view background
     lightListTable: "#FFFFFF", // list view table background
     lightListTableHeading: "alias:lightListTableHeadingText opacity:0.04", // list view table heading
-    lightListTableHeadingText: "#333333", // list view table heading text
+    lightListTableHeadingText: "#43445B", // list view table heading text
     lightListTableText: "#333333", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
     lightListBreadcrumbsText: "#666666", // list view breadcrumbs text
@@ -97,13 +97,16 @@ export const styles = () => ({
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
     headerShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
     listTableShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
-    resourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // Lighter shadow
+    darkListTableShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Lighter shadow
+    resourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
+    darkResourseFormShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", // Lighter shadow
+
   },
   fontSize: {
     "headerText-size": "1rem"
   },
   borderRadius: {
-    "default": "2px"
+    "default": ".5rem"
   }
 });
 

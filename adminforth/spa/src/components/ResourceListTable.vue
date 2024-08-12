@@ -1,6 +1,6 @@
 <template>
   <!-- table -->
-  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-black	overflow-y-hidden rounded-default">
+  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden rounded-default">
 
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
@@ -55,7 +55,7 @@
       </thead>
       <tbody>
         <SkeleteLoader v-if="!rows" :columns="3" :rows="resource?.columns.length + 2"/>  
-      <tr v-else-if="rows.length === 0" class="bg-lightListTable border-b dark:bg-darkListTable dark:border-darkListTableBorder">
+      <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
         <td :colspan="resource?.columns.length + 2">
 
           <div id="toast-simple"
@@ -69,7 +69,9 @@
       </tr>
 
       <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
-          class="bg-lightListTable border-b dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer">
+          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
+        :class="{'border-b': rowI !== rows.length - 1}"
+      >
         <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
           <div class="flex items center ">
             <input
