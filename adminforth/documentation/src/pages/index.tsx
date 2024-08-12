@@ -16,7 +16,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Sign in form',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO out of the box!'
+    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO done for you'
   },
   {
     original: require('@site/static/img/previews/users_management.png').default,
@@ -70,7 +70,7 @@ function HomepageHeader() {
     <>
       <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
-          <Heading as="h1" className="hero__title">
+          <Heading as="h1" className={clsx('hero', styles.heroBanner className="hero__title">
             {siteConfig.title}
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
