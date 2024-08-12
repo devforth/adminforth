@@ -26,9 +26,4 @@ docker builder prune -a -f
 docker container prune -f
 
 
-
-# print all curent env
-echo "ENV: "
-env
-
 docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait
