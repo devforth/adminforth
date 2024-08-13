@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-default">
     <div 
-      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl  rounded-default"
+      class="relative overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl  rounded-default"
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
@@ -20,7 +20,8 @@
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
                   v-if="currentValues !== null"
-                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700 block md:table-row"
+                  class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+                  :class="{ 'border-b': i !== editableColumns.length - 1 }"
               >
                     <td class="px-6 py-4 sm:pb-0 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
                       {{ column.label }}

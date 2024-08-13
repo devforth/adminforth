@@ -1,13 +1,13 @@
 {
   "name": "@adminforth/chat-gpt",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "rollout": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch && npm publish --access public",
-    "postinstall": "npm link adminforth",
+    "prepare": "npm link adminforth",
     "build": "tsc"
   },
   "keywords": [],

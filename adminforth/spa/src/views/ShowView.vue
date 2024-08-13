@@ -44,7 +44,7 @@
     </div>
     <div 
       v-else-if="coreStore.record"
-      class="relative overflow-x-auto shadow-resourseFormShadow "
+      class="relative overflow-x-auto rounded-default shadow-resourseFormShadow "
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
         <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
@@ -58,8 +58,9 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="column in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
-                class="bg-lightForm bg-darkForm odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
+            <tr v-for="column,i in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
+              class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700"
+              :class="{ 'border-b': i !== coreStore.resource.columns.filter(c => c.showIn.includes('show')).length - 1 }"
             >
               <component
                 v-if="column.components?.showRow"

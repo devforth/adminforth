@@ -7,7 +7,6 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
-import ImageGallery from "react-image-gallery";
 // import stylesheet if you're not already using CSS @import
 import "react-image-gallery/styles/css/image-gallery.css";
 
@@ -16,7 +15,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Sign in form',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO out of the box!'
+    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO done for you'
   },
   {
     original: require('@site/static/img/previews/users_management.png').default,
@@ -70,7 +69,7 @@ function HomepageHeader() {
     <>
       <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
-          <Heading as="h1" className="hero__title">
+          <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
             {siteConfig.title}
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
@@ -160,16 +159,6 @@ export default function Home(): JSX.Element {
         <HomepageFeatures />
 
       </main>
-      
-
-      {/* <ImageGallery 
-        items={images} 
-        showFullscreenButton={false} 
-        showPlayButton={false}
-        autoPlay={true}
-        slideInterval={7000}
-      />; */}
-      
 
     </Layout>
   );

@@ -6,9 +6,9 @@
 AdminForth requires Node v18 or higher:
 
 ```bash
-nvm install 18
-nvm alias default 18
-nvm use 18
+nvm install 20
+nvm alias default 20
+nvm use 20
 ```
 
 ## Installation
