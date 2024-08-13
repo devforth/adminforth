@@ -242,5 +242,5 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
   }
 ```
 
-
+Also you will have to enable static website hosting in your bucket settings and set index.html and error.html to empty strings.
 
