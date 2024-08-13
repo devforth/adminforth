@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "rollout": "tsc && cp -rf custom dist/ && npm version patch && npm publish --access public",
-    "postinstall": "npm link adminforth"
+    "prepare": "npm link adminforth"
   },
   "keywords": [],
   "author": "",
