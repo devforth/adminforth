@@ -15,7 +15,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Sign in form',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO done for you'
+    description: 'OWASP-Compliant JWT Sign-In and JWT-SSO already there'
   },
   {
     original: require('@site/static/img/previews/users_management.png').default,
@@ -39,7 +39,7 @@ const images = [
     original: require('@site/static/img/previews/2fa_plugin.png').default,
     title: '2FA Plugin - secure your admin panel',
     link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
-    description: 'RFC 6238-Compliant TOTP-Based 2FA'
+    description: 'RFC 6238-Compliant TOTP-Based 2FA will add additional security layer to your admin panel'
   },
   {
     original: require('@site/static/img/previews/dark.png').default,
@@ -58,7 +58,7 @@ const images = [
     thumbnail: require('@site/static/img/previews/dashboard.png').default,
     title: 'Custom Pages and Dashboards',
     link: '/docs/tutorial/Customization/customPages/',
-    description: 'Create your own pages and dashboards with Vue3 components'
+    description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
   }
 ];
 

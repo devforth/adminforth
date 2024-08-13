@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.65] - 2024-08-13
+
+### Added
+- Plugin custom Vue components can now import types from `@/types` folder. Used "postinstall" ln -fs which is not supported on pure Windows (no wsl).
+
+### Changed
+- improved HEAVY_DEBUG logging
+- moved "postinstall" hook in plugins to "prepare" to not execute "npm link" when plugin installed as dependency
+
+
 
 ## [1.2.52] - 2024-08-09
 
