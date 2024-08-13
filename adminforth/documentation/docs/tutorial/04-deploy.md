@@ -54,7 +54,7 @@ In root directory create file `Dockerfile`:
 
 ```Dockerfile
 # use the same nove devsion which you used during dev
-FROM node:20 
+FROM node:20-alpine
 RUN --mount=type=cache,target=/tmp
 WORKDIR /code/
 ADD package.json package-lock.json /code/
