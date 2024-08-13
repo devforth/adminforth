@@ -102,10 +102,6 @@ export const admin = new AdminForth({
         },
       },
       columns: [
-        {
-          name: 'appartment_image',
-          showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
-        },
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
@@ -120,6 +116,10 @@ export const admin = new AdminForth({
           maxLength: 255,  // you can set max length for string fields
           minLength: 3,  // you can set min length for string fields
         }, 
+        {
+          name: 'appartment_image',
+          showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+        },
         {
           name: 'created_at',
           type: AdminForthDataTypes.DATETIME ,
