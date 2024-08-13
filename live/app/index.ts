@@ -221,10 +221,11 @@ export const admin = new AdminForth({
         }),
         new UploadPlugin({
           pathColumnName: 'appartment_image',
-          s3Bucket: 'adminforth-demo', // ❗ Your bucket name
+          s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
           s3Region: 'eu-north-1', // ❗ Selected region
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
           s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          s3ACL: 'public-read',
           allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
           maxFileSize: 1024 * 1024 * 20, // 5MB
           s3Path: ({originalFilename, originalExtension, contentType}) => 
@@ -232,6 +233,7 @@ export const admin = new AdminForth({
           // You can use next to change preview URLs (if it is image) in list and show views
           preview: {
             showInList: true,
+            previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
           }
         })
       ],
