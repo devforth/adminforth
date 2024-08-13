@@ -29,7 +29,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Tailwind Look',
-    img: require('@site/static/img/css.png').default,
+    img: require('@site/static/img/tail.png').default,
     description: (
       <>
         Look is based on TailwindCSS, with a themes customization and dark mode available
