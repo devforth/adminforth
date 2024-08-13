@@ -178,6 +178,7 @@ export const currentFileDir = (metaUrl) => {
   return __dirname;
 }
 
+// in both bundeled and dev mode this always points to the root of the adminforth package (where package.json is)
 export const ADMIN_FORTH_ABSOLUTE_PATH = path.join(currentFileDir(import.meta.url), '..');
 
 const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'package.json'), 'utf8'));

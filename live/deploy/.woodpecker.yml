@@ -12,10 +12,12 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - cd live/deploy && /bin/sh build.sh
-
     secrets:
       - VAULT_MAIN_CA_PEM_KEY
       - VAULT_MAIN_KEY_PEM_KEY
       - VAULT_MAIN_CERT_PEM_KEY
       - VAULT_AF_SECRET
       - VAULT_HARBOR_KEY
+      - VAULT_OPENAI_API_KEY
+      - VAULT_AWS_ACCESS_KEY_ID
+      - VAULT_AWS_SECRET_ACCESS_KEY

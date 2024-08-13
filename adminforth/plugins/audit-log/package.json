@@ -8,7 +8,7 @@
   "scripts": {
     "rollout": "tsc && rsync -av --exclude 'node_modules' custom/ dist/ && npm version patch && npm publish --access public",
     "build": "tsc",
-    "postinstall": "npm link adminforth"
+    "prepare": "npm link adminforth"
   },
   "author": "devforth",
   "license": "ISC",

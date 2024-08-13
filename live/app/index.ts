@@ -280,7 +280,7 @@ export const admin = new AdminForth({
             },
           ]
         },
-        { 
+        {
           name: 'created_at', 
           type: AdminForthDataTypes.DATETIME,
           showIn: ['list', 'filter', 'show'],

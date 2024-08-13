@@ -431,12 +431,6 @@ export default class ChatGptPlugin extends AdminForthPlugin {
 //diff-add
     this.resourceConfig = resourceConfig;
 //diff-add
-    if (!this.options.openAiApiKey) {
-//diff-add
-      throw new Error('OPENAI_API_KEY is required');
-//diff-add
-    }
-//diff-add
     // ensure that column exists
 //diff-add
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
@@ -492,6 +486,14 @@ That is why we will use `validateConfigAfterDiscover` method:
     if (![AdminForthDataTypes.STRING, AdminForthDataTypes.TEXT].includes(column!.type!)) {
 //diff-add
       throw new Error(`Field ${this.options.fieldName} should be string or text type, but it is ${column!.type}`);
+//diff-add
+    }
+//diff-add
+    // any validation better to do here e.g. because bundleNow might no have enough environment
+//diff-add
+    if (!this.options.openAiApiKey) {
+//diff-add
+      throw new Error('OPENAI_API_KEY is required');
 //diff-add
     }
   }

@@ -171,7 +171,7 @@ const onFileChange = async (e) => {
       reader.readAsDataURL(file);
     }
     
-    const { uploadUrl, s3Path } = await callAdminForthApi({
+    const { uploadUrl, tagline, s3Path } = await callAdminForthApi({
         path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
         method: 'POST',
         body: {
@@ -196,7 +196,7 @@ const onFileChange = async (e) => {
       });
       xhr.open('PUT', uploadUrl, true);
       xhr.setRequestHeader('Content-Type', type);
-      xhr.setRequestHeader('x-amz-tagging', (new URL(uploadUrl)).searchParams.get('x-amz-tagging'));
+      xhr.setRequestHeader('x-amz-tagging', tagline);
       xhr.send(file);
     });
     if (!success) {

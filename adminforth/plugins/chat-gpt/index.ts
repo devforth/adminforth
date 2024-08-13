@@ -23,10 +23,6 @@ export default class ChatGptPlugin extends AdminForthPlugin {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.resourceConfig = resourceConfig;
 
-    if (!this.options.openAiApiKey) {
-      throw new Error('OPENAI_API_KEY is required');
-    }
-    
     // ensure that column exists
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
     if (!column) {
@@ -54,6 +50,10 @@ export default class ChatGptPlugin extends AdminForthPlugin {
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
     if (![AdminForthDataTypes.STRING, AdminForthDataTypes.TEXT].includes(column!.type!)) {
       throw new Error(`Field ${this.options.fieldName} should be string or text type, but it is ${column!.type}`);
+    }
+    // any validation better to do here e.g. because bundleNow migt no have enough environment
+    if (!this.options.openAiApiKey) {
+      throw new Error('OPENAI_API_KEY is required');
     }
   }
 

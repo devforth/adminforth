@@ -21,10 +21,10 @@ export DOCKER_HOST=tcp://$HOST_DOMAIN:2376
 export DOCKER_TLS_VERIFY=1
 export DOCKER_CERT_PATH=~/.docker/$HOST_DOMAIN
 
-docker builder prune -a -f
-docker container prune -f
-
-
 
 
 docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait
+
+docker builder prune -a -f
+docker container prune -f
+docker system prune -f

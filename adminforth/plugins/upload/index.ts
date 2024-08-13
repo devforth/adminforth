@@ -1,6 +1,7 @@
 
 import { PluginOptions } from './types.js';
-import AWS from 'aws-sdk';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
@@ -20,13 +21,16 @@ export default class UploadPlugin extends AdminForthPlugin {
   async setupLifecycleRule() {
     // check that lifecyle rule "adminforth-unused-cleaner" exists
     const CLEANUP_RULE_ID = 'adminforth-unused-cleaner';
-    const s3 = new AWS.S3({
-      accessKeyId: this.options.s3AccessKeyId,
-      secretAccessKey: this.options.s3SecretAccessKey,
-      region: this.options.s3Region
+    const s3 = new S3({
+      credentials: {
+        accessKeyId: this.options.s3AccessKeyId,
+        secretAccessKey: this.options.s3SecretAccessKey,
+      },
+
+      region: this.options.s3Region,
     });
     // check bucket exists
-    const bucketExists = s3.headBucket({ Bucket: this.options.s3Bucket }).promise()
+    const bucketExists = s3.headBucket({ Bucket: this.options.s3Bucket })
     if (!bucketExists) {
       throw new Error(`Bucket ${this.options.s3Bucket} does not exist`);
     }
@@ -35,10 +39,10 @@ export default class UploadPlugin extends AdminForthPlugin {
     let ruleExists: boolean = false;
 
     try {
-        const lifecycleConfig: any = await s3.getBucketLifecycleConfiguration({ Bucket: this.options.s3Bucket }).promise();
+        const lifecycleConfig: any = await s3.getBucketLifecycleConfiguration({ Bucket: this.options.s3Bucket });
         ruleExists = lifecycleConfig.Rules.some((rule: any) => rule.ID === CLEANUP_RULE_ID);
     } catch (e: any) {
-      if (e.code !== 'NoSuchLifecycleConfiguration') {
+      if (e.name !== 'NoSuchLifecycleConfiguration') {
         throw e;
       } else {
         ruleExists = false;
@@ -54,7 +58,7 @@ export default class UploadPlugin extends AdminForthPlugin {
           Rules: [
             {
               ID: CLEANUP_RULE_ID,
-              Status: 'Enabled',
+              Status: ExpirationStatus.Enabled,
               Filter: {
                 Tag: {
                   Key: ADMINFORTH_NOT_YET_USED_TAG,
@@ -69,25 +73,24 @@ export default class UploadPlugin extends AdminForthPlugin {
         }
       };
 
-      await s3.putBucketLifecycleConfiguration(params).promise();
+      await s3.putBucketLifecycleConfiguration(params);
     }
   }
 
-  async genPreviewUrl(record: any, s3: AWS.S3) {
+  async genPreviewUrl(record: any, s3: S3) {
     if (this.options.preview?.previewUrl) {
       record[`previewUrl_${this.pluginInstanceId}`] = this.options.preview.previewUrl({ s3Path: record[this.options.pathColumnName] });
       return;
     }
-    const previewUrl = await s3.getSignedUrl('getObject', {
+    const previewUrl = await await getSignedUrl(s3, new GetObjectCommand({
       Bucket: this.options.s3Bucket,
       Key: record[this.options.pathColumnName],
-    });
+    }));
 
     record[`previewUrl_${this.pluginInstanceId}`] = previewUrl;
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
-    this.setupLifecycleRule();
 
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
@@ -167,10 +170,13 @@ export default class UploadPlugin extends AdminForthPlugin {
     // in afterSave hook, aremove tag adminforth-not-yet-used from the file
     resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
       if (record[pathColumnName]) {
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
 
         await s3.putObjectTagging({
@@ -179,7 +185,7 @@ export default class UploadPlugin extends AdminForthPlugin {
           Tagging: {
             TagSet: []
           }
-        }).promise();
+        });
       }
       return { ok: true };
     });
@@ -194,10 +200,13 @@ export default class UploadPlugin extends AdminForthPlugin {
         return { ok: true };
       }
       if (record[pathColumnName]) {
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
 
         await this.genPreviewUrl(record, s3);
@@ -210,10 +219,13 @@ export default class UploadPlugin extends AdminForthPlugin {
 
     if (this.options.preview?.showInList) {
       resourceConfig.hooks.list.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
   
        await Promise.all(response.map(async (record: any) => {
@@ -230,10 +242,13 @@ export default class UploadPlugin extends AdminForthPlugin {
     // add delete hook which sets tag adminforth-candidate-for-cleanup to true
     resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }) => {
       if (record[pathColumnName]) {
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
 
         await s3.putObjectTagging({
@@ -247,7 +262,7 @@ export default class UploadPlugin extends AdminForthPlugin {
               }
             ]
           }
-        }).promise();
+        });
       }
       return { ok: true };
     });
@@ -269,10 +284,13 @@ export default class UploadPlugin extends AdminForthPlugin {
     resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
 
       if (record[virtualColumn.name] || record[virtualColumn.name] === null) {
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
 
         if (oldRecord[pathColumnName]) {
@@ -288,7 +306,7 @@ export default class UploadPlugin extends AdminForthPlugin {
                 }
               ]
             }
-          }).promise();
+          });
         }
         if (record[virtualColumn.name] !== null) {
           // remove tag from new file
@@ -298,7 +316,7 @@ export default class UploadPlugin extends AdminForthPlugin {
             Tagging: {
               TagSet: []
             }
-          }).promise();
+          });
         }
       }
       return { ok: true };
@@ -307,7 +325,10 @@ export default class UploadPlugin extends AdminForthPlugin {
     
   }
 
- 
+  validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: any) {
+    // called here because modifyResourceConfig can be called in build time where there is no environment and AWS secrets
+    this.setupLifecycleRule();
+  }
 
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
@@ -324,26 +345,34 @@ export default class UploadPlugin extends AdminForthPlugin {
         if (s3Path.startsWith('/')) {
           throw new Error('s3Path should not start with /, please adjust s3path function to not return / at the start of the path');
         }
-        const s3 = new AWS.S3({
-          accessKeyId: this.options.s3AccessKeyId,
-          secretAccessKey: this.options.s3SecretAccessKey,
-          region: this.options.s3Region
+        const s3 = new S3({
+          credentials: {
+            accessKeyId: this.options.s3AccessKeyId,
+            secretAccessKey: this.options.s3SecretAccessKey,
+          },
+
+          region: this.options.s3Region,
         });
 
+        const tagline = `${ADMINFORTH_NOT_YET_USED_TAG}=true`;
         const params = {
           Bucket: this.options.s3Bucket,
           Key: s3Path,
           ContentType: contentType,
-          ACL: this.options.s3ACL || 'private',
-          Tagging: `${ADMINFORTH_NOT_YET_USED_TAG}=true`,
+          ACL: (this.options.s3ACL || 'private') as  ObjectCannedACL,
+          Tagging: tagline,
         };
 
-        const uploadUrl = await s3.getSignedUrl('putObject', params,)
+        const uploadUrl = await await getSignedUrl(s3, new PutObjectCommand(params), {
+          expiresIn: 1800,
+          unhoistableHeaders: new Set(['x-amz-tagging']),
+        })
 
         
         return {
           uploadUrl,
           s3Path,
+          tagline,
         };
       }
     });

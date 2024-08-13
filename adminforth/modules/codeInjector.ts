@@ -230,13 +230,13 @@ class CodeInjector implements ICodeInjector {
           dereference: true, // needed to dereference types
         });
         if (process.env.HEAVY_DEBUG) {
-          console.log('🪲 await fsExtra.copy filtering', src, dest);
+          console.log('🪲 await fsExtra.copy copy single file', src, dest);
         }
 
       }));
     } else {
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲 await fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, ${CodeInjector.SPA_TMP_PATH}`);
+        console.log(`🪲 await fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, -> ${CodeInjector.SPA_TMP_PATH}`);
       }
 
       // try to rm SPA_TMP_PATH/src/types directory 
@@ -249,11 +249,12 @@ class CodeInjector implements ICodeInjector {
       // overwrite can't be used to not destroy cache
       await fsExtra.copy(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa'), CodeInjector.SPA_TMP_PATH, {
         filter: (src) => {
-          if (process.env.HEAVY_DEBUG) {
-            console.log('🪲 await fsExtra.copy filtering', src);
+          const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
+          if (process.env.HEAVY_DEBUG && !filterPasses) {
+            console.log('🪲 await fsExtra.copy filtered out', src);
           }
 
-          return !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
+          return filterPasses
         },
         dereference: true, // needed to dereference types
       });
