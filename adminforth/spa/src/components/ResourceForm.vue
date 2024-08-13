@@ -20,7 +20,8 @@
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
                   v-if="currentValues !== null"
-                  class="bg-ligftForm dark:bg-gray-800 border-b dark:border-gray-700 block md:table-row"
+                  class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+                  :class="{ 'border-b': i !== editableColumns.length - 1 }"
               >
                     <td class="px-6 py-4 sm:pb-0 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
                       {{ column.label }}

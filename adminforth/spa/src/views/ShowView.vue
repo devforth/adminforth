@@ -58,8 +58,9 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="column in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
-                class="bg-lightForm bg-darkForm odd:dark:bg-gray-900  even:dark:bg-gray-800 border-b  dark:border-gray-700"
+            <tr v-for="column,i in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
+              class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700"
+              :class="{ 'border-b': i !== coreStore.resource.columns.filter(c => c.showIn.includes('show')).length - 1 }"
             >
               <component
                 v-if="column.components?.showRow"
