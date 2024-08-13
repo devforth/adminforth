@@ -18,7 +18,7 @@
     "@adminforth/chat-gpt": "^1.0.10",
     "@adminforth/foreign-inline-list": "^1.0.9",
     "@adminforth/upload": "^1.0.13",
-    "adminforth": "^1.2.65",
+    "adminforth": "^1.2.66",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
