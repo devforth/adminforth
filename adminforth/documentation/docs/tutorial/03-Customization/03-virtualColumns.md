@@ -59,7 +59,7 @@ columns: [
 
  To test component open some apartment for edit and change `description` field to `US New York`.
  Here is how it looks:
- ![alt text](image-1.png)
+ ![alt text](<Virtual columns.png>)
 
 
 ## Virtual columns for editing.

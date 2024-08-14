@@ -174,4 +174,4 @@ Also we have to add an Api to get percentages:
 > ☝️ Please note that we are using `window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 Here is how it looks:
-![alt text](<localhost_3500_resource_aparts (2).png>)
+![alt text](<Page Injections.png>)
