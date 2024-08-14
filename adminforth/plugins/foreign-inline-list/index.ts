@@ -21,7 +21,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
   }
 
   instanceUniqueRepresentation(pluginOptions: any) : string {
-    return `${this.options.foreignResourceId}`;
+    return `${pluginOptions.foreignResourceId}`;
   }
 
   setupEndpoints(server: IHttpServer) {
@@ -46,7 +46,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
 
   }
 
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
 

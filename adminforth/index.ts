@@ -84,8 +84,10 @@ class AdminForth implements IAdminForth {
         pluginInstance.modifyResourceConfig(this, resource);
         const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
         if (plugin) {
+          process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
+          
           throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
-            Tu support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
+            To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
         }
         this.activatedPlugins.push(pluginInstance);
       }

@@ -19,32 +19,6 @@ export default class ChatGptPlugin extends AdminForthPlugin {
     return `${pluginOptions.fieldName}`;
   }
 
-  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    super.modifyResourceConfig(adminforth, resourceConfig);
-    this.resourceConfig = resourceConfig;
-
-    // ensure that column exists
-    const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
-    if (!column) {
-      throw new Error(`Field ${this.options.fieldName} not found in resource ${this.resourceConfig.label}`);
-    }
-
-    if (!column.components) {
-      column.components = {};
-    }
-    const filed = {
-      file: this.componentPath('completionInput.vue'),
-      meta: {
-        pluginInstanceId: this.pluginInstanceId,
-        fieldName: this.options.fieldName,
-        debounceTime: this.options.expert?.debounceTime || 300,
-      }
-    }
-    column.components.create = filed;
-    column.components.edit = filed;
-
-    this.columnType = column.type!;
-  }
  
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
@@ -171,6 +145,33 @@ export default class ChatGptPlugin extends AdminForthPlugin {
         };
       }
     });
+  }
+
+  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    super.modifyResourceConfig(adminforth, resourceConfig);
+    this.resourceConfig = resourceConfig;
+
+    // ensure that column exists
+    const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
+    if (!column) {
+      throw new Error(`Field ${this.options.fieldName} not found in resource ${this.resourceConfig.label}`);
+    }
+
+    if (!column.components) {
+      column.components = {};
+    }
+    const filed = {
+      file: this.componentPath('completionInput.vue'),
+      meta: {
+        pluginInstanceId: this.pluginInstanceId,
+        fieldName: this.options.fieldName,
+        debounceTime: this.options.expert?.debounceTime || 300,
+      }
+    }
+    column.components.create = filed;
+    column.components.edit = filed;
+
+    this.columnType = column.type!;
   }
 
 }

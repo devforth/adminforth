@@ -1,6 +1,8 @@
 <template>
   <!-- table -->
-  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden rounded-default">
+  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden"
+    :class="{'rounded-default': !noRoundings}"
+  >
 
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
@@ -255,7 +257,8 @@ const props = defineProps([
   'totalRows',
   'pageSize',
   'checkboxes',
-  'sort'
+  'sort',
+  'noRoundings'
 ])
 
 // emits, update page

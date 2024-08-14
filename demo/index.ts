@@ -8,6 +8,7 @@ import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
 import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
 import UploadPlugin from '../adminforth/plugins/upload/index.ts';
 import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.ts';
+import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.ts';
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -206,16 +207,21 @@ const admin = new AdminForth({
             { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
             { name: 'created_at', required: false },
             { name: 'resource_id', required: false },
-            { name: 'user_id', required: false },
+            { name: 'user_id', required: false, 
+              foreignResource: {
+                resourceId: 'users',
+              },
+            },
             { name: 'action', required: false },
             { name: 'diff', required: false, type: AdminForthDataTypes.JSON },
             { name: 'record_id', required: false },
         ],
+        
         options: {
             allowedActions: {
                 edit: false,
                 delete: false,
-            }
+            },
         },
         plugins: [
           new AuditLogPlugin({
@@ -319,7 +325,7 @@ const admin = new AdminForth({
         { 
           name: 'description',
           sortable: false,
-          type: AdminForthDataTypes.TEXT,
+          type: AdminForthDataTypes.RICHTEXT,
           showIn: ['filter', 'show', 'edit'],
         },
         {
@@ -385,12 +391,25 @@ const admin = new AdminForth({
             debounceTime: 250,
           }
         }),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          fieldName: 'description',
-          model: 'gpt-4o',
-          expert: {
-            debounceTime: 250,
+        // new ChatGptPlugin({
+        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //   fieldName: 'description',
+        //   model: 'gpt-4o',
+        //   expert: {
+        //     debounceTime: 250,
+        //   }
+        // }),
+        new RichEditorPlugin({
+          htmlFieldName: 'description',
+          completion: {
+            provider: 'openai-chat-gpt',
+            params: {
+              apiKey: process.env.OPENAI_API_KEY as string,
+              model: 'gpt-4o',
+            },
+            expert: {
+              debounceTime: 250,
+            }
           }
         }),
       ],
@@ -451,6 +470,10 @@ const admin = new AdminForth({
             resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
             resourceConfig.options!.listPageSize = 3;
           },
+        }),
+        new ForeignInlineListPlugin({
+          foreignResourceId: 'audit_log',
+         
         }),
         new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'}), 
       ],
