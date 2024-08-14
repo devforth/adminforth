@@ -15,10 +15,10 @@
   "description": "",
   "dependencies": {
     "@adminforth/audit-log": "^1.0.36",
-    "@adminforth/chat-gpt": "^1.0.10",
-    "@adminforth/foreign-inline-list": "^1.0.9",
+    "@adminforth/chat-gpt": "^1.0.11",
+    "@adminforth/foreign-inline-list": "^1.0.18",
     "@adminforth/upload": "^1.0.13",
-    "adminforth": "^1.2.66",
+    "adminforth": "^1.2.74",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
