@@ -3,8 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Create Admin Panels faster on Node.js and Vue.js with AdminForth Framework',
-  tagline: 'Start developing backoffice using open-source Admin Framework on Tailwind UI extendable with Vue3 components',
+  title: 'Create Admin Panels faster on Node and Vue with AdminForth Framework',
+  tagline: 'Start developing backoffice using open-source Admin Framework on Tailwind UI and extend it with Vue3',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
