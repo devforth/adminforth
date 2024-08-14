@@ -87,7 +87,10 @@ import { v4 as uuid } from 'uuid';
 //diff-add
         { name: 'resource_id', required: false },
 //diff-add
-        { name: 'user_id', required: false },
+        { name: 'user_id', required: false, 
+            foreignResource: {
+            resourceId: 'users',
+        } },
 //diff-add
         { name: 'action', required: false },
 //diff-add
