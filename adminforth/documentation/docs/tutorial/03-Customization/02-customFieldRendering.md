@@ -51,7 +51,7 @@ Now you can use this component in the configuration of the resource:
 }
 ```
 Here is how it looks:
-![alt text](image.png)
+![alt text](<Custom record field rendering.png>)
 
 In very similar way you can render how cell is rendered in `'edit'` and `'create'` view. 
 You can use it for creating custom editors for the fields. Check [component specs](/docs/api/types/AdminForthConfig/type-aliases/AdminForthFieldComponents#create) to understand which props are passed to the component

@@ -59,7 +59,7 @@ Action code is called on the server side only and allowed to only authorized use
 > ☝️ You can use `adminUser` object to check whether user is allowed to perform bulk action
 
 Here is how it looks:
-![alt text](image-3.png)
+![alt text](<Custom bulk actions.png>)
 
 
 ## Limiting access to bulk actions

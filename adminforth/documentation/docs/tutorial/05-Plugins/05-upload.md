@@ -145,7 +145,7 @@ async function initDataBase() {
 > will still prevent column from showing in these views. This is because plugin will handle file upload and you should not 
 > allow user to set path manually.
 
-![alt text](localhost_3500_resource_aparts_show_16.png)
+![alt text](Upload.png)
 
 ![alt text](Untitleddesign-ezgif.com-crop.gif)
 
