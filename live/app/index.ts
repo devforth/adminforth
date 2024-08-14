@@ -266,6 +266,9 @@ export const admin = new AdminForth({
             // feel free to console.log and edit resourceConfig as you need
           },
         }),
+        new ForeignInlineListPlugin({
+          foreignResourceId: 'audit_logs',
+        }),
       ],
       columns: [
         { 

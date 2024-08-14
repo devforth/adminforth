@@ -6,7 +6,7 @@ Creating a plugin is a powerful way to extend AdminForth functionality.
 
 Every plugin is installed to resource.
 
-Main concept is pretty simple: every plugin simply does modification of AdminForth config which developer passed on AdminForth initialization. 
+Every plugin simply does modification of AdminForth config which developer passed on AdminForth initialization. 
 
 Plugin can modify both config of resource where it is installed or whole global config.
 
@@ -66,6 +66,8 @@ import { PluginOptions } from './types.js';
 
 export default class ChatGptPlugin extends AdminForthPlugin {
   options: PluginOptions;
+  resourceConfig: AdminForthResource;
+
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -130,7 +132,8 @@ Create `./af-plugin-chatgpt/tsconfig.json` file:
 }
 
 ```
- 
+
+This is very important step! (otherwise some features like method redefinition might blindly fail).
 
 ## Creating plugin logic
 
