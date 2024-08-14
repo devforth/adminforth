@@ -57,7 +57,10 @@ export const admin = new AdminForth({
         { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
         { name: 'created_at', required: false },
         { name: 'resource_id', required: false },
-        { name: 'user_id', required: false },
+        { name: 'user_id', required: false, 
+          foreignResource: {
+          resourceId: 'users',
+        } },
         { name: 'action', required: false },
         { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
         { name: 'record_id', required: false },
