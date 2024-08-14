@@ -84,6 +84,7 @@
     </div>
 
     <ResourceListTable
+      :noRoundings="true"
       :resource="listResource"
       :rows="rows"
       @update:page="page = $event"
