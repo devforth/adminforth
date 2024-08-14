@@ -22,12 +22,17 @@ export default class ChatGptPlugin extends AdminForthPlugin {
       throw new Error(`Column ${this.options.htmlFieldName} not found in resource ${resourceConfig.label}`);
     }
     const filed = {
-      file: this.componentPath('completionInput.vue'),
+      file: this.componentPath('quillEditor.vue'),
       meta: {
         pluginInstanceId: this.pluginInstanceId,
         debounceTime: this.options.expert?.debounceTime || 300,
       }
     }
+    if (!c.components) {
+      c.components = {};
+    }
+    c.components.create = filed;
+    c.components.edit = filed;
     
   }
   
@@ -38,7 +43,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
   instanceUniqueRepresentation(pluginOptions: any) : string {
     // optional method to return unique string representation of plugin instance. 
     // Needed if plugin can have multiple instances on one resource 
-    return `single`;
+    return pluginOptions.htmlFieldName;
   }
 
   setupEndpoints(server: IHttpServer) {
