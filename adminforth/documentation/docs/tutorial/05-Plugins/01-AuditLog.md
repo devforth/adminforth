@@ -163,6 +163,6 @@ menu: [
 
 That's it! Now you can see the logs in the table 
 
-![alt text](image.png)
+![alt text](AuditLog.png)
 
 See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options.
