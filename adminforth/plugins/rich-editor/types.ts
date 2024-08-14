@@ -70,6 +70,11 @@ export interface PluginOptions {
     promptInputLimit?: number;
 
     /**
+     * Time in ms to wait after user stops typing before sending request to completion provider. Default is 300 ms.
+     */
+    debounceTime: number;
+
+    /**
      * When completion is made, this plugin passes non-empty fields of the record to the LLM model for record context understanding.
      */
     recordContext?: {
