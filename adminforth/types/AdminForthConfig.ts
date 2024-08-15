@@ -798,7 +798,9 @@ export type AdminForthResource = {
      */
     columns: Array<AdminForthResourceColumn>,
 
-    
+    /**
+     * Internal array of columns which are not virtual. You should not edit it. 
+     */
     dataSourceColumns?: Array<AdminForthResourceColumn>,  // TODO, mark as private
 
     /**
@@ -818,25 +820,79 @@ export type AdminForthResource = {
      * 
      */
     plugins?: Array<IAdminForthPlugin>,
+
+    /**
+     * Hooks allow you to change the data on different stages of resource lifecycle.
+     * Hooks are functions which will be called on backend side (only backend side).
+     */
     hooks?: {
       show?: {
+        /**
+         * Typical usecases: 
+         * - request additional data from database before returning to frontend for soft-join 
+         */
         beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+        /**
+         * Typical usecases:
+         * - Transform value for some field for record returned from database before returning to frontend (minimize, sanitize, etc)
+         * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
+         * - Attach additional data to record before returning to frontend 
+         */
         afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
       list?: {
+        /**
+         * Typical usecases:
+         * - add additional filters in addition to what user selected before fetching data from database.
+         * - same as hooks.show.beforeDatasourceRequest 
+         */
         beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+        /**
+         * Typical usecases:
+         * - Same as hooks.show.afterDatasourceResponse but applied for each record in list
+         */
         afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
       create?: {
+        /**
+         * Typical usecases:
+         * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
+         * - fill-in adminUser as creator of record
+         * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
+         */
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+        /**
+         * Typical usecases:
+         * - Initiate some trigger after record saved to database (e.g sync to another datasource)
+         */
         afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       edit?: {
+        /**
+         * Typical usecases:
+         * - Same as hooks.create.beforeSave but for edit page
+         */
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+        /**
+         * Typical usecases:
+         * - Same as hooks.create.afterSave but for edit page
+         */
         afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       delete?: {
+        /**
+         * Typical usecases:
+         * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
+         */
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+        /**
+         * Typical usecases:
+         * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
+         */
         afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
       },
     },
@@ -1050,7 +1106,6 @@ export type AdminForthConfig = {
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
-
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
 
       /**
@@ -1224,7 +1279,8 @@ export type AdminForthConfig = {
      * 
      */
     baseUrl?: string,
-   
+    
+    
     deleteConfirmation?: boolean,
     
    
