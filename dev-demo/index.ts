@@ -1,14 +1,14 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes } from '../adminforth/index.ts';
+import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes } from '../adminforth/index.js';
 import { v1 as uuid } from 'uuid';
 
-import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.ts';
-import AuditLogPlugin from '../adminforth/plugins/audit-log/index.ts';
-import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.ts';
-import UploadPlugin from '../adminforth/plugins/upload/index.ts';
-import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.ts';
-import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.ts';
+import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.js';
+import AuditLogPlugin from '../adminforth/plugins/audit-log/index.js';
+import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.js';
+import UploadPlugin from '../adminforth/plugins/upload/index.js';
+import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.js';
+import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.js';
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -74,11 +74,11 @@ if (!tableExists2) {
 }
 
 
-// check column appartment_image in aparts table
+// check column apartment_image in aparts table
 const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-const columnExists = columns.some((c) => c.name === 'appartment_image');
+const columnExists = columns.some((c) => c.name === 'apartment_image');
 if (!columnExists) {
-  await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
+  await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
 }
 
 const demoChecker = async ({ record, adminUser, resource }) => {
@@ -292,7 +292,7 @@ const admin = new AdminForth({
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
         {
-          name: 'appartment_image',
+          name: 'apartment_image',
           showIn: [],
           required: true,
           editingNote: 'Upload image of apartment',
@@ -367,7 +367,7 @@ const admin = new AdminForth({
       plugins: [
         ...(process.env.AWS_ACCESS_KEY_ID ? [
           new UploadPlugin({
-            pathColumnName: 'appartment_image',
+            pathColumnName: 'apartment_image',
             s3Bucket: 'tmpbucket-adminforth',
             s3Region: 'eu-central-1',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
@@ -401,16 +401,16 @@ const admin = new AdminForth({
         // }),
         new RichEditorPlugin({
           htmlFieldName: 'description',
-          completion: {
-            provider: 'openai-chat-gpt',
-            params: {
-              apiKey: process.env.OPENAI_API_KEY as string,
-              model: 'gpt-4o',
-            },
-            expert: {
-              debounceTime: 250,
-            }
-          }
+          // completion: {
+          //   provider: 'openai-chat-gpt',
+          //   params: {
+          //     apiKey: process.env.OPENAI_API_KEY as string,
+          //     // model: 'gpt-4o',
+          //   },
+          //   expert: {
+          //     debounceTime: 250,
+          //   }
+          // }
         }),
       ],
       hooks: {

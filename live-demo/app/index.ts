@@ -120,7 +120,7 @@ export const admin = new AdminForth({
           minLength: 3,  // you can set min length for string fields
         }, 
         {
-          name: 'appartment_image',
+          name: 'apartment_image',
           showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
         },
         {
@@ -223,7 +223,7 @@ export const admin = new AdminForth({
           // }
         }),
         new UploadPlugin({
-          pathColumnName: 'appartment_image',
+          pathColumnName: 'apartment_image',
           s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
           s3Region: 'eu-north-1', // ❗ Selected region
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -388,9 +388,9 @@ async function initDataBase() {
   db = betterSqlite3(DB_FILE);
 
   const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-  const columnExists = columns.some((c) => c.name === 'appartment_image');
+  const columnExists = columns.some((c) => c.name === 'apartment_image');
   if (!columnExists) {
-    await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
+    await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
   }
 
   const auditTableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs';`).get();

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted, watch } from "vue";
+import { onMounted, ref, onUnmounted, watch, type Ref } from "vue";
 import { callAdminForthApi } from '@/utils';
 import { AdminForthColumn } from '@/types/AdminForthConfig';
 import AsyncQueue from './async-queue';
@@ -83,7 +83,7 @@ onMounted(() => {
 
   quill = new Quill(editor.value as HTMLElement, {
     theme: "snow",
-    placeholder: props.placeholder || 'Type here...',
+    placeholder: 'Type here...',
     // formats : ['complete'],
     modules: {
       keyboard: {
@@ -240,6 +240,10 @@ function deleteCompleteEmbed() {
 }
 
 function approveCompletion(type: 'all' | 'word') { 
+  if (!props.meta.shouldComplete) {
+    return;
+  }
+
   dbg('💨 approveCompletion')
 
   if (completion.value === null) {
@@ -274,6 +278,9 @@ function approveCompletion(type: 'all' | 'word') {
 }
 
 async function startCompletion() {
+  if (!props.meta.shouldComplete) {
+    return;
+  }
   completion.value = null;
   // return;
   deleteCompleteEmbed();
@@ -316,7 +323,20 @@ async function startCompletion() {
 
     dbg('👇 completion finished', quill.getContents());
 
-  }, props.debounceTime || 300);
+  }, props.meta.debounceTime || 300);
+}
+
+function removeCompletionOnBlur() {
+  if (lastText?.trim().length === 0) {
+    completion.value = null;
+    const d = quill.getContents();
+    const i = d.ops.findIndex((op: any) => op.insert.complete);
+    if (i !== -1) {
+      d.ops.splice(i, 1);
+      quill.setContents(d, 'silent');
+      dbg('🧹 Cleaned completion from ops to make ph visible');
+    }
+  }
 }
 
 </script>

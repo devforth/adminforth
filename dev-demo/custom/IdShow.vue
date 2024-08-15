@@ -1,5 +1,5 @@
 <template> 
-    Appartment {{ record?.title }}
+    Apartment {{ record?.title }}
     Id: "{{ record?.id }}"
     Meta: "{{ meta }}"
 </template>
