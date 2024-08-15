@@ -18,7 +18,8 @@ const ADMIN_BASE_URL = '';
 
 // create test1.db
 try { fs.mkdirSync('db') } catch (e) {} 
-const db = betterSqlite3('db/test1.sqlite')
+const dbPath = 'db/test.sqlite';
+const db = betterSqlite3(dbPath)
 
 const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
 if (!tableExists) {
@@ -136,7 +137,7 @@ const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: 'sqlite://test1.sqlite'
+      url: `sqlite://${dbPath}`
     },
     {
       id: 'db2',
