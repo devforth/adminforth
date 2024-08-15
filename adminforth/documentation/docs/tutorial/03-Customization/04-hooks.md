@@ -47,7 +47,7 @@ import type { AdminUser } from  'adminforth';
 //diff-add
         if (adminUser.isRoot) {
 //diff-add
-          return { ok: false, error: "Root user can't create appartment, relogin as DB user" };
+          return { ok: false, error: "Root user can't create apartment, re-login as DB user" };
 //diff-add
         }
 //diff-add
