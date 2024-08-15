@@ -20,10 +20,37 @@ export interface PluginOptions {
    */
   htmlFieldName: string;
 
+
+  /**
+   * Quill toolbar setting, full toolbar:
+   * 
+   * ```
+   * [
+   *     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+   *     ['blockquote', 'code-block', 'link'],
+   *     // [ 'image', 'video', 'formula' ],
+   *
+   *     [{ 'header': 2 }, { 'header': 3 }],               // custom button values
+   *     [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+   *     // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+   *     // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+   *     // [{ 'direction': 'rtl' }],                         // text direction
+   *     // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+   *     // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+   *     // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+   *     // [{ 'font': [] }],
+   *     [{ 'align': [] }],
+   *
+   *     ['clean']  
+   * ]  
+   *```
+   */
+  toolbar?: any[];
+
   /**
    * The completion section is used to define the completion provider and its parameters.
    */
-  completion: {
+  completion?: {
     /**
      * The provider is the name of the plugin that will be used to provide completions.
      */
