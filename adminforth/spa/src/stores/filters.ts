@@ -1,9 +1,8 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
-import { callAdminForthApi } from '@/utils';
+import { ref, type Ref } from 'vue';
+import { defineStore } from 'pinia';
 
 export const useFiltersStore = defineStore('filters', () => {
-    const filters = ref([]);
+    const filters: Ref<any[]> = ref([]);
     const setFilter = (filter: any) => {
         filters.value = [...filters.value, filter];
     }
@@ -16,7 +15,5 @@ export const useFiltersStore = defineStore('filters', () => {
     const clearFilters = () => {
         filters.value = [];
     }
-    return {setFilter, getFilters,clearFilters, filters,setFilters}
-    })
-
-    
+    return {setFilter, getFilters, clearFilters, filters, setFilters}
+})
