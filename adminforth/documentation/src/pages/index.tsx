@@ -44,7 +44,7 @@ const images = [
   {
     original: require('@site/static/img/previews/dark.png').default,
     title: 'Dark mode out of the box',
-    link: '/docs/tutorial/Customization/branding/',
+    link: '/docs/tutorial/gettingStarted',
     description: 'Dark mode is enabled by default, create your own components in Tailwind-way and it will work with no additional friction'
   },
   {
@@ -55,10 +55,21 @@ const images = [
   },
   {
     original: require('@site/static/img/previews/dashboard.png').default,
-    thumbnail: require('@site/static/img/previews/dashboard.png').default,
     title: 'Custom Pages and Dashboards',
     link: '/docs/tutorial/Customization/customPages/',
     description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
+  },
+  {
+    original: require('@site/static/img/previews/branding.png').default,
+    title: 'Branding and theming',
+    link: '/docs/tutorial/Customization/branding/',
+    description: 'Upload your logo, change colors, update titles, make the look to match your brand'
+  },
+  {
+    original: require('@site/static/img/previews/richeditor.png').default,
+    title: 'Rich Editor Plugin - WYSIWYG',
+    link: '/docs/tutorial/Plugins/RichEditor/',
+    description: 'Attach Rich Editor plugin to your text fields and get WYSIWYG editor for your content'
   }
 ];
 

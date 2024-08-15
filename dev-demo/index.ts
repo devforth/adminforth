@@ -118,18 +118,18 @@ const admin = new AdminForth({
       }}
     }],
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
-    brandName: 'My App',
+    brandName: '',
     datesFormat: 'D MMM YY HH:mm:ss',
-    title: 'My App Admin',
-    brandLogo: '@@/logo.svg',
+    title: 'Devforth Admin',
+    brandLogo: '@@/df.svg',
     emptyFieldPlaceholder: '-',
-    // styles:{
-    //   colors: {
-    //     light: {
-    //       sidebar: {main:'#571e58', text:'white'},
-    //     },
-    //   }
-    // },
+    styles:{
+      colors: {
+        light: {
+          sidebar: {main:'#1c2a5b', text:'white'},
+        },
+      }
+    },
 
   },
  
@@ -402,25 +402,18 @@ const admin = new AdminForth({
         // }),
         new RichEditorPlugin({
           htmlFieldName: 'description',
-          // completion: {
-          //   provider: 'openai-chat-gpt',
-          //   params: {
-          //     apiKey: process.env.OPENAI_API_KEY as string,
-          //     // model: 'gpt-4o',
-          //   },
-          //   expert: {
-          //     debounceTime: 250,
-          //   }
-          // }
+          completion: {
+            provider: 'openai-chat-gpt',
+            params: {
+              apiKey: process.env.OPENAI_API_KEY as string,
+              // model: 'gpt-4o',
+            },
+            expert: {
+              debounceTime: 250,
+            }
+          }
         }),
       ],
-      hooks: {
-        delete: {
-          beforeSave: async ({ record, adminUser, resource }: any) => {
-            return { ok: false, error: "Sorry, error here" }
-          }
-        },
-      },
 
       options:{
           
