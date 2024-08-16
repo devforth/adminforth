@@ -4,6 +4,9 @@ export const styles = () => ({
   colors: {
     lightHtml: "#FFFFFF", // main background
 
+    lightPrimary: "#3B82F6", // primary color
+    lightPrimaryOpacity: "alias:lightPrimary opacity:0.1", // primary color opacity
+
     lightNavbar: "#FFFFFF", // navbar background
     lightNavbarBorder: "rgb(229 231 235)", // border
     lightNavbarText: "#111827", // navbar text
@@ -58,6 +61,9 @@ export const styles = () => ({
 
     // colors for dark theme
     darkHtml: "#111827",
+
+    darkPrimary: "#3B82F6", // primary color
+    darkPrimaryOpacity: "alias:darkPrimary opacity:0.1", // primary color opacity
 
     darkNavbar: "#111827", 
     darkNavbarBorder: "#e5e7eb",
