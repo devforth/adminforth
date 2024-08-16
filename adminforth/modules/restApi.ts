@@ -207,6 +207,8 @@ export default class AdminForthRestAPI {
           newMenu.push(newMenuItem)
         }
 
+        const announcementBadge = this.adminforth.config.customization.announcementBadge?.(adminUser);
+
         return {
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
@@ -223,6 +225,7 @@ export default class AdminForthRestAPI {
             usernameField: this.adminforth.config.auth.usernameField,
             title: this.adminforth.config.customization?.title,
             emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
+            announcementBadge,
           },
           adminUser,
           version: ADMINFORTH_VERSION,

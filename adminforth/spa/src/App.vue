@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
-            type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
+              type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
@@ -73,38 +73,66 @@
           </span>
         </div>
 
-          <ul class="space-y-2 font-medium">
-            <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-              <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
-              <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
-              <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
-              ">{{ item.label }}</div>
-              <li v-else-if="item.children" class="  ">
-                <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover" 
-                    :aria-controls="`dropdown-example${i}`"
-                    :data-collapse-toggle="`dropdown-example${i}`"
-                >
-                  <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
+        <ul class="space-y-2 font-medium">
+          <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
+            <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
+            <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
+            <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
+            ">{{ item.label }}</div>
+            <li v-else-if="item.children" class="  ">
+              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover" 
+                  :aria-controls="`dropdown-example${i}`"
+                  :data-collapse-toggle="`dropdown-example${i}`"
+              >
+                <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
-                  <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
-                  <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-                  </svg>
-                </button>
+                <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
+                <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                </svg>
+              </button>
 
-                <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
-                  <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                    <li>
-                      <MenuLink :item="child" isChild="true" />
-                    </li>
-                  </template>
-                </ul> 
-              </li>
-              <li v-else>
-                <MenuLink :item="item" />
-              </li>
-            </template>
-          </ul>
+              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
+                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+                  <li>
+                    <MenuLink :item="child" isChild="true" />
+                  </li>
+                </template>
+              </ul> 
+            </li>
+            <li v-else>
+              <MenuLink :item="item" />
+            </li>
+          </template>
+        </ul>
+
+
+        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-blue-50 dark:bg-blue-900" role="alert"
+          v-if="ctaBadge"
+        >
+          <div class="flex items-center mb-3">
+            <span class="bg-blue-200 text-blue-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800"
+              v-if="ctaBadge.title"
+            >
+              {{ctaBadge.title}}
+            </span>
+            <button type="button" 
+              class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 inline-flex justify-center items-center w-6 h-6 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-400 p-1 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-400 dark:hover:bg-blue-800" 
+              data-dismiss-target="#dropdown-cta" aria-label="Close"
+              v-if="ctaBadge.closable" @click="closeCTA"
+            >
+              <span class="sr-only">Close</span>
+              <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+              </svg>
+            </button>
+          </div>
+          <p class="mb-3 text-sm fill-blue-800 dark:fill-blue-400 text-blue-800 dark:text-blue-400" v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
+          <p class="text-sm text-blue-800 dark:text-blue-400" v-else>
+            {{ ctaBadge.text }}  
+          </p>
+          <!-- <a class="text-sm text-blue-800 underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
+        </div>
       </div>
     </aside>
     
@@ -311,4 +339,18 @@ onBeforeMount(()=>{
   document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
 
+
+const ctaBadge = computed(() => {
+  const badge = coreStore.config?.announcementBadge;
+  const hash = badge.closable ? JSON.stringify(badge).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0) : '';
+  if (badge.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
+    return null;
+  }
+  return {...badge, hash};
+});
+
+function closeCTA() {
+  const hash = ctaBadge.value.hash;
+  window.localStorage.setItem(`ctaBadge-${hash}`, '1');
+}
 </script>
