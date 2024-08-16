@@ -73,6 +73,12 @@ const admin = new AdminForth({
 //diff-add
         light: {
 //diff-add
+          // color for buttons, links, etc.
+//diff-add
+          primary: '#791DAA',
+//diff-add
+          // color for sidebar and text
+//diff-add
           sidebar: {main:'#571e58', text:'white'},
 //diff-add
         },

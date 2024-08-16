@@ -107,17 +107,19 @@
         </ul>
 
 
-        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity" role="alert"
+        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm
+        " role="alert"
           v-if="ctaBadge"
         >
           <div class="flex items-center mb-3">
-            <span class="bg-blue-200 text-blue-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800"
+            <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
               v-if="ctaBadge.title"
             >
               {{ctaBadge.title}}
             </span>
             <button type="button" 
-              class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 inline-flex justify-center items-center w-6 h-6 text-blue-900 rounded-lg focus:ring-2 focus:ring-blue-400 p-1 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-400 dark:hover:bg-blue-800" 
+              class="ms-auto -mx-1.5 -my-1.5 bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity inline-flex justify-center items-center w-6 h-6  rounded-lg  p-1 hover:brightness-110" 
               data-dismiss-target="#dropdown-cta" aria-label="Close"
               v-if="ctaBadge?.closable" @click="closeCTA"
             >
@@ -127,8 +129,8 @@
               </svg>
             </button>
           </div>
-          <p class="mb-3 text-sm fill-lightPrimary dark:fill-darkPrimary text-lightPrimary dark:text-darkPrimary" v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
-          <p class="mb-3 text-sm fill-lightPrimary dark:fill-darkPrimary text-lightPrimary dark:text-darkPrimary" v-else>
+          <p class="mb-3 text-sm " v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
+          <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
             {{ ctaBadge.text }}  
           </p>
           <!-- <a class="text-sm text-blue-800 underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
@@ -342,8 +344,11 @@ onBeforeMount(()=>{
 
 const ctaBadge = computed(() => {
   const badge = coreStore.config?.announcementBadge;
-  const hash = badge?.closable ? JSON.stringify(badge).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0) : '';
-  if (badge?.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
+  if (!badge) {
+    return null;
+  }
+  const hash = badge.closable ? JSON.stringify(badge).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0) : '';
+  if (badge.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
     return null;
   }
   return {...badge, hash};
