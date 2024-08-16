@@ -1260,14 +1260,21 @@ export type AdminForthConfig = {
        * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
        */
       styles?: Object,
+
       /**
        * Description of custom pages which will let register custom pages for custom routes in AdminForth.
        */
-
       customPages?: Array<{
         path: string,
         component: AdminForthComponentDeclaration,
       }>,
+
+      /**
+       * Function to return custom badge in side bar for users. Can return text or html
+       * If function is not passed or returns null, badge will not be shown.
+       * Execution is done on admin app load. 
+       */
+      announcementBadge?: (user: AdminUser) => { text?: string, html?: string, closable?: boolean, title?: string } | null,
     }
 
     /**
