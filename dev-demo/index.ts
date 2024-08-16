@@ -126,6 +126,7 @@ const admin = new AdminForth({
     styles:{
       colors: {
         light: {
+          primary: '#425BB8',
           sidebar: {main:'#1c2a5b', text:'white'},
         },
       }

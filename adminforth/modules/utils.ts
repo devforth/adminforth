@@ -282,13 +282,15 @@ export function parseColorForAliases(str){
   const opacityRegex = /opacity:([0-9.]+)/;
   const darkenRegex = /darken/;
   const lightenRegex = /lighten/;
+  const inverseRegex = /inverse/;
 
   // Extract alias and properties
   const aliasMatch = str.match(aliasRegex);
   const opacityMatch = str.match(opacityRegex)
   const darkenMatch = str.match(darkenRegex)
   const lightenMatch = str.match(lightenRegex)
-  return {aliasMatch,opacityMatch,darkenMatch,lightenMatch}
+  const inverseMatch = str.match(inverseRegex)
+  return {aliasMatch,opacityMatch,darkenMatch,lightenMatch, inverseMatch}
 }
 
 export function darkenRGBA(rgba) {
@@ -326,4 +328,10 @@ export function lightenRGBA(rgba) {
 }
 
 
+export function inverseRGBA(rgba) {
+  // return white or black depending on the brightness of the color
+  let [r, g, b] = rgba.match(/\d+/g).map(Number);
+  let brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128 ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
+}
 

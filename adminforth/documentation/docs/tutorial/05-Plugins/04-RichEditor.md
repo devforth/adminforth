@@ -10,7 +10,7 @@ This plugin allows you to use Quill editor in your AdminForth application.
 First, install the plugin:
 
 ```bash
-npm install @adminforth/rich-editor
+npm i @adminforth/rich-editor --save
 ```
 
 Import plugin:
