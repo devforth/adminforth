@@ -134,7 +134,7 @@
           <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
             {{ ctaBadge.text }}  
           </p>
-          <!-- <a class="text-sm text-blue-800 underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
+          <!-- <a class="text-sm text-lightPrimary underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
         </div>
       </div>
     </aside>
