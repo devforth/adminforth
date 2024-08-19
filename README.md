@@ -14,8 +14,7 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [List](https://adminforth.dev/docs/tutorial/gettingStarted):
 
-![image](https://github.com/user-attachments/assets/ea8a415a-f4b1-4f6a-ab3e-a82cbbafd23a)
-
+![localhost_3500_resource_aparts (6) 1 (1)](https://github.com/user-attachments/assets/ba7fd3f1-b080-48f7-a96f-29e5dbc83f3a)
 
 [Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
