@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.2.83] - 2024-08-19
+
+### Fixed
+- Dropdown on lowest form input (create and edit)
+
+## [1.2.82] - 2024-08-19
+
+### Added
+- More bindings to the primary color variable
+
 ## [1.2.81] - 2024-08-19
 
 ### Added
