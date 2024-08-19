@@ -110,7 +110,7 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
     return true; 
   }
   if (adminUser.isRoot) {
-    return "Root user can't edit appartment, relogin as DB user"; 
+    return "Root user can't edit apartment, relogin as DB user"; 
   }
   const { oldRecord, newRecord } = meta;
   if (oldRecord.realtor_id !== adminUser.dbUser.id) {

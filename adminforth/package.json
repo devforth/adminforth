@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.2.75",
+  "version": "1.2.83",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "rollout": "tsc && npm version patch && npm publish && npm run rollout-doc",
     "rollout-doc": "cd documentation && npm run build && npm run deploy",
     "docs": "typedoc",
-    "postinstall": "cd spa/src && ln -sf ../../types types"
+    "postinstall": "cd ./spa/src/ && test ! -d ./types && ln -sf ../../types ./types || echo 'types linked'"
   },
   "author": "devforth.io",
   "license": "ISC",

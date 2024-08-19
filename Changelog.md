@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.83] - 2024-08-19
+
+### Fixed
+- Dropdown on lowest form input (create and edit)
+
+## [1.2.82] - 2024-08-19
+
+### Added
+- More bindings to the primary color variable
+
+## [1.2.81] - 2024-08-19
+
+### Added
+- Support OL / UL lists in `richtext` fields
+
+## [1.2.80] - 2024-08-16
+
+### Fixed
+
+- Make primary color variable and use it for colored links
+- Create style variables for announcement badge
+- Fix announcement badge appearance when it is not configured
+
+## [1.2.77] - 2024-08-16
+
+### Added
+
+- customization.announcementBadge
+
+## [1.2.76] - 2024-08-15
+
+### Fixed
+- Fixed filters selected on the previous page persists on the next page 
+ https://github.com/devforth/adminforth/pull/2
+
 ## [1.2.75] - 2024-08-13
 
 ### Added

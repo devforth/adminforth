@@ -10,7 +10,7 @@
       />
       <div class="absolute inset-y-0 left-2 flex items-center pr-2 flex-wrap">
         {{  }}
-        <div v-for="item in selectedItems" :key="item?.name" class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+        <div v-for="item in selectedItems" :key="item?.name" class="bg-lightPrimaryOpacity text-lightPrimary text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkPrimaryOpacity dark:text-darkPrimary">
           <span>{{ item.label }}</span>
           <button
             type="button"
@@ -40,7 +40,7 @@
         v-for="item in filteredItems"
         :key="item.value"
         class="px-4 py-2 cursor-pointer hover:bg-gray-100"
-        :class="{ 'bg-blue-100': selectedItems.includes(item) }"
+        :class="{ 'bg-lightPrimaryOpacity': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
         <label :for="item.value">{{ item.label }}</label>

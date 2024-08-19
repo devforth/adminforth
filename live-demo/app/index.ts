@@ -41,6 +41,15 @@ export const admin = new AdminForth({
     title: 'My App Admin',  // used to set HTML meta title tag
     // brandLogo: '@@/logo.svg',
     // favicon: '@@/favicon.png',
+    announcementBadge: (adminUser: AdminUser) => {
+      return { 
+        html: `
+<svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
+<a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
+        closable: true,
+        title: 'Support us for free',
+      }
+    }
   },
 
   dataSources: [
@@ -120,7 +129,7 @@ export const admin = new AdminForth({
           minLength: 3,  // you can set min length for string fields
         }, 
         {
-          name: 'appartment_image',
+          name: 'apartment_image',
           showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
         },
         {
@@ -223,7 +232,7 @@ export const admin = new AdminForth({
           // }
         }),
         new UploadPlugin({
-          pathColumnName: 'appartment_image',
+          pathColumnName: 'apartment_image',
           s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
           s3Region: 'eu-north-1', // ❗ Selected region
           s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -388,9 +397,9 @@ async function initDataBase() {
   db = betterSqlite3(DB_FILE);
 
   const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-  const columnExists = columns.some((c) => c.name === 'appartment_image');
+  const columnExists = columns.some((c) => c.name === 'apartment_image');
   if (!columnExists) {
-    await db.prepare('ALTER TABLE apartments ADD COLUMN appartment_image VARCHAR(255);').run();
+    await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
   }
 
   const auditTableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs';`).get();
