@@ -79,8 +79,16 @@ class AdminForth implements IAdminForth {
 
   activatePlugins() {
     process.env.HEAVY_DEBUG && console.log('🔌🔌🔌 Activating plugins');
+    const allPluginInstances = [];
     for (let resource of this.config.resources) {
       for (let pluginInstance of resource.plugins || []) {
+        allPluginInstances.push({pi: pluginInstance, resource});
+      }
+    }
+    allPluginInstances.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
+    console.log('🔌🔌🔌 Activating plugins', allPluginInstances.map(({pi}) => pi.activationOrder));
+    allPluginInstances.forEach(
+      ({pi: pluginInstance, resource}) => {
         pluginInstance.modifyResourceConfig(this, resource);
         const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
         if (plugin) {
@@ -91,7 +99,7 @@ class AdminForth implements IAdminForth {
         }
         this.activatedPlugins.push(pluginInstance);
       }
-    };
+    );
   }
 
   async discoverDatabases() {

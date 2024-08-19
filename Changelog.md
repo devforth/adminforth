@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
+## [1.2.84] - 2024-08-20
+
+### Fixed
+- Improve CTA badge appearance when there is no title
+
+### Improved
+
+- base plugin now remembers pointer to resourceConfig, so in any plugin you can access it via `this.resourceConfig`
+- plugins now support orderedActivation so you can control the order of plugin activation by setting `activationOrder` in plugin class
+
+
 ## [1.2.83] - 2024-08-19
 
 ### Fixed
