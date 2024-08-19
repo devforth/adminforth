@@ -277,6 +277,14 @@ export interface IAdminForthPlugin {
   pluginInstanceId: string;
   customFolderPath: string;
   pluginOptions: any;
+  resourceConfig: AdminForthResource;
+
+  /**
+   * Before activating all plugins are sorted by this number and then activated in order.
+   * If you want to make sure that your plugin is activated after some other plugin, set this number to higher value. (default is 0)
+   */
+  activationOrder: number;
+
 
   /**
    * AdminForth plugins concept is based on modification of full AdminForth configuration

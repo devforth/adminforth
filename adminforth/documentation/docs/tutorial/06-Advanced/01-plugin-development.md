@@ -66,8 +66,6 @@ import { PluginOptions } from './types.js';
 
 export default class ChatGptPlugin extends AdminForthPlugin {
   options: PluginOptions;
-  resourceConfig: AdminForthResource;
-
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -76,7 +74,6 @@ export default class ChatGptPlugin extends AdminForthPlugin {
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
-    this.resourceConfig = resourceConfig;
   
     // simply modify resourceConfig or adminforth.config. You can get access to plugin options via this.options;
   }
@@ -431,16 +428,15 @@ export default class ChatGptPlugin extends AdminForthPlugin {
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
-//diff-add
-    this.resourceConfig = resourceConfig;
+
 //diff-add
     // ensure that column exists
 //diff-add
-    const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
+    const column = resourceConfig.columns.find(f => f.name === this.options.fieldName);
 //diff-add
     if (!column) {
 //diff-add
-      throw new Error(`Field ${this.options.fieldName} not found in resource ${this.resourceConfig.label}`);
+      throw new Error(`Field ${this.options.fieldName} not found in resource ${resourceConfig.label}`);
 //diff-add
     }
 //diff-add
@@ -576,3 +572,26 @@ Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new se
 
 > 🎓 Homework 2: Plugin does not pass record other values to Chat GPT which can help to create better prompts with context understanding.
 > Try to adjust prompt to include other record values. Keep in mind that longer prompts can be more expensive and slower, so should smartly limit prompt length.
+
+## Configuring plugin activation order
+
+By default all plugins are activated in random order. 
+
+Rarely, it might happen that your plugin somehow depends on other plugins (e.g. default AdminForth rich text editor plugin depends on AdminForth upload file to support images in text).
+
+To control plugin activation order you can set `activationOrder` property in plugin class:
+
+```ts title='./af-plugin-chatgpt/index.ts'
+export default class ChatGptPlugin extends AdminForthPlugin {
+  options: PluginOptions;
+
+  activationOrder = 100;
+
+  ...
+}
+```
+
+Default value of activationOrder for most plugins is `0`. Plugins with higher activationOrder will be activated later.
+
+To ensure that plugin activates before some other plugins set `activationOrder` to negative value.
+

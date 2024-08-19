@@ -108,11 +108,10 @@
 
 
         <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm
-        " role="alert"
+          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
           v-if="ctaBadge"
         >
-          <div class="flex items-center mb-3">
+          <div class="flex items-center mb-3" :class="!ctaBadge.title ? 'float-right' : ''">
             <!-- <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
               v-if="ctaBadge.title"
             > -->
@@ -121,6 +120,7 @@
             </span>
             <button type="button" 
               class="ms-auto -mx-1.5 -my-1.5 bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity inline-flex justify-center items-center w-6 h-6  rounded-lg  p-1 hover:brightness-110" 
+              
               data-dismiss-target="#dropdown-cta" aria-label="Close"
               v-if="ctaBadge?.closable" @click="closeCTA"
             >

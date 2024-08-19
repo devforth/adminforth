@@ -15,6 +15,9 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   pluginInstanceId: string;
   customFolderPath: string;
   pluginOptions: any;
+  resourceConfig: AdminForthResource;
+
+  activationOrder: number = 0;
 
   constructor(pluginOptions: any, metaUrl: string) {
     // set up plugin here
@@ -32,7 +35,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   }
 
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-
+    this.resourceConfig = resourceConfig;
     const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
 
     const seed = `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${uniqueness}`;
