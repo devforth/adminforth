@@ -113,9 +113,10 @@
           v-if="ctaBadge"
         >
           <div class="flex items-center mb-3">
-            <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
+            <!-- <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
               v-if="ctaBadge.title"
-            >
+            > -->
+            <span>
               {{ctaBadge.title}}
             </span>
             <button type="button" 

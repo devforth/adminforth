@@ -123,11 +123,22 @@ const admin = new AdminForth({
     title: 'Devforth Admin',
     brandLogo: '@@/df.svg',
     emptyFieldPlaceholder: '-',
+    // styles:{
+    //   colors: {
+    //     light: {
+    //       primary: '#425BB8',
+    //       sidebar: {main:'#1c2a5b', text:'white'},
+    //     },
+    //   }
+    // },
+
     styles:{
       colors: {
         light: {
-          primary: '#425BB8',
-          sidebar: {main:'#1c2a5b', text:'white'},
+          // color for buttons, links, etc.
+          primary: '#8a158d',
+          // color for sidebar and text
+          sidebar: {main:'#571e58', text:'white'},
         },
       }
     },
