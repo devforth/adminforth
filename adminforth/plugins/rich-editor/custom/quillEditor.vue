@@ -394,10 +394,9 @@ function removeCompletionOnBlur() {
   }
 
 
-//TODO: remove
-//  .ql-editor:not(:focus) [completer] {
-//    display: none;
-//  }
+  .ql-editor:not(:focus) [completer] {
+    display: none;
+  }
 
   .ql-editor [completer] {
     color: gray;

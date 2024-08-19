@@ -136,10 +136,13 @@ const admin = new AdminForth({
       colors: {
         light: {
           // color for buttons, links, etc.
-          primary: '#8a158d',
+         primary: '#8a158d',
           // color for sidebar and text
-          sidebar: {main:'#571e58', text:'white'},
+          // sidebar: {main:'#571e58', text:'white'},
         },
+        dark: {
+        //   primary: '#8a158d',
+        }
       }
     },
 

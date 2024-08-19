@@ -32,7 +32,7 @@
       </div>
 
       <button type="button"
-              class="text-blue-700 dark:text-blue-500 text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
               @click="toggleTimeInputs">{{ showTimeInputs ? 'Hide time' : 'Show time' }}
         <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
