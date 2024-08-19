@@ -3,7 +3,7 @@ import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource } from "
 import { PluginOptions } from './types.js';
 
 
-export default class ChatGptPlugin extends AdminForthPlugin {
+export default class RichEditorPlugin extends AdminForthPlugin {
   options: PluginOptions;
   resourceConfig?: AdminForthResource = undefined;
 
