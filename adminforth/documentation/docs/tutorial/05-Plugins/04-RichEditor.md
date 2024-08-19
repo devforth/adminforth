@@ -1,6 +1,4 @@
 
-> 🫸This plugin is under development and not yet released
-
 # Rich editor
 
 Under the hood this plugin uses [Quill](https://quilljs.com/). Quill is a free, open source WYSIWYG editor built for the modern web.
@@ -9,10 +7,16 @@ This plugin allows you to use Quill editor in your AdminForth application.
 
 ## Usage
 
+First, install the plugin:
+
+```bash
+npm i @adminforth/rich-editor --save
+```
+
 Import plugin:
 
 ```ts title="./index.ts"
-import RichEditorPlugin from 'adminforth/plugins/RichEditorPlugin';
+import RichEditorPlugin from '@adminforth/rich-editor';
 ```
 
 Now instantiate the plugin and add it to the configuration:
@@ -35,9 +39,9 @@ Now instantiate the plugin and add it to the configuration:
   plugins: [
     ...
 //diff-add
-    new QuillEditorPlugin({
+    new RichEditorPlugin({
 //diff-add
-      htmlField: 'description',
+      htmlFieldName: 'description',
 //diff-add
     }),
     ...
@@ -45,9 +49,13 @@ Now instantiate the plugin and add it to the configuration:
 }
 ```
 
+
+
 Now you can see Quill editor in the `description` field in the edit view:
 
 < screenshot >
+
+
 
 # Multiple editors in one resource
 
@@ -83,4 +91,35 @@ If you need multiple fields in one resource which happens rarely, just add multi
     ...
   ],
 }
+```
+
+
+## Completion
+
+To get completion suggestions for the text in the editor, you can use the `completion` option. This option is an object with the following properties:
+
+```ts title="./index.ts"
+  new RichEditorPlugin({
+      htmlFieldName: 'description',
+//diff-add
+      completion: {
+//diff-add
+        provider: 'openai-chat-gpt',
+//diff-add
+        params: {
+//diff-add
+          apiKey: process.env.OPENAI_API_KEY as string,
+//diff-add
+          // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
+//diff-add
+        },
+//diff-add
+        expert: {
+//diff-add
+          debounceTime: 250,
+//diff-add
+        }
+//diff-add
+      }
+    }),
 ```

@@ -31,10 +31,10 @@
                                       <span @click="onCopyClick" class="text-xs font-semibold">Copy</span>
                                   </span>
                                   <span id="success-message" class="hidden inline-flex items-center">
-                                      <svg class="w-3 h-3 text-blue-700 dark:text-blue-500 me-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12">
+                                      <svg class="w-3 h-3 text-lightPrimary dark:text-darkPrimary me-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12">
                                           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5.917 5.724 10.5 15 1.5"/>
                                       </svg>
-                                      <span class="text-xs font-semibold text-blue-700 dark:text-blue-500">Copied</span>   
+                                      <span class="text-xs font-semibold text-lightPrimary dark:text-darkPrimary">Copied</span>   
                                   </span>
                               </button>
                           </div>

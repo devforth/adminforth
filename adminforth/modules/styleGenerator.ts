@@ -1,4 +1,4 @@
-import { transformObject,deepMerge,createRGBA,parseColorForAliases,darkenRGBA, lightenRGBA } from "./utils.js";
+import { transformObject,deepMerge,createRGBA,parseColorForAliases,darkenRGBA, lightenRGBA, inverseRGBA } from "./utils.js";
 import { styles } from "./styles.js";
 
 
@@ -23,7 +23,7 @@ export class StylesGenerator {
     }
    
     private changeAlias(str:any, mergedStyles:any){
-      const {aliasMatch,opacityMatch,darkenMatch,lightenMatch} = parseColorForAliases(str);
+      const {aliasMatch,opacityMatch,darkenMatch,lightenMatch, inverseMatch} = parseColorForAliases(str);
       if (!aliasMatch) {
         return str;
       } else {
@@ -33,8 +33,11 @@ export class StylesGenerator {
         if (darkenMatch) {
           return darkenRGBA(createRGBA(color, opacity))
         }
-        if  (lightenMatch){
+        if (lightenMatch){
           return lightenRGBA(createRGBA(color, opacity))
+        }
+        if (inverseMatch){
+          return inverseRGBA(createRGBA(color, opacity))
         }
         return createRGBA(color, opacity);
       }

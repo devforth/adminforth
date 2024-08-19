@@ -1,7 +1,7 @@
 <template>
   <div>
     <span @click="(e)=>{e.stopPropagation()}" v-if="column.foreignResource">
-      <RouterLink v-if="record[column.name]" class="font-medium text-blue-600 dark:text-blue-500 hover:brightness-110"
+      <RouterLink v-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110"
         :to="{ name: 'resource-show', params: { resourceId: column.foreignResource.resourceId, primaryKey: record[column.name].pk } }">
         {{ record[column.name].label }}
       </RouterLink>
@@ -21,7 +21,7 @@
       {{ checkEmptyValues(formatDate(record[column.name]),route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'richtext'">
-      <div v-html="protectAgainstXSS(record[column.name])"></div>
+      <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
@@ -55,7 +55,11 @@ const props = defineProps({
 });
 
 function protectAgainstXSS(value) {
-  return sanitizeHtml(value);
+  return sanitizeHtml(value, {
+    allowedAttributes: {
+    'li': [ 'data-list' ],
+    } 
+  });
 }
 
 
@@ -64,3 +68,21 @@ function formatDate(date) {
   return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD HH:mm:ss');
 }
 </script>
+
+<style lang="scss">
+
+.allow-lists {
+  ol {
+    list-style-type: decimal;
+    padding-left: 1.5em;
+
+    li[data-list="bullet"] {
+      list-style-type: disc;
+    }
+    li[data-list="ordered"] {
+      list-style-type: decimal;
+    }
+  }
+
+} 
+</style>

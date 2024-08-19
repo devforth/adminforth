@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted, watch } from "vue";
+import { onMounted, ref, onUnmounted, watch, type Ref } from "vue";
 import { callAdminForthApi } from '@/utils';
 import { AdminForthColumn } from '@/types/AdminForthConfig';
 import AsyncQueue from './async-queue';
@@ -32,10 +32,11 @@ function dbg(title: string,...args: any[]) {
   console.log(title, ...args.map(a =>JSON.stringify(a, null, 1))); 
 }
 
-const BlockEmbed = Quill.import('blots/block/embed');
+// blots/embed: Represents inline embed elements, like images or videos that can be inserted into the text flow.
+const Embed = Quill.import('blots/embed');
 
 // @ts-ignore
-class CompleteBlot extends BlockEmbed {
+class CompleteBlot extends Embed {
   static blotName = 'complete';
   static tagName = 'span';
 
@@ -83,9 +84,33 @@ onMounted(() => {
 
   quill = new Quill(editor.value as HTMLElement, {
     theme: "snow",
-    placeholder: props.placeholder || 'Type here...',
+    placeholder: 'Type here...',
     // formats : ['complete'],
     modules: {
+      toolbar: props.meta.toolbar || [
+        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+        ['blockquote', 'code-block', 'link'],
+        // [
+        //   // 'image', 
+        //   // 'video', 
+        //   // 'formula'
+        // ],
+
+        [{ 'header': 2 }, { 'header': 3 }],               // custom button values
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+        // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+        // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+        // [{ 'direction': 'rtl' }],                         // text direction
+
+        // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+        // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+        // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+        // [{ 'font': [] }],
+        [{ 'align': [] }],
+
+        ['clean']                                         // remove formatting button
+      ],
       keyboard: {
         bindings: {
           tab: {
@@ -150,7 +175,7 @@ async function emitTextUpdate() {
   await (new Promise((resolve) => setTimeout(resolve, 0)));
 
   dbg('⬆️ emit value suggestion-input', html);
-  emit('update:modelValue', html);
+  emit('update:value', html);
 }
 
 // Auto-Completion functions
@@ -240,6 +265,10 @@ function deleteCompleteEmbed() {
 }
 
 function approveCompletion(type: 'all' | 'word') { 
+  if (!props.meta.shouldComplete) {
+    return;
+  }
+
   dbg('💨 approveCompletion')
 
   if (completion.value === null) {
@@ -250,6 +279,8 @@ function approveCompletion(type: 'all' | 'word') {
 
   let shouldComplete = false;
   if (type === 'all') {
+    dbg(`👇 insert all at ${cursorPosition.index}, ${completion.value.join('')}`);
+    deleteCompleteEmbed();
     quill.insertText(cursorPosition.index, completion.value.join(''), 'silent');
     shouldComplete = true;
   } else {
@@ -274,8 +305,10 @@ function approveCompletion(type: 'all' | 'word') {
 }
 
 async function startCompletion() {
+  if (!props.meta.shouldComplete) {
+    return;
+  }
   completion.value = null;
-  // return;
   deleteCompleteEmbed();
 
   if (tmt) {
@@ -305,18 +338,29 @@ async function startCompletion() {
       return;
     }
 
-    // deleteCompleteEmbed();
-    // insert on +1 to insert after \n
-    quill.insertEmbed(cursorPosition.index + 1, 'complete', { text: completionAnswer.join('') }, 'silent');
+    quill.insertEmbed(cursorPosition.index, 'complete', { text: completionAnswer.join('') }, 'silent');
 
-    dbg('👇 set pos', cursorPosition.index, cursorPosition.length)
-    quill.setSelection(cursorPosition.index, cursorPosition.length, 'silent');
+    // dbg('👇 set pos', cursorPosition.index, cursorPosition.length)
+    // quill.setSelection(cursorPosition.index, cursorPosition.length, 'silent');
 
     completion.value = completionAnswer;
 
     dbg('👇 completion finished', quill.getContents());
 
-  }, props.debounceTime || 300);
+  }, props.meta.debounceTime || 300);
+}
+
+function removeCompletionOnBlur() {
+  if (lastText?.trim().length === 0) {
+    completion.value = null;
+    const d = quill.getContents();
+    const i = d.ops.findIndex((op: any) => op.insert.complete);
+    if (i !== -1) {
+      d.ops.splice(i, 1);
+      quill.setContents(d, 'silent');
+      dbg('🧹 Cleaned completion from ops to make ph visible');
+    }
+  }
 }
 
 </script>
@@ -349,28 +393,13 @@ async function startCompletion() {
     }
   }
 
-  p:has(+ [completer]) br {
-    display: none;
-  }
-  p:has(+ [completer]) {
-    // background: rgb(255 227 227);  // debug
-    display: inline;
-  }
 
   .ql-editor:not(:focus) [completer] {
     display: none;
   }
 
   .ql-editor [completer] {
-    // important to keep pointer-events non none for cursor position on completer click
-
-    // text is not selectable
-    user-select: none;
     color: gray;
-
-    // if inline or inline used then user-select: none brakes triple click
-    display: contents;
-
     font-style: italic;
   }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-default">
     <div 
-      class="relative overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl  rounded-default"
+      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl  rounded-default"
     >
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">

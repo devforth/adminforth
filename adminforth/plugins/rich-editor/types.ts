@@ -20,10 +20,37 @@ export interface PluginOptions {
    */
   htmlFieldName: string;
 
+
+  /**
+   * Quill toolbar setting, full toolbar:
+   * 
+   * ```
+   * [
+   *     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+   *     ['blockquote', 'code-block', 'link'],
+   *     // [ 'image', 'video', 'formula' ],
+   *
+   *     [{ 'header': 2 }, { 'header': 3 }],               // custom button values
+   *     [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+   *     // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+   *     // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+   *     // [{ 'direction': 'rtl' }],                         // text direction
+   *     // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+   *     // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+   *     // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+   *     // [{ 'font': [] }],
+   *     [{ 'align': [] }],
+   *
+   *     ['clean']  
+   * ]  
+   *```
+   */
+  toolbar?: any[];
+
   /**
    * The completion section is used to define the completion provider and its parameters.
    */
-  completion: {
+  completion?: {
     /**
      * The provider is the name of the plugin that will be used to provide completions.
      */
@@ -47,59 +74,66 @@ export interface PluginOptions {
       model?: string;
     }
 
+    /**
+     * Expert settings
+     */
+    expert?: {
+        /**
+         * Number of tokens to generate. Default is 50. 1 token ~= ¾ words 
+         */
+        maxTokens?: number;
+
+        /**
+         * Temperature (0-1). Lower is more deterministic, higher is more unpredicted creative. Default is 0.7.
+         */
+        temperature?: number;
+
+        /**
+         * Maximum number of last characters which will be used for completion for target field. Default is 500.
+         * Higher value will give better context but will cost more. 
+         */
+        promptInputLimit?: number;
+
+        /**
+         * Time in ms to wait after user stops typing before sending request to completion provider. Default is 300 ms.
+         */
+        debounceTime?: number;
+
+        /**
+         * Stop completion on these characters. Default is ['.']
+         */
+        stop?: string[];
+
+        /**
+         * When completion is made, this plugin passes non-empty fields of the record to the LLM model for record context understanding.
+         */
+        recordContext?: {
+          /**
+           * Using this field you can limit number of fields passed to the model. 
+           * Default is 5. 
+           * Completion field is not included in this limit.
+           * Set to 0 to disable context passing at all.
+           * If count of fields exceeds this number, longest fields will be selected.
+           * If some of values will exceed maxFieldLength, it will be smartly truncated by splitting ito splitParts, taking their 
+           * starting substring and joining back with '...'.
+           */
+          maxFields?: number;
+
+          /**
+           * Limit of input field value. Default is 300. If field is longer, it will be truncated.
+           */
+          maxFieldLength?: number;
+
+          /**
+           * How many parts to split field value if it exceeds maxFieldLength. Default is 5.
+           */
+          splitParts?: number;
+
+        }
+      }
+
   }
 
-  /**
-   * Expert settings
-   */
-  expert?: {
-    /**
-     * Number of tokens to generate. Default is 50. 1 token ~= ¾ words 
-     */
-    maxTokens?: number;
-
-    /**
-     * Temperature (0-1). Lower is more deterministic, higher is more unpredicted creative. Default is 0.7.
-     */
-    temperature?: number;
-
-    /**
-     * Maximum number of last characters which will be used for completion for target field. Default is 500.
-     * Higher value will give better context but will cost more. 
-     */
-    promptInputLimit?: number;
-
-    /**
-     * Time in ms to wait after user stops typing before sending request to completion provider. Default is 300 ms.
-     */
-    debounceTime: number;
-
-    /**
-     * When completion is made, this plugin passes non-empty fields of the record to the LLM model for record context understanding.
-     */
-    recordContext?: {
-      /**
-       * Using this field you can limit number of fields passed to the model. 
-       * Default is 5. 
-       * Completion field is not included in this limit.
-       * Set to 0 to disable context passing at all.
-       * If count of fields exceeds this number, longest fields will be selected.
-       * If some of values will exceed maxFieldLength, it will be smartly truncated by splitting ito splitParts, taking their 
-       * starting substring and joining back with '...'.
-       */
-      maxFields?: number;
-
-      /**
-       * Limit of input field value. Default is 300. If field is longer, it will be truncated.
-       */
-      maxFieldLength?: number;
-
-      /**
-       * How many parts to split field value if it exceeds maxFieldLength. Default is 5.
-       */
-      splitParts?: number;
-
-    }
-  }
+ 
 }
 

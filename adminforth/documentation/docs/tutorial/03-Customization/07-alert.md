@@ -55,3 +55,28 @@ Here is how alert looks:
 
 And here is how confirmation looks:
 ![alt text](<Alerts and confirmations2.png>)
+
+## Announcement
+
+
+You can notify users of important information by displaying an announcement badge in side bar:
+
+```ts title="/index.ts"
+
+  customization: {
+//diff-add
+    announcementBadge: (adminUser: AdminUser) => {
+//diff-add
+      return { 
+//diff-add
+        html: '⭐ <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!',
+//diff-add
+        closable: true,
+//diff-add
+        title: 'Support us for free',
+//diff-add
+      }
+//diff-add
+    }
+  },
+```

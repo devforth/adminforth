@@ -21,7 +21,7 @@
     <button
       v-if="isChanged"
       type="button"
-      class="flex items-center p-0.5 ml-auto px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="flex items-center p-0.5 ml-auto px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
       @click="clear">Clear
     </button>
 
@@ -130,23 +130,27 @@ function setSliderValues(start, end) {
     }
 
     &:deep(.vue-slider-dot-handle) {
-        background-color: #1c64f2;
+        // apply bg-blue-500 to the handle when active
+        @apply bg-lightPrimary;
         border: none;
         box-shadow: none;
     }
 
     &:deep(.vue-slider-dot-handle:hover) {
-        background-color: #1c64f2;
+        @apply bg-lightPrimary;
+        filter: brightness(1.1);
         border: none;
         box-shadow: none;
     }
 
     &:deep(.vue-slider-process) {
-        background-color: rgb(225 239 254);
+      @apply bg-lightPrimaryOpacity;
+
     }
 
     &:deep(.vue-slider-process:hover) {
-        background-color: rgb(225 239 254);
+      filter: brightness(1.1);
+      @apply bg-lightPrimaryOpacity;
     }
 }
 </style>

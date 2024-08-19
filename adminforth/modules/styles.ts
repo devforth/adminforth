@@ -4,12 +4,18 @@ export const styles = () => ({
   colors: {
     lightHtml: "#FFFFFF", // main background
 
+    lightPrimary: "#1a56db", // primary color
+    lightPrimaryContrast: "alias:lightPrimary inverse", // primary color contrast
+    lightPrimaryOpacity: "alias:lightPrimary opacity:0.05", // primary color opacity
+
     lightNavbar: "#FFFFFF", // navbar background
     lightNavbarBorder: "rgb(229 231 235)", // border
     lightNavbarText: "#111827", // navbar text
     lightNavbarTextHover: "alias:lightNavbarText darken", // navbar text hover
     lightNavbarTextActive: "alias:lightNavbarText darken", // navbar text active
     lightNavbarIcons: "alias:lightNavbarText opacity:0.7", // navbar icons
+    lightAnnouncementText: "alias:lightPrimaryContrast", // announcement text
+    lightAnnouncementBG: "alias:lightPrimary", // announcement
 
     lightSidebar: "#f9fafb", // sidebar background
     lightSidebarBorder: "alias:lightSidebarText opacity:0.05", // sidebar right border
@@ -59,12 +65,18 @@ export const styles = () => ({
     // colors for dark theme
     darkHtml: "#111827",
 
+    darkPrimary: "#1c64f2", // primary color
+    darkPrimaryContrast: "alias:darkPrimary inverse", // primary color contrast
+    darkPrimaryOpacity: "alias:darkPrimary opacity:0.1", // primary color opacity
+
     darkNavbar: "#111827", 
     darkNavbarBorder: "#e5e7eb",
     darkNavbarText: "#9ca3af",
     darkNavbarTextHover: "alias:darkNavbarText lighten",
     darkNavbarTextActive: "alias:darkNavbarText lighten",
     darkNavbarIcons: "alias:darkNavbarText opacity:0.7",
+    darkAnnouncementText: "alias:darkPrimaryContrast",
+    darkAnnouncementBG: "alias:darkPrimary",
 
     darkSidebar: "#1f2937", 
     darkSidebarBorder: "alias:darkSidebarText opacity:0.3", 

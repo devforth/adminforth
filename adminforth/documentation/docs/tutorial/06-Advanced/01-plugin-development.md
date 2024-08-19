@@ -44,7 +44,7 @@ Edit `package.json`:
 //diff-remove
     "test": "echo \"Error: no test specified\" && exit 1",
 //diff-add
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch"
   },
 }
 ```
