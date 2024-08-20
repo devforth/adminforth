@@ -59,8 +59,8 @@ if (!tableExists) {
 
 }
 
-const tableExists2 = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_log';`).get();
-if (!tableExists2) {
+const tableExistsAuditLog = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_log';`).get();
+if (!tableExistsAuditLog) {
   await db.prepare(`
     CREATE TABLE audit_log (
       id uuid NOT NULL,  -- identifier of applied change record 
@@ -74,6 +74,18 @@ if (!tableExists2) {
     );`).run();
 }
 
+const tableExistsDescriptionImage = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='description_image';`).get();
+if (!tableExistsDescriptionImage) {
+  await db.prepare(`
+    CREATE TABLE description_image (
+      id uuid NOT NULL,  -- identifier of applied change record 
+      created_at timestamp without time zone, -- timestamp of applied change
+      resource_id varchar(255), -- identifier of resource where change were applied
+      record_id varchar, -- identifier of record that been changed
+      image_path varchar(255), -- path to image
+      PRIMARY KEY(id)
+    );`).run();
+}
 
 // check column apartment_image in aparts table
 const columns = await db.prepare('PRAGMA table_info(apartments);').all();
@@ -117,6 +129,7 @@ const admin = new AdminForth({
           customLayout: true,
       }}
     }],
+   
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: '',
     datesFormat: 'D MMM YY HH:mm:ss',
@@ -152,7 +165,7 @@ const admin = new AdminForth({
 <svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
 <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
         closable: true,
-        title: 'Support us for free',
+        // title: 'Support us for free',
       }
     }
    },
@@ -178,21 +191,6 @@ const admin = new AdminForth({
     }
   ],
   resources: [
-
-
-    // CREATE TABLE demo.clicks
-    // (
-    //     `clickid` UUID,
-    //     `element` String,
-    //     `clientX` Int32,
-    //     `created_at` DateTime,
-    //     `aggressiveness` Float32
-    // )
-    // ENGINE = MergeTree
-    // ORDER BY clickid
-    // SETTINGS index_granularity = 8192
-    // add field click_price decimal:
-    // ALTER TABLE demo.clicks ADD COLUMN click_price Decimal(10, 2) AFTER aggressiveness 
     {
       dataSource: 'ch', table: 'clicks',
       columns: [
@@ -435,7 +433,14 @@ const admin = new AdminForth({
             expert: {
               debounceTime: 250,
             }
-          }
+          }, 
+          // requires to have table 'description_images' with upload plugin installed on attachment field
+          attachments: {
+            attachmentResource: 'description_images',
+            attachmentFieldName: 'image_path',
+            attachmentRecordIdFieldName: 'record_id',
+            attachmentResourceIdFieldName: 'resource_id',
+          },
         }),
       ],
 
@@ -598,6 +603,38 @@ const admin = new AdminForth({
         // },
         
       }
+    },
+    {
+      dataSource: 'maindb', 
+      table: 'description_image',
+      resourceId: 'description_images',
+      label: 'Description images',
+      columns: [
+        { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
+        { name: 'created_at', required: false, fillOnCreate: ({initialRecord}: any) => (new Date()).toISOString() },
+        { name: 'resource_id', required: false },
+        { name: 'record_id', required: false },
+        { name: 'image_path', required: false },
+      ],
+      plugins: [
+        new UploadPlugin({
+          pathColumnName: 'image_path',
+          s3Bucket: 'tmpbucket-adminforth',
+          s3Region: 'eu-central-1',
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
+          maxFileSize: 1024 * 1024 * 20, // 5MB
+          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          // s3ACL: 'public-read', // ACL which will be set to uploaded file
+          s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+    
+          preview: {
+            // Used to display preview (if it is image) in list and show views
+            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+            showInList: false,
+          }
+        }),
+      ],
     },
     {
         dataSource: 'db2', table: 'games',
