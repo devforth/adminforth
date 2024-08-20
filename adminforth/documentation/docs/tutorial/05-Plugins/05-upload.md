@@ -122,8 +122,11 @@ export const admin = new AdminForth({
   ...
 
 });
+```
 
+Add a column for storing the path to the file in the database, add this statement to the end of `initDataBase` function:
 
+```ts title="./index.ts"
 async function initDataBase() {
   ...
 //diff-add
