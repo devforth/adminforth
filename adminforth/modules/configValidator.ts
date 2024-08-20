@@ -162,7 +162,8 @@ export default class ConfigValidator implements IConfigValidator {
 
 
         res.resourceId = res.resourceId || res.table;
-        res.label = res.label || res.table.charAt(0).toUpperCase() + res.table.slice(1);
+        // as fallback value, capitalize and then replace _ with space
+        res.label = res.label || res.resourceId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
         if (!res.dataSource) {
           errors.push(`Resource "${res.resourceId}" is missing dataSource`);
         }
