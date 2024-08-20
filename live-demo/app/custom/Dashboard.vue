@@ -22,18 +22,21 @@
           <div class="grid grid-cols-2 py-3">
             <dl>
               <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Listed price</dt>
-              <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">{{
-          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-            data.totalListedPrice,
-          ) }}
+              <dd 
+                class="leading-none text-xl font-bold text-green-500 dark:text-green-400"
+                v-if="data.totalListedPrice"
+              >{{ new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                  data.totalListedPrice,
+                ) }}
               </dd>
             </dl>
             <dl>
               <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Unlisted price</dt>
-              <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">{{
-          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-            data.totalUnlistedPrice,
-          ) }}
+              <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500"
+                v-if="data.totalUnlistedPrice"
+              >{{ new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                  data.totalUnlistedPrice,
+                ) }}
               </dd>
             </dl>
           </div>
