@@ -9,6 +9,7 @@ import UploadPlugin from '@adminforth/upload';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import RichEditorPlugin from '@adminforth/rich-editor';
 dotenv.config();
 
 try { fs.mkdirSync('db') } catch (e) {} 
@@ -165,6 +166,7 @@ export const admin = new AdminForth({
         },
         { 
           name: 'description',
+          type: AdminForthDataTypes.RICHTEXT,
           sortable: false,
           showIn: ['show', 'edit', 'create', 'filter'],
         },
@@ -218,21 +220,14 @@ export const admin = new AdminForth({
         }
       ],
       plugins: [
+        new RichEditorPlugin({
+          htmlFieldName: 'description',
+        }),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'title',
         }),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          fieldName: 'description',
-          model: 'gpt-4o',
-          // expert: {
-            // maxTokens: 50, // token limit to generate for each completion. 50 is default
-            // temperature: 0.7, // Model temperature, 0.7
-            // promptInputLimit: 500, // Limit in characters of edited field to be passed to Model. 500 is default value
-            // debounceTime: 300, // Debounce time in milliseconds. 300 is default value
-          // }
-        }),
+        
         new UploadPlugin({
           pathColumnName: 'apartment_image',
           s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
