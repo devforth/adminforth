@@ -53,7 +53,7 @@ Now instantiate the plugin and add it to the configuration:
 
 Now you can see Quill editor in the `description` field in the edit view:
 
-< screenshot >
+![alt text](image-2.png)
 
 
 
