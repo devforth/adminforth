@@ -371,7 +371,7 @@ const admin = new AdminForth({
         },
         {
           name: 'user_id',
-          showIn: [ 'filter', 'show', 'edit'],
+          showIn: [ 'filter', 'show', 'edit', 'list'],
           foreignResource: {
             resourceId: 'users',
             hooks: {

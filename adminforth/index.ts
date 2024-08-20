@@ -86,7 +86,6 @@ class AdminForth implements IAdminForth {
       }
     }
     allPluginInstances.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
-    console.log('🔌🔌🔌 Activating plugins', allPluginInstances.map(({pi}) => pi.activationOrder));
     allPluginInstances.forEach(
       ({pi: pluginInstance, resource}) => {
         pluginInstance.modifyResourceConfig(this, resource);

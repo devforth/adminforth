@@ -65,9 +65,9 @@ export const styles = () => ({
     // colors for dark theme
     darkHtml: "#111827",
 
-    darkPrimary: "#1c64f2", // primary color
+    darkPrimary: "rgb(130 172 255)", // primary color
     darkPrimaryContrast: "alias:darkPrimary inverse", // primary color contrast
-    darkPrimaryOpacity: "alias:darkPrimary opacity:0.1", // primary color opacity
+    darkPrimaryOpacity: "#212A40", // primary color opacity
 
     darkNavbar: "#111827", 
     darkNavbarBorder: "#e5e7eb",
@@ -96,7 +96,7 @@ export const styles = () => ({
     darkListTableHeading: "#334155", 
     darkListTableHeadingText: "#9ca3af",
     darkListTableText: "#9ca3af", 
-    darkListTableRowHover: "#4b5563",
+    darkListTableRowHover: "rgb(35 47 65)",
     darkListBreadcrumbsText: "#BBBBBB", 
     darkListBorder: "#444444", 
 

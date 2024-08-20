@@ -1,7 +1,7 @@
 <template>
   <div>
     <span @click="(e)=>{e.stopPropagation()}" v-if="column.foreignResource">
-      <RouterLink v-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110"
+      <RouterLink v-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
         :to="{ name: 'resource-show', params: { resourceId: column.foreignResource.resourceId, primaryKey: record[column.name].pk } }">
         {{ record[column.name].label }}
       </RouterLink>
