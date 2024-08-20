@@ -60,8 +60,9 @@ Now create plugin boilerplate in `index.ts`:
 
 ```ts title='./af-plugin-chatgpt/index.ts'
 
-import { AdminForthResourcePages, IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResourceColumn, AdminForthResource, AdminForthDataTypes  } from "adminforth";
-import { PluginOptions } from './types.js';
+import { AdminForthPlugin } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthResourcePages, AdminForthResourceColumn, AdminForthDataTypes, AdminForthResource } from "adminforth";
+import type { PluginOptions } from './types.js';
 
 
 export default class ChatGptPlugin extends AdminForthPlugin {
