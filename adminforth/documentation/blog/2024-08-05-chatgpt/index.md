@@ -24,11 +24,9 @@ It allows to:
 
 ## Want to try it out?
 
-First follow the instructions in the [Getting Started](https://adminforth.dev/docs/tutorial/gettingStarted) 
+Go to a [Live Demo](https://demo.adminforth.dev/resource/aparts/create) and start creating a new apartment record. Type in the `title` and `description` field and see how the plugin works.
 
-tutorial to create a new project.
-
-To install the plugin, follow the instructions in the [Chat-GPT plugin page](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt).
+If you want to try it out on your hello-wrold admin panel, then, first follow the instructions in the [Getting Started](https://adminforth.dev/docs/tutorial/gettingStarted) tutorial to create a new project. To install the plugin, then, follow the instructions in the [Chat-GPT plugin page](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt).
 
 
 ## Context matters, but with sane limit!
