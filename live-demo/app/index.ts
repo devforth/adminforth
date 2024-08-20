@@ -152,6 +152,7 @@ export const admin = new AdminForth({
           maxValue: 1000,
         },
         { 
+          label: 'Rooms number',
           name: 'number_of_rooms',
           allowMinMaxQuery: true,
           enum: [
