@@ -210,6 +210,7 @@ export const admin = new AdminForth({
         },
         {
           name: 'realtor_id',
+          label: 'Realtor',
           foreignResource: {
             resourceId: 'users',
           }
@@ -396,12 +397,6 @@ export const admin = new AdminForth({
 async function initDataBase() {
   db = betterSqlite3(DB_FILE);
 
-  const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-  const columnExists = columns.some((c) => c.name === 'apartment_image');
-  if (!columnExists) {
-    await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
-  }
-
   const auditTableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs';`).get();
   if (!auditTableExists) {
     await db.prepare(`
@@ -433,7 +428,7 @@ async function initDataBase() {
           created_at TIMESTAMP,
           realtor_id VARCHAR(255)
       );`).run();
-
+    
     await db.prepare(`
       CREATE TABLE users (
           id VARCHAR(255) PRIMARY KEY NOT NULL,
@@ -458,6 +453,13 @@ async function initDataBase() {
         )`).run();
     }
   }
+
+  const columns = await db.prepare('PRAGMA table_info(apartments);').all();
+  const columnExists = columns.some((c) => c.name === 'apartment_image');
+  if (!columnExists) {
+    await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
+  }
+    
 }
 
 
