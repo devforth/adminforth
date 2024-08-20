@@ -247,7 +247,7 @@ export const admin = new AdminForth({
         })
       ],
       options: {
-        listPageSize: 12,
+        listPageSize: 8,
         allowedActions:{
           edit: true,
           delete: true,
