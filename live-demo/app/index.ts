@@ -222,6 +222,16 @@ export const admin = new AdminForth({
       plugins: [
         new RichEditorPlugin({
           htmlFieldName: 'description',
+          completion: {
+            provider: 'openai-chat-gpt',
+            params: {
+              apiKey: process.env.OPENAI_API_KEY as string,
+              // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
+            },
+            expert: {
+              debounceTime: 250,
+            }
+          }
         }),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
