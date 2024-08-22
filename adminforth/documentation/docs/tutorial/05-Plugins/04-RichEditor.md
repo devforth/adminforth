@@ -30,6 +30,7 @@ Now instantiate the plugin and add it to the configuration:
     ...
     {
       name: 'description',
+//diff-add
       type: AdminForthDataTypes.RICHTEXT, // like plain AdminForthDataTypes.TEXT but renders HTML in show/list views
       ...
     }
