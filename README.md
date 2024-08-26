@@ -22,7 +22,7 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
 
-![AdminForth Chat-GPT preview](https://adminforth.dev/assets/images/demoChatGpt-cb045146add2758d6fb571efef680e80.gif)
+![dashboard_test2 (1)](https://github.com/user-attachments/assets/c42a889f-03fa-4934-8032-dc2a97938db6)
 
 # For developers
 
