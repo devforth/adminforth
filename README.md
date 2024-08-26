@@ -18,7 +18,7 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
-![AdminForth List pewview](https://adminforth.dev/assets/images/rpl-42d4f1eb05aa42bf95fea1462ea0fbcd.gif)
+![dashboard_size](https://github.com/user-attachments/assets/9aa716a2-79f5-464d-8cdd-f53f28684315)
 
 [Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
 
