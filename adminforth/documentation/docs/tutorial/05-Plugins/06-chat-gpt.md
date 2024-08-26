@@ -75,6 +75,7 @@ export const admin = new AdminForth({
 
 Here is how it looks:
 
-![Demo AdminForth Chat-GPT](./demoChatGpt.gif)
+!![alt text](dashboard_test2.gif)
+
 
 Check all plugin options in the [API reference](https://adminforth.dev/docs/api/plugins/chat-gpt/types/interfaces/PluginOptions).
