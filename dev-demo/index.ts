@@ -772,7 +772,7 @@ const admin = new AdminForth({
           label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
-          badge: (adminUser) => {
+          badge: async (adminUser) => {
             return '10'
           }
         },
