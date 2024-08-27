@@ -84,9 +84,15 @@
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
+                
                 <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
-                <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}</span>
+                <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
+
+                <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+                    fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">{{ item.badge }}</span>
+                </span>
+
                 <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                 </svg>
@@ -95,12 +101,12 @@
               <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
-                    <MenuLink :item="child" isChild="true" />
-                  </li>
+                      <MenuLink :item="child" isChild="true" />
+                    </li>
                 </template>
-              </ul> 
-            </li>
-            <li v-else>
+            </ul> 
+        </li>
+        <li v-else>
               <MenuLink :item="item" />
             </li>
           </template>
