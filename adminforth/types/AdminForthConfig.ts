@@ -469,6 +469,12 @@ export type AdminForthConfigMenuItem = {
      * You can use it to hide menu items depending on some user
      */
     visible?: (user: AdminUser) => boolean,
+
+    /**
+     * Optional callback which will be called before rendering the menu for each item.
+     * Result of callback if not null will be used as a small badge near the menu item.
+     */
+    badge?: string | ((user: AdminUser) => string),
   }
   
 

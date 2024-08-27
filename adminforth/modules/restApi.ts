@@ -182,7 +182,18 @@ export default class AdminForthRestAPI {
               throw new Error(`'visible' function of ${menuItem.label || menuItem.type }  must return boolean value`);
             }
             return toReturn;
-          }}
+          }
+        
+          
+        }
+
+        function processMenuItem(menuItem) {
+            if (menuItem.badge) {
+                if (typeof menuItem.badge === 'function') {
+                    menuItem.badge = menuItem.badge(adminUser);
+                }
+            }
+        }
         let newMenu = []
         for (let menuItem of this.adminforth.config.menu) {
           let newMenuItem = {...menuItem,}
@@ -200,10 +211,12 @@ export default class AdminForthRestAPI {
                   continue
                 }
               }
+              processMenuItem(newChild)
               newChildren.push(newChild)
             }
             newMenuItem = {...newMenuItem, children: newChildren}
           }
+          processMenuItem(newMenuItem)
           newMenu.push(newMenuItem)
         }
 
