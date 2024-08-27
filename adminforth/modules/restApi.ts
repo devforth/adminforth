@@ -187,10 +187,10 @@ export default class AdminForthRestAPI {
           
         }
 
-        function processMenuItem(menuItem) {
+        async function processMenuItem(menuItem) {
             if (menuItem.badge) {
                 if (typeof menuItem.badge === 'function') {
-                    menuItem.badge = menuItem.badge(adminUser);
+                    menuItem.badge = await menuItem.badge(adminUser);
                 }
             }
         }
