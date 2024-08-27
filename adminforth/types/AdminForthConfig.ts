@@ -474,7 +474,7 @@ export type AdminForthConfigMenuItem = {
      * Optional callback which will be called before rendering the menu for each item.
      * Result of callback if not null will be used as a small badge near the menu item.
      */
-    badge?: string | ((user: AdminUser) => string),
+    badge?: string | ((user: AdminUser) => Promise<string>),
   }
   
 

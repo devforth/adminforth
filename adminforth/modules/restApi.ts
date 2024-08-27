@@ -211,12 +211,12 @@ export default class AdminForthRestAPI {
                   continue
                 }
               }
-              processMenuItem(newChild)
+              await processMenuItem(newChild)
               newChildren.push(newChild)
             }
             newMenuItem = {...newMenuItem, children: newChildren}
           }
-          processMenuItem(newMenuItem)
+          await processMenuItem(newMenuItem)
           newMenu.push(newMenuItem)
         }
 
