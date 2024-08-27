@@ -29,7 +29,15 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 ```
 cd adminforth
 npm ci
+npm run build
+npm link
 
-cd ../demo
+cd plugins/audit-log
+npm ci
+# repeat for each plugin
+cd plugins/chat-gpt
+npm ci
+
+cd dev-demo
 npm ci && npm start
 ```

@@ -617,23 +617,25 @@ const admin = new AdminForth({
         { name: 'image_path', required: false },
       ],
       plugins: [
-        new UploadPlugin({
-          pathColumnName: 'image_path',
-          s3Bucket: 'tmpbucket-adminforth',
-          s3Region: 'eu-central-1',
-          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
-          maxFileSize: 1024 * 1024 * 20, // 5MB
-          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
-    
-          preview: {
-            // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-            showInList: false,
-          }
-        }),
+        ...(process.env.AWS_ACCESS_KEY_ID ? [
+            new UploadPlugin({
+            pathColumnName: 'image_path',
+            s3Bucket: 'tmpbucket-adminforth',
+            s3Region: 'eu-central-1',
+            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+        
+            preview: {
+                // Used to display preview (if it is image) in list and show views
+                // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+                showInList: false,
+            }
+            }),
+        ]: []),
       ],
     },
     {
@@ -770,6 +772,9 @@ const admin = new AdminForth({
           label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
+          badge: (adminUser) => {
+            return '10'
+          }
         },
         // {
         //   label: 'Games',
