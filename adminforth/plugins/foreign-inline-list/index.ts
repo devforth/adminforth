@@ -8,7 +8,7 @@ import type {
 
 import { AdminForthPlugin, AdminForthResourcePages } from "adminforth";
 import { PluginOptions } from "./types.js";
-
+import { interpretResource, ActionCheckSource } from "adminforth";
 
 export default class ForeignInlineListPlugin extends AdminForthPlugin {
   foreignResource: AdminForthResource;
@@ -29,19 +29,29 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_resource`,
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const resource = this.adminforth.config.resources.find((res) => this.options.foreignResourceId === res.resourceId);
         if (!resource) {
           return { error: `Resource ${this.options.foreignResourceId} not found` };
         }
         // exclude "plugins" key
         const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
+        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
+
         
         if (this.options.modifyTableResourceConfig) {
           this.options.modifyTableResourceConfig(resourceCopy);
         }
-        return { resource: resourceCopy };
-      },
+        return { 
+          resource: { 
+            ...resourceCopy,
+            options: {
+              ...resourceCopy.options,
+              allowedActions,
+            },
+          }
+        };
+      }
     });
 
   }

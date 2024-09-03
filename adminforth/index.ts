@@ -18,11 +18,12 @@ import {
 } from './types/AdminForthConfig.js';
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI from './modules/restApi.js';
+import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
 
 // exports
 export * from './types/AdminForthConfig.js'; 
+export { interpretResource };
 export { AdminForthPlugin };
 
 
