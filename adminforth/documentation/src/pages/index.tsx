@@ -79,7 +79,7 @@ function HomepageHeader() {
       <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
         <div className="container">
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            {siteConfig.title}
+            Create Admin Panels faster on Node and Vue with AdminForth Framework
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
           <div className={styles.buttons}>
