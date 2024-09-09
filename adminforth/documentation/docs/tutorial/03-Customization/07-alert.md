@@ -80,3 +80,6 @@ You can notify users of important information by displaying an announcement badg
     }
   },
 ```
+
+Here's what the announcement will look like:
+![alt text](image-11.png)
