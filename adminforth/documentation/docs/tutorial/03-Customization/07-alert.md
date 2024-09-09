@@ -51,7 +51,7 @@ menu: [
 }
 ```
 Here is how alert looks:
-![alt text](<Alerts and confirmations1.png>)
+![alt text](image-13.png)
 
 And here is how confirmation looks:
 ![alt text](<Alerts and confirmations2.png>)
