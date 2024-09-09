@@ -21,6 +21,32 @@ import { ADMINFORTH_VERSION, listify } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 
+
+export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
+  // if (process.env.HEAVY_DEBUG) {
+  //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
+  // }
+  const allowedActions = {};
+
+  await Promise.all(
+    Object.entries(resource.options?.allowedActions || {}).map(
+      async ([key, value]: [string, AllowedActionValue]) => {
+        if (process.env.HEAVY_DEBUG) {
+          console.log('🪲checking for allowed call', key, 'value:', value, 'typeof', typeof value);
+        }
+      
+        // if callable then call
+        if (typeof value === 'function') {
+          allowedActions[key] = await value({ adminUser, resource, meta, source });
+        } else {
+          allowedActions[key] = value;
+        }
+      })
+  );
+
+  return { allowedActions };
+}
+
 export default class AdminForthRestAPI {
 
   adminforth: IAdminForth;
@@ -246,30 +272,7 @@ export default class AdminForthRestAPI {
       },
     });
 
-    async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
-      // if (process.env.HEAVY_DEBUG) {
-      //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
-      // }
-      const allowedActions = {};
-
-      await Promise.all(
-        Object.entries(resource.options?.allowedActions || {}).map(
-          async ([key, value]: [string, AllowedActionValue]) => {
-            if (process.env.HEAVY_DEBUG) {
-              console.log('🪲checking for allowed call', key, 'value:', value, 'typeof', typeof value);
-            }
-          
-            // if callable then call
-            if (typeof value === 'function') {
-              allowedActions[key] = await value({ adminUser, resource, meta, source });
-            } else {
-              allowedActions[key] = value;
-            }
-          })
-      );
-
-      return { allowedActions };
-    }
+    
 
     function checkAccess(action: AllowedActionsEnum, allowedActions: AllowedActions): { allowed: boolean, error?: string } {
       const allowed = (allowedActions[action] as boolean | string | undefined);
