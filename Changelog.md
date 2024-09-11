@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Data API using admin.resource(xxx).get/list/create/update/delete
 
 ### Improved
-- Use fuse search to suggest developers right names in case of typos e.g. when user specified non-existing resourceId
+- Use fuse search to suggest developers right names during config validations in case of typos in config e.g. when user specified non-existing resourceId
 
 ### Breaking changes
 
