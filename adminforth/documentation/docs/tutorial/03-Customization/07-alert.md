@@ -12,25 +12,20 @@ Create a Vue component in the custom directory of your project, e.g. Alerts.vue:
 
 ```html title="./custom/Alerts.vue"
 <template>
-    <div class="buttons">
-        <button @click="callAlert" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Call alert</button>
+    <div class="ml-3 mt-16">
+        <button @click="callAlert('Example success alert')" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Call alert</button>
         <button @click="callConfirmation" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Confirmation</button>
+        <button @click="callAlert('Example danger alert','warning')" class="focus:outline-none text-white bg-orange-500 hover:bg-orange-400 focus:ring-4 focus:ring-orange-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-900">Danger alert</button>
     </div>
 </template>
 <script setup>
-function callAlert(){
-    window.adminforth.alert({message: 'Example alert', variant: 'success'})
+function callAlert(message,variant='success'){
+    window.adminforth.alert({message: message, variant: variant})
 };
 async function callConfirmation(){
     const isConfirmed = await window.adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
 }
 </script>
-<style>
-    .buttons {
-        margin-left: 30px;
-        margin-top: 80px;
-    }
-</style>
 ```
 
 Now let's add this page to the AdminForth menu:
@@ -51,7 +46,7 @@ menu: [
 }
 ```
 Here is how alert looks:
-![alt text](<Alerts and confirmations1.png>)
+![alt text](image-12.png)
 
 And here is how confirmation looks:
 ![alt text](<Alerts and confirmations2.png>)
