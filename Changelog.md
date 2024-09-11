@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
-- Removed `rootUser` from everywhere, now dataApi is used to create the first user. 
-Now you need to create a first user via dataApi,:
+- Removed `rootUser` from everywhere. 
+Now you need to create a first user via dataApi:
 
 ```js
   admin.discoverDatabases().then(async () => {
