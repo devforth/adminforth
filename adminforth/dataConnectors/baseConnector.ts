@@ -1,4 +1,5 @@
-import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn } from "../types/AdminForthConfig.js";
+import { get } from "http";
+import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn, IAdminForthSort, IAdminForthFilter } from "../types/AdminForthConfig.js";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -17,19 +18,21 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       offset: 0,
       sort: [], 
       filters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }],
-      getTotals: false
     });
-    return data.data.length > 0 ? data.data[0] : null;
+    return data.length > 0 ? data[0] : null;
   }
 
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: { 
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
     resource: AdminForthResource, 
     limit: number, 
     offset: number, 
-    sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
-    getTotals?: boolean
-  }): Promise<{ data: any[], total: number }> {
+    sort: IAdminForthSort[], 
+    filters: IAdminForthFilter[],
+  }): Promise<any[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string; operator: AdminForthFilterOperators; value: any; }[]; }): Promise<number> {
     throw new Error('Method not implemented.');
   }
 
@@ -67,17 +70,18 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource; recordId: string; }): Promise<void> {
+  deleteRecord({ resource, recordId }: { resource: AdminForthResource; recordId: string; }): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
 
-  async getData({ resource, limit, offset, sort, filters }: { 
+  async getData({ resource, limit, offset, sort, filters, getTotals }: { 
     resource: AdminForthResource, 
     limit: number, 
     offset: number, 
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    getTotals: boolean,
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
       filters.map((f) => {
@@ -89,15 +93,23 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       });
     }
 
-    const d = await this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals: true });
+    const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters })];
+    if (getTotals) {
+      promises.push(this.getCount({ resource, filters }));
+    } else {
+      promises.push(Promise.resolve(undefined));
+    }
+
+    const [data, total] = await Promise.all(promises);
+
     // call getFieldValue for each field
-    d.data.map((record) => {
+    data.map((record) => {
       for (const col of resource.dataSourceColumns) {
         record[col.name] = this.getFieldValue(col, record[col.name]);
       }
     });
 
-    return d;
+    return { data, total };
   }
 
   async getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource; columns: AdminForthResourceColumn[]; }): Promise<{ [key: string]: { min: any; max: any; }; }> {
