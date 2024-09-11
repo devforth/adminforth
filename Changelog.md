@@ -84,6 +84,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - moved "postinstall" hook in plugins to "prepare" to not execute "npm link" when plugin installed as dependency
 
 
+## [1.3.1] - 2024-09-14
+
+### Added
+
+- Data API using admin.resource(xxx).get/list/create/update/delete
+
+### Improved
+- Use fuse search to suggest developers right names in case of typos e.g. when user specified non-existing resourceId
+
+### Breaking changes
+
+- Removed `rootUser` from everywhere, now dataApi is used to create the first user. 
+Now you need to create a first user via dataApi,:
+
+```js
+  admin.discoverDatabases().then(async () => {
+    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('users').create({
+        email: 'adminforth',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+  });
+```
+
+## [1.2.99] - 2024-09-14
+
+### Fixed
+
+- Sorting in Mongo datasource connector
+
+### Improved
+
+- Items count request in table and datasource interface moved to separate method
+This allows to run it in parallel with a list request to speed up the response time
 
 ## [1.2.52] - 2024-08-09
 

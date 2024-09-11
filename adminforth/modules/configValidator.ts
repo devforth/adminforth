@@ -10,7 +10,7 @@ import {
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName } from './utils.js';
+import { guessLabelFromName, suggestIfTypo } from './utils.js';
 
 import crypto from 'crypto';
 
@@ -51,17 +51,6 @@ export default class ConfigValidator implements IConfigValidator {
   validateConfig() {
     const errors = [];
 
-    if (this.config.rootUser) {
-      if (!this.config.rootUser.username) {
-        throw new Error('rootUser.username is required');
-      }
-      if (!this.config.rootUser.password) {
-        throw new Error('rootUser.password is required');
-      }
-
-      console.log('\n ☝️☝️☝️ [INSECURE ALERT] config.rootUser is set, please create a new user to login in backoffice and remove config.rootUser from config ASAP when you are in production\n');
-    }
-
     if (!this.config.customization.customComponentsDir) {
       this.config.customization.customComponentsDir = './custom';
     }
@@ -74,8 +63,13 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (this.config.auth) {
-      if (!this.config.auth.resourceId) {
-        throw new Error('No config.auth.resourceId defined');
+      // TODO: remove in future releases
+      if (!this.config.auth.usersResourceId && this.config.auth.resourceId) {
+        this.config.auth.usersResourceId = this.config.auth.resourceId;
+      }
+
+      if (!this.config.auth.usersResourceId) {
+        throw new Error('No config.auth.usersResourceId defined');
       }
       if (!this.config.auth.passwordHashField) {
         throw new Error('No config.auth.passwordHashField defined');
@@ -86,9 +80,10 @@ export default class ConfigValidator implements IConfigValidator {
       if (this.config.auth.loginBackgroundImage) {
         errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
       }
-      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
       if (!userResource) {
-        throw new Error(`Resource with id "${this.config.auth.resourceId}" not found`);
+        const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId || res.table), this.config.auth.usersResourceId);
+        throw new Error(`Resource with id "${this.config.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
       }
 
       if (!this.config.auth.beforeLoginConfirmation) {

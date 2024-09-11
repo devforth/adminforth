@@ -3,7 +3,7 @@ import type {
   AdminForthResource, 
   IAdminForth,
   IHttpServer,
-  
+  suggestIfTypo,
 } from "adminforth";
 
 import { AdminForthPlugin, AdminForthResourcePages } from "adminforth";
@@ -63,7 +63,8 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
     // get resource with foreignResourceId
     this.foreignResource = adminforth.config.resources.find((resource) => resource.resourceId === this.options.foreignResourceId);
     if (!this.foreignResource) {
-      throw new Error(`ForeignInlineListPlugin: Resource with ID "${this.options.foreignResourceId}" not found`);
+      const similar = suggestIfTypo(adminforth.config.resources.map((res) => res.resourceId), this.options.foreignResourceId);
+      throw new Error(`ForeignInlineListPlugin: Resource with ID "${this.options.foreignResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
     }
     resourceConfig.columns.push({
       name: `foreignInlineList_${this.foreignResource.resourceId}`,

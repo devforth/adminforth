@@ -1,40 +1,15 @@
 import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAdminForth } from '../types/AdminForthConfig.js';
 
 
-// export interface IOperationalResource {
-//   get: (filters: IAdminForthFilter | IAdminForthFilter[]) => Promise<any[]>;
-
-//   list: (filters: IAdminForthFilter | IAdminForthFilter[], limit: number, offset: number, sort: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
-
-//   count: (filters: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
-
-//   create: (record: any) => Promise<any>;
-
-//   update: (primaryKey: any, record: any) => Promise<any>;
-
-//   delete: (primaryKey: any) => Promise<boolean>;
-
-//   deleteMany: (primaryKeys: any[]) => Promise<boolean>;
-// }
-
-
-// async getData({ resource, limit, offset, sort, filters }: { 
-//   resource: AdminForthResource, 
-//   limit: number, 
-//   offset: number, 
-//   sort: { field: string, direction: AdminForthSortDirections }[], 
-//   filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
-// }): Promise<{ data: any[], total: number }> {
-
 function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[]): IAdminForthFilter[] {
-  return (typeof filter === 'object' ? [filter] : filter) as IAdminForthFilter[];
+  return (Array.isArray(filter) ? filter : [filter]) as IAdminForthFilter[];
 }
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
-  return (typeof sort === 'object' ? [sort] : sort) as IAdminForthSort[];
+  return (Array.isArray(sort) ? sort : [sort]) as IAdminForthSort[];
 }
 
-export class OperationalResource implements IOperationalResource {
+export default class OperationalResource implements IOperationalResource {
   dataConnector: IAdminForthDataSourceConnectorBase;
   resourceConfig: AdminForthResource;
 
@@ -43,14 +18,16 @@ export class OperationalResource implements IOperationalResource {
     this.resourceConfig = resourceConfig;
   }
 
-  async get(filter: IAdminForthFilter | IAdminForthFilter[]): Promise<any[]> {
-    return await this.dataConnector.getData({
-      resource: this.resourceConfig,
-      filters: filtersIfFilter(filter),
-      limit: 1,
-      offset: 0,
-      sort: [],
-    })[0];
+  async get(filter: IAdminForthFilter | IAdminForthFilter[]): Promise<any | null> {
+    return (
+      await this.dataConnector.getData({
+        resource: this.resourceConfig,
+        filters: filtersIfFilter(filter),
+        limit: 1,
+        offset: 0,
+        sort: [],
+      })
+    ).data[0] || null;
   }
 
   async list(
@@ -78,7 +55,7 @@ export class OperationalResource implements IOperationalResource {
   }
 
   async create(record: any): Promise<any> {
-    return await this.dataConnector.createRecord({ resource: this.resourceConfig, record });
+    return await this.dataConnector.createRecord({ resource: this.resourceConfig, record, adminUser: null });
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
@@ -92,6 +69,5 @@ export class OperationalResource implements IOperationalResource {
   async delete(primaryKey: any): Promise<boolean> {
     return await this.dataConnector.deleteRecord({ resource: this.resourceConfig, recordId: primaryKey });
   }
-  
 
 }

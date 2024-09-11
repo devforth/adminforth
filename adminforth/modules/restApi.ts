@@ -67,73 +67,64 @@ export default class AdminForthRestAPI {
         let adminUser: AdminUser;
         let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
 
-        let token;
-        if (this.adminforth.config.rootUser 
-            && username === this.adminforth.config.rootUser.username 
-            && password === this.adminforth.config.rootUser.password
-        ) {
-          this.adminforth.auth.setAuthCookie({ response, username, pk: null });
-          adminUser = { isRoot: true, dbUser: null, pk: null, username: this.adminforth.config.rootUser.username};
-        } else {
-          // get resource from db
-          if (!this.adminforth.config.auth) {
-            throw new Error('No config.auth defined');
-          }
-          const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.resourceId);
-          // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
-          if (!userResource.dataSourceColumns.find((col) => col.name === this.adminforth.config.auth.passwordHashField)) {
-            userResource.dataSourceColumns.push({
-              name: this.adminforth.config.auth.passwordHashField,
-              backendOnly: true,
-              showIn: [],
-              type: AdminForthDataTypes.STRING,
-            });
-            console.log('Adding passwordHashField to userResource', userResource)
-          }
+        // get resource from db
+        if (!this.adminforth.config.auth) {
+          throw new Error('No config.auth defined we need it to find user, please follow the docs');
+        }
+        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
+        if (!userResource.dataSourceColumns.find((col) => col.name === this.adminforth.config.auth.passwordHashField)) {
+          userResource.dataSourceColumns.push({
+            name: this.adminforth.config.auth.passwordHashField,
+            backendOnly: true,
+            showIn: [],
+            type: AdminForthDataTypes.STRING,
+          });
+          console.log('Adding passwordHashField to userResource', userResource)
+        }
 
-          const userRecord = (
-            await this.adminforth.connectors[userResource.dataSource].getData({
-              resource: userResource,
-              filters: [
-                { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
-              ],
-              limit: 1,
-              offset: 0,
-              sort: [],
-            })
-          ).data?.[0];
+        const userRecord = (
+          await this.adminforth.connectors[userResource.dataSource].getData({
+            resource: userResource,
+            filters: [
+              { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+            ],
+            limit: 1,
+            offset: 0,
+            sort: [],
+          })
+        ).data?.[0];
 
-          if (!userRecord) {
-            return { error: 'User not found' };
-          }
+        if (!userRecord) {
+          return { error: 'User not found' };
+        }
 
-          const passwordHash = userRecord[this.adminforth.config.auth.passwordHashField];
-          const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
-          if (valid) {
-            adminUser = { 
-              isRoot: false, dbUser: userRecord,
-              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
-              username,
-            };
-            const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
-            if (beforeLoginConfirmation?.length){
-              for (const hook of beforeLoginConfirmation) {
-                const resp = await hook({ adminUser, response });
-                
-                if (resp?.body?.redirectTo) {
-                  toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
-                  break;
-                }
+        const passwordHash = userRecord[this.adminforth.config.auth.passwordHashField];
+        const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
+        if (valid) {
+          adminUser = { 
+            dbUser: userRecord,
+            pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
+            username,
+          };
+          const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
+          if (beforeLoginConfirmation?.length){
+            for (const hook of beforeLoginConfirmation) {
+              const resp = await hook({ adminUser, response });
+              
+              if (resp?.body?.redirectTo) {
+                toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
+                break;
               }
             }
-            if (toReturn.allowedLogin){
-              this.adminforth.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
-            } 
-          } else {
-            return { error: INVALID_MESSAGE };
           }
-          
+          if (toReturn.allowedLogin){
+            this.adminforth.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+          } 
+        } else {
+          return { error: INVALID_MESSAGE };
         }
+          
         
         return toReturn;
     }
@@ -168,7 +159,7 @@ export default class AdminForthRestAPI {
           throw new Error('No config.auth defined');
         }
         const usernameField = this.adminforth.config.auth.usernameField;
-        const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.resourceId);
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
         return {
@@ -188,14 +179,10 @@ export default class AdminForthRestAPI {
       handler: async ({input, adminUser, cookies}) => {
         let username = ''
         let userFullName = ''
-        if (adminUser.isRoot) {
-          // isRoot can be in JWT token still when rootUser deleted, so we check for rootUser?"
-          username = this.adminforth.config.rootUser?.username || 'RootUser';
-        } else {
-            const dbUser = adminUser.dbUser;
-            username = dbUser[this.adminforth.config.auth.usernameField]; 
-            userFullName =dbUser[this.adminforth.config.auth.userFullNameField];
-        }
+    
+        const dbUser = adminUser.dbUser;
+        username = dbUser[this.adminforth.config.auth.usernameField]; 
+        userFullName =dbUser[this.adminforth.config.auth.userFullNameField];
 
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
