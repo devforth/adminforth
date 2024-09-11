@@ -1,5 +1,6 @@
 import { get } from "http";
 import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn, IAdminForthSort, IAdminForthFilter } from "../types/AdminForthConfig.js";
+import { suggestIfTypo } from "../modules/utils.js";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -56,10 +57,21 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  createRecord({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
+  createRecord({ resource, record, adminUser }: { 
+    resource: AdminForthResource; record: any; adminUser: any;
+  }): Promise<void> {
     // transform value using setFieldValue and call createRecordOriginalValues
     const newRecord = {...record};
+    
     for (const col of resource.dataSourceColumns) {
+      if (col.fillOnCreate) {
+        if (record[col.name] === undefined) {
+            record[col.name] = col.fillOnCreate({
+                initialRecord: record, adminUser
+             });
+        }
+      }
+
         newRecord[col.name] = this.setFieldValue(col, record[col.name]);
     }
     process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', newRecord);
@@ -85,10 +97,15 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
       filters.map((f) => {
+        const fieldObj = resource.dataSourceColumns.find((col) => col.name == f.field);
+        if (!fieldObj) {
+          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), f.field);
+          throw new Error(`Field '${f.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        }
         if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          f.value = f.value.map((val) => this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), val));
+          f.value = f.value.map((val) => this.setFieldValue(fieldObj, val));
         } else {
-          f.value = this.setFieldValue(resource.dataSourceColumns.find((col) => col.name == f.field), f.value);
+          f.value = this.setFieldValue(fieldObj, f.value);
         }
       });
     }

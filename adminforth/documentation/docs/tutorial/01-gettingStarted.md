@@ -114,12 +114,8 @@ const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
-  rootUser: {
-    username: 'adminforth',  // use these as credentials for first login
-    password: 'adminforth',
-  },
   auth: {
-    resourceId: 'users',  // resource to get user during login
+    usersResourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
   },
@@ -414,8 +410,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // serve after you added all api
   admin.express.serve(app)
-  admin.discoverDatabases();
 
+  admin.discoverDatabases().then(async () => {
+    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('users').create({
+        email: 'adminforth',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+  });
 
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

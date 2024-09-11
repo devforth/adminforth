@@ -44,9 +44,7 @@ import type { AdminUser } from  'adminforth';
 //diff-add
       delete: async ({ adminUser }: { adminUser: AdminUser }): Promise<boolean> => {
 //diff-add
-        // important: if adminUser.isRoot, then adminUser.dbUser is undefined
-//diff-add
-        return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+        return adminUser.dbUser.role === 'superadmin';
 //diff-add
       }
 //diff-add
@@ -71,9 +69,7 @@ import type { AdminUser } from  'adminforth';
 //diff-add
 async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
 //diff-add
-  // important: if adminUser.isRoot, the adminUser.dbUser is undefined
-//diff-add
-  return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+  return adminUser.dbUser.role === 'superadmin';
 //diff-add
 }
 
@@ -108,9 +104,6 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
   if (source === ActionCheckSource.DisplayButtons) {
     // if check is done for displaying button - we show button to everyone
     return true; 
-  }
-  if (adminUser.isRoot) {
-    return "Root user can't edit apartment, relogin as DB user"; 
   }
   const { oldRecord, newRecord } = meta;
   if (oldRecord.realtor_id !== adminUser.dbUser.id) {

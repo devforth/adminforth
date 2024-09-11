@@ -5,7 +5,7 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
-import { ADMINFORTH_VERSION, listify } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -22,11 +22,13 @@ import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
+import OperationalResource from './modules/operationalResource.js';
 
 // exports
 export * from './types/AdminForthConfig.js'; 
 export { interpretResource };
 export { AdminForthPlugin };
+export { suggestIfTypo };
 
 
 class AdminForth implements IAdminForth {
@@ -52,7 +54,7 @@ class AdminForth implements IAdminForth {
   activatedPlugins: Array<AdminForthPlugin>;
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
-  resourceInstances: {
+  operationalResources: {
     [resourceId: string]: IOperationalResource,
   }
   baseUrlSlashed: string;
@@ -120,14 +122,17 @@ class AdminForth implements IAdminForth {
     this.config.dataSources.forEach((ds) => {
       const dbType = ds.url.split(':')[0];
       if (!this.config.databaseConnectors[dbType]) {
-        throw new Error(`Database type ${dbType} is not supported, consider using databaseConnectors in AdminForth config`);
+        throw new Error(`Database type '${dbType}' is not supported, consider using one of ${Object.keys(this.connectorClasses).join(', ')} or create your own data-source connector`);
       }
       this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
     });
 
     await Promise.all(this.config.resources.map(async (res) => {
       if (!this.connectors[res.dataSource]) {
-        throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}'`);
+        const similar = suggestIfTypo(Object.keys(this.connectors), res.dataSource);
+        throw new Error(`Resource '${res.table}' refers to unknown dataSource '${res.dataSource}' ${similar 
+          ? `. Did you mean '${similar}'?` : 'Available dataSources: '+Object.keys(this.connectors).join(', ')}`
+        );
       }
       const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
       if (fieldTypes !== null && !Object.keys(fieldTypes).length) {
@@ -143,7 +148,8 @@ class AdminForth implements IAdminForth {
 
       res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name] && !col.virtual) {
-          throw new Error(`Resource '${res.table}' has no column '${col.name}'`);
+          const similar = suggestIfTypo(Object.keys(fieldTypes), col.name);
+          throw new Error(`Resource '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
@@ -160,6 +166,11 @@ class AdminForth implements IAdminForth {
 
     this.statuses.dbDiscover = 'done';
 
+    this.operationalResources = {};
+    this.config.resources.forEach((resource) => {
+      this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
+    });
+
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
@@ -168,9 +179,12 @@ class AdminForth implements IAdminForth {
   }
 
   async getUserByPk(pk: string) {
-    const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.resourceId);
+    const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
     if (!resource) {
-      throw new Error('No auth resource found');
+      const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId), this.config.auth.usersResourceId);
+      throw new Error(`No resource with  ${this.config.auth.usersResourceId} found. ${similar ? 
+        `Did you mean '${similar}' in config.auth.usersResourceId?` : 'Please set correct resource in config.auth.usersResourceId'}`
+      );
     }
     const users = await this.connectors[resource.dataSource].getData({
       resource,
@@ -186,13 +200,6 @@ class AdminForth implements IAdminForth {
 
   async createResourceRecord({ resource, record, adminUser }: { resource: AdminForthResource, record: any, adminUser: AdminUser }) {
     for (const column of resource.columns) {
-        if (column.fillOnCreate) {
-            if (record[column.name] === undefined) {
-                record[column.name] = column.fillOnCreate({
-                    initialRecord: record, adminUser
-                 });
-            }
-        }
         if (
             (column.required as {create?: boolean, edit?: boolean}) ?.create &&
             record[column.name] === undefined &&
@@ -235,7 +242,7 @@ class AdminForth implements IAdminForth {
     }
     const connector = this.connectors[resource.dataSource];
     process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record createResourceRecord', record);
-    await connector.createRecord({ resource, record });
+    await connector.createRecord({ resource, record, adminUser });
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
       console.log('Hook afterSave', hook);
@@ -253,7 +260,20 @@ class AdminForth implements IAdminForth {
   }
 
   resource(resourceId: string) {
-    return this.config.resources.find((res) => res.resourceId === resourceId);
+    if (this.statuses.dbDiscover !== 'done') {
+      if (this.statuses.dbDiscover === 'running') {
+        throw new Error('Database discovery is running. You can\'t use data API while database discovery is not finished.\n'+
+          'Consider moving your code to a place where it will be executed after database discovery is already done (after await admin.discoverDatabases())');
+      } else {
+        throw new Error('Database discovery is not yet started. You can\'t use data API before database discovery is done. \n'+
+          'Call admin.discoverDatabases() first and await it before using data API');
+      }
+    }
+    if (!this.operationalResources[resourceId]) {
+      const closeName = suggestIfTypo(Object.keys(this.operationalResources), resourceId);
+      throw new Error(`Resource with id '${resourceId}' not found${closeName ? `. Did you mean '${closeName}'?` : ''}`);
+    }
+    return this.operationalResources[resourceId];
   }
 
   setupEndpoints(server: IHttpServer) {
