@@ -90,6 +90,17 @@ export interface IExpressHttpServer extends IHttpServer {
   authorize(callable: Function): void;
 }
 
+export interface IAdminForthFilter {
+  field: string;
+  operator: AdminForthFilterOperators;
+  value: any;
+}
+
+export interface IAdminForthSort {
+  field: string, 
+  direction: AdminForthSortDirections 
+}
+
 export interface IAdminForthDataSourceConnector {
   
   /**
@@ -145,15 +156,21 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
-    sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
-    getTotals?: boolean
-  }): Promise<{data: Array<any>, total: number}>;
+    sort: IAdminForthSort[], 
+    filters: IAdminForthFilter[],
+  }): Promise<Array<any>>;
 
+  /**
+   * Used to get count of records in database.
+   */
+  getCount({ resource, filters }: {
+    resource: AdminForthResource,
+    filters: IAdminForthFilter[],
+  }): Promise<number>;
 
   /**
    * Optional method which used to get min and max values for columns in resource.
@@ -181,7 +198,7 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Used to delete record in database.
    */
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<void>;
+  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
 }
 
 
@@ -196,11 +213,14 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource,
     limit: number,
     offset: number,
-    sort: { field: string, direction: AdminForthSortDirections }[],
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+    sort: IAdminForthSort[],
+    filters: IAdminForthFilter[],
+    getTotals?: boolean,
   }): Promise<{ data: Array<any>, total: number }>;
 
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+
+  createRecord({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
@@ -1305,6 +1325,67 @@ export type AdminForthConfig = {
     deleteConfirmation?: boolean,
     
    
+}
+
+// define typescript objects which I can instantiate as Filters.EQ(field, value) and they woudl
+// return { field: field, operator: 'eq', value: value }. They should be exported with Filters namespace so I can import Filters from this file
+// and use Filters.EQ(field, value) in my code
+
+export type FDataFilter = (field: string, value: any) => IAdminForthFilter;
+
+export class Filters {
+  static EQ(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.EQ, value };
+  }
+  static NEQ(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.NE, value };
+  }
+  static GT(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.GT, value };
+  }
+  static GTE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.GTE, value };
+  }
+  static LT(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LT, value };
+  }
+  static LTE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LTE, value };
+  }
+  static IN(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.IN, value };
+  }
+  static NOT_IN(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.NIN, value };
+  }
+  static LIKE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LIKE, value };
+  }
+}
+
+export type FDataSort = (field: string, direction: AdminForthSortDirections) => IAdminForthSort;
+
+export class Sorts {
+  static ASC(field: string): IAdminForthSort {
+    return { field, direction: AdminForthSortDirections.asc };
+  }
+  static DESC(field: string): IAdminForthSort {
+    return { field, direction: AdminForthSortDirections.desc };
+  }
+}
+
+export interface IOperationalResource {
+  get: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<any[]>;
+
+  list: (filter: IAdminForthFilter | IAdminForthFilter[], limit: number, offset: number, sort: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+
+  count: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
+
+  create: (record: any) => Promise<any>;
+
+  update: (primaryKey: any, record: any) => Promise<any>;
+
+  delete: (primaryKey: any) => Promise<boolean>;
 }
   
 

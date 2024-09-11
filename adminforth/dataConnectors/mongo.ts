@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, 
+    IAdminForthDataSourceConnector, AdminForthResource } from '../types/AdminForthConfig.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
@@ -104,28 +105,57 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
           return value ? 1 : 0;
         }
         return value;
-      }
-    
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }) {
-        // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
-        const tableName = resource.table;
+    }
 
-        const collection = this.db.db().collection(tableName);
+    async genQuery({ resource, limit, offset, sort, filters }) {
+        const collection = this.db.db().collection(resource.table);
         const query = {};
         for (const filter of filters) {
             query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
         }
-        let total = 0;
-        if (getTotals) {
-            total = await collection.countDocuments(query);
+        return { collection, query };
+    }
+    
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
+        { 
+            resource: AdminForthResource, 
+            limit: number, 
+            offset: number, 
+            sort: { field: string, direction: AdminForthSortDirections }[], 
+            filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
         }
+    ): Promise<any[]> {
+
+        // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
+        const tableName = resource.table;
+
+        const collection = this.db.db().collection(tableName);
+        const query = this.genQuery({ resource, limit, offset, sort, filters });
+
+        const sortArray: any[] = sort.map((s) => {
+            return [s.field, this.SortDirectionsMap[s.direction]];
+        });
+
         const result = await collection.find(query)
-            .sort(sort)
+            .sort(sortArray)
             .skip(offset)
             .limit(limit)
             .toArray();
 
-        return { data: result, total }
+        return result
+    }
+
+    async getCount({ resource, filters }: { 
+            resource: AdminForthResource, 
+            filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+    }): Promise<number> {
+
+        const collection = this.db.db().collection(resource.table);
+        const query = {};
+        for (const filter of filters) {
+            query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
+        }
+        return await collection.countDocuments(query);
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
@@ -158,10 +188,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }
 
-    async deleteRecord({ resource, recordId }) {
+    async deleteRecord({ resource, recordId }): Promise<boolean> {
         const primaryKey = this.getPrimaryKey(resource);
         const collection = this.db.db().collection(resource.table);
-        await collection.deleteOne({ [primaryKey]: recordId });
+        const res = await collection.deleteOne({ [primaryKey]: recordId });
+        return res.deletedCount > 0;
     }
 
     async close() {

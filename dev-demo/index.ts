@@ -192,7 +192,21 @@ const admin = new AdminForth({
   ],
   resources: [
     {
-      dataSource: 'ch', table: 'clicks',
+      dataSource: 'ch', 
+      table: 'clicks',
+      /*
+      SQL to create table run SQL in http://localhost:8123/play
+      CREATE TABLE demo.clicks (
+        clickid UUID PRIMARY KEY,
+        element String,
+        clientX Int32,
+        created_at DateTime,
+        aggressiveness Float32,
+        click_price Decimal(10, 2)
+
+      )
+
+      */
       columns: [
         { 
           name: 'clickid', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),

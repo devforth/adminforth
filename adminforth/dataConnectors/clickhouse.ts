@@ -172,19 +172,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthSortDirections.desc]: 'DESC',
     };
     
-
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: { 
-        resource: AdminForthResource, 
-        limit: number, 
-        offset: number, 
-        sort: { field: string, direction: AdminForthSortDirections }[], 
-        filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
-        getTotals?: boolean, 
-    }): Promise<{ data: any[], total: number }> {
-      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
-      const tableName = resource.table;
-
-      const where = filters.length ? `WHERE ${filters.map((f, i) => {
+    whereClause(
+        resource: AdminForthResource,
+        filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+    ): string {
+      return  filters.length ? `WHERE ${filters.map((f, i) => {
         const column = resource.dataSourceColumns.find((col) => col.name == f.field);
         let placeholder = `{f${i}:${column._underlineType}}`;
         let field = f.field;
@@ -197,9 +189,12 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
         return `${field} ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
+    }
 
+    whereParams(
+        filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+    ): any {
       const params = {};
-      
       filters.length ? filters.forEach((f, i) => {
         // for arrays do set in map
         const v = f.value;
@@ -214,6 +209,24 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           params[`f${i}`] = v;
         }
       }) : [];
+
+      return params;
+    }
+
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
+        resource: AdminForthResource, 
+        limit: number, 
+        offset: number, 
+        sort: { field: string, direction: AdminForthSortDirections }[], 
+        filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    }): Promise<any[]> {
+      console.log('getDataWithOriginalTypes', resource, limit, offset, sort, filters);
+      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+      const tableName = resource.table;
+
+      const where = this.whereClause(resource, filters);
+
+      const params = this.whereParams(filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
@@ -233,27 +246,33 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
       const rows = await stmt.json();
 
-      let total = 0;
-      if (getTotals) {
-        const countQ = await this.client.query({
-          query: `SELECT COUNT(*) FROM ${tableName} ${where}`,
-          format: 'JSONEachRow',
-          query_params: d,
-        });
-        const countResp = await countQ.json()
-        total = countResp[0]['COUNT()'];
-      }
+      return rows.map((row) => {
+        const newRow = {};
+        for (const [key, value] of Object.entries(row)) {
+          newRow[key] = value;
+        }
+        return newRow;
+      });
+    }
 
-      return {
-        data: rows.map((row) => {
-          const newRow = {};
-          for (const [key, value] of Object.entries(row)) {
-            newRow[key] = value;
-          }
-          return newRow;
-        }),
-        total,
-      };
+    async getCount({
+      resource,
+      filters,
+    }: {
+      resource: AdminForthResource;
+      filters: { field: string, operator: AdminForthFilterOperators, value: any }[];
+    }): Promise<number> {
+      const tableName = resource.table;
+      const where = this.whereClause(resource, filters);
+      const d = this.whereParams(filters);
+      
+      const countQ = await this.client.query({
+        query: `SELECT COUNT(*) FROM ${tableName} ${where}`,
+        format: 'JSONEachRow',
+        query_params: d,
+      });
+      const countResp = await countQ.json()
+      return countResp[0]['COUNT()'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
@@ -298,16 +317,18 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       );
     }
 
-    async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }) {
+    async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean> {
       const pkColumn = resource.dataSourceColumns.find((col) => col.primaryKey);
-      await this.client.command(
+      const res = await this.client.command(
         { 
           query: `ALTER TABLE ${this.dbName}.${resource.table} DELETE WHERE ${
             pkColumn.name
           } = {recordId:${pkColumn._underlineType}}`, 
           query_params: { recordId },
-      }
+        }
       );
+      // todo test what is in res
+      return res;
     }
 
     close() {

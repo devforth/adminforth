@@ -10,7 +10,9 @@ import {
   type AdminForthConfig, 
   type IAdminForth, 
   type IConfigValidator,
-  AdminForthFilterOperators, AdminForthDataTypes, AdminForthResourcePages, IHttpServer, 
+  IOperationalResource,
+  AdminForthFilterOperators,
+  AdminForthDataTypes, AdminForthResourcePages, IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
   AdminUser,
@@ -50,7 +52,9 @@ class AdminForth implements IAdminForth {
   activatedPlugins: Array<AdminForthPlugin>;
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
-
+  resourceInstances: {
+    [resourceId: string]: IOperationalResource,
+  }
   baseUrlSlashed: string;
 
   statuses: {
@@ -130,7 +134,7 @@ class AdminForth implements IAdminForth {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
       if (fieldTypes === null) {
-        console.error(`DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        console.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
         return;
       }
       if (!res.columns) {
@@ -246,6 +250,10 @@ class AdminForth implements IAdminForth {
     }
 
     return { ok: true };
+  }
+
+  resource(resourceId: string) {
+    return this.config.resources.find((res) => res.resourceId === resourceId);
   }
 
   setupEndpoints(server: IHttpServer) {
