@@ -88,12 +88,13 @@ class AdminForthAuth {
       console.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
       return null;
     }
-    if (pk === null) {
-      decoded.isRoot = true;
-    } else {
-      const dbUser = await this.adminforth.getUserByPk(pk);
-      decoded.dbUser = dbUser;
+    const dbUser = await this.adminforth.getUserByPk(pk);
+    if (!dbUser) {
+      console.error(`User with pk ${pk} not found in database`);
+      // will logout user which was deleted
+      return null;
     }
+    decoded.dbUser = dbUser;
     return decoded;
   }
 

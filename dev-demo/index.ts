@@ -1,6 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes } from '../adminforth/index.js';
+import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes, Filters } from '../adminforth/index.js';
 import { v1 as uuid } from 'uuid';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.js';
@@ -95,7 +95,7 @@ if (!columnExists) {
 }
 
 const demoChecker = async ({ record, adminUser, resource }) => {
-  if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+  if (adminUser.dbUser.role !== 'superadmin') {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
@@ -103,12 +103,7 @@ const demoChecker = async ({ record, adminUser, resource }) => {
 
 const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
-  // For changing favicon put your favicon.ico in public folder
-  // deleteConfirmation: true,
-  rootUser: {
-    username: 'adminforth',
-    password: 'adminforth',
-  },
+  // deleteConfirmation: false,
   auth: {
     resourceId: 'users',  // resource for getting user
     usernameField: 'email',
@@ -192,7 +187,21 @@ const admin = new AdminForth({
   ],
   resources: [
     {
-      dataSource: 'ch', table: 'clicks',
+      dataSource: 'ch', 
+      table: 'clicks',
+      /*
+      SQL to create table run SQL in http://localhost:8123/play
+      CREATE TABLE demo.clicks (
+        clickid UUID PRIMARY KEY,
+        element String,
+        clientX Int32,
+        created_at DateTime,
+        aggressiveness Float32,
+        click_price Decimal(10, 2)
+
+      )
+
+      */
       columns: [
         { 
           name: 'clickid', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
@@ -786,7 +795,7 @@ const admin = new AdminForth({
         //   icon: 'flowbite:user-solid',
         //   resourceId: 'games_users',
         //   visible:(user) => {
-        //     return user.isRoot || user.dbUser.role === 'superadmin'
+        //     return user.dbUser.role === 'superadmin'
         //   }
         // },
         // {
@@ -817,7 +826,7 @@ const admin = new AdminForth({
       icon: 'flowbite:user-solid',
       resourceId: 'users',
       visible:(user) => {
-        return user.isRoot || user.dbUser.role === 'superadmin'
+        return user.dbUser.role === 'superadmin'
       }
     },
     {
@@ -913,9 +922,15 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
 // serve after you added all api
 admin.express.serve(app)
-admin.discoverDatabases();
-
-
+admin.discoverDatabases().then(async () => {
+  if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
+    await admin.resource('users').create({
+      email: 'adminforth',
+      password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+      role: 'superadmin',
+    });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

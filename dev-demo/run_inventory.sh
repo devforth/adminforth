@@ -1,0 +1,1 @@
+docker compose -p af-dev-demo -f inventory.yml up -d --build --remove-orphans --wait

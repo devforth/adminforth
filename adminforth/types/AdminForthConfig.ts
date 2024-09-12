@@ -51,16 +51,18 @@ export interface IHttpServer {
 
 export type AdminUser = {
   /**
-   * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.resourceId}
-   * or null if it is user logged in as {@link AdminForthConfig.rootUser}
+   * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.usersResourceId}
    */
   pk: string | null,
 
   /**
-   * Username which takend from {@link AdminForthConfig.auth.usernameField} field in user resource {@link AdminForthConfig.auth.resourceId}
+   * Username which taken from {@link AdminForthConfig.auth.usernameField} field in user resource {@link AdminForthConfig.auth.usersResourceId}
    */
   username: string,
-  isRoot: boolean,
+
+  /**
+   * User record fetched from database, from resource defined in {@link AdminForthConfig.auth.usersResourceId}
+   */
   dbUser: any,
 }
 
@@ -88,6 +90,17 @@ export interface IExpressHttpServer extends IHttpServer {
    * 
    */
   authorize(callable: Function): void;
+}
+
+export interface IAdminForthFilter {
+  field: string;
+  operator: AdminForthFilterOperators;
+  value: any;
+}
+
+export interface IAdminForthSort {
+  field: string, 
+  direction: AdminForthSortDirections 
 }
 
 export interface IAdminForthDataSourceConnector {
@@ -145,15 +158,21 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
-    sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
-    getTotals?: boolean
-  }): Promise<{data: Array<any>, total: number}>;
+    sort: IAdminForthSort[], 
+    filters: IAdminForthFilter[],
+  }): Promise<Array<any>>;
 
+  /**
+   * Used to get count of records in database.
+   */
+  getCount({ resource, filters }: {
+    resource: AdminForthResource,
+    filters: IAdminForthFilter[],
+  }): Promise<number>;
 
   /**
    * Optional method which used to get min and max values for columns in resource.
@@ -181,7 +200,7 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Used to delete record in database.
    */
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<void>;
+  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
 }
 
 
@@ -196,11 +215,18 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource,
     limit: number,
     offset: number,
-    sort: { field: string, direction: AdminForthSortDirections }[],
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
+    sort: IAdminForthSort[],
+    filters: IAdminForthFilter[],
+    getTotals?: boolean,
   }): Promise<{ data: Array<any>, total: number }>;
 
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
+
+  createRecord({ resource, record, adminUser }: { 
+    resource: AdminForthResource, 
+    record: any 
+    adminUser: AdminUser
+  }): Promise<void>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
@@ -724,7 +750,7 @@ export type AdminForthBulkAction = {
    * 
    * ```ts
    * allowed: async ({ resource, adminUser, selectedIds }) => {
-   *   if (adminUser.isRoot || adminUser.dbUser.role !== 'superadmin') {
+   *   if (adminUser.dbUser.role !== 'superadmin') {
    *    return false;
    *   } 
    *   return true;
@@ -766,7 +792,7 @@ export type AdminForthBulkAction = {
      *   ],
      *   allowedActions: \{
      *     edit: (\{ resource, adminUser, recordIds \}) => \{
-     *       return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+     *       return adminUser.dbUser.role === 'superadmin';
      *     \}
      *   \}
      * \}
@@ -959,8 +985,8 @@ export type AdminForthResource = {
        * ```ts
        * allowedActions: {
        *  create: ({ resource, adminUser }) => {
-       *    // Allow only superadmin or root user to create records
-       *    return adminUser.isRoot || adminUser.dbUser.role === 'superadmin';
+       *    // Allow only superadmin to create records
+       *    return adminUser.dbUser.role === 'superadmin';
        *  },
        *  delete: false, // disable delete action for all users
        * }
@@ -1066,32 +1092,20 @@ export type AdminForthDataSource = {
 export type AdminForthConfig = {
 
     /**
-     * Root user should be used to login to the admin panel first time.
-     * Then you should create User for yourself using AdminForth (so it will be persisted in DB), 
-     * and then disable this option as it is less secure
-     */
-    rootUser?: {
-      /**
-       * Username for root user
-       */
-      username: string,
-
-      /**
-       * Password for root user
-       */
-      password: string,
-    },
-
-    /**
      * Authorization module configuration
      */
     auth?: {
       /**
-       * Resource ID for user resource. 
+       * Resource ID for resource which stores user table.
        * Resource is a table in database where users will be stored and fetched from. Resources and their ids are defined in resources section of the config.
        * In other words this setting is a reference to a table in database where users will be fetched from on login. 
        */
-      resourceId: string,
+      usersResourceId?: string,
+
+      /**
+       * Legacy field left for backward compatibility. Use usersResourceId instead.
+       */
+      resourceId?: string,
 
       /**
        * Field name (column name) in user resource which will be used as username for searching user in database during login.
@@ -1302,9 +1316,74 @@ export type AdminForthConfig = {
     baseUrl?: string,
     
     
+    /**
+     * Whether to show delete confirmation dialog before deleting record.
+     * By default it is true.
+     */
     deleteConfirmation?: boolean,
     
    
+}
+
+// define typescript objects which I can instantiate as Filters.EQ(field, value) and they woudl
+// return { field: field, operator: 'eq', value: value }. They should be exported with Filters namespace so I can import Filters from this file
+// and use Filters.EQ(field, value) in my code
+
+export type FDataFilter = (field: string, value: any) => IAdminForthFilter;
+
+export class Filters {
+  static EQ(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.EQ, value };
+  }
+  static NEQ(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.NE, value };
+  }
+  static GT(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.GT, value };
+  }
+  static GTE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.GTE, value };
+  }
+  static LT(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LT, value };
+  }
+  static LTE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LTE, value };
+  }
+  static IN(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.IN, value };
+  }
+  static NOT_IN(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.NIN, value };
+  }
+  static LIKE(field: string, value: any): IAdminForthFilter {
+    return { field, operator: AdminForthFilterOperators.LIKE, value };
+  }
+}
+
+export type FDataSort = (field: string, direction: AdminForthSortDirections) => IAdminForthSort;
+
+export class Sorts {
+  static ASC(field: string): IAdminForthSort {
+    return { field, direction: AdminForthSortDirections.asc };
+  }
+  static DESC(field: string): IAdminForthSort {
+    return { field, direction: AdminForthSortDirections.desc };
+  }
+}
+
+export interface IOperationalResource {
+  get: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<any | null>;
+
+  list: (filter: IAdminForthFilter | IAdminForthFilter[], limit: number, offset: number, sort: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+
+  count: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
+
+  create: (record: any) => Promise<any>;
+
+  update: (primaryKey: any, record: any) => Promise<any>;
+
+  delete: (primaryKey: any) => Promise<boolean>;
 }
   
 

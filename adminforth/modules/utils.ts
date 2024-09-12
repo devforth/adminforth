@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import Fuse from 'fuse.js';
 // @ts-ignore-next-line
 
 
@@ -335,3 +336,22 @@ export function inverseRGBA(rgba) {
   return brightness > 128 ? 'rgba(0,0,0,1)' : 'rgba(255,255,255,1)';
 }
 
+
+export function suggestIfTypo(names: string[], name: string): string {
+  if (!name) {
+    return null;
+  }
+  const options = {
+    includeScore: true, // Includes score in the results to see how close matches are
+    threshold: 0.3,     // Defines the fuzziness (lower values mean stricter matches)
+  };
+  
+  const fuse = new Fuse(names.filter(
+    (n) => !!n
+  ), options);
+  // Search for a resource
+  const result = fuse.search(name);
+  if (result.length > 0) {
+    return result[0].item;
+  }
+}

@@ -48,13 +48,10 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
     }
     (this.adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).push(
       async({ adminUser, response }: { adminUser: AdminUser, response: IAdminForthHttpResponse} )=> {
-        if(adminUser.isRoot){
-          return { body: {loginAllowed: true}, ok: true}
-        }
         const secret = adminUser.dbUser[this.options.twoFaSecretFieldName]
         const userName = adminUser.dbUser[adminforth.config.auth.usernameField]
         const brandName = adminforth.config.customization.brandName
-        const authResource = adminforth.config.resources.find((res)=>res.resourceId === adminforth.config.auth.resourceId )
+        const authResource = adminforth.config.resources.find((res)=>res.resourceId === adminforth.config.auth.usersResourceId )
         const authPk = authResource.columns.find((col)=>col.primaryKey).name
         const userPk = adminUser.dbUser[authPk]
         let newSecret = null
