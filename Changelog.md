@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2024-09-14
+
+### Fixed
+
+- Mongo filtering issues (e.g. user can't login because filters was not applied)
+
+### Added
+
+- `primaryKey` to all before/after save hooks so e.g. in update you can understand for what record it is called
+
+
 ## [1.3.1] - 2024-09-14
 
 ### Added

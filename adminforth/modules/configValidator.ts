@@ -278,10 +278,10 @@ export default class ConfigValidator implements IConfigValidator {
                     (res.hooks.delete.beforeSave as AfterSaveFunction[]).map(
                       async (hook) => {
                         const resp = await hook({ 
-                          primaryKey: recordId,
+                          recordId: recordId,
                           resource: res, 
                           record, 
-                          adminUser
+                          adminUser,
                         }); 
                         if (!error && resp.error) {
                           error = resp.error;
@@ -300,8 +300,10 @@ export default class ConfigValidator implements IConfigValidator {
                     (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
                       async (hook) => {
                         await hook({ 
-                          resource: res, record, adminUser,
-                          primaryKey: recordId
+                          resource: res, 
+                          record, 
+                          adminUser,
+                          recordId: recordId
                         }); 
                       }
                     )
@@ -390,8 +392,6 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
       });
-
-
 
       if (!this.config.menu) {
         errors.push('No config.menu defined');
