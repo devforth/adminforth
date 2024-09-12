@@ -277,7 +277,12 @@ export default class ConfigValidator implements IConfigValidator {
                   await Promise.all(
                     (res.hooks.delete.beforeSave as AfterSaveFunction[]).map(
                       async (hook) => {
-                        const resp = await hook({ resource: res, record, adminUser }); 
+                        const resp = await hook({ 
+                          primaryKey: recordId,
+                          resource: res, 
+                          record, 
+                          adminUser
+                        }); 
                         if (!error && resp.error) {
                           error = resp.error;
                         }
@@ -294,7 +299,10 @@ export default class ConfigValidator implements IConfigValidator {
                   await Promise.all(
                     (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
                       async (hook) => {
-                        await hook({ resource: res, record, adminUser }); 
+                        await hook({ 
+                          resource: res, record, adminUser,
+                          primaryKey: recordId
+                        }); 
                       }
                     )
                   )

@@ -604,7 +604,12 @@ export default class AdminForthRestAPI {
 
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
+              const resp = await hook({
+                primaryKey: recordId,
+                resource,
+                record,
+                adminUser 
+              });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
               }
@@ -634,7 +639,13 @@ export default class AdminForthRestAPI {
             
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser, oldRecord });
+              const resp = await hook({ 
+                resource, 
+                record, 
+                adminUser, 
+                oldRecord,
+                primaryKey: recordId,
+              });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
               }
@@ -674,7 +685,12 @@ export default class AdminForthRestAPI {
 
             // execute hook if needed
             for (const hook of listify(resource.hooks?.delete?.beforeSave as BeforeSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
+              const resp = await hook({ 
+                resource, 
+                record, 
+                adminUser,
+                recordId: body['primaryKey']
+              });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
               }
@@ -689,7 +705,12 @@ export default class AdminForthRestAPI {
 
             // execute hook if needed
             for (const hook of listify(resource.hooks?.delete?.afterSave as BeforeSaveFunction[])) {
-              const resp = await hook({ resource, record, adminUser });
+              const resp = await hook({ 
+                resource, 
+                record, 
+                adminUser,
+                primaryKey: body['primaryKey']
+              });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
               }

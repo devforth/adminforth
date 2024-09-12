@@ -107,13 +107,12 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return value;
     }
 
-    async genQuery({ resource, limit, offset, sort, filters }) {
-        const collection = this.db.db().collection(resource.table);
+    async genQuery({ filters }) {
         const query = {};
         for (const filter of filters) {
             query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
         }
-        return { collection, query };
+        return query;
     }
     
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
@@ -130,7 +129,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         const tableName = resource.table;
 
         const collection = this.db.db().collection(tableName);
-        const query = this.genQuery({ resource, limit, offset, sort, filters });
+        const query = await this.genQuery({ filters });
 
         const sortArray: any[] = sort.map((s) => {
             return [s.field, this.SortDirectionsMap[s.direction]];
