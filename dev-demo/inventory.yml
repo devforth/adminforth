@@ -32,7 +32,15 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
 
+  mongo:
+    image: mongo:4.4
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
 volumes:
   clickhouse-data:
   pg-data:
+  mongo-data:
