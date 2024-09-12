@@ -135,12 +135,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       [AdminForthSortDirections.desc]: 'DESC',
     };
     
-
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }): Promise<{ data: any[], total: number }> {
-      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
-      const tableName = resource.table;
-
-      const where = filters.length ? `WHERE ${filters.map((f, i) => {
+    whereClause(filters) {
+      return filters.length ? `WHERE ${filters.map((f, i) => {
         let placeholder = '?';
         let field = f.field;
         let operator = this.OperatorsMap[f.operator];
@@ -154,25 +150,31 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
 
         return `${field} ${operator} ${placeholder}`
       }).join(' AND ')}` : '';
-
-      const filterValues = [];
-      
-      filters.length ? filters.forEach((f) => {
-        // for arrays do set in map
-        const v = f.value;
-
+    }
+    whereParams(filters) {
+      return filters.reduce((acc, f) => {
         if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
-          filterValues.push(`%${v}%`);
+          acc.push(`%${f.value}%`);
         } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          filterValues.push(...v);
+          acc.push(...f.value);
         } else {
-          filterValues.push(v);
+          acc.push(f.value);
         }
-      }) : [];
+        return acc;
+      }, []);
+    }
+
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
+      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+      const tableName = resource.table;
+
+      const where = this.whereClause(filters);
+
+      const filterValues = this.whereParams(filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
-
+      console.log('🪲 SQLITE Query', `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`, 'params:', [...filterValues, limit, offset]);
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
       const stmt = this.db.prepare(q);
       const d = [...filterValues, limit, offset];
@@ -182,22 +184,21 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       }
       const rows = await stmt.all(d);
 
-      let total = 0;
-      if (getTotals) {
-        const totalStmt = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`);
-        total = totalStmt.get([...filterValues])['COUNT(*)'];
-      }
+      return rows.map((row) => {
+        const newRow = {};
+        for (const [key, value] of Object.entries(row)) {
+          newRow[key] = value;
+        }
+        return newRow;
+      })
+    }
 
-      return {
-        data: rows.map((row) => {
-          const newRow = {};
-          for (const [key, value] of Object.entries(row)) {
-            newRow[key] = value;
-          }
-          return newRow;
-        }),
-        total,
-      };
+    async getCount({ resource, filters }) {
+      const tableName = resource.table;
+      const where = this.whereClause(filters);
+      const filterValues = this.whereParams(filters);
+      const totalStmt = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`);
+      return totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
@@ -232,9 +233,10 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       await q.run(values);
     }
 
-    async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }) {
+    async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean> {
       const q = this.db.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`);
-      await q.run(recordId);
+      const res = await q.run(recordId);
+      return res.changes > 0;
     }
 
     close() {

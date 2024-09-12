@@ -20,6 +20,19 @@ services:
       volumes:
         - clickhouse-data:/var/lib/clickhouse
 
+  pg:
+    image: postgres:13
+    restart: always
+    ports:
+      - "54321:5432"
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
 
 volumes:
   clickhouse-data:
+  pg-data:

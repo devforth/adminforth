@@ -45,12 +45,6 @@ import type { AdminUser } from  'adminforth';
 //diff-add
       beforeSave: async ({ adminUser, record }: { adminUser: AdminUser, record: any }) => {
 //diff-add
-        if (adminUser.isRoot) {
-//diff-add
-          return { ok: false, error: "Root user can't create apartment, re-login as DB user" };
-//diff-add
-        }
-//diff-add
         record.realtor_id = adminUser.dbUser.id;
 //diff-add
         return { ok: true, record };

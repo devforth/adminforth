@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import { AdminForthDataTypes, AdminForthResource, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
 import AdminForthBaseConnector from './baseConnector.js';
 const { Client } = pkg;
 
@@ -168,24 +168,26 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            return dayjs(value);
-          } else if (field._underlineType == 'varchar') {
-            return dayjs(value).toISOString();
-          }
-        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value ? 1 : 0;
+      if (field.type == AdminForthDataTypes.DATETIME) {
+        if (!value) {
+          return null;
         }
-        return value;
+        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+          return dayjs(value);
+        } else if (field._underlineType == 'varchar') {
+          return dayjs(value).toISOString();
+        }
+      } else if (field.type == AdminForthDataTypes.BOOLEAN) {
+        return value ? 1 : 0;
       }
-    
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, getTotals }) {
-      const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
-      const tableName = resource.table;
+      return value;
+    }
+
+    whereClauseAndValues(resource: AdminForthResource, filters: { field: string, operator: AdminForthFilterOperators, value: any }[]) : {
+      sql: string,
+      paramsCount: number,
+      values: any[],
+    } {
       
       let totalCounter = 1;
       const where = filters.length ? `WHERE ${filters.map((f, i) => {
@@ -201,9 +203,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
 
         if (fieldData._underlineType == 'uuid') {
-            field = `cast("${field}" as text)`
+          field = `cast("${field}" as text)`
         } else { 
-            field = `"${field}"`
+          field = `"${field}"`
         }
         return `${field} ${operator} ${placeholder}`;
       }).join(' AND ')}` : '';
@@ -221,8 +223,22 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
           filterValues.push(v);
         }
       }) : [];
+      return {
+        sql: where,
+        paramsCount: totalCounter,
+        values: filterValues,
+      };
 
-      const limitOffset = `LIMIT $${totalCounter} OFFSET $${totalCounter + 1}`; 
+    }
+
+    
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
+      const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
+      const tableName = resource.table;
+      
+      const { sql: where, paramsCount, values: filterValues } = this.whereClauseAndValues(resource, filters);
+
+      const limitOffset = `LIMIT $${paramsCount} OFFSET $${paramsCount + 1}`; 
       const d = [...filterValues, limit, offset];
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const selectQuery = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} ${limitOffset}`;
@@ -231,20 +247,20 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
       }
       const stmt = await this.db.query(selectQuery, d);
       const rows = stmt.rows;
-      let total = 0;
-      if (getTotals) {
-        total = (await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues)).rows[0].count;
-      }
-      return {
-        data: rows.map((row) => {
-          const newRow = {};
-          for (const [key, value] of Object.entries(row)) {
-              newRow[key] = value;
-          }
-          return newRow;
-        }),
-        total,
-      };
+      return rows.map((row) => {
+        const newRow = {};
+        for (const [key, value] of Object.entries(row)) {
+            newRow[key] = value;
+        }
+        return newRow;
+      });
+    }
+
+    async getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string, operator: AdminForthFilterOperators, value: any }[]; }): Promise<number> {
+        const tableName = resource.table;
+        const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
+        const stmt = await this.db.query(`SELECT COUNT(*) FROM ${tableName} ${where}`, filterValues);
+        return stmt.rows[0].count;
     }
   
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
@@ -277,8 +293,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         await this.db.query(`UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`, values);
     }
 
-    async deleteRecord({ resource, recordId }) {
-        await this.db.query(`DELETE FROM ${resource.table} WHERE "${this.getPrimaryKey(resource)}" = $1`, [recordId]);
+    async deleteRecord({ resource, recordId }): Promise<boolean> {
+      const res = await this.db.query(`DELETE FROM ${resource.table} WHERE "${this.getPrimaryKey(resource)}" = $1`, [recordId]);
+      return res.rowCount > 0;
     }
 
     async close() {
