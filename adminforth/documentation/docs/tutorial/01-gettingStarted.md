@@ -101,7 +101,7 @@ Create `index.ts` file in root directory with following content:
 ```ts title="./index.ts"
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
 
 import dotenv from 'dotenv';
 dotenv.config();
