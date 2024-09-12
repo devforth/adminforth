@@ -1,8 +1,9 @@
 
 # Getting Started
 
-This demo has some explanations and longer code snippets. 
-For quick and short hello world example check out [Hello World](./01.1-helloWorld.md)
+This Getting Started Page has some explanations and larger tables. 
+
+For fast and short hello world example check out [Hello World](./01-helloWorld.md)
 
 ## Prerequisites
 
