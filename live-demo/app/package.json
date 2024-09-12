@@ -19,7 +19,7 @@
     "@adminforth/foreign-inline-list": "^1.0.18",
     "@adminforth/rich-editor": "^1.0.9",
     "@adminforth/upload": "^1.0.13",
-    "adminforth": "^1.2.86",
+    "adminforth": "^1.3.5",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
