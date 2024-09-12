@@ -493,6 +493,7 @@ const admin = new AdminForth({
       table: 'users',
       resourceId: 'users',
       label: 'Users',  
+      
       recordLabel: (r: any) => `👤 ${r.email}`,
       plugins: [
         new ForeignInlineListPlugin({
@@ -524,6 +525,11 @@ const admin = new AdminForth({
           primaryKey: true,
           fillOnCreate: ({initialRecord, adminUser}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],  // the default is full set
+        },
+        {
+          name: 'updatedAt',
+          primaryKey: false,
+          showIn: ['list', 'edit', 'filter', 'show'],
         },
         {
           name: 'secret2fa',
