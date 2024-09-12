@@ -690,13 +690,13 @@ export type AfterDataSourceResponseFunction = (params: {resource: AdminForthReso
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeSaveFunction = (params:{resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
+export type BeforeSaveFunction = (params: {resource: AdminForthResource, primaryKey: any, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterSaveFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
+export type AfterSaveFunction = (params: {resource: AdminForthResource, primaryKey: any, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Allow to get user data before login confirmation, will triger when user try to login.
