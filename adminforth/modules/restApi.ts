@@ -605,7 +605,7 @@ export default class AdminForthRestAPI {
             // execute hook if needed
             for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
               const resp = await hook({
-                primaryKey: recordId,
+                recordId,
                 resource,
                 record,
                 adminUser 
@@ -644,7 +644,7 @@ export default class AdminForthRestAPI {
                 record, 
                 adminUser, 
                 oldRecord,
-                primaryKey: recordId,
+                recordId,
               });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -709,7 +709,7 @@ export default class AdminForthRestAPI {
                 resource, 
                 record, 
                 adminUser,
-                primaryKey: body['primaryKey']
+                recordId: body['primaryKey']
               });
               if (!resp || (!resp.ok && !resp.error)) {
                 throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
