@@ -1,6 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
 import AuditLogPlugin from '@adminforth/audit-log';
 import { v4 as uuid } from 'uuid';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
