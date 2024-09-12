@@ -47,6 +47,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           } else if (baseType == 'boolean') {
             field.type = AdminForthDataTypes.BOOLEAN;
             field._underlineType = 'boolean';
+          } else if (baseType == 'datetime') {
+            field.type = AdminForthDataTypes.DATETIME;
+            field._underlineType = 'datetime';
           } else {
             field.type = 'unknown'
           }
@@ -67,6 +70,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
           return dayjs.unix(+value).toISOString();
         } else if (field._underlineType == 'varchar') {
+          return dayjs(value).toISOString();
+        } else if (field._underlineType == 'datetime') {
           return dayjs(value).toISOString();
         } else {
           throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field "${field.name}"`);
@@ -102,6 +107,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         } else if (field._underlineType == 'varchar') {
           // value is iso string now, convert to unix timestamp
           return dayjs(value).toISOString();
+        } else {
+          return value;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value ? 1 : 0;

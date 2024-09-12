@@ -1,6 +1,9 @@
 
 # Getting Started
 
+This demo has some explanations and longer code snippets. 
+For quick and short hello world example check out [Hello World](./01.1-helloWorld.md)
+
 ## Prerequisites
 
 AdminForth requires Node v18 or higher:
