@@ -32,15 +32,24 @@ export default class OperationalResource implements IOperationalResource {
 
   async list(
       filter: IAdminForthFilter | IAdminForthFilter[], 
-      limit: number, 
-      offset: number, 
+      limit: number | null, 
+      offset: number | null, 
       sort: IAdminForthSort | IAdminForthSort[]
   ): Promise<any[]> {
+    let appliedLimit = limit;
+    if (limit === null) {
+      appliedLimit = 1000000000;
+    }
+    let appliedOffset = offset;
+    if (offset === null) {
+      appliedOffset = 0;
+    }
+
     const { data } = await this.dataConnector.getData({
       resource: this.resourceConfig,
       filters: filtersIfFilter(filter),
-      limit,
-      offset,
+      limit: appliedLimit,
+      offset: appliedOffset,
       sort: sortsIfSort(sort),
       getTotals: false,
     });
