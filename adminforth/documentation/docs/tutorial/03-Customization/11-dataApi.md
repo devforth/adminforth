@@ -34,14 +34,18 @@ const user = await admin.resource('users').getById('1234');
 ### Check School with name 'Hawkins Elementary' exits in DB
 
 ```ts
-const schoolExists = !!(await admin.resource('schools').get([Filters.EQ('name', 'Hawkins Elementary')]));
+const schoolExists = !!(await admin.resource('schools').get(
+  [Filters.EQ('name', 'Hawkins Elementary')]
+));
 ```
 
 
 ### Get user with name 'John' and role not 'SuperAdmin'
 
 ```ts
-const user = await admin.resource('users').get([Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]);
+const user = await admin.resource('users').get(
+  [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
+);
 ```
 
 ## Getting list of items from database
@@ -61,7 +65,9 @@ Signature:
 ### Get 15 latest users which role is not Admin:
 
 ```ts
-const users = await admin.resource('users').list([Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt'));
+const users = await admin.resource('users').list(
+  [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
+);
 ```
 
 ### Get 10 oldest users (with highest age):
@@ -79,7 +85,9 @@ const users = await admin.resource('users').list([], 10, 10, Sorts.ASC('age'));
 ### Get 10 schools, sort by rating first, then oldest by founded year:
 
 ```ts
-const schools = await admin.resource('schools').list([], 10, 0, [Sorts.DESC('rating'), Sorts.ASC('foundedYear')]);
+const schools = await admin.resource('schools').list(
+  [], 10, 0, [Sorts.DESC('rating'), Sorts.ASC('foundedYear')]
+);
 ```
 
 ## Creating new item in database
@@ -132,7 +140,9 @@ const dailyReports = await Promise.all(
     const dateEnd = new Date(dateStart);
     dateEnd.setDate(dateEnd.getDate() + 1);
 
-    return admin.resource('users').count([Filters.GTE('createdAt', dateStart.toISOString()), Filters.LT('createdAt', dateEnd.toISOString())]);
+    return admin.resource('users').count(
+      [Filters.GTE('createdAt', dateStart.toISOString()), Filters.LT('createdAt', dateEnd.toISOString())]
+    );
   })
 );
 ```
@@ -185,8 +195,12 @@ Golden rule: create one index per query you are going to use often or where you 
 For example if you have two queries:
 
 ```ts
-const users = await admin.resource('users').list([Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt'));
-const users = await admin.resource('users').list([Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]);
+const users = await admin.resource('users').list(
+  [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
+);
+const users = await admin.resource('users').list(
+  [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
+);
 ```
 You have to create two different indexes:
 

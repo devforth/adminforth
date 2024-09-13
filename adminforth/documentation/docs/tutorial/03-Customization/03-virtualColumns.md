@@ -64,7 +64,7 @@ columns: [
 
 ## Virtual columns for editing.
 
-Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/01-gettingStarted.md) we used this feature to add `password` field to the `users` resource. 
+Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/001-gettingStarted.md) we used this feature to add `password` field to the `users` resource. 
 Thing is that password itself can't be stored in the database, but instead their hash is stored. 
 So we need to add `password` field to the `users` resource and make it `virtual` so it will not be stored in the database.
 
