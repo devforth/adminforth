@@ -102,6 +102,8 @@ Signature:
 }): Promise<any>
 ```
 
+Returns value representing created item with all fields, including fields which were populated with `fillOnCreate`.
+
 ### Create a new school:
 
 ```ts
@@ -121,6 +123,8 @@ Signature:
   filters: [],
 ): Promise<number>
 ```
+
+Returns number of items in database which match the filters.
 
 ### Count number of schools with rating above 4:
 
@@ -175,7 +179,7 @@ Signature:
 ```ts
 .delete(
   primaryKey: string, // value of field marked as primaryKey in resource configuration
-): Promise<void>
+): Promise<boolean>
 ```
 
 ### Delete school with ID '1234'

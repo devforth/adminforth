@@ -226,7 +226,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource, 
     record: any 
     adminUser: AdminUser
-  }): Promise<void>;
+  }): Promise<any>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
