@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.13] - 2024-09-13
+
+## Fixed
+
+- Selecting one item in some cases selected all (if id attribute had name different from id)
+- DataAPI create is now returning full created record (handy when e.g. id field auto-populated by fillOnCreate)
+
 ## [1.3.9] - 2024-09-12
 
 ### Improved
