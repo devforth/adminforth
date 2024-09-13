@@ -16,14 +16,14 @@ Import:
 import AuditLogPlugin from '@adminforth/audit-log';
 ```
 
-[Getting Started](<../01-gettingStarted.md>) will be used as base for this example.
+[Getting Started](<../001-gettingStarted.md>) will be used as base for this example.
 
 
 ## Creating table for storing activity data
 For the first, to track records changes, we need to set up the database and table with certain fields inside where tracked data will be stored.
 
 First of all you should create this table in your own database. In our example we will continue using SQLite database we created
-in [Getting Started](<../01-gettingStarted.md>). Just add the following code to the end of `initDataBase` function in `index.ts` file:
+in [Getting Started](<../001-gettingStarted.md>). Just add the following code to the end of `initDataBase` function in `index.ts` file:
 
 ```ts title='./index.ts'
 async function initDataBase() {

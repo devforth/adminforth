@@ -20,7 +20,7 @@ OPENAI_API_KEY=your_key
 
 Add plugin installation to any text or string column. 
 
-For example let's add it for title and description in `aparts` resource configuration which we created in [Getting Started](../01-gettingStarted.md) tutorial.
+For example let's add it for title and description in `aparts` resource configuration which we created in [Getting Started](../001-gettingStarted.md) tutorial.
 
 ```ts title="./index.ts"
 //diff-add
