@@ -508,7 +508,17 @@ const admin = new AdminForth({
           foreignResourceId: 'audit_log',
          
         }),
-        new TwoFactorsAuthPlugin({twoFaSecretFieldName:'secret2fa'}), 
+        new TwoFactorsAuthPlugin({
+          twoFaSecretFieldName: 'secret2fa',
+          // optional callback to define which users should be enforced to use 2FA
+          usersFilterToApply: (adminUser: AdminUser) => {
+            if (process.env.NODE_ENV === 'development') {
+              return false;
+            }
+            // return true if user should be enforced to use 2FA,
+            return adminUser.dbUser.email !== 'adminforth'
+          },
+        }), 
       ],
       options: {
         allowedActions: {

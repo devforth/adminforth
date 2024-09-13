@@ -54,7 +54,13 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
         const authResource = adminforth.config.resources.find((res)=>res.resourceId === adminforth.config.auth.usersResourceId )
         const authPk = authResource.columns.find((col)=>col.primaryKey).name
         const userPk = adminUser.dbUser[authPk]
-        let newSecret = null
+        let newSecret = null;
+
+        const userNeeds2FA = this.options.usersFilterToApply ? this.options.usersFilterToApply(adminUser) : true;
+        if (!userNeeds2FA){
+          return { body:{loginAllowed: true}, ok: true}
+        }
+
         if (!secret){
           const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
           newSecret = tempSecret.secret
@@ -66,10 +72,8 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
             body:{
               loginAllowed: false,
               redirectTo: '/confirm2fa',
-             
             },
             ok: true
-            
           }
         }
         const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk },'tempTotp', ) 

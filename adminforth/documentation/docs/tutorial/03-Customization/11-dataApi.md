@@ -28,7 +28,9 @@ Signature:
 ### Get item by ID:
 
 ```ts
-const user = await admin.resource('users').getById('1234');
+const user = await admin.resource('users').get(
+  [Filters.EQ('id', '1234')]
+);
 ```
 
 ### Check School with name 'Hawkins Elementary' exits in DB
