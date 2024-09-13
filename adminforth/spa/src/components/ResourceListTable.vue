@@ -70,7 +70,7 @@
         </td>
       </tr>
 
-      <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="row.id"
+      <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
         :class="{'border-b': rowI !== rows.length - 1}"
       >
@@ -80,8 +80,8 @@
               @click="(e)=>{e.stopPropagation()}"
               id="checkbox-table-search-1"
               type="checkbox"
-              :checked="checkboxesInternal.includes(row.id)"
-              @change="(e)=>{addToCheckedValues(row.id)}"
+              :checked="checkboxesInternal.includes(row._primaryKeyValue)"
+              @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
             <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
           </div>
@@ -299,6 +299,7 @@ watch(() => props.sort, (newSort) => {
 });
 
 function addToCheckedValues(id) {
+  console.log('checking', checkboxesInternal.value, 'id', id)
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
@@ -312,13 +313,13 @@ const columnsListed = computed(() => props.resource?.columns?.filter(c => c.show
 async function selectAll(value) {
   if (!allFromThisPageChecked.value) {
     props.rows.forEach((r) => {
-      if (!checkboxesInternal.value.includes(r.id)) {
-        checkboxesInternal.value.push(r.id)
+      if (!checkboxesInternal.value.includes(r._primaryKeyValue)) {
+        checkboxesInternal.value.push(r._primaryKeyValue)
       } 
     });
   } else {
     props.rows.forEach((r) => {
-      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r.id);
+      checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r._primaryKeyValue);
     });
   }
   checkboxesInternal.value = [ ...checkboxesInternal.value ];
@@ -328,7 +329,7 @@ const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
   if (!props.rows) return false;
-  return props.rows.every((r) => checkboxesInternal.value.includes(r.id));
+  return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));

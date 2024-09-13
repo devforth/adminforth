@@ -57,25 +57,28 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  createRecord({ resource, record, adminUser }: { 
+  async createRecord({ resource, record, adminUser }: { 
     resource: AdminForthResource; record: any; adminUser: any;
-  }): Promise<void> {
+  }): Promise<any> {
     // transform value using setFieldValue and call createRecordOriginalValues
-    const newRecord = {...record};
-    
+    const filledRecord = {...record};
+    const recordWithOriginalValues = {...record};
+
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
-        if (record[col.name] === undefined) {
-            record[col.name] = col.fillOnCreate({
-                initialRecord: record, adminUser
-             });
+        if (filledRecord[col.name] === undefined) {
+          filledRecord[col.name] = col.fillOnCreate({
+            initialRecord: record, 
+            adminUser
+          });
         }
       }
-
-        newRecord[col.name] = this.setFieldValue(col, record[col.name]);
+      recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
     }
-    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', newRecord);
-    return this.createRecordOriginalValues({ resource, record: newRecord });
+    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', recordWithOriginalValues);
+    await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+
+    return recordWithOriginalValues;
   }
 
   updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {
