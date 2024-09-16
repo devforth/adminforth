@@ -35,6 +35,7 @@ Create `.env` file in root directory and put following content:
 
 ```bash title="./.env"
 DATABASE_URL="file:./db.sqlite"
+DATABASE_FILE_URL=file:${DATABASE_FILE}
 ADMINFORTH_SECRET=123
 NODE_ENV=development
 ```
