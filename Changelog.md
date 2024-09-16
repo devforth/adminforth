@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- showBrandNameInSidebar - now to hide brand name in the sidebar you have to use this new option (on the same level with brandName). By default it is `true`.
+- showBrandNameInSidebar - now to hide brand name in the sidebar you have to use this new option (on the same level with brandName).
+Previously you had to set brandName to empty string. By default it is `true`.
 
 ## [1.3.13] - 2024-09-13
 
