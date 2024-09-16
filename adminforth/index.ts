@@ -23,6 +23,7 @@ import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
+import { error } from 'console';
 
 // exports
 export * from './types/AdminForthConfig.js'; 
@@ -198,28 +199,20 @@ class AdminForth implements IAdminForth {
     return users.data[0] || null;
   }
 
-  async createResourceRecord({ resource, record, adminUser }: { resource: AdminForthResource, record: any, adminUser: AdminUser }) {
+  async createResourceRecord(
+    { resource, record, adminUser }: 
+    { resource: AdminForthResource, record: any, adminUser: AdminUser }
+  ): Promise<{ ok: boolean, error?: string, createdRecord?: any }> {
+    
     for (const column of resource.columns) {
-        if (
-            (column.required as {create?: boolean, edit?: boolean}) ?.create &&
-            record[column.name] === undefined &&
-            column.showIn.includes(AdminForthResourcePages.create)
-        ) {
-            return { error: `Column '${column.name}' is required` };
-        }
-
-        if (column.isUnique) {
-            const existingRecord = await this.connectors[resource.dataSource].getData({
-                resource,
-                filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value: record[column.name] }],
-                limit: 1,
-                sort: [],
-                offset: 0
-            });
-            if (existingRecord.data.length > 0) {
-                return { error: `Record with ${column.name} ${record[column.name]} already exists` };
-            }
-        }
+      // TODO: assuming specifity for AdminForthResourcePages.create better to move it to api for this button
+      if (
+          (column.required as {create?: boolean, edit?: boolean}) ?.create &&
+          record[column.name] === undefined &&
+          column.showIn.includes(AdminForthResourcePages.create)
+      ) {
+          return { error: `Column '${column.name}' is required`, ok: false };
+      }
     }
 
     // execute hook if needed
@@ -230,7 +223,7 @@ class AdminForth implements IAdminForth {
       }
 
       if (resp.error) {
-        return { error: resp.error };
+        return { error: resp.error, ok: false };
       }
     }
 
@@ -242,24 +235,30 @@ class AdminForth implements IAdminForth {
     }
     const connector = this.connectors[resource.dataSource];
     process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record createResourceRecord', record);
-    await connector.createRecord({ resource, record, adminUser });
+    const { ok, error, createdRecord } = await connector.createRecord({ resource, record, adminUser });
 
     const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
       console.log('Hook afterSave', hook);
-      const resp = await hook({ recordId: primaryKey, resource, record, adminUser });
+      const resp = await hook({ 
+        recordId: primaryKey, 
+        resource, 
+        record: createdRecord, 
+        adminUser
+      });
+
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
       }
 
       if (resp.error) {
-        return { error: resp.error };
+        return { error: resp.error, ok: false };
       }
     }
 
-    return { ok: true };
+    return { ok, error, createdRecord };
   }
 
   resource(resourceId: string) {
