@@ -1132,6 +1132,16 @@ export type AdminForthConfig = {
        */
       loginBackgroundImage?: string,
 
+
+      /**
+       * Position of background image on login page
+       * 'over' - image will be displayed over full login page under login form
+       * '1/2' - image will be displayed on left 1/2 of login page
+       * 
+       * Default: '1/2'
+       */
+      loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
+
       /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
@@ -1194,6 +1204,13 @@ export type AdminForthConfig = {
        * Your app name
        */
       brandName?: string,
+
+
+      /**
+       * Whether to show brand name in sidebar
+       * default is true
+       */
+      showBrandNameInSidebar?: boolean,
 
       /**
        * Path to your app logo

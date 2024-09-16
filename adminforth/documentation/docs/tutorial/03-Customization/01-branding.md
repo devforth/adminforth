@@ -19,7 +19,7 @@ const admin = new AdminForth({
 //diff-add
   customization: {
 //diff-add
-    brandName: 'My App',  // used in header
+    brandName: 'My App',  // used in login page and sidebar
 //diff-add
     title: 'My App Admin',  // used to set HTML title tag
 //diff-add
@@ -41,14 +41,19 @@ You can use `@@/` prefix for all paths in the configuration and also import imag
 </template>
 ```
 
-To completely remove brand name from sidebar and header, set it to empty string:
+## Removing brand name from sidebar
+
+
+If you are using logo image which has branded title inside, you might
+want completely remove default text brand name from sidebar:
 
 ```ts title='./index.ts'
-//diff-remove
 brandName: 'My App',
 //diff-add
-brandName: '',
+showBrandNameInSidebar: false,
 ```
+
+`brandName` will still be used in the other places e.g. login form.
 
 ## Theming
 
@@ -134,3 +139,20 @@ const admin = new AdminForth({
 ```
 Here is how it looks:
 ![alt text](<localhost_3500_login (2).png>)
+
+You can also set background position and size:
+
+```ts title='./index.ts'
+
+auth: {
+  ...
+  loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
+//diff-add
+  loginBackgroundPosition: 'over',
+}
+```
+
+`loginBackgroundPosition` accepts values:
+
+- `over` - image will be over the whole login page with cover mode
+- `1/2`(default), `3/4`, `2/5`, `3/5` etc. - image will be in the left side of the login page with cover mode
