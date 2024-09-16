@@ -52,7 +52,7 @@ brandName: '',
 
 ## Theming
 
-AdminForth uses TailwindCSS for styling. By default both black and light thems the same as for Tailwind, but you able to customize the look of the application by changing the TailwindCSS configuration.
+AdminForth uses TailwindCSS for styling. You are able to customize the look of the application by changing the TailwindCSS configuration.
 
 Use [styles.ts](https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts) file to see which variables are available for change.
 
@@ -113,7 +113,7 @@ styles: {
 
 ## Login background
 
-Some why login background image matters.
+To make login interface less boring background image matters.
 
 For example you might want to get [free sweet background](https://unsplash.com/s/photos/secure?license=free) from Unsplash like
 [Nate Watson's apartments view](https://images.unsplash.com/photo-1516501312919-d0cb0b7b60b8?q=80&w=3404&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D).
