@@ -226,7 +226,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource, 
     record: any 
     adminUser: AdminUser
-  }): Promise<any>;
+  }): Promise<{ok: boolean, error?: string, createdRecord?: any}>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
@@ -264,7 +264,9 @@ export interface IAdminForth {
     [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
-  createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
+  createResourceRecord(
+    params: { resource: AdminForthResource, record: any, adminUser: AdminUser }
+  ): Promise<{ ok: boolean, error?: string, createdRecord?: any }>;
 
   auth: IAdminForthAuth;
 
@@ -1379,7 +1381,7 @@ export interface IOperationalResource {
 
   count: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
 
-  create: (record: any) => Promise<any>;
+  create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
   update: (primaryKey: any, record: any) => Promise<any>;
 

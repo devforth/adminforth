@@ -568,12 +568,13 @@ export default class AdminForthRestAPI {
 
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser });
             if (response.error) {
-              return { error: response.error };
+              return { error: response.error, ok: false };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
             return {
-              newRecordId: record[connector.getPrimaryKey(resource)]
+              newRecordId: response.createdRecord[connector.getPrimaryKey(resource)],
+              ok: true
             }
         }
     });
