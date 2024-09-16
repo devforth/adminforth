@@ -53,7 +53,6 @@ it might contain your own sensitive secrets. So to follow best practices, we rec
 > ☝️ For demo purposes we will create a database using Prisma and SQLite. 
 > You can also create it using any other favorite tool or ORM and skip this step.
 
-```bash
 
 Create `./schema.prisma` and put next content there:
 
