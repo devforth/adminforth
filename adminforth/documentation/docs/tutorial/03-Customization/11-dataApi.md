@@ -12,7 +12,23 @@ This allows you to make basic operations on the data with AdminForth without usi
 
 > ☝️ For advanced operations like generating aggregations, joins and other complex queries you should use your own ORM or query builder.
 
+## Usage
 
+Basically you just import `Filters`, `Sorts` from the `adminforth` package and call the awaitable methods on the `admin.resource('users')`.
+
+```ts
+import { Filters, Sorts } from 'adminforth';
+...
+
+const admin = new AdminForth({
+  ...
+});
+
+// get the resource object
+await admin.resource('users').get([Filters.EQ('id', '1234')]);
+```
+
+Here is the list of methods you can use:
 
 ## Getting one item from database
 
