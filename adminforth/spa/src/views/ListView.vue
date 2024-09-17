@@ -149,22 +149,7 @@ const DEFAULT_PAGE_SIZE = 10;
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
 
 
-watch([page], async () => {
-  console.log('↘️watch([page]: filters changed');
-  await getList();
-});
 
-watch(() => filtersStore.filters, async () => {
-  page.value = 1;
-  checkboxes.value = [];
-  console.log('↘️watch(() => filtersStore.filters: filters changed');
-  await getList();
-}, {deep: true});
-
-watch([sort], async () => {
-  console.log('↘️watch([sort]: filters changed');
-  await getList();
-}, {deep: true});
 
 
 async function getList() {
@@ -222,6 +207,8 @@ async function init() {
     resourceId: route.params.resourceId
   });
 
+  // !!! clear filters should be in same tick with sort assignment so that watch can catch it
+  filtersStore.clearFilters();
   if (coreStore.resource.options?.defaultSort) {
     sort.value = [{
         field: coreStore.resource.options.defaultSort.columnName,
@@ -230,8 +217,8 @@ async function init() {
   } else {
     sort.value = [];
   }
-  console.log('↘️init changed');
-  await getList();
+  console.log('↘️init fired');
+  // await getList();
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
     method: 'POST',
@@ -241,18 +228,22 @@ async function init() {
   });
 }
 
-onMounted(async () => {
-  initFlowbite(); 
- 
-  await init();
+watch([page, sort, () => filtersStore.filters], async () => {
+  console.log('↘️watch fired getList');
+  await getList();
+}, { deep: true });
 
-});
-
-// on route param change 
-watch(() => route.params.resourceId, async () => {
-  filtersStore.setFilters([]);
+watch(() => filtersStore.filters, async (to, from) => {
+  page.value = 1;
   checkboxes.value = [];
+}, {deep: true});
+
+onMounted(async () => {
+  console.log('🧱onMounted fired');
+  initFlowbite(); 
   await init();
 });
+
+
 
 </script>

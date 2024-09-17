@@ -56,12 +56,4 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  const filterStore = useFiltersStore();
-  if (to.path.startsWith('/resource/')) {
-    filterStore.clearFilters();
-  }
-  next()
-})
-
 export default router
