@@ -130,7 +130,6 @@
                       </button>
                     </template>
                     <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
-
                     <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
 
                 </td>
@@ -154,10 +153,10 @@ import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@ic
 import { computedAsync } from '@vueuse/core';
 import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
-
+const route = useRoute();
 const props = defineProps({
   loading: Boolean,
   resource: Object,
@@ -168,7 +167,7 @@ const props = defineProps({
 
 const unmasked = ref({});
 
-const mode = computed(() => props.record  && Object.keys(props.record).length ? 'edit' : 'create');
+const mode = computed(() => route.name === 'resource-create' ? 'create' : 'edit');
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
