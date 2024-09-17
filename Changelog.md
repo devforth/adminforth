@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.14] - 2024-09-16
 
+##
+
+## [1.3.14] - 2024-09-16
+
 ### Improved
 
 - Move unique check to the data API and make requests parallel to speed up the response time 
