@@ -32,6 +32,7 @@ export type CoreConfig = {
         usernameField: string,
         passwordHashField: string,
         loginBackgroundImage: string,
+        loginBackgroundPosition: string,
         userFullnameField: string,
     },
     emptyFieldPlaceholder?: {

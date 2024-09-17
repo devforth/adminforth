@@ -109,7 +109,8 @@ const admin = new AdminForth({
     usernameField: 'email',
     passwordHashField: 'password_hash',
     userFullNameField: 'fullName', // optional
-    loginBackgroundImage: 'https://images.unsplash.com/photo-1499988921418-b7df40ff03f9?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
     demoCredentials: "adminforth:adminforth",  // never use it for production
     loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
     // loginBackgroundImage: '@@/pho.jpg',
@@ -126,7 +127,8 @@ const admin = new AdminForth({
     }],
    
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
-    brandName: '',
+    brandName: 'My Admin',
+    showBrandNameInSidebar: false,
     datesFormat: 'D MMM YY HH:mm:ss',
     title: 'Devforth Admin',
     brandLogo: '@@/df.svg',

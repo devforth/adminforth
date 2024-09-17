@@ -166,6 +166,7 @@ export default class AdminForthRestAPI {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
+          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
@@ -244,6 +245,7 @@ export default class AdminForthRestAPI {
           menu: newMenu,
           config: { 
             brandName: this.adminforth.config.customization.brandName,
+            showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
             brandLogo: this.adminforth.config.customization.brandLogo,
             datesFormat: this.adminforth.config.customization.datesFormat,
             deleteConfirmation: this.adminforth.config.deleteConfirmation,
@@ -568,12 +570,13 @@ export default class AdminForthRestAPI {
 
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser });
             if (response.error) {
-              return { error: response.error };
+              return { error: response.error, ok: false };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
             return {
-              newRecordId: record[connector.getPrimaryKey(resource)]
+              newRecordId: response.createdRecord[connector.getPrimaryKey(resource)],
+              ok: true
             }
         }
     });

@@ -130,7 +130,9 @@ export default class ConfigValidator implements IConfigValidator {
     if (this.config.customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
     }
-
+    if (this.config.customization.showBrandNameInSidebar === undefined) {
+      this.config.customization.showBrandNameInSidebar = true;
+    }
     if (this.config.customization.favicon) {
       errors.push(...this.checkCustomFileExists(this.config.customization.favicon));
     }

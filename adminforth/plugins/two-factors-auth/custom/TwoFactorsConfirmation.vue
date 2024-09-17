@@ -1,6 +1,6 @@
 <template>
     <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800"
-      :style="coreStore.config?.loginBackgroundImage ? {
+      :style="(coreStore.config?.loginBackgroundImage && coreStore.config?.loginBackgroundPosition === 'over') ? {
         'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
         'background-size': 'cover',
         'background-position': 'center',

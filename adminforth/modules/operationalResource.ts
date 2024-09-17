@@ -1,3 +1,4 @@
+import { error } from 'console';
 import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAdminForth } from '../types/AdminForthConfig.js';
 
 
@@ -63,8 +64,13 @@ export default class OperationalResource implements IOperationalResource {
     });
   }
 
-  async create(record: any): Promise<any> {
-    return await this.dataConnector.createRecord({ resource: this.resourceConfig, record, adminUser: null });
+  async create(recordValues: any): Promise<{ ok: boolean; createdRecord: any; error?: string; }> {
+    const { ok, createdRecord, error } = await this.dataConnector.createRecord({ 
+      resource: this.resourceConfig, 
+      record: recordValues, 
+      adminUser: null 
+    });
+    return { ok, createdRecord, error };
   }
 
   async update(primaryKey: any, record: any): Promise<any> {

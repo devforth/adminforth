@@ -28,7 +28,7 @@ const admin = new AdminForth({
 await admin.resource('users').get([Filters.EQ('id', '1234')]);
 ```
 
-Here is the list of methods you can use:
+Here we will show you how to use the Data API with simple examples.
 
 ## Getting one item from database
 

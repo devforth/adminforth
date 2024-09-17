@@ -59,7 +59,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
   async createRecord({ resource, record, adminUser }: { 
     resource: AdminForthResource; record: any; adminUser: any;
-  }): Promise<any> {
+  }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
@@ -75,10 +75,40 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
     }
+
+    async function checkUnique(column: AdminForthResourceColumn, value: any) {
+      const existingRecord = await this.getData({
+        resource,
+        filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }],
+        limit: 1,
+        sort: [],
+        offset: 0,
+        getTotals: false
+      });
+      return existingRecord.data.length > 0;
+    }
+    let error: string | null = null;
+    await Promise.race(
+      resource.dataSourceColumns.map(async (col) => {
+        if (col.isUnique && !col.virtual && !error) {
+          const exists = await checkUnique(col, recordWithOriginalValues[col.name]);
+          if (exists) {
+            error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
+          }
+        }
+      })
+    );
+    if (error) {
+      return { error, ok: false };
+    }
+
     process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', recordWithOriginalValues);
     await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
 
-    return recordWithOriginalValues;
+    return {
+      ok: true,
+      createdRecord: recordWithOriginalValues,
+    }
   }
 
   updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {
