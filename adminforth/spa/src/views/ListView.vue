@@ -117,8 +117,6 @@ import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
-
-import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 
 
@@ -152,17 +150,19 @@ const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEF
 
 
 watch([page], async () => {
+  console.log('↘️watch([page]: filters changed');
   await getList();
 });
 
-watch(()=>filtersStore.filters, async () => {
+watch(() => filtersStore.filters, async () => {
   page.value = 1;
   checkboxes.value = [];
-
+  console.log('↘️watch(() => filtersStore.filters: filters changed');
   await getList();
 }, {deep: true});
 
 watch([sort], async () => {
+  console.log('↘️watch([sort]: filters changed');
   await getList();
 }, {deep: true});
 
@@ -230,7 +230,7 @@ async function init() {
   } else {
     sort.value = [];
   }
-
+  console.log('↘️init changed');
   await getList();
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',

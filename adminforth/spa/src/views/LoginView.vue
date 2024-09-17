@@ -1,24 +1,38 @@
 <template>
-  <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800"
-    :style="coreStore.config?.loginBackgroundImage ? {
+  <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800 relative w-screen h-screen"
+    :style="coreStore.config?.loginBackgroundImage && backgroundPosition === 'over' ? {
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
       'background-blend-mode': 'darken'
     }: {}"
-    >
+  >
+    
+    <img v-if="coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
+      :src="loadFile(coreStore.config?.loginBackgroundImage)"
+      class="position-absolute top-0 left-0 h-screen object-cover w-0"
+      :class="{
+        '1/2': 'md:w-1/2',
+        '1/3': 'md:w-1/3',
+        '2/3': 'md:w-2/3',
+        '3/4': 'md:w-3/4',
+        '2/5': 'md:w-2/5',
+        '3/5': 'md:w-3/5',
+      }[backgroundPosition]"
+    />
 
     <!-- Main modal -->
-    <div id="authentication-modal" tabindex="-1" class=" overflow-y-auto overflow-x-hidden z-50 min-w-[400px] justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full">
+    <div id="authentication-modal" tabindex="-1" 
+      class="overflow-y-auto flex flex-grow
+      overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                        Sign in to {{ coreStore.config?.brandName }}
+                      Sign in to {{ coreStore.config?.brandName }}
                     </h3>
-                   
                 </div>
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
@@ -87,7 +101,7 @@
 
 <script setup>
 
-import { onMounted, ref, watchEffect } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
@@ -103,10 +117,13 @@ const inProgress = ref(false);
 const coreStore = useCoreStore();
 const user = useUserStore();
 
-
 const showPw = ref(false);
 
 const error = ref(null);
+
+const backgroundPosition = computed(() => {
+  return coreStore.config?.loginBackgroundPosition || '1/2';
+});
 
 onMounted(async () => {
     await coreStore.getPublicConfig();

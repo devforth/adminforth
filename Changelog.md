@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.14] - 2024-09-16
+
+##
+
+## [1.3.14] - 2024-09-16
+
+### Improved
+
+- Move unique check to the data API and make requests parallel to speed up the response time 
+- Now create data API returns error and ok:true/false code. 
+
+### Added
+
+- loginBackgroundPosition - now you can set position and size of the login background image. By default it is `1/2` which means image will be in the left side of the login page with cover mode. You can also set it to `over` to make image over the whole login page with cover mode.
+
+### Changed
+
+- showBrandNameInSidebar - now to hide brand name in the sidebar you have to use this new option (on the same level with brandName).
+Previously you had to set brandName to empty string. By default it is `true`.
+
 ## [1.3.13] - 2024-09-13
 
 ## Fixed

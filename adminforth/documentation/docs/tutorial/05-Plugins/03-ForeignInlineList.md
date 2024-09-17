@@ -19,7 +19,7 @@ import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 In [Getting Started](<../001-gettingStarted.md>) we created a `'aparts'` resource which has a field `'realtor_id'`.
 This field refers to record from `'users'` resource. This means that we can display a list of apartments in the user's show view.
 
-Add to your `'users'` resource configuration (which we created in ), plugin instance:
+Add to your `'users'` resource configuration the plugin instance:
 
 
 ```ts title="./index.ts"

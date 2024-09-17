@@ -226,7 +226,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource, 
     record: any 
     adminUser: AdminUser
-  }): Promise<any>;
+  }): Promise<{ok: boolean, error?: string, createdRecord?: any}>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
@@ -264,7 +264,9 @@ export interface IAdminForth {
     [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
-  createResourceRecord(params: { resource: AdminForthResource, record: any, adminUser: AdminUser }): Promise<any>;
+  createResourceRecord(
+    params: { resource: AdminForthResource, record: any, adminUser: AdminUser }
+  ): Promise<{ ok: boolean, error?: string, createdRecord?: any }>;
 
   auth: IAdminForthAuth;
 
@@ -1130,6 +1132,16 @@ export type AdminForthConfig = {
        */
       loginBackgroundImage?: string,
 
+
+      /**
+       * Position of background image on login page
+       * 'over' - image will be displayed over full login page under login form
+       * '1/2' - image will be displayed on left 1/2 of login page
+       * 
+       * Default: '1/2'
+       */
+      loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
+
       /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
@@ -1192,6 +1204,13 @@ export type AdminForthConfig = {
        * Your app name
        */
       brandName?: string,
+
+
+      /**
+       * Whether to show brand name in sidebar
+       * default is true
+       */
+      showBrandNameInSidebar?: boolean,
 
       /**
        * Path to your app logo
@@ -1379,7 +1398,7 @@ export interface IOperationalResource {
 
   count: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
 
-  create: (record: any) => Promise<any>;
+  create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
   update: (primaryKey: any, record: any) => Promise<any>;
 
