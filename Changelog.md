@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.17]
+
+### Fixed
+
+- If value in enum type field is not in the list, it is now shown as a string instead of empty value on list/show
+
+### Changed
+
+- Move light and dark switch from menu to the top right corner of the page
+
+
 ## [1.3.16] - 2024-09-18
 
 ### Fixed
