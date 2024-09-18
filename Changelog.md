@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.17]
+## [1.3.17] - 2024-09-18
 
 ### Fixed
 
@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move light and dark switch from menu to the top right corner of the page
+
+
+### Added
+
+- `enforceLowerCase` option for text/string columns. Might be handy for emails to comply with RFC 5321 and RFC 5322, usernames etc.
+We recommend setting it to email field for users table (updated in the tutorial)
 
 
 ## [1.3.16] - 2024-09-18

@@ -244,6 +244,10 @@ const setCurrentValue = (key, value) => {
   } else {
     currentValues.value[key] = value;
   }
+  if (['text', 'richtext', 'string'].includes(col.type) && col.enforceLowerCase) {
+    currentValues.value[key] = currentValues.value[key].toLowerCase();
+  }
+
   currentValues.value = { ...currentValues.value };
   console.log('3️⃣ setCurrentValue', key, value);
   emit('update:record', currentValues.value);
