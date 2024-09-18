@@ -569,7 +569,7 @@ const admin = new AdminForth({
         {
           name: 'role',
           enum: [
-            { value: 'superadmin', label: 'Super Admin' },
+            // { value: 'superadmin', label: 'Super Admin' },
             { value: 'user', label: 'User' },
           ]
         },
