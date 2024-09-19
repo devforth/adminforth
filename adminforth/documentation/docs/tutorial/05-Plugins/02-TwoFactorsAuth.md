@@ -50,7 +50,6 @@ export const admin = new AdminForth({
   }
 }
 
-//diff-add
 async function initDataBase() {
   ...
 //diff-add
@@ -80,7 +79,7 @@ for the dev environment using `usersFilterToApply` option.
 
     plugins: [
         new TwoFactorsAuthPlugin ({ 
-          twoFaSecretFieldName: 'secret2fa' 
+          twoFaSecretFieldName: 'secret2fa',
 //diff-add
           usersFilterToApply: (adminUser: AdminUser) => {
 //diff-add
@@ -93,6 +92,7 @@ for the dev environment using `usersFilterToApply` option.
             }
 //diff-add
             return true;
+//diff-add
           },
         }),
     ],
