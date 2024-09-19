@@ -3,11 +3,12 @@ import { defineStore } from 'pinia';
 
 export const useFiltersStore = defineStore('filters', () => {
     const filters: Ref<any[]> = ref([]);
+    
     const setFilter = (filter: any) => {
-        filters.value = [...filters.value, filter];
+        filters.value.push(filter);
     }
     const setFilters = (f: any) => {
-        filters.value = [...f];
+        filters.value = f;
     }
     const getFilters = () => {
         return filters.value;

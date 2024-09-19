@@ -57,6 +57,21 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
+  async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any) {
+    process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+    const existingRecord = await this.getData({
+      resource,
+      filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }],
+      limit: 1,
+      sort: [],
+      offset: 0,
+      getTotals: false
+    });
+    process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 existingRecord|||', existingRecord);
+
+    return existingRecord.data.length > 0;
+  }
+
   async createRecord({ resource, record, adminUser }: { 
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
@@ -76,28 +91,21 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
     }
 
-    async function checkUnique(column: AdminForthResourceColumn, value: any) {
-      const existingRecord = await this.getData({
-        resource,
-        filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }],
-        limit: 1,
-        sort: [],
-        offset: 0,
-        getTotals: false
-      });
-      return existingRecord.data.length > 0;
-    }
+    
     let error: string | null = null;
-    await Promise.race(
+    await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
+
         if (col.isUnique && !col.virtual && !error) {
-          const exists = await checkUnique(col, recordWithOriginalValues[col.name]);
+
+          const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name]);
           if (exists) {
             error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
           }
         }
       })
     );
+    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 error', error);
     if (error) {
       return { error, ok: false };
     }

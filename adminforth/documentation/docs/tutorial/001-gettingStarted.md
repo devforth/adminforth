@@ -268,9 +268,10 @@ export const admin = new AdminForth({
           name: 'email', 
           required: true,
           isUnique: true,
+          enforceLowerCase: true,
           validation: [
             {
-              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+              regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
               message: 'Email is not valid, must be in format example@test.com'
             },
           ]

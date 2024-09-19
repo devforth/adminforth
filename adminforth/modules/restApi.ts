@@ -261,8 +261,6 @@ export default class AdminForthRestAPI {
       },
     });
 
-    
-
     function checkAccess(action: AllowedActionsEnum, allowedActions: AllowedActions): { allowed: boolean, error?: string } {
       const allowed = (allowedActions[action] as boolean | string | undefined);
       if (allowed !== true) {
@@ -383,6 +381,7 @@ export default class AdminForthRestAPI {
           offset,
           filters,
           sort,
+          getTotals: true,
         });
         // for foreign keys, add references
         await Promise.all(

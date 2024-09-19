@@ -236,7 +236,10 @@ class AdminForth implements IAdminForth {
     const connector = this.connectors[resource.dataSource];
     process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record createResourceRecord', record);
     const { ok, error, createdRecord } = await connector.createRecord({ resource, record, adminUser });
-
+    if (!ok) {
+      return { ok, error };
+    }
+    
     const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed

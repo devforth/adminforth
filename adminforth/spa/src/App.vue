@@ -18,7 +18,12 @@
           </div>
           <div class="flex items-center">
             <div class="flex items-center ms-3 ">
+              <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+                <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
+                <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
+              </span>
               <div>
+
                 <button type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">Open user menu</span>
                   <svg class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -36,14 +41,9 @@
                   </p>
                 </div>
                 <ul class="py-1" role="none">
-                  <li>
-                    <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
-                      {{ theme === 'dark' ? 'Light' : 'Dark' }}
-                      <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
-                      <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
-                      mode
-                    </span>
-                  </li>
+                  <!-- <li>
+                    
+                  </li> -->
                   <li>
                     <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">Sign out</button>
                   </li>

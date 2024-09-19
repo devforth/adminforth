@@ -539,11 +539,6 @@ const admin = new AdminForth({
           showIn: ['list', 'filter', 'show'],  // the default is full set
         },
         {
-          name: 'updatedAt',
-          primaryKey: false,
-          showIn: ['list', 'edit', 'filter', 'show'],
-        },
-        {
           name: 'secret2fa',
           type: AdminForthDataTypes.STRING,
           showIn: [],
@@ -552,8 +547,8 @@ const admin = new AdminForth({
         { 
           name: 'email', 
           isUnique: true,
-          required:false,
-          
+          required: true,
+          enforceLowerCase: true,
         },
         { 
           name: 'created_at', 
@@ -569,7 +564,7 @@ const admin = new AdminForth({
         {
           name: 'role',
           enum: [
-            { value: 'superadmin', label: 'Super Admin' },
+            // { value: 'superadmin', label: 'Super Admin' },
             { value: 'user', label: 'User' },
           ]
         },
