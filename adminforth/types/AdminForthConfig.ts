@@ -571,6 +571,10 @@ export type AdminForthResourceColumn = {
      */
     isUnique?: boolean,
 
+    /**
+     * Will automatically convert any capital letters to lowercase in input during editing
+     */
+    enforceLowerCase?: boolean,
 
     /**
      * Runtime validation Regexp rules for this field.

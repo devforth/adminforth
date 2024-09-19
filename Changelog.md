@@ -5,9 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.14] - 2024-09-16
+## [1.3.17] - 2024-09-18
 
-##
+### Fixed
+
+- If value in enum type field is not in the list, it is now shown as a string instead of empty value on list/show
+
+### Changed
+
+- Move light and dark switch from menu to the top right corner of the page
+
+
+### Added
+
+- `enforceLowerCase` option for text/string columns. Might be handy for emails to comply with RFC 5321 and RFC 5322, usernames etc.
+We recommend setting it to email field for users table (updated in the tutorial)
+
+
+## [1.3.16] - 2024-09-18
+
+### Fixed
+
+- upgrade express dep to fix security vulnerability
+
+
+## [1.3.15] - 2024-09-17
+
+## Fixed
+- Empty pagination
+- Edit/Create form: create rules (note, required etc) applied from edit mode instead of create mode when user entered first value on create
+- Remove duplicated requests when moving from page to page
+- Internal code improvements to simplify filters cleanup on pages navigation
+- fix unique checks in both data API and UI
 
 ## [1.3.14] - 2024-09-16
 
