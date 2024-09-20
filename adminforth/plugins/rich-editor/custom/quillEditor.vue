@@ -92,12 +92,13 @@ onMounted(() => {
     modules: {
       toolbar: props.meta.toolbar || [
         ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-        ['blockquote', 'code-block', 'link'],
+        ['blockquote', 'code-block', 'link', ...props.meta.uploadPluginInstanceId ? ['image'] : []],
         // [
         //   // 'image', 
         //   // 'video', 
         //   // 'formula'
         // ],
+        
 
         [{ 'header': 2 }, { 'header': 3 }],               // custom button values
         [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
@@ -375,7 +376,6 @@ function removeCompletionOnBlur() {
   .ql-toolbar.ql-snow[class] {
     border: none;
     padding: 0 0 1rem 0;
-
     .ql-picker-label{
       padding-left: 0;
     }
@@ -383,19 +383,16 @@ function removeCompletionOnBlur() {
 
   .ql-container {
     border: 0;
-
     .ql-editor {
       position: relative;
       padding: 0;
       min-height: 100px;
-
       &.ql-blank::before {
         left: 0px;
         font-style: normal;
       }
     }
   }
-
 
   .ql-editor:not(:focus) [completer] {
     display: none;
@@ -404,6 +401,29 @@ function removeCompletionOnBlur() {
   .ql-editor [completer] {
     color: gray;
     font-style: italic;
+  }
+
+  .ql-snow .ql-stroke {
+    @apply dark:stroke-darkPrimary;
+    @apply stroke-lightPrimary;
+
+  }
+  .ql-snow button:hover .ql-stroke,
+  .ql-snow [role="button"]:hover .ql-stroke {
+    @apply dark:stroke-darkPrimary;
+    @apply stroke-lightPrimary;
+    filter: brightness(1.3);
+  }
+
+  .ql-snow .ql-fill {
+    @apply dark:fill-darkPrimary;
+    @apply fill-lightPrimary;
+  }
+
+  .ql-snow button:hover .ql-fill {
+    @apply dark:fill-darkPrimary;
+    @apply fill-lightPrimary;
+    filter: brightness(1.3);
   }
 
 }

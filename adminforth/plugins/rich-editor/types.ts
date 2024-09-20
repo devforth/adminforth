@@ -134,6 +134,35 @@ export interface PluginOptions {
 
   }
 
- 
+  /**
+   * Allows to attach images to the HTML text
+   * Requires to have a separate resource with Upload Plugin installed on attachment field.
+   * Each attachment used in HTML will create one record in the attachment resource.
+   */
+  attachments?: {
+    /**
+     * Resource name where images are stored. Should point to the existing resource.
+     */
+    attachmentResource: string;
+
+    /**
+     * Field name in the attachment resource where image is stored. Should point to the existing field in the attachment resource.
+     * Also there should be upload plugin installed on this field.
+     */
+    attachmentFieldName: 'image_path',
+
+    /**
+     * When attachment is created, it will be linked to the record with this field name.
+     * For example when RichEditor installed on description field of appartment resource,
+     * field in attachment resource describet hear will store id of appartment record.
+     */
+    attachmentRecordIdFieldName: 'record_id',
+
+    /**
+     * When attachment is created, it will be linked to the resource with this field name.
+     * For example when RichEditor installed on description field of appartment resource, it will store id of appartment resource.
+     */
+    attachmentResourceIdFieldName: 'resource_id',
+  },
 }
 
