@@ -482,7 +482,7 @@ const admin = new AdminForth({
         allowedActions:{
           edit: true,
           delete: async (p) => { return true; },
-          show: false,
+          show: true,
           filter: true,
           create: true,
         },

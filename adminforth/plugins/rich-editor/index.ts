@@ -5,7 +5,7 @@ import { PluginOptions } from './types.js';
 
 export default class RichEditorPlugin extends AdminForthPlugin {
   options: PluginOptions;
-  resourceConfig?: AdminForthResource = undefined;
+  resourceConfig: AdminForthResource = undefined;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
