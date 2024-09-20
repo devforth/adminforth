@@ -39,6 +39,8 @@ const Embed = Quill.import('blots/embed');
 class CompleteBlot extends Embed {
   static blotName = 'complete';
   static tagName = 'span';
+  // https://stackoverflow.com/a/78434756/27379293
+  static className = "complete-blot";
 
   static create(value: { text: string }) {
     let node = super.create();
@@ -53,6 +55,7 @@ class CompleteBlot extends Embed {
       text: node.innerText,
     };
   }
+
 }
 // @ts-ignore
 Quill.register(CompleteBlot);
