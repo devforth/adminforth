@@ -666,10 +666,10 @@ const admin = new AdminForth({
         label: 'Games',
         columns: [
             {
-                name: 'id', 
-                readOnly: true, required: false, 
-                label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
-                showIn: ['list', 'filter', 'show'],  // the default is full set
+              name: 'id', 
+              readOnly: true, required: false, 
+              label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
+              showIn: ['list', 'filter', 'show'],  // the default is full set
             },
             { name: 'name', required: true, isUnique: true },
             { name: 'created_by', required: true,
@@ -677,7 +677,6 @@ const admin = new AdminForth({
                     { value: 'CD Projekt Red', label: 'CD Projekt Red' },
                     { value: 'Rockstar Studios', label: 'Rockstar' },
                     { value: 'Bethesda Game Studios', label: 'Bethesda' },
-                    
                 ]
             },
             { name: 'release_date', fillOnCreate: ({initialRecord}: any) => (new Date()).toISOString() },
