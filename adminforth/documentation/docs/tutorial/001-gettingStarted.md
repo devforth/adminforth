@@ -30,13 +30,6 @@ AdminForth does not provide own HTTP server, but can add own listeners over exis
 npm install express@4.19.2
 ```
 
-For demo purposes we will use SQLite data source. You can use Postgres, Mongo or Clickhouse as well, or create own data source by [implementing DataSource Connector interface](/docs/api/types/AdminForthConfig/interfaces/IAdminForthDataSourceConnector).
-
-
-```bash
-npm install better-sqlite3@10.0.0
-```
-
 You can use AdminForth in pure Node, but we recommend using TypeScript for better development experience:
 
 ```bash
@@ -79,7 +72,7 @@ Open `package.json`, set `type` to `module` and add `start` script:
   "scripts": {
     ...
 //diff-add
-    "start": "tsx watch index.ts"
+    "start": "tsx watch --env-file=.env index.ts"
   },
 }
 ```
@@ -87,8 +80,10 @@ Open `package.json`, set `type` to `module` and add `start` script:
 Create `.env` file in root directory with following content:
 
 ```bash title="./.env"
-ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION
-NODE_ENV=development 
+DATABASE_FILE=./db.sqlite
+DATABASE_FILE_URL=file:${DATABASE_FILE}
+ADMINFORTH_SECRET=123
+NODE_ENV=development
 ```
 
 > ☝️ In production:
@@ -100,19 +95,63 @@ NODE_ENV=development
 it might contain your own sensitive secrets. So to follow best practices, we recommend to add `.env` into `.gitignore` and create `.env.sample` as template for other repository users.
 > During deployment you should set `ADMINFORTH_SECRET` in environment variables of Docker image or in other way without using `.env` file.
 
+## Database creation
+
+> ☝️ For demo purposes we will create a database using Prisma and SQLite. 
+> You can also create it using any other favorite tool or ORM and skip this step.
+
+
+Create `./schema.prisma` and put next content there:
+
+```text title="./schema.prisma"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_FILE_URL")
+}
+
+model users {
+  id            String     @id
+  created_at    DateTime 
+  email         String   @unique
+  role          String     
+  password_hash String
+}
+
+model apartments {
+  id                String     @id
+  created_at        DateTime? 
+  title             String 
+  square_meter      Float?
+  price             Decimal
+  number_of_rooms   Int?
+  description       String?
+  country           String?
+  listed            Boolean
+  realtor_id        String?
+}
+
+```
+
+Create database using `prisma migrate`:
+
+```bash
+npx --yes prisma migrate dev --name init
+```
+
+
 Create `index.ts` file in root directory with following content:
 
 ```ts title="./index.ts"
-import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
+import AdminForth, { Filters } from 'adminforth';
+import usersResource from "./resources/users";
+import apartmentsResource from "./resources/apartments";
 
-import dotenv from 'dotenv';
-dotenv.config();
 
-
-const DB_FILE = 'test.sqlite';
-let db;
 
 const ADMIN_BASE_URL = '';
 
@@ -132,192 +171,12 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: `sqlite://${DB_FILE}`
+      url: `sqlite://${process.env.DATABASE_FILE}`
     },
   ],
   resources: [
-    {
-      dataSource: 'maindb', 
-      table: 'apartments',
-      resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
-                            // in case of same table names from different data sources
-      label: 'Apartments',   // label is defaulted to table name but you can change it
-      recordLabel: (r) => `🏡 ${r.title}`,
-      columns: [
-        { 
-          name: 'id', 
-          label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
-          showIn: ['filter', 'show'], // show column in filter and in show page
-          primaryKey: true,
-          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
-        },
-        { 
-          name: 'title',
-          required: true,
-          showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
-          maxLength: 255,  // you can set max length for string fields
-          minLength: 3,  // you can set min length for string fields
-        }, 
-        {
-          name: 'created_at',
-          type: AdminForthDataTypes.DATETIME ,
-          allowMinMaxQuery: true,
-          showIn: ['list', 'filter', 'show', 'edit'],
-          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
-        },
-        { 
-          name: 'price',
-          allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
-          editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
-        },
-        { 
-          name: 'square_meter', 
-          label: 'Square', 
-          allowMinMaxQuery: true,
-          minValue: 1,  // you can set min /max value for number columns so users will not be able to enter more/less
-          maxValue: 1000,
-        },
-        { 
-          name: 'number_of_rooms',
-          allowMinMaxQuery: true,
-          enum: [
-            { value: 1, label: '1 room' },
-            { value: 2, label: '2 rooms' },
-            { value: 3, label: '3 rooms' },
-            { value: 4, label: '4 rooms' },
-            { value: 5, label: '5 rooms' },
-          ],
-        },
-        { 
-          name: 'description',
-          sortable: false,
-          showIn: ['show', 'edit', 'create', 'filter'],
-        },
-        {
-          name: 'country',
-          enum: [{
-            value: 'US',
-            label: 'United States'
-          }, {
-            value: 'DE',
-            label: 'Germany'
-          }, {
-            value: 'FR',
-            label: 'France'
-          }, {
-            value: 'UK',
-            label: 'United Kingdom'
-          }, {
-            value:'NL',
-            label: 'Netherlands'
-          }, {
-            value: 'IT',
-            label: 'Italy'
-          }, {
-            value: 'ES',
-            label: 'Spain'
-          }, {
-            value: 'DK',
-            label: 'Denmark'
-          }, {
-            value: 'PL',
-            label: 'Poland'
-          }, {
-            value: 'UA',
-            label: 'Ukraine'
-          }, {
-            value: null,
-            label: 'Not defined'
-          }],
-        },
-        {
-          name: 'listed',
-          required: true,  // will be required on create/edit
-        },
-        {
-          name: 'realtor_id',
-          foreignResource: {
-            resourceId: 'users',
-          }
-        }
-      ],
-      options: {
-        listPageSize: 12,
-        allowedActions:{
-          edit: true,
-          delete: true,
-          show: true,
-          filter: true,
-        },
-      },
-    },
-    { 
-      dataSource: 'maindb', 
-      table: 'users',
-      resourceId: 'users',
-      label: 'Users',  
-      recordLabel: (r) => `👤 ${r.email}`,
-      columns: [
-        { 
-          name: 'id', 
-          primaryKey: true,
-          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),
-          showIn: ['list', 'filter', 'show'],
-        },
-        { 
-          name: 'email', 
-          required: true,
-          isUnique: true,
-          enforceLowerCase: true,
-          validation: [
-            {
-              regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com'
-            },
-          ]
-        },
-        { 
-          name: 'created_at', 
-          type: AdminForthDataTypes.DATETIME,
-          showIn: ['list', 'filter', 'show'],
-          fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
-        },
-        {
-          name: 'role',
-          enum: [
-            { value: 'superadmin', label: 'Super Admin' },
-            { value: 'user', label: 'User' },
-          ]
-        },
-        {
-          name: 'password',
-          virtual: true,  // field will not be persisted into db
-          required: { create: true }, // make required only on create page
-          editingNote: { edit: 'Leave empty to keep password unchanged' },
-          minLength: 8,
-          type: AdminForthDataTypes.STRING,
-          showIn: ['create', 'edit'], // to show field only on create and edit pages
-          masked: true, // to show stars in input field
-        },
-        { name: 'password_hash', backendOnly: true, showIn: []}
-      ],
-      hooks: {
-        create: {
-          beforeSave: async ({ record, adminUser, resource }) => {
-            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            return { ok: true };
-          }
-        },
-        edit: {
-          beforeSave: async ({ record, adminUser, resource}) => {
-            if (record.password) {
-              record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            }
-            return { ok: true }
-          },
-        },
-      }
-    },
+    apartmentsResource,
+    usersResource,
   ],
   menu: [
     {
@@ -351,58 +210,9 @@ export const admin = new AdminForth({
   ],
 });
 
-
-async function initDataBase() {
-  db = betterSqlite3(DB_FILE);
-
-  const tableExists = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='apartments';`).get();
-  if (!tableExists) {
-    // if no table - create couple of tables and fill them with some mock data
-    await db.prepare(`
-      CREATE TABLE apartments (
-          id VARCHAR(20) PRIMARY KEY NOT NULL,
-          title VARCHAR(255) NOT NULL,
-          square_meter REAL,
-          price DECIMAL(10, 2) NOT NULL,
-          number_of_rooms INT,
-          description TEXT,
-          country VARCHAR(2),
-          listed BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP,
-          realtor_id VARCHAR(255)
-      );`).run();
-
-    await db.prepare(`
-      CREATE TABLE users (
-          id VARCHAR(255) PRIMARY KEY NOT NULL,
-          email VARCHAR(255) NOT NULL,
-          password_hash VARCHAR(255) NOT NULL,
-          created_at VARCHAR(255) NOT NULL,
-          role VARCHAR(255) NOT NULL
-      );`).run();
-
-    for (let i = 0; i < 100; i++) {
-      await db.prepare(`
-        INSERT INTO apartments (
-          id, title, square_meter, price, 
-          number_of_rooms, description, 
-          created_at, listed, 
-          country
-        ) VALUES (
-         '${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, 
-         ${ Math.floor(Math.random() * 5) }, 'Next gen apartments', 
-         ${ Date.now() / 1000 - Math.random() * 14 * 60 * 60 * 24 }, ${i % 2 == 0}, 
-         '${['US', 'DE', 'FR', 'UK', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}'
-        )`).run();
-    }
-  }
-}
-
-
 if (import.meta.url === `file://${process.argv[1]}`) {
   // if script is executed directly e.g. node index.ts or npm start
 
-  await initDataBase();
 
   const app = express()
   app.use(express.json());
@@ -433,10 +243,203 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 ```
 
-> ☝️ For simplicity we defined whole configuration in one file. Normally once configuration grows you should 
-> move each resource configuration to separate file and organize them to folder and import them in `index.ts`.
+Next step you need to create `resources` folder.
+
+Create `apartments.js` in `resources`:
+```ts title="/apartments.js"
+import { AdminForthDataTypes } from 'adminforth';
+
+export default {
+  dataSource: 'maindb',
+  table: 'apartments',
+  resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
+  // in case of same table names from different data sources
+  label: 'Apartments',   // label is defaulted to table name but you can change it
+  recordLabel: (r) => `🏡 ${r.title}`,
+  columns: [
+    {
+      name: 'id',
+      label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
+      showIn: ['filter', 'show'], // show column in filter and in show page
+      primaryKey: true,
+      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
+    },
+    {
+      name: 'title',
+      required: true,
+      showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
+      maxLength: 255,  // you can set max length for string fields
+      minLength: 3,  // you can set min length for string fields
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      allowMinMaxQuery: true,
+      showIn: ['list', 'filter', 'show', 'edit'],
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
+    },
+    {
+      name: 'price',
+      allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
+      editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
+    },
+    {
+      name: 'square_meter',
+      label: 'Square',
+      allowMinMaxQuery: true,
+      minValue: 1,  // you can set min /max value for number columns so users will not be able to enter more/less
+      maxValue: 1000,
+    },
+    {
+      name: 'number_of_rooms',
+      allowMinMaxQuery: true,
+      enum: [
+        { value: 1, label: '1 room' },
+        { value: 2, label: '2 rooms' },
+        { value: 3, label: '3 rooms' },
+        { value: 4, label: '4 rooms' },
+        { value: 5, label: '5 rooms' },
+      ],
+    },
+    {
+      name: 'description',
+      sortable: false,
+      showIn: ['show', 'edit', 'create', 'filter'],
+    },
+    {
+      name: 'country',
+      enum: [{
+        value: 'US',
+        label: 'United States'
+      }, {
+        value: 'DE',
+        label: 'Germany'
+      }, {
+        value: 'FR',
+        label: 'France'
+      }, {
+        value: 'UK',
+        label: 'United Kingdom'
+      }, {
+        value: 'NL',
+        label: 'Netherlands'
+      }, {
+        value: 'IT',
+        label: 'Italy'
+      }, {
+        value: 'ES',
+        label: 'Spain'
+      }, {
+        value: 'DK',
+        label: 'Denmark'
+      }, {
+        value: 'PL',
+        label: 'Poland'
+      }, {
+        value: 'UA',
+        label: 'Ukraine'
+      }, {
+        value: null,
+        label: 'Not defined'
+      }],
+    },
+    {
+      name: 'listed',
+      required: true,  // will be required on create/edit
+    },
+    {
+      name: 'realtor_id',
+      foreignResource: {
+        resourceId: 'users',
+      }
+    }
+  ],
+  options: {
+    listPageSize: 12,
+    allowedActions: {
+      edit: true,
+      delete: true,
+      show: true,
+      filter: true,
+    },
+  },
+}
+```
+
+Create `users.js` in `resources`:
+```ts title="/users.js"
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+export default {
+  dataSource: 'maindb',
+  table: 'users',
+  resourceId: 'users',
+  label: 'Users',
+  recordLabel: (r) => `👤 ${r.email}`,
+  columns: [
+    {
+      name: 'id',
+      primaryKey: true,
+      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
+      showIn: ['list', 'filter', 'show'],
+    },
+    {
+      name: 'email',
+      required: true,
+      isUnique: true,
+      validation: [
+        {
+          regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+          message: 'Email is not valid, must be in format example@test.com'
+        },
+      ]
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      showIn: ['list', 'filter', 'show'],
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
+    },
+    {
+      name: 'role',
+      enum: [
+        { value: 'superadmin', label: 'Super Admin' },
+        { value: 'user', label: 'User' },
+      ]
+    },
+    {
+      name: 'password',
+      virtual: true,  // field will not be persisted into db
+      required: { create: true }, // make required only on create page
+      editingNote: { edit: 'Leave empty to keep password unchanged' },
+      minLength: 8,
+      type: AdminForthDataTypes.STRING,
+      showIn: ['create', 'edit'], // to show field only on create and edit pages
+      masked: true, // to show stars in input field
+    },
+    { name: 'password_hash', backendOnly: true, showIn: [] }
+  ],
+  hooks: {
+    create: {
+      beforeSave: async ({ record, adminUser, resource }) => {
+        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        return { ok: true };
+      }
+    },
+    edit: {
+      beforeSave: async ({ record, adminUser, resource }) => {
+        if (record.password) {
+          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        }
+        return { ok: true }
+      },
+    },
+  }
+}
+```
+
 
 Now you can run your app:
+
 
 ```bash
 npm start
@@ -447,8 +450,64 @@ Open http://localhost:3500 in your browser and login with credentials `adminfort
 
 ![alt text](localhost_3500_login.png)
 
+## Generating fake records
 
-After Login you should see:
+```ts title="./index.ts"
+//diff-add
+async function seedDatabase() {
+//diff-add
+  if (await admin.resource('aparts').count() > 0) {
+//diff-add
+    return
+//diff-add    
+  }
+//diff-add  
+  for (let i = 0; i <= 50; i++) {
+//diff-add    
+    await admin.resource('aparts').create({
+//diff-add      
+      id: `${i}`,
+//diff-add      
+      title: `Apartment ${i}`,
+//diff-add      
+      square_meter: (Math.random() * 100).toFixed(1),
+//diff-add      
+      price: (Math.random() * 10000).toFixed(2),
+//diff-add      
+      number_of_rooms: Math.floor(Math.random() * 4) + 1,
+//diff-add      
+      description: 'Next gen apartments',
+//diff-add      
+      created_at: (new Date(Date.now() - Math.random() * 60 * 60 * 24 * 14 * 1000)).toISOString(),
+//diff-add      
+      listed: i % 2 == 0,
+//diff-add      
+      country: `${['US', 'DE', 'FR', 'UK', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`
+//diff-add      
+    });
+//diff-add    
+  };
+//diff-add  
+};
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+
+  ...
+
+  admin.discoverDatabases().then(async () => {
+    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('users').create({
+        email: 'adminforth',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+//diff-add
+    await seedDatabase();
+  });
+
+```
+This will create records during first launch. Now you should see:
 ![alt text](localhost_3500_resource_aparts.png)
 
 
