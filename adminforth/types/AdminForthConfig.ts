@@ -1400,7 +1400,7 @@ export interface IOperationalResource {
 
   list: (filter: IAdminForthFilter | IAdminForthFilter[], limit: number, offset: number, sort: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
-  count: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<number>;
+  count: (filter: IAdminForthFilter | IAdminForthFilter[] | undefined) => Promise<number>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
