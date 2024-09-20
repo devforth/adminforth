@@ -169,6 +169,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
     // in afterSave hook, aremove tag adminforth-not-yet-used from the file
     resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
+      
       if (record[pathColumnName]) {
         const s3 = new S3({
           credentials: {
@@ -366,13 +367,26 @@ export default class UploadPlugin extends AdminForthPlugin {
         const uploadUrl = await await getSignedUrl(s3, new PutObjectCommand(params), {
           expiresIn: 1800,
           unhoistableHeaders: new Set(['x-amz-tagging']),
-        })
+        });
 
+        let previewUrl;
+        if (this.options.preview?.previewUrl) {
+          previewUrl = this.options.preview.previewUrl({ s3Path });
+          return;
+        } else if (this.options.s3ACL === 'public-read') {
+          previewUrl = `https://${this.options.s3Bucket}.s3.${this.options.s3Region}.amazonaws.com/${s3Path}`;
+        } else {
+          previewUrl = await getSignedUrl(s3, new GetObjectCommand({
+            Bucket: this.options.s3Bucket,
+            Key: s3Path,
+          }));
+        }
         
         return {
           uploadUrl,
           s3Path,
           tagline,
+          previewUrl,
         };
       }
     });
