@@ -21,7 +21,7 @@ import RichEditorPlugin from '@adminforth/rich-editor';
 
 Now instantiate the plugin and add it to the configuration:
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.js"
 
 {
   ...

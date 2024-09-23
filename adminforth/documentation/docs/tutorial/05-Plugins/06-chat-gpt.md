@@ -22,7 +22,7 @@ Add plugin installation to any text or string column.
 
 For example let's add it for title and description in `aparts` resource configuration which we created in [Getting Started](../001-gettingStarted.md) tutorial.
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.js"
 //diff-add
 import ChatGptPlugin from '@adminforth/chat-gpt';
 

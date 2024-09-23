@@ -11,7 +11,7 @@ By default AdminForth provides only one bulk action `delete` which allows to del
 
 To add custom bulk action quickly:
 
-```ts
+```ts title="./resources/apartments.js"
 //diff-add
 import { AdminUser } from 'adminforth';
 
