@@ -1,12 +1,26 @@
 
-import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource } from "adminforth";
-import { PluginOptions } from './types.js';
+import type { IAdminForth, IHttpServer, AdminForthResource } from "adminforth";
+import type { PluginOptions } from './types.js';
+import { AdminForthPlugin, Filters } from "adminforth";
+import * as cheerio from 'cheerio';
 
+
+// options:
+// attachments: {
+//   attachmentResource: 'description_images',
+//   attachmentFieldName: 'image_path',
+//   attachmentRecordIdFieldName: 'record_id',
+//   attachmentResourceIdFieldName: 'resource_id',
+// },
 
 export default class RichEditorPlugin extends AdminForthPlugin {
   options: PluginOptions;
   resourceConfig: AdminForthResource = undefined;
 
+  uploadPlugin: AdminForthPlugin;
+
+  activationOrder: number = 100000;
+  
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
@@ -14,27 +28,131 @@ export default class RichEditorPlugin extends AdminForthPlugin {
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
-    this.resourceConfig = resourceConfig;
-
 
     const c = resourceConfig.columns.find(c => c.name === this.options.htmlFieldName);
     if (!c) {
       throw new Error(`Column ${this.options.htmlFieldName} not found in resource ${resourceConfig.label}`);
     }
+    
+    if (this.options.attachments) {
+      const resource = adminforth.config.resources.find(r => r.resourceId === this.options.attachments!.attachmentResource);
+      if (!resource) {
+        throw new Error(`Resource '${this.options.attachments!.attachmentResource}' not found`);
+      }
+      const field = resource.columns.find(c => c.name === this.options.attachments!.attachmentFieldName);
+      if (!field) {
+        throw new Error(`Field '${this.options.attachments!.attachmentFieldName}' not found in resource '${this.options.attachments!.attachmentResource}'`);
+      }
+      const plugin = adminforth.activatedPlugins.find(p => 
+        p.resourceConfig!.resourceId === this.options.attachments!.attachmentResource && 
+        p.pluginOptions.pathColumnName === this.options.attachments!.attachmentFieldName
+      );
+      if (!plugin) {
+        throw new Error(`Plugin for attachment field '${this.options.attachments!.attachmentFieldName}' not found in resource '${this.options.attachments!.attachmentResource}', please check if Upload Plugin is installed on the field ${this.options.attachments!.attachmentFieldName}`);
+      }
+
+      if (plugin.pluginOptions.s3ACL !== 'public-read') {
+        throw new Error(`Upload Plugin for attachment field '${this.options.attachments!.attachmentFieldName}' in resource '${this.options.attachments!.attachmentResource}' 
+          should have s3ACL set to 'public-read' (in vast majority of cases signed urls inside of HTML text is not desired behavior, so we did not implement it)`);
+      }
+      this.uploadPlugin = plugin;
+    }
+
     const filed = {
       file: this.componentPath('quillEditor.vue'),
       meta: {
         pluginInstanceId: this.pluginInstanceId,
         debounceTime: this.options.completion?.expert?.debounceTime || 300,
         shouldComplete: !!this.options.completion,
+        uploadPluginInstanceId: this.uploadPlugin?.pluginInstanceId,
       }
     }
+
     if (!c.components) {
       c.components = {};
     }
     c.components.create = filed;
     c.components.edit = filed;
-    
+
+    // if attachment configured we need a post-save hook to create attachment records for each image data-s3path
+    if (this.options.attachments) {
+
+      function getAttachmentPathes(html: string) {
+        const $ = cheerio.load(html);
+        const s3Paths = [];
+        $('img[data-s3path]').each((i, el) => {
+          const src = $(el).attr('data-s3path');
+          s3Paths.push(src);
+        });
+        return s3Paths;
+      }
+
+      async function createAttachmentRecords(adminforth: IAdminForth, options: PluginOptions, record: any, s3Paths: string[]) {
+        await Promise.all(s3Paths.map(async (s3Path) => {
+          await adminforth.resource(options.attachments.attachmentResource).create({
+            [options.attachments.attachmentFieldName]: s3Path,
+            [options.attachments.attachmentRecordIdFieldName]: record.id,
+            [options.attachments.attachmentResourceIdFieldName]: resourceConfig.resourceId,
+          });
+        }
+        ));
+      }
+
+      async function deleteAttachmentRecords(adminforth: IAdminForth, options: PluginOptions, record: any, s3Paths: string[]) {
+        await adminforth.resource(options.attachments.attachmentResource).delete(
+          Filters.IN(options.attachments.attachmentFieldName, s3Paths)
+        )
+      }
+      
+
+      resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
+        // find all s3Paths in the html
+        const s3Paths = getAttachmentPathes(record[this.options.htmlFieldName])
+        
+        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths', s3Paths);
+
+        // create attachment records
+        await createAttachmentRecords(adminforth, this.options, record, s3Paths);
+
+        return { ok: true };
+      });
+
+      // after edit we need to delete attachments that are not in the html anymore
+      // and add new ones
+      resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
+        const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
+          Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record.id),
+          Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
+        );
+        const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+        const newS3Paths = getAttachmentPathes(record[this.options.htmlFieldName]);
+        const toDelete = existingS3Paths.filter(s3Path => !newS3Paths.includes(s3Path));
+        const toAdd = newS3Paths.filter(s3Path => !existingS3Paths.includes(s3Path));
+        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', toDelete)
+        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to add', toAdd);
+
+        await Promise.all([
+          deleteAttachmentRecords(adminforth, this.options, record, toDelete),
+          createAttachmentRecords(adminforth, this.options, record, toAdd),
+        ]);
+
+        return { ok: true };
+
+      });
+
+      // after delete we need to delete all attachments
+      resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }) => {
+        const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
+          Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record.id),
+          Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
+        );
+        const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', existingS3Paths);
+        await deleteAttachmentRecords(adminforth, this.options, record, existingS3Paths);
+
+        return { ok: true };
+      });
+    }
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
@@ -42,6 +160,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
     if (this.options.completion && this.options.completion.provider !== 'openai-chat-gpt') {
       throw new Error(`Invalid provider ${this.options.completion.provider}`);
     }
+
   }
 
   instanceUniqueRepresentation(pluginOptions: any) : string {
@@ -164,7 +283,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
         };
       }
     });
-  }
 
+  }
 
 }

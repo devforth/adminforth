@@ -318,6 +318,7 @@ export default class AdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_data',
       handler: async ({ body, adminUser }) => {
+
         const { resourceId, source } = body;
         if (['show', 'list'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };

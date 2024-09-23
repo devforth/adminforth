@@ -641,21 +641,24 @@ const admin = new AdminForth({
       plugins: [
         ...(process.env.AWS_ACCESS_KEY_ID ? [
             new UploadPlugin({
-            pathColumnName: 'image_path',
-            s3Bucket: 'tmpbucket-adminforth',
-            s3Region: 'eu-central-1',
-            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
-            maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            // s3ACL: 'public-read', // ACL which will be set to uploaded file
-            s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
-        
-            preview: {
-                // Used to display preview (if it is image) in list and show views
-                // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-                showInList: false,
-            }
+              pathColumnName: 'image_path',
+              s3Bucket: 'tmpbucket-adminforth',
+              s3Region: 'eu-central-1',
+              allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'exe', 'webp'],
+              maxFileSize: 1024 * 1024 * 20, // 5MB
+              s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              
+              // rich editor plugin supports only 'public-read' ACL images for SEO purposes (instead of presigned URLs which change every time)
+              s3ACL: 'public-read', // ACL which will be set to uploaded file
+              
+              s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+          
+              preview: {
+                  // Used to display preview (if it is image) in list and show views
+                  // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+                  showInList: false,
+              }
             }),
         ]: []),
       ],
@@ -666,10 +669,10 @@ const admin = new AdminForth({
         label: 'Games',
         columns: [
             {
-                name: 'id', 
-                readOnly: true, required: false, 
-                label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
-                showIn: ['list', 'filter', 'show'],  // the default is full set
+              name: 'id', 
+              readOnly: true, required: false, 
+              label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
+              showIn: ['list', 'filter', 'show'],  // the default is full set
             },
             { name: 'name', required: true, isUnique: true },
             { name: 'created_by', required: true,
@@ -677,7 +680,6 @@ const admin = new AdminForth({
                     { value: 'CD Projekt Red', label: 'CD Projekt Red' },
                     { value: 'Rockstar Studios', label: 'Rockstar' },
                     { value: 'Bethesda Game Studios', label: 'Bethesda' },
-                    
                 ]
             },
             { name: 'release_date', fillOnCreate: ({initialRecord}: any) => (new Date()).toISOString() },
@@ -798,6 +800,13 @@ const admin = new AdminForth({
             return '10'
           }
         },
+        {
+          label: 'Description Images',
+          resourceId: 'description_images',
+          icon: 'flowbite:image-solid',
+
+        },
+
         // {
         //   label: 'Games',
         //   icon: 'flowbite:caret-right-solid',
