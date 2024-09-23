@@ -34,6 +34,7 @@ function dbg(title: string,...args: any[]) {
 
 // blots/embed: Represents inline embed elements, like images or videos that can be inserted into the text flow.
 const Embed = Quill.import('blots/embed');
+const BlockEmbed = Quill.import('blots/block/embed');
 
 // @ts-ignore
 class CompleteBlot extends Embed {
@@ -55,10 +56,34 @@ class CompleteBlot extends Embed {
       text: node.innerText,
     };
   }
-
 }
+
+// @ts-ignore
+class ImageBlot extends BlockEmbed {
+  static blotName = 'image';
+  static tagName = 'img';
+
+  static create(value) {
+    let node = super.create();
+    node.setAttribute('alt', value.alt);
+    node.setAttribute('src', value.url);
+    node.setAttribute('data-s3path', value['s3Path']);
+    return node;
+  }
+  
+  static value(node) {
+    return {
+      alt: node.getAttribute('alt'),
+      url: node.getAttribute('src'),
+      s3Path: node.getAttribute('data-s3path'),
+    };
+  }
+}
+
 // @ts-ignore
 Quill.register(CompleteBlot);
+// @ts-ignore
+Quill.register(ImageBlot);
 
 const updaterQueue = new AsyncQueue();
 
@@ -81,6 +106,83 @@ const editorFocused = ref(false);
 
 let lastText: string | null = null;
 
+const imageProgress = ref(0);
+
+
+async function saveToServer(file: File) {
+  const fd = new FormData();
+  fd.append('image', file);
+
+  // send fd to s3
+  const { uploadUrl, tagline, previewUrl, s3Path } = await callAdminForthApi({
+      path: `/plugin/${props.meta.uploadPluginInstanceId}/get_s3_upload_url`,
+      method: 'POST',
+      body: {
+        originalFilename: file.name,
+        contentType: file.type,
+        size: file.size,
+        originalExtension: file.name.split('.').pop(),
+      },
+  });
+
+  const xhr = new XMLHttpRequest();
+  const success = await new Promise((resolve) => {
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        imageProgress.value = Math.round((e.loaded / e.total) * 100);
+      }
+    };
+    xhr.addEventListener('loadend', () => {
+      const success = xhr.readyState === 4 && xhr.status === 200;
+      // try to read response
+      resolve(success);
+    });
+    xhr.open('PUT', uploadUrl, true);
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.setRequestHeader('x-amz-tagging', tagline);
+    xhr.send(file);
+  });
+  if (!success) {
+    window.adminforth.alert({
+      messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
+      <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
+        xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      }</pre>`,
+      variant: 'danger',
+      timeout: 30,
+    });
+    imageProgress.value = 0;
+    return;
+  }
+
+  // here we have s3Path, call createResource to save the image
+  const range = quill.getSelection();
+  quill.insertEmbed(range.index, 'image', { 
+    url: previewUrl, 
+    s3Path: s3Path, 
+    alt: file.name 
+  }, 'user');
+
+}
+
+async function imageHandler() {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'file');
+  input.click();
+
+  // Listen upload local image and save to server
+  input.onchange = () => {
+    const file = input.files[0];
+
+    // file type is only image.
+    if (/^image\//.test(file.type)) {
+      saveToServer(file);
+    } else {
+      console.warn('You could only upload images.');
+    }
+  };
+}
+
 onMounted(() => {
   currentValue.value = props.record[props.column.name] || '';
   editor.value.innerHTML = currentValue.value;
@@ -90,30 +192,36 @@ onMounted(() => {
     placeholder: 'Type here...',
     // formats : ['complete'],
     modules: {
-      toolbar: props.meta.toolbar || [
-        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-        ['blockquote', 'code-block', 'link'],
-        // [
-        //   // 'image', 
-        //   // 'video', 
-        //   // 'formula'
-        // ],
+      toolbar: {
+        container: props.meta.toolbar || [
+            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+            ['blockquote', 'code-block', 'link', ...props.meta.uploadPluginInstanceId ? ['image'] : []],
+            // [
+            //   // 'image', 
+            //   // 'video', 
+            //   // 'formula'
+            // ],
+            
 
-        [{ 'header': 2 }, { 'header': 3 }],               // custom button values
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-        // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-        // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-        // [{ 'direction': 'rtl' }],                         // text direction
+            [{ 'header': 2 }, { 'header': 3 }],               // custom button values
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+            // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+            // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+            // [{ 'direction': 'rtl' }],                         // text direction
 
-        // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-        // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+            // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
 
-        // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-        // [{ 'font': [] }],
-        [{ 'align': [] }],
+            // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+            // [{ 'font': [] }],
+            [{ 'align': [] }],
 
-        ['clean']                                         // remove formatting button
-      ],
+            ['clean']                                         // remove formatting button
+        ],
+        handlers: {
+          image: imageHandler,
+        },
+      },
       keyboard: {
         bindings: {
           tab: {
@@ -375,7 +483,6 @@ function removeCompletionOnBlur() {
   .ql-toolbar.ql-snow[class] {
     border: none;
     padding: 0 0 1rem 0;
-
     .ql-picker-label{
       padding-left: 0;
     }
@@ -383,19 +490,16 @@ function removeCompletionOnBlur() {
 
   .ql-container {
     border: 0;
-
     .ql-editor {
       position: relative;
       padding: 0;
       min-height: 100px;
-
       &.ql-blank::before {
         left: 0px;
         font-style: normal;
       }
     }
   }
-
 
   .ql-editor:not(:focus) [completer] {
     display: none;
@@ -404,6 +508,29 @@ function removeCompletionOnBlur() {
   .ql-editor [completer] {
     color: gray;
     font-style: italic;
+  }
+
+  .ql-snow .ql-stroke {
+    @apply dark:stroke-darkPrimary;
+    @apply stroke-lightPrimary;
+
+  }
+  .ql-snow button:hover .ql-stroke,
+  .ql-snow [role="button"]:hover .ql-stroke {
+    @apply dark:stroke-darkPrimary;
+    @apply stroke-lightPrimary;
+    filter: brightness(1.3);
+  }
+
+  .ql-snow .ql-fill {
+    @apply dark:fill-darkPrimary;
+    @apply fill-lightPrimary;
+  }
+
+  .ql-snow button:hover .ql-fill {
+    @apply dark:fill-darkPrimary;
+    @apply fill-lightPrimary;
+    filter: brightness(1.3);
   }
 
 }

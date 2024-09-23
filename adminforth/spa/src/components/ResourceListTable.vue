@@ -3,11 +3,13 @@
   <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden"
     :class="{'rounded-default': !noRoundings}"
   >
-
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-      
+
+        <div role="status" class="max-w-sm animate-pulse">
+            <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+        </div>      
     </div>
 
     <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
@@ -23,9 +25,9 @@
 
         <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
          
-          <div @click="() => c.sortable && onSortButtonClick(c.name)" class="flex items-center " :class="{'cursor-pointer':c.sortable}">
+          <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
+              class="flex items-center " :class="{'cursor-pointer':c.sortable}">
             {{ c.label }}
-            
 
             <div v-if="c.sortable"
                 :style="{ 'color':ascArr.includes(c.name)?'green':descArr.includes(c.name)?'red':'currentColor'}">
@@ -56,109 +58,113 @@
       </tr>
       </thead>
       <tbody>
-        <SkeleteLoader v-if="!rows" :columns="3" :rows="resource?.columns.length + 2"/>  
-      <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
-        <td :colspan="resource?.columns.length + 2">
+        <SkeleteLoader 
+          v-if="!rows" 
+          :columns="resource?.columns.filter(c => c.showIn.includes('list')).length + 2"
+          :rows="3"
+        />
+        <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
+          <td :colspan="resource?.columns.length + 2">
 
-          <div id="toast-simple"
-              class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
-              role="alert">
-            <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400"/>
-            <div class="ps-4 text-sm font-normal">No items here yet</div>
+            <div id="toast-simple"
+                class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
+                role="alert">
+              <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400"/>
+              <div class="ps-4 text-sm font-normal">No items here yet</div>
+            </div>
+
+          </td>
+        </tr>
+
+        <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+            class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
+          :class="{'border-b': rowI !== rows.length - 1}"
+        >
+          <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
+            <div class="flex items center ">
+              <input
+                @click="(e)=>{e.stopPropagation()}"
+                id="checkbox-table-search-1"
+                type="checkbox"
+                :checked="checkboxesInternal.includes(row._primaryKeyValue)"
+                @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
+              <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+            </div>
+          </td>
+          <td v-for="c in columnsListed" class="px-6 py-4">
+            <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
+            <component
+              :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
+              :meta="c?.components?.list?.meta"
+              :column="c"
+              :record="row"
+              :adminUser="coreStore.adminUser"
+              :resource="resource"
+            />
+          </td>
+          <td class=" items-center px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
+            <div class="flex">
+            <RouterLink
+              v-if="resource.options?.allowedActions.show"
+              :to="{ 
+                name: 'resource-show', 
+                params: { 
+                  resourceId: resource.resourceId, 
+                  primaryKey: row._primaryKeyValue,
+                }
+              }"
+              class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline"
+              :data-tooltip-target="`tooltip-show-${rowI}`"
+            >
+              <IconEyeSolid class="w-5 h-5 me-2"/>
+            </RouterLink>
+
+            <div :id="`tooltip-show-${rowI}`"
+                role="tooltip"
+                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+              Show item
+              <div class="tooltip-arrow" data-popper-arrow></div>
+            </div>
+
+            <RouterLink v-if="resource.options?.allowedActions.edit"
+              :to="{
+                name: 'resource-edit',
+                params: { 
+                  resourceId: resource.resourceId,
+                  primaryKey: row._primaryKeyValue 
+                } 
+              }"
+              class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
+              :data-tooltip-target="`tooltip-edit-${rowI}`"
+            >
+              <IconPenSolid class="w-5 h-5 me-2"/>
+            </RouterLink>
+
+            <div :id="`tooltip-edit-${rowI}`"
+                role="tooltip"
+                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+              Edit
+              <div class="tooltip-arrow" data-popper-arrow></div>
+            </div>
+
+            <button v-if="resource.options?.allowedActions.delete"
+                    class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
+                    :data-tooltip-target="`tooltip-delete-${rowI}`"
+                    @click="deleteRecord(row)"
+            >
+              <IconTrashBinSolid class="w-5 h-5 me-2"/>
+            </button>
+
+            <div :id="`tooltip-delete-${rowI}`"
+                role="tooltip"
+                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+              Delete
+              <div class="tooltip-arrow" data-popper-arrow></div>
+            </div>
           </div>
-
-        </td>
-      </tr>
-
-      <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
-          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
-        :class="{'border-b': rowI !== rows.length - 1}"
-      >
-        <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-          <div class="flex items center ">
-            <input
-              @click="(e)=>{e.stopPropagation()}"
-              id="checkbox-table-search-1"
-              type="checkbox"
-              :checked="checkboxesInternal.includes(row._primaryKeyValue)"
-              @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
-            <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
-          </div>
-        </td>
-        <td v-for="c in columnsListed" class="px-6 py-4">
-          <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
-          <component
-            :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
-            :meta="c?.components?.list?.meta"
-            :column="c"
-            :record="row"
-            :adminUser="coreStore.adminUser"
-            :resource="resource"
-          />
-        </td>
-        <td class=" items-center px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-          <div class="flex">
-          <RouterLink
-            v-if="resource.options?.allowedActions.show"
-            :to="{ 
-              name: 'resource-show', 
-              params: { 
-                resourceId: resource.resourceId, 
-                primaryKey: row._primaryKeyValue,
-              }
-            }"
-            class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline"
-            :data-tooltip-target="`tooltip-show-${rowI}`"
-          >
-            <IconEyeSolid class="w-5 h-5 me-2"/>
-          </RouterLink>
-
-          <div :id="`tooltip-show-${rowI}`"
-              role="tooltip"
-              class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-            Show item
-            <div class="tooltip-arrow" data-popper-arrow></div>
-          </div>
-
-          <RouterLink v-if="resource.options?.allowedActions.edit"
-            :to="{
-              name: 'resource-edit',
-              params: { 
-                resourceId: resource.resourceId,
-                primaryKey: row._primaryKeyValue 
-              } 
-            }"
-            class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-            :data-tooltip-target="`tooltip-edit-${rowI}`"
-          >
-            <IconPenSolid class="w-5 h-5 me-2"/>
-          </RouterLink>
-
-          <div :id="`tooltip-edit-${rowI}`"
-              role="tooltip"
-              class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-            Edit
-            <div class="tooltip-arrow" data-popper-arrow></div>
-          </div>
-
-          <button v-if="resource.options?.allowedActions.delete"
-                  class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-                  :data-tooltip-target="`tooltip-delete-${rowI}`"
-                  @click="deleteRecord(row)"
-          >
-            <IconTrashBinSolid class="w-5 h-5 me-2"/>
-          </button>
-
-          <div :id="`tooltip-delete-${rowI}`"
-              role="tooltip"
-              class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-            Delete
-            <div class="tooltip-arrow" data-popper-arrow></div>
-          </div>
-        </div>
-        </td>
-      </tr>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -237,13 +243,10 @@ import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
 import {
 IconInboxOutline,
-IconPlusOutline
 } from '@iconify-prerendered/vue-flowbite';
 
 import {
-IconBanOutline,
 IconEyeSolid,
-IconFilterOutline,
 IconPenSolid,
 IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
@@ -335,10 +338,18 @@ const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').ma
 const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
 
 
-function onSortButtonClick(field) {
+function onSortButtonClick(event, field) {
+  // if ctrl key is pressed, add to sort otherwise sort by this field
+  // in any case if field is already in sort, toggle direction
+  
   const sortIndex = sort.value.findIndex((s) => s.field === field);
   if (sortIndex === -1) {
-    sort.value = [...sort.value,{field, direction: 'asc'}];
+    // field is not in sort, add it
+    if (event.ctrlKey) {
+      sort.value = [...sort.value,{field, direction: 'asc'}];
+    } else {
+      sort.value = [{field, direction: 'asc'}];
+    }
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {

@@ -2,7 +2,10 @@ import { error } from 'console';
 import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAdminForth } from '../types/AdminForthConfig.js';
 
 
-function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[]): IAdminForthFilter[] {
+function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): IAdminForthFilter[] {
+  if (!filter) {
+    return [];
+  }
   return (Array.isArray(filter) ? filter : [filter]) as IAdminForthFilter[];
 }
 
@@ -57,7 +60,7 @@ export default class OperationalResource implements IOperationalResource {
     return data;
   }
 
-  async count(filter: IAdminForthFilter | IAdminForthFilter[]): Promise<number> {
+  async count(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): Promise<number> {
     return await this.dataConnector.getCount({
       resource: this.resourceConfig,
       filters: filtersIfFilter(filter),
