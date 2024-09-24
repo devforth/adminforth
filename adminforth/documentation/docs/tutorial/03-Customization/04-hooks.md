@@ -19,7 +19,7 @@ Hooks are used to:
 
 Let's add reference to `adminUser` when user creates a new apartment:
 
-```ts title='./index.ts'
+```ts title='./resources/apartments.js'
 // diff-add
 import type { AdminUser } from  'adminforth';
 

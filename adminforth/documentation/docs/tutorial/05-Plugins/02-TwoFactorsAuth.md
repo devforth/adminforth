@@ -26,7 +26,28 @@ export const admin = new AdminForth({
       //... other resource configurations
   },
   ...
-  {
+}
+
+async function initDataBase() {
+  ...
+//diff-add
+  // check column secret2fa in apartments table
+//diff-add
+  const columns = await db.prepare('PRAGMA table_info(users);').all();
+//diff-add
+  const columnExists = columns.some((c) => c.name === 'secret2fa');
+//diff-add
+  if (!columnExists) {
+//diff-add
+    await db.prepare('ALTER TABLE users ADD COLUMN secret2fa VARCHAR(255);').run();
+//diff-add
+  }
+}
+```
+
+And add it to `users.js`
+```ts tittle="./resources/users.js"
+{
     table: 'users',
 //diff-add
     plugins: [
@@ -48,23 +69,6 @@ export const admin = new AdminForth({
         }
     ],
   }
-}
-
-async function initDataBase() {
-  ...
-//diff-add
-  // check column secret2fa in apartments table
-//diff-add
-  const columns = await db.prepare('PRAGMA table_info(users);').all();
-//diff-add
-  const columnExists = columns.some((c) => c.name === 'secret2fa');
-//diff-add
-  if (!columnExists) {
-//diff-add
-    await db.prepare('ALTER TABLE users ADD COLUMN secret2fa VARCHAR(255);').run();
-//diff-add
-  }
-}
 ```
 
 Thats it! Two-Factor Authentication is now enabled: 
