@@ -8,7 +8,7 @@ You can use `options.allowedActions` on resource to limit access to the resource
 
 If you want to disable deletion of the resource records for all users:
 
-```ts title="./resources/users.js"
+```ts title="./resources/users.ts"
 {
   ...
   resourceId: 'users',
@@ -30,7 +30,7 @@ If you want to disable deletion of the resource records for all users:
 
 If you want to disable deletion of apartments for all users apart from users with role `superadmin`:
 
-```ts title='./resources/apartments.js'
+```ts title='./resources/apartments.ts'
 //diff-add
 import type { AdminUser } from  'adminforth';
 
@@ -62,7 +62,7 @@ import type { AdminUser } from  'adminforth';
 
 Let's disable creating and editing of new users for all users apart from users with role `superadmin`, and at the same time disable deletion for all users:
 
-```ts title="./resources/users.js"
+```ts title="./resources/users.ts"
 //diff-add
 import type { AdminUser } from  'adminforth';
 

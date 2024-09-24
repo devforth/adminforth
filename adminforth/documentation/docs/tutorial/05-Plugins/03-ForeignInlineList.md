@@ -22,7 +22,7 @@ This field refers to record from `'users'` resource. This means that we can disp
 Add to your `'users'` resource configuration the plugin instance:
 
 
-```ts title="./resources/users.js"
+```ts title="./resources/users.ts"
 { 
     ...
     resourceId: 'users',
