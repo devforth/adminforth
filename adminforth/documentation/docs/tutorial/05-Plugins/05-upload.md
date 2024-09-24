@@ -145,7 +145,7 @@ model apartments {
 
 ![alt text](Upload.png)
 
-![alt text](Untitleddesign-ezgif.com-crop.gif)
+!![alt text](upload_gif.gif)
 
 
 This setup will upload files to S3 bucket with private ACL and save path to file (relative to bucket root) in `apartment_image` column.
