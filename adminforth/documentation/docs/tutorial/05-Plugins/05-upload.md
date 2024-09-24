@@ -124,29 +124,24 @@ export const admin = new AdminForth({
 });
 ```
 
-Add a column for storing the path to the file in the database, add this statement to the end of `initDataBase` function:
+Add a column for storing the path to the file in the database, add this statement to the `./schema.prisma`:
 
-```ts title="./index.ts"
-async function initDataBase() {
-  ...
+```ts title="./schema.prisma"
+model apartments {
+  id                String     @id
+  created_at        DateTime? 
+  title             String 
+  square_meter      Float?
+  price             Decimal
+  number_of_rooms   Int?
+  description       String?
+  country           String?
+  listed            Boolean
+  realtor_id        String?
 //diff-add
-  // check column apartment_image in apartments table
-//diff-add
-  const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-//diff-add
-  const columnExists = columns.some((c) => c.name === 'apartment_image');
-//diff-add
-  if (!columnExists) {
-//diff-add
-    await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
-//diff-add
-  }
+  apartment_image   String?
 }
 ```
-
-> ☝️ If you will try to set 'create' or 'edit' in showIn of column which defined by plugin.options.pathColumnName, plugin
-> will still prevent column from showing in these views. This is because plugin will handle file upload and you should not 
-> allow user to set path manually.
 
 ![alt text](Upload.png)
 
