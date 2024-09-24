@@ -62,7 +62,7 @@ import type { AdminUser } from  'adminforth';
 
 Let's disable creating and editing of new users for all users apart from users with role `superadmin`, and at the same time disable deletion for all users:
 
-```ts title="./index.ts"
+```ts title="./resources/users.js"
 //diff-add
 import type { AdminUser } from  'adminforth';
 
