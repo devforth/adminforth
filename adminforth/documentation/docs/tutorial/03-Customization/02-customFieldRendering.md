@@ -27,7 +27,7 @@ defineProps({
 
 Now you can use this component in the configuration of the resource:
 
-```ts title='./resources/apartments.js'
+```ts title='./resources/apartments.ts'
 {
   ...
   resourceId: 'aparts',
@@ -62,7 +62,7 @@ Sometimes you need to render same component with different parameters.
 You can use [full component declaration](/docs/api/types/AdminForthConfig/type-aliases/AdminForthComponentDeclarationFull.md)
 
 
-```ts title='./resources/apartments.js'
+```ts title='./resources/apartments.ts'
 
 {
   ...

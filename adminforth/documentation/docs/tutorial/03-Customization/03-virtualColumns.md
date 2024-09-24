@@ -6,7 +6,7 @@
 Sometimes you need to visualize custom columns which do not exist in database. 
 For doing this you can use `virtual` columns.
 
-```ts title='./resources/apartments.js'
+```ts title='./resources/apartments.ts'
 //diff-add
 import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth';
 
@@ -68,7 +68,7 @@ Another usecase of `virtual` columns is to add new fields in edit and create vie
 Thing is that password itself can't be stored in the database, but instead their hash is stored. 
 So we need to add `password` field to the `users` resource and make it `virtual` so it will not be stored in the database.
 
-```ts title="./resources/users.js"
+```ts title="./resources/users.ts"
 ...
 resourceId: 'users',
 ...

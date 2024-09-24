@@ -5,7 +5,7 @@ In addition to ability to create custom pages and overwrite how fields are rende
 
 For example let's add a custom pie chart to the `list` page of the `aparts` resource. Pie chart will show the distribution of the rooms count and more over will allow to filter the list by the rooms count.
 
-```ts title="./resources/apartments.js"
+```ts title="./resources/apartments.ts"
 {
   resourceId: 'aparts',
   ...

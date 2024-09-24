@@ -63,7 +63,7 @@ AWS_SECRET_ACCESS_KEY=your_secret_access_key
 
 Add column to `aparts` resource configuration:
 
-```ts title="./resources/apartments.js"
+```ts title="./resources/apartments.ts"
 //diff-add
 import UploadPlugin from '@adminforth/upload';
 //diff-add

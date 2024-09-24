@@ -45,8 +45,8 @@ async function initDataBase() {
 }
 ```
 
-And add it to `users.js`
-```ts tittle="./resources/users.js"
+And add it to `users.ts`
+```ts tittle="./resources/users.ts"
 {
     table: 'users',
 //diff-add
