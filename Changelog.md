@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Also for alerts without timeout param set 30 seconds as default timeout, you still can use 'unlimited' intentially to never hide alert 
 - Add alert when record is created
 
+### Security fixes
+
+- When user was nto found during login, return same message as when password is wrong to prevent email/username enumeration
+
 
 ## [1.3.21] - 2024-09-25
 
