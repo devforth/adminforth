@@ -45,7 +45,8 @@ class CompleteBlot extends Embed {
 
   static create(value: { text: string }) {
     let node = super.create();
-    node.setAttribute('contenteditable', 'false');
+    // we should keep contenteditable=true for case when user clicks on empty area
+    // node.setAttribute('contenteditable', 'false');
     node.setAttribute('completer', '');
     node.innerText = value.text;
     return node;
@@ -113,15 +114,17 @@ async function saveToServer(file: File) {
   const fd = new FormData();
   fd.append('image', file);
 
+  const originalFilename = file.name.split('.').slice(0, -1).join('.');
+  const originalExtension = file.name.split('.').pop();
   // send fd to s3
   const { uploadUrl, tagline, previewUrl, s3Path } = await callAdminForthApi({
       path: `/plugin/${props.meta.uploadPluginInstanceId}/get_s3_upload_url`,
       method: 'POST',
       body: {
-        originalFilename: file.name,
+        originalFilename,
         contentType: file.type,
         size: file.size,
-        originalExtension: file.name.split('.').pop(),
+        originalExtension,
       },
   });
 
@@ -258,10 +261,12 @@ onMounted(() => {
     }
     const text = quill.getText();
     // don't allow to select after completion
-    if (range?.index === text.length) {
-      dbg('✋ prevent selection after completion');
-      quill.setSelection(text.length - 1, 0, 'silent');
-    }
+    // TODO
+    // if (range?.index === text.length) {
+    //   console.log('RANGE IDX', range.index, text.length, 'text', JSON.stringify(text, null, 1));
+    //   dbg('✋ prevent selection after completion');
+    //   quill.setSelection(text.length - 1, 0, 'silent');
+    // }
   });
 
 
@@ -275,8 +280,10 @@ onMounted(() => {
 
 
 async function emitTextUpdate() {
-  const html = quill.root.innerHTML;
-  
+  const editorHtml = quill.root.innerHTML;
+  // remove completion from html
+  const html = editorHtml.replace(/<span[^>]*completer[^>]*>.*?<\/span>/g, '');
+
   if (lastText === html) {
     return;
   }
@@ -451,8 +458,8 @@ async function startCompletion() {
 
     quill.insertEmbed(cursorPosition.index, 'complete', { text: completionAnswer.join('') }, 'silent');
 
-    // dbg('👇 set pos', cursorPosition.index, cursorPosition.length)
-    // quill.setSelection(cursorPosition.index, cursorPosition.length, 'silent');
+    //dbg('👇 set pos', cursorPosition.index, cursorPosition.length)
+    //quill.setSelection(cursorPosition.index, cursorPosition.length, 'silent');
 
     completion.value = completionAnswer;
 
@@ -501,9 +508,9 @@ function removeCompletionOnBlur() {
     }
   }
 
-  .ql-editor:not(:focus) [completer] {
-    display: none;
-  }
+  // .ql-editor:not(:focus) [completer] {
+  //   display: none;
+  // }
 
   .ql-editor [completer] {
     color: gray;

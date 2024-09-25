@@ -63,7 +63,7 @@ class AdminForthAuth {
     return jwt.sign({...payload, t: type}, secret, { expiresIn });
   }
 
-  async verify(jwtToken: string, mustHaveType: string): Promise<Object> {
+  async verify(jwtToken: string, mustHaveType: string, decodeUser: boolean | undefined = true): Promise<Object> {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -88,13 +88,16 @@ class AdminForthAuth {
       console.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
       return null;
     }
-    const dbUser = await this.adminforth.getUserByPk(pk);
-    if (!dbUser) {
-      console.error(`User with pk ${pk} not found in database`);
-      // will logout user which was deleted
-      return null;
+    if (decodeUser !== false) {
+      const dbUser = await this.adminforth.getUserByPk(pk);
+      if (!dbUser) {
+        console.error(`User with pk ${pk} not found in database`);
+        // will logout user which was deleted
+        return null;
+      }
+      decoded.dbUser = dbUser;
     }
-    decoded.dbUser = dbUser;
+    
     return decoded;
   }
 
