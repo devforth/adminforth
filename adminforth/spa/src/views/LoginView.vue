@@ -56,9 +56,16 @@
                             </button>
                         </div>
 
-                        <div class="flex items-start mb-5 hidden">
+                        <div v-if="coreStore.config.rememberMeDays" 
+                            class="flex items-start mb-5"
+                            :title="`Stay logged in for ${coreStore.config.rememberMeDays} days`"
+                        >
                           <div class="flex items-center h-5">
-                            <input id="remember" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" required />
+                            <input id="remember" 
+                              ref="rememberInput"
+                              type="checkbox" 
+                              value="" 
+                              class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" />
                           </div>
                           <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
                         </div>
@@ -125,6 +132,7 @@ import { useRouter } from 'vue-router';
 
 const passwordInput = ref(null);
 const usernameInput = ref(null);
+const rememberInput = ref(null);
 
 const router = useRouter();
 const inProgress = ref(false);
@@ -166,6 +174,7 @@ async function login() {
     body: {
       username,
       password,
+      rememberMe: rememberInput.value.checked,
     }
   });
   inProgress.value = false;

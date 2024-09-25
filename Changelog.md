@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - close all toasts automatically if during route change they exist more then 5 seconds. 
 - Also for alerts without timeout param set 30 seconds as default timeout, you still can use 'unlimited' intentially to never hide alert 
 - Add alert when record is created
+- Add delete bulk action confirmation as default behavior, allow to return successMessage from bulk action
 
 ### Security fixes
 
