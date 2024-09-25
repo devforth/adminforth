@@ -11,38 +11,28 @@ npm i @adminforth/two-factors-auth --save
 
 Plugin is already installed into adminforth, to import:
     
-```ts
+```ts title="/users.ts"
 import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
 ```
 
 Plugin required some additional setup, to make it work properly. It should be added to the resource auth resource. In our example we will add it to the user resource .
 
-```ts title='./index.ts'
-
-export const admin = new AdminForth({
-  //... other resource configurations
-  auth: {
-      resourceId: 'users'
-      //... other resource configurations
-  },
-  ...
+```ts title='./schema.prisma'
+model users {
+  id            String     @id
+  created_at    DateTime 
+  email         String   @unique
+  role          String     
+  password_hash String
+//diff-add
+  secret2fa     String?
 }
+```
 
-async function initDataBase() {
-  ...
-//diff-add
-  // check column secret2fa in apartments table
-//diff-add
-  const columns = await db.prepare('PRAGMA table_info(users);').all();
-//diff-add
-  const columnExists = columns.some((c) => c.name === 'secret2fa');
-//diff-add
-  if (!columnExists) {
-//diff-add
-    await db.prepare('ALTER TABLE users ADD COLUMN secret2fa VARCHAR(255);').run();
-//diff-add
-  }
-}
+Then:
+
+```bash
+npx --yes prisma migrate dev --name init
 ```
 
 And add it to `users.ts`
