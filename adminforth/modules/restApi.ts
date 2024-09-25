@@ -62,7 +62,7 @@ export default class AdminForthRestAPI {
       path: '/login',
       handler: async ({ body, response }) => {
        
-        const INVALID_MESSAGE = 'Invalid username or password';
+        const INVALID_MESSAGE = 'Invalid Username or Password';
         const { username, password } = body;
         let adminUser: AdminUser;
         let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
@@ -95,10 +95,9 @@ export default class AdminForthRestAPI {
           })
         ).data?.[0];
 
-        console.log('userRecord', userRecord, this.adminforth.config.auth.usernameField, username);
 
         if (!userRecord) {
-          return { error: 'User not found' };
+          return { error: INVALID_MESSAGE };
         }
 
         const passwordHash = userRecord[this.adminforth.config.auth.passwordHashField];
