@@ -98,6 +98,8 @@
                         {{ error }}
                       </div>
                     </div>
+
+                    
                     <button 
                       @click="reset"
                       type="submit" class="flex items-center justify-center gap-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
@@ -107,6 +109,14 @@
                       Reset Password
                     
                     </button>
+
+                    <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
+                      or <router-link class=" text-blue-600 underline dark:text-blue-500 hover:no-underline 
+                        cursor-pointer" to="/login">
+                        Back to login
+                      </router-link>
+                    </p>
+
                   </form>
 
                 </div>

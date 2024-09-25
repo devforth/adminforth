@@ -1,5 +1,5 @@
 
-
+# Email password reset
 
 Plugin allows to reset password for admin users who forgot their password by sending email with reset link signed with secured JWT token.
 

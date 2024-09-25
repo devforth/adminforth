@@ -327,7 +327,7 @@ onMounted(async () => {
     window.adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
-      timeout: 'unlimited'
+      timeout: 30,
     });
   }
 
