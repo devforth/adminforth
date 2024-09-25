@@ -245,8 +245,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 Next step you need to create `resources` folder.
 
-Create `apartments.js` in `resources`:
-```ts title="/apartments.js"
+Create `apartments.ts` in `resources`:
+```ts title="/apartments.ts"
 import { AdminForthDataTypes } from 'adminforth';
 
 export default {
@@ -366,8 +366,8 @@ export default {
 }
 ```
 
-Create `users.js` in `resources`:
-```ts title="/users.js"
+Create `users.ts` in `resources`:
+```ts title="/users.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 export default {
   dataSource: 'maindb',
