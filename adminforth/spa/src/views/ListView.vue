@@ -110,7 +110,6 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
-import { useModalStore } from '@/stores/modal';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, getIcon } from '@/utils';
 import { initFlowbite } from 'flowbite';

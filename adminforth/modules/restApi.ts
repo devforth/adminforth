@@ -95,6 +95,8 @@ export default class AdminForthRestAPI {
           })
         ).data?.[0];
 
+        console.log('userRecord', userRecord, this.adminforth.config.auth.usernameField, username);
+
         if (!userRecord) {
           return { error: 'User not found' };
         }
@@ -170,6 +172,7 @@ export default class AdminForthRestAPI {
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
+          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
         };
       },
     });

@@ -65,7 +65,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
           newSecret = tempSecret.secret
         } else {
-          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk },'tempTotp');
+          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk }, 'tempTotp');
           response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; max-age=3600; `);
 
           return {
@@ -139,7 +139,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           } else {
             return {error: 'Wrong or expired OTP code'}
           }
-       }
+        }
       }
     })
   }

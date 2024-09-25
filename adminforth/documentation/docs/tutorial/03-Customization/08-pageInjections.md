@@ -175,3 +175,40 @@ Also we have to add an Api to get percentages:
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)
+
+
+## Login page customization
+
+You can also inject custom components to the login page. 
+
+`loginPageInjections.underInputs` allows to add one or more panels under the login form inputs:
+
+![loginPageInjections.underInputs](image-15.png)
+
+For example:
+
+```ts title="/index.ts"
+
+new AdminForth({
+  ...
+  customization: {
+    loginPageInjections: {
+      underInputs: '@@/CustomLoginFooter.vue',
+    }
+    ...
+  }
+
+  ...
+})
+```
+
+Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
+
+```html title="./custom/CustomLoginFooter.vue"
+<template>
+  <div class="text-center text-gray-500 text-sm mt-4">
+    By logging in, you agree to our <a href="#" class="text-blue-500">Terms of Service</a> and <a href="#" class="text-blue-500">Privacy Policy</a>
+  </div>
+</template>
+```
+  
