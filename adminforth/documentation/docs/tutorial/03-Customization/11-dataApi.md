@@ -30,7 +30,7 @@ await admin.resource('users').get([Filters.EQ('id', '1234')]);
 
 Here we will show you how to use the Data API with simple examples.
 
-## Getting one item from database
+## Get one item from database
 
 
 Signature:
@@ -41,7 +41,7 @@ Signature:
 ): Promise<any>
 ```
 
-### Get item by ID:
+Get item by ID:
 
 ```ts
 const user = await admin.resource('users').get(
@@ -49,7 +49,7 @@ const user = await admin.resource('users').get(
 );
 ```
 
-### Check School with name 'Hawkins Elementary' exits in DB
+Check School with name 'Hawkins Elementary' exits in DB
 
 ```ts
 const schoolExists = !!(await admin.resource('schools').get(
@@ -58,7 +58,7 @@ const schoolExists = !!(await admin.resource('schools').get(
 ```
 
 
-### Get user with name 'John' and role not 'SuperAdmin'
+Get user with name 'John' and role not 'SuperAdmin'
 
 ```ts
 const user = await admin.resource('users').get(
@@ -66,7 +66,7 @@ const user = await admin.resource('users').get(
 );
 ```
 
-## Getting list of items from database
+## Get list of items from database
 
 
 Signature:
@@ -80,7 +80,7 @@ Signature:
 ): Promise<any[]>
 ```
 
-### Get 15 latest users which role is not Admin:
+Get 15 latest users which role is not Admin:
 
 ```ts
 const users = await admin.resource('users').list(
@@ -88,19 +88,19 @@ const users = await admin.resource('users').list(
 );
 ```
 
-### Get 10 oldest users (with highest age):
+Get 10 oldest users (with highest age):
 
 ```ts
 const users = await admin.resource('users').list([], 10, 0, Sorts.ASC('age'));
 ```
 
-### Get next page of oldest users:
+Get next page of oldest users:
 
 ```ts
 const users = await admin.resource('users').list([], 10, 10, Sorts.ASC('age'));
 ```
 
-### Get 10 schools, sort by rating first, then oldest by founded year:
+Get 10 schools, sort by rating first, then oldest by founded year:
 
 ```ts
 const schools = await admin.resource('schools').list(
@@ -108,7 +108,7 @@ const schools = await admin.resource('schools').list(
 );
 ```
 
-## Creating new item in database
+## Create a new item in database
 
 Signature:
 
@@ -120,7 +120,7 @@ Signature:
 
 Returns value representing created item with all fields, including fields which were populated with `fillOnCreate`.
 
-### Create a new school:
+Create a new school:
 
 ```ts
 await admin.resource('schools').create({
@@ -130,7 +130,7 @@ await admin.resource('schools').create({
 });
 ```
 
-## Counting items in database
+## Count items in database
 
 Signature:
 
@@ -142,13 +142,13 @@ Signature:
 
 Returns number of items in database which match the filters.
 
-### Count number of schools with rating above 4:
+Count number of schools with rating above 4:
 
 ```ts
 const schoolsCount = await admin.resource('schools').count([Filters.GT('rating', 4)]);
 ```
 
-### Create data for daily report with number of users signed up daily for last 7 days:
+Create data for daily report with number of users signed up daily for last 7 days:
 
 Note: while this is not the most efficient way to do this, it's a good example of how you can use `count` method to get the data for the report.
 Plus it still should be fast enough while you have index on `createdAt` field.
@@ -169,7 +169,7 @@ const dailyReports = await Promise.all(
 );
 ```
 
-## Updating item in database
+## Update item in database
 
 Signature:
 
@@ -182,13 +182,13 @@ Signature:
 ): Promise<any>
 ```
 
-### Update school rating to 4.8
+Update school rating to 4.8
 
 ```ts
 await admin.resource('schools').update('1234', { rating: 4.8 });
 ```
 
-## Deleting item from database
+## Delete item from database
 
 Signature:
 
@@ -198,7 +198,7 @@ Signature:
 ): Promise<boolean>
 ```
 
-### Delete school with ID '1234'
+Delete school with ID '1234'
 
 ```ts
 await admin.resource('schools').delete('1234');

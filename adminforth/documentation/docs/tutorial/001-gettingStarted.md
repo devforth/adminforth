@@ -1,9 +1,8 @@
 
 # Getting Started
 
-This Getting Started Page has some explanations and larger tables. 
-
-For fast and short hello world example check out [Hello World](./01-helloWorld.md)
+This Getting Started Page has some explanations and tables with various field types. 
+For faster and shorter hello world example check out [Hello World](./01-helloWorld.md)
 
 ## Prerequisites
 
