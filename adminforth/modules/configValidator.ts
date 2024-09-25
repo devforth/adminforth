@@ -6,6 +6,7 @@ import {
   AdminForthResourcePages, AllowedActionsEnum,
   type AdminForthComponentDeclarationFull,
   type AfterSaveFunction,
+  AdminForthBulkAction,
 } from "../types/AdminForthConfig.js";
 
 import fs from 'fs';
@@ -260,7 +261,7 @@ export default class ConfigValidator implements IConfigValidator {
 
 
         //check if resource has bulkActions
-        let bulkActions = res?.options?.bulkActions || [];
+        let bulkActions: AdminForthBulkAction[] = res?.options?.bulkActions || [];
 
         if (!Array.isArray(bulkActions)) {
           errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
@@ -272,6 +273,7 @@ export default class ConfigValidator implements IConfigValidator {
             label: `Delete checked`,
             state: 'danger',
             icon: 'flowbite:trash-bin-outline',
+            confirm: 'Are you sure you want to delete selected items?',
             allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
             action: async ({ selectedIds, adminUser }) => {
               const connector = this.adminforth.connectors[res.dataSource];
@@ -324,7 +326,7 @@ export default class ConfigValidator implements IConfigValidator {
               if (error) {
                 return { error, ok: false };
               }
-              return { ok: true };
+              return { ok: true, successMessage: `${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''} deleted` };
             }
           });
         }
