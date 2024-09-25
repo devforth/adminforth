@@ -31,6 +31,8 @@ import { AdminUser } from 'adminforth';
 //diff-add
             state:'active',
 //diff-add
+            // if optional `confirm` is provided, user will be asked to confirm action
+//diff-add
             confirm: 'Are you sure you want to mark all selected apartments as listed?',
 //diff-add
             action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
@@ -39,7 +41,7 @@ import { AdminUser } from 'adminforth';
 //diff-add
               stmt.run(...selectedIds);
 //diff-add
-              return { ok: true, error: false, message: 'Marked as listed' }
+              return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
 //diff-add
             },
 //diff-add
@@ -57,6 +59,9 @@ Action code is called on the server side only and allowed to only authorized use
 > or write raw queries to update the data.
 
 > ☝️ You can use `adminUser` object to check whether user is allowed to perform bulk action
+
+
+> Action response can return optional `successMessage` property which will be shown to user after action is performed. If this property is not provided, no messages will be shown to user.
 
 Here is how it looks:
 ![alt text](<Custom bulk actions.png>)

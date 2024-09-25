@@ -10,6 +10,7 @@ import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
 import { ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
+import { title } from 'process';
 
 
 let TMP_DIR;
@@ -211,7 +212,12 @@ class CodeInjector implements ICodeInjector {
             path: '${page.path}',
             name: '${page.path}',
             component: () => import('${page?.component?.file || page.component}'),
-            meta: { title: '${page.meta?.title || page.path.replace('/', '')}',customLayout:${page?.component?.meta?.customLayout }}
+            meta: ${
+                JSON.stringify({
+                  ...(page?.component?.meta || {}),
+                  title: page.meta?.title || page.path.replace('/', '')
+                })
+            }
           },`})
         
     }}

@@ -57,7 +57,11 @@ export class FrontendAPI implements FrontendAPIInterface {
 
   confirm(params: ConfirmParams): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.modalStore.setModalContent({ content: params.message, acceptText: params.yes, cancelText: params.no })
+      this.modalStore.setModalContent({ 
+        content: params.message, 
+        acceptText: params.yes || 'Yes',
+        cancelText: params.no || 'Cancel' 
+      })
       this.modalStore.onAcceptFunction = resolve
       this.modalStore.onCancelFunction = reject
       this.modalStore.togleModal()

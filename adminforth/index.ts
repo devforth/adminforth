@@ -264,7 +264,7 @@ class AdminForth implements IAdminForth {
     return { ok, error, createdRecord };
   }
 
-  resource(resourceId: string) {
+  resource(resourceId: string): IOperationalResource {
     if (this.statuses.dbDiscover !== 'done') {
       if (this.statuses.dbDiscover === 'running') {
         throw new Error('Database discovery is running. You can\'t use data API while database discovery is not finished.\n'+

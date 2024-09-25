@@ -71,7 +71,7 @@ export const useCoreStore = defineStore('core', () => {
       window.adminforth.alert({
         message: respData.error,
         variant: 'danger',
-        timeout: 'unlimited'
+        timeout: 30,
       });
       record.value = {};
     } else {

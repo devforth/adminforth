@@ -1,4 +1,5 @@
 import type { Express } from 'express';
+import OperationalResource from '../modules/operationalResource.js';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
@@ -237,7 +238,7 @@ export interface IAdminForthDataSourceConnectorConstructor {
 }
 
 export interface IAdminForthAuth {
-  verify(jwt : string, mustHaveType: string): Promise<any>;
+  verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
   issueJWT(payload: Object, type: string): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
@@ -290,6 +291,11 @@ export interface IAdminForth {
    * However for simple setup you can call it from your main script, and users will see some "AdminForth is bundling" message in the admin panel while app is bundling.
    */
   bundleNow({ hotReload, verbose }: { hotReload: boolean, verbose: boolean }): Promise<void>;
+
+  /**
+   * Resource to get access to operational resources for data api fetching and manipulation.
+   */
+  resource(resourceId: string): IOperationalResource;
 
   /**
    * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
@@ -738,13 +744,17 @@ export type AdminForthBulkAction = {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string }>,
+  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
    */
   confirm?: string,
 
+  /**
+   * Success message which will be displayed to user after action is executed.
+   */
+  successMessage?: string,
   /**
    * Allowed callback called to check whether action is allowed for user.
    * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
@@ -1326,6 +1336,15 @@ export type AdminForthConfig = {
        * Execution is done on admin app load. 
        */
       announcementBadge?: (user: AdminUser) => { text?: string, html?: string, closable?: boolean, title?: string } | null,
+      
+      /**
+       * Custom panel components or array of components which will be displayed in the login form 
+       * right after the inputs. Use it to add custom authorization methods like social login or other custom fields e.g. 'reset' 
+       * password link.
+       */
+      loginPageInjections?: {
+        underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+      }
     }
 
     /**

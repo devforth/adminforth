@@ -9,7 +9,7 @@ export function showWarningTost(message: string) {
 }
 
 export function showErrorTost(message: string, timeout?: number) {
-  window.adminforth.alert({ message, variant: 'danger', timeout: timeout || 'unlimited'});  
+  window.adminforth.alert({ message, variant: 'danger', timeout: timeout || 30});  
   return message;
 }
 
