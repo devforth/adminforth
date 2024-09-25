@@ -295,7 +295,7 @@ export interface IAdminForth {
   /**
    * Resource to get access to operational resources for data api fetching and manipulation.
    */
-  resource(resourceId: string): OperationalResource;
+  resource(resourceId: string): IOperationalResource;
 
   /**
    * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
