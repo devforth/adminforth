@@ -149,6 +149,10 @@ async function saveRecord() {
         primaryKey: response.newRecordId
       } 
     });
+    window.adminforth.alert({
+      message: 'Record created successfully',
+      variant: 'success'
+    });
   }
 }
 
