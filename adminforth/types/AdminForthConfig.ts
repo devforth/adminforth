@@ -239,11 +239,11 @@ export interface IAdminForthDataSourceConnectorConstructor {
 
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
-  issueJWT(payload: Object, type: string): string;
+  issueJWT(payload: Object, type: string, expiresIn?: string): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
-  setAuthCookie({response, username, pk,}: {response: any, username: string, pk: string}): void;
+  setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
 }
@@ -1178,6 +1178,13 @@ export type AdminForthConfig = {
        * Any prompt to show users on login. Supports HTML.
        */
       loginPromptHTML?: string,
+
+      /**
+       * Remember me days for "Remember Me" checkbox on login page.
+       * If not set or set to null/0/undefined, "Remember Me" checkbox will not be displayed.
+       * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
+       */
+      rememberMeDays?: number,
     },
      /**
       * Array of resources which will be displayed in the admin panel.

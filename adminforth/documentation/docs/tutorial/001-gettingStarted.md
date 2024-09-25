@@ -152,7 +152,6 @@ import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
 
 
-
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
@@ -161,6 +160,7 @@ export const admin = new AdminForth({
     usersResourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
+    rememberMeDays: 30, // users who will check "remember me" will stay logged in for 30 days
   },
   customization: {
     brandName: 'My Admin',

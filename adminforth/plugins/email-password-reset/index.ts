@@ -88,7 +88,7 @@ export default class EmailPasswordReset extends AdminForthPlugin {
         if (af) {
           const brandName = this.adminforth.config.customization.brandName;
 
-          const resetToken = this.adminforth.auth.issueJWT({email, issuer: brandName }, 'tempResetPassword');
+          const resetToken = this.adminforth.auth.issueJWT({email, issuer: brandName }, 'tempResetPassword', '2h');
 
 
           // send email with AWS SES this.options.providerOptions.AWS_SES
@@ -117,6 +117,7 @@ export default class EmailPasswordReset extends AdminForthPlugin {
                     ${url}?token=${resetToken}\n\n
 
                     If you didn't request this, please ignore this email.\n\n
+                    Link is valid for 2 hours.\n\n
 
                     Thanks,
                     The ${brandName} Team
@@ -133,6 +134,7 @@ export default class EmailPasswordReset extends AdminForthPlugin {
                       <p>To reset your ${brandName} password, click the link below:</p>
                       <p><a href="${url}?token=${resetToken}">Reset password</a></p>
                       <p>If you didn't request this, please ignore this email.</p>
+                      <p>Link is valid for 2 hours.</p>
                       <p>Thanks,</p>
                       <p>The ${brandName} Team</p>
                     </body>

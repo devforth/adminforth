@@ -63,7 +63,7 @@ export default class AdminForthRestAPI {
       handler: async ({ body, response }) => {
        
         const INVALID_MESSAGE = 'Invalid Username or Password';
-        const { username, password } = body;
+        const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
 
@@ -120,7 +120,13 @@ export default class AdminForthRestAPI {
             }
           }
           if (toReturn.allowedLogin){
-            this.adminforth.auth.setAuthCookie({ response, username, pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] });
+            const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
+            this.adminforth.auth.setAuthCookie({ 
+              expireInDays,
+              response, 
+              username, 
+              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
+            });
           } 
         } else {
           return { error: INVALID_MESSAGE };
@@ -172,6 +178,7 @@ export default class AdminForthRestAPI {
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
+          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
         };
       },
     });

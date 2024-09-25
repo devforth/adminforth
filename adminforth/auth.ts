@@ -30,10 +30,15 @@ class AdminForthAuth {
     response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
-  setAuthCookie({ response, username, pk}: {
-    response: any, username: string, pk: string | null
+  setAuthCookie({ expireInDays, response, username, pk}: {
+    expireInDays?: number,
+    response: any, 
+    username: string, 
+    pk: string | null
   }) {
-    const token = this.issueJWT({ username, pk, }, 'auth');
+    const expiresIn: string = expireInDays ? `${expireInDays}d` : (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
+
+    const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
     response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
   }
 
@@ -47,11 +52,8 @@ class AdminForthAuth {
     const {name,value,expiry,httpOnly} = payload
     response.setHeader('Set-Cookie', `adminforth_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
   }
-
  
-
-
-  issueJWT(payload: Object, type: string) {
+  issueJWT(payload: Object, type: string, expiresIn: string = '24h'): string {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
@@ -59,7 +61,6 @@ class AdminForthAuth {
     }
 
     // issue JWT token
-    const expiresIn = process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h';
     return jwt.sign({...payload, t: type}, secret, { expiresIn });
   }
 

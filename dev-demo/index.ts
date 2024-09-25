@@ -112,6 +112,7 @@ const admin = new AdminForth({
     demoCredentials: "adminforth:adminforth",  // never use it for production
     loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
     // loginBackgroundImage: '@@/pho.jpg',
+    rememberMeDays: 30,
   },
   customization: {
     customComponentsDir: './custom',
