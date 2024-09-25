@@ -473,10 +473,10 @@ const admin = new AdminForth({
             // icon: 'typcn:archive',
             state:'active',
             confirm: 'Are you sure you want to mark all selected apartments as listed?',
-            action: function ({selectedIds, adminUser}: any) {
+            action: async function ({selectedIds, adminUser}: any) {
               const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
-              stmt.run(...selectedIds);
-              return { ok: true, error: false, message: 'Marked as listed' }
+              await stmt.run(...selectedIds);
+              return { ok: true, successMessage: 'Marked as listed' }
             }
           }
         ],

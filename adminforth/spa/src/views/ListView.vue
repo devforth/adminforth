@@ -179,6 +179,16 @@ async function getList() {
 }
 
 async function startBulkAction(actionId) {
+  const action = coreStore.resource.options.bulkActions.find(a => a.id === actionId);
+  if (action.confirm) {
+    const confirmed = await window.adminforth.confirm({
+      message: action.confirm,
+    });
+    if (!confirmed) {
+      return;
+    }
+  }
+
   const data = await callAdminForthApi({
     path: '/start_bulk_action',
     method: 'POST',
@@ -192,6 +202,14 @@ async function startBulkAction(actionId) {
   if (data?.ok) {
     checkboxes.value = [];
     await getList();
+
+    if (data.successMessage) {
+      window.adminforth.alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+
   }
   if (data?.error) {
     showErrorTost(data.error);
