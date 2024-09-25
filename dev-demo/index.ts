@@ -9,10 +9,8 @@ import TwoFactorsAuthPlugin from '../adminforth/plugins/two-factors-auth/index.j
 import UploadPlugin from '../adminforth/plugins/upload/index.js';
 import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.js';
 import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.js';
+import EmailResetPasswordPlugin from '../adminforth/plugins/email-password-reset/index.js';
 import fs from 'fs';
-import dotenv from 'dotenv';
-dotenv.config();
-
 
 const ADMIN_BASE_URL = '';
 
@@ -328,7 +326,7 @@ const admin = new AdminForth({
         {
           name: 'apartment_image',
           showIn: [],
-          required: true,
+          required: false,
           editingNote: 'Upload image of apartment',
         },
         { 
@@ -446,12 +444,15 @@ const admin = new AdminForth({
             }
           }, 
           // requires to have table 'description_images' with upload plugin installed on attachment field
-          attachments: {
-            attachmentResource: 'description_images',
-            attachmentFieldName: 'image_path',
-            attachmentRecordIdFieldName: 'record_id',
-            attachmentResourceIdFieldName: 'resource_id',
-          },
+          
+          ...(process.env.AWS_ACCESS_KEY_ID ? {
+            attachments: {
+              attachmentResource: 'description_images',
+              attachmentFieldName: 'image_path',
+              attachmentRecordIdFieldName: 'record_id',
+              attachmentResourceIdFieldName: 'resource_id',
+            },
+          }: {}),
         }),
       ],
 
@@ -521,6 +522,18 @@ const admin = new AdminForth({
             return adminUser.dbUser.email !== 'adminforth'
           },
         }), 
+        new EmailResetPasswordPlugin({
+          emailProvider: 'AWS_SES',
+          emailField: 'email',
+          sendFrom: 'no-reply@devforth.io',
+          providerOptions: {
+            AWS_SES: {
+              region: 'eu-central-1',
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            }
+          }
+        }),
       ],
       options: {
         allowedActions: {

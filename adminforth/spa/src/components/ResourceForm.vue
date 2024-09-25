@@ -6,16 +6,14 @@
       <form autocomplete="off" @submit.prevent>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
           <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 block md:table-row-group">
-              <tr>
-                  <th scope="col" class="px-6 py-3 hidden md:table-cell">
-                      Field
-                  </th>
-                  <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
-                      Value
-                  </th>
-
-                 
-              </tr>
+            <tr>
+              <th scope="col" class="px-6 py-3 hidden md:table-cell">
+                  Field
+              </th>
+              <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
+                  Value
+              </th>
+            </tr>
           </thead>
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
@@ -147,7 +145,6 @@
 
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
 import Dropdown from '@/components/Dropdown.vue';
-import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';

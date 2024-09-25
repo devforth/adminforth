@@ -1,0 +1,24 @@
+{
+  "name": "@adminforth/email-password-reset",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch",
+    "rollout": "npm publish --access public"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.6.1",
+    "adminforth": "file:../..",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.654.0",
+    "validator": "^13.12.0"
+  }
+}

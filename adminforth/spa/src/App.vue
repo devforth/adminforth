@@ -297,7 +297,11 @@ async function initRouter() {
 }
 
 async function loadMenu() {
-  await coreStore.fetchMenuAndResource();
+  await initRouter();
+  if (!route.meta.customLayout) {
+    // for custom layouts we don't need to fetch menu
+    await coreStore.fetchMenuAndResource();
+  }
   loginRedirectCheckIsReady.value = true;
 }
 

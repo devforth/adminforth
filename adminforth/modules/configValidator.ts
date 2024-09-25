@@ -127,6 +127,13 @@ export default class ConfigValidator implements IConfigValidator {
     if (this.config?.customization.brandName === undefined) {
       this.config.customization.brandName = 'AdminForth';
     }
+    if (this.config.customization.loginPageInjections === undefined) {
+      this.config.customization.loginPageInjections = {};
+    }
+
+    if (this.config.customization.loginPageInjections.underInputs === undefined) {
+      this.config.customization.loginPageInjections.underInputs = [];
+    }
     if (this.config.customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(this.config.customization.brandLogo));
     }
