@@ -160,13 +160,13 @@ export interface PluginOptions {
      * For example when RichEditor installed on description field of apartment resource,
      * field in attachment resource described hear will store id of apartment record.
      */
-    attachmentRecordIdFieldName: 'record_id',
+    attachmentRecordIdFieldName: string; // e.g. 'apartment_id',
 
     /**
      * When attachment is created, it will be linked to the resource, by storing id of the resource with editor in attachment resource.
      * For example when RichEditor installed on description field of apartment resource, it will store id of apartment resource.
      */
-    attachmentResourceIdFieldName: 'resource_id',
+    attachmentResourceIdFieldName: string; // e.g. 'apartment_resource_id',
   },
 }
 

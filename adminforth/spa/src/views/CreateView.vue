@@ -29,6 +29,10 @@
         Save
       </button>
 
+      <ThreeDotsMenu 
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems"
+      ></ThreeDotsMenu>
+
     </BreadcrumbsWithButtons>
 
     <component 
@@ -73,12 +77,13 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 
 
 const isValid = ref(false);
@@ -116,6 +121,7 @@ onMounted(async () => {
   });
   loading.value = false;
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'create');
+  initThreeDotsDropdown();
 });
 
 async function saveRecord() {

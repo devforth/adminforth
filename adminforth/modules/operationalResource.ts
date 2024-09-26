@@ -36,10 +36,18 @@ export default class OperationalResource implements IOperationalResource {
 
   async list(
       filter: IAdminForthFilter | IAdminForthFilter[], 
-      limit: number | null, 
-      offset: number | null, 
-      sort: IAdminForthSort | IAdminForthSort[]
+      limit: number | null = null, 
+      offset: number | null = null,
+      sort: IAdminForthSort | IAdminForthSort[] = []
   ): Promise<any[]> {
+    // check if type of limit and offset is number
+    if (limit !== null && typeof limit !== 'number') {
+      throw new Error('Limit must be a number');
+    }
+    if (offset !== null && typeof offset !== 'number') {
+      throw new Error('Offset must be a number');
+    }
+
     let appliedLimit = limit;
     if (limit === null) {
       appliedLimit = 1000000000;

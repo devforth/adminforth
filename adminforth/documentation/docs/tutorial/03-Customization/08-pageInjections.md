@@ -56,10 +56,10 @@ const chatOptions = {
       dataPointSelection: function (event, chartContext, config) {
         if (config.selectedDataPoints[0].length) {
           const selectedRoomsCount = data.value[config.dataPointIndex].rooms;
-          window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+          window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
         } else {
           // clear filter
-          window.adminforth.updateListFilter({field: 'number_of_rooms', value: undefined});
+          window.adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
         }
       }
     },
@@ -171,7 +171,7 @@ Also we have to add an Api to get percentages:
   admin.express.serve(app)
 ```
 
-> ☝️ Please note that we are using `window.adminforth.updateListFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+> ☝️ Please note that we are using `window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)
@@ -183,7 +183,7 @@ You can also inject custom components to the login page.
 
 `loginPageInjections.underInputs` allows to add one or more panels under the login form inputs:
 
-![loginPageInjections.underInputs](image-15.png)
+<img src="image-15.png" width="400" alt="loginPageInjections.underInputs" />
 
 For example:
 
@@ -212,3 +212,61 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
 </template>
 ```
   
+
+## Three dots menu customization
+
+You can also inject custom components to the three dots menu on the top right corner of the page.
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      show: {
+          threeDotsDropdownItems: [
+            '@@/CheckReadingTime.vue',
+          ]
+      }
+    }
+  }
+}
+```
+
+Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
+
+```html title="./custom/CheckReadingTime.vue"
+<template>
+  <div class="text-gray-500 text-sm">
+    <div @click="checkReadingTime" class="cursor-pointer flex gap-2 items-center">
+      Check reading time
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { getReadingTime} from "text-analyzer";
+
+function checkReadingTime() {
+  const text = document.querySelector('[data-af-column="description"]')?.innerText;
+  if (text) {
+    const readingTime = getReadingTime(text);
+    window.adminforth.alert({
+      message: `Reading time: ${readingTime} minutes`,
+      variant: 'success',
+    });
+  }
+  window.adminforth.list.closeThreeDotsDropdown();
+}
+```
+
+For this demo we will use text-analyzer package:
+
+
+```bash 
+cd custom
+npm install text-analyzer --save
+```
+
+
+> ☝️ Please note that we are using AdminForth Frontend API `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.

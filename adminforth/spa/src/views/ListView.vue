@@ -72,6 +72,10 @@
             {{ filtersStore.filters.length }}
         </span>
       </button>
+
+      <ThreeDotsMenu 
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems"
+      ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
     <component 
@@ -112,11 +116,12 @@ import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, getIcon } from '@/utils';
-import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
+import { initFlowbite } from 'flowbite';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 
 
 import {
@@ -138,6 +143,11 @@ const page = ref(1);
 const columnsMinMax = ref({});
 const sort = ref([]);
 
+watch(() => sort, async (to, from) => {
+  // in store sort might be needed for plugins
+  filtersStore.setSort(sort.value);
+}, {deep: true});
+
 const rows = ref(null);
 const totalRows = ref(0);
 const checkboxes = ref([]);
@@ -146,9 +156,6 @@ const DEFAULT_PAGE_SIZE = 10;
 
 
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
-
-
-
 
 
 async function getList() {
@@ -224,6 +231,8 @@ async function init() {
     resourceId: route.params.resourceId
   });
 
+  initFlowbite();
+
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it
   filtersStore.clearFilters();
   if (coreStore.resource.options?.defaultSort) {
@@ -234,8 +243,7 @@ async function init() {
   } else {
     sort.value = [];
   }
-  console.log('↘️init fired');
-  // await getList();
+  // await getList(); - Not needed here, watch will trigger it
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
     method: 'POST',
@@ -246,9 +254,12 @@ async function init() {
 }
 
 watch([page, sort, () => filtersStore.filters], async () => {
-  console.log('↘️watch fired getList');
   await getList();
 }, { deep: true });
+
+window.adminforth.list.refresh = async () => {
+  await getList();
+}
 
 watch(() => filtersStore.filters, async (to, from) => {
   page.value = 1;
@@ -256,9 +267,8 @@ watch(() => filtersStore.filters, async (to, from) => {
 }, {deep: true});
 
 onMounted(async () => {
-  console.log('🧱onMounted fired');
-  initFlowbite(); 
   await init();
+  initThreeDotsDropdown();
 });
 
 

@@ -25,6 +25,10 @@
         Save
       </button>
 
+      <ThreeDotsMenu 
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems"
+      ></ThreeDotsMenu>
+
     </BreadcrumbsWithButtons>
 
     <component 
@@ -69,11 +73,13 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
+
 
 const coreStore = useCoreStore();
 
@@ -107,12 +113,13 @@ const editableRecord = computed(() => {
 })
 
 onMounted(async () => {
-
   loading.value = true;
 
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
+  initThreeDotsDropdown();
+
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
@@ -149,6 +156,13 @@ async function saveRecord() {
   });
   if (resp.error) {
     showErrorTost(resp.error);
+  } else {
+    window.adminforth.alert({
+      message: 'Record updated successfully',
+      variant: 'success',
+      timeout: 400000
+
+    });
   }
   saving.value = false;
   router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });

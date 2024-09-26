@@ -47,6 +47,10 @@ export const useCoreStore = defineStore('core', () => {
     if (!resource.value) {
       throw new Error('Columns not fetched yet');
     }
+    const col = resource.value.columns.find((col: AdminForthResourceColumn) => col.primaryKey);
+    if (!col) {
+      throw new Error(`Primary key not found in resource ${resourceId}`);
+    }
 
     const respData = await callAdminForthApi({
       path: '/get_resource_data',
@@ -56,7 +60,7 @@ export const useCoreStore = defineStore('core', () => {
         resourceId: resourceId,
         filters: [
           {
-            field: resource.value.columns.find((col: AdminForthResourceColumn) => col.primaryKey).name,
+            field: col.name,
             operator: 'eq',
             value: primaryKey
           }

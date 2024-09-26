@@ -11,6 +11,7 @@ import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.js';
 import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.js';
 import EmailResetPasswordPlugin from '../adminforth/plugins/email-password-reset/index.js';
 import fs from 'fs';
+import ImportExportPlugin from '../adminforth/plugins/import-export/index.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -417,6 +418,7 @@ const admin = new AdminForth({
             }
           }),
         ]: []),
+        new ImportExportPlugin({}),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           fieldName: 'title',

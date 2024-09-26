@@ -2,9 +2,10 @@ import { onMounted, ref, resolveComponent } from 'vue';
 import type {  CoreConfig } from './spa_types/core';
 
 import router from "./router";
-import { useRouter } from 'vue-router';
 import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
+import { Dropdown } from 'flowbite';
+
 
 export async function callApi({path, method, body=undefined}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
@@ -100,4 +101,16 @@ export function checkAcessByAllowedActions(allowedActions:any, action:any ) {
   }
 }
 
-
+export function initThreeDotsDropdown() {
+  const threeDotsDropdown: HTMLElement | null = document.querySelector('#listThreeDotsDropdown');
+  if (threeDotsDropdown) {
+    // this resource has three dots dropdown
+    const dd = new Dropdown(
+      threeDotsDropdown, 
+      document.querySelector('[data-dropdown-toggle="listThreeDotsDropdown"]') as HTMLElement, 
+    );
+    window.adminforth.list.closeThreeDotsDropdown = () => {
+      dd.hide();
+    }
+  }
+}
