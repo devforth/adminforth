@@ -10,7 +10,7 @@ import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import RichEditorPlugin from '@adminforth/rich-editor';
-import { importExport } from '@adminforth/import-export';
+import importExport from '@adminforth/import-export';
 dotenv.config();
 
 try { fs.mkdirSync('db') } catch (e) {} 
