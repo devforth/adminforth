@@ -32,9 +32,10 @@ new AdminForth({
   ...
   resources: [
     {
-      resourceId: 'posts',
+      resourceId: 'aparts',
       plugins: [
-        importExport({}),
+        ...
+        new importExport({}),
       ],
     },
   ],
