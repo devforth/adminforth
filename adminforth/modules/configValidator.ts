@@ -32,7 +32,8 @@ export default class ConfigValidator implements IConfigValidator {
     return [];
   }
 
-  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>, ignoreExistsCheck: boolean = false): AdminForthComponentDeclaration {
+  validateComponent(component: AdminForthComponentDeclaration, errors: Array<string>): AdminForthComponentDeclaration {
+    
     if (!component) {
       return component;
     }
@@ -42,6 +43,18 @@ export default class ConfigValidator implements IConfigValidator {
     } else {
       obj = component;
     }
+
+    let ignoreExistsCheck = false;
+    if (
+      this.adminforth.codeInjector.allComponentNames.hasOwnProperty(
+        (component as AdminForthComponentDeclarationFull).file)
+    ) {
+      // not obvious, but if we are in this if, it means that this is plugin component
+      // if component is plugin component, we don't need to check if it exists in users folder
+      ignoreExistsCheck = true;
+    }
+    
+
     if (!ignoreExistsCheck) {
       errors.push(...this.checkCustomFileExists(obj.file));
     }
@@ -109,10 +122,7 @@ export default class ConfigValidator implements IConfigValidator {
 
     if (this.config.customization.customPages) {
       this.config.customization.customPages.forEach((page, i) => {
-        // validate component if it's not plugin injection
-        if (this.adminforth.codeInjector.allComponentNames.hasOwnProperty(page.component as PropertyKey)) {
-          const validatedPage = this.validateComponent(page.component, errors, true);
-        }
+        this.validateComponent(page.component, errors);
       });
     } else {
       this.config.customization.customPages = [];
@@ -341,9 +351,16 @@ export default class ConfigValidator implements IConfigValidator {
         res.options.bulkActions = bulkActions;
 
         // if pageInjection is a string, make array with one element. Also check file exists
-        const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom'];
+        const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'];
+        const possiblePages = ['list', 'show', 'create', 'edit'];
+
         if (res.options.pageInjections) {
           Object.entries(res.options.pageInjections).map(([key, value]) => {
+            if (!possiblePages.includes(key)) {
+              const similar = suggestIfTypo(possiblePages, key);
+              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${key}", allowed keys are ${possiblePages.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+            }
+
             Object.entries(value).map(([injection, target]) => {
               if (possibleInjections.includes(injection)) {
                 if (!Array.isArray(res.options.pageInjections[key][injection])) {
@@ -354,7 +371,8 @@ export default class ConfigValidator implements IConfigValidator {
                   res.options.pageInjections[key][injection][i] = this.validateComponent(target, errors);
                 });
               } else {
-                errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')}`);
+                const similar = suggestIfTypo(possibleInjections, injection);
+                errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
               }
             });
 
@@ -477,13 +495,8 @@ export default class ConfigValidator implements IConfigValidator {
         if (column.components) {
 
           for (const [key, comp] of Object.entries(column.components as Record<string, AdminForthComponentDeclarationFull>)) {
-            let ignoreExistsCheck = false;
-            if (this.adminforth.codeInjector.allComponentNames[comp.file]) {
-              // not obvious, but if we are in this if, it means that this is plugin component
-              // and there is no sense to check if it exists in users folder
-              ignoreExistsCheck = true;
-            }
-            column.components[key] = this.validateComponent(comp, errors, ignoreExistsCheck);
+            
+            column.components[key] = this.validateComponent(comp, errors);
           }
         }
       }

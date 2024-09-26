@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import ResourceParent from '@/views/ResourceParent.vue';
-import { useFiltersStore } from '@/stores/filters';
+
 /* IMPORTANT:ADMINFORTH ROUTES IMPORTS */
 
 const router = createRouter({

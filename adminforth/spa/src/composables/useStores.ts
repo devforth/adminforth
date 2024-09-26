@@ -24,17 +24,11 @@ import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
 declare global {
   interface Window {
-    adminforth: {
-      confirm: (params: ConfirmParams) => Promise<void>;
-      alert: (params: AlertParams) => void;
-      setListFilter: (filter: any) => void;
-      updateListFilter: (filter: any) => void;
-      clearListFilters: () => void;
-    };
+    adminforth: FrontendAPIInterface;
   }
 }
 
-export class FrontendAPI implements FrontendAPIInterface {
+export class FrontendAPI {
   private toastStore:any
   private modalStore:any
   private filtersStore:any  
@@ -45,14 +39,19 @@ export class FrontendAPI implements FrontendAPIInterface {
     }
     this.toastStore = useToastStore();
     this.modalStore = useModalStore();
-    console.log(this.toastStore, this.modalStore,'init of adminforth frontend api')
+    
     window.adminforth = {
       confirm: this.confirm.bind(this),
       alert: this.alert.bind(this),
-      setListFilter: this.setListFilter.bind(this),
-      updateListFilter: this.updateListFilter.bind(this),
-      clearListFilters: this.clearListFilters.bind(this),
-    }
+
+      list: {
+        refresh: () => {/* will be redefined in list*/},
+        closeThreeDotsDropdown: () => {/* will be redefined in list*/},
+        setFilter: () => this.setListFilter.bind(this),
+        updateFilter: () => this.updateListFilter.bind(this),
+        clearFilters: () => this.clearListFilters.bind(this),
+      }
+    };
   }
 
   confirm(params: ConfirmParams): Promise<void> {

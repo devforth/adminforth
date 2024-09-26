@@ -165,7 +165,7 @@
       </div>
     </div>
     <AcceptModal />
-    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse">
+    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-50">
       <transition-group
         name="fade"
         tag="div"

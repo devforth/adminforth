@@ -19,6 +19,7 @@ export interface FrontendAPIInterface {
      * @returns A promise that resolves when the user confirms the dialog
      */   
     confirm(params:ConfirmParams ): Promise<void>;
+    
     /**
      * Show an alert
      * 
@@ -33,37 +34,53 @@ export interface FrontendAPIInterface {
      * @param params - The parameters of the alert
      */
     alert(params:AlertParams): void;
-    /**
-     * Add a filter to the list of filters.
-     * Works only when user located on the list page.
-     * Can be used to set filter from charts or other components in pageInjections.
-     * 
-     * Example:
-     * 
-     * ```ts
-     * window.adminforth.updateListFilter({field: 'name', operator: 'ilike', value: 'john'})
-     * ```
-     * 
-     * @param filter - The filter to add
-     */
-    setListFilter(filter: any): void;
-    /**
-     * Update a filter in the list of filters
-     * 
-     * Example:
-     * 
-     * ```ts
-     * window.adminforth.updateListFilter({field: 'name', operator: 'ilike', value: 'john'})
-     * ```
-     * 
-     * @param filter - The filter to update
-     */
-    updateListFilter(filter: any): void;
-    /**
-     * Clear all filters from the list
-     */
-    clearListFilters(): void;
 
+
+    list: {
+
+        /**
+         * Refresh the list
+         */
+        refresh(): void;
+
+        /**
+         * Close the three dots dropdown
+         */
+        closeThreeDotsDropdown(): void;
+
+        /**
+         * Set a filter in the list
+         * Works only when user located on the list page.
+         * Can be used to set filter from charts or other components in pageInjections.
+         * 
+         * Example:
+         * 
+         * ```ts
+         * window.adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * ```
+         * 
+         * @param filter - The filter to set
+         */
+        setFilter(filter: any): void;
+
+        /**
+         * Update a filter in the list
+         * 
+         * Example:
+         * 
+         * ```ts
+         * window.adminforth.list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * ```
+         * 
+         * @param filter - The filter to update
+         */
+        updateFilter(filter: any): void;
+
+        /**
+         * Clear all filters from the list
+         */
+        clearFilters(): void;
+    }
 }
 
 export type ConfirmParams = {

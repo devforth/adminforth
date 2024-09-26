@@ -22,6 +22,10 @@
         <IconTrashBinSolid class="w-4 h-4" />
         Delete
       </button>
+
+      <ThreeDotsMenu 
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems"
+      ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
     <component 
@@ -74,7 +78,7 @@
                 <td class="px-6 py-4 whitespace-nowrap "> <!--align-top-->
                   {{ column.label }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap">
+                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap" :data-af-column="column.name">
                   <component
                     v-if="column?.components?.show"
                     :is="getCustomComponent(column?.components?.show)"
@@ -119,31 +123,27 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
-import { useModalStore } from '@/stores/modal';
-import { getCustomComponent, checkAcessByAllowedActions } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
+import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 
 
-const item = ref(null);
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 
-console.log(route.params,'showWiev');
-
-
 const coreStore = useCoreStore();
-const modalStore = useModalStore();
 
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
+  initThreeDotsDropdown();
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
@@ -176,9 +176,8 @@ async function deleteRecord(row) {
 
     } catch (e) {
       console.error(e);
-      };
-    }
-
+    };
+  }
     
 }
 

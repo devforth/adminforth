@@ -230,10 +230,8 @@
 <script setup>
 
 
-import { initFlowbite } from 'flowbite';
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { callAdminForthApi, getIcon } from '@/utils';
+import { computed, ref, watch } from 'vue';
+import { callAdminForthApi } from '@/utils';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';

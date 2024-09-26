@@ -174,7 +174,7 @@ async function login() {
     body: {
       username,
       password,
-      rememberMe: rememberInput.value.checked,
+      rememberMe: rememberInput.value?.checked,
     }
   });
   inProgress.value = false;

@@ -19,6 +19,23 @@ function generateSalt(length = 16) {
   return crypto.randomBytes(length).toString('hex');
 }
 
+function parseTimeToSeconds(time: string): number {
+  const unit = time.slice(-1);
+  const value = parseInt(time.slice(0, -1), 10);
+  switch (unit) {
+    case 's':
+      return value;
+    case 'm':
+      return value * 60;
+    case 'h':
+      return value * 60 * 60;
+    case 'd':
+      return value * 60 * 60 * 24;
+    default:
+      throw new Error(`Invalid time unit: ${unit}`);
+  }
+}
+
 class AdminForthAuth {
   adminforth: AdminForth;
 
@@ -37,13 +54,17 @@ class AdminForthAuth {
     pk: string | null
   }) {
     const expiresIn: string = expireInDays ? `${expireInDays}d` : (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
+    // might be h,m,d in string
+    const expiresInSec = parseTimeToSeconds(expiresIn);
 
     const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
-    response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+    const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
+    
+    response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
   }
 
   removeCustomCookie({response, name}) {
-    response.setHeader('Set-Cookie', `adminforth_test'='2'; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict`);
+    response.setHeader('Set-Cookie', `adminforth_${name}=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
   setCustomCookie({ response, payload }: {

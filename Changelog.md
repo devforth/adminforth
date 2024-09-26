@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.3.26] - 2024-09-26
+
+### Added
+- threeDotsDropdownItems page injection
+- plugin for import/export
+- add alert after edit created
+
+### Fixed
+- fix login issue when rememberMe is not set
+- Cookie expiration time is synced with JWT token expiration time, had no expiration before (session cookie)
+
 ## [1.3.23] - 2024-09-25
 
 ### Added
