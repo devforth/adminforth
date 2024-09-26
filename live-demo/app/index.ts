@@ -10,6 +10,7 @@ import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import RichEditorPlugin from '@adminforth/rich-editor';
+import { importExport } from '@adminforth/import-export';
 dotenv.config();
 
 try { fs.mkdirSync('db') } catch (e) {} 
@@ -83,6 +84,7 @@ export const admin = new AdminForth({
         }
       },
       plugins: [
+        importExport({}),
         new AuditLogPlugin({
             // if you want to exclude some resources from logging
             //excludeResourceIds: ['users'],
@@ -221,6 +223,7 @@ export const admin = new AdminForth({
         }
       ],
       plugins: [
+        importExport({}),
         new RichEditorPlugin({
           htmlFieldName: 'description',
           completion: {
@@ -274,6 +277,7 @@ export const admin = new AdminForth({
       label: 'Users',  
       recordLabel: (r) => `👤 ${r.email}`,
       plugins: [
+        importExport({}),
         new ForeignInlineListPlugin({
           foreignResourceId: 'aparts',
           modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
