@@ -1,5 +1,4 @@
 import type { Express } from 'express';
-import OperationalResource from '../modules/operationalResource.js';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
