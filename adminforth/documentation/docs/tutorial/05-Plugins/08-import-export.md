@@ -21,7 +21,7 @@ npm install @adminforth/import-export
 To use the plugin, you need to import it and call the `importExport` function:
 
 ```typescript
-import { importExport } from '@adminforth/import-export';
+import importExport from '@adminforth/import-export';
 ```
 
 Add plugin instantiation to the `plugins` array of resource where you want to use it:
