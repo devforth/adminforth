@@ -1,4 +1,4 @@
-import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthFilterOperators } from "adminforth";
+import { AdminForthPlugin, suggestIfTypo, AdminForthFilterOperators } from "adminforth";
 import type { IAdminForth, IHttpServer, AdminForthResourceColumn, AdminForthComponentDeclaration, AdminForthResource } from "adminforth";
 import type { PluginOptions } from './types.js';
 

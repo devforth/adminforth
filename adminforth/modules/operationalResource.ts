@@ -1,5 +1,4 @@
-import { error } from 'console';
-import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAdminForth } from '../types/AdminForthConfig.js';
+import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/AdminForthConfig.js';
 
 
 function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): IAdminForthFilter[] {
