@@ -176,7 +176,7 @@ Also we have to add an Api to get percentages:
   admin.express.serve(app)
 ```
 
-> ☝️ Please note that we are using `window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+> ☝️ Please note that we are using [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)
@@ -188,7 +188,7 @@ You can also inject custom components to the login page.
 
 `loginPageInjections.underInputs` allows to add one or more panels under the login form inputs:
 
-<img src="image-15.png" width="400" alt="loginPageInjections.underInputs" />
+![login Page Injections underInputs](<Group 2 (1).png>)
 
 For example:
 
@@ -249,7 +249,7 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { getReadingTime} from "text-analyzer";
 
 function checkReadingTime() {
@@ -274,4 +274,4 @@ npm install text-analyzer --save
 ```
 
 
-> ☝️ Please note that we are using AdminForth Frontend API `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
