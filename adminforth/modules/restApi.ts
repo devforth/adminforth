@@ -362,8 +362,6 @@ export default class AdminForthRestAPI {
         }
         const { limit, offset, filters, sort } = body;
 
-        
-
         for (const filter of (filters || [])) {
           if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
               throw new Error(`Operator '${filter.operator}' is not allowed`);
