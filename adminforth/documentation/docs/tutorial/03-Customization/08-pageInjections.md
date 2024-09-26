@@ -135,7 +135,7 @@ onMounted(async () => {
 </script>
 ```
 
-Then initialize npm in `custom` directory and install required packages:
+Then initialize npm in `custom` directory if you didn't do this and install required packages:
 ```bash
 npm init -y
 npm install apexcharts --save-dev
