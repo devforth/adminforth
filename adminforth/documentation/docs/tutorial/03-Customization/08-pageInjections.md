@@ -135,6 +135,11 @@ onMounted(async () => {
 </script>
 ```
 
+Then initialize npm in `custom` directory if you didn't do this and install required packages:
+```bash
+npm init -y
+npm install apexcharts --save-dev
+```
 
 Also we have to add an Api to get percentages:
 
