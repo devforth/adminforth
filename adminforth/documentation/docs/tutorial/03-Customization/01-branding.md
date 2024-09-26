@@ -138,7 +138,7 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](<localhost_3500_login (2).png>)
+![alt text](demo.adminforth.dev_login.png)
 
 You can also set background position and size:
 
