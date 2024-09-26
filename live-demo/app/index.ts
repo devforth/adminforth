@@ -84,7 +84,7 @@ export const admin = new AdminForth({
         }
       },
       plugins: [
-        importExport({}),
+        new importExport({}),
         new AuditLogPlugin({
             // if you want to exclude some resources from logging
             //excludeResourceIds: ['users'],
@@ -223,7 +223,7 @@ export const admin = new AdminForth({
         }
       ],
       plugins: [
-        importExport({}),
+        new importExport({}),
         new RichEditorPlugin({
           htmlFieldName: 'description',
           completion: {
@@ -277,7 +277,7 @@ export const admin = new AdminForth({
       label: 'Users',  
       recordLabel: (r) => `👤 ${r.email}`,
       plugins: [
-        importExport({}),
+        new importExport({}),
         new ForeignInlineListPlugin({
           foreignResourceId: 'aparts',
           modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
