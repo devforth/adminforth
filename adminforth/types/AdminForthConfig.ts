@@ -1524,17 +1524,17 @@ export type ValidationObject = {
     /**
      * Whether to check case sensitivity (i flag)
      */
-    caseSensitive: boolean,
+    caseSensitive?: boolean,
     
     /**
      * Whether to check Multiline strings (m flag)
      */
-    multiline: boolean, 
+    multiline?: boolean, 
     
     /**
      * Whether to check global strings (g flag)
      */
-    global: boolean
+    global?: boolean
   }
 
 export type AdminForthComponentDeclarationFull = {
