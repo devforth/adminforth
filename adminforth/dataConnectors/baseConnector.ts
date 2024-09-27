@@ -67,7 +67,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       offset: 0,
       getTotals: false
     });
-    process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 existingRecord|||', existingRecord);
 
     return existingRecord.data.length > 0;
   }
@@ -90,14 +89,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
     }
-
     
     let error: string | null = null;
     await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
-
         if (col.isUnique && !col.virtual && !error) {
-
           const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name]);
           if (exists) {
             error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
@@ -105,12 +101,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         }
       })
     );
-    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 error', error);
     if (error) {
+      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
       return { error, ok: false };
     }
 
-    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record', recordWithOriginalValues);
+    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record', recordWithOriginalValues);
     await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
 
     return {
@@ -119,8 +115,24 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
-  updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {
+  updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<{ error?: string; ok: boolean; }> {
+    // transform value using setFieldValue and call updateRecordOriginalValues
+    const recordWithOriginalValues = {...newValues};
+
+    for (const field of Object.keys(newValues)) {
+      const col = resource.dataSourceColumns.find((col) => col.name == field);
+      recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
+    }
+
+    process.env.HEAVY_DEBUG && console.log(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
+
+    await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
+
+    return { ok: true };
   }
 
   deleteRecord({ resource, recordId }: { resource: AdminForthResource; recordId: string; }): Promise<boolean> {

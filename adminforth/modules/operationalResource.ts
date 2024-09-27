@@ -87,7 +87,7 @@ export default class OperationalResource implements IOperationalResource {
     return await this.dataConnector.updateRecord({ 
       resource: this.resourceConfig,
       recordId: primaryKey,
-      newValues: record 
+      newValues: record
     });
   }
 

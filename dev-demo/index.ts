@@ -535,7 +535,8 @@ const admin = new AdminForth({
               accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             }
-          }
+          },
+          passwordField: 'password',
         }),
       ],
       options: {
@@ -590,7 +591,10 @@ const admin = new AdminForth({
           required: { create: true }, // to show only in create page
           editingNote: { edit: 'Leave empty to keep password unchanged' },
 
-          // minLength: 8,
+          minLength: 8,
+          validation: [
+            AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
+          ],
           type: AdminForthDataTypes.STRING,
           showIn: ['create', 'edit'], // to show in create and edit pages
           masked: true, // to show stars in input field

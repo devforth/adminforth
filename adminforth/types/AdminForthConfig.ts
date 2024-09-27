@@ -189,14 +189,12 @@ export interface IAdminForthDataSourceConnector {
   createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
 
   /**
-   * Used to update record in database.
+   * Update record in database. newValues might have not all fields in record, but only changed ones.
    * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}
-   * newValues is array of fields which should be updated (might be not all fields in record, but only changed fields).
    */
-  updateRecord({ resource, recordId, newValues }:
-    { resource: AdminForthResource, recordId: string, newValues: any }
-  ): Promise<void>;
-  
+  updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void>;
+
+
   /**
    * Used to delete record in database.
    */
@@ -228,12 +226,18 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     adminUser: AdminUser
   }): Promise<{ok: boolean, error?: string, createdRecord?: any}>;
 
+  updateRecord({ resource, recordId, newValues }: { 
+    resource: AdminForthResource, 
+    recordId: string, 
+    newValues: any, 
+  }): Promise<{ok: boolean, error?: string}>;
+
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 }
 
 
 export interface IAdminForthDataSourceConnectorConstructor {
-  new ({ url }: { url: string }): IAdminForthDataSourceConnector;
+  new ({ url }: { url: string }): IAdminForthDataSourceConnectorBase;
 }
 
 export interface IAdminForthAuth {
@@ -266,7 +270,15 @@ export interface IAdminForth {
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser }
-  ): Promise<{ ok: boolean, error?: string, createdRecord?: any }>;
+  ): Promise<{ error?: string, createdRecord?: any }>;
+
+  updateResourceRecord(
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser }
+  ): Promise<{ error?: string }>;
+
+  deleteResourceRecord(
+    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any }
+  ): Promise<{ error?: string }>;
 
   auth: IAdminForthAuth;
 
@@ -701,13 +713,13 @@ export type AfterDataSourceResponseFunction = (params: {resource: AdminForthReso
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeSaveFunction = (params: {resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
+export type BeforeSaveFunction = (params: {resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, oldRecord?: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterSaveFunction = (params: {resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any}) => Promise<{ok: boolean, error?: string}>;
+export type AfterSaveFunction = (params: {resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, oldRecord?: any}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Allow to get user data before login confirmation, will triger when user try to login.
@@ -1508,6 +1520,21 @@ export type ValidationObject = {
      * Example: "Invalid email format"
      */
     message: string,
+
+    /**
+     * Whether to check case sensitivity (i flag)
+     */
+    caseSensitive: boolean,
+    
+    /**
+     * Whether to check Multiline strings (m flag)
+     */
+    multiline: boolean, 
+    
+    /**
+     * Whether to check global strings (g flag)
+     */
+    global: boolean
   }
 
 export type AdminForthComponentDeclarationFull = {

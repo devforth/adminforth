@@ -95,6 +95,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
 
       const createAttachmentRecords = async (adminforth: IAdminForth, options: PluginOptions, record: any, s3Paths: string[]) => {
         await Promise.all(s3Paths.map(async (s3Path) => {
+          // TODO, hooks are not called here
           await adminforth.resource(options.attachments.attachmentResource).create({
             [options.attachments.attachmentFieldName]: s3Path,
             [options.attachments.attachmentRecordIdFieldName]: record.id,

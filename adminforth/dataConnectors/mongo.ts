@@ -182,7 +182,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         await collection.insertOne(newRecord);
     }
 
-    async updateRecord({ resource, recordId, newValues }) {
+    async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const collection = this.db.db().collection(resource.table);
         await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }

@@ -171,7 +171,7 @@ const onFileChange = async (e) => {
       reader.readAsDataURL(file);
     }
     
-    const { uploadUrl, tagline, s3Path } = await callAdminForthApi({
+    const { uploadUrl, tagline, s3Path, error } = await callAdminForthApi({
         path: `/plugin/${props.meta.pluginInstanceId}/get_s3_upload_url`,
         method: 'POST',
         body: {
@@ -181,6 +181,17 @@ const onFileChange = async (e) => {
           originalExtension: extension,
         },
     });
+
+    if (error) {
+      window.adminforth.alert({
+        message: `File was not uploaded because of error: ${error}`,
+        variant: 'danger'
+      });
+      imgPreview.value = null;
+      uploaded.value = false;
+      progress.value = 0;
+      return;
+    }
 
     const xhr = new XMLHttpRequest();
     const success = await new Promise((resolve) => {

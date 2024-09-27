@@ -169,6 +169,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
     // in afterSave hook, aremove tag adminforth-not-yet-used from the file
     resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
+      process.env.HEAVY_DEBUG && console.log('💾💾  after save ', record?.id);
       
       if (record[pathColumnName]) {
         const s3 = new S3({
@@ -179,6 +180,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
           region: this.options.s3Region,
         });
+        process.env.HEAVY_DEBUG && console.log('🪥🪥 remove ObjectTagging', record[pathColumnName]);
 
         await s3.putObjectTagging({
           Bucket: this.options.s3Bucket,
@@ -339,7 +341,9 @@ export default class UploadPlugin extends AdminForthPlugin {
         const { originalFilename, contentType, size, originalExtension } = body;
 
         if (this.options.allowedFileExtensions && !this.options.allowedFileExtensions.includes(originalExtension)) {
-          throw new Error(`File extension "${originalExtension}" is not allowed, allowed extensions are: ${this.options.allowedFileExtensions.join(', ')}`);
+          return {
+            error: `File extension "${originalExtension}" is not allowed, allowed extensions are: ${this.options.allowedFileExtensions.join(', ')}`
+          };
         }
 
         const s3Path: string = this.options.s3Path({ originalFilename, originalExtension, contentType });

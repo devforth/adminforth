@@ -35,11 +35,17 @@ export default class EmailPasswordReset extends AdminForthPlugin {
     }
     this.emailField = emailField;
 
-    if (!this.options.passwordConstraints) {
-      this.options.passwordConstraints = {}
+    if (!this.options.passwordField) {
+      throw new Error(`passwordField is required to get password constraints and should be a name of virtual field in auth resource`);
     }
-    if (!this.options.passwordConstraints.minLength) {
-      this.options.passwordConstraints.minLength = 8;
+
+    const passwordField = authResource.columns.find(f => f.name === this.options.passwordField);
+    if (!passwordField) {
+      const similar = suggestIfTypo(authResource.columns.map(f => f.name), this.options.passwordField);
+
+      throw new Error(`Field with name ${this.options.passwordField} not found in resource ${authResource.resourceId}.
+        ${similar ? `Did you mean ${similar}?` : ''}
+      `);
     }
 
 
@@ -53,7 +59,11 @@ export default class EmailPasswordReset extends AdminForthPlugin {
         meta: { 
           customLayout: true, 
           pluginInstanceId: this.pluginInstanceId,
-          passwordConstraints: this.options.passwordConstraints
+          passwordField: {
+            minLength: passwordField.minLength,
+            maxLength: passwordField.maxLength,
+            validation: passwordField.validation
+          }
         }
       }
     })

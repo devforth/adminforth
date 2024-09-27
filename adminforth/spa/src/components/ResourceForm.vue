@@ -145,7 +145,7 @@
 
 import CustomDatePicker from "@/components/CustomDatePicker.vue";
 import Dropdown from '@/components/Dropdown.vue';
-import { callAdminForthApi, getCustomComponent } from '@/utils';
+import { applyRegexValidation, callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';
 import { initFlowbite } from 'flowbite';
@@ -172,7 +172,7 @@ const currentValues = ref(null);
 
 const customComponentsInValidity = ref({});
 const customComponentsEmptiness = ref({});
-
+  
 
 const columnError = (column) => {
   const val = computed(() => {
@@ -212,22 +212,12 @@ const columnError = (column) => {
         return `This field must be less than ${column.maxValue}`;
       }
     }
-    if ( column.validation && column.validation.length ) {
-      const validationArray = column.validation;
-      for (let i = 0; i < validationArray.length; i++) {
-        if (validationArray[i].regExp) {
-          const regExp = new RegExp(validationArray[i].regExp);
-          let value = currentValues.value[column.name];
-          if (value === undefined || value === null) {
-            value = '';
-          }
-          if (!regExp.test(value)) {
-            return validationArray[i].message;
-          }
-        }
-      }
 
+    const error = applyRegexValidation(currentValues.value[column.name], column.validation);
+    if (error) {
+      return error;
     }
+
     return null;
   });
   return val.value;
