@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.28] - 2024-09-27
+
+### Improved
+
+- Password reset now respects same password constraints as on the user creation from virtual field
+- Regexes in `column.validation` now support insensitive and other flags
+
+### Fixed
+
+- Updating fields did not respect native data types on the update data apu
+
+## Changed
+
+- Now create/update/delete methods which run hooks where ejected fromr est api, makes them available from plugin
+- In data connector interface added update with original values
+
 
 ## [1.3.26] - 2024-09-26
 
