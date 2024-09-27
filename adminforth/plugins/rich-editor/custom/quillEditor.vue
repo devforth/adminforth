@@ -117,7 +117,7 @@ async function saveToServer(file: File) {
   const originalFilename = file.name.split('.').slice(0, -1).join('.');
   const originalExtension = file.name.split('.').pop();
   // send fd to s3
-  const { uploadUrl, tagline, previewUrl, s3Path } = await callAdminForthApi({
+  const { uploadUrl, tagline, previewUrl, s3Path, error } = await callAdminForthApi({
       path: `/plugin/${props.meta.uploadPluginInstanceId}/get_s3_upload_url`,
       method: 'POST',
       body: {
@@ -127,6 +127,14 @@ async function saveToServer(file: File) {
         originalExtension,
       },
   });
+
+  if (error) {
+    window.adminforth.alert({
+      message: `File was not uploaded because of error: ${error}`,
+      variant: 'danger'
+    });
+    return;
+  }
 
   const xhr = new XMLHttpRequest();
   const success = await new Promise((resolve) => {

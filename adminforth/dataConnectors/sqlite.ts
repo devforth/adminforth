@@ -181,13 +181,12 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
-      console.log('🪲 SQLITE Query', `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`, 'params:', [...filterValues, limit, offset]);
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
       const stmt = this.db.prepare(q);
       const d = [...filterValues, limit, offset];
 
       if (process.env.HEAVY_DEBUG) {
-        console.log('🪲 SQLITE Query', q, 'params:', d);
+        console.log('🪲📜 SQLITE Q', q, 'params:', d);
       }
       const rows = await stmt.all(d);
 
@@ -230,13 +229,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       await q.run(values);
     }
 
-    async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
+    async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
       const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
       const values = [...Object.values(newValues), recordId];
 
       const q = this.db.prepare(
           `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
       )
+      process.env.HEAVY_DEBUG && console.log('🪲 SQLITE Query', `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`, 'params:', values);
       await q.run(values);
     }
 

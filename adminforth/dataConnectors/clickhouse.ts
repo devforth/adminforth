@@ -303,11 +303,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       });
     }
 
-    async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
+    async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
       const columnsWithPlaceholders = Object.keys(newValues).map((col) => {
         return `${col} = {${col}:${resource.dataSourceColumns.find((c) => c.name == col)._underlineType}}`
       });
-      const values = [...Object.values(newValues), recordId];
 
       await this.client.command(
         { 

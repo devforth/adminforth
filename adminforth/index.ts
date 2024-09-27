@@ -17,6 +17,7 @@ import {
   AfterSaveFunction,
   AdminUser,
   AdminForthResource,
+  IAdminForthDataSourceConnectorBase,
 } from './types/AdminForthConfig.js';
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
@@ -38,6 +39,17 @@ class AdminForth implements IAdminForth {
   static Utils = {
     generatePasswordHash: async (password) => {
       return await AdminForthAuth.generatePasswordHash(password);
+    },
+
+    PASSWORD_VALIDATORS: {
+      UP_LOW_NUM_SPECIAL: {
+        regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*\\(\\)\\-_=\\+\\[\\]\\{\\}\\|;:\',\\.<>\\/\\?]).+$',
+        message: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character'
+      },
+      UP_LOW_NUM: {
+        regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$',
+        message: 'Password must include at least one uppercase letter, one lowercase letter, and one number'
+      },
     }
   }
 
@@ -49,7 +61,9 @@ class AdminForth implements IAdminForth {
   express: ExpressServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
-  connectors;
+  connectors: {
+    [dataSourceId: string]: IAdminForthDataSourceConnectorBase,
+  };
   connectorClasses: any;
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
@@ -202,18 +216,7 @@ class AdminForth implements IAdminForth {
   async createResourceRecord(
     { resource, record, adminUser }: 
     { resource: AdminForthResource, record: any, adminUser: AdminUser }
-  ): Promise<{ ok: boolean, error?: string, createdRecord?: any }> {
-    
-    for (const column of resource.columns) {
-      // TODO: assuming specifity for AdminForthResourcePages.create better to move it to api for this button
-      if (
-          (column.required as {create?: boolean, edit?: boolean}) ?.create &&
-          record[column.name] === undefined &&
-          column.showIn.includes(AdminForthResourcePages.create)
-      ) {
-          return { error: `Column '${column.name}' is required`, ok: false };
-      }
-    }
+  ): Promise<{ error?: string, createdRecord?: any }> {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
@@ -223,28 +226,28 @@ class AdminForth implements IAdminForth {
       }
 
       if (resp.error) {
-        return { error: resp.error, ok: false };
+        return { error: resp.error };
       }
     }
 
     // remove virtual columns from record
     for (const column of resource.columns.filter((col) => col.virtual)) {
-        if (record[column.name]) {
-          delete record[column.name];
-        }
+      if (record[column.name]) {
+        delete record[column.name];
+      }
     }
     const connector = this.connectors[resource.dataSource];
-    process.env.HEAVY_DEBUG && console.log('🪲🪲🪲🪲 creating record createResourceRecord', record);
-    const { ok, error, createdRecord } = await connector.createRecord({ resource, record, adminUser });
-    if (!ok) {
-      return { ok, error };
+    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record createResourceRecord', record);
+    const { error, createdRecord } = await connector.createRecord({ resource, record, adminUser });
+    if ( error ) {
+      return { error };
     }
     
     const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
-      console.log('Hook afterSave', hook);
+      process.env.HEAVY_DEBUG && console.log('🪲 Hook afterSave', hook);
       const resp = await hook({ 
         recordId: primaryKey, 
         resource, 
@@ -257,11 +260,112 @@ class AdminForth implements IAdminForth {
       }
 
       if (resp.error) {
-        return { error: resp.error, ok: false };
+        return { error: resp.error };
       }
     }
 
-    return { ok, error, createdRecord };
+    return { error, createdRecord };
+  }
+
+  /**
+   * record is partial record with only changed fields
+   */
+  async updateResourceRecord(
+    { resource, recordId, record, oldRecord, adminUser }:
+    { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser }
+  ): Promise<{ error?: string }> {
+
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
+      const resp = await hook({
+        recordId,
+        resource,
+        record,
+        oldRecord,
+        adminUser 
+      });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      }
+      if (resp.error) {
+        return { error: resp.error };
+      }
+    }
+    const newValues = {};
+    const connector = this.connectors[resource.dataSource];
+
+    for (const recordField in record) {
+      if (record[recordField] !== oldRecord[recordField]) {
+        // leave only changed fields to reduce data transfer/modifications in db
+        const column = resource.columns.find((col) => col.name === recordField);
+        if (!column || !column.virtual) {
+          // exclude virtual columns
+          newValues[recordField] = record[recordField];
+        }
+      }
+    } 
+
+    if (Object.keys(newValues).length > 0) {
+      await connector.updateRecord({ resource, recordId, newValues });
+    }
+    
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
+      const resp = await hook({ 
+        resource, 
+        record, 
+        adminUser, 
+        oldRecord,
+        recordId,
+      });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+      }
+
+      return { error: resp.error };
+    }
+  }
+
+  async deleteResourceRecord(
+    { resource, recordId, adminUser, record }:
+    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any }
+  ): Promise<{ error?: string }> {
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.delete?.beforeSave as BeforeSaveFunction[])) {
+      const resp = await hook({ 
+        resource, 
+        record, 
+        adminUser,
+        recordId,
+      });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      }
+
+      if (resp.error) {
+        return { error: resp.error };
+      }
+    }
+
+    const connector = this.connectors[resource.dataSource];
+    await connector.deleteRecord({ resource, recordId});
+
+    // execute hook if needed
+    for (const hook of listify(resource.hooks?.delete?.afterSave as BeforeSaveFunction[])) {
+      const resp = await hook({ 
+        resource, 
+        record, 
+        adminUser,
+        recordId,
+      });
+      if (!resp || (!resp.ok && !resp.error)) {
+        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
+      }
+
+      if (resp.error) {
+        return { error: resp.error };
+      }
+    }
   }
 
   resource(resourceId: string): IOperationalResource {

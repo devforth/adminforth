@@ -13,7 +13,8 @@ import {
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
   AfterSaveFunction,
-  AllowedActionsResolved
+  AllowedActionsResolved,
+  AdminForthResourcePages
 
 } from "../types/AdminForthConfig.js";
 
@@ -32,7 +33,7 @@ export async function interpretResource(adminUser: AdminUser, resource: AdminFor
     Object.entries(resource.options?.allowedActions || {}).map(
       async ([key, value]: [string, AllowedActionValue]) => {
         if (process.env.HEAVY_DEBUG) {
-          console.log('🪲checking for allowed call', key, 'value:', value, 'typeof', typeof value);
+          console.log(`🪲🚥check allowed ${key}, ${value}`)
         }
       
         // if callable then call
@@ -575,6 +576,16 @@ export default class AdminForthRestAPI {
 
             const { record } = body;
 
+            for (const column of resource.columns) {
+              if (
+                  (column.required as {create?: boolean, edit?: boolean})?.create &&
+                  record[column.name] === undefined &&
+                  column.showIn.includes(AdminForthResourcePages.create)
+              ) {
+                  return { error: `Column '${column.name}' is required`, ok: false };
+              }
+            }
+
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser });
             if (response.error) {
               return { error: response.error, ok: false };
@@ -607,66 +618,17 @@ export default class AdminForthRestAPI {
 
             const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body, newRecord: record, oldRecord}, ActionCheckSource.EditRequest);
 
-            const { allowed, error } = checkAccess(AllowedActionsEnum.edit, allowedActions);
+            const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
+              return { allowedError };
+            }
+
+            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId });
+            if (error) {
               return { error };
             }
-
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
-              const resp = await hook({
-                recordId,
-                resource,
-                record,
-                adminUser 
-              });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
-            const newValues = {};
-
-            for (const recordField in record) {
-              if (record[recordField] !== oldRecord[recordField]) {
-                const column = resource.columns.find((col) => col.name === recordField);
-                if (column) {
-                  if (!column.virtual) {
-                    newValues[recordField] = connector.setFieldValue(column, record[recordField]);
-                  }
-                } else {
-                  newValues[recordField] = record[recordField];
-                }
-              }
-            } 
-
-            if (Object.keys(newValues).length > 0) {
-                await connector.updateRecord({ resource, recordId, newValues});
-            }
-            
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
-              const resp = await hook({ 
-                resource, 
-                record, 
-                adminUser, 
-                oldRecord,
-                recordId,
-              });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
-
             return {
-              newRecordId: recordId
+              ok: true
             }
         }
     });
@@ -693,43 +655,12 @@ export default class AdminForthRestAPI {
               return { error };
             }
 
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.delete?.beforeSave as BeforeSaveFunction[])) {
-              const resp = await hook({ 
-                resource, 
-                record, 
-                adminUser,
-                recordId: body['primaryKey']
-              });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
-            }
-
-            const connector = this.adminforth.connectors[resource.dataSource];
-            await connector.deleteRecord({ resource, recordId: body['primaryKey']});
-
-            // execute hook if needed
-            for (const hook of listify(resource.hooks?.delete?.afterSave as BeforeSaveFunction[])) {
-              const resp = await hook({ 
-                resource, 
-                record, 
-                adminUser,
-                recordId: body['primaryKey']
-              });
-              if (!resp || (!resp.ok && !resp.error)) {
-                throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-              }
-
-              if (resp.error) {
-                return { error: resp.error };
-              }
+            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'] });
+            if (deleteError) {
+              return { error: deleteError };
             }
             return {
+              ok: true,
               recordId: body['primaryKey']
             }
         }

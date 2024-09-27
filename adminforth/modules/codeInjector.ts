@@ -236,13 +236,13 @@ class CodeInjector implements ICodeInjector {
           dereference: true, // needed to dereference types
         });
         if (process.env.HEAVY_DEBUG) {
-          console.log('🪲 await fsExtra.copy copy single file', src, dest);
+          console.log('🪲⚙️ fsExtra.copy copy single file', src, dest);
         }
 
       }));
     } else {
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲 await fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, -> ${CodeInjector.SPA_TMP_PATH}`);
+        console.log(`🪲⚙️ fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, -> ${CodeInjector.SPA_TMP_PATH}`);
       }
 
       // try to rm SPA_TMP_PATH/src/types directory 
@@ -257,7 +257,7 @@ class CodeInjector implements ICodeInjector {
         filter: (src) => {
           const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
           if (process.env.HEAVY_DEBUG && !filterPasses) {
-            console.log('🪲 await fsExtra.copy filtered out', src);
+            console.log('🪲⚙️ fsExtra.copy filtered out', src);
           }
 
           return filterPasses
@@ -287,7 +287,7 @@ class CodeInjector implements ICodeInjector {
       for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
         const to = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', dest);
         if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲 await fsExtra.copy from ${src}, ${to}`);
+          console.log(`🪲⚙️ fsExtra.copy from ${src}, ${to}`);
         }
 
         await fsExtra.copy(src, to, {
@@ -534,7 +534,7 @@ class CodeInjector implements ICodeInjector {
     await collectDirectories(spaPath);
 
     if (process.env.HEAVY_DEBUG) {
-      console.log('🔎 Watching for changes in:', directories.join(','));
+      console.log('🪲🔎 Watch for:', directories.join(','));
     }
 
     const watcher = filewatcher();
@@ -593,12 +593,12 @@ class CodeInjector implements ICodeInjector {
 
     const watcher = filewatcher();
     files.forEach((file) => {
-      process.env.HEAVY_DEBUG && console.log(`🔎 Watching for changes in file ${file}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${file}`);
       watcher.add(file);
     });
 
     if (process.env.HEAVY_DEBUG) {
-      console.log('🔎 Watching for changes in:', directories.join(','));
+      console.log('🪲🔎 Watch for:', directories.join(','));
     }
     
     watcher.on(
@@ -657,7 +657,7 @@ class CodeInjector implements ICodeInjector {
       await this.runNpmShell({command: 'run build-only', cwd});
     } else {
       const command = 'run dev';
-      console.log(`⚙️ spawn: npm ${command}...`);
+      console.log(`🪲⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {

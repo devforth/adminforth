@@ -35,7 +35,7 @@ Now completely Remove bundleNow call from `index.ts` file:
 //diff-add
   if (process.env.NODE_ENV === 'development') {
 //diff-add
-    await admin.bundleNow({ hotReload: true});
+    await admin.bundleNow({ hotReload: true });
 //diff-add
     console.log('Bundling AdminForth done');
 //diff-add
@@ -53,7 +53,7 @@ node_modules
 In root directory create file `Dockerfile`:
 
 ```Dockerfile
-# use the same nove devsion which you used during dev
+# use the same node version which you used during dev
 FROM node:20-alpine
 RUN --mount=type=cache,target=/tmp
 WORKDIR /code/
@@ -61,7 +61,7 @@ ADD package.json package-lock.json /code/
 RUN npm ci  
 ADD . /code/
 RUN npm run bundleNow
-CMD ["npm", "run", "startLive"]
+CMD ["npm", "run", "migrateLiveAndStart"]
 ```
 
 Add `bundleNow` and `startLive` to `package.json`:
@@ -70,34 +70,19 @@ Add `bundleNow` and `startLive` to `package.json`:
 {
     "type": "module",
     "scripts": {
-        "start": "ADMINFORTH_SECRET=CHANGE_ME_IN_PRODUCTION NODE_ENV=development tsx watch index.ts",
+        "start": "tsx watch --env-file=.env index.ts",
 //diff-add
         "bundleNow": "tsx bundleNow.ts",
 //diff-add
         "startLive": "NODE_ENV=production tsx index.ts"
+//diff-add
+        "migrate": "npx prisma migrate dev --name init"
+//diff-add
+        "migrateLiveAndStart": "npm run migrate && npm run startLive"
     },
 }
 ```
 
-## Persisting SQLite db volume
-
-If you are still using SQLite database like in our demo you might want to persist it between container restarts.
-To do this we will put our db into `db` folder to be able to mount it in volume:
-
-```ts title='./index.ts'
-import dotenv from 'dotenv';
-//diff-add
-import fs from 'fs';
-
-dotenv.config();
-
-//diff-add
-try { fs.mkdirSync('db') } catch (e) {} 
-//diff-remove
-const DB_FILE = 'test.sqlite';
-//diff-add
-const DB_FILE = 'db/test.sqlite';
-```
 
 
 ## Building the image
@@ -113,7 +98,10 @@ And run container with:
 
 ```bash
 docker run -p 3500:3500 \
-  -e NODE_ENV=production -e ADMINFORTH_SECRET=CHANGEME\
+  -e NODE_ENV=production \
+  -e ADMINFORTH_SECRET=CHANGEME \
+  -e DATABASE_FILE=/code/db/db.sqlite \
+  -e DATABASE_FILE_URL=file:/code/db/db.sqlite \
   -v $(pwd)/db:/code/db \
   myadminapp
 ```
@@ -171,6 +159,8 @@ services:
     environment:
       - NODE_ENV=production
       - ADMINFORTH_SECRET=!CHANGEME! # ☝️ replace with your secret
+      - DATABASE_FILE=/code/db/db.sqlite
+      - DATABASE_FILE_URL=file:/code/db/db.sqlite
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminforth.tls=true"

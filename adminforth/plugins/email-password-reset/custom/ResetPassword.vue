@@ -37,33 +37,59 @@
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
                   <form v-if="enteringNew" class="space-y-4" role="alert" @submit.prevent>
-                    <div>
+                    <div class="relative">
                       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
-                      <input type="password" name="password" id="password" 
-                        ref="passwordInput"
+                      <input 
+                        :type="unmasked ? 'text' : 'password'"
+                        name="password" id="password" 
+                        v-model="password"
                         @keydown.enter="passwordConfirmationInput.focus()"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="New password" required />
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
+                        placeholder="New password" required 
+                      />
+                      
+                      <button
+                        type="button"
+                        @click="unmasked = !unmasked"
+                        class="h-6 absolute inset-y-2 top-9 right-1 flex items-center pr-2 z-index-100 focus:outline-none"
+                      >
+                        <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked" />
+                        <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+                      </button>
                     </div>
 
-                    <div>
+                    <div class="relative">
                       <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm new password</label>
-                      <input type="password" name="password_confirmation" id="password_confirmation" 
-                        ref="passwordConfirmationInput"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Confirm new password" required />
+                      <input 
+                        :type="unmasked ? 'text' : 'password'"
+                        name="password_confirmation" id="password_confirmation" 
+                        v-model="passwordConfirmation"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
+                        placeholder="Confirm new password" required 
+                      />
 
+                      <button
+                        type="button"
+                        @click="unmasked = !unmasked"
+                        class="h-6 absolute inset-y-2 top-9 right-1 flex items-center pr-2 z-index-100 focus:outline-none"
+                      >
+                        <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked" />
+                        <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+                      </button>
                     </div>
 
-                    <div v-if="error" class="flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                    <div v-if="validationError || error" class="flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
                       <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                       </svg>
                       <span class="sr-only">Info</span>
                       <div>
-                        {{ error }}
+                        {{ validationError || error }}
                       </div>
                     </div>
 
                     <button
+                      :disabled="inProgress || (validationRunning && validationError)"
                       @click="setNewPassword"
                       type="submit" class="flex items-center justify-center gap-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                       <svg v-if="inProgress"
@@ -72,7 +98,7 @@
                         Set new password
                     </button>
                   </form>
-
+<!-- END of set new paasord -->
                   <div v-if="!enteringNew && requestSent" class="flex items center justify-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-800 dark:text-green-400" role="alert">
                     If user with specified email exists in our db, then request was sent. Please check your email at {{ emailInput.value }} to reset your password.
                   </div>
@@ -132,8 +158,9 @@
 
 import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, loadFile } from '@/utils';
+import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
+import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 
 
 const inProgress = ref(false);
@@ -142,11 +169,49 @@ const coreStore = useCoreStore();
 const requestSent = ref(false);
 
 const emailInput = ref(null);
-const passwordInput = ref(null);
-const passwordConfirmationInput = ref(null);
+const password = ref("");
+const passwordConfirmation = ref("");
+const unmasked = ref(false);
 
 const route = useRoute();
 const router = useRouter();
+
+function checkPassowrd() {
+
+  if (!password.value || !passwordConfirmation.value) {
+    return 'Please enter both password and password confirmation';
+  }
+  if (password.value !== passwordConfirmation.value) {
+    return 'Passwords do not match';
+  }
+
+  if (password.value.length < passwordField.value.minLength) {
+    return `Password must be at least ${passwordField.value.minLength} characters long`;
+  }
+
+  if (password.value.length > passwordField.value.maxLength) {
+    return `Password must be at most ${passwordField.value.maxLength} characters long`;
+  }
+
+  if (passwordField.value.validation) {
+    const valError = applyRegexValidation(password.value, passwordField.value.validation);
+    if (valError) {
+      return valError;
+    }
+  }
+
+  return null;
+}
+
+const validationRunning = ref(false);
+
+const validationError = computed(() => {
+  console.log('validationRunning.value', validationRunning.value, 'aa', checkPassowrd());
+  if (validationRunning.value) {
+    return checkPassowrd();
+  }
+  return null;
+});
 
 const error = ref(null);
 
@@ -157,8 +222,8 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-const constrains = computed(
-  () => route.meta.passwordConstraints
+const passwordField = computed(
+  () => route.meta.passwordField
 )
 
 onMounted(async () => {
@@ -193,20 +258,9 @@ async function reset() {
 
 async function setNewPassword() {
   error.value = null;
-  const password = passwordInput.value.value;
-  const passwordConfirmation = passwordConfirmationInput.value.value;
-  if (!password || !passwordConfirmation) {
-    error.value = 'Please enter both password and password confirmation';
-    return;
-  }
-  console.log('password', password, passwordConfirmation);
-  if (password !== passwordConfirmation) {
-    error.value = 'Passwords do not match';
-    return;
-  }
-
-  if (password.length < constrains.value.minLength) {
-    error.value = `Password must be at least ${constrains.value.minLength} characters long`;
+  
+  if (checkPassowrd()) {
+    validationRunning.value = true;
     return;
   }
 
@@ -216,7 +270,7 @@ async function setNewPassword() {
     method: 'POST',
     body: {
       token: route.query.token,
-      password,
+      password: password.value,
     }
   });
   inProgress.value = false;

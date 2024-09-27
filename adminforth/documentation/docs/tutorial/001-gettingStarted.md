@@ -410,10 +410,15 @@ export default {
       virtual: true,  // field will not be persisted into db
       required: { create: true }, // make required only on create page
       editingNote: { edit: 'Leave empty to keep password unchanged' },
-      minLength: 8,
       type: AdminForthDataTypes.STRING,
       showIn: ['create', 'edit'], // to show field only on create and edit pages
       masked: true, // to show stars in input field
+
+      minLength: 8,
+      validation: [
+        // request to have at least 1 digit, 1 upper case, 1 lower case
+        AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
+      ],
     },
     { name: 'password_hash', backendOnly: true, showIn: [] }
   ],

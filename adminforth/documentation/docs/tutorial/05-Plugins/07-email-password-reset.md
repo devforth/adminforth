@@ -42,6 +42,9 @@ plugins: [
     // field in user resource which contains email
     emailField: 'email',
 
+    // field in user resource which contains password constrains. Should be virtual field
+    passwordField: 'password',
+
     // domain part should be verified in SES
     sendFrom: 'no-reply@devforth.io',
 
@@ -53,6 +56,7 @@ plugins: [
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
       }
     }
+
   }),
 ]
 ```

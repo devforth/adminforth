@@ -1,5 +1,7 @@
 import { onMounted, ref, resolveComponent } from 'vue';
-import type {  CoreConfig } from './spa_types/core';
+import type { CoreConfig } from './spa_types/core';
+import type { ValidationObject } from './types/AdminForthConfig';
+
 
 import router from "./router";
 import { useCoreStore } from './stores/core';
@@ -111,6 +113,37 @@ export function initThreeDotsDropdown() {
     );
     window.adminforth.list.closeThreeDotsDropdown = () => {
       dd.hide();
+    }
+  }
+}
+
+export function applyRegexValidation(value: any, validation: ValidationObject[] | undefined) {
+
+  if ( validation?.length ) {
+    const validationArray = validation;
+    for (let i = 0; i < validationArray.length; i++) {
+      if (validationArray[i].regExp) {
+        let flags = '';
+        if (validationArray[i].caseSensitive) {
+          flags += 'i';
+        }
+        if (validationArray[i].multiline) {
+          flags += 'm';
+        }
+        if (validationArray[i].global) {
+          flags += 'g';
+        }
+
+        const regExp = new RegExp(validationArray[i].regExp, flags);
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        let valueS = `${value}`;
+
+        if (!regExp.test(valueS)) {
+          return validationArray[i].message;
+        }
+      }
     }
   }
 }
