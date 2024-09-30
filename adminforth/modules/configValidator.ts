@@ -351,7 +351,7 @@ export default class ConfigValidator implements IConfigValidator {
         res.options.bulkActions = bulkActions;
 
         // if pageInjection is a string, make array with one element. Also check file exists
-        const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'];
+        const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
         const possiblePages = ['list', 'show', 'create', 'edit'];
 
         if (res.options.pageInjections) {

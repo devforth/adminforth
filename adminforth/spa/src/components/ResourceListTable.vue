@@ -165,9 +165,9 @@
               </div>
 
               <component 
-                v-if="coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons"
-                :is="getCustomComponent(coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons)" 
-                :meta="coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons.meta"
+                v-if="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
+                :is="getCustomComponent(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)" 
+                :meta="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons.meta"
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
                 :record="row"

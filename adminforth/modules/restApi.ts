@@ -687,9 +687,11 @@ export default class AdminForthRestAPI {
               return { error: `Action '${actionId}' not found` };
             } 
             
-            const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
-            if (!execAllowed) {
-              return { error: `Action '${actionId}' is not allowed` };
+            if (action.allowed) {
+              const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
+              if (!execAllowed) {
+                return { error: `Action '${actionId}' is not allowed` };
+              }
             }
             const response = await action.action({selectedIds: recordIds, adminUser, resource});
             
