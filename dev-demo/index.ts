@@ -462,16 +462,19 @@ const admin = new AdminForth({
 
       options:{
           
-        // pageInjections: {
+        pageInjections: {
+          list: {
+            customActionIcons: '@@/IdShow.vue',
+          }
         //   show: {
         //     beforeBreadcrumbs: '@@/TopLine.vue',
         //   },
         //   // list: {
         //   //   bottom: '@@/TopLine.vue',
         //   // }
-        // },
+        },
         listPageSize: 5,
-        listTableClickUrl: (record, adminUser) => `https://www.google.com/search?q=${record.id}`,
+        // listTableClickUrl: (record, adminUser) => `https://www.google.com/search?q=${record.id}`,
         bulkActions: [
           {
             label: 'Mark as listed',

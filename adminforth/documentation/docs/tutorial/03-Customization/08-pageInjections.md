@@ -281,7 +281,7 @@ npm install text-analyzer --save
 > ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
 
-## List custom actions
+## List table custom action icons
 
 
 `customActionIcons` allows to add custom actions to the list page
@@ -297,10 +297,42 @@ npm install text-analyzer --save
     pageInjections: {
       list: {
           `customActionIcons`: [
-            '@@/CustomTableAction.vue',
+            '@@/SearchForApartmentInGoogle.vue',
           ]
       }
     }
   }
 }
+```
+
+
+Now create file `SearchForApartmentInGoogle.vue` in the `custom` folder of your project:
+
+```html title="./custom/SearchForApartmentInGoogle.vue"
+<template> 
+    <a :href="`https://google.com?q=${record.title}`" :data-tooltip-target="`tooltip-google-${record.id}`"
+       class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ml-2"
+    >
+        <IconCardSearch class="w-5 h-5 me-2"/>
+    </a>
+
+    <div :id="`tooltip-google-${record.id}`" role="tooltip"
+        class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+      Search for competitive apartments in Google
+      <div class="tooltip-arrow" data-popper-arrow></div>
+    </div>
+</template>
+
+<script setup>
+import { IconCardSearch } from '@iconify-prerendered/vue-mdi';
+
+const props = defineProps(['column', 'record', 'meta']);
+
+</script>
+```
+
+Install used icon:
+
+```sh
+npm i @iconify-prerendered/vue-mdi
 ```
