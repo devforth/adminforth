@@ -1027,7 +1027,7 @@ export type AdminForthResource = {
        */
       listPageSize?: number,
 
-      listTableClickUrl?: (record: any, adminUser: AdminUser) => string,
+      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string>,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.

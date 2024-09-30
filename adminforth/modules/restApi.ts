@@ -437,13 +437,15 @@ export default class AdminForthRestAPI {
               delete item[key];
             }
           })
-    
           item._label = resource.recordLabel(item);
-
-          if (resource.options.listTableClickUrl) {
-            item._clickUrl = resource.options.listTableClickUrl(item, adminUser);
-          }
         });
+        if (resource.options.listTableClickUrl) {
+          await Promise.all(
+            data.data.map(async (item) => {
+                item._clickUrl = await resource.options.listTableClickUrl(item, adminUser);
+            })
+          );
+        }
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
