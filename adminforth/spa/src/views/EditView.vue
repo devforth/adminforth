@@ -138,7 +138,6 @@ async function saveRecord() {
   }
 
   saving.value = true;
-
   const updates = {};
   for (const key in record.value) {
     if (record.value[key] !== coreStore.record[key]) {
@@ -162,7 +161,6 @@ async function saveRecord() {
       message: 'Record updated successfully',
       variant: 'success',
       timeout: 400000
-
     });
   }
   saving.value = false;

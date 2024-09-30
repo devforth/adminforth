@@ -147,10 +147,10 @@ const toogleItem = (item) => {
 
   
   const list = selectedItems.value.map(item => item.value);
-  const updValue = list.length ? list : undefined;
+  const updValue = list.length ? list : null;
   let emitValue;
   if (props.single) {
-    emitValue = updValue ? updValue[0] : undefined;
+    emitValue = updValue ? updValue[0] : null;
   } else {
     emitValue = updValue;
   }
