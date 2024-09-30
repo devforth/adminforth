@@ -222,6 +222,9 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
 
 You can also inject custom components to the three dots menu on the top right corner of the page.
 
+
+![alt text](<Group 4.png>)
+
 ```ts title="/apartments.ts"
 {
   resourceId: 'aparts',
@@ -275,3 +278,28 @@ npm install text-analyzer --save
 
 
 > ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+
+
+## List custom actions
+
+
+`customActionIcons` allows to add custom actions to the list page
+
+![alt text](<Group 3.png>)
+
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+          `customActionIcons`: [
+            '@@/CustomTableAction.vue',
+          ]
+      }
+    }
+  }
+}
+```

@@ -201,7 +201,6 @@ async function startBulkAction(actionId) {
 
 async function getList() {
   rows.value = null;
-  console.log('getList', listResource.value)
   const data = await callAdminForthApi({
     path: '/get_resource_data',
     method: 'POST',

@@ -306,6 +306,8 @@ export default class AdminForthRestAPI {
               if (res) {
                 allowedBulkActions.push(action);
               }
+            } else {
+              allowedBulkActions.push(action);
             }
           })
         );
@@ -435,10 +437,12 @@ export default class AdminForthRestAPI {
               delete item[key];
             }
           })
-        });
-
-        data.data.forEach((item) => {
+    
           item._label = resource.recordLabel(item);
+
+          if (resource.options.listTableClickUrl) {
+            item._clickUrl = resource.options.listTableClickUrl(item, adminUser);
+          }
         });
 
         // only after adminforth made all post processing, give user ability to edit it

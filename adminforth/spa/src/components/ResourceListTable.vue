@@ -76,8 +76,9 @@
           </td>
         </tr>
 
-        <tr @click="onClick($event,row)"   v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
-            class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
+        <tr @click="onClick($event,row)" 
+          v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
           :class="{'border-b': rowI !== rows.length - 1}"
         >
           <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
@@ -105,64 +106,73 @@
           </td>
           <td class=" items-center px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex">
-            <RouterLink
-              v-if="resource.options?.allowedActions.show"
-              :to="{ 
-                name: 'resource-show', 
-                params: { 
-                  resourceId: resource.resourceId, 
-                  primaryKey: row._primaryKeyValue,
-                }
-              }"
-              class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline"
-              :data-tooltip-target="`tooltip-show-${rowI}`"
-            >
-              <IconEyeSolid class="w-5 h-5 me-2"/>
-            </RouterLink>
+              <RouterLink
+                v-if="resource.options?.allowedActions.show"
+                :to="{ 
+                  name: 'resource-show', 
+                  params: { 
+                    resourceId: resource.resourceId, 
+                    primaryKey: row._primaryKeyValue,
+                  }
+                }"
+                class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline"
+                :data-tooltip-target="`tooltip-show-${rowI}`"
+              >
+                <IconEyeSolid class="w-5 h-5 me-2"/>
+              </RouterLink>
 
-            <div :id="`tooltip-show-${rowI}`"
-                role="tooltip"
-                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-              Show item
-              <div class="tooltip-arrow" data-popper-arrow></div>
+              <div :id="`tooltip-show-${rowI}`"
+                  role="tooltip"
+                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                Show item
+                <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+              <RouterLink v-if="resource.options?.allowedActions.edit"
+                :to="{
+                  name: 'resource-edit',
+                  params: { 
+                    resourceId: resource.resourceId,
+                    primaryKey: row._primaryKeyValue 
+                  } 
+                }"
+                class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
+                :data-tooltip-target="`tooltip-edit-${rowI}`"
+              >
+                <IconPenSolid class="w-5 h-5 me-2"/>
+              </RouterLink>
+
+              <div :id="`tooltip-edit-${rowI}`"
+                  role="tooltip"
+                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                Edit
+                <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+              <button v-if="resource.options?.allowedActions.delete"
+                      class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
+                      :data-tooltip-target="`tooltip-delete-${rowI}`"
+                      @click="deleteRecord(row)"
+              >
+                <IconTrashBinSolid class="w-5 h-5 me-2"/>
+              </button>
+
+              <div :id="`tooltip-delete-${rowI}`"
+                  role="tooltip"
+                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                Delete
+                <div class="tooltip-arrow" data-popper-arrow></div>
+              </div>
+
+              <component 
+                v-if="coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons"
+                :is="getCustomComponent(coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons)" 
+                :meta="coreStore.resourceOptions?.pageInjections?.edit?.customActionIcons.meta"
+                :resource="coreStore.resource" 
+                :adminUser="coreStore.adminUser"
+                :record="row"
+              />
             </div>
-
-            <RouterLink v-if="resource.options?.allowedActions.edit"
-              :to="{
-                name: 'resource-edit',
-                params: { 
-                  resourceId: resource.resourceId,
-                  primaryKey: row._primaryKeyValue 
-                } 
-              }"
-              class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-              :data-tooltip-target="`tooltip-edit-${rowI}`"
-            >
-              <IconPenSolid class="w-5 h-5 me-2"/>
-            </RouterLink>
-
-            <div :id="`tooltip-edit-${rowI}`"
-                role="tooltip"
-                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-              Edit
-              <div class="tooltip-arrow" data-popper-arrow></div>
-            </div>
-
-            <button v-if="resource.options?.allowedActions.delete"
-                    class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-                    :data-tooltip-target="`tooltip-delete-${rowI}`"
-                    @click="deleteRecord(row)"
-            >
-              <IconTrashBinSolid class="w-5 h-5 me-2"/>
-            </button>
-
-            <div :id="`tooltip-delete-${rowI}`"
-                role="tooltip"
-                class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-              Delete
-              <div class="tooltip-arrow" data-popper-arrow></div>
-            </div>
-          </div>
           </td>
         </tr>
       </tbody>
@@ -360,18 +370,45 @@ function onSortButtonClick(event, field) {
 
 
 const clickTarget = ref(null);
+
 async function onClick(e,row) {
   if(clickTarget.value === e.target) return;
   clickTarget.value = e.target;
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   if (window.getSelection().toString()) return;
-  else {router.push({
-    name: 'resource-show',
-    params: {
-      resourceId: props.resource.resourceId,
-      primaryKey: row._primaryKeyValue,
-    },
-  })}
+  else {
+    if (e.ctrlKey || e.metaKey) {
+      if (row._clickUrl) {
+        window.open(row._clickUrl, '_blank');
+      } else {
+        router.push(
+          router.resolve({
+            name: 'resource-show',
+            params: {
+              resourceId: props.resource.resourceId,
+              primaryKey: row._primaryKeyValue,
+            },
+          })
+        );
+      }
+    } else {
+      if (row._clickUrl) {
+        if (row._clickUrl.startsWith('http')) {
+          document.location.href = row._clickUrl;
+        } else {
+          router.push(row._clickUrl);
+        }
+      } else {
+        router.push({
+          name: 'resource-show',
+          params: {
+            resourceId: props.resource.resourceId,
+            primaryKey: row._primaryKeyValue,
+          },
+        });
+      }
+    }
+  }
 }
 
 async function deleteRecord(row) {
