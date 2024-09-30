@@ -29,8 +29,6 @@ import { AdminUser } from 'adminforth';
 //diff-add
             icon: 'flowbite:eye-solid',
 //diff-add
-            state:'active',
-//diff-add
             // if optional `confirm` is provided, user will be asked to confirm action
 //diff-add
             confirm: 'Are you sure you want to mark all selected apartments as listed?',
