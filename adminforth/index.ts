@@ -321,9 +321,12 @@ class AdminForth implements IAdminForth {
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
       }
-
-      return { error: resp.error };
+      if (resp.error) {
+        return { error: resp.error };
+      }
     }
+    
+    return { error: null };
   }
 
   async deleteResourceRecord(

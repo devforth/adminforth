@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.31] - 2024-09-30
+
+### Fixed
+
+- minLength + not required columns now work correctly
+- add opacity to disabled save button
+- don't discover virtual columns for mongo
+
 ## [1.3.28] - 2024-09-27
 
 ### Improved

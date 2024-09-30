@@ -42,7 +42,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     };
 
     async discoverFields(resource) {
-        return resource.columns.reduce((acc, col) => {
+        return resource.columns.filter((col) => !col.virtual).reduce((acc, col) => {
             if (!col.type) {
                 throw new Error(`Type is not defined for column ${col.name} in resource ${resource.table}`);
             }

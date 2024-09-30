@@ -197,7 +197,13 @@ const columnError = (column) => {
       if ( column.maxLength && currentValues.value[column.name]?.length > column.maxLength ) {
         return `This field must be shorter than ${column.maxLength} characters`;
       }
+      
       if ( column.minLength && currentValues.value[column.name]?.length < column.minLength ) {
+        // if column.required[mode.value] is false, then we check if the field is empty
+        let needToCheckEmpty = column.required[mode.value] || currentValues.value[column.name]?.length > 0;
+        if (!needToCheckEmpty) {
+          return null;
+        }
         return `This field must be longer than ${column.minLength} characters`;
       }
     }
@@ -212,10 +218,12 @@ const columnError = (column) => {
         return `This field must be less than ${column.maxValue}`;
       }
     }
-
-    const error = applyRegexValidation(currentValues.value[column.name], column.validation);
-    if (error) {
-      return error;
+    console.log('column.validation: ', JSON.stringify(column), 'aa', JSON.stringify(currentValues.value[column.name]));
+    if (currentValues.value[column.name] && column.validation) {
+      const error = applyRegexValidation(currentValues.value[column.name], column.validation);
+      if (error) {
+        return error;
+      }
     }
 
     return null;
