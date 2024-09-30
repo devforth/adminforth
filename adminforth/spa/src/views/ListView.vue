@@ -183,6 +183,9 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
+  await new Promise(resolve => setTimeout(resolve, 0));
+  initFlowbite(); // for tooltips in table
+
 }
 
 async function startBulkAction(actionId) {

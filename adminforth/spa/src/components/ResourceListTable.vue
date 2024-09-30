@@ -164,14 +164,17 @@
                 <div class="tooltip-arrow" data-popper-arrow></div>
               </div>
 
-              <component 
-                v-if="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
-                :is="getCustomComponent(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)" 
-                :meta="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons.meta"
-                :resource="coreStore.resource" 
-                :adminUser="coreStore.adminUser"
-                :record="row"
-              />
+                
+              <template v-if="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons">
+                <component 
+                  v-for="c in coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
+                  :is="getCustomComponent(c)" 
+                  :meta="c.meta"
+                  :resource="coreStore.resource" 
+                  :adminUser="coreStore.adminUser"
+                  :record="row"
+                />
+              </template>
             </div>
           </td>
         </tr>
