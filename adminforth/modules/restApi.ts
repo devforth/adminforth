@@ -306,6 +306,8 @@ export default class AdminForthRestAPI {
               if (res) {
                 allowedBulkActions.push(action);
               }
+            } else {
+              allowedBulkActions.push(action);
             }
           })
         );
@@ -435,11 +437,15 @@ export default class AdminForthRestAPI {
               delete item[key];
             }
           })
-        });
-
-        data.data.forEach((item) => {
           item._label = resource.recordLabel(item);
         });
+        if (resource.options.listTableClickUrl) {
+          await Promise.all(
+            data.data.map(async (item) => {
+                item._clickUrl = await resource.options.listTableClickUrl(item, adminUser);
+            })
+          );
+        }
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
@@ -681,9 +687,11 @@ export default class AdminForthRestAPI {
               return { error: `Action '${actionId}' not found` };
             } 
             
-            const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
-            if (!execAllowed) {
-              return { error: `Action '${actionId}' is not allowed` };
+            if (action.allowed) {
+              const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
+              if (!execAllowed) {
+                return { error: `Action '${actionId}' is not allowed` };
+              }
             }
             const response = await action.action({selectedIds: recordIds, adminUser, resource});
             

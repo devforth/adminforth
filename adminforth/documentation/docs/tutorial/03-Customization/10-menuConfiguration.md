@@ -13,6 +13,7 @@ You can use any icon from the [Iconify Gallery](https://icon-sets.iconify.design
 
 > 👋 With deep respect to Alex Kozack who created great [iconify-prerendered](https://github.com/cawa-93/iconify-prerendered) MIT package used by AdminForth. It uses a scheduled job to prerender all icons from Iconify to icons font and then publish them to npm
 
+
 ## Grouping 
 
 You can created a group of menu items with open or close:

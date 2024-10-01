@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.34] - 2024-09-32
+
+### Fixed
+
+- run bulk action without allowed attribute
+
+
+## [1.3.33] - 2024-09-32
+
+### Improved
+
+- make `listTableClickUrl` to be async
+
+
+## [1.3.32] - 2024-09-31
+
+### Fixed
+
+- was unable to set foreign item to empty on edit page
+- bulkActions without 'allowed' property did not show up. 
+
+### Added
+
+- add new injection for icons in table: `customActionIcons`
+- listTableClickUrl - allows to define where to navigate when user clicks on the row in the list table
+
 ## [1.3.31] - 2024-09-30
 
 ### Fixed
