@@ -8,7 +8,7 @@ import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
-import { ICodeInjector } from '../types/AdminForthConfig.js';
+import { AdminForthConfigMenuItem, ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
 import { title } from 'process';
 
@@ -21,6 +21,35 @@ try {
   TMP_DIR = '/tmp';
 }
 
+
+function findHomePage(menuItem: AdminForthConfigMenuItem[]): AdminForthConfigMenuItem | undefined {
+  for (const item of menuItem) {
+    if (item.homepage) {
+      return item;
+    }
+    if (item.children) {
+      const found = findHomePage(item.children);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return undefined;
+}
+async function findFirstMenuItemWithResource(menuItem: AdminForthConfigMenuItem[]): Promise<AdminForthConfigMenuItem | undefined> {
+  for (const item of menuItem) {
+    if (item.path || item.resourceId) {
+      return item;
+    }
+    if (item.children) {
+      const found = await findFirstMenuItemWithResource(item.children);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return undefined;
+}
 
 const execAsync = promisify(exec);
 
@@ -429,10 +458,18 @@ class CodeInjector implements ICodeInjector {
 
 
     /* generate custom routes */
-    const homepageMenuItem = this.adminforth.config.menu.find((mi)=>mi.homepage);
-    let childrenHomePageMenuItem = this.adminforth.config.menu.find((mi)=>mi.children && mi.children?.find((mi)=>mi.homepage));
-    let childrenHomepage = childrenHomePageMenuItem?.children?.find((mi)=>mi.homepage)
-    let homePagePath = homepageMenuItem?.path || `/resource/${childrenHomepage?.resourceId}`;
+
+
+    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
+    if (!homepageMenuItem) {
+      // find first item with path or resourceId. If we face a menu item with children earlier then path/resourceId, we should search in children
+      homepageMenuItem = await findFirstMenuItemWithResource(this.adminforth.config.menu);
+    }
+    if (!homepageMenuItem) {
+      throw new Error('No homepage found in menu and no menu item with path/resourceId found. AdminForth can not generate routes');
+    }
+
+    let homePagePath = homepageMenuItem.path || `/resource/${homepageMenuItem.resourceId}`;
     if (!homePagePath) {
       homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
