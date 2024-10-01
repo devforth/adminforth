@@ -73,4 +73,33 @@ You might want to allow only certain users to perform your custom bulk action.
 
 To implement this limitation use `allowed`:
 
-< todo >
+If you want to prohibit the use of bulk action for user, you can do it this way:
+
+```ts title="./resources/apartments.ts"
+bulkActions: [
+  {
+    label: 'Mark as listed',
+    icon: 'flowbite:eye-solid',
+    state:'active',
+//diff-add
+    allowed: async ({ resource, adminUser, selectedIds }) => {
+//diff-add     
+      if (adminUser.dbUser.role !== 'superadmin') {
+//diff-add       
+        return false;
+//diff-add
+        } 
+//diff-add       
+        return true;
+//diff-add       
+    },
+      // if optional `confirm` is provided, user will be asked to confirm action
+    confirm: 'Are you sure you want to mark all selected apartments as listed?',
+    action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }, allow) {
+      const stmt = admin.resource('aparts').dataConnector.db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')}`);
+      stmt.run(...selectedIds);
+      return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
+    },
+  }
+],
+```
