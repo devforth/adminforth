@@ -25,8 +25,8 @@ nvm use 20
 mkdir af-hello
 cd af-hello
 npm init -y
-npm install adminforth express@4 typescript tsx @types/node --save-dev
-npx --yes tsc --init
+npm install adminforth express @types/express typescript tsx @types/node --save-dev
+npx --yes tsc --init --module ESNext --target ESNext
 ```
 
 ## Env variables
@@ -153,10 +153,7 @@ export const admin = new AdminForth({
           isUnique: true,
           enforceLowerCase: true,
           validation: [
-            {
-              regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com',
-            },
+            AdminForth.Utils.EMAIL,
           ]
         },
         {

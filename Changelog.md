@@ -5,10 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.43]
+
+### Fixed
+- homepage detection for case when no childer items are present
+
+
+## [1.3.42]
+
+### Fixed
+- more minor validation and typo suggestionss
+
+## [1.3.41]
+
+### Fixed
+- allow use table instead of resource id for auth resource
+
+### Added
+
+- add email validator AdminForth.Utils.EMAIL_VALIDATOR
+
+
 ## [1.3.40] - 2024-10-01
 
 ### Fixed
-- removed  -moz-user-select for unvanted side effects like selecting wierd rectangles in table cells when 
+- removed  -moz-user-select for unwanted side effects like selecting wierd rectangles in table cells when 
 new page should be opened
 - fix ctrl+click in for default table items
 - fix title (try to get it from resource label first, then fallback to humanified router param)

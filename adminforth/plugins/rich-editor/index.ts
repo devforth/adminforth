@@ -195,7 +195,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
           );
           const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
           process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', existingS3Paths);
-          await deleteAttachmentRecords(adminforth, this.options, record, existingS3Paths, adminUser);
+          await deleteAttachmentRecords(adminforth, this.options, existingS3Paths, adminUser);
 
           return { ok: true };
         }

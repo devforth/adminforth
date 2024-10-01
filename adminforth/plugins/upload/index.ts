@@ -224,7 +224,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     // ** HOOKS FOR LIST **//
 
 
-    if (this.options.preview?.showInList) {
+    if (this.options.preview?.showInList || this.options.preview?.showInList === undefined) {
       resourceConfig.hooks.list.afterDatasourceResponse.push(async ({ response }: { response: any }) => {
         const s3 = new S3({
           credentials: {
