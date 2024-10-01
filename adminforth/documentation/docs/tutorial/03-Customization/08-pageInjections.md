@@ -274,6 +274,7 @@ For this demo we will use text-analyzer package:
 
 ```bash 
 cd custom
+npm init -y
 npm install text-analyzer --save
 ```
 
