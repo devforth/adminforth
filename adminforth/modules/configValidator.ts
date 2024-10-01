@@ -76,35 +76,6 @@ export default class ConfigValidator implements IConfigValidator {
       this.config.customization.customComponentsDir = undefined;
     }
 
-    if (this.config.auth) {
-      // TODO: remove in future releases
-      if (!this.config.auth.usersResourceId && this.config.auth.resourceId) {
-        this.config.auth.usersResourceId = this.config.auth.resourceId;
-      }
-
-      if (!this.config.auth.usersResourceId) {
-        throw new Error('No config.auth.usersResourceId defined');
-      }
-      if (!this.config.auth.passwordHashField) {
-        throw new Error('No config.auth.passwordHashField defined');
-      }
-      if (!this.config.auth.usernameField) {
-        throw new Error('No config.auth.usernameField defined');
-      }
-      if (this.config.auth.loginBackgroundImage) {
-        errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
-      }
-      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
-      if (!userResource) {
-        const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId || res.table), this.config.auth.usersResourceId);
-        throw new Error(`Resource with id "${this.config.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
-      }
-
-      if (!this.config.auth.beforeLoginConfirmation) {
-        this.config.auth.beforeLoginConfirmation = [];
-      }
-    }
-
     if (!this.config.customization) {
       this.config.customization = {};
     }
@@ -224,6 +195,16 @@ export default class ConfigValidator implements IConfigValidator {
           col.showIn = col.showIn || Object.values(AdminForthResourcePages);
 
           if (col.foreignResource) {
+
+            if (!col.foreignResource.resourceId) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource without resourceId`);
+            }
+            const resource = this.config.resources.find((r) => r.resourceId === col.foreignResource.resourceId);
+            if (!resource) {
+              const similar = suggestIfTypo(this.config.resources.map((r) => r.resourceId), col.foreignResource.resourceId);
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource resourceId which is not in resources: "${col.foreignResource.resourceId}". 
+              ${similar ? `Did you mean "${similar}" instead of "${col.foreignResource.resourceId}"?` : ''}`);
+            }
             const befHook = col.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest;
             if (befHook) {
               if (!Array.isArray(befHook)) {
@@ -442,7 +423,9 @@ export default class ConfigValidator implements IConfigValidator {
           }
 
           if (item.resourceId && !this.config.resources.find((res) => res.resourceId === item.resourceId)) {
-            errors.push(`Menu item with type 'resourceId' has resourceId which is not in resources: ${JSON.stringify(item)}`);
+            const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId), item.resourceId);
+            errors.push(`Menu item with type 'resourceId' has resourceId which is not in resources: "${JSON.stringify(item)}". 
+                ${similar ? `Did you mean "${similar}" instead of "${item.resourceId}"?` : ''}`);
           }
 
           if (item.type === 'component' && !item.component) {
@@ -474,6 +457,35 @@ export default class ConfigValidator implements IConfigValidator {
       };
       browseMenu(this.config.menu);
 
+    }
+
+    if (this.config.auth) {
+      // TODO: remove in future releases
+      if (!this.config.auth.usersResourceId && this.config.auth.resourceId) {
+        this.config.auth.usersResourceId = this.config.auth.resourceId;
+      }
+
+      if (!this.config.auth.usersResourceId) {
+        throw new Error('No config.auth.usersResourceId defined');
+      }
+      if (!this.config.auth.passwordHashField) {
+        throw new Error('No config.auth.passwordHashField defined');
+      }
+      if (!this.config.auth.usernameField) {
+        throw new Error('No config.auth.usernameField defined');
+      }
+      if (this.config.auth.loginBackgroundImage) {
+        errors.push(...this.checkCustomFileExists(this.config.auth.loginBackgroundImage));
+      }
+      const userResource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
+      if (!userResource) {
+        const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId ), this.config.auth.usersResourceId);
+        throw new Error(`Resource with id "${this.config.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
+      }
+
+      if (!this.config.auth.beforeLoginConfirmation) {
+        this.config.auth.beforeLoginConfirmation = [];
+      }
     }
 
     // check for duplicate resourceIds and show which ones are duplicated

@@ -684,7 +684,7 @@ const admin = new AdminForth({
                   // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
 
                   // show image preview instead of path in list view
-                  showInList: false,
+                  // showInList: false,
               }
             }),
         ]: []),
@@ -808,7 +808,7 @@ const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/Dash.vue',
       path: '/dashboard',
-      homepage: true,
+      // homepage: true,
       isStaticRoute:false,
       meta:{
         title: 'Dashboard',

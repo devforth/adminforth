@@ -50,6 +50,10 @@ class AdminForth implements IAdminForth {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$',
         message: 'Password must include at least one uppercase letter, one lowercase letter, and one number'
       },
+    },
+    EMAIL_VALIDATOR: {
+      regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
+      message: 'Email is not valid, must be in format example@test.com',
     }
   }
 
@@ -369,6 +373,8 @@ class AdminForth implements IAdminForth {
         return { error: resp.error };
       }
     }
+
+    return { error: null };
   }
 
   resource(resourceId: string): IOperationalResource {
