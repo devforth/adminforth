@@ -14,6 +14,8 @@ To add custom bulk action quickly:
 ```ts title="./resources/apartments.ts"
 //diff-add
 import { AdminUser } from 'adminforth';
+//diff-add
+import { admin } from '../index';
 
 {
   ...
@@ -37,7 +39,7 @@ import { AdminUser } from 'adminforth';
 //diff-add
             action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
 //diff-add
-              const stmt = db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
+              const stmt = admin.resource('aparts').dataConnector.db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
 //diff-add
               stmt.run(...selectedIds);
 //diff-add
