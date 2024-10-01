@@ -115,22 +115,8 @@ export default class UploadPlugin extends AdminForthPlugin {
           file: this.componentPath('uploader.vue'),
           meta: pluginFrontendOptions,
         },
-        show: {
-          file: this.componentPath('preview.vue'),
-          meta: pluginFrontendOptions,
-        },
-        ...(
-          this.options.preview?.showInList ? {
-            list: {
-              file: this.componentPath('preview.vue'),
-              meta: pluginFrontendOptions,
-            }
-          } : {}
-        ),
       },
-      showIn: ['edit', 'create', 'show', ...(this.options.preview?.showInList ? [
-        AdminForthResourcePages.list
-      ] : [])],
+      showIn: ['edit', 'create'],
     };
 
    
@@ -138,6 +124,24 @@ export default class UploadPlugin extends AdminForthPlugin {
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
     if (pathColumnIndex === -1) {
       throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
+    }
+    if (!resourceConfig.columns[pathColumnIndex].components) {
+      resourceConfig.columns[pathColumnIndex].components = {};
+    }
+    
+    if (this.options.preview?.showInList || this.options.preview?.showInList === undefined) {
+      // add preview column to list
+      resourceConfig.columns[pathColumnIndex].components.list = {
+        file: this.componentPath('preview.vue'),
+        meta: pluginFrontendOptions,
+      };
+    }
+
+    if (this.options.preview?.showInShow || this.options.preview?.showInShow === undefined) {
+      resourceConfig.columns[pathColumnIndex].components.show = {
+        file: this.componentPath('preview.vue'),
+        meta: pluginFrontendOptions,
+      };
     }
 
     // insert virtual column after path column if it is not already there

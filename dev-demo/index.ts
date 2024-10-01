@@ -680,8 +680,10 @@ const admin = new AdminForth({
               s3Path: ({originalFilename, originalExtension, contentType}) => `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
           
               preview: {
-                  // Used to display preview (if it is image) in list and show views
+                  // Used to display preview (if it is image) in list and show views instead of just path
                   // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+
+                  // show image preview instead of path in list view
                   showInList: false,
               }
             }),

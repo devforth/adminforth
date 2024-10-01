@@ -334,5 +334,6 @@ const props = defineProps(['column', 'record', 'meta']);
 Install used icon:
 
 ```sh
+cd custom
 npm i @iconify-prerendered/vue-mdi
 ```

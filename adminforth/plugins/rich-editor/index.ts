@@ -1,5 +1,5 @@
 
-import type { IAdminForth, IHttpServer, AdminForthResource } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser, AfterSaveFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
 import { AdminForthPlugin, Filters } from "adminforth";
 import * as cheerio from 'cheerio';
@@ -77,6 +77,9 @@ export default class RichEditorPlugin extends AdminForthPlugin {
     c.components.create = filed;
     c.components.edit = filed;
 
+    const editorRecordPkField = resourceConfig.columns.find(c => c.primaryKey);
+
+
     // if attachment configured we need a post-save hook to create attachment records for each image data-s3path
     if (this.options.attachments) {
 
@@ -93,81 +96,110 @@ export default class RichEditorPlugin extends AdminForthPlugin {
         return s3Paths;
       }
 
-      const createAttachmentRecords = async (adminforth: IAdminForth, options: PluginOptions, record: any, s3Paths: string[]) => {
+      const createAttachmentRecords = async (
+        adminforth: IAdminForth, options: PluginOptions, recordId: any, s3Paths: string[], adminUser: AdminUser
+      ) => {
+        process.env.HEAVY_DEBUG && console.log('📸 Creating attachment records', JSON.stringify(recordId))
         await Promise.all(s3Paths.map(async (s3Path) => {
-          // TODO, hooks are not called here
-          await adminforth.resource(options.attachments.attachmentResource).create({
-            [options.attachments.attachmentFieldName]: s3Path,
-            [options.attachments.attachmentRecordIdFieldName]: record.id,
-            [options.attachments.attachmentResourceIdFieldName]: resourceConfig.resourceId,
-          });
+          await adminforth.createResourceRecord(
+            {
+              resource: this.attachmentResource,
+              record: {
+                [options.attachments.attachmentFieldName]: s3Path,
+                [options.attachments.attachmentRecordIdFieldName]: recordId,
+                [options.attachments.attachmentResourceIdFieldName]: resourceConfig.resourceId,
+              },
+              adminUser
+            }
+          )
         }
         ));
       }
 
-      const deleteAttachmentRecords = async (adminforth: IAdminForth, options: PluginOptions, record: any, s3Paths: string[]) => {
+      const deleteAttachmentRecords = async (
+        adminforth: IAdminForth, options: PluginOptions, s3Paths: string[], adminUser: AdminUser
+      ) => {
         
         const attachmentPrimaryKeyField = this.attachmentResource.columns.find(c => c.primaryKey);
         
-        const attachmentIds = await adminforth.resource(options.attachments.attachmentResource).list(
+        const attachments = await adminforth.resource(options.attachments.attachmentResource).list(
           Filters.IN(options.attachments.attachmentFieldName, s3Paths)
-        ).then((res: any) => res.map((a: any) => a[attachmentPrimaryKeyField.name]));
+        );
 
-        await Promise.all(attachmentIds.map(async (id: any) => {
-          await adminforth.resource(options.attachments.attachmentResource).delete(id);
+        await Promise.all(attachments.map(async (a: any) => {
+          await adminforth.deleteResourceRecord(
+            {
+              resource: this.attachmentResource,
+              recordId: a[attachmentPrimaryKeyField.name],
+              adminUser,
+              record: a,
+            }
+          )
         }))
       }
       
 
-      resourceConfig.hooks.create.afterSave.push(async ({ record }: { record: any }) => {
+      (resourceConfig.hooks.create.afterSave as Array<AfterSaveFunction>).push(async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
         // find all s3Paths in the html
         const s3Paths = getAttachmentPathes(record[this.options.htmlFieldName])
         
         process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths', s3Paths);
 
         // create attachment records
-        await createAttachmentRecords(adminforth, this.options, record, s3Paths);
+        await createAttachmentRecords(
+          adminforth, this.options, record[editorRecordPkField.name], s3Paths, adminUser);
 
         return { ok: true };
       });
 
       // after edit we need to delete attachments that are not in the html anymore
       // and add new ones
-      resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
-        const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list([
-          Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record.id),
-          Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
-        ]);
-        const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
-        const newS3Paths = getAttachmentPathes(record[this.options.htmlFieldName]);
-        const toDelete = existingS3Paths.filter(s3Path => !newS3Paths.includes(s3Path));
-        const toAdd = newS3Paths.filter(s3Path => !existingS3Paths.includes(s3Path));
-        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', toDelete)
-        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to add', toAdd);
+      (resourceConfig.hooks.edit.afterSave as Array<AfterSaveFunction>).push(
+        async ({ recordId, record, adminUser }: { recordId: any, record: any, adminUser: AdminUser }) => {
+          process.env.HEAVY_DEBUG && console.log('⚓ Cought hook', recordId, 'rec', record);
+          if (record[this.options.htmlFieldName] === undefined) {
+            // field was not changed, do nothing
+            return { ok: true };
+          }
+          const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list([
+            Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, recordId),
+            Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
+          ]);
+          const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+          const newS3Paths = getAttachmentPathes(record[this.options.htmlFieldName]);
+          process.env.HEAVY_DEBUG && console.log('📸 Existing s3Paths (from db)', existingS3Paths)
+          process.env.HEAVY_DEBUG && console.log('📸 Found new s3Paths (from text)', newS3Paths);
+          const toDelete = existingS3Paths.filter(s3Path => !newS3Paths.includes(s3Path));
+          const toAdd = newS3Paths.filter(s3Path => !existingS3Paths.includes(s3Path));
+          process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', toDelete)
+          process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to add', toAdd);
 
-        await Promise.all([
-          deleteAttachmentRecords(adminforth, this.options, record, toDelete),
-          createAttachmentRecords(adminforth, this.options, record, toAdd),
-        ]);
+          await Promise.all([
+            deleteAttachmentRecords(adminforth, this.options, toDelete, adminUser),
+            createAttachmentRecords(adminforth, this.options, recordId, toAdd, adminUser)
+          ]);
 
-        return { ok: true };
+          return { ok: true };
 
-      });
+        }
+      );
 
       // after delete we need to delete all attachments
-      resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }) => {
-        const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
-          [
-            Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record.id),
-            Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
-          ]
-        );
-        const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
-        process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', existingS3Paths);
-        await deleteAttachmentRecords(adminforth, this.options, record, existingS3Paths);
+      (resourceConfig.hooks.delete.afterSave as Array<AfterSaveFunction>).push(
+        async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
+          const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
+            [
+              Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record[editorRecordPkField.name]),
+              Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
+            ]
+          );
+          const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+          process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', existingS3Paths);
+          await deleteAttachmentRecords(adminforth, this.options, record, existingS3Paths, adminUser);
 
-        return { ok: true };
-      });
+          return { ok: true };
+        }
+    );
     }
   }
   

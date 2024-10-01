@@ -381,17 +381,19 @@ async function onClick(e,row) {
   if (window.getSelection().toString()) return;
   else {
     if (e.ctrlKey || e.metaKey) {
+
       if (row._clickUrl) {
         window.open(row._clickUrl, '_blank');
       } else {
-        router.push(
+        window.open(
           router.resolve({
             name: 'resource-show',
             params: {
               resourceId: props.resource.resourceId,
               primaryKey: row._primaryKeyValue,
             },
-          })
+          }).fullPath,
+          '_blank'
         );
       }
     } else {

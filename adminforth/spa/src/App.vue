@@ -313,16 +313,21 @@ function handleCustomLayout() {
   }
 }
 
+function humanizeSnake(str: string): string {
+  if (!str) {
+    return '';
+  }
+  return str.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
 
-
-watch(route, () => {
+watch([route, () => coreStore.resourceById], async () => {
   handleCustomLayout()
-  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ Object.values(route.params)[0] || route.meta.title || ' '}`;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || humanizeSnake(Object.values(route.params)[0] as string);
+  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
   useHead({
     title: title.value,
   })
-  
-
 });
 
 watch (()=>coreStore.menu, () => {

@@ -107,14 +107,6 @@ export const admin = new AdminForth({
 //diff-add
             `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
 //diff-add
-      // You can use next to change preview URLs (if it is image) in list and show views
-//diff-add
-      preview: {
-//diff-add
-        showInList: true,
-//diff-add
-      }
-//diff-add
     })
 //diff-add
   ]
@@ -198,9 +190,6 @@ Then you can change ACL in plugin configuration:
         maxFileSize: 1024 * 1024 * 20, // 5MB
         s3Path: ({originalFilename, originalExtension, contentType}) => 
                   `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
-        preview: {
-            showInList: true,
-        }
       })
       
 ```
@@ -218,7 +207,6 @@ For preview in AdminForth plugin will still use presigned URLs, but you can chan
 ```ts title="./index.ts"
 
   preview: {
-      showInList: true,
 //diff-add
       previewUrl: ({s3Path}) => `https://my-bucket.s3.us-east-1.amazonaws.com/${s3Path}`, 
   }

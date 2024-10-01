@@ -60,9 +60,16 @@ export type PluginOptions = {
   preview: {
 
     /**
-     * By default preview is shown in the show view only. If you want to show it in the list view as well, set this to true
+     * Whether to show preview of image instead of path in list field
+     * By default true
      */
-    showInList: boolean,
+    showInList?: boolean,
+
+    /**
+     * Whether to show preview of image instead of path in list field
+     * By default true
+     */
+    showInShow?: boolean,
 
     /**
      * Used to display preview (if it is image) in list and show views.
