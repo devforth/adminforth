@@ -1027,6 +1027,8 @@ export type AdminForthResource = {
        */
       listPageSize?: number,
 
+      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string>,
+
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
        * Each injection is a path to a custom component which will be displayed in the admin panel.
@@ -1055,6 +1057,7 @@ export type AdminForthResource = {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -1066,6 +1069,7 @@ export type AdminForthResource = {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -1077,6 +1081,7 @@ export type AdminForthResource = {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -1088,6 +1093,7 @@ export type AdminForthResource = {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
       }
     },

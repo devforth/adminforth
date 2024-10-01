@@ -181,7 +181,7 @@ export default class UploadPlugin extends AdminForthPlugin {
           region: this.options.s3Region,
         });
         process.env.HEAVY_DEBUG && console.log('🪥🪥 remove ObjectTagging', record[pathColumnName]);
-
+        // let it crash if it fails: this is a new file which just was uploaded.
         await s3.putObjectTagging({
           Bucket: this.options.s3Bucket,
           Key: record[pathColumnName],
@@ -254,18 +254,23 @@ export default class UploadPlugin extends AdminForthPlugin {
           region: this.options.s3Region,
         });
 
-        await s3.putObjectTagging({
-          Bucket: this.options.s3Bucket,
-          Key: record[pathColumnName],
-          Tagging: {
-            TagSet: [
-              {
-                Key: ADMINFORTH_NOT_YET_USED_TAG,
-                Value: 'true'
-              }
-            ]
-          }
-        });
+        try {
+          await s3.putObjectTagging({
+            Bucket: this.options.s3Bucket,
+            Key: record[pathColumnName],
+            Tagging: {
+              TagSet: [
+                {
+                  Key: ADMINFORTH_NOT_YET_USED_TAG,
+                  Value: 'true'
+                }
+              ]
+            }
+          });
+        } catch (e) {
+          // file might be e.g. already deleted, so we catch error
+          console.error(`Error setting tag ${ADMINFORTH_NOT_YET_USED_TAG} to true for object ${record[pathColumnName]}. File will not be auto-cleaned up`, e);
+        }
       }
       return { ok: true };
     });
@@ -298,21 +303,27 @@ export default class UploadPlugin extends AdminForthPlugin {
 
         if (oldRecord[pathColumnName]) {
           // put tag to delete old file
-          await s3.putObjectTagging({
-            Bucket: this.options.s3Bucket,
-            Key: oldRecord[pathColumnName],
-            Tagging: {
-              TagSet: [
-                {
-                  Key: ADMINFORTH_NOT_YET_USED_TAG,
-                  Value: 'true'
-                }
-              ]
-            }
-          });
+          try {
+            await s3.putObjectTagging({
+              Bucket: this.options.s3Bucket,
+              Key: oldRecord[pathColumnName],
+              Tagging: {
+                TagSet: [
+                  {
+                    Key: ADMINFORTH_NOT_YET_USED_TAG,
+                    Value: 'true'
+                  }
+                ]
+              }
+            });
+          } catch (e) {
+            // file might be e.g. already deleted, so we catch error
+            console.error(`Error setting tag ${ADMINFORTH_NOT_YET_USED_TAG} to true for object ${oldRecord[pathColumnName]}. File will not be auto-cleaned up`, e);
+          }
         }
         if (record[virtualColumn.name] !== null) {
           // remove tag from new file
+          // in this case we let it crash if it fails: this is a new file which just was uploaded. 
           await s3.putObjectTagging({
             Bucket: this.options.s3Bucket,
             Key: record[pathColumnName],

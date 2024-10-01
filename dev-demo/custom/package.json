@@ -14,6 +14,7 @@
     "vue-suggestion-input": "^0.0.12"
   },
   "dependencies": {
+    "@iconify-prerendered/vue-mdi": "^0.25.1718880438",
     "apexcharts": "^3.52.0"
   }
 }

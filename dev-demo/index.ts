@@ -228,7 +228,8 @@ const admin = new AdminForth({
         { name: 'aggressiveness', 
           allowMinMaxQuery: true,
           type: AdminForthDataTypes.FLOAT,
-          required: false
+          required: false,
+          showIn: ['filter', 'show', 'edit'],
         },
         {
           name: 'click_price',
@@ -461,15 +462,19 @@ const admin = new AdminForth({
 
       options:{
           
-        // pageInjections: {
+        pageInjections: {
+          list: {
+            customActionIcons: '@@/IdShow.vue',
+          }
         //   show: {
         //     beforeBreadcrumbs: '@@/TopLine.vue',
         //   },
         //   // list: {
         //   //   bottom: '@@/TopLine.vue',
         //   // }
-        // },
+        },
         listPageSize: 5,
+        // listTableClickUrl: (record, adminUser) => `https://www.google.com/search?q=${record.id}`,
         bulkActions: [
           {
             label: 'Mark as listed',
