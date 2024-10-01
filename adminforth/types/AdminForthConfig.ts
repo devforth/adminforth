@@ -1442,7 +1442,7 @@ export class Sorts {
 export interface IOperationalResource {
   get: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<any | null>;
 
-  list: (filter: IAdminForthFilter | IAdminForthFilter[], limit: number, offset: number, sort: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+  list: (filter: IAdminForthFilter | IAdminForthFilter[], limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
   count: (filter: IAdminForthFilter | IAdminForthFilter[] | undefined) => Promise<number>;
 

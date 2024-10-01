@@ -37,7 +37,7 @@ import { useCoreStore } from '@/stores/core'
 const coreStore = useCoreStore()
 
 const props = defineProps<{
-  threeDotsDropdownItems: any[]
+  threeDotsDropdownItems: any[] | undefined
 }>()
 
 </script>
