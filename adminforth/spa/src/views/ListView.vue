@@ -167,7 +167,7 @@ async function getList() {
       source: 'list',
       resourceId: route.params.resourceId,
       limit: pageSize.value,
-      offset: (page.value - 1) * pageSize.value,
+      offset: ((page.value || 1) - 1) * pageSize.value,
       filters: filtersStore.filters,
       sort: sort.value,
     }
