@@ -78,8 +78,9 @@
 
         <tr @click="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
-          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover cursor-pointer"
-          :class="{'border-b': rowI !== rows.length - 1}"
+          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+
+          :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
           <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex items center ">
@@ -181,16 +182,18 @@
       </tbody>
     </table>
   </div>
-  <!-- pagination -->
+  <!-- pagination
+  totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
+  -->
   <div class="flex flex-col items-center mt-4 mb-4 xs:flex-row xs:justify-between xs:items-center"
-    v-if="rows && totalRows >= pageSize && totalRows > 0"
+    v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
   >
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
           Showing <span class="font-semibold text-gray-900 dark:text-white">
-            {{ (page - 1) * pageSize + 1 }}
+            {{ ((page || 1) - 1) * pageSize + 1 }}
           </span> to <span class="font-semibold text-gray-900 dark:text-white">
-            {{ Math.min(page * pageSize, totalRows) }}
+            {{ Math.min((page || 1) * pageSize, totalRows) }}
           </span> of <span class="font-semibold text-gray-900 dark:text-white">{{
         totalRows
       }}</span> Entries
@@ -380,8 +383,12 @@ async function onClick(e,row) {
   await new Promise((resolve) => setTimeout(resolve, 100));
   if (window.getSelection().toString()) return;
   else {
-    if (e.ctrlKey || e.metaKey) {
-
+    if (row._clickUrl === null) {
+      // user asked to nothing on click
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
+      
       if (row._clickUrl) {
         window.open(row._clickUrl, '_blank');
       } else {

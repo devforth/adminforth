@@ -1027,7 +1027,33 @@ export type AdminForthResource = {
        */
       listPageSize?: number,
 
-      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string>,
+      /**
+       * Callback to define what happens when user clicks on record in list view.
+       * By default show view will be opened.
+       * If you wish to open custom page, return URL to the custom page (can start with https://, or relative adminforth path)
+       * If you wish to open page in new tab, add `target=_blank` get param to returned URL, example:
+       * 
+       * ```ts
+       * listTableClickUrl: async (record, adminUser) => {
+       *   return `https://google.com/search?q=${record.name}&target=_blank`;
+       * }
+       * ```
+       * 
+       * If you wish to do nothing on click, return null.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * listTableClickUrl: async (record, adminUser) => {
+       *   return null;
+       * }
+       * ```
+       * 
+       * @param record - record which was clicked
+       * @param adminUser - user who clicked
+       * @returns 
+       */
+      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string | null>,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
