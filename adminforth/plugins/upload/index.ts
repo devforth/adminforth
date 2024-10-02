@@ -91,18 +91,27 @@ export default class UploadPlugin extends AdminForthPlugin {
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
-
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
     // use component uploader.vue
     const { pathColumnName } = this.options;
+    const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
+    if (pathColumnIndex === -1) {
+      throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
+    }
 
     const pluginFrontendOptions = {
       allowedExtensions: this.options.allowedFileExtensions,
       maxFileSize: this.options.maxFileSize,
       pluginInstanceId: this.pluginInstanceId,
+      resourceLabel: resourceConfig.label,
+      generateImages: this.options.generation ? true : false,
+      pathColumnLabel: resourceConfig.columns[pathColumnIndex].label,
     };
+    // define components which will be imported from other components
+    this.componentPath('imageGenerator.vue');
+
     const virtualColumn: AdminForthResourceColumn = {
       virtual: true,
       name: `uploader_${this.pluginInstanceId}`,
@@ -121,10 +130,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
    
 
-    const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
-    if (pathColumnIndex === -1) {
-      throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
-    }
+   
     if (!resourceConfig.columns[pathColumnIndex].components) {
       resourceConfig.columns[pathColumnIndex].components = {};
     }
@@ -409,6 +415,58 @@ export default class UploadPlugin extends AdminForthPlugin {
         };
       }
     });
+
+    // generation: {
+    //   provider: 'openai-dall-e',
+    //   countToGenerate: 3,
+    //   openAiOptions: {
+    //     model: 'dall-e-3',
+    //     size: '1792x1024',
+    //     apiKey: process.env.OPENAI_API_KEY as string,
+    //   },
+    // },
+
+  //   curl https://api.openai.com/v1/images/generations \
+  // -H "Content-Type: application/json" \
+  // -H "Authorization: Bearer $OPENAI_API_KEY" \
+  // -d '{
+  //   "model": "dall-e-3",
+  //   "prompt": "A cute baby sea otter",
+  //   "n": 1,
+  //   "size": "1024x1024"
+  // }'
+
+    server.endpoint({
+      method: 'POST',
+      path: `/plugin/${this.pluginInstanceId}/generate_images`,
+      handler: async ({ body }) => {
+        const { prompt } = body;
+
+        if (this.options.generation.provider !== 'openai-dall-e') {
+          throw new Error(`Provider ${this.options.generation.provider} is not supported`);
+        }
+
+        const { model, size, apiKey } = this.options.generation.openAiOptions;
+        const url = 'https://api.openai.com/v1/images/generations';
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            prompt,
+            n: this.options.generation.countToGenerate,
+            size,
+          })
+        });
+
+        const json = await response.json();
+        return json;
+      }
+    });
+
   }
 
 }

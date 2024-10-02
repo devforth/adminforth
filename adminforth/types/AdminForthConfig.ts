@@ -1303,9 +1303,16 @@ export type AdminForthConfig = {
       favicon?: string,
 
       /**
-       * DayJS format string for all dates in the app
+       * DayJS format string for all dates in the app.
+       * Defaulted to 'MMM D, YYYY'
        */
       datesFormat?: string,
+
+      /**
+       * DayJS format string for all datetimes in the app.
+       * Defaulted to 'HH:mm:ss'
+       */
+      timeFormat?: string,
 
       /**
        * HTML title tag value, defaults to brandName

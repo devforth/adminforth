@@ -3,10 +3,9 @@ import type {
   AdminForthResource, 
   IAdminForth,
   IHttpServer,
-  suggestIfTypo,
 } from "adminforth";
 
-import { AdminForthPlugin, AdminForthResourcePages } from "adminforth";
+import { AdminForthPlugin, AdminForthResourcePages, suggestIfTypo } from "adminforth";
 import { PluginOptions } from "./types.js";
 import { interpretResource, ActionCheckSource } from "adminforth";
 

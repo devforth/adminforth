@@ -166,7 +166,10 @@ export default class EmailPasswordReset extends AdminForthPlugin {
             const sRes = await ses.send(emailCommand);
           } catch (e) {
             console.error('Error sending email', e);
-            return { error: e, ok: false };
+            if (process.env.NODE_ENV === 'development') {
+              return { error: 'Some thing went wrong, please check the console', ok: false };
+            }
+            return { error: 'Something went wrong, please contact support', ok: false };
           }
         
         }

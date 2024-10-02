@@ -258,6 +258,7 @@ export default class AdminForthRestAPI {
             showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
             brandLogo: this.adminforth.config.customization.brandLogo,
             datesFormat: this.adminforth.config.customization.datesFormat,
+            timeFormat: this.adminforth.config.customization.timeFormat,
             deleteConfirmation: this.adminforth.config.deleteConfirmation,
             auth: this.adminforth.config.auth,
             usernameField: this.adminforth.config.auth.usernameField,

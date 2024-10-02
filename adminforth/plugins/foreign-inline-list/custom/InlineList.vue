@@ -110,7 +110,8 @@ import {
   IconFilterOutline,
   IconPlusOutline,
 } from '@iconify-prerendered/vue-flowbite';
-import { showErrorTost, showWarningTost, showSuccesTost} from '@/composables/useFrontendApi';
+import { showErrorTost } from '@/composables/useFrontendApi';
+import { initFlowbite } from 'flowbite';
 
 import { getIcon } from '@/utils';
 
@@ -226,6 +227,10 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+  initFlowbite(); // for tooltips in table
+
 }
 
 onMounted( async () => {
@@ -245,6 +250,7 @@ onMounted( async () => {
   });
   loading.value = false;
   await getList();
+
 });
 
 </script>
