@@ -24,6 +24,7 @@ export type CoreConfig = {
     brandLogo: string,
     title: string,
     datesFormat: string,
+    timeFormat: string,
     usernameField: string,
     usernameFieldName?: string,
     deleteConfirmation?: boolean,

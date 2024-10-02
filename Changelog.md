@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## Unreleased [1.3.51] - 
+
+### Added
+
+### Fixed
+
+- `timeFormat` fix for pure time stamps
+- page input in list table now autogrows in large values
+
+
+## [1.3.48] - 2024-10-02
+
+### Added
+
+- `timeFormat` and `dateFormat` are now separated, datetime is concatinated from them. 
+This allows to specify formats for all time stamps date stampts and datetime stamps separately
+
+
+## [1.3.46] - 2024-10-02
+
+### Fixed
+- when page input is focused and changed focus to losts
+
+### Improved
+
+- listTableClickUrl supports target blank
+- listTableClickUrl supports null
+
+
+
+## [1.3.45]
+
+### Fixed
+
+- Page backspace requests first page
+
+
 ## [1.3.43]
 
 ### Fixed

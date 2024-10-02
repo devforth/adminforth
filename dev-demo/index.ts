@@ -129,7 +129,11 @@ const admin = new AdminForth({
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My Admin',
     showBrandNameInSidebar: false,
-    datesFormat: 'D MMM YY HH:mm:ss',
+    // datesFormat: 'D MMM YY',
+    // timeFormat: 'HH:mm:ss',
+    datesFormat: 'DD/MM/YYYY',
+    timeFormat: 'HH:mm:ss A',
+
     title: 'Devforth Admin',
     brandLogo: '@@/df.svg',
     emptyFieldPlaceholder: '-',
@@ -411,7 +415,15 @@ const admin = new AdminForth({
             s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             // s3ACL: 'public-read', // ACL which will be set to uploaded file
             s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
-      
+            generation: {
+              provider: 'openai-dall-e',
+              countToGenerate: 3,
+              openAiOptions: {
+                model: 'dall-e-3',
+                size: '1792x1024',
+                apiKey: process.env.OPENAI_API_KEY as string,
+              },
+            },
             preview: {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
@@ -474,7 +486,7 @@ const admin = new AdminForth({
         //   // }
         },
         listPageSize: 5,
-        // listTableClickUrl: (record, adminUser) => `https://www.google.com/search?q=${record.id}`,
+        // listTableClickUrl: async (record, adminUser) => null,
         bulkActions: [
           {
             label: 'Mark as listed',

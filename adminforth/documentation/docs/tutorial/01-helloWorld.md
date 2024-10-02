@@ -126,7 +126,8 @@ export const admin = new AdminForth({
   },
   customization: {
     brandName: 'My Admin',
-    datesFormat: 'D MMM YY HH:mm:ss',
+    datesFormat: 'D MMM YY',
+    timeFormat: 'HH:mm:ss',
     emptyFieldPlaceholder: '-',
   },
   dataSources: [{

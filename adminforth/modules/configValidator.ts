@@ -127,7 +127,11 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (!this.config.customization.datesFormat) {
-      this.config.customization.datesFormat = 'MMM D, YYYY HH:mm:ss';
+      this.config.customization.datesFormat = 'MMM D, YYYY';
+    }
+
+    if (!this.config.customization.timeFormat) {
+      this.config.customization.timeFormat = 'HH:mm:ss';
     }
 
     if (this.config.resources) {

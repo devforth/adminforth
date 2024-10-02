@@ -18,7 +18,13 @@
       {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label || record[column.name], route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
+      {{ checkEmptyValues(formatDateTime(record[column.name]),route.meta.type) }}
+    </span>
+    <span v-else-if="column.type === 'date'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatDate(record[column.name]),route.meta.type) }}
+    </span>
+    <span v-else-if="column.type === 'time'" class="whitespace-nowrap">
+      {{ checkEmptyValues(formatTime(record[column.name]),route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'richtext'">
       <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
@@ -73,9 +79,19 @@ function protectAgainstXSS(value) {
 }
 
 
+function formatDateTime(date) {
+  if (!date) return '';
+  return dayjs.utc(date).local().format(`${coreStore.config?.datesFormat} ${coreStore.config?.timeFormat}` || 'YYYY-MM-DD HH:mm:ss');
+}
+
 function formatDate(date) {
   if (!date) return '';
-  return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD HH:mm:ss');
+  return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD');
+}
+
+function formatTime(time) {
+  if (!time) return '';
+  return dayjs(`0000-00-00 ${time}`).format(coreStore.config?.timeFormat || 'HH:mm:ss');
 }
 </script>
 

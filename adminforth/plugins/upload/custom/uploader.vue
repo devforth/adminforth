@@ -1,5 +1,14 @@
 <template>
-  <div class="flex items-center justify-center w-full">
+  <div class="relative w-full">
+      <ImageGenerator v-if="showImageGen" @close="showImageGen = false" :record="record" :meta="meta" ></ImageGenerator>
+
+      <button v-if="meta.generateImages" 
+        type="button" @click="showImageGen = true" 
+        class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 
+          font-medium rounded-lg text-sm px-2.5 py-2.5 text-center me-2 mb-2 absolute right-0 top-2">
+          <IconWandMagicSparklesOutline class="w-5 h-5"/>
+      </button>
+
       <label for="dropzone-file" 
         class="flex flex-col px-3 items-center justify-center w-full h-64 border-2  border-dashed rounded-lg cursor-pointer  dark:hover:bg-gray-800 hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
         @dragover.prevent="() => dragging = true"
@@ -58,7 +67,8 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils' 
-
+import { IconWandMagicSparklesOutline } from '@iconify-prerendered/vue-flowbite'; 
+import ImageGenerator from '@@/plugins/UploadPlugin/imageGenerator.vue';
 const props = defineProps({
   meta: Object,
   record: Object,
@@ -70,6 +80,7 @@ const emit = defineEmits([
   'update:emptiness',
 ]);
 
+const showImageGen = ref(false);
 const dragging = ref(false);
 
 const imgPreview = ref(null);

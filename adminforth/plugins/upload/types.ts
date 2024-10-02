@@ -85,4 +85,43 @@ export type PluginOptions = {
      */ 
     previewUrl?: ({s3Path}) => string,
   }
+
+
+  /**
+   * AI image generation options
+   */
+  generation?: {
+    /**
+     * The provider to use for image generation
+     * for now only 'openai-dall-e' is supported
+     */
+    provider: string,
+
+    /**
+     * The number of images to generate
+     * in one request
+     */
+    countToGenerate: number,
+
+    /**
+     * Options for OpenAI
+     */
+    openAiOptions: {
+      /**
+       * The model to use, e.g. 'dall-e-3'
+       */
+      model: string,
+
+      /**
+       * The size of the image to generate, e.g. '1792x1024'
+       */
+      size: string,
+
+      /**
+       * The OpenAI API key
+       */
+      apiKey: string,
+    }
+  }
+
 }

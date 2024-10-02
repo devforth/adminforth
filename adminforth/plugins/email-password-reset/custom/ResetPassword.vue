@@ -100,7 +100,7 @@
                   </form>
 <!-- END of set new paasord -->
                   <div v-if="!enteringNew && requestSent" class="flex items center justify-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-800 dark:text-green-400" role="alert">
-                    If user with specified email exists in our db, then request was sent. Please check your email at {{ emailInput.value }} to reset your password.
+                    If user with specified email exists in our db, then request was sent. Please check your email at {{ sentToEmail }} to reset your password.
                   </div>
 
                   <form v-if="!enteringNew && !requestSent" class="space-y-4" @submit.prevent>
@@ -156,7 +156,7 @@
 
 <script setup lang="ts">
 
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, Ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
@@ -172,6 +172,8 @@ const emailInput = ref(null);
 const password = ref("");
 const passwordConfirmation = ref("");
 const unmasked = ref(false);
+const sentToEmail: Ref<string> = ref('');
+
 
 const route = useRoute();
 const router = useRouter();
@@ -253,6 +255,7 @@ async function reset() {
   } else {
     error.value = null;
     requestSent.value = true;
+    sentToEmail.value = email;
   }
 }
 

@@ -34,7 +34,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
 ]
 ```
 
-> ☝️ In AllowedOrigins add all your domains. For example if you will searve adming on `https://example.com/admin` you should add 
+> ☝️ In AllowedOrigins add all your domains. For example if you will serve admin on `https://example.com/admin` you should add 
 > `"https://example.com"` to AllowedOrigins:
 >
 > ```json
@@ -194,7 +194,7 @@ Then you can change ACL in plugin configuration:
       
 ```
 
-Now every uploaded file will be public so in your custom app you can easily concatinate bucket URL with `s3Path` to get public URL:
+Now every uploaded file will be public so in your custom app you can easily concatenate bucket URL with `s3Path` to get public URL:
 
 ```ts
 export async function getPublicUrl(s3Path: string): string {

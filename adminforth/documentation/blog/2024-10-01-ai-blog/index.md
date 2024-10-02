@@ -41,7 +41,53 @@ npx --yes tsc --init --module ESNext --target ESNext
 
 ## Step 2: Prepare environment
 
-Create .env file with the following content:
+### OpenAI
+
+To allocate OpenAI API key, go to https://platform.openai.com/, open Dashboard -> API keys -> Create new secret key.
+
+### S3
+
+1. Go to https://aws.amazon.com and login.
+2. Go to Services -> S3 and create a bucket. Put in bucket name e.g. `my-ai-blog-bucket`. 
+Leave all settings unchanged (ACL Disabled, Block all public access - checked)
+3. Go to bucket settings, Permissions, scroll down to Cross-origin resource sharing (CORS) and put in the following configuration:
+
+```json
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "PUT"
+        ],
+        "AllowedOrigins": [
+            "http://localhost:3500"
+        ],
+        "ExposeHeaders": []
+    }
+]
+```
+
+> ☝️ In AllowedOrigins add all your domains. For example if you will serve blog and admin on `https://example.com/` you should add 
+> `"https://example.com"` to AllowedOrigins:
+>
+> ```json
+> [
+>      "https://example.com",
+>      "http://localhost:3500"
+> ]
+> ```
+> Every character matters, so don't forget to add `http://` or `https://`!
+
+4. Go to Services -> IAM and create a new user. Put in user name e.g. `my-ai-blog-bucket`.
+5. Attach existing policies directly -> `AmazonS3FullAccess`. Go to your user -> `Add permissions` -> `Attach policies directly` -> `AmazonS3FullAccess`
+6. Go to Security credentials and create a new access key. Save `Access key ID` and `Secret access key`.
+
+
+### Create .env file in project directory
+
+Create `.env` file with the following content:
 
 ```bash title=".env"
 DATABASE_URL=file:./db.sqlite
@@ -49,9 +95,12 @@ ADMINFORTH_SECRET=123
 NODE_ENV=development
 # Your OpenAI API key for ChatGPT completions
 OPENAI_API_KEY=...
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_S3_BUCKET=my-ai-blog-bucket
+AWS_S3_REGION=us-east-1
 ```
 
-To allocate OpenAI API key, go to https://platform.openai.com/, open Dashboard -> API keys -> Create new secret key.
 
 ## Step 3: Initialize database
 
