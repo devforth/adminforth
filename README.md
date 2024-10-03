@@ -24,6 +24,10 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 ![dashboard_test2 (1)](https://github.com/user-attachments/assets/c42a889f-03fa-4934-8032-dc2a97938db6)
 
+[Image DALEE Generation](https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation)
+
+![Dalee generator](https://adminforth.dev/assets/images/demoImgGen-d19e5bc5d448914c2b6775316283c4ac.gif)
+
 # For developers
 
 ```
