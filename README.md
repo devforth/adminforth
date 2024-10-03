@@ -28,6 +28,8 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 ![Dalee generator](https://adminforth.dev/assets/images/demoImgGen-d19e5bc5d448914c2b6775316283c4ac.gif)
 
+![demoImgGen](https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a)
+
 # For developers
 
 ```
