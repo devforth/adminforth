@@ -218,7 +218,6 @@ const columnError = (column) => {
         return `This field must be less than ${column.maxValue}`;
       }
     }
-    console.log('column.validation: ', JSON.stringify(column), 'aa', JSON.stringify(currentValues.value[column.name]));
     if (currentValues.value[column.name] && column.validation) {
       const error = applyRegexValidation(currentValues.value[column.name], column.validation);
       if (error) {
@@ -244,13 +243,11 @@ const setCurrentValue = (key, value) => {
   }
 
   currentValues.value = { ...currentValues.value };
-  console.log('3️⃣ setCurrentValue', key, value);
   emit('update:record', currentValues.value);
 };
 
 onMounted(() => {
   currentValues.value = Object.assign({}, props.record);
-  console.log('2️⃣ currentValues', JSON.stringify(currentValues.value));
   initFlowbite();
   emit('update:isValid', isValid.value);
 });

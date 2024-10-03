@@ -3,6 +3,7 @@ import { PluginOptions } from './types.js';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth";
+import { Readable } from "stream";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
@@ -108,6 +109,7 @@ export default class UploadPlugin extends AdminForthPlugin {
       resourceLabel: resourceConfig.label,
       generateImages: this.options.generation ? true : false,
       pathColumnLabel: resourceConfig.columns[pathColumnIndex].label,
+      fieldsForContext: this.options.generation?.fieldsForContext,
     };
     // define components which will be imported from other components
     this.componentPath('imageGenerator.vue');
@@ -448,22 +450,50 @@ export default class UploadPlugin extends AdminForthPlugin {
 
         const { model, size, apiKey } = this.options.generation.openAiOptions;
         const url = 'https://api.openai.com/v1/images/generations';
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            prompt,
-            n: this.options.generation.countToGenerate,
-            size,
-          })
-        });
 
-        const json = await response.json();
-        return json;
+        let error = null;
+        const images = await Promise.all(
+          (new Array(this.options.generation.countToGenerate)).fill(0).map(async () => {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model,
+                prompt,
+                n: 1,
+                size,
+              })
+            });
+
+            const json = await response.json();
+            if (json.error) {
+              console.error('Error generating image', json.error);
+              error = json.error;
+              return;
+            }
+            
+            return json;
+
+          })
+        );
+
+        return { error, images };
+      }
+    });
+
+    server.endpoint({
+      method: 'GET',
+      path: `/plugin/${this.pluginInstanceId}/cors-proxy`,
+      handler: async ({ query, response  }) => {
+        const { url } = query;
+        const resp = await fetch(url);
+        response.setHeader('Content-Type', resp.headers.get('Content-Type'));
+        //@ts-ignore
+        Readable.fromWeb( resp.body ).pipe( response.blobStream() );
+        return null
       }
     });
 

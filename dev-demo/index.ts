@@ -128,14 +128,14 @@ const admin = new AdminForth({
    
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'My Admin',
-    showBrandNameInSidebar: false,
+    showBrandNameInSidebar: true,
     // datesFormat: 'D MMM YY',
     // timeFormat: 'HH:mm:ss',
     datesFormat: 'DD/MM/YYYY',
     timeFormat: 'HH:mm:ss A',
 
     title: 'Devforth Admin',
-    brandLogo: '@@/df.svg',
+    // brandLogo: '@@/df.svg',
     emptyFieldPlaceholder: '-',
     // styles:{
     //   colors: {
@@ -332,7 +332,7 @@ const admin = new AdminForth({
         },
         {
           name: 'apartment_image',
-          showIn: [],
+          showIn: ['list', 'show'],
           required: false,
           editingNote: 'Upload image of apartment',
         },
@@ -417,17 +417,18 @@ const admin = new AdminForth({
             s3Path: ({originalFilename, originalExtension, contentType}) => `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
             generation: {
               provider: 'openai-dall-e',
-              countToGenerate: 3,
+              countToGenerate: 2,
               openAiOptions: {
                 model: 'dall-e-3',
                 size: '1792x1024',
                 apiKey: process.env.OPENAI_API_KEY as string,
               },
+              fieldsForContext: ['title'],
             },
             preview: {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-              showInList: false,
+              showInList: true,
             }
           }),
         ]: []),
@@ -835,9 +836,9 @@ const admin = new AdminForth({
           label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
-          badge: async (adminUser) => {
-            return '10'
-          }
+          // badge: async (adminUser) => {
+          //   return '10'
+          // }
         },
         {
           label: 'Description Images',

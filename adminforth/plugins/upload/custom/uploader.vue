@@ -1,12 +1,14 @@
 <template>
   <div class="relative w-full">
-      <ImageGenerator v-if="showImageGen" @close="showImageGen = false" :record="record" :meta="meta" ></ImageGenerator>
+      <ImageGenerator v-if="showImageGen" @close="showImageGen = false" :record="record" :meta="meta" 
+        @uploadImage="uploadGeneratedImage"  
+      ></ImageGenerator>
 
       <button v-if="meta.generateImages" 
         type="button" @click="showImageGen = true" 
         class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 
           font-medium rounded-lg text-sm px-2.5 py-2.5 text-center me-2 mb-2 absolute right-0 top-2">
-          <IconWandMagicSparklesOutline class="w-5 h-5"/>
+          <IconMagic class="w-5 h-5"/>
       </button>
 
       <label for="dropzone-file" 
@@ -38,8 +40,7 @@
               <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1 mb-2" v-if="progress > 0 && !uploaded">
                 <!-- progress bar  with smooth progress animation -->
                 <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full
-                  transition-all duration-200 ease-in-out
-                " 
+                  transition-all duration-200 ease-in-out" 
                   :style="{width: `${progress}%`}">{{ progress }}%
                 </div>
               </div>
@@ -66,9 +67,13 @@
 
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
-import { callAdminForthApi } from '@/utils' 
-import { IconWandMagicSparklesOutline } from '@iconify-prerendered/vue-flowbite'; 
+import { callAdminForthApi } from '@/utils'
+import { IconMagic } from '@iconify-prerendered/vue-mdi';
+
+
 import ImageGenerator from '@@/plugins/UploadPlugin/imageGenerator.vue';
+
+
 const props = defineProps({
   meta: Object,
   record: Object,
@@ -92,6 +97,18 @@ const uploadedSize = ref(0);
 watch(() => uploaded, (value) => {
   emit('update:emptiness', !value);
 });
+
+function uploadGeneratedImage(imgBlob) {
+  // update the value
+  console.log('⚓⚓ Generated image uploaded:', imgBlob);
+
+  const file = new File([imgBlob], 'generated.png', { type: imgBlob.type });
+  onFileChange({
+    target: {
+      files: [file],
+    },
+  });
+}
 
 onMounted(() => {
   const previewColumnName = `previewUrl_${props.meta.pluginInstanceId}`;

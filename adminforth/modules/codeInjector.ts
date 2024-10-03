@@ -538,13 +538,12 @@ class CodeInjector implements ICodeInjector {
     }
 
     await this.runNpmShell({command: 'ci', cwd: CodeInjector.SPA_TMP_PATH});
-
     
     if (iconPackageNames.length) {
       const npmInstallCommand = `install ${[
         ...iconPackageNames,
         ...usersPackages, 
-        ...pluginPackages.map(({ packages }) => packages)
+        ...pluginPackages.map(({ packages }) => packages.join(' ')),
       ].join(' ')}`;
       await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
     }

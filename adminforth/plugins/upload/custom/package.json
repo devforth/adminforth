@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@iconify-prerendered/vue-mdi": "^0.25.1718880438",
     "medium-zoom": "^1.1.0"
   }
 }
