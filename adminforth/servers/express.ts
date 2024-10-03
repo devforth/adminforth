@@ -206,6 +206,7 @@ class ExpressServer implements IExpressHttpServer {
         headers: [],
         status: 200,
         message: undefined,
+
         setHeader(name, value) {
           process.env.HEAVY_DEBUG && console.log(' 🪲Setting header', name, value);
           this.headers.push([name, value]);
@@ -214,10 +215,15 @@ class ExpressServer implements IExpressHttpServer {
         setStatus(code, message) {
           this.status = code;
           this.message = message;
+        },
+
+        blobStream() {
+          return res;
         }
+        
       };
       const input = { body, query, headers, cookies, adminUser, response, _raw_express_req: req, _raw_express_res: res};
-
+      
       let output;
       try {
         output = await handler(input);
@@ -225,18 +231,21 @@ class ExpressServer implements IExpressHttpServer {
         console.error('Error in handler', e);
         // print full stack trace 
         console.error(e.stack);
-        
         res.status(500).send('Internal server error');
         return;
       }
       response.headers.forEach(([name, value]) => {
         res.setHeader(name, value);
       });
-      const resp = res.status(response.status);
+      res.status(response.status);
       if (response.message) {
-        resp.send(response.message);
+        res.send(response.message);
         return;
       }
+      if (output === null) {
+        // nothing should be returned anymore
+        return;
+      }      
       res.json(output);
     }
 

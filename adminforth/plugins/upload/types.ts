@@ -121,7 +121,13 @@ export type PluginOptions = {
        * The OpenAI API key
        */
       apiKey: string,
-    }
+    },
+
+    /**
+     * Fields of record to use for context. if supplied must be array of valid column names for resource
+     * where plugin is used.
+     */
+    fieldsForContext? : string[],
   }
 
 }

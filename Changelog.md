@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `timeFormat` fix for pure time stamps
 - page input in list table now autogrows in large values
+- plugin was not able to use more then one package in `custom` folder package.json
+- express server proxy now has `blobStream()` method which returns stream for blob data e.g. for piping
 
 
 ## [1.3.48] - 2024-10-02

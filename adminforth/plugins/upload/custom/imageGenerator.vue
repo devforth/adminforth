@@ -6,7 +6,7 @@
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow-xl dark:bg-gray-700">
             <!-- Modal header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+            <div class="flex items-center justify-between p-3 md:p-4 border-b rounded-t dark:border-gray-600">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                     Generate image with AI
                 </h3>
@@ -21,10 +21,10 @@
             </div>
             <!-- Modal body -->
             <div class="p-4 md:p-5 space-y-4">
-
-              <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your prompt</label>
-              <textarea id="message" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                placeholder="Prompt which will be passed to AI network" v-model="prompt"></textarea>
+              <textarea id="message" rows="3" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                placeholder="Prompt which will be passed to AI network" v-model="prompt"
+                title="Prompt which will be passed to AI network"
+                ></textarea>
 
               <div class="flex items-center justify-center w-full relative">
                 <div 
@@ -39,7 +39,7 @@
                 
                 <div id="gallery" class="relative w-full" data-carousel="static">
                   <!-- Carousel wrapper -->
-                  <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
+                  <div class="relative h-56 overflow-hidden rounded-lg md:h-72">
                       <!-- Item 1 -->
                       <div v-for="(img, index) in images" :key="index" class="hidden duration-700 ease-in-out" data-carousel-item>
                           <img :src="img" class="absolute block max-w-full h-auto -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="">
@@ -48,12 +48,10 @@
                       <div v-if="images.length === 0" class="flex items-center justify-center w-full h-full">
                         
                         <button @click="generateImages" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 
-                        focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
-                        dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ms-2">Generate images</button>
+                          focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+                          dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ms-2">Generate images</button>
 
                       </div>
-
-                     
                      
                   </div>
                   <!-- Slider controls -->
@@ -84,9 +82,15 @@
             </div>
             <!-- Modal footer -->
             <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-                <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Use image</button>
+                <button type="button" @click="confirmImage"
+                  :disabled="loading"
+                  class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+                  dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+                >Use image</button>
                 <button type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                  @click="emit('close')">Cancel</button>
+                  @click="emit('close')"
+                >Cancel</button>
             </div>
         </div>
     </div>
@@ -100,34 +104,36 @@
 <script setup lang="ts">
 
 import { ref, onMounted } from 'vue'
-import { Carousel, initFlowbite } from 'flowbite';
-import internal from 'stream';
+import { Carousel } from 'flowbite';
+import { callAdminForthApi } from '@/utils';
 
 const prompt = ref('');
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'uploadImage']);
 const props = defineProps(['meta', 'record']);
 const images = ref([]);
 const loading = ref(false);
 
-function minifyRecord(rec: object) {
-  // for each key make it string and make sure each field has not more then 100 characters
-  // if more add ... at the end
-  return Object.keys(rec).reduce((acc, key) => {
-    if (!rec[key]) return acc;
-    acc[key] = rec[key].toString().slice(0, 100)
-    if (rec[key].length > 100) {
-      acc[key] += '...'
-    }
-    return acc
-  }, {})
+function minifyField(field: string): string {
+  if (field.length > 100) {
+    return field.slice(0, 100) + '...';
+  }
+  return field;
 }
 
 const caurosel = ref(null);
 onMounted(() => {
   // Initialize carousel
-  prompt.value = `Generate image for field "${props.meta.pathColumnLabel}" in ${props.meta.resourceLabel}.${
-    Object.values(props.record || {}).length ? 'Additional context: ' + JSON.stringify(minifyRecord(props.record)) : ''
-  }`
+  let additionalContext = null;
+  if (props.meta.fieldsForContext) {
+    additionalContext = props.meta.fieldsForContext.filter((field: string) => props.record[field]).map((field: string) => {
+      return `${field}: ${minifyField(props.record[field])}`;
+    }).join('\n');
+  }
+
+  prompt.value = `Generate image for field "${props.meta.pathColumnLabel}" in ${props.meta.resourceLabel}. No text should be on image.`
+  if (additionalContext) {
+    prompt.value += ` ${additionalContext}`;
+  }
 
 })
 
@@ -145,30 +151,53 @@ async function slide(direction: number) {
   }
 }
 
+async function confirmImage() {
+  loading.value = true;
+
+  const currentIndex = caurosel.value?.getActiveItem()?.position || 0;
+  const img = images.value[currentIndex];
+  // read  url to base64 and send it to the parent component
+  const imgBlob = await fetch(
+    `/adminapi/v1/plugin/${props.meta.pluginInstanceId}/cors-proxy?url=${encodeURIComponent(img)}`
+  ).then(res => { return res.blob() });
+
+  emit('uploadImage', imgBlob);
+  emit('close');
+
+  loading.value = false;
+}
+
 async function generateImages() {
   loading.value = true;
   const currentIndex = caurosel.value?.getActiveItem()?.position || 0;
+  const resp = await callAdminForthApi({
+    path: `/plugin/${props.meta.pluginInstanceId}/generate_images`,
+    method: 'POST',
+    body: {
+      prompt: prompt.value,
+    },
+  });
 
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 * 2));
-  if (!images.value.length) {
-    images.value = [
-      'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg',
-      'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg',
-      'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg',
-    ];
-  } else {
-    images.value = [
-      ...images.value,
-      'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg',
-      'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-5.jpg',
-    ];
+  if (resp.error) {
+    window.adminforth.alert({
+      message: `error: ${JSON.stringify(resp.error)}`,
+      variant: 'danger',
+      timeout: 15,
+    });
+    return;
   }
+
+  images.value = [
+    ...images.value,
+    ...resp.images.map(im => im.data[0].url),
+  ];
+
+  // images.value = [
+  //   'https://via.placeholder.com/600x400?text=Image+1',
+  //   'https://via.placeholder.com/600x400?text=Image+2',
+  // ];
   await new Promise(resolve => setTimeout(resolve, 0));
 
-  console.log(images.value.map((img, index) => ({
-      el: document.getElementById('gallery').querySelector(`[data-carousel-item]:nth-child(${index + 1})`),
-      position: index,
-    })))
   caurosel.value = new Carousel(
     document.getElementById('gallery'), 
     images.value.map((img, index) => ({
