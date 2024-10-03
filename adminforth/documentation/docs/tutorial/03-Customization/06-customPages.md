@@ -495,4 +495,4 @@ mongoose, or just use raw SQL queries against your tables.
 
 Demo:
 
-![AdminForth dashboard demo](rpl.gif)
+![alt text](dashDemo.gif)

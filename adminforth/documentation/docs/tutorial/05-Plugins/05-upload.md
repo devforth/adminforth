@@ -232,3 +232,37 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
 
 Also you will have to enable static website hosting in your bucket settings and set index.html and error.html to empty strings.
 
+
+## Image generation
+
+Upload plugin supports AI generation for images
+
+```ts title="./index.ts"
+
+new UploadPlugin({
+  ...
+//diff-add
+  generation: {
+//diff-add
+    provider: 'openai-dall-e',
+//diff-add
+    countToGenerate: 2,  // how much images generate in one shot
+//diff-add
+    openAiOptions: {
+//diff-add
+      model: 'dall-e-3',  // one of models from OpenAI docs https://platform.openai.com/docs/api-reference/images/create
+//diff-add
+      size: '1792x1024',  // make sure that size is supported by model using OpenAI docs
+//diff-add
+      apiKey: process.env.OPENAI_API_KEY as string,
+//diff-add
+    },
+//diff-add
+    fieldsForContext: ['title'],
+
+},
+```
+
+Here is how it works:
+
+![alt text](demoImgGen-1.gif)

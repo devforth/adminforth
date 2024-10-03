@@ -124,3 +124,5 @@ To get completion suggestions for the text in the editor, you can use the `compl
       }
     }),
 ```
+
+![alt text](gptDemo.gif)
