@@ -18,7 +18,8 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
-![dashboard_size](https://github.com/user-attachments/assets/9aa716a2-79f5-464d-8cdd-f53f28684315)
+![dashDemo](https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197)
+
 
 [Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
 
