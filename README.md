@@ -18,11 +18,19 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
-![dashboard_size](https://github.com/user-attachments/assets/9aa716a2-79f5-464d-8cdd-f53f28684315)
+![dashDemo](https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197)
+
 
 [Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
 
-![dashboard_test2 (1)](https://github.com/user-attachments/assets/c42a889f-03fa-4934-8032-dc2a97938db6)
+![gptDemo](https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028)
+
+
+[Image DALEE Generation](https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation)
+
+![Dalee generator](https://adminforth.dev/assets/images/demoImgGen-d19e5bc5d448914c2b6775316283c4ac.gif)
+
+![demoImgGen](https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a)
 
 # For developers
 
