@@ -22,7 +22,8 @@ Full API reference [here](https://adminforth.dev/docs/api/).
 
 [Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
 
-![dashboard_test2 (1)](https://github.com/user-attachments/assets/c42a889f-03fa-4934-8032-dc2a97938db6)
+![gptDemo](https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028)
+
 
 [Image DALEE Generation](https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation)
 
