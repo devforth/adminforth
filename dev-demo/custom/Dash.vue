@@ -4,10 +4,8 @@
         class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
       Statistics.</h1>
 
-    <div class="grid grid-cols-4 gap-4">
-     
-
-      <div class="  col-span-2 max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
+    <div class="grid grid-cols-5 gap-4">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 col-span-2" v-if="data">
         <div class="flex justify-between">
           <div>
             <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
@@ -16,20 +14,10 @@
 
         </div>
         <div id="area-chart"></div>
+
       </div>
 
-      <div class="col-span-2 max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
-        <div class="flex justify-between mb-5">
-          <div>
-            <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-              Unlisted vs Listed price
-            </p>
-          </div>
-        </div>
-        <div id="size-chart" class="[&>div]:mx-auto"></div>
-      </div>
-
-      <!-- <div class="col-span-3 row-span-2 w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 " v-if="data">
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 row-span-2 col-span-3" v-if="data">
 
         <div class="grid grid-cols-2 py-3">
           <dl>
@@ -52,8 +40,18 @@
 
         <div id="bar-chart"></div>
 
-      </div> -->
+      </div>
 
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 col-span-2" v-if="data">
+        <div class="flex justify-between mb-5">
+          <div>
+            <p class="text-base font-normal text-gray-500 dark:text-gray-400">
+              Unlisted vs Listed price
+            </p>
+          </div>
+        </div>
+        <div id="size-chart" class="[&>div]:mx-auto"></div>
+      </div>
     </div>
 
   </div>
@@ -69,7 +67,7 @@ const data = ref({});
 
 const optionsC1 = {
   chart: {
-    height: 200,
+    height: 145,
     type: "area",
     fontFamily: "Inter, sans-serif",
     dropShadow: {
@@ -152,7 +150,7 @@ const optionsC2 = {
     },
     type: "bar",
     width: "100%",
-    height: 400,
+    height: 380,
     toolbar: {
       show: false,
     }
@@ -229,7 +227,7 @@ const optionsC2 = {
 
 const optionsC3 = {
   chart: {
-    height: 200,
+    height: 130,
     type: "area",
     fontFamily: "Inter, sans-serif",
     dropShadow: {
@@ -312,7 +310,7 @@ onMounted(async () => {
     window.adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
-      timeout: 'unlimited'
+      timeout: 30,
     });
   }
 

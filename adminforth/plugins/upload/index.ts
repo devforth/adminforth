@@ -2,7 +2,7 @@
 import { PluginOptions } from './types.js';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
-import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
 import { Readable } from "stream";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
@@ -100,6 +100,16 @@ export default class UploadPlugin extends AdminForthPlugin {
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
     if (pathColumnIndex === -1) {
       throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
+    }
+
+    if (this.options.generation?.fieldsForContext) {
+      this.options.generation?.fieldsForContext.forEach((field: string) => {
+        if (!resourceConfig.columns.find((column: any) => column.name === field)) {
+          const similar = suggestIfTypo(resourceConfig.columns.map((column: any) => column.name), field);
+          throw new Error(`Field "${field}" specified in fieldsForContext not found in
+ resource "${resourceConfig.label}". ${similar ? `Did you mean "${similar}"?` : ''}`);
+        }
+      });
     }
 
     const pluginFrontendOptions = {

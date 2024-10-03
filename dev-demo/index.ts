@@ -12,6 +12,8 @@ import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.js';
 import EmailResetPasswordPlugin from '../adminforth/plugins/email-password-reset/index.js';
 import fs from 'fs';
 import ImportExportPlugin from '../adminforth/plugins/import-export/index.js';
+import { generate } from "random-words";
+
 
 const ADMIN_BASE_URL = '';
 
@@ -51,8 +53,14 @@ if (!tableExists) {
     await db.prepare(`
       INSERT INTO apartments (
         id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
-      ) VALUES ('${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
-        .floor(Math.random() * 5) }, 'Next gen apartments', ${Date.now() / 1000 - i * 60 * 60 * 24}, ${i % 2 == 0}, ${i % 2 == 0 ? "'house'" : "'apartment'"});
+      ) VALUES ('${i}', 
+        '${generate({ min: 2, max: 5, join: ' ' })}', 
+        ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
+        .floor(Math.random() * 5) }, 
+        'Next gen apartments', 
+        ${Date.now() / 1000 - 60 * 60 * 24 * 7 * Math.random()},
+        ${Math.random() > 0.5 ? 1 : 0},
+        ${Math.random() > 0.5 ? "'house'" : "'apartment'"});
       `).run();
   }
 
@@ -127,12 +135,12 @@ const admin = new AdminForth({
     }],
    
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
-    brandName: 'My Admin',
+    brandName: 'New Reality',
     showBrandNameInSidebar: true,
     // datesFormat: 'D MMM YY',
     // timeFormat: 'HH:mm:ss',
-    datesFormat: 'DD/MM/YYYY',
-    timeFormat: 'HH:mm:ss A',
+    datesFormat: 'DD MMM',
+    timeFormat: 'hh:mm',
 
     title: 'Devforth Admin',
     // brandLogo: '@@/df.svg',
@@ -150,12 +158,19 @@ const admin = new AdminForth({
       colors: {
         light: {
           // color for buttons, links, etc.
-         primary: '#8a158d',
+          primary: '#16537e',
           // color for sidebar and text
-          // sidebar: {main:'#571e58', text:'white'},
+          sidebar: {
+            main:'#232323', 
+            text:'white'
+          },
         },
         dark: {
-        //   primary: '#8a158d',
+          primary: '#8a158d',
+          sidebar: {
+            main:'#8a158d', 
+            text:'white'
+          },
         }
       }
     },
@@ -332,7 +347,7 @@ const admin = new AdminForth({
         },
         {
           name: 'apartment_image',
-          showIn: ['list', 'show'],
+          showIn: ['show'],
           required: false,
           editingNote: 'Upload image of apartment',
         },
@@ -435,6 +450,7 @@ const admin = new AdminForth({
         new ImportExportPlugin({}),
         new ChatGptPlugin({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4o',
           fieldName: 'title',
           expert: {
             debounceTime: 250,
@@ -454,7 +470,7 @@ const admin = new AdminForth({
             provider: 'openai-chat-gpt',
             params: {
               apiKey: process.env.OPENAI_API_KEY as string,
-              // model: 'gpt-4o',
+              model: 'gpt-4o',
             },
             expert: {
               debounceTime: 250,
