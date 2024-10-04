@@ -9,6 +9,8 @@ Many developers today are using copilots to write code faster and think less abo
 
 But what about writing plain text? For example blogs and micro-blogs? Sometimes you want to share your progress and thoughts but you are lazy for typing. Then you can give a try to AI-assisted blogging. Our Open-Source AdminForth framework has couple of new AI-capable plugins to write text and generate images.
 
+![alt text](nuxtBlog.gif)
+
 For AI plugins are backed by OpenAI API, but their architecture allows to be easily extended for other AI providers once OpenAI competitors will reach the same or better level of quality.
 
 Here we will suggest you simple as 1-2-3 steps to build and host a blog with AI assistant which will help you to write posts.
@@ -96,8 +98,6 @@ Create `.env` file with the following content:
 ```bash title=".env"
 DATABASE_URL=file:./db/db.sqlite
 ADMINFORTH_SECRET=123
-NODE_ENV=development
-# Your OpenAI API key for ChatGPT completions
 OPENAI_API_KEY=...
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
@@ -173,9 +173,9 @@ Open `package.json`, set `type` to `module` and add `start` script:
   "scripts": {
     ...
 //diff-add
-    "start": "tsx watch --env-file=.env index.ts",
+    "start": "NODE_ENV=development tsx watch --env-file=.env index.ts",
 //diff-add
-    "startLive": "NODE_ENV=production tsx index.ts"
+    "startLive": "NODE_ENV=production APP_PORT=80 tsx index.ts"
   },
 }
 ```
@@ -196,6 +196,7 @@ declare var process : {
     NODE_ENV: string,
     AWS_S3_BUCKET: string,
     AWS_S3_REGION: string,
+    APP_PORT: string,
   }
   argv: string[]
 }
@@ -256,7 +257,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   const app = express()
   app.use(express.json());
-  const port = 3500;
+  const port = process.env.APP_PORT || 3500;
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
   if (process.env.NODE_ENV === 'development') {
@@ -304,7 +305,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.discoverDatabases().then(async () => {
     if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth')])) {
       await admin.resource('user').create({
-        email: 'adminforth@adminforth.dev',
+        email: 'adminforth',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
     }
@@ -603,7 +604,7 @@ npm start
 Open `http://localhost:3500/admin` in your browser and login with `adminforth@adminforth.dev` and `adminforth` credentials.
 Set up your avatar (you can generate it with AI) and public name in user settings.
 
-<Screenshot>
+// TODO screenshot with generated avatar (user edit page)
 
 ## Step 5: Create Nuxt project
 
@@ -619,7 +620,7 @@ npm run dev
 
 Edit `app.vue`: 
 
-```vue title="./seo/app.vue"
+```html title="./seo/app.vue"
 <template>
   <div id="app">
     <NuxtPage />
@@ -664,7 +665,7 @@ $grColor5: #695BE9;
 
 Add folder `pages` and create `index.vue`:
 
-```vue title="./seo/pages/index.vue"
+```html title="./seo/pages/index.vue"
 <template>
   <div class="container">
     <PostCard 
@@ -727,7 +728,7 @@ onMounted(async () => {
 
 Finally, create `PostCard.vue` component:
 
-```vue title="./seo/PostCard.vue"
+```html title="./seo/PostCard.vue"
 <template>
   <div class="post-card">
     <img v-if="props.post.picture" :src="props.post.picture" alt="post image" />
@@ -854,7 +855,10 @@ Now you can start your Nuxt project:
 npm run dev
 ```
 
-Open `http://localhost:3500` in your browser and you will see your blog with posts from admin panel.
+Open `http://localhost:3500` in your browser and you will see your blog with posts from admin panel:
+
+// TODO screenshot how it looks
+
 Go to `http://localhost:3500/admin` to add new posts.
 
 ## Step 6: Deploy
@@ -877,6 +881,7 @@ Create `Dockerfile` in root project directory:
 
 ```dockerfile title="./Dockerfile"
 from node:20
+EXPOSE 3500
 WORKDIR /app
 RUN apt update && apt install -y supervisor
 COPY package.json package-lock.json ./
@@ -916,9 +921,7 @@ stderr_logfile=/dev/stderr
 
 EOF
 
-
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-
 ```
 
 Build and run your docker container locally:
@@ -928,3 +931,34 @@ sudo docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it $(docker build
 ```
 
 Now you can open `http://localhost` in your browser and see your blog.
+
+### Deploy to AWS Elastic Beanstalk
+
+First we need to install Elastic Beanstalk CLI:
+
+```bash
+pip install awsebcli
+```
+
+Now create Elastic Beanstalk application:
+
+```bash
+
+eb init --region eu-central-1 -p docker my-ai-blog 
+```
+
+Add AutoScalingFullAccess policy to your user in AWS IAM console.
+During creation you need to specify your AWS credentials. Make sure that user which you are using has next policies attached:
+- `AutoScalingFullAccess` 
+- `AdministratorAccess-AWSElasticBeanstalk`
+- `AWSElasticBeanstalkService`
+
+```
+eb create live --envvars $(cat .env | tr '\n' ',' | sed 's/,$//') --single --instance-types t4g.nano
+```
+
+To terminate environment and stop billing:
+
+```bash
+eb terminate --force live
+```
