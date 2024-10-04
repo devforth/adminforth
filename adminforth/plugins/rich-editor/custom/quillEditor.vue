@@ -525,6 +525,10 @@ function removeCompletionOnBlur() {
     font-style: italic;
   }
 
+  .ql-editor p {
+    margin-bottom: 0.5rem;
+  }
+
   .ql-snow .ql-stroke {
     @apply dark:stroke-darkPrimary;
     @apply stroke-lightPrimary;

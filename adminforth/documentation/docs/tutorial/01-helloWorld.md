@@ -34,10 +34,9 @@ npx --yes tsc --init --module ESNext --target ESNext
 Create `.env` file in root directory and put following content:
 
 ```bash title="./.env"
-DATABASE_FILE=./db.sqlite
+DATABASE_FILE=../db.sqlite
 DATABASE_FILE_URL=file:${DATABASE_FILE}
 ADMINFORTH_SECRET=123
-NODE_ENV=development
 ```
 
 > ☝️ Production best practices:
@@ -106,7 +105,7 @@ Open `package.json`, set `type` to `module` and add `start` script:
   "scripts": {
     ...
 //diff-add
-    "start": "tsx watch --env-file=.env index.ts"
+    "start": "NODE_ENV=development tsx watch --env-file=.env index.ts",
   },
 }
 ```

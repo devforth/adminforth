@@ -23,7 +23,7 @@
           </div>
         </th>
 
-        <th v-for="c in columnsListed" scope="col" class="px-6 py-3">
+        <th v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
          
           <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
               class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -94,7 +94,7 @@
               <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
             </div>
           </td>
-          <td v-for="c in columnsListed" class="px-6 py-4">
+          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
@@ -105,7 +105,7 @@
               :resource="resource"
             />
           </td>
-          <td class=" items-center px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
+          <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex">
               <RouterLink
                 v-if="resource.options?.allowedActions.show"
