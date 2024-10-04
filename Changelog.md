@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Improved
 
 - Paddings for table now are smaller on lower screen sizes
+- added user pk to adminUser passed to page injection components
 
 ### Fixed
 

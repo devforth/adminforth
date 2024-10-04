@@ -949,11 +949,17 @@ Now create Elastic Beanstalk application:
 eb init --region eu-central-1 -p docker my-ai-blog 
 ```
 
-Add AutoScalingFullAccess policy to your user in AWS IAM console.
-During creation you need to specify your AWS credentials. Make sure that user which you are using has next policies attached:
-- `AutoScalingFullAccess` 
-- `AdministratorAccess-AWSElasticBeanstalk`
-- `AWSElasticBeanstalkService`
+aws ec2 create-launch-template \
+    --launch-template-name MyLaunchTemplate \
+    --version-description "Initial version" \
+    --launch-template-data '{
+        "ImageId": "ami-1234567890abcdef0",
+        "InstanceType": "t2.micro",
+        "KeyName": "my-key-pair",
+        "SecurityGroupIds": ["sg-0123456789abcdef0"],
+        "UserData": "echo Hello World"
+    }'
+    
 
 ```
 eb create live --envvars $(cat .env | tr '\n' ',' | sed 's/,$//') --single --instance-types t4g.nano

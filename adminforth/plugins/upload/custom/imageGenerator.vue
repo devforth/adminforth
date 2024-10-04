@@ -158,7 +158,7 @@ async function confirmImage() {
   const img = images.value[currentIndex];
   // read  url to base64 and send it to the parent component
   const imgBlob = await fetch(
-    `/adminapi/v1/plugin/${props.meta.pluginInstanceId}/cors-proxy?url=${encodeURIComponent(img)}`
+    `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}/adminapi/v1/plugin/${props.meta.pluginInstanceId}/cors-proxy?url=${encodeURIComponent(img)}`
   ).then(res => { return res.blob() });
 
   emit('uploadImage', imgBlob);
