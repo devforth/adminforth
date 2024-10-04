@@ -1075,6 +1075,8 @@ export type AdminForthResource = {
        * 
        */
       pageInjections?: {
+
+
         /**
          * Custom components which can be injected into resource list page.
          * 
@@ -1404,6 +1406,15 @@ export type AdminForthConfig = {
        */
       loginPageInjections?: {
         underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+      }
+
+      /**
+       * Custom panel components or array of components which will be displayed in different parts of the admin panel.
+       */
+      globalInjections?: {
+        userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+        header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+        sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
       }
     }
 

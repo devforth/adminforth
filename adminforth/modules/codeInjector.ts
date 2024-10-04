@@ -356,6 +356,18 @@ class CodeInjector implements ICodeInjector {
 
     // for each custom component generate import statement
     const customResourceComponents = [];
+
+    function checkInjections(filePathes) {
+      filePathes.forEach(({ file }) => {
+        if (!customResourceComponents.includes(file)) {
+          if (file === undefined) {
+            throw new Error('file is undefined');
+          }
+          customResourceComponents.push(file);
+        }
+      });
+    }
+
     this.adminforth.config.resources.forEach((resource) => {
       resource.columns.forEach((column) => {
         if (column.components) {
@@ -369,19 +381,20 @@ class CodeInjector implements ICodeInjector {
           });
         }
       });
+      
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: {file: string}[]) => {
-          filePathes.forEach(({ file }) => {
-            if (!customResourceComponents.includes(file)) {
-              if (file === undefined) {
-                throw new Error('file is undefined');
-              }
-              customResourceComponents.push(file);
-            }
-          });
+          checkInjections(filePathes);
         });
       });
     });
+
+    if (this.adminforth.config.customization?.globalInjections) {
+      Object.values(this.adminforth.config.customization.globalInjections).forEach((injection) => {
+        checkInjections(injection);
+      });
+    }
+
 
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);

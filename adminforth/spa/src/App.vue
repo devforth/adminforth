@@ -17,7 +17,20 @@
             
           </div>
           <div class="flex items-center">
+            
+            <component 
+              v-for="c in coreStore?.config?.globalInjections?.header || []"
+              :is="getCustomComponent(c)"
+              :meta="c.meta"
+              :record="coreStore.record"
+              :resource="coreStore.resource"
+              :adminUser="coreStore.adminUser"
+            />
+
             <div class="flex items-center ms-3 ">
+
+
+
               <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
@@ -41,9 +54,15 @@
                   </p>
                 </div>
                 <ul class="py-1" role="none">
-                  <!-- <li>
-                    
-                  </li> -->
+                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []">
+                    <component 
+                      :is="getCustomComponent(c)"
+                      :meta="c.meta"
+                      :record="coreStore.record"
+                      :resource="coreStore.resource"
+                      :adminUser="coreStore.adminUser"
+                    />
+                  </li>
                   <li>
                     <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">Sign out</button>
                   </li>
@@ -145,6 +164,15 @@
           </p>
           <!-- <a class="text-sm text-lightPrimary underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
         </div>
+
+        <component 
+          v-for="c in coreStore?.config?.globalInjections?.sidebar || []"
+          :is="getCustomComponent(c)"
+          :meta="c.meta"
+          :record="coreStore.record"
+          :resource="coreStore.resource"
+          :adminUser="coreStore.adminUser"
+        />
       </div>
     </aside>
     
@@ -237,7 +265,9 @@ import { createHead } from 'unhead'
 import { loadFile } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
-import { FrontendAPI } from '@/composables/useStores'
+import { FrontendAPI } from '@/composables/useStores';
+import { getCustomComponent } from '@/utils';
+
 // import { link } from 'fs';
 const coreStore = useCoreStore();
 const modalStore = useModalStore();

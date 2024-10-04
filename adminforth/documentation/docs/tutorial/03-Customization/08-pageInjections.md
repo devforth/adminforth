@@ -338,3 +338,18 @@ Install used icon:
 cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
+
+## Global Injections
+
+You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu
+
+
+* `config.customization.globalInjections.userMenu`:
+
+
+![alt text](<Group 6.png>)
+
+Also there are:
+
+* `config.customization.globalInjections.header`
+* `config.customization.globalInjections.sidebar`
