@@ -12,8 +12,7 @@ import {
   type IConfigValidator,
   IOperationalResource,
   AdminForthFilterOperators,
-  AdminForthDataTypes, 
-  IHttpServer, 
+  AdminForthDataTypes, IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
   AdminUser,
@@ -25,7 +24,6 @@ import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
-import { error } from 'console';
 
 // exports
 export * from './types/AdminForthConfig.js'; 

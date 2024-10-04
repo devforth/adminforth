@@ -72,7 +72,7 @@ const admin = new AdminForth({
 //diff-add
   customization:{
 //diff-add
-    styles:{
+    styles: {
 //diff-add
       colors: {
 //diff-add
