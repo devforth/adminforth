@@ -186,7 +186,7 @@ Create `index.ts` file in root directory with following content:
 import express from 'express';
 import AdminForth, { Filters, Sorts } from 'adminforth';
 import userResource from './user.res.js';
-import postResource from './post.res.js';
+import postResource from './posts.res.js';
 import contentImageResource from './content-image.res.js';
 import httpProxy from 'http-proxy';
 
@@ -196,7 +196,6 @@ declare var process : {
     NODE_ENV: string,
     AWS_S3_BUCKET: string,
     AWS_S3_REGION: string,
-    APP_PORT: string,
   }
   argv: string[]
 }
@@ -257,7 +256,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   const app = express()
   app.use(express.json());
-  const port = process.env.APP_PORT || 3500;
+  const port = 3500;
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
   if (process.env.NODE_ENV === 'development') {
@@ -293,6 +292,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.use((req, res, next) => {
     if (!req.url.startsWith('/admin')) {
       const proxy = httpProxy.createProxyServer();
+      proxy.on('error', function (err, req, res) {
+        res.send(`No response from Nuxt at http://localhost:3000, did you start it? ${err}`)
+      });
       proxy.web(req, res, { target: 'http://localhost:3000' });
     } else {
       next();
@@ -305,7 +307,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.discoverDatabases().then(async () => {
     if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth')])) {
       await admin.resource('user').create({
-        email: 'adminforth',
+        email: 'adminforth@adminforth.dev',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
     }
