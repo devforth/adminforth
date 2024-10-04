@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Paddings for table now are smaller on lower screen sizes
 
+### Fixed
+
+- Remove dump sidebar on every page
+- Add config.customization.globalInjections
+
 ## [1.3.51] - 2024-10-03
 
 ### Fixed

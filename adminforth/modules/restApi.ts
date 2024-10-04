@@ -265,6 +265,7 @@ export default class AdminForthRestAPI {
             title: this.adminforth.config.customization?.title,
             emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
             announcementBadge,
+            globalInjections: this.adminforth.config.customization?.globalInjections,
           },
           adminUser,
           version: ADMINFORTH_VERSION,
