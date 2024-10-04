@@ -22,8 +22,6 @@
               v-for="c in coreStore?.config?.globalInjections?.header || []"
               :is="getCustomComponent(c)"
               :meta="c.meta"
-              :record="coreStore.record"
-              :resource="coreStore.resource"
               :adminUser="coreStore.adminUser"
             />
 
@@ -31,7 +29,8 @@
 
 
 
-              <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+              <span               
+              @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
@@ -54,12 +53,11 @@
                   </p>
                 </div>
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []">
+              
+                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
-                      :record="coreStore.record"
-                      :resource="coreStore.resource"
                       :adminUser="coreStore.adminUser"
                     />
                   </li>
@@ -169,8 +167,6 @@
           v-for="c in coreStore?.config?.globalInjections?.sidebar || []"
           :is="getCustomComponent(c)"
           :meta="c.meta"
-          :record="coreStore.record"
-          :resource="coreStore.resource"
           :adminUser="coreStore.adminUser"
         />
       </div>
@@ -250,7 +246,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, defineComponent, onBeforeMount } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
-import { initFlowbite } from 'flowbite'
+import { initFlowbite, Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
@@ -372,6 +368,14 @@ watch([loggedIn,  routerIsReady, loginRedirectCheckIsReady], ([l,r,lr]) => {
   if (l && r && lr) {
     setTimeout(() => {
       initFlowbite();
+
+      const dd = new Dropdown(
+        document.querySelector('#dropdown-user') as HTMLElement,
+        document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
+      );
+      window.adminforth.closeUserMenuDropdown = () => {
+        dd.hide();
+      }
     }); 
   }
 })
@@ -407,4 +411,8 @@ function closeCTA() {
   const hash = ctaBadge.value.hash;
   window.localStorage.setItem(`ctaBadge-${hash}`, '1');
 }
+
+
+
+
 </script>
