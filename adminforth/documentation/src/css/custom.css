@@ -80,8 +80,32 @@ pre code:has(.code-block-diff-remove-line) {
   color: #FFFFFF;
 }
 
-[class="img_node_modules-@docusaurus-theme-classic-lib-theme-MDXComponents-Img-styles-module"] {
+.markdown img {
   border-radius: 8px; 
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2); 
   margin: 16px 0;
 }
+
+.theme-code-block pre {
+  max-height: 500px;
+  overflow-y: overlay;
+  /* semi-transparent white scroll background, with rounded corners, webkit scrollbar */
+
+}
+
+.theme-code-block pre::-webkit-scrollbar {
+  width: 12px;
+}
+
+.theme-code-block pre::-webkit-scrollbar-thumb {
+  background-color: #888; /* Scrollbar color */
+  border-radius: 10px !important; /* Rounded corners for the thumb */
+  border: 3px solid #f1f1f1; /* Padding around thumb */
+}
+
+.theme-code-block pre::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Track (background of scrollbar) */
+  border-radius: 10px !important; /* Rounded borders for the track */
+}
+
+  
