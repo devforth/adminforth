@@ -55,7 +55,8 @@ To allocate OpenAI API key, go to https://platform.openai.com/, open Dashboard -
 
 1. Go to https://aws.amazon.com and login.
 2. Go to Services -> S3 and create a bucket. Put in bucket name e.g. `my-ai-blog-bucket`. 
-Leave all settings unchanged (ACL Disabled, Block all public access - checked)
+First of all go to your bucket settings, Permissions, scroll down to Block public access (bucket settings for this bucket) and uncheck all checkboxes.
+Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" and "Bucket owner preferred" radio buttons.
 3. Go to bucket settings, Permissions, scroll down to Cross-origin resource sharing (CORS) and put in the following configuration:
 
 ```json
@@ -606,7 +607,7 @@ npm start
 Open `http://localhost:3500/admin` in your browser and login with `adminforth@adminforth.dev` and `adminforth` credentials.
 Set up your avatar (you can generate it with AI) and public name in user settings.
 
-// TODO screenshot with generated avatar (user edit page)
+![alt text](generated_avatar.png)
 
 ## Step 5: Create Nuxt project
 
@@ -857,15 +858,21 @@ Now you can start your Nuxt project:
 npm run dev
 ```
 
+And run `npm start` if you did not run it previously:
+
+```bash
+npm start
+```
+
 Open `http://localhost:3500` in your browser and you will see your blog with posts from admin panel:
 
-// TODO screenshot how it looks
+![alt text](localhost_3500_.png)
 
 Go to `http://localhost:3500/admin` to add new posts.
 
 ## Step 6: Deploy
 
-We will dockerize app to make it easy to deploy with many ways. We will wratp both Node.js adminforth app and Nuxt.js app into single container for simplicity using supervisor. However you can split them into two containers and deploy them separately e.g. using docker compose. 
+We will dockerize app to make it easy to deploy with many ways. We will wrap both Node.js adminforth app and Nuxt.js app into single container for simplicity using supervisor. However you can split them into two containers and deploy them separately e.g. using docker compose. 
 
 Please note that in this demo example we routing requests to Nuxt.js app from AdminForth app using http-proxy. 
 While this will work fine, it might give slower serving then if you would route traffik using dedicated reverse proxies like traefik or nginx.
