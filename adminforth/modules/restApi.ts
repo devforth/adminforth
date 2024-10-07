@@ -193,11 +193,15 @@ export default class AdminForthRestAPI {
     
         const dbUser = adminUser.dbUser;
         username = dbUser[this.adminforth.config.auth.usernameField]; 
-        userFullName =dbUser[this.adminforth.config.auth.userFullNameField];
+        userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
+        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+
+        const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
-            [this.adminforth.config.auth.userFullNameField]: userFullName
+            [this.adminforth.config.auth.userFullNameField]: userFullName,
+            pk: userPk,
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
@@ -265,6 +269,7 @@ export default class AdminForthRestAPI {
             title: this.adminforth.config.customization?.title,
             emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
             announcementBadge,
+            globalInjections: this.adminforth.config.customization?.globalInjections,
           },
           adminUser,
           version: ADMINFORTH_VERSION,

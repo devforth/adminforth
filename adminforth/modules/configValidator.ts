@@ -15,6 +15,9 @@ import { guessLabelFromName, suggestIfTypo } from './utils.js';
 
 import crypto from 'crypto';
 
+
+
+
 export default class ConfigValidator implements IConfigValidator {
 
   constructor(private adminforth: IAdminForth, private config: AdminForthConfig) {
@@ -22,6 +25,16 @@ export default class ConfigValidator implements IConfigValidator {
     this.config = config;
   }
   
+  validateAndListifyInjection(obj, key, errors) {
+    if (!Array.isArray(obj[key])) {
+      // not array
+      obj[key] = [obj[key]];
+    }
+    obj[key].forEach((target, i) => {
+      obj[key][i] = this.validateComponent(target, errors);
+    });
+  }
+
   checkCustomFileExists(filePath: string): Array<string> {
     if (filePath.startsWith('@@/')) {
       const checkPath = path.join(this.config.customization.customComponentsDir, filePath.replace('@@/', ''));
@@ -112,7 +125,9 @@ export default class ConfigValidator implements IConfigValidator {
     if (this.config.customization.loginPageInjections === undefined) {
       this.config.customization.loginPageInjections = {};
     }
-
+    if (this.config.customization.globalInjections === undefined) {
+      this.config.customization.globalInjections = {};
+    }
     if (this.config.customization.loginPageInjections.underInputs === undefined) {
       this.config.customization.loginPageInjections.underInputs = [];
     }
@@ -339,7 +354,11 @@ export default class ConfigValidator implements IConfigValidator {
         const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
         const possiblePages = ['list', 'show', 'create', 'edit'];
 
+        
+          
+
         if (res.options.pageInjections) {
+
           Object.entries(res.options.pageInjections).map(([key, value]) => {
             if (!possiblePages.includes(key)) {
               const similar = suggestIfTypo(possiblePages, key);
@@ -348,13 +367,7 @@ export default class ConfigValidator implements IConfigValidator {
 
             Object.entries(value).map(([injection, target]) => {
               if (possibleInjections.includes(injection)) {
-                if (!Array.isArray(res.options.pageInjections[key][injection])) {
-                  // not array
-                  res.options.pageInjections[key][injection] = [target];
-                }
-                res.options.pageInjections[key][injection].forEach((target, i) => {
-                  res.options.pageInjections[key][injection][i] = this.validateComponent(target, errors);
-                });
+                this.validateAndListifyInjection(res.options.pageInjections[key], injection, errors);
               } else {
                 const similar = suggestIfTypo(possibleInjections, injection);
                 errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
@@ -362,6 +375,7 @@ export default class ConfigValidator implements IConfigValidator {
             });
 
           })
+          
         }
 
         // transform all hooks Functions to array of functions
@@ -406,6 +420,18 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
       });
+
+      if (this.config.customization.globalInjections) {
+        const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar',]
+        Object.keys(this.config.customization.globalInjections).forEach((injection) => {
+          if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
+            this.validateAndListifyInjection(this.config.customization.globalInjections, injection, errors);
+          } else {
+            const similar = suggestIfTypo(ALLOWED_GLOBAL_INJECTIONS, injection);
+            errors.push(`Global injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_GLOBAL_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          }
+        });
+      }
 
       if (!this.config.menu) {
         errors.push('No config.menu defined');

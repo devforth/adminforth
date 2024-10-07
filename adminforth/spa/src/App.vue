@@ -17,8 +17,20 @@
             
           </div>
           <div class="flex items-center">
+            
+            <component 
+              v-for="c in coreStore?.config?.globalInjections?.header || []"
+              :is="getCustomComponent(c)"
+              :meta="c.meta"
+              :adminUser="coreStore.adminUser"
+            />
+
             <div class="flex items-center ms-3 ">
-              <span @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+
+
+
+              <span               
+              @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
@@ -41,9 +53,14 @@
                   </p>
                 </div>
                 <ul class="py-1" role="none">
-                  <!-- <li>
-                    
-                  </li> -->
+              
+                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" >
+                    <component 
+                      :is="getCustomComponent(c)"
+                      :meta="c.meta"
+                      :adminUser="coreStore.adminUser"
+                    />
+                  </li>
                   <li>
                     <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">Sign out</button>
                   </li>
@@ -145,6 +162,13 @@
           </p>
           <!-- <a class="text-sm text-lightPrimary underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
         </div>
+
+        <component 
+          v-for="c in coreStore?.config?.globalInjections?.sidebar || []"
+          :is="getCustomComponent(c)"
+          :meta="c.meta"
+          :adminUser="coreStore.adminUser"
+        />
       </div>
     </aside>
     
@@ -222,7 +246,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, defineComponent, onBeforeMount } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
-import { initFlowbite } from 'flowbite'
+import { initFlowbite, Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
@@ -237,7 +261,9 @@ import { createHead } from 'unhead'
 import { loadFile } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
-import { FrontendAPI } from '@/composables/useStores'
+import { FrontendAPI } from '@/composables/useStores';
+import { getCustomComponent } from '@/utils';
+
 // import { link } from 'fs';
 const coreStore = useCoreStore();
 const modalStore = useModalStore();
@@ -342,6 +368,14 @@ watch([loggedIn,  routerIsReady, loginRedirectCheckIsReady], ([l,r,lr]) => {
   if (l && r && lr) {
     setTimeout(() => {
       initFlowbite();
+
+      const dd = new Dropdown(
+        document.querySelector('#dropdown-user') as HTMLElement,
+        document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
+      );
+      window.adminforth.closeUserMenuDropdown = () => {
+        dd.hide();
+      }
     }); 
   }
 })
@@ -377,4 +411,8 @@ function closeCTA() {
   const hash = ctaBadge.value.hash;
   window.localStorage.setItem(`ctaBadge-${hash}`, '1');
 }
+
+
+
+
 </script>

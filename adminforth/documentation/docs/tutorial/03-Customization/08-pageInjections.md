@@ -338,3 +338,53 @@ Install used icon:
 cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
+
+## Global Injections
+
+You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu
+
+* `config.customization.globalInjections.userMenu`:
+
+![alt text](<Group 6.png>)
+
+use `window.adminforth.closeUserMenuDropdown();` to close the dropdown after the item is clicked.
+
+```ts title="/index.ts"
+{
+  ...
+  customization: {
+    globalInjections: {
+      userMenu: [
+        '@@/CustomUserMenuItem.vue',
+      ]
+    }
+  }
+  ...
+}
+```
+
+Now create file `CustomUserMenuItem.vue` in the `custom` folder of your project:
+
+```html title="./custom/CustomUserMenuItem.vue"
+<template>
+  <div @click="openCustomPage" class="cursor-pointer flex px-4 py-2 text-sm flex items-center">
+    Custom Page
+  </div>
+</template>
+
+<script setup>
+function openCustomPage() {
+  window.adminforth.alert({
+    message: 'Custom page is opened',
+    variant: 'success',
+  });
+  window.adminforth.closeUserMenuDropdown();
+}
+</script>
+```
+
+
+Also there are:
+
+* `config.customization.globalInjections.header`
+* `config.customization.globalInjections.sidebar`

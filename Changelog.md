@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Improved
 
 - Paddings for table now are smaller on lower screen sizes
+- added user pk to adminUser passed to page injection components
+
+### Fixed
+
+- Remove dump sidebar on every page
+- Add config.customization.globalInjections
 
 ## [1.3.51] - 2024-10-03
 
