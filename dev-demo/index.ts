@@ -125,6 +125,9 @@ const admin = new AdminForth({
   },
   customization: {
     customComponentsDir: './custom',
+    globalInjections: {
+      userMenu: '@@/login2.vue',
+    },
     customPages:[{
       path : '/login2',
       component: {

@@ -49,6 +49,11 @@ export interface FrontendAPIInterface {
         closeThreeDotsDropdown(): void;
 
         /**
+         * Close the user menu dropdown
+         */
+        closeUserMenuDropdown(): void;
+
+        /**
          * Set a filter in the list
          * Works only when user located on the list page.
          * Can be used to set filter from charts or other components in pageInjections.
