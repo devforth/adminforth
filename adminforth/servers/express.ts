@@ -199,6 +199,7 @@ class ExpressServer implements IExpressHttpServer {
       
       const query = req.query;
       const adminUser = req.adminUser;
+      // lower request headers
       const headers = req.headers;
       const cookies = await parseExpressCookie(req);
 

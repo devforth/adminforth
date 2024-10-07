@@ -1,5 +1,5 @@
 
-import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes  } from "adminforth";
+import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes, getClinetIp, RateLimiter } from "adminforth";
 import { PluginOptions } from './types.js';
 
 
@@ -71,7 +71,21 @@ export default class ChatGptPlugin extends AdminForthPlugin {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/doComplete`,
-      handler: async ({ body }) => {
+      handler: async ({ body, headers }) => {
+        if (this.options.rateLimit?.limit) {
+          // rate limit
+          const { error } = RateLimiter.checkRateLimit(
+            this.pluginInstanceId, 
+            this.options.rateLimit?.limit,
+            getClinetIp(headers),
+          );
+          if (error) {
+            return {
+              completion: [],
+            }
+          }
+        }
+
         const { record } = body;
         const recordNoField = {...record};
         delete recordNoField[this.options.fieldName];
