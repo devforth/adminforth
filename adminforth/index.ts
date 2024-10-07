@@ -5,7 +5,7 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -29,7 +29,7 @@ import OperationalResource from './modules/operationalResource.js';
 export * from './types/AdminForthConfig.js'; 
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo };
+export { suggestIfTypo, RateLimiter, getClinetIp };
 
 
 class AdminForth implements IAdminForth {

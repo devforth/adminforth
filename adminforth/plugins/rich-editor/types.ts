@@ -130,7 +130,25 @@ export interface PluginOptions {
           splitParts?: number;
 
         }
-      }
+    }
+
+    /**
+     * Since AI generation can be expensive, we can limit the number of requests per IP.
+     * Completion will simply stop working when limit is reached so user will not be bothered with error messages.
+     */
+    rateLimit?: {
+
+      /**
+       * E.g. 5/1d - 5 requests per day
+       * 3/1h - 3 requests per hour
+       */ 
+      limit: string,
+
+      /**
+       * Message shown to user when rate limit is reached
+       */
+      errorMessage: string,
+    },
 
   }
 

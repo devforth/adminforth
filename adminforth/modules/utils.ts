@@ -355,3 +355,118 @@ export function suggestIfTypo(names: string[], name: string): string {
     return result[0].item;
   }
 }
+
+
+export function getClinetIp(headers: object) {
+  console.log('headers', headers);
+  return headers['CF-Connecting-IP'] || 
+    headers['x-forwarded-for'] || 
+    headers['x-real-ip'] || 
+    headers['x-client-ip'] || 
+    headers['x-proxy-user'] || 
+    headers['x-cluster-client-ip'] || 
+    headers['forwarded'] || 
+    headers['remote-addr'] || 
+    headers['client-ip'] || 
+    headers['x-client-ip'] || 
+    headers['x-real-ip'] || 'unknown';
+}
+
+
+export class RateLimiter {
+  static counterData = {};
+
+
+
+
+  /**
+   * Very dirty version of ratelimiter for demo purposes (should not be considered as production ready)
+   * Will be used as RateLimiter.checkRateLimit('key', '5/24h', clientIp)
+   * Stores counter in this class, in RAM, resets limits on app restart.
+   * Also it creates setTimeout for every call, so is not optimal for high load.
+   * @param key - key to store rate limit for
+   * @param limit - limit in format '5/24h' - 5 requests per 24 hours
+   * @param clientIp 
+   */
+  static checkRateLimit(key: string, limit: string, clientIp: string) {
+
+    if (!limit) {
+      throw new Error('Rate limit is not set');
+    }
+
+    if (!key) {
+      throw new Error('Rate limit key is not set');
+    }
+
+    if (!clientIp) {
+      throw new Error('Client IP is not set');
+    }
+
+    if (!limit.includes('/')) {
+      throw new Error('Rate limit should be in format count/period, like 5/24h');
+    }
+
+    // parse limit
+    const [count, period] = limit.split('/');
+    const [preiodAmount, periodType] = /(\d+)(\w+)/.exec(period).slice(1);
+    const preiodAmountNumber = parseInt(preiodAmount);
+
+    // get current time
+    const whenClear = new Date();
+    if (periodType === 'h') {
+      whenClear.setHours(whenClear.getHours() + preiodAmountNumber);
+    } else if (periodType === 'd') {
+      whenClear.setDate(whenClear.getDate() + preiodAmountNumber);
+    } else if (periodType === 'm') {
+      whenClear.setMinutes(whenClear.getMinutes() + preiodAmountNumber);
+    } else if (periodType === 'y') {
+      whenClear.setFullYear(whenClear.getFullYear() + preiodAmountNumber);
+    } else if (periodType === 's') {
+      whenClear.setSeconds(whenClear.getSeconds() + preiodAmountNumber);
+    } else {
+      throw new Error(`Unsupported period type for rate limiting: ${periodType}`);
+    }
+
+  
+    // get current counter
+    const counter = this.counterData[key] && this.counterData[key][clientIp] || 0;
+    if (counter >= count) {
+      return { error: true };
+    }
+    RateLimiter.incrementCounter(key, clientIp);
+    setTimeout(() => {
+      RateLimiter.decrementCounter(key, clientIp);
+    }, whenClear.getTime() - Date.now());
+
+
+    return { error: false };
+
+  }
+
+  static incrementCounter(key: string, ip: string) {
+    if (!RateLimiter.counterData[key]) {
+      RateLimiter.counterData[key] = {};
+    }
+    if (!RateLimiter.counterData[key][ip]) {
+      RateLimiter.counterData[key][ip] = 0;
+    }
+    RateLimiter.counterData[key][ip]++;
+    console.log('🔄️🔄️🔄️🔄️🔄️🔄️ incremented', key, ip, this.counterData[key][ip]);
+  }
+
+  static decrementCounter(key: string, ip: string) {
+    if (!RateLimiter.counterData[key]) {
+      RateLimiter.counterData[key] = {};
+    }
+    if (!RateLimiter.counterData[key][ip]) {
+      RateLimiter.counterData[key][ip] = 0;
+    }
+    if (RateLimiter.counterData[key][ip] > 0) {
+      RateLimiter.counterData[key][ip]--;
+    }
+    console.log('🔄️🔄️🔄️🔄️🔄️🔄️ decremented', key, ip, this.counterData[key][ip]);
+
+  }
+
+
+}

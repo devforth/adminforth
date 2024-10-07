@@ -442,6 +442,10 @@ const admin = new AdminForth({
                 apiKey: process.env.OPENAI_API_KEY as string,
               },
               fieldsForContext: ['title'],
+              rateLimit: {
+                limit: '2/1m',
+                errorMessage: 'For demo purposes, you can generate only 2 images per minute',
+              }
             },
             preview: {
               // Used to display preview (if it is image) in list and show views

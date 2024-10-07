@@ -936,10 +936,11 @@ Now you can open `http://localhost` in your browser and see your blog.
 
 ### Deploy to AWS Elastic Beanstalk
 
+
 First we need to install Elastic Beanstalk CLI:
 
 ```bash
-pip install awsebcli
+pip install awsebcli --user --upgrade
 ```
 
 Now create Elastic Beanstalk application:
@@ -949,17 +950,41 @@ Now create Elastic Beanstalk application:
 eb init --region eu-central-1 -p docker my-ai-blog 
 ```
 
-aws ec2 create-launch-template \
-    --launch-template-name MyLaunchTemplate \
-    --version-description "Initial version" \
-    --launch-template-data '{
-        "ImageId": "ami-1234567890abcdef0",
-        "InstanceType": "t2.micro",
-        "KeyName": "my-key-pair",
-        "SecurityGroupIds": ["sg-0123456789abcdef0"],
-        "UserData": "echo Hello World"
-    }'
-    
+Now create folder `.ebextensions` in root project directory and create `01-autoscaling.config` file there: 
+
+
+```yaml title=".ebextensions/01-autoscaling.config"
+option_settings:
+  aws:autoscaling:launchconfiguration:
+    DisableIMDSv1: true
+```
+
+
+Also create `Dockerrun.aws.json` file in root project directory:
+
+```json title="./Dockerrun.aws.json"
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "my-ai-blog",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": 3500,
+      "HostPort": 80
+    }
+  ],
+  "Volumes": [
+    {
+      "HostDirectory": "/dbData",
+      "ContainerDirectory": "/app/db"
+    }
+  ]
+}
+```
+
+Now deploy your app to Elastic Beanstalk:
 
 ```
 eb create live --envvars $(cat .env | tr '\n' ',' | sed 's/,$//') --single --instance-types t4g.nano
