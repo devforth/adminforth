@@ -930,7 +930,7 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development', verbose: true});
+    await admin.bundleNow({ hotReload: false || process.env.NODE_ENV === 'development'});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();

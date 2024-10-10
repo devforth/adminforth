@@ -60,7 +60,7 @@ WORKDIR /code/
 ADD package.json package-lock.json /code/
 RUN npm ci  
 ADD . /code/
-RUN npm run bundleNow
+RUN npx tsx bundleNow.ts
 CMD ["npm", "run", "migrateLiveAndStart"]
 ```
 
@@ -71,8 +71,6 @@ Add `bundleNow` and `startLive` to `package.json`:
     "type": "module",
     "scripts": {
         "start": "tsx watch --env-file=.env index.ts",
-//diff-add
-        "bundleNow": "tsx bundleNow.ts",
 //diff-add
         "startLive": "NODE_ENV=production tsx index.ts"
 //diff-add
