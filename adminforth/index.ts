@@ -197,6 +197,16 @@ class AdminForth implements IAdminForth {
   }
 
   async getUserByPk(pk: string) {
+    // if database discovery is not done, throw
+    if (this.statuses.dbDiscover !== 'done') {
+      if (this.statuses.dbDiscover === 'running') {
+        throw new Error('Database discovery is running. You can\'t use data API while database discovery is not finished.\n'+
+          'Consider moving your code to a place where it will be executed after database discovery is already done (after await admin.discoverDatabases())');
+      }
+      throw new Error('Database discovery is not yet started. You can\'t use data API before database discovery is done. \n'+
+        'Call admin.discoverDatabases() first and await it before using data API');
+    }
+
     const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
     if (!resource) {
       const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId), this.config.auth.usersResourceId);

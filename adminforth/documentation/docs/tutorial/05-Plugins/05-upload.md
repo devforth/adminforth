@@ -266,3 +266,21 @@ new UploadPlugin({
 Here is how it works:
 
 ![alt text](demoImgGen-1.gif)
+
+
+### Rate limits
+
+You can set rate limits for image generation per IP address:
+
+```ts title="./index.ts"
+new UploadPlugin({
+  ...
+  generation: {
+    ...
+//diff-add
+  rateLimit: {
+    limit: '5/12h', // up to 5 times per 12 hour 
+    errorMessage: 'You exhausted your image generation limit 5 times per 12 hours, please try again later',
+  }
+      ...
+});
