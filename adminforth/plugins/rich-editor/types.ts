@@ -145,6 +145,7 @@ export interface PluginOptions {
       limit: string,
 
       /**
+       * Not used now
        * Message shown to user when rate limit is reached
        */
       errorMessage: string,
