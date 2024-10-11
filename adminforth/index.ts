@@ -126,6 +126,23 @@ class AdminForth implements IAdminForth {
     );
   }
 
+  getPluginsByClassName<T>(className: string): T[] {
+    const plugins = this.activatedPlugins.filter((plugin) => plugin.className === className);
+    return plugins as T[];
+  }
+
+  getPluginByClassName<T>(className: string): T {
+    const plugins = this.getPluginsByClassName(className);
+    if (plugins.length > 1) {
+      throw new Error(`Multiple plugins with className ${className} found. Use getPluginsByClassName instead`);
+    }
+    if (plugins.length === 0) {
+      const similar = suggestIfTypo(this.activatedPlugins.map((p) => p.className), className);
+      throw new Error(`Plugin with className ${className} not found. ${similar ? `Did you mean ${similar}?` : ''}`);
+    }
+    return plugins[0] as T;
+  }
+
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
     this.connectorClasses = {

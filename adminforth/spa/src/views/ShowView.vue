@@ -1,6 +1,7 @@
 <template>
   <div class="relative">
     <component 
+      v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :meta="c.meta"
@@ -103,6 +104,7 @@
     </div>
 
     <component 
+      v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
       :is="getCustomComponent(c)"
       :meta="c.meta"

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - When discovery is no started, getUserByPk will show error in console
 
+### Added
+
+- Now you can get plugin instance by Plugin class name (for single plugins): `admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')`
+
+
 ## [1.3.53] - 2024-10-09
 
 ### Improved
