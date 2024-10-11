@@ -1186,14 +1186,14 @@ terraform apply -auto-approve
 
 > ☝️ To check logs run `ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output instance_public_ip)`, then `sudo docker logs -n100 -f aiblog`
 
-Terraform config will build Docker image locally and then copy it to EC2 instance. This approach allows to save build resources (CPU/RAM) on EC2 instance, however increases network traffic (image might be around 200MB). If you want to build image on EC2 instance, you can adjust config slightly: remove `null_resource.build_image` and change `null_resource.remote_commands` to build image on EC2 instance, however micro instance most likely will not be able to build and keep app running at the same time, so you will need to increase instance type.
+Terraform config will build Docker image locally and then copy it to EC2 instance. This approach allows to save build resources (CPU/RAM) on EC2 instance, however increases network traffic (image might be around 200MB). If you want to build image on EC2 instance, you can adjust config slightly: remove `null_resource.build_image` and change `null_resource.remote_commands` to build image on EC2 instance, however micro instance most likely will not be able to build and keep app running at the same time, so you will need to increase instance type or terminate app while building image (which introduces downtime so not recommended as well).
 
 
 ### Add HTTPs and CDN
 
 For adding HTTPS and CDN you will use free Cloudflare service (though you can use paid AWS Cloudfront or any different way e.g. add Traefik and Let's Encrypt). Go to https://cloudflare.com and create an account. Add your domain and follow instructions to change your domain nameservers to Cloudflare ones.
 
-Go to your domain settings and add A record with your Elastic Beanstalk IP address, e.g.
+Go to your domain settings and add A record with your server IP address, which was shown in output of `terraform apply` command.
 
 ```
 Type: A
