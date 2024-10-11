@@ -1,11 +1,11 @@
 ---
 slug: ai-blog
-title: AI-Assisted blog with AdminForth and Nuxt in a minutes
+title: Build AI-Assisted blog with AdminForth and Nuxt in 20 minutes
 authors: ivanb
 tags: [nuxt, chatgpt]
 ---
 
-Many developers today are using copilots to write code faster and relax their minds for some routine tasks.
+Many developers today are using copilots to write code faster and relax their minds from a routine tasks.
 
 But what about writing plain text? For example blogs and micro-blogs: sometimes you want to share your progress but you are lazy for typing. Then you can give a try to AI-assisted blogging. Our Open-Source AdminForth framework has couple of new AI-capable plugins to write text and generate images.
 
@@ -78,16 +78,16 @@ Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" a
 ]
 ```
 
-> ☝️ In AllowedOrigins add all your domains. For example if you will serve blog and admin on `https://example.com/` you should add 
-> `"https://example.com"` to AllowedOrigins:
+> ☝️ In AllowedOrigins add all your domains. For example if you will serve blog and admin on `https://blog.example.com/` you should add 
+> `"https://blog.example.com"` to AllowedOrigins:
 >
 > ```json
 > [
->      "https://example.com",
+>      "https://blog.example.com",
 >      "http://localhost:3500"
 > ]
 > ```
-> Every character matters, so don't forget to add `http://` or `https://`!
+> Every character matters, so don't forget to add `http://` or `https://` and don't add slashes at the end of the domain.
 
 4. Go to Services -> IAM and create a new user. Put in user name e.g. `my-ai-blog-bucket`.
 5. Attach existing policies directly -> `AmazonS3FullAccess`. Go to your user -> `Add permissions` -> `Attach policies directly` -> `AmazonS3FullAccess`
@@ -100,7 +100,7 @@ Create `.env` file with the following content:
 
 ```bash title=".env"
 DATABASE_URL=file:./db/db.sqlite
-ADMINFORTH_SECRET=123
+ADMINFORTH_SECRET=<some random string>
 OPENAI_API_KEY=...
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
@@ -308,7 +308,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('user').get([Filters.IN('email', 'adminforth')])) {
+    if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
       await admin.resource('user').create({
         email: 'adminforth@adminforth.dev',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
@@ -896,6 +896,8 @@ Please note that in this demo example we routing requests to Nuxt.js app from Ad
 While this will work fine, it might give slower serving then if you would route traffik using dedicated reverse proxies like traefik or nginx.
 
 
+### Dockerize in single container
+
 Create `bundleNow.ts` file in root project directory:
 
 ```ts title="./bundleNow.ts"
@@ -951,7 +953,6 @@ stderr_logfile=/dev/stderr
 
 EOF
 
-
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
 ```
 
@@ -978,7 +979,7 @@ sudo docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it $(docker build
 
 Now you can open `http://localhost` in your browser and see your blog.
 
-### Deploy to EC2
+### Deploy to EC2 with terraform
 
 
 First of all install Terraform as described here [https://developer.hashicorp.com/terraform/install#linux](terraform installation).
@@ -992,7 +993,7 @@ sudo apt update && sudo apt install terraform
 ```
 
 
-Create special AWS credentials for deployemnts by going to AWS console -> IAM -> Users -> Add user -> Attach existing policies directly -> `AdministratorAccess` -> Create user. Save `Access key ID` and `Secret access key` into `~/.aws/credentials` file:
+Create special AWS credentials for deployemnts by going to `AWS console` -> `IAM` -> `Users` -> `Add user` (e.g. my-ai-blog-user) -> Attach existing policies directly -> `AdministratorAccess` -> Create user. Save `Access key ID` and `Secret access key` into `~/.aws/credentials` file:
 
 Create or open file:
 
@@ -1202,3 +1203,12 @@ Cloudflare proxy: orange (enabled)
 ```
 
 ![alt text](image.png)
+
+
+## Useful links
+
+* [Full source code of the project](https://github.com/devforth/adminforth-example-ai-blog)
+* [Live demo of AI BLog](https://blog-demo.adminforth.dev/admin/resource/post)
+* [AdminForth documentation](https://adminforth.dev/docs/tutorial/gettingStarted/)
+* [AdminForth GitHub](https://github.com/devforth/adminforth)
+* [Nuxt.js documentation](https://nuxt.com/docs/getting-started/introduction)

@@ -949,6 +949,14 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
+
+      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
+        'aparts',
+        'visitedDashboard',
+        { dashboard: 'main' },
+        req.adminUser
+      )
+
       const days = req.body.days || 7;
       const apartsByDays = await db.prepare(
         `SELECT 
