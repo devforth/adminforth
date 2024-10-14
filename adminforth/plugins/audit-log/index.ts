@@ -29,11 +29,11 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
-  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum, data: Object, user: AdminUser, oldRecord: Object) => {
+  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object) => {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
     const connector = this.adminforth.connectors[resource.dataSource];
-
+    
     const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
     if (action !== AllowedActionsEnum.delete) {
       oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
@@ -79,6 +79,35 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
     return {ok: true};
   }
+
+  /**
+   * Create a custom action in the audit log resource
+   * @param resourceId - The resourceId of the resource that the action is being performed on. Can be null if the action is not related to a specific resource.
+   * @param actionId - The id of the action being performed, can be random string
+   * @param data - The data to be stored in the audit log
+   * @param user - The adminUser user performing the action
+   */
+  logCustomAction = async (resourceId: string | null, actionId: string, data: Object, user: AdminUser) => {
+    if (resourceId) {
+      const resource = this.adminforth.config.resources.find((r) => r.resourceId === resourceId);
+      if (!resource) {
+        const similarResource = this.adminforth.config.resources.find((r) => r.resourceId.includes(resourceId));
+        throw new Error(`Resource ${resourceId} not found. Did you mean ${similarResource.resourceId}?`)
+      }
+    }
+
+    const record = {
+      [this.options.resourceColumns.resourceIdColumnName]: resourceId,
+      [this.options.resourceColumns.resourceActionColumnName]: actionId,
+      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': {}, 'newRecord': data },
+      [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
+      [this.options.resourceColumns.resourceRecordIdColumnName]: null,
+      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format()
+    }
+    const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
+    await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
+  }
+
 
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);

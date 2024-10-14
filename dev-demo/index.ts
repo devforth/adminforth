@@ -442,6 +442,10 @@ const admin = new AdminForth({
                 apiKey: process.env.OPENAI_API_KEY as string,
               },
               fieldsForContext: ['title'],
+              rateLimit: {
+                limit: '2/1m',
+                errorMessage: 'For demo purposes, you can generate only 2 images per minute',
+              }
             },
             preview: {
               // Used to display preview (if it is image) in list and show views
@@ -926,7 +930,7 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development', verbose: true});
+    await admin.bundleNow({ hotReload: false || process.env.NODE_ENV === 'development'});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();
@@ -945,6 +949,14 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
+
+      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
+        'aparts',
+        'visitedDashboard',
+        { dashboard: 'main' },
+        req.adminUser
+      )
+
       const days = req.body.days || 7;
       const apartsByDays = await db.prepare(
         `SELECT 

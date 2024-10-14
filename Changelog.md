@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased [1.3.52] 
+## [1.3.54] - Unreleased
+
+### Fixed
+
+- When discovery is no started, getUserByPk will show error in console
+
+### Added
+
+- Now you can get plugin instance by Plugin class name (for single plugins): `admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')`
+
+
+## [1.3.53] - 2024-10-09
 
 ### Improved
 
@@ -16,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove dump sidebar on every page
 - Add config.customization.globalInjections
+
+### Added
+
+- Util function to get client IP address from request import { getClinetIp } from 'adminforth';
+- Util to Rate limit requests import { RateLimiter } from 'adminforth';
 
 ## [1.3.51] - 2024-10-03
 

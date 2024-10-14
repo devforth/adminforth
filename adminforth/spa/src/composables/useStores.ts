@@ -47,6 +47,7 @@ export class FrontendAPI {
       list: {
         refresh: () => {/* will be redefined in list*/},
         closeThreeDotsDropdown: () => {/* will be redefined in list*/},
+        closeUserMenuDropdown: () => {/* will be redefined in list*/},
         setFilter: () => this.setListFilter.bind(this),
         updateFilter: () => this.updateListFilter.bind(this),
         clearFilters: () => this.clearListFilters.bind(this),

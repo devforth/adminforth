@@ -1,15 +1,17 @@
 ---
 slug: ai-blog
-title: AI-Assisted blog with AdminForth and Nuxt in a minutes
+title: Build AI-Assisted blog with AdminForth and Nuxt in 20 minutes
 authors: ivanb
 tags: [nuxt, chatgpt]
 ---
 
-Many developers today are using copilots to write code faster and think less about syntax.
+Many developers today are using copilots to write code faster and relax their minds from a routine tasks.
 
-But what about writing plain text? For example blogs and micro-blogs? Sometimes you want to share your progress and thoughts but you are lazy for typing. Then you can give a try to AI-assisted blogging. Our Open-Source AdminForth framework has couple of new AI-capable plugins to write text and generate images.
+But what about writing plain text? For example blogs and micro-blogs: sometimes you want to share your progress but you are lazy for typing. Then you can give a try to AI-assisted blogging. Our Open-Source AdminForth framework has couple of new AI-capable plugins to write text and generate images.
 
 ![alt text](nuxtBlog.gif)
+
+You can also touch a blog which we will create in [live](https://blog-demo.adminforth.dev/admin).
 
 For AI plugins are backed by OpenAI API, but their architecture allows to be easily extended for other AI providers once OpenAI competitors will reach the same or better level of quality.
 
@@ -76,16 +78,16 @@ Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" a
 ]
 ```
 
-> ☝️ In AllowedOrigins add all your domains. For example if you will serve blog and admin on `https://example.com/` you should add 
-> `"https://example.com"` to AllowedOrigins:
+> ☝️ In AllowedOrigins add all your domains. For example if you will serve blog and admin on `https://blog.example.com/` you should add 
+> `"https://blog.example.com"` to AllowedOrigins:
 >
 > ```json
 > [
->      "https://example.com",
+>      "https://blog.example.com",
 >      "http://localhost:3500"
 > ]
 > ```
-> Every character matters, so don't forget to add `http://` or `https://`!
+> Every character matters, so don't forget to add `http://` or `https://` and don't add slashes at the end of the domain.
 
 4. Go to Services -> IAM and create a new user. Put in user name e.g. `my-ai-blog-bucket`.
 5. Attach existing policies directly -> `AmazonS3FullAccess`. Go to your user -> `Add permissions` -> `Attach policies directly` -> `AmazonS3FullAccess`
@@ -98,7 +100,7 @@ Create `.env` file with the following content:
 
 ```bash title=".env"
 DATABASE_URL=file:./db/db.sqlite
-ADMINFORTH_SECRET=123
+ADMINFORTH_SECRET=<some random string>
 OPENAI_API_KEY=...
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
@@ -186,9 +188,9 @@ Create `index.ts` file in root directory with following content:
 ```ts title="./index.ts"
 import express from 'express';
 import AdminForth, { Filters, Sorts } from 'adminforth';
-import userResource from './user.res.js';
-import postResource from './posts.res.js';
-import contentImageResource from './content-image.res.js';
+import userResource from './res/user.js';
+import postResource from './res/posts.js';
+import contentImageResource from './res/content-image.js';
 import httpProxy from 'http-proxy';
 
 declare var process : {
@@ -306,7 +308,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth')])) {
+    if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
       await admin.resource('user').create({
         email: 'adminforth@adminforth.dev',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
@@ -322,9 +324,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 ## Step 5: Create resources
 
-Create `user.res.ts` file in root directory with following content:
+Create `res` folder. Create `./res/user.ts` file with following content:
 
-```ts title="./users.res.ts"
+```ts title="./res/users.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';
@@ -378,6 +380,22 @@ export default {
     },
     { name: 'avatar' },
   ],
+  hooks: {
+    create: {
+      beforeSave: async ({ record, adminUser, resource }) => {
+        record.passwordHash = await AdminForth.Utils.generatePasswordHash(record.password);
+        return { ok: true };
+      }
+    },
+    edit: {
+      beforeSave: async ({ record, adminUser, resource }) => {
+        if (record.password) {
+          record.passwordHash = await AdminForth.Utils.generatePasswordHash(record.password);
+        }
+        return { ok: true }
+      },
+    },
+  }
   plugins: [
     new UploadPlugin({
       pathColumnName: 'avatar',
@@ -406,9 +424,9 @@ export default {
 ```
 
 
-Create `posts.res.ts` file in root directory with following content:
+Create `posts.ts` file in res directory with following content:
 
-```ts title="./post.res.ts"
+```ts title="./res/post.ts"
 import { AdminUser, AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';
@@ -540,9 +558,9 @@ export default {
 }
 ```
 
-Also create `content-image.res.ts` file in root directory with following content:
+Also create `content-image.ts` file in `res` directory with following content:
 
-```ts title="./content-image.res.ts"
+```ts title="./res/content-image.ts"
 
 import { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
@@ -877,31 +895,36 @@ We will dockerize app to make it easy to deploy with many ways. We will wrap bot
 Please note that in this demo example we routing requests to Nuxt.js app from AdminForth app using http-proxy. 
 While this will work fine, it might give slower serving then if you would route traffik using dedicated reverse proxies like traefik or nginx.
 
-Create `.dockerignore` file in root project directory:
 
-```bash title="./.dockerignore"
-node_modules
-seo/node_modules
-db
-.env
+### Dockerize in single container
+
+Create `bundleNow.ts` file in root project directory:
+
+```ts title="./bundleNow.ts"
+import { admin } from './index.js';
+
+await admin.bundleNow({ hotReload: false});
+console.log('Bundling AdminForth done.');
 ```
+
 
 Create `Dockerfile` in root project directory:
 
 ```dockerfile title="./Dockerfile"
-from node:20
+FROM node:20-alpine
 EXPOSE 3500
 WORKDIR /app
-RUN apt update && apt install -y supervisor
+RUN apk add --no-cache supervisor
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY seo/package.json seo/package-lock.json seo/
 RUN cd seo && npm ci
 COPY . .
+
 RUN npx tsx bundleNow.ts
 RUN cd seo && npm run build
 
-RUN cat > /etc/supervisor/conf.d/supervisord.conf <<EOF
+RUN cat > /etc/supervisord.conf <<EOF
 [supervisord]
 nodaemon=true
 
@@ -930,8 +953,23 @@ stderr_logfile=/dev/stderr
 
 EOF
 
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
 ```
+
+Create `.dockerignore` file in root project directory:
+
+```bash title=".dockerignore"
+.env
+node_modules
+seo/node_modules
+.git
+db
+*.tar
+.terraform*
+terraform*
+*.tf
+```
+
 
 Build and run your docker container locally:
 
@@ -941,39 +979,236 @@ sudo docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it $(docker build
 
 Now you can open `http://localhost` in your browser and see your blog.
 
-### Deploy to AWS Elastic Beanstalk
+### Deploy to EC2 with terraform
 
-First we need to install Elastic Beanstalk CLI:
 
-```bash
-pip install awsebcli
-```
+First of all install Terraform as described here [https://developer.hashicorp.com/terraform/install#linux](terraform installation).
 
-Now create Elastic Beanstalk application:
+If you are on Ubuntu(WSL2 or native) you can use the following commands:
 
 ```bash
-
-eb init --region eu-central-1 -p docker my-ai-blog 
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install terraform
 ```
 
-aws ec2 create-launch-template \
-    --launch-template-name MyLaunchTemplate \
-    --version-description "Initial version" \
-    --launch-template-data '{
-        "ImageId": "ami-1234567890abcdef0",
-        "InstanceType": "t2.micro",
-        "KeyName": "my-key-pair",
-        "SecurityGroupIds": ["sg-0123456789abcdef0"],
-        "UserData": "echo Hello World"
-    }'
+
+Create special AWS credentials for deployemnts by going to `AWS console` -> `IAM` -> `Users` -> `Add user` (e.g. my-ai-blog-user) -> Attach existing policies directly -> `AdministratorAccess` -> Create user. Save `Access key ID` and `Secret access key` into `~/.aws/credentials` file:
+
+Create or open file:
+
+```bash
+code ~/.aws/credentials
+```
+
+```bash
+...
+
+[myaws]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET
+```
+
+
+Create file `main.tf` in root project directory:
+
+```hcl title="./main.tf"
+provider "aws" {
+  region = "eu-central-1"
+  profile = "myaws"
+}
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnet" "default_subnet" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+
+  filter {
+    name   = "default-for-az"
+    values = ["true"]
+  }
+
+  filter {
+    name   = "availability-zone"
+    values = ["eu-central-1a"]
+  }
+}
+
+resource "aws_security_group" "instance_sg" {
+  name   = "my-ai-blog-instance-sg"
+  vpc_id = data.aws_vpc.default.id
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # SSH
+  ingress {
+    description = "Allow SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "terraform-deployer-key"
+  public_key = file("~/.ssh/id_rsa.pub") # Path to your public SSH key
+}
+
+
+resource "aws_instance" "docker_instance" {
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3a.micro"
+  subnet_id              = data.aws_subnet.default_subnet.id
+  vpc_security_group_ids = [aws_security_group.instance_sg.id]
+  key_name               = aws_key_pair.deployer.key_name
+
+  user_data = <<-EOF
+    #!/bin/bash
+    yum update -y
+    amazon-linux-extras install docker -y
+    systemctl start docker
+    systemctl enable docker
+    usermod -a -G docker ec2-user
+  EOF
+
+  tags = {
+    Name = "my-ai-blog-instance"
+  }
+}
+
+resource "null_resource" "build_image" {
+  provisioner "local-exec" {
+    command = "docker build -t blogapp . && docker save blogapp:latest -o blogapp_image.tar"
+  }
+  triggers = {
+    always_run = timestamp() # Force re-run if necessary
+  }
+}
+
+resource "null_resource" "remote_commands" {
+  depends_on = [aws_instance.docker_instance, null_resource.build_image]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+
+  provisioner "file" {
+    source      = "${path.module}/blogapp_image.tar"
+    destination = "/home/ec2-user/blogapp_image.tar"
     
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/id_rsa")
+      host        = aws_instance.docker_instance.public_ip
+    }
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/.env"
+    destination = "/home/ec2-user/.env"
+    
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/id_rsa")
+      host        = aws_instance.docker_instance.public_ip
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "while ! command -v docker &> /dev/null; do echo 'Waiting for Docker to be installed...'; sleep 1; done",
+      "while ! sudo docker info &> /dev/null; do echo 'Waiting for Docker to start...'; sleep 1; done",
+      "sudo docker system prune -af",
+      "docker load -i /home/ec2-user/blogapp_image.tar",
+      "sudo docker rm -f blogapp || true",
+      "sudo docker run --env-file .env -d -p 80:3500 --name blogapp -v /home/ec2-user/db:/app/db blogapp"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/id_rsa")
+      host        = aws_instance.docker_instance.public_ip
+    }
+  }
+
+  
+}
+
+output "instance_public_ip" {
+  value = aws_instance.docker_instance.public_ip
+}
 
 ```
-eb create live --envvars $(cat .env | tr '\n' ',' | sed 's/,$//') --single --instance-types t4g.nano
-```
 
-To terminate environment and stop billing:
+
+Now you can deploy your app to AWS EC2:
 
 ```bash
-eb terminate --force live
+terraform init
+terraform apply -auto-approve
 ```
+
+> ☝️ To destroy and  stop billing run `terraform destroy -auto-approve`
+
+> ☝️ To check logs run `ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output instance_public_ip)`, then `sudo docker logs -n100 -f aiblog`
+
+Terraform config will build Docker image locally and then copy it to EC2 instance. This approach allows to save build resources (CPU/RAM) on EC2 instance, however increases network traffic (image might be around 200MB). If you want to build image on EC2 instance, you can adjust config slightly: remove `null_resource.build_image` and change `null_resource.remote_commands` to build image on EC2 instance, however micro instance most likely will not be able to build and keep app running at the same time, so you will need to increase instance type or terminate app while building image (which introduces downtime so not recommended as well).
+
+
+### Add HTTPs and CDN
+
+For adding HTTPS and CDN you will use free Cloudflare service (though you can use paid AWS Cloudfront or any different way e.g. add Traefik and Let's Encrypt). Go to https://cloudflare.com and create an account. Add your domain and follow instructions to change your domain nameservers to Cloudflare ones.
+
+Go to your domain settings and add A record with your server IP address, which was shown in output of `terraform apply` command.
+
+```
+Type: A
+Name: blog
+Value: x.y.z.w
+Cloudflare proxy: orange (enabled)
+```
+
+![alt text](image.png)
+
+
+## Useful links
+
+* [Full source code of the project](https://github.com/devforth/adminforth-example-ai-blog)
+* [Live demo of AI BLog](https://blog-demo.adminforth.dev/admin/resource/post)
+* [AdminForth documentation](https://adminforth.dev/docs/tutorial/gettingStarted/)
+* [AdminForth GitHub](https://github.com/devforth/adminforth)
+* [Nuxt.js documentation](https://nuxt.com/docs/getting-started/introduction)

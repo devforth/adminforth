@@ -133,3 +133,27 @@ That's it! Now you can see the logs in the table
 ![alt text](AuditLog.png)
 
 See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options.
+
+
+## Logging custom actions
+
+Audit log is able to catch only standard actions like `create`, `update`, `delete` or custom bulk actions.
+
+If you have a custom, self coded actions in your API, you can log them by calling `logCustomAction` method of `AuditLogPlugin` instance:
+
+```ts title="./resources/auditLogs.ts"
+
+app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
+  admin.express.authorize(
+    async (req, res) => {
+
+      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
+        'aparts',
+        'visitedDashboard',
+        { dashboard: 'main' },
+        req.adminUser
+      )
+
+      ....
+
+```

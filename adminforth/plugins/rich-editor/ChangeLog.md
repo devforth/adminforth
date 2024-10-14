@@ -1,5 +1,5 @@
 
 
-## [1.0.15]
-
--- Add image uploads support
+## [1.0.12] - 2021-10-07
+### Added
+- Rate limiting for openai requests support
