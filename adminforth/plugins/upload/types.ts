@@ -128,6 +128,25 @@ export type PluginOptions = {
      * where plugin is used.
      */
     fieldsForContext? : string[],
+
+    
+    /**
+     * Since AI generation can be expensive, we can limit the number of requests per IP.
+     */
+    rateLimit?: {
+
+      /**
+       * E.g. 5/1d - 5 requests per day
+       * 3/1h - 3 requests per hour
+       */ 
+      limit: string,
+
+      /**
+       * !Not used now
+       * Message shown to user when rate limit is reached
+       */
+      errorMessage: string,
+    },
   }
 
 }

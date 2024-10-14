@@ -4,6 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
 import { Readable } from "stream";
+import { RateLimiter, getClinetIp } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
@@ -451,11 +452,23 @@ export default class UploadPlugin extends AdminForthPlugin {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/generate_images`,
-      handler: async ({ body }) => {
+      handler: async ({ body, headers }) => {
         const { prompt } = body;
 
         if (this.options.generation.provider !== 'openai-dall-e') {
           throw new Error(`Provider ${this.options.generation.provider} is not supported`);
+        }
+
+        if (this.options.generation.rateLimit?.limit) {
+          // rate limit
+          const { error } = RateLimiter.checkRateLimit(
+            this.pluginInstanceId, 
+            this.options.generation.rateLimit?.limit,
+            getClinetIp(headers),
+          );
+          if (error) {
+            return { error: this.options.generation.rateLimit.errorMessage };
+          }
         }
 
         const { model, size, apiKey } = this.options.generation.openAiOptions;

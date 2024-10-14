@@ -16,7 +16,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   customFolderPath: string;
   pluginOptions: any;
   resourceConfig: AdminForthResource;
-
+  className: string;
   activationOrder: number = 0;
 
   constructor(pluginOptions: any, metaUrl: string) {
@@ -24,6 +24,8 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     this.pluginDir = currentFileDir(metaUrl);
     this.customFolderPath = path.join(this.pluginDir, this.customFolderName);
     this.pluginOptions = pluginOptions;
+    console.log(`🪲 🪲 🪲 🪲 🪲 🪲 AdminForthPlugin.constructor`, this.constructor.name);
+    this.className = this.constructor.name;
   }
 
   setupEndpoints(server: any) {

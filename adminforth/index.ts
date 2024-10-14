@@ -5,7 +5,7 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -29,7 +29,7 @@ import OperationalResource from './modules/operationalResource.js';
 export * from './types/AdminForthConfig.js'; 
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo };
+export { suggestIfTypo, RateLimiter, getClinetIp };
 
 
 class AdminForth implements IAdminForth {
@@ -126,6 +126,23 @@ class AdminForth implements IAdminForth {
     );
   }
 
+  getPluginsByClassName<T>(className: string): T[] {
+    const plugins = this.activatedPlugins.filter((plugin) => plugin.className === className);
+    return plugins as T[];
+  }
+
+  getPluginByClassName<T>(className: string): T {
+    const plugins = this.getPluginsByClassName(className);
+    if (plugins.length > 1) {
+      throw new Error(`Multiple plugins with className ${className} found. Use getPluginsByClassName instead`);
+    }
+    if (plugins.length === 0) {
+      const similar = suggestIfTypo(this.activatedPlugins.map((p) => p.className), className);
+      throw new Error(`Plugin with className ${className} not found. ${similar ? `Did you mean ${similar}?` : ''}`);
+    }
+    return plugins[0] as T;
+  }
+
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
     this.connectorClasses = {
@@ -197,6 +214,16 @@ class AdminForth implements IAdminForth {
   }
 
   async getUserByPk(pk: string) {
+    // if database discovery is not done, throw
+    if (this.statuses.dbDiscover !== 'done') {
+      if (this.statuses.dbDiscover === 'running') {
+        throw new Error('Database discovery is running. You can\'t use data API while database discovery is not finished.\n'+
+          'Consider moving your code to a place where it will be executed after database discovery is already done (after await admin.discoverDatabases())');
+      }
+      throw new Error('Database discovery is not yet started. You can\'t use data API before database discovery is done. \n'+
+        'Call admin.discoverDatabases() first and await it before using data API');
+    }
+
     const resource = this.config.resources.find((res) => res.resourceId === this.config.auth.usersResourceId);
     if (!resource) {
       const similar = suggestIfTypo(this.config.resources.map((res) => res.resourceId), this.config.auth.usersResourceId);

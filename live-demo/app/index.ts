@@ -30,7 +30,7 @@ const blockDemoUsers = async ({ record, adminUser, resource }) => {
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   auth: {
-    loginBackgroundImage: '@@/adminforthloginimg.avif',
+    //loginBackgroundImage: '@@/adminforthloginimg.avif',
     resourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',

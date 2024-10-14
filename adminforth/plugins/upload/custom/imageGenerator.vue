@@ -184,6 +184,7 @@ async function generateImages() {
       variant: 'danger',
       timeout: 15,
     });
+    loading.value = false;
     return;
   }
 

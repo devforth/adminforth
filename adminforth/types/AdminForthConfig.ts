@@ -325,6 +325,7 @@ export interface IAdminForthPlugin {
   customFolderPath: string;
   pluginOptions: any;
   resourceConfig: AdminForthResource;
+  className: string;
 
   /**
    * Before activating all plugins are sorted by this number and then activated in order.

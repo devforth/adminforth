@@ -1,7 +1,7 @@
 
 import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser, AfterSaveFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
-import { AdminForthPlugin, Filters } from "adminforth";
+import { AdminForthPlugin, Filters, getClinetIp, RateLimiter } from "adminforth";
 import * as cheerio from 'cheerio';
 
 
@@ -257,8 +257,23 @@ export default class RichEditorPlugin extends AdminForthPlugin {
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/doComplete`,
-      handler: async ({ body }) => {
+      handler: async ({ body, headers }) => {
         const { record } = body;
+
+        if (this.options.completion.rateLimit?.limit) {
+          // rate limit
+          const { error } = RateLimiter.checkRateLimit(
+            this.pluginInstanceId, 
+            this.options.completion.rateLimit?.limit,
+            getClinetIp(headers),
+          );
+          if (error) {
+            return {
+              completion: [],
+            }
+          }
+        }
+
         const recordNoField = {...record};
         delete recordNoField[this.options.htmlFieldName];
         let currentVal = record[this.options.htmlFieldName] as string;
