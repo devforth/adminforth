@@ -625,7 +625,7 @@ npm start
 Open `http://localhost:3500/admin` in your browser and login with `adminforth@adminforth.dev` and `adminforth` credentials.
 Set up your avatar (you can generate it with AI) and public name in user settings.
 
-![alt text](generated_avatar.png)
+![alt text](aiblogpost.png)
 
 ## Step 5: Create Nuxt project
 
