@@ -89,6 +89,7 @@
     <ResourceListTable
       :resource="coreStore.resource"
       :rows="rows"
+      :page="page"
       @update:page="page = $event"
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
@@ -115,7 +116,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
-import { callAdminForthApi, getIcon } from '@/utils';
+import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
@@ -236,8 +237,23 @@ async function init() {
 
   initFlowbite();
 
-  // !!! clear filters should be in same tick with sort assignment so that watch can catch it
-  filtersStore.clearFilters();
+  // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
+
+  // try to init filters from query params
+  const filters = Object.keys(route.query).filter(k => k.startsWith('filter__')).map(k => {
+    const [_, field, operator] = k.split('__');
+    return {
+      field,
+      operator,
+      value: decodeURIComponent(route.query[k])
+    }
+  });
+  if (filters.length) {
+    filtersStore.setFilters(filters);
+  } else {
+    filtersStore.clearFilters();
+  }
+
   if (coreStore.resource.options?.defaultSort) {
     sort.value = [{
         field: coreStore.resource.options.defaultSort.columnName,
@@ -246,6 +262,11 @@ async function init() {
   } else {
     sort.value = [];
   }
+  // page init should be also in same tick 
+  if (route.query.page) {
+    page.value = parseInt(route.query.page);
+  }
+
   // await getList(); - Not needed here, watch will trigger it
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
@@ -257,6 +278,8 @@ async function init() {
 }
 
 watch([page, sort, () => filtersStore.filters], async () => {
+  console.log('🔄️ page/sort/filter change fired, page:', page.value);
+
   await getList();
 }, { deep: true });
 
@@ -264,14 +287,39 @@ window.adminforth.list.refresh = async () => {
   await getList();
 }
 
+let initInProcess = false;
+
 watch(() => filtersStore.filters, async (to, from) => {
+  if (initInProcess) {
+    return;
+  }
+  console.log('🔄️ filters changed', JSON.stringify(to))
   page.value = 1;
   checkboxes.value = [];
+  // update query param for each filter as filter_<column_name>=value
+  const query = {};
+  const currentQ = currentQuery();
+  filtersStore.filters.forEach(f => {
+    query[`filter__${f.field}__${f.operator}`] = encodeURIComponent(f.value);
+  });
+  // set every key in currentQ which starts with filter_ to undefined if it is not in query
+  Object.keys(currentQ).forEach(k => {
+    if (k.startsWith('filter_') && !query[k]) {
+      query[k] = undefined;
+    }
+  });
+  setQuery(query);
 }, {deep: true});
 
 onMounted(async () => {
+  initInProcess = true;
   await init();
   initThreeDotsDropdown();
+  initInProcess = false;
+});
+
+watch([page], async () => {
+  setQuery({ page: page.value });
 });
 
 

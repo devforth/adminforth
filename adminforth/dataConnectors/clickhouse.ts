@@ -265,14 +265,14 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       const tableName = resource.table;
       const where = this.whereClause(resource, filters);
       const d = this.whereParams(filters);
-      
+
       const countQ = await this.client.query({
-        query: `SELECT COUNT(*) FROM ${tableName} ${where}`,
+        query: `SELECT COUNT(*) as count FROM ${tableName} ${where}`,
         format: 'JSONEachRow',
         query_params: d,
       });
       const countResp = await countQ.json()
-      return countResp[0]['COUNT()'];
+      return +countResp[0]['count'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {

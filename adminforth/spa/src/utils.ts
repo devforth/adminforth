@@ -147,3 +147,14 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
     }
   }
 }
+
+export function currentQuery() {
+  return router.currentRoute.value.query;
+}
+
+export function setQuery(query: any) {
+  const currentQuery = { ...router.currentRoute.value.query, ...query };
+  router.replace({
+    query: currentQuery,
+  });
+}
