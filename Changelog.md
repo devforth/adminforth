@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - When discovery is no started, getUserByPk will show error in console
+- Clickhouse count for some clickhouse versions
 
 ### Added
 

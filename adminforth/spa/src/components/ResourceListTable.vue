@@ -250,7 +250,7 @@
 <script setup>
 
 
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { callAdminForthApi } from '@/utils';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -260,19 +260,20 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
 import {
-IconInboxOutline,
+  IconInboxOutline,
 } from '@iconify-prerendered/vue-flowbite';
 
 import {
-IconEyeSolid,
-IconPenSolid,
-IconTrashBinSolid
+  IconEyeSolid,
+  IconPenSolid,
+  IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 
 const coreStore = useCoreStore();
 
 const props = defineProps([
+  'page',
   'resource', 
   'rows',
   'totalRows',
@@ -296,6 +297,7 @@ const page = ref(1);
 const sort = ref([]);
 
 
+
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
 });
@@ -317,6 +319,10 @@ watch(() => props.checkboxes, (newCheckboxes) => {
 
 watch(() => props.sort, (newSort) => {
   sort.value = newSort;
+});
+
+watch(() => props.page, (newPage) => {
+  page.value = newPage;
 });
 
 function addToCheckedValues(id) {

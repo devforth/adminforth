@@ -24,25 +24,28 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
   {
     ...
     menu: {
-      items: [
-        {
-          label: 'Blog',
-          icon: 'flowbite:brain-solid',
-          open: true,
-          children: [
-            {
-              label: 'Posts',
-              icon: 'flowbite:book-open-outline',
-              resourceId: 'posts',
-            },
-            {
-              label: 'Categories',
-              icon: 'flowbite:folder-duplicate-outline',
-              resourceId: 'categories',
-            },
-          ],
-        },
-      ],
+      {
+        label: 'Blog',
+        icon: 'flowbite:brain-solid',
+        open: true,
+        children: [
+          {
+            label: 'Posts',
+            icon: 'flowbite:book-open-outline',
+            resourceId: 'posts',
+          },
+          {
+            label: 'Categories',
+            icon: 'flowbite:folder-duplicate-outline',
+            resourceId: 'categories',
+          },
+        ],
+      },
+      {
+        label: 'Users',
+        icon: 'flowbite:folder-duplicate-outline',
+        resourceId: 'users',
+      },
     },
     ...
   }
@@ -57,25 +60,24 @@ You can put one or several gaps between menu items:
 ```ts title='./index.ts'
 {
   ...
-  menu: {
-    items: [
-      {
-        label: 'Posts',
-        icon: 'flowbite:book-open-outline',
-        resourceId: 'posts',
-      },
-      {
-        type: 'gap',
-      },
-      {
-        type: 'gap',
-      },
-      {
-        label: 'Categories',
-        icon: 'flowbite:folder-duplicate-outline',
-        resourceId: 'categories',
-      },
-  },
+  menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+    },
+    {
+      type: 'gap',
+    },
+    {
+      type: 'gap',
+    },
+    {
+      label: 'Categories',
+      icon: 'flowbite:folder-duplicate-outline',
+      resourceId: 'categories',
+    },
+  ],
   ...
 }
 ```
@@ -87,22 +89,21 @@ To split menu items with a line you can use a divider:
 ```ts title='./index.ts'
 {
   ...
-  menu: {
-    items: [
-      {
-        label: 'Posts',
-        icon: 'flowbite:book-open-outline',
-        resourceId: 'posts',
-      },
-      {
-        type: 'divider',
-      },
-      {
-        label: 'Categories',
-        icon: 'flowbite:folder-duplicate-outline',
-        resourceId: 'categories',
-      },
-  },
+  menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      label: 'Categories',
+      icon: 'flowbite:folder-duplicate-outline',
+      resourceId: 'categories',
+    },
+  ]
   ...
 }
 ```
@@ -116,23 +117,22 @@ You can add a heading to the menu:
 ```ts title='./index.ts'
 {
   ...
-  menu: {
-    items: [
-      {
-        type: 'heading',
-        label: 'Editings',
-      },
-      {
-        label: 'Posts',
-        icon: 'flowbite:book-open-outline',
-        resourceId: 'posts',
-      },
-      {
-        label: 'Categories',
-        icon: 'flowbite:folder-duplicate-outline',
-        resourceId: 'categories',
-      },
-  },
+  menu: [
+    {
+      type: 'heading',
+      label: 'Editings',
+    },
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+    },
+    {
+      label: 'Categories',
+      icon: 'flowbite:folder-duplicate-outline',
+      resourceId: 'categories',
+    },
+  ],
   ...
 }
 ```
@@ -141,21 +141,22 @@ You can add a heading to the menu:
 
 ## Badge
 
-You can add a badge near the menu item title (e.g. to get coubnt of unread messages). To do this, you need to add a `badge` field to the menu item configuration:
+You can add a badge near the menu item title (e.g. to get count of unread messages). To do this, you need to add a `badge` field to the menu item configuration:
 
 ```ts title='./index.ts'
 {
   ...
-  menu: {
-    items: [
-      {
-        badge:  (adminUser: AdminUser) => {
-          return 10
-        },
-        ...,
+  menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+      badge:  (adminUser: AdminUser) => {
+        return 10
       },
-    ],
-  },
+      ...,
+    },
+  ],
   ...
 }
 ```
