@@ -228,6 +228,18 @@ async function startBulkAction(actionId) {
 }
 
 
+class SortQuerySerializer {
+    static serialize(sort) {
+        return sort.map(s => `${s.field}__${s.direction}`).join(',');
+    }
+    static deserialize(str) {
+        return str.split(',').map(s => {
+            const [field, direction] = s.split('__');
+            return { field, direction };
+        });
+    }
+}
+
 
 async function init() {
   
@@ -254,7 +266,9 @@ async function init() {
     filtersStore.clearFilters();
   }
 
-  if (coreStore.resource.options?.defaultSort) {
+  if (route.query.sort) {
+    sort.value = SortQuerySerializer.deserialize(route.query.sort);
+  } else if (coreStore.resource.options?.defaultSort) {
     sort.value = [{
         field: coreStore.resource.options.defaultSort.columnName,
         direction: coreStore.resource.options.defaultSort.direction
@@ -322,6 +336,16 @@ watch([page], async () => {
   setQuery({ page: page.value });
 });
 
+
+
+
+watch([sort], async () => {
+  if (!sort.value.length) {
+    setQuery({ sort: undefined });
+    return;
+  }
+  setQuery({ sort: SortQuerySerializer.serialize(sort.value) });
+});
 
 
 </script>
