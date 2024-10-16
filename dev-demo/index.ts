@@ -35,7 +35,8 @@ if (!tableExists) {
         property_type VARCHAR(255) DEFAULT 'apartment',
         listed BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP,
-        user_id VARCHAR(255)
+        user_id VARCHAR(255),
+        country VARCHAR(5)
     );`).run();
 
   await db.prepare(`
@@ -230,6 +231,9 @@ const admin = new AdminForth({
         { 
           name: 'clickid', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
           showIn: ['list', 'filter', 'show'],
+          components: {
+            list: '@/renderers/CompactUUID.vue'
+          }
         },
         { name: 'element', 
           type: AdminForthDataTypes.STRING,
@@ -339,6 +343,51 @@ const admin = new AdminForth({
                 // list: '@@/IdShow.vue',
             },
         }, 
+        {
+          name: 'country',
+          components: {
+            list: {
+              file: '@/renderers/CountryFlag.vue',
+              meta: {
+                showCountryName: true,
+              }
+            }
+          },
+          enum: [{
+            value: 'US',
+            label: 'United States'
+          }, {
+            value: 'DE',
+            label: 'Germany'
+          }, {
+            value: 'FR',
+            label: 'France'
+          }, {
+            value: 'GB',
+            label: 'United Kingdom'
+          }, {
+            value: 'NL',
+            label: 'Netherlands'
+          }, {
+            value: 'IT',
+            label: 'Italy'
+          }, {
+            value: 'ES',
+            label: 'Spain'
+          }, {
+            value: 'DK',
+            label: 'Denmark'
+          }, {
+            value: 'PL',
+            label: 'Poland'
+          }, {
+            value: 'UA',
+            label: 'Ukraine'
+          }, {
+            value: null,
+            label: 'Not defined'
+          }],
+        },
         {
           name: 'created_at',
           type: AdminForthDataTypes.DATETIME ,

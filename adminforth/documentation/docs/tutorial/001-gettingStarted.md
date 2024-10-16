@@ -317,7 +317,7 @@ export default {
         value: 'FR',
         label: 'France'
       }, {
-        value: 'UK',
+        value: 'GB',
         label: 'United Kingdom'
       }, {
         value: 'NL',
@@ -487,7 +487,7 @@ async function seedDatabase() {
 //diff-add      
       listed: i % 2 == 0,
 //diff-add      
-      country: `${['US', 'DE', 'FR', 'UK', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`
+      country: `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`
 //diff-add      
     });
 //diff-add    

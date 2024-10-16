@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Now you can get plugin instance by Plugin class name (for single plugins): `admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')`
+- Premade field renderer`@/renderers/CompactUUID.vue`
+- Premade field renderer`@/renderers/CountryFlag.vue`
+
+
+### Improved
+
+- Filters, page and sort are now saved to query parameters
 
 
 ## [1.3.53] - 2024-10-09
