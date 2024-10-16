@@ -10,6 +10,14 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+      <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
+        :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
+        class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+      >
+        <IconPlusOutline class="w-4 h-4 me-2"/>
+        Add new
+      </RouterLink>
+
       <RouterLink v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
         class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
@@ -126,7 +134,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
-import { IconPenSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
