@@ -1,0 +1,69 @@
+<template>
+  <span class="flex items-center">
+    <span 
+      :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
+      :data-tooltip-target="`tooltip-${id}`"
+    ></span>
+
+    <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
+    
+    <div 
+      v-if="!meta.showCountryName && countryName"
+      :id="`tooltip-${id}`" role="tooltip"
+      class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
+    >
+      {{ countryName }}
+      <div class="tooltip-arrow" data-popper-arrow></div>
+    </div>
+  </span>
+  
+</template>
+
+<script setup>  
+
+import { computed, ref, onMounted } from 'vue';
+import { initFlowbite } from 'flowbite';
+import 'flag-icons/css/flag-icons.min.css';
+import isoCountries from 'i18n-iso-countries';
+import enLocal from 'i18n-iso-countries/langs/en.json';
+
+isoCountries.registerLocale(enLocal);
+
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
+
+const id = ref();
+
+
+onMounted(async () => {
+  id.value = Math.random().toString(36).substring(7);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  initFlowbite();
+});
+
+const countryIsoLow = computed(() => {
+  return props.record[props.column.name]?.toLowerCase();
+});
+
+const countryName = computed(() => {
+  if (!countryIsoLow.value) {
+    return '';
+  }
+  return isoCountries.getName(countryIsoLow.value, 'en');
+});
+
+</script>
+
+<style scoped lang="scss">
+
+.flag-icon {
+  width: 2rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+
+  // border radius  for background
+  border-radius: 3px;
+  // add some silkiness to the flag
+  box-shadow: inset -1px -1px 2px 0px rgba(50 50 50 / 0.3), inset 1px 1px 2px 0px rgba(255 255 255 / 0.3);
+}
+
+</style>

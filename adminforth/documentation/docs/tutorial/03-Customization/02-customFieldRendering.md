@@ -20,7 +20,11 @@ Create directory `custom`. Create a file `RoomsCell.vue` in it:
 
 <script setup>
 defineProps({
-  record: Object
+  record: Object,
+  resource: Object,
+  adminUser: Object,
+  meta: Object
+  columns: Object
 });
 </script>
 ```
@@ -127,8 +131,10 @@ Now our component can read `filler` from `meta` prop:
 <script setup>
 defineProps({
   record: Object,
-//diff-add
+  resource: Object,
+  adminUser: Object,
   meta: Object
+  columns: Object
 });
 </script>
 ```
@@ -148,3 +154,86 @@ And simply do `npm install` for the package you need:
 npm install <some package> --save-dev
 ```
 
+
+## Pre-made renderers
+
+Though creating custom renderers is super-easy, we have couple of pre-made renderers for you to use.
+
+### CompactUUID
+
+If you have a UUID column which you want display in table, you can use
+
+```ts title='./resources/apartments.ts'
+//diff-add
+import { randomUUID } from 'crypto';
+
+  ...
+  columns: [
+    { 
+      name: 'id', 
+      primaryKey: true, 
+      showIn: ['list', 'filter', 'show'],
+//diff-remove
+      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
+//diff-add
+      fillOnCreate: ({initialRecord}: any) => randomUUID(),
+//diff-add
+      components: {
+//diff-add
+        list: '@/renderers/CompactUUID.vue'
+//diff-add
+      }
+    }
+  ...
+```
+
+![alt text](<Group 8.jpg>)
+
+
+### Country Flag
+
+
+```ts title='./resources/apartments.ts'
+  columns: [
+    ...
+    {
+      name: 'country',
+  //diff-add
+      components: {
+  //diff-add
+        list: '@/renderers/CountryFlag.vue'
+  //diff-add
+      },
+    ...
+```
+
+![alt text](<Group 10.jpg>)
+
+You can also show country name after the flag:
+
+```ts title='./resources/apartments.ts'
+  columns: [
+    ...
+    {
+      name: 'country',
+  //diff-add
+      components: {
+  //diff-add
+        list: {
+  //diff-add
+          file: '@/renderers/CountryFlag.vue',
+  //diff-add
+          meta: {
+  //diff-add
+            showCountryName: true
+  //diff-add
+          }
+  //diff-add
+        }
+  //diff-add
+      },
+      ...
+    }
+```
+
+![alt text](<Group 12.jpg>)

@@ -21,7 +21,6 @@
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
-        data-tooltip-placement="bottom"
         class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-darkListTable dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
       >
         <IconBanOutline class="w-5 h-5 "/>
@@ -257,7 +256,7 @@ async function init() {
     return {
       field,
       operator,
-      value: decodeURIComponent(route.query[k])
+      value: JSON.parse(decodeURIComponent(route.query[k]))
     }
   });
   if (filters.length) {
@@ -314,7 +313,9 @@ watch(() => filtersStore.filters, async (to, from) => {
   const query = {};
   const currentQ = currentQuery();
   filtersStore.filters.forEach(f => {
-    query[`filter__${f.field}__${f.operator}`] = encodeURIComponent(f.value);
+    if (f.value) {
+      query[`filter__${f.field}__${f.operator}`] = encodeURIComponent(JSON.stringify(f.value));
+    }
   });
   // set every key in currentQ which starts with filter_ to undefined if it is not in query
   Object.keys(currentQ).forEach(k => {

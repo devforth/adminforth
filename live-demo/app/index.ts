@@ -186,7 +186,7 @@ export const admin = new AdminForth({
             value: 'FR',
             label: 'France'
           }, {
-            value: 'UK',
+            value: 'GB',
             label: 'United Kingdom'
           }, {
             value:'NL',
@@ -461,7 +461,7 @@ async function initDataBase() {
          '${i}', 'Apartment ${i}', ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, 
          ${ Math.floor(Math.random() * 5) }, 'Next gen apartments', 
          ${ Date.now() / 1000 - Math.random() * 14 * 60 * 60 * 24 }, ${i % 2 == 0}, 
-         '${['US', 'DE', 'FR', 'UK', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}'
+         '${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}'
         )`).run();
     }
   }

@@ -17,6 +17,6 @@
 <script setup>
 import { IconCardSearch } from '@iconify-prerendered/vue-mdi';
 
-const props = defineProps(['column', 'record', 'meta']);
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 
 </script>
