@@ -551,13 +551,24 @@ class CodeInjector implements ICodeInjector {
     }
 
     await this.runNpmShell({command: 'ci', cwd: CodeInjector.SPA_TMP_PATH});
-    
-    if (iconPackageNames.length) {
-      const npmInstallCommand = `install ${[
-        ...iconPackageNames,
-        ...usersPackages, 
-        ...pluginPackages.map(({ packages }) => packages.join(' ')),
-      ].join(' ')}`;
+
+    const allPacks = [
+      ...iconPackageNames,
+      ...usersPackages, 
+      ...pluginPackages.reduce((acc, { packages }) => {
+        acc.push(...packages);
+        return acc;
+      }, []),
+    ];
+    const EXCLUDE_PACKS = ['@iconify-prerendered/vue-flowbite'];
+
+    const allPacksFiltered = allPacks.filter((pack) => {
+      return !EXCLUDE_PACKS.some((exclude) => pack.startsWith(exclude));
+    })
+    const allPacksUnique = Array.from(new Set(allPacksFiltered));
+
+    if (allPacks.length) {
+      const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
       await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
     }
 
