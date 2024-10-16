@@ -1,7 +1,7 @@
 
-AuditLog plugin allows to limit access to the resource actions (list, show, create, update, delete) based on custom callback.
-Callback accepts [AdminUser](/docs/api/types/AdminForthConfig/type-aliases/AdminUser/) which you can use to define access rules.
-
+AuditLog plugin allows to log all changes in the resources done from the admin panel. 
+It will allow you to figure out who and when made changes in the data. 
+Requires separate table in the database to store logs.
 
 ## Installation
 
