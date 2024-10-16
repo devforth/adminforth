@@ -21,7 +21,7 @@ import { initFlowbite } from 'flowbite';
 const visualValue = computed(() => {
   // if lenght is more then 8, show only first 4 and last 4 characters, ... in the middle
   const val = props.record[props.column.name];
-  if (val.length > 8) {
+  if (val && val.length > 8) {
     return `${val.substr(0, 4)}...${val.substr(val.length - 4)}`;
   }
   return val;
