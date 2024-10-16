@@ -207,7 +207,7 @@ import { randomUUID } from 'crypto';
     ...
 ```
 
-![alt text](<Group 10.jpg>)
+![alt text](<Group 13.png>)
 
 You can also show country name after the flag:
 
@@ -236,4 +236,4 @@ You can also show country name after the flag:
     }
 ```
 
-![alt text](<Group 12.jpg>)
+![alt text](<Group 12 (1).jpg>)
