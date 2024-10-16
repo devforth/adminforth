@@ -61,9 +61,9 @@ const countryName = computed(() => {
   flex-shrink: 0;
 
   // border radius  for background
-  border-radius: 3px;
+  border-radius: 2px;
   // add some silkiness to the flag
-  box-shadow: inset -1px -1px 2px 0px rgba(50 50 50 / 0.3), inset 1px 1px 2px 0px rgba(255 255 255 / 0.3);
+  box-shadow: inset -1px -1px 0.5px 0px rgba(0 0 0 / 0.2), inset 1px 1px 0.5px 0px rgba(255 255 255 / 0.2);
 }
 
 </style>

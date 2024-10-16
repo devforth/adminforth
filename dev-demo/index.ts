@@ -349,7 +349,7 @@ const admin = new AdminForth({
             list: {
               file: '@/renderers/CountryFlag.vue',
               meta: {
-                showCountryName: true,
+                showCountryName: false,
               }
             }
           },

@@ -5,18 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.54] - Unreleased
+## [1.3.54] - next
 
 ### Fixed
 
 - When discovery is no started, getUserByPk will show error in console
 - Clickhouse count for some clickhouse versions
+- overflow on mobile
 
 ### Added
 
 - Now you can get plugin instance by Plugin class name (for single plugins): `admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')`
-- Premade field renderer`@/renderers/CompactUUID.vue`
-- Premade field renderer`@/renderers/CountryFlag.vue`
+- Pre-made field renderer`@/renderers/CompactUUID.vue`
+- Pre-made field renderer`@/renderers/CountryFlag.vue`
 
 
 ### Improved
