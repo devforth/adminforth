@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Improved
 
 - Filters, page and sort are now saved to query parameters
+- Don't install users packages which are already in AdminForth
 
 
 ## [1.3.53] - 2024-10-09
