@@ -58,7 +58,7 @@ Add this code in `auditLogs.ts`:
     dataSource: 'maindb', 
     table: 'audit_logs',
     columns: [
-      { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid() },
+      { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(), showIn: ['show'] },
       { name: 'created_at', required: false },
       { name: 'resource_id', required: false },
       { name: 'user_id', required: false, 
