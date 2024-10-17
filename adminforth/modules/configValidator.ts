@@ -14,6 +14,7 @@ import path from 'path';
 import { guessLabelFromName, suggestIfTypo } from './utils.js';
 
 import crypto from 'crypto';
+import { AdminForthSortDirections } from "adminforth/index.js";
 
 
 
@@ -249,6 +250,22 @@ export default class ConfigValidator implements IConfigValidator {
           };
         }
 
+        if (res.options.defaultSort) {
+          const colName = res.options.defaultSort.columnName;
+          const col = res.columns.find((c) => c.name === colName);
+          if (!col) {
+            const similar = suggestIfTypo(res.columns.map((c) => c.name), colName);
+            errors.push(`Resource "${res.resourceId}" defaultSort.columnName column "${colName}" not found in columns. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          }
+          const dir = res.options.defaultSort.direction;
+          if (!dir) {
+            errors.push(`Resource "${res.resourceId}" defaultSort.direction is missing`);
+          }
+          // AdminForthSortDirections is enum
+          if (!(Object.values(AdminForthSortDirections) as string[]).includes(dir)) {
+            errors.push(`Resource "${res.resourceId}" defaultSort.direction "${dir}" is invalid, allowed values are ${Object.values(AdminForthSortDirections).join(', ')}`);
+          }
+        }
 
         if (Object.keys(res.options.allowedActions).includes('all')) {
           if (Object.keys(res.options.allowedActions).length > 1) {
