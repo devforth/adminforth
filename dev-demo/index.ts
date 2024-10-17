@@ -324,6 +324,7 @@ const admin = new AdminForth({
             showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
             maxLength: 255,  // you can set max length for string fields
             minLength: 3,  // you can set min length for string fields
+            type: AdminForthDataTypes.JSON,
             components: {
                 // edit: {
                 //     file: '@@/IdShow.vue',
@@ -504,14 +505,14 @@ const admin = new AdminForth({
           }),
         ]: []),
         new ImportExportPlugin({}),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          model: 'gpt-4o',
-          fieldName: 'title',
-          expert: {
-            debounceTime: 250,
-          }
-        }),
+        // new ChatGptPlugin({
+        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //   model: 'gpt-4o',
+        //   fieldName: 'title',
+        //   expert: {
+        //     debounceTime: 250,
+        //   }
+        // }),
         // new ChatGptPlugin({
         //   openAiApiKey: process.env.OPENAI_API_KEY as string,
         //   fieldName: 'description',

@@ -29,6 +29,9 @@
     <span v-else-if="column.type === 'richtext'">
       <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
     </span>
+    <span v-else-if="column.type === 'json'">
+      <JsonViewer :value="record[column.name]" copyable sort :theme="theme" />
+    </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
     </span>
@@ -44,13 +47,19 @@ import timezone from 'dayjs/plugin/timezone';
 import {checkEmptyValues} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import sanitizeHtml from 'sanitize-html';
+import { JsonViewer } from "vue3-json-viewer";
+import "vue3-json-viewer/dist/index.css";
 
 
 import { useCoreStore } from '@/stores/core';
+import { computed } from 'vue';
 
 const coreStore = useCoreStore();
 const route = useRoute();
 
+const theme = computed(() => {
+  return window.localStorage.getItem('af__theme') || 'light';
+});
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -111,4 +120,22 @@ function formatTime(time) {
   }
 
 } 
+</style>
+
+<style lang="scss" >
+
+.jv-container .jv-code {
+  padding: 10px 10px;
+}
+
+.jv-container .jv-button[class] {
+  @apply text-lightPrimary;
+  @apply dark:text-darkPrimary;
+
+}
+
+.jv-container.jv-dark {
+  background: transparent;
+}
+
 </style>

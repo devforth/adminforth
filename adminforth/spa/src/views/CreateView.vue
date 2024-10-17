@@ -90,7 +90,7 @@ import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 const isValid = ref(false);
 const validating = ref(false);
 
-const loading = ref(false);
+const loading = ref(true);
 const saving = ref(false);
 
 const route = useRoute();

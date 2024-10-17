@@ -90,7 +90,7 @@ const validating = ref(false);
 const route = useRoute();
 const router = useRouter();
 
-const loading = ref(false);
+const loading = ref(true);
 
 const saving = ref(false);
 

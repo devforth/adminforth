@@ -104,6 +104,14 @@
                           @input="setCurrentValue(column.name, $event.target.value)"
                       >
                       </textarea>
+                      <textarea
+                          v-else-if="['json'].includes(column.type)"
+                          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          placeholder="Text"
+                          :value="currentValues[column.name]"
+                          @input="setCurrentValue(column.name, $event.target.value)"
+                      >
+                      </textarea>
                       <input
                           v-else
                           :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
@@ -155,7 +163,6 @@ import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  loading: Boolean,
   resource: Object,
   record: Object,
   validating: Boolean,
@@ -192,6 +199,13 @@ const columnError = (column) => {
     
     ) {
       return 'This field is required';
+    }
+    if (column.type === 'json' && currentValues.value[column.name]) {
+      try {
+        JSON.parse(currentValues.value[column.name]);
+      } catch (e) {
+        return 'Invalid JSON';
+      }
     }
     if ( column.type === 'string' || column.type === 'text' ) {
       if ( column.maxLength && currentValues.value[column.name]?.length > column.maxLength ) {
@@ -243,11 +257,32 @@ const setCurrentValue = (key, value) => {
   }
 
   currentValues.value = { ...currentValues.value };
-  emit('update:record', currentValues.value);
+
+  //json fields should transform to object
+  const up = {...currentValues.value};
+  props.resource.columns.forEach((column) => {
+    if (column.type === 'json' && up[column.name]) {
+      try {
+        up[column.name] = JSON.parse(up[column.name]);
+      } catch (e) {
+        // do nothing
+      }
+    }
+  });
+  emit('update:record', up);
 };
 
 onMounted(() => {
+
   currentValues.value = Object.assign({}, props.record);
+  // json values should transform to string
+  props.resource.columns.forEach((column) => {
+    if (column.type === 'json' && currentValues.value[column.name]) {
+      currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
+    }
+  });
+  console.log('currentValues', currentValues.value);
+
   initFlowbite();
   emit('update:isValid', isValid.value);
 });
