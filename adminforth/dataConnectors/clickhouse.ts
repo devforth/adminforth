@@ -117,7 +117,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         return !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
-          return JSON.parse(value);
+          try {
+            return JSON.parse(value);
+          } catch (e) {
+              return {'error': `Failed to parse JSON: ${e.message}`}
+          }
         } else {
           console.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
         }

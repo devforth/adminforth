@@ -295,7 +295,7 @@ const theme = ref('light');
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   document.documentElement.classList.toggle('dark');
-  window.localStorage.setItem('theme', theme.value);
+  window.localStorage.setItem('af__theme', theme.value);
 
 }
 
@@ -390,7 +390,7 @@ onMounted(async () => {
 })
 
 onBeforeMount(()=>{
-  theme.value = window.localStorage.getItem('theme') || 'light';
+  theme.value = window.localStorage.getItem('af__theme') || 'light';
   document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
 

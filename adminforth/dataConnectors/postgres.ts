@@ -153,7 +153,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
         if (field.type == AdminForthDataTypes.JSON) {
             if (typeof value == 'string') {
-                return JSON.parse(value);
+                try {
+                    return JSON.parse(value);
+                } catch (e) {
+                    return {'error': `Failed to parse JSON: ${e.message}`}
+                }
             } else if (typeof value == 'object') {
                 return value;
             } else {
