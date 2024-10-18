@@ -2,6 +2,7 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
+import { base } from '@faker-js/faker';
 
 
 
@@ -73,11 +74,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
             field.scale = parseInt(scale);
           } else if (baseType.startsWith('Float')) {
             field.type = AdminForthDataTypes.FLOAT;
-          } else if (baseType == 'DateTime64' || baseType == 'DateTime') {
+          } else if (baseType == 'DateTime64' || baseType == 'DateTime' || baseType.startsWith('DateTime64(')) {
             field.type = AdminForthDataTypes.DATETIME;
           } else if (baseType == 'Date' || baseType == 'Date64') {
             field.type = AdminForthDataTypes.DATE;
-          } else if (baseType == 'Boolean') {
+          } else if (baseType == 'Boolean' || baseType == 'Bool') {
             field.type = AdminForthDataTypes.BOOLEAN;
             field._underlineType = 'boolean';
           } else {
