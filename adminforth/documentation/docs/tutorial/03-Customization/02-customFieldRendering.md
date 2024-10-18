@@ -23,7 +23,7 @@ defineProps({
   record: Object,
   resource: Object,
   adminUser: Object,
-  meta: Object
+  meta: Object,
   columns: Object
 });
 </script>
