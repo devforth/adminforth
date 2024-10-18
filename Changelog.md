@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When discovery is no started, getUserByPk will show error in console
 - Clickhouse count for some clickhouse versions
 - overflow on mobile
+- comapct UUID value renederer shows no copy button when value is empty
+- support for Bool and DateTime64 data types in Clickhouse
 
 ### Added
 
