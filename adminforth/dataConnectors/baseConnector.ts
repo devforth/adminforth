@@ -1,4 +1,3 @@
-import { get } from "http";
 import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn, IAdminForthSort, IAdminForthFilter } from "../types/AdminForthConfig.js";
 import { suggestIfTypo } from "../modules/utils.js";
 
@@ -158,6 +157,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
       filters.map((f) => {
+        if (!f.field) {
+          throw new Error(`Field "field" not specified in filter object: ${JSON.stringify(f)}`);
+        }
+        if (!f.operator) {
+          throw new Error(`Field "operator" not specified in filter object: ${JSON.stringify(f)}`);
+        }
         const fieldObj = resource.dataSourceColumns.find((col) => col.name == f.field);
         if (!fieldObj) {
           const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), f.field);
