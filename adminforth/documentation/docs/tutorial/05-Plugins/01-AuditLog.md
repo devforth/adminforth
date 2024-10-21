@@ -132,7 +132,7 @@ That's it! Now you can see the logs in the table
 
 ![alt text](AuditLog.png)
 
-See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options.
+<!-- See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options. -->
 
 
 ## Logging custom actions

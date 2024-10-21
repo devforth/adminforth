@@ -56,4 +56,4 @@ You can use `modifyTableResourceConfig` callback to modify what columns to show 
 
 ![alt text](ForeignInlineList.png)
 
-See [API Reference](/docs/api/plugins/foreign-inline-list/types/type-aliases/PluginOptions) for more all options.
+<!-- See [API Reference](/docs/api/plugins/foreign-inline-list/types/type-aliases/PluginOptions) for more all options. -->
