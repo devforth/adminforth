@@ -171,7 +171,10 @@ import { randomUUID } from 'crypto';
   columns: [
     { 
       name: 'id', 
-      primaryKey: true, 
+      primaryKey: true,
+//diff-remove
+      showIn: ['filter', 'show'],
+//diff-add
       showIn: ['list', 'filter', 'show'],
 //diff-remove
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
