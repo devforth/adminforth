@@ -30,8 +30,8 @@
 
 
               <span               
-              @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
-                <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="theme !== 'dark'" />
+                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+                <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
               <div>
@@ -294,9 +294,7 @@ const theme = ref('light');
 
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
-  document.documentElement.classList.toggle('dark');
-  window.localStorage.setItem('af__theme', theme.value);
-
+  coreStore.toggleTheme();
 }
 
 function clickOnMenuItem (label: string) {
