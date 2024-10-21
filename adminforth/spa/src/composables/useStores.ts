@@ -7,7 +7,7 @@ import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
 import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
- type FilterParams = {
+type FilterParams = {
   /**
    * Field of resource to filter
    */

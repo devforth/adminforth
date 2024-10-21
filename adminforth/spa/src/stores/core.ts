@@ -6,6 +6,8 @@ import type { Ref } from 'vue'
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById: Ref<Object> = ref({});
+  const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem('af__theme') as ('light'|'dark') || 'light');
+
   const menu = ref([]);
   const config = ref({});
   const record: Ref<any | null> = ref({});
@@ -22,6 +24,19 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
   const adminUser = ref(null);
+
+  async function toggleTheme() {
+    theme.value = theme.value === 'light' ? 'dark' : 'light';
+    if (theme.value === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+
+    document.documentElement.setAttribute('data-theme', theme.value);
+    theme.value = theme.value;
+    window.localStorage.setItem('af__theme', theme.value);
+  }
 
   async function fetchMenuAndResource() {
     const resp = await callAdminForthApi({
@@ -143,6 +158,8 @@ export const useCoreStore = defineStore('core', () => {
     resourceOptions,
     resource,
     adminUser,
-    resourceColumnsWithFilters
+    resourceColumnsWithFilters,
+    toggleTheme,
+    theme,
   }
 })

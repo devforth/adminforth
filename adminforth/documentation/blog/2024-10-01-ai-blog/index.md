@@ -44,7 +44,7 @@ cd ai-blog
 npm init -y
 npm install adminforth @adminforth/upload @adminforth/rich-editor @adminforth/chat-gpt \
  express slugify http-proxy @types/express typescript tsx @types/node --save-dev
-npx --yes tsc --init --module ESNext --target ESNext
+npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
 ## Step 2: Prepare environment

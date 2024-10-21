@@ -1,6 +1,6 @@
 <template>
   <span class="flex items-center"  
-    :data-tooltip-target="val && `tooltip-${id}`"
+    :data-tooltip-target="visualValue && `tooltip-${id}`"
     data-tooltip-placement="top"
   >
     {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>

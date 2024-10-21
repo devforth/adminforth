@@ -26,7 +26,7 @@ mkdir af-hello
 cd af-hello
 npm init -y
 npm install adminforth express @types/express typescript tsx @types/node --save-dev
-npx --yes tsc --init --module ESNext --target ESNext
+npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
 ## Env variables
