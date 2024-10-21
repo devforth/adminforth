@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.54] - next
+## [1.3.55] -  next
+
+# wip
+
+## [1.3.54] - 2024-10-21
 
 ### Fixed
 
@@ -14,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overflow on mobile
 - comapct UUID value renederer shows no copy button when value is empty
 - support for Bool and DateTime64 data types in Clickhouse
+- add .d.ts files for type hints
 
 ### Added
 
@@ -28,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't install users packages which are already in AdminForth
 - Add `json` renderer for json fields
 - Add validation for `defaultSort` in resource options
+- set target=es2017 in tsconfig (min node version is >=8), to remove awaiters
 
 
 ## [1.3.53] - 2024-10-09

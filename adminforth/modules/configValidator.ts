@@ -14,8 +14,7 @@ import path from 'path';
 import { guessLabelFromName, suggestIfTypo } from './utils.js';
 
 import crypto from 'crypto';
-import { AdminForthSortDirections } from "adminforth/index.js";
-
+import { AdminForthSortDirections } from "../types/AdminForthConfig.js";
 
 
 

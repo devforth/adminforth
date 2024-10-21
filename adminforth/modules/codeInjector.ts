@@ -172,6 +172,14 @@ class CodeInjector implements ICodeInjector {
     return [lockHash, packages];
   }
 
+  getSpaDir() {
+    let spaDir = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
+    if (!fs.existsSync(spaDir)) {
+      spaDir = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'dist', 'spa');
+    }
+    return spaDir;
+  }
+
   async prepareSources({ filesUpdated }: { filesUpdated?: string[] }) {
     // check SPA_TMP_PATH exists and create if not
     try {
@@ -254,10 +262,11 @@ class CodeInjector implements ICodeInjector {
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
 
+    const spaDir = this.getSpaDir();
     if (filesUpdated) {
       // copy only updated files
       await Promise.all(filesUpdated.map(async (file) => {
-        const src = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa', file);
+        const src = path.join(spaDir, file);
         const dest = path.join(CodeInjector.SPA_TMP_PATH, file);
  
         // overwrite:true can't be used to not destroy cache
@@ -270,8 +279,10 @@ class CodeInjector implements ICodeInjector {
 
       }));
     } else {
+      let spaDir = this.getSpaDir();
+
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲⚙️ fsExtra.copy from ${path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa')}, -> ${CodeInjector.SPA_TMP_PATH}`);
+        console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${CodeInjector.SPA_TMP_PATH}`);
       }
 
       // try to rm SPA_TMP_PATH/src/types directory 
@@ -282,7 +293,8 @@ class CodeInjector implements ICodeInjector {
       }
 
       // overwrite can't be used to not destroy cache
-      await fsExtra.copy(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa'), CodeInjector.SPA_TMP_PATH, {
+    
+      await fsExtra.copy(spaDir, CodeInjector.SPA_TMP_PATH, {
         filter: (src) => {
           const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
           if (process.env.HEAVY_DEBUG && !filterPasses) {
@@ -576,7 +588,7 @@ class CodeInjector implements ICodeInjector {
   }
 
   async watchForReprepare({}) {
-    const spaPath = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
+    const spaPath = this.getSpaDir();
     // get list of all subdirectories in spa recursively
     const directories = [];
     const collectDirectories = async (dir) => {
