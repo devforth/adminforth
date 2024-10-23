@@ -240,3 +240,38 @@ You can also show country name after the flag:
 ```
 
 ![alt text](<Group 12 (1).jpg>)
+
+### Human Number
+
+It formats large numbers into a human-readable format (e.g., 10k, 1.5M) and supports localization for different number formats.
+
+```ts title='./resources/apartments.ts'
+  columns: [
+    ...
+    { 
+          name: 'square_meter', 
+          label: 'Square', 
+          minValue: 1,  // you can set min /max value for number fields
+          maxValue: 100000000,
+          //diff-add
+          components: {
+          //diff-add
+            list: {
+          //diff-add
+              file: '@/renderers/HumanNumber.vue',
+          //diff-add
+              meta: {
+          //diff-add
+                showCountryName: true,
+          //diff-add
+              }
+          //diff-add
+            }
+          //diff-add
+          }
+        },
+    {
+    ...
+```
+
+![alt text](<HumanNumber.png>)
