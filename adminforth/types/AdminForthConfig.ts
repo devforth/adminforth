@@ -44,7 +44,8 @@ export interface IHttpServer {
       body: any, 
       adminUser: any, 
       query: {[key: string]: string}, 
-      headers: {[key: string]: string}, cookies: {[key: string]: string}, 
+      headers: {[key: string]: string}, 
+      cookies: {[key: string]: string}, 
       response: IAdminForthHttpResponse,
     ) => void,
   }): void;
@@ -704,13 +705,30 @@ export type AdminForthResourceColumn = {
  * Modify query to change how data is fetched from database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeDataSourceRequestFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, query: any}) => Promise<{ok: boolean, error?: string}>;
+export type BeforeDataSourceRequestFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, query: any, 
+  extra: {
+    body: any,
+    query: Record<string, string>,
+    headers: Record<string, string>,
+    cookies: Record<string, string>,
+  }
+}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterDataSourceResponseFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, response: any}) => Promise<{ok: boolean, error?: string}>;
+export type AfterDataSourceResponseFunction = (params: {
+  resource: AdminForthResource, 
+  adminUser: AdminUser, 
+  response: any, 
+  extra: {
+    body: any,
+    query: Record<string, string>,
+    headers: Record<string, string>,
+    cookies: Record<string, string>,
+  }
+}) => Promise<{ok: boolean, error?: string}>;
 
 /**
  * Modify record to change how data is saved to database.

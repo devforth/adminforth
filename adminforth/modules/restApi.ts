@@ -335,7 +335,7 @@ export default class AdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body, adminUser }) => {
+      handler: async ({ body, adminUser, headers, query, cookies }) => {
 
         const { resourceId, source } = body;
         if (['show', 'list'].includes(source) === false) {
@@ -360,7 +360,14 @@ export default class AdminForthRestAPI {
         }
 
         for (const hook of listify(resource.hooks?.[source]?.beforeDatasourceRequest)) {
-          const resp = await hook({ resource, query: body, adminUser });
+          const resp = await hook({ 
+            resource, 
+            query: body, 
+            adminUser, 
+            extra: {
+              body, query, headers, cookies
+            } 
+          });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }
@@ -455,7 +462,15 @@ export default class AdminForthRestAPI {
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
-          const resp = await hook({ resource, response: data.data, adminUser });
+          const resp = await hook({ 
+            resource, 
+            response: 
+            data.data, 
+            adminUser, 
+            extra: {
+              body, query, headers, cookies
+            }});
+
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
           }

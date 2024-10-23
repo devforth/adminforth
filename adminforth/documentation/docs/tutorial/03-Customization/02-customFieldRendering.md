@@ -161,7 +161,7 @@ Though creating custom renderers is super-easy, we have couple of pre-made rende
 
 ### CompactUUID
 
-If you have a UUID column which you want display in table, you can use
+If you have a UUID column which you want display in table in more compact manner, you can use `CompactUUID` renderer.
 
 ```ts title='./resources/apartments.ts'
 //diff-add
@@ -195,6 +195,7 @@ import { randomUUID } from 'crypto';
 
 ### Country Flag
 
+Renders string fields containing ISO-3166-1 alpha-2 country codes as flags (e.g. 'US', 'DE', 'FR', etc.)
 
 ```ts title='./resources/apartments.ts'
   columns: [

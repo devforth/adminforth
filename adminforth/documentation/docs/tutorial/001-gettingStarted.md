@@ -33,21 +33,16 @@ You can use AdminForth in pure Node, but we recommend using TypeScript for bette
 
 ```bash
 npm install typescript@5.4.5 tsx@4.11.2  @types/express  @types/node --save-dev
-```
-
-Also we will store secret for JWTs in .env file:
-
-```bash
-npm install dotenv --save-dev
+npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
 ## Basic Philosophy
 
-AdminForth connects to existing databases and provides a backoffice for managing data including CRUD operations, filtering, sorting, and more.
+AdminForth connects to existing databases and provides a back-office for managing data including CRUD operations, filtering, sorting, and more.
 
 Database should be already created by using any database management tool, ORM or migrator. AdminForth does not provide a way to create tables or columns in the database.
 
-Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in backoffice. For most DBs AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
+Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in back-office. For most DBs AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
 
 Also in AdminForth you can define in "Vue" way:
 * how each field will be rendered
