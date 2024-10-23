@@ -726,7 +726,7 @@ export type AfterDataSourceResponseFunction = (params: {
     body: any,
     query: Record<string, string>,
     headers: Record<string, string>,
-    cookies: Record<string, string>,
+    cookies: { key: string, value: string }[],
   }
 }) => Promise<{ok: boolean, error?: string}>;
 
