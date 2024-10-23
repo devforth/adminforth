@@ -2,8 +2,6 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
-import { base } from '@faker-js/faker';
-
 
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
