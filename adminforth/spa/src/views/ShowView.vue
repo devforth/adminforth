@@ -57,7 +57,7 @@
     </div>
     <div 
       v-else-if="coreStore.record"
-      class="relative overflow-x-auto rounded-default shadow-resourseFormShadow "
+      class="relative rounded-default shadow-resourseFormShadow "
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
         <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">

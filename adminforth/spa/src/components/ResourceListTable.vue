@@ -1,6 +1,6 @@
 <template>
   <!-- table -->
-  <div class="relative overflow-x-auto shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden"
+  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden"
     :class="{'rounded-default': !noRoundings}"
   >
     <!-- skelet loader -->
