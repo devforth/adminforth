@@ -410,7 +410,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
       const days = req.body.days || 7;
-      const apartsByDays = await db.prepare(
+      const apartsByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
           COUNT(*) as count 
@@ -424,7 +424,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
       const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
 
       // add listed, unlisted, listedPrice, unlistedPrice
-      const listedVsUnlistedByDays = await db.prepare(
+      const listedVsUnlistedByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
           SUM(listed) as listed, 
@@ -438,7 +438,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         `
       ).all(days);
 
-      const listedVsUnlistedPriceByDays = await db.prepare(
+      const listedVsUnlistedPriceByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
           SUM(listed * price) as listedPrice,
