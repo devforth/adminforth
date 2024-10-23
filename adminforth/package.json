@@ -31,6 +31,7 @@
   "type": "module",
   "dependencies": {
     "@clickhouse/client": "^1.4.0",
+    "@faker-js/faker": "^9.0.3",
     "better-sqlite3": "^10.0.0",
     "dayjs": "^1.11.11",
     "express": "^4.21.0",
