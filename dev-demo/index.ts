@@ -56,7 +56,7 @@ if (!tableExists) {
         id, title, square_meter, price, number_of_rooms, description, created_at, listed, property_type
       ) VALUES ('${i}', 
         '${generate({ min: 2, max: 5, join: ' ' })}', 
-        ${(Math.random() * 100).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
+        ${(Math.random() * 1000000).toFixed(1)}, ${(Math.random() * 10000).toFixed(2)}, ${Math
         .floor(Math.random() * 5) }, 
         'Next gen apartments', 
         ${Date.now() / 1000 - 60 * 60 * 24 * 7 * Math.random()},
@@ -324,7 +324,6 @@ const admin = new AdminForth({
             showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
             maxLength: 255,  // you can set max length for string fields
             minLength: 3,  // you can set min length for string fields
-            type: AdminForthDataTypes.JSON,
             components: {
                 // edit: {
                 //     file: '@@/IdShow.vue',
@@ -415,7 +414,15 @@ const admin = new AdminForth({
           label: 'Square', 
           // allowMinMaxQuery: true,
           minValue: 1,  // you can set min /max value for number fields
-          maxValue: 1000,
+          maxValue: 100000000,
+          components: {
+            list: {
+              file: '@/renderers/HumanNumber.vue',
+              meta: {
+                showCountryName: true,
+              }
+            }
+          }
         },
         { 
           name: 'number_of_rooms',
