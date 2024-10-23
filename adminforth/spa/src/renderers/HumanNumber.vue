@@ -24,12 +24,15 @@
     if (typeof val === 'number') {
       return formatNumber(val, userLocale.value);
     }
-    return '';
+    return val;
   });
   
   const formattedTooltipValue = computed(() => {
     const val = props.record[props.column.name];
-    return formatNumberUsingIntl(val, userLocale.value); 
+    if (typeof val === 'number') {
+      return formatNumberUsingIntl(val, userLocale.value); 
+    }
+    return val;
   });
 
   function formatNumber(num, locale) {
