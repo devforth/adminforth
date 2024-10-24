@@ -21,7 +21,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
         class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
       Statistics.</h1>
 
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
         <div class="flex justify-between">
           <div>
@@ -34,23 +34,26 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 
       </div>
 
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 row-span-2 col-span-2" v-if="data">
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 md:row-span-2 md:col-span-2" v-if="data">
 
         <div class="grid grid-cols-2 py-3">
           <dl>
             <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Listed price</dt>
-            <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">{{
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-          data.totalListedPrice,
-        ) }}
+            <dd 
+              class="leading-none text-xl font-bold text-green-500 dark:text-green-400"
+              v-if="data.totalListedPrice"
+            >{{ new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                data.totalListedPrice,
+              ) }}
             </dd>
           </dl>
           <dl>
             <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Unlisted price</dt>
-            <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">{{
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-          data.totalUnlistedPrice,
-        ) }}
+            <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500"
+              v-if="data.totalUnlistedPrice"
+            >{{ new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                data.totalUnlistedPrice,
+              ) }}
             </dd>
           </dl>
         </div>
@@ -327,9 +330,9 @@ onMounted(async () => {
     window.adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
-      timeout: 30,
+      timeout: 'unlimited'
     });
-  }
+  } 
 
   const apartsByDaysReverse = data.value.apartsByDays.reverse();
 
