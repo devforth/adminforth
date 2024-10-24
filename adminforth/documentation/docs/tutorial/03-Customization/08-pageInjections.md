@@ -267,6 +267,7 @@ function checkReadingTime() {
   }
   window.adminforth.list.closeThreeDotsDropdown();
 }
+</script>
 ```
 
 For this demo we will use text-analyzer package:
@@ -297,7 +298,7 @@ npm install text-analyzer --save
   options: {
     pageInjections: {
       list: {
-          `customActionIcons`: [
+          customActionIcons: [
             '@@/SearchForApartmentInGoogle.vue',
           ]
       }
