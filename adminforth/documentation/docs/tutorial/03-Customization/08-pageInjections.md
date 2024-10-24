@@ -298,7 +298,7 @@ npm install text-analyzer --save
   options: {
     pageInjections: {
       list: {
-          `customActionIcons`: [
+          customActionIcons: [
             '@@/SearchForApartmentInGoogle.vue',
           ]
       }
