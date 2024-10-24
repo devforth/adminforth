@@ -2,13 +2,13 @@
   <span class="flex items-center">
     <span 
       :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
-      :data-tooltip-target="`tooltip-${id}`"
+      :data-tooltip-target="shouldShowTooltip ? `tooltip-${id}`: undefined"
     ></span>
 
     <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
     
     <div 
-      v-if="!meta.showCountryName && countryName"
+      v-if="shouldShowTooltip"
       :id="`tooltip-${id}`" role="tooltip"
       class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
     >
@@ -33,6 +33,9 @@ const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser'])
 
 const id = ref();
 
+const shouldShowTooltip = computed(() => {
+  return !props.meta.showCountryName && countryName.value;
+});
 
 onMounted(async () => {
   id.value = Math.random().toString(36).substring(7);
