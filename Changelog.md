@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.56] -  next
 
-# wip
+### Fixed
+
+- make theme reactive in storage
+- suggest NodeNext for getting started and hello world for right completions
+- CompactUUID renderer fixes
+
 
 ## [1.3.55] - 2024-10-21
 

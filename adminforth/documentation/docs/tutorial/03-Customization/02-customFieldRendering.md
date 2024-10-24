@@ -161,7 +161,7 @@ Though creating custom renderers is super-easy, we have couple of pre-made rende
 
 ### CompactUUID
 
-If you have a UUID column which you want display in table, you can use
+If you have a UUID column which you want display in table in more compact manner, you can use `CompactUUID` renderer.
 
 ```ts title='./resources/apartments.ts'
 //diff-add
@@ -195,6 +195,7 @@ import { randomUUID } from 'crypto';
 
 ### Country Flag
 
+Renders string fields containing ISO-3166-1 alpha-2 country codes as flags (e.g. 'US', 'DE', 'FR', etc.)
 
 ```ts title='./resources/apartments.ts'
   columns: [
@@ -240,3 +241,38 @@ You can also show country name after the flag:
 ```
 
 ![alt text](<Group 12 (1).jpg>)
+
+### Human Number
+
+It formats large numbers into a human-readable format (e.g., 10k, 1.5M) and supports localization for different number formats.
+
+```ts title='./resources/apartments.ts'
+  columns: [
+    ...
+    { 
+          name: 'square_meter', 
+          label: 'Square', 
+          minValue: 1,  // you can set min /max value for number fields
+          maxValue: 100000000,
+          //diff-add
+          components: {
+          //diff-add
+            list: {
+          //diff-add
+              file: '@/renderers/HumanNumber.vue',
+          //diff-add
+              meta: {
+          //diff-add
+                showCountryName: true,
+          //diff-add
+              }
+          //diff-add
+            }
+          //diff-add
+          }
+        },
+    {
+    ...
+```
+
+![alt text](<HumanNumber.png>)

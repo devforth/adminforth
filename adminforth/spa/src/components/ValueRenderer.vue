@@ -30,7 +30,7 @@
       <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
     </span>
     <span v-else-if="column.type === 'json'">
-      <JsonViewer :value="record[column.name]" copyable sort :theme="theme" />
+      <JsonViewer :value="record[column.name]" copyable sort :theme="coreStore.theme" />
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
@@ -57,9 +57,6 @@ import { computed } from 'vue';
 const coreStore = useCoreStore();
 const route = useRoute();
 
-const theme = computed(() => {
-  return window.localStorage.getItem('af__theme') || 'light';
-});
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
