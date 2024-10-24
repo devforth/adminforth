@@ -916,13 +916,13 @@ export type AdminForthResource = {
     hooks?: {
       show?: {
         /**
-         * Typical usecases: 
+         * Typical use-cases: 
          * - request additional data from database before returning to frontend for soft-join 
          */
         beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
 
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Transform value for some field for record returned from database before returning to frontend (minimize, sanitize, etc)
          * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
          * - Attach additional data to record before returning to frontend 
@@ -931,21 +931,22 @@ export type AdminForthResource = {
       },
       list?: {
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - add additional filters in addition to what user selected before fetching data from database.
          * - same as hooks.show.beforeDatasourceRequest 
          */
         beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
 
         /**
-         * Typical usecases:
-         * - Same as hooks.show.afterDatasourceResponse but applied for each record in list
+         * Typical use-cases:
+         * - Same as hooks.show.afterDatasourceResponse but applied for all records returned from database for 
+         * showing in list view, e.g. add new field to each record in list view
          */
         afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
       },
       create?: {
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
          * - fill-in adminUser as creator of record
          * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
@@ -953,32 +954,32 @@ export type AdminForthResource = {
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
 
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Initiate some trigger after record saved to database (e.g sync to another datasource)
          */
         afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       edit?: {
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Same as hooks.create.beforeSave but for edit page
          */
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
 
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Same as hooks.create.afterSave but for edit page
          */
         afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
       },
       delete?: {
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
          */
         beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
         /**
-         * Typical usecases:
+         * Typical use-cases:
          * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
          */
         afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,

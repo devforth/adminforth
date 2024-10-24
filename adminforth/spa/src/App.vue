@@ -173,7 +173,7 @@
     </aside>
     
 
-    <div class="sm:ml-64 max-w-[100vw] sm:max-w-[calc(100vw-16rem)]" 
+    <div class="sm:ml-64 max-w-[100vw] sm:max-w-[calc(100%-16rem)]" 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady">
       <div class="p-0 dark:border-gray-700 mt-14">
         <RouterView/>     
