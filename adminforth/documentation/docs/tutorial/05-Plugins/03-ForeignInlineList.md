@@ -10,7 +10,7 @@ Import plugin:
 npm i @adminforth/foreign-inline-list --save
 ```
 
-```ts title="./index.ts"
+```ts title="./resources/users.ts"
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 ```
