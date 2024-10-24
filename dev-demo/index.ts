@@ -616,11 +616,12 @@ const admin = new AdminForth({
           twoFaSecretFieldName: 'secret2fa',
           // optional callback to define which users should be enforced to use 2FA
           usersFilterToApply: (adminUser: AdminUser) => {
-            if (process.env.NODE_ENV === 'development') {
-              return false;
-            }
+            // if (process.env.NODE_ENV === 'development') {
+            //   return false;
+            // }
             // return true if user should be enforced to use 2FA,
-            return adminUser.dbUser.email !== 'adminforth'
+            return true;
+            // return adminUser.dbUser.email !== 'adminforth'
           },
         }), 
         new EmailResetPasswordPlugin({
