@@ -15,7 +15,7 @@ npm i @adminforth/rich-editor --save
 
 Import plugin:
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.ts"
 import RichEditorPlugin from '@adminforth/rich-editor';
 ```
 
