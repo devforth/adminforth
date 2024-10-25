@@ -83,11 +83,12 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   /**
    * Create a custom action in the audit log resource
    * @param resourceId - The resourceId of the resource that the action is being performed on. Can be null if the action is not related to a specific resource.
+   * @param recordId - The recordId of the record that the action is being performed on. Can be null if the action is not related to a specific record.
    * @param actionId - The id of the action being performed, can be random string
    * @param data - The data to be stored in the audit log
    * @param user - The adminUser user performing the action
    */
-  logCustomAction = async (resourceId: string | null, actionId: string, data: Object, user: AdminUser) => {
+  logCustomAction = async (resourceId: string | null=null, recordId: string | null=null, actionId: string, data: Object, user: AdminUser) => {
     if (resourceId) {
       const resource = this.adminforth.config.resources.find((r) => r.resourceId === resourceId);
       if (!resource) {
@@ -101,7 +102,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceActionColumnName]: actionId,
       [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': {}, 'newRecord': data },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
-      [this.options.resourceColumns.resourceRecordIdColumnName]: null,
+      [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format()
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
