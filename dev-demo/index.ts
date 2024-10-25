@@ -566,7 +566,7 @@ const admin = new AdminForth({
         //   //   bottom: '@@/TopLine.vue',
         //   // }
         },
-        listPageSize: 5,
+        listPageSize: 25,
         // listTableClickUrl: async (record, adminUser) => null,
         bulkActions: [
           {
@@ -1010,6 +1010,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
         'aparts',
+        null,
         'visitedDashboard',
         { dashboard: 'main' },
         req.adminUser

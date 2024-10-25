@@ -57,7 +57,7 @@
         </th>
       </tr>
       </thead>
-      <tbody>
+      <tbody class="overflow-y-auto">
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.includes('list')).length + 2"
