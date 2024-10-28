@@ -159,7 +159,6 @@ import Dropdown from '@/components/Dropdown.vue';
 import { applyRegexValidation, callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';
-import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import AfTooltip from "./AfTooltip.vue";
@@ -285,9 +284,7 @@ onMounted(() => {
       currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
     }
   });
-  console.log('currentValues', currentValues.value);
 
-  initFlowbite();
   emit('update:isValid', isValid.value);
 });
 
