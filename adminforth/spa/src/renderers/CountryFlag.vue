@@ -1,5 +1,4 @@
 <template>
-
     <AfTooltip>
       <span class="flex items-center">
         <span 
@@ -12,7 +11,6 @@
         {{ countryName }}
       </template>
     </AfTooltip>
-    
 </template>
 
 <script setup>  

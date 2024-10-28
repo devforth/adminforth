@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="relative w-full">
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
@@ -57,9 +57,9 @@
     </div>
     <div 
       v-else-if="coreStore.record"
-      class="relative rounded-default shadow-resourseFormShadow "
+      class="relative shadow-resourseFormShadow"
     >
-     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
+     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default overflow-hidden ">
         <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
