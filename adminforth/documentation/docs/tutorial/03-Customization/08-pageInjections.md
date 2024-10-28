@@ -217,7 +217,46 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
   </div>
 </template>
 ```
-  
+
+
+## List view page injections shrinking: thin enough to shrink?
+
+
+When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
+
+![alt text](<Group 15.png>)
+
+
+However one one of the above injections is set, the table will not try to shrink it's height into viewport and will have a fixed height. We apply this behavior because generally page injection might take a lot of height and table risks to be too small to be usable. So vertical scroll is moved to the body (horizontal scroll is still on the table):
+
+![alt text](<Group 17.png>)
+
+
+However, if you intend to use injection as a small panel, you can set `meta.thinEnoughToShrinkTable` to `true` in the injection instantiation:
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        bottom: {
+          file: '@@/BottomPanel.vue',
+          meta: {
+            thinEnoughToShrinkTable: true,
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+![alt text](<Group 19.png>)
+
+If at least one injection will not set or will not define `meta.thinEnoughToShrinkTable` as `true`, the table will not try to shrink into viewport.
+
 
 ## Three dots menu customization
 
