@@ -149,6 +149,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
         'aparts',
+        null, // recordId can be null if not applicable
         'visitedDashboard',
         { dashboard: 'main' },
         req.adminUser

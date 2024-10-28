@@ -620,7 +620,7 @@ const admin = new AdminForth({
             //   return false;
             // }
             // return true if user should be enforced to use 2FA,
-            return true;
+            return false;
             // return adminUser.dbUser.email !== 'adminforth'
           },
         }), 

@@ -1,11 +1,10 @@
 <template>
   <div v-if="defaultLayout" >
-
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
-      class="fixed h-14 top-0 z-20 w-full  border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider">
-      <div class="px-3 py-3 lg:px-5 lg:pl-3">
-        <div class="flex items-center justify-between">
+      class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
+    >
+      <div class="px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
               type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
@@ -14,10 +13,8 @@
                   <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
                 </svg>
             </button>
-            
           </div>
           <div class="flex items-center">
-            
             <component 
               v-for="c in coreStore?.config?.globalInjections?.header || []"
               :is="getCustomComponent(c)"
@@ -26,16 +23,12 @@
             />
 
             <div class="flex items-center ms-3 ">
-
-
-
               <span               
                 @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
               <div>
-
                 <button type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">Open user menu</span>
                   <svg class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -43,6 +36,7 @@
                   </svg>
                 </button>
               </div>
+
               <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-darkSidebar dark:divide-darkSidebarDevider dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
@@ -52,8 +46,8 @@
                     {{ coreStore.username }}
                   </p>
                 </div>
+
                 <ul class="py-1" role="none">
-              
                   <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" >
                     <component 
                       :is="getCustomComponent(c)"
@@ -67,18 +61,15 @@
                 </ul>
               </div>
             </div>
-          </div>
         </div>
       </div>
-   </nav>
-
-
+    </nav>
 
     <aside 
 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
 
-      id="logo-lightSidebar" class="fixed bg-lightSidebar border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder" 
+      id="logo-lightSidebar" class="fixed border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder" 
       :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
       aria-label="Sidebar"
     >
