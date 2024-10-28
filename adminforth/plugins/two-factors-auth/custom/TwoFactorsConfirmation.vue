@@ -17,9 +17,9 @@
                     <div class="my-4 flex justify-center items-center">
                       <v-otp-input
                         ref="code"
-                        input-classes="h-10 w-10 border border-[2px] rounded-md flex otp-input"
+                        input-classes="h-10 w-10 border border-[2px] rounded-md flex otp-input dark:bg-gray-700 dark:text-gray-400 font-bold"
                         :conditionalClass="['one', 'two', 'three', 'four', 'five', 'six']"
-                        inputType="letter-numeric"
+                        inputType="number"
                         :num-inputs="6"
                         v-model:value="bindValue"
                         :should-auto-focus="true"
