@@ -1302,6 +1302,11 @@ export type AdminForthConfig = {
        */
       brandName?: string,
 
+      /**
+       * Slug which will be used on tech side e.g. to store cookies separately.
+       * Created automatically from brandName if not set. 
+       */
+      _brandNameSlug?: string,
 
       /**
        * Whether to show brand name in sidebar

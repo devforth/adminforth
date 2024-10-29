@@ -43,7 +43,8 @@ class AdminForthAuth {
   }
 
   removeAuthCookie(response) {
-    response.setHeader('Set-Cookie', `adminforth_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
   setAuthCookie({ expireInDays, response, username, pk}: {
@@ -59,18 +60,23 @@ class AdminForthAuth {
     const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
     
-    response.setHeader('Set-Cookie', `adminforth_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
+    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
   }
 
   removeCustomCookie({response, name}) {
-    response.setHeader('Set-Cookie', `adminforth_${name}=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
   setCustomCookie({ response, payload }: {
     response: any, payload: {name: string, value: string, expiry: number, httpOnly: boolean}
   }) {
-    const {name,value,expiry,httpOnly} = payload
-    response.setHeader('Set-Cookie', `adminforth_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
+    const {name, value, expiry, httpOnly} = payload;
+    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
+      httpOnly ? ' HttpOnly;' : ''
+    } SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
   }
  
   issueJWT(payload: Object, type: string, expiresIn: string = '24h'): string {
