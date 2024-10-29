@@ -11,7 +11,7 @@
     />
   </Teleport>
     
-  <td colspan="2">
+  <td colspan="2" class="pb-3">
     <div class="flex items-center gap-1">
       <h4 v-if="listResource"
           class="px-6 py-4"
