@@ -2,7 +2,6 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { callAdminForthApi } from '@/utils';
 import { initFlowbite } from 'flowbite'
-import { useRouter } from 'vue-router';
 import { useCoreStore } from './core';
 import router from '@/router';
 

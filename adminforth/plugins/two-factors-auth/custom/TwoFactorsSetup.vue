@@ -40,7 +40,20 @@
                           </div>
                       </div>
                   </div>
-                  <Vue2FACodeInput v-model="code"/>
+                  <div class="my-4 flex justify-center items-center">
+                    <v-otp-input
+                      ref="code"
+                      input-classes="h-10 w-10 border border-[2px] rounded-md flex otp-input dark:bg-gray-700 dark:text-gray-400 font-bold" 
+                      :conditionalClass="['one', 'two', 'three', 'four', 'five', 'six']"
+                      inputType="number"
+                      :num-inputs="6"
+                      :should-auto-focus="true"
+                      :should-focus-order="true"
+                      @on-complete="handleOnComplete"
+                    />
+                  </div>
+                  
+                  <!-- <Vue2FACodeInput v-model="code" autofocus /> -->
                   <button @click="()=>{router.push('./login')}" class="flex items-center justify-center gap-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Cancel</button>      
               </div>
           </div>
@@ -55,7 +68,7 @@
 
 <script setup>
 
-import { onMounted, ref, watchEffect,computed,watch } from 'vue';
+import { onMounted, onBeforeUnmount,  ref, watchEffect,computed,watch } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
@@ -63,8 +76,16 @@ import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
+import VOtpInput from "vue3-otp-input";
 
 const code = ref(null);
+const handleOnComplete = (value) => {
+  sendCode(value);
+};
+
+const fillInput = (value) => {
+  code.value?.fillInput(value);
+};
 
 const router = useRouter();
 const inProgress = ref(false);
@@ -73,6 +94,7 @@ const coreStore = useCoreStore();
 const user = useUserStore();
 
 // use this simple function to automatically focus on the next input
+
 
 
 
@@ -108,11 +130,12 @@ function onCopyClick(){
   window.adminforth.alert({message: 'Copied to clipboard', variant: 'success'})
 }
 
-watch(code, async (nv)=>{
-    if (nv){
-      sendCode();
-    }
-  })
+// watch(code, async (nv)=>{
+//     if (nv){
+//       console.log(code.value);
+//       sendCode();
+//     }
+//   })
 
 onMounted(async () => {
   coreStore.getPublicConfig()
@@ -126,16 +149,22 @@ onMounted(async () => {
 
   totp.value=parseJwt(totpJWT.value);
 
-
+  window.addEventListener('keydown', handleKeydown);
 });
 
-async function sendCode () {
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
+
+async function sendCode (value) {
   inProgress.value = true;
+
+  
   const resp = await callAdminForthApi({
     method: 'POST',
     path: '/plugin/twofa/confirmSetup',
     body: {
-      code: code.value,
+      code: value,
       secret: totp.value.newSecret,
     }
   })
@@ -145,4 +174,24 @@ async function sendCode () {
     showErrorTost('Invalid code');
   }
 }
+
+
+function handleKeydown(event) {
+  if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+    event.preventDefault();
+    navigator.clipboard.readText().then((pastedData) => {
+      if (pastedData) {
+        fillInput(pastedData);
+      }
+    }).catch(err => {
+      console.error('Failed to read clipboard contents: ', err);
+    });
+  }
+}
 </script>
+<style>
+.otp-input {
+  margin: 0 5px;
+
+}
+</style>

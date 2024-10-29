@@ -1,31 +1,25 @@
 <template>
-  <span class="flex items-center">
-    <span 
-      :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
-      :data-tooltip-target="shouldShowTooltip ? `tooltip-${id}`: undefined"
-    ></span>
-
-    <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
-    
-    <div 
-      v-if="shouldShowTooltip"
-      :id="`tooltip-${id}`" role="tooltip"
-      class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
-    >
-      {{ countryName }}
-      <div class="tooltip-arrow" data-popper-arrow></div>
-    </div>
-  </span>
-  
+    <AfTooltip>
+      <span class="flex items-center">
+        <span 
+          :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
+        ></span>
+        <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
+      </span>
+      
+      <template v-if="shouldShowTooltip" #tooltip>
+        {{ countryName }}
+      </template>
+    </AfTooltip>
 </template>
 
 <script setup>  
 
 import { computed, ref, onMounted } from 'vue';
-import { initFlowbite } from 'flowbite';
 import 'flag-icons/css/flag-icons.min.css';
 import isoCountries from 'i18n-iso-countries';
 import enLocal from 'i18n-iso-countries/langs/en.json';
+import AfTooltip from '@/components/AfTooltip.vue';
 
 isoCountries.registerLocale(enLocal);
 
@@ -39,8 +33,6 @@ const shouldShowTooltip = computed(() => {
 
 onMounted(async () => {
   id.value = Math.random().toString(36).substring(7);
-  await new Promise(resolve => setTimeout(resolve, 0));
-  initFlowbite();
 });
 
 const countryIsoLow = computed(() => {

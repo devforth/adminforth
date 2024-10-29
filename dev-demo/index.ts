@@ -185,7 +185,7 @@ const admin = new AdminForth({
 <svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
 <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
         closable: true,
-        // title: 'Support us for free',
+        title: 'Support us for free',
       }
     }
    },
@@ -558,15 +558,18 @@ const admin = new AdminForth({
         pageInjections: {
           list: {
             customActionIcons: '@@/IdShow.vue',
-          }
+            // bottom: {
+            //   file: '@@/TopLine.vue',
+            //   meta: {
+            //     thinEnoughToShrinkTable: true,
+            //   }
+            // }
+          },
         //   show: {
         //     beforeBreadcrumbs: '@@/TopLine.vue',
         //   },
-        //   // list: {
-        //   //   bottom: '@@/TopLine.vue',
-        //   // }
         },
-        listPageSize: 5,
+        listPageSize: 25,
         // listTableClickUrl: async (record, adminUser) => null,
         bulkActions: [
           {
@@ -620,6 +623,7 @@ const admin = new AdminForth({
               return false;
             }
             // return true if user should be enforced to use 2FA,
+            // return true;
             return adminUser.dbUser.email !== 'adminforth'
           },
         }), 
@@ -1009,6 +1013,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
         'aparts',
+        null,
         'visitedDashboard',
         { dashboard: 'main' },
         req.adminUser

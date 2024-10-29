@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="relative flex flex-col max-w-full w-full">
     <Teleport to="body">
       <Filters
         :columns="coreStore.resource?.columns"
@@ -120,7 +120,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
-import { initFlowbite } from 'flowbite';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 
 
@@ -184,8 +183,6 @@ async function getList() {
   });
   totalRows.value = data.total;
   await new Promise(resolve => setTimeout(resolve, 0));
-  initFlowbite(); // for tooltips in table
-
 }
 
 async function startBulkAction(actionId) {
@@ -245,8 +242,6 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
-
-  initFlowbite();
 
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
 

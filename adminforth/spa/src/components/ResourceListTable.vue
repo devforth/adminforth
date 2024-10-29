@@ -1,6 +1,6 @@
 <template>
   <!-- table -->
-  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-y-hidden"
+  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
   >
     <!-- skelet loader -->
@@ -11,53 +11,55 @@
             <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
         </div>      
     </div>
+    <table v-else class=" w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
 
-    <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
-      <thead class="text-xs text-view-table-heading-text bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-      <tr>
-        <th scope="col" class="p-4">
-          <div v-if="rows && rows.length" class="flex items-center">
-            <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                  class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-            <label for="checkbox-all-search" class="sr-only">checkbox</label>
-          </div>
-        </th>
-
-        <th v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
-         
-          <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
-              class="flex items-center " :class="{'cursor-pointer':c.sortable}">
-            {{ c.label }}
-
-            <div v-if="c.sortable"
-                :style="{ 'color':ascArr.includes(c.name)?'green':descArr.includes(c.name)?'red':'currentColor'}">
-              <svg v-if="ascArr.includes(c.name) || descArr.includes(c.name)" class="w-3 h-3 ms-1.5"
-                  :class="{'rotate-180':descArr.includes(c.name)}" viewBox="0 0 24 24">
-                <path
-                  d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847"/>
-              </svg>
-              <svg v-else class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                  fill='currentColor'
-                  viewBox="0 0 24 24">
-                <path
-                  d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
-              </svg>
-            </div>
-            <span
-             class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-             v-if="sort.findIndex((s) => s.field === c.name) !== -1 && sort?.length > 1">
-            {{ sort.findIndex((s) => s.field === c.name) + 1 }}
-            </span>
-
-          </div>
-        </th>
-
-        <th scope="col" class="px-6 py-3">
-          Actions
-        </th>
-      </tr>
-      </thead>
       <tbody>
+
+        <!-- table header -->
+        <tr class="t-header sticky z-1 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+          <td scope="col" class="p-4">
+            <div v-if="rows && rows.length" class="flex items-center">
+              <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
+                    class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
+                    focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="checkbox-all-search" class="sr-only">checkbox</label>
+            </div>
+          </td>
+
+          <td v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          
+            <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
+                class="flex items-center " :class="{'cursor-pointer':c.sortable}">
+              {{ c.label }}
+
+              <div v-if="c.sortable">
+                <svg v-if="ascArr.includes(c.name) || descArr.includes(c.name)" class="w-3 h-3 ms-1.5"
+                    fill='currentColor'
+                    :class="{'rotate-180':descArr.includes(c.name)}" viewBox="0 0 24 24">
+                  <path
+                    d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847"/>
+                </svg>
+                <svg v-else class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill='currentColor'
+                    viewBox="0 0 24 24">
+                  <path
+                    d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
+                </svg>
+              </div>
+              <span
+                class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
+                v-if="sort.findIndex((s) => s.field === c.name) !== -1 && sort?.length > 1">
+                {{ sort.findIndex((s) => s.field === c.name) + 1 }}
+              </span>
+
+            </div>
+          </td>
+
+          <td scope="col" class="px-6 py-3">
+            Actions
+          </td>
+        </tr>
+        <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.includes('list')).length + 2"
@@ -106,65 +108,57 @@
             />
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex">
-              <RouterLink
-                v-if="resource.options?.allowedActions.show"
-                :to="{ 
-                  name: 'resource-show', 
-                  params: { 
-                    resourceId: resource.resourceId, 
-                    primaryKey: row._primaryKeyValue,
-                  }
-                }"
-                class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline"
-                :data-tooltip-target="`tooltip-show-${rowI}`"
-              >
-                <IconEyeSolid class="w-5 h-5 me-2"/>
-              </RouterLink>
+            <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
+              <AfTooltip>
+                <RouterLink
+                  v-if="resource.options?.allowedActions.show"
+                  :to="{ 
+                    name: 'resource-show', 
+                    params: { 
+                      resourceId: resource.resourceId, 
+                      primaryKey: row._primaryKeyValue,
+                    }
+                  }"
 
-              <div :id="`tooltip-show-${rowI}`"
-                  role="tooltip"
-                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                Show item
-                <div class="tooltip-arrow" data-popper-arrow></div>
-              </div>
+                >
+                  <IconEyeSolid class="w-5 h-5 me-2"/>
+                </RouterLink>
 
-              <RouterLink v-if="resource.options?.allowedActions.edit"
-                :to="{
-                  name: 'resource-edit',
-                  params: { 
-                    resourceId: resource.resourceId,
-                    primaryKey: row._primaryKeyValue 
-                  } 
-                }"
-                class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-                :data-tooltip-target="`tooltip-edit-${rowI}`"
-              >
-                <IconPenSolid class="w-5 h-5 me-2"/>
-              </RouterLink>
+                <template v-slot:tooltip>
+                  Show item
+                </template>
+              </AfTooltip>
 
-              <div :id="`tooltip-edit-${rowI}`"
-                  role="tooltip"
-                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                Edit
-                <div class="tooltip-arrow" data-popper-arrow></div>
-              </div>
+              <AfTooltip>
+                <RouterLink
+                  v-if="resource.options?.allowedActions.edit"
+                  :to="{ 
+                    name: 'resource-edit', 
+                    params: { 
+                      resourceId: resource.resourceId, 
+                      primaryKey: row._primaryKeyValue,
+                    }
+                  }"
+                >
+                  <IconPenSolid class="w-5 h-5 me-2"/>
+                </RouterLink>
+                <template v-slot:tooltip>
+                  Edit item
+                </template>
+              </AfTooltip>
 
-              <button v-if="resource.options?.allowedActions.delete"
-                      class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ms-3"
-                      :data-tooltip-target="`tooltip-delete-${rowI}`"
-                      @click="deleteRecord(row)"
-              >
-                <IconTrashBinSolid class="w-5 h-5 me-2"/>
-              </button>
+              <AfTooltip>
+                <button
+                  v-if="resource.options?.allowedActions.delete"
+                  @click="deleteRecord(row)"
+                >
+                  <IconTrashBinSolid class="w-5 h-5 me-2"/>
+                </button>
 
-              <div :id="`tooltip-delete-${rowI}`"
-                  role="tooltip"
-                  class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                Delete
-                <div class="tooltip-arrow" data-popper-arrow></div>
-              </div>
-
+                <template v-slot:tooltip>
+                  Delete item
+                </template>
+              </AfTooltip>
                 
               <template v-if="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons">
                 <component 
@@ -185,30 +179,23 @@
   <!-- pagination
   totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
   -->
-  <div class="flex flex-col items-center mt-4 mb-4 xs:flex-row xs:justify-between xs:items-center"
+  <div class="flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3"
     v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
   >
-    <!-- Help text -->
-    <span class="text-sm text-gray-700 dark:text-gray-400">
-          Showing <span class="font-semibold text-gray-900 dark:text-white">
-            {{ ((page || 1) - 1) * pageSize + 1 }}
-          </span> to <span class="font-semibold text-gray-900 dark:text-white">
-            {{ Math.min((page || 1) * pageSize, totalRows) }}
-          </span> of <span class="font-semibold text-gray-900 dark:text-white">{{
-        totalRows
-      }}</span> Entries
-      </span>
-    <div class="inline-flex mt-2 xs:mt-0">
+    
+    <div class="inline-flex ">
         <!-- Buttons -->
         <button
-          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page--" :disabled="page <= 1">
-          <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M13 5H1m0 0 4 4M1 5l4-4"/>
           </svg>
-          Prev
+          <span class="hidden sm:inline">
+            Prev
+          </span>
         </button>
         <button
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
@@ -232,11 +219,10 @@
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
-          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-
+          class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page++" :disabled="page >= totalPages">
-          Next
-          <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+          <span class="hidden sm:inline">Next</span>
+          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M1 5h12m0 0L9 1m4 4L9 9"/>
@@ -244,6 +230,15 @@
         </button>
     </div>
 
+    <!-- Help text -->
+    <span class="text-sm text-gray-700 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-900 dark:text-white">
+          {{ ((page || 1) - 1) * pageSize + 1 }}
+        </span> to <span class="font-semibold text-gray-900 dark:text-white">
+          {{ Math.min((page || 1) * pageSize, totalRows) }}
+        </span> of <span class="font-semibold text-gray-900 dark:text-white">{{
+          totalRows }}</span> <span class="hidden sm:inline">Entries</span>
+    </span>
   </div>
 </template>
 
@@ -269,8 +264,10 @@ import {
   IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
+import AfTooltip from './AfTooltip.vue';
 
 const coreStore = useCoreStore();
+
 
 const props = defineProps([
   'page',

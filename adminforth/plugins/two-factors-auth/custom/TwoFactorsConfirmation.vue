@@ -14,7 +14,21 @@
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black text-gray-500" >
                 <div class="p-8 w-full max-w-md max-h-full" >
                     <div class="m-3" >Please enter your authenticator code </div>
-                    <Vue2FACodeInput v-model="code"/>
+                    <div class="my-4 flex justify-center items-center">
+                      <v-otp-input
+                        ref="code"
+                        input-classes="h-10 w-10 border border-[2px] rounded-md flex otp-input dark:bg-gray-700 dark:text-gray-400 font-bold"
+                        :conditionalClass="['one', 'two', 'three', 'four', 'five', 'six']"
+                        inputType="number"
+                        :num-inputs="6"
+                        v-model:value="bindValue"
+                        :should-auto-focus="true"
+                        :should-focus-order="true"
+                        @on-change="handleOnChange"
+                        @on-complete="handleOnComplete"
+                      />
+                    </div>
+                    <!-- <Vue2FACodeInput v-model="code"/> -->
                     <button @click="()=>{router.push('./login')}" class="flex items-center justify-center gap-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                       Cancel
                     </button>   
@@ -31,17 +45,26 @@
   
   <script setup>
   
-  import { onMounted, ref, watchEffect,computed,watch } from 'vue';
+  import { onMounted, onBeforeUnmount, ref, watchEffect,computed,watch } from 'vue';
   import { useCoreStore } from '@/stores/core';
   import { useUserStore } from '@/stores/user';
   import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
   import { callAdminForthApi, loadFile } from '@/utils';
   import { useRouter } from 'vue-router';
-  import { initFlowbite } from 'flowbite'
   import { showErrorTost } from '@/composables/useFrontendApi';
   import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
+  import VOtpInput from "vue3-otp-input";
 
   const code = ref(null);
+
+  const handleOnComplete = (value) => {
+    sendCode(value);
+  };
+
+  const fillInput = (value) => {
+    code.value?.fillInput(value);
+  };
+
   const router = useRouter();
   const inProgress = ref(false);
   
@@ -75,16 +98,22 @@
   }  
   
   onMounted(async () => {
-    coreStore.getPublicConfig()
+    coreStore.getPublicConfig();
+    window.addEventListener('keydown', handleKeydown);
   });
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleKeydown);
+  });
+
   
-  async function sendCode () {
+  async function sendCode (value) {
     inProgress.value = true;
     const resp = await callAdminForthApi({
       method: 'POST',
       path: '/plugin/twofa/confirmSetup',
       body: {
-        code: code.value,
+        code: value,
         secret: null,
       }
     })
@@ -95,11 +124,24 @@
     }
   }
 
-  watch(code, async (nv)=>{
-    if (nv){
-      sendCode();
+  // watch(code, async (nv)=>{
+  //   if (nv){
+  //     sendCode();
+  //   }
+  // })
+
+  function handleKeydown(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+      event.preventDefault();
+      navigator.clipboard.readText().then((pastedData) => {
+        if (pastedData) {
+          fillInput(pastedData);
+        }
+      }).catch(err => {
+        console.error('Failed to read clipboard contents: ', err);
+      });
     }
-  })
+  }
   </script>
 
   <style lang='scss'>
@@ -109,7 +151,9 @@
       gap: 1rem;
       margin-bottom: 1rem;
     }
-
+    .otp-input {
+      margin: 0 5px;
+    }
     .vue3-2fa-code-input-box {
         &[type='text'] {
           @apply  w-10 h-10 text-center text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
