@@ -449,6 +449,18 @@ export default class ConfigValidator implements IConfigValidator {
         });
       }
 
+      if (this.config.customization.loginPageInjections) {
+        const ALLOWED_GLOBAL_INJECTIONS = ['underInputs']
+        Object.keys(this.config.customization.loginPageInjections).forEach((injection) => {
+          if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
+            this.validateAndListifyInjection(this.config.customization.loginPageInjections, injection, errors);
+          } else {
+            const similar = suggestIfTypo(ALLOWED_GLOBAL_INJECTIONS, injection);
+            errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_GLOBAL_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          }
+        });
+      }
+
       if (!this.config.menu) {
         errors.push('No config.menu defined');
       }

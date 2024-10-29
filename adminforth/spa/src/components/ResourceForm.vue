@@ -53,7 +53,6 @@
 
 import { applyRegexValidation, callAdminForthApi} from '@/utils';
 import { computedAsync } from '@vueuse/core';
-import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
@@ -181,8 +180,6 @@ onMounted(() => {
       currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
     }
   });
-  
-  initFlowbite();
   emit('update:isValid', isValid.value);
 });
 

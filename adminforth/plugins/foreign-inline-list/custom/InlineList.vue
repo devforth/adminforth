@@ -111,7 +111,6 @@ import {
   IconPlusOutline,
 } from '@iconify-prerendered/vue-flowbite';
 import { showErrorTost } from '@/composables/useFrontendApi';
-import { initFlowbite } from 'flowbite';
 
 import { getIcon } from '@/utils';
 
@@ -229,8 +228,6 @@ async function getList() {
   totalRows.value = data.total;
 
   await new Promise(resolve => setTimeout(resolve, 0));
-  initFlowbite(); // for tooltips in table
-
 }
 
 onMounted( async () => {
