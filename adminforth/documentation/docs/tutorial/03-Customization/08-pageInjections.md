@@ -261,7 +261,7 @@ function checkReadingTime() {
   if (text) {
     const readingTime = getReadingTime(text);
     window.adminforth.alert({
-      message: `Reading time: ${readingTime} minutes`,
+      message: `Reading time: ${readingTime.minutes} minutes`,
       variant: 'success',
     });
   }
