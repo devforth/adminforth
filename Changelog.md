@@ -18,6 +18,9 @@ This fixed extra resources allocation on the page, improved scroll performance
 - fix border radius between show/edit/create pages
 - fix loginPageInjections is not getting listified and might crash plugin which uses it
 
+### Improved
+
+- Isolate cookies for case when you have multiple adminForth apps on one machine
 
 ## [1.3.55] - 2024-10-21
 
