@@ -1,16 +1,16 @@
 <template>
   <div>
     <div 
-      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl"
+      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl rounded-default"
     >
       <form autocomplete="off" @submit.prevent>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default overflow-hidden">
-          <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 block md:table-row-group">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 block md:table-row-group ">
             <tr>
-              <th scope="col" class="px-6 py-3 hidden md:table-cell">
+              <th scope="col" class="px-6 py-3 hidden md:table-cell  bg-lightFormHeading dark:bg-gray-700 rounded-tl-lg">
                   Field
               </th>
-              <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
+              <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell bg-lightFormHeading dark:bg-gray-700 rounded-tr-lg">
                   Value
               </th>
             </tr>
@@ -18,10 +18,13 @@
           <tbody>
               <tr v-for="column, i in editableColumns" :key="column.name"
                   v-if="currentValues !== null"
-                  class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+                  class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row "
                   :class="{ 'border-b': i !== editableColumns.length - 1 }"
-              >
-                    <td class="px-6 py-4 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
+              >     
+                    <!-- for tds or last tr add border-b-->
+                    <td class="px-6 py-4 whitespace-nowrap flex items-center block md:table-cell " 
+                      :class="{'rounded-bl-lg': i === editableColumns.length - 1}"
+                      > <!--align-top-->
                       <span class="flex items-center gap-1">                     
                         {{ column.label }}
                         <AfTooltip v-if="column.required[mode]">
@@ -38,7 +41,9 @@
                      
                      
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell">
+                    <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell"
+                      :class="{'rounded-br-lg': i === editableColumns.length - 1}"
+                    >
                     <template v-if="column?.components?.[props.source]?.file">
                       <component
                         :is="getCustomComponent(column.components[props.source])"
