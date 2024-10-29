@@ -51,7 +51,6 @@
   import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
   import { callAdminForthApi, loadFile } from '@/utils';
   import { useRouter } from 'vue-router';
-  import { initFlowbite } from 'flowbite'
   import { showErrorTost } from '@/composables/useFrontendApi';
   import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
   import VOtpInput from "vue3-otp-input";

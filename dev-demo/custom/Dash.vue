@@ -1,11 +1,11 @@
 <template>
-  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none h-screen">
+  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
         class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
       Statistics.</h1>
 
-    <div class="grid grid-cols-5 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 col-span-2" v-if="data">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
         <div class="flex justify-between">
           <div>
             <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
@@ -17,7 +17,7 @@
 
       </div>
 
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 row-span-2 col-span-3" v-if="data">
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 md:row-span-2 md:col-span-2" v-if="data">
 
         <div class="grid grid-cols-2 py-3">
           <dl>
@@ -42,7 +42,7 @@
 
       </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 col-span-2" v-if="data">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
         <div class="flex justify-between mb-5">
           <div>
             <p class="text-base font-normal text-gray-500 dark:text-gray-400">
@@ -53,7 +53,6 @@
         <div id="size-chart" class="[&>div]:mx-auto"></div>
       </div>
     </div>
-
   </div>
 </template>
 

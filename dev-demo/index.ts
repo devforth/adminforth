@@ -559,13 +559,16 @@ const admin = new AdminForth({
         pageInjections: {
           list: {
             customActionIcons: '@@/IdShow.vue',
-          }
+            // bottom: {
+            //   file: '@@/TopLine.vue',
+            //   meta: {
+            //     thinEnoughToShrinkTable: true,
+            //   }
+            // }
+          },
         //   show: {
         //     beforeBreadcrumbs: '@@/TopLine.vue',
         //   },
-        //   // list: {
-        //   //   bottom: '@@/TopLine.vue',
-        //   // }
         },
         listPageSize: 25,
         // listTableClickUrl: async (record, adminUser) => null,
