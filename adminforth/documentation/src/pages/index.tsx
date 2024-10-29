@@ -99,7 +99,7 @@ function HomepageHeader() {
       </header>
       <img src={require('@site/static/img/preview.png').default} alt="AdminForth" style={{
         width: '100%',
-        maxWidth: 1000,
+        maxWidth: 1100,
         zIndex: 100,
         margin: '0 auto',
         marginTop: '-28vw',
