@@ -71,6 +71,8 @@ class CodeInjector implements ICodeInjector {
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
 
+  // TODO: we should use brandSlug here to improve development experience for users who have couple of
+  // projects in adminforth
   static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
 
   cleanup() {

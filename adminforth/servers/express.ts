@@ -157,9 +157,9 @@ class ExpressServer implements IExpressHttpServer {
   authorize(handler) {
     return async (req, res, next) => {
       const cookies = await parseExpressCookie(req);
-
+      const brandSlug = this.adminforth.config.customization._brandNameSlug;
       // check if multiple adminforth_jwt providerd and show warning
-      const jwts = cookies.filter(({key}) => key === 'adminforth_jwt');
+      const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
       if (jwts.length > 1) {
         console.error('Multiple adminforth_jwt cookies provided');
       }
