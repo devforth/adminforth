@@ -227,7 +227,7 @@ When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are s
 ![alt text](<Group 15.png>)
 
 
-However one one of the above injections is set, the table will not try to shrink it's height into viewport and will have a fixed height. We apply this behavior because generally page injection might take a lot of height and table risks to be too small to be usable. So vertical scroll is moved to the body (horizontal scroll is still on the table):
+However if one of the above injections is set, the table will not try to shrink it's height into viewport and will have a fixed height. We apply this behavior because generally page injection might take a lot of height and table risks to be too small to be usable. So vertical scroll is moved to the body (horizontal scroll is still on the table):
 
 ![alt text](<Group 17.png>)
 
