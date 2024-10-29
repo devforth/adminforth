@@ -31,8 +31,8 @@ export const styles = () => ({
 
     lightList: "#FFFFFF", // list view background
     lightListTable: "#FFFFFF", // list view table background
-    lightListTableHeading: "alias:lightListTableHeadingText opacity:0.04", // list view table heading
-    lightListTableHeadingText: "#43445B", // list view table heading text
+    lightListTableHeading: "#f5f5f8", // list view table heading
+    lightListTableHeadingText: "alias:lightListTableHeading inverse", // list view table heading text
     lightListTableText: "#333333", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
     lightListBreadcrumbsText: "#666666", // list view breadcrumbs text

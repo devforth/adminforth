@@ -1,10 +1,10 @@
 <template>
-  <div class="rounded-default">
+  <div>
     <div 
-      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl  rounded-default"
+      class="relative shadow-resourseFormShadow dark:shadow-darkResourseFormShadow sm:rounded-lg dark:shadow-2xl"
     >
       <form autocomplete="off" @submit.prevent>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default overflow-hidden">
           <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 block md:table-row-group">
             <tr>
               <th scope="col" class="px-6 py-3 hidden md:table-cell">
@@ -21,19 +21,22 @@
                   class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
                   :class="{ 'border-b': i !== editableColumns.length - 1 }"
               >
-                    <td class="px-6 py-4 sm:pb-0 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
-                      {{ column.label }}
-                      <span :data-tooltip-target="`tooltip-show-${i}`" class="ml-1 relative inline-block">
+                    <td class="px-6 py-4 whitespace-nowrap flex items-center block md:table-cell"> <!--align-top-->
+                      <span class="flex items-center gap-1">                     
+                        {{ column.label }}
+                        <AfTooltip v-if="column.required[mode]">
+
                           <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                          :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
+                            :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
                           />
+
+                          <template #tooltip>
+                            Required field
+                          </template>
+                        </AfTooltip>
                       </span>
-                      <div :id="`tooltip-show-${i}`"
-                          role="tooltip" 
-                          class="ml-1 absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                          Required field
-                          <div class="tooltip-arrow" data-popper-arrow></div>
-                      </div>
+                     
+                     
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell">
                     <template v-if="column?.components?.[props.source]?.file">
@@ -156,9 +159,9 @@ import Dropdown from '@/components/Dropdown.vue';
 import { applyRegexValidation, callAdminForthApi, getCustomComponent } from '@/utils';
 import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
 import { computedAsync } from '@vueuse/core';
-import { initFlowbite } from 'flowbite';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import AfTooltip from "./AfTooltip.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -281,9 +284,7 @@ onMounted(() => {
       currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
     }
   });
-  console.log('currentValues', currentValues.value);
 
-  initFlowbite();
   emit('update:isValid', isValid.value);
 });
 

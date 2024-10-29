@@ -217,7 +217,46 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
   </div>
 </template>
 ```
-  
+
+
+## List view page injections shrinking: thin enough to shrink?
+
+
+When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
+
+![alt text](<Group 15.png>)
+
+
+However if one of the above injections is set, the table will not try to shrink it's height into viewport and will have a fixed height. We apply this behavior because generally page injection might take a lot of height and table risks to be too small to be usable. So vertical scroll is moved to the body (horizontal scroll is still on the table):
+
+![alt text](<Group 17.png>)
+
+
+However, if you intend to use injection as a small panel, you can set `meta.thinEnoughToShrinkTable` to `true` in the injection instantiation:
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        bottom: {
+          file: '@@/BottomPanel.vue',
+          meta: {
+            thinEnoughToShrinkTable: true,
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+![alt text](<Group 19.png>)
+
+If at least one injection will not set or will not define `meta.thinEnoughToShrinkTable` as `true`, the table will not try to shrink into viewport.
+
 
 ## Three dots menu customization
 
@@ -311,25 +350,23 @@ npm install text-analyzer --save
 Now create file `SearchForApartmentInGoogle.vue` in the `custom` folder of your project:
 
 ```html title="./custom/SearchForApartmentInGoogle.vue"
-<template> 
-    <a :href="`https://google.com?q=${record.title}`" :data-tooltip-target="`tooltip-google-${record.id}`"
-       class="font-medium text-lightPrimary dark:text-darkPrimary hover:underline ml-2"
-    >
-        <IconCardSearch class="w-5 h-5 me-2"/>
-    </a>
+<template>
+    <AfTooltip>
+        <a :href="`https://google.com?q=${record.title}`">
+            <IconCardSearch class="w-5 h-5 me-2"/>
+        </a>
 
-    <div :id="`tooltip-google-${record.id}`" role="tooltip"
-        class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-      Search for competitive apartments in Google
-      <div class="tooltip-arrow" data-popper-arrow></div>
-    </div>
+        <template #tooltip>
+            Search for competitive apartments in Google
+        </template>
+    </AfTooltip>
 </template>
 
 <script setup>
 import { IconCardSearch } from '@iconify-prerendered/vue-mdi';
+import AfTooltip from '@/components/AfTooltip.vue';
 
-const props = defineProps(['column', 'record', 'meta']);
-
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 </script>
 ```
 
