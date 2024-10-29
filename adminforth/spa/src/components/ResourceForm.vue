@@ -218,7 +218,7 @@ const groupedColumns = computed(() => {
   if (!groups || groups.length === 0) return [];
 
   return groups.map(group => ({
-    groupName: group.groupName,
+    ...group,
     columns: props.resource.columns.filter(col => group.columns.includes(col.name) && editableColumns.value.includes(col))
   }));
 });
