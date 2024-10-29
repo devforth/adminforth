@@ -1044,6 +1044,12 @@ export type AdminForthResource = {
        */
       allowedActions?: AllowedActions,
 
+
+      createEditGroups?: {
+        groupName: string;
+        columns: string[];
+      }[];
+
       /** 
        * Page size for list view
        */
