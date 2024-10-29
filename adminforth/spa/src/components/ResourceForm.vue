@@ -1,10 +1,36 @@
 <template>
   <div class="rounded-default">
-    <div>
-      <form autocomplete="off" @submit.prevent>
-        <div v-if="!coreStore.resource.options.createEditGroups || coreStore.resource.options.createEditGroups.length === 0">
+    <form autocomplete="off" @submit.prevent>
+      <div v-if="!coreStore.resource.options.createEditGroups || coreStore.resource.options.createEditGroups.length === 0">
+        <GroupsTable
+        :group="{groupName: '', columns: editableColumns}"
+        :currentValues="currentValues"
+        :editableColumns="editableColumns"
+        :mode="mode"
+        :unmasked="unmasked"
+        :columnOptions="columnOptions"
+        :validating="validating"
+        :columnError="columnError"
+        :setCurrentValue="setCurrentValue"
+        />
+      </div>
+      <div v-else class="flex flex-col gap-4">
+        <template v-for="group in groupedColumns" :key="group.groupName" class="flex flex-col gap-4"> 
           <GroupsTable
-          :group="{groupName: '', columns: editableColumns}"
+          :group="group"
+          :currentValues="currentValues"
+          :editableColumns="editableColumns"
+          :mode="mode"
+          :unmasked="unmasked"
+          :columnOptions="columnOptions"
+          :validating="validating"
+          :columnError="columnError"
+          :setCurrentValue="setCurrentValue"
+          />
+        </template>
+        <div v-if="otherColumns.length > 0">
+          <GroupsTable
+          :group="{groupName: 'Other', columns: otherColumns}"
           :currentValues="currentValues"
           :editableColumns="editableColumns"
           :mode="mode"
@@ -15,36 +41,8 @@
           :setCurrentValue="setCurrentValue"
           />
         </div>
-        <div v-else class="flex flex-col gap-4">
-            <template v-for="group in groupedColumns" :key="group.groupName" class="flex flex-col gap-4"> 
-              <GroupsTable
-              :group="group"
-              :currentValues="currentValues"
-              :editableColumns="editableColumns"
-              :mode="mode"
-              :unmasked="unmasked"
-              :columnOptions="columnOptions"
-              :validating="validating"
-              :columnError="columnError"
-              :setCurrentValue="setCurrentValue"
-              />
-            </template>
-              <div v-if="otherColumns.length > 0">
-                <GroupsTable
-                :group="{groupName: 'Other', columns: otherColumns}"
-                :currentValues="currentValues"
-                :editableColumns="editableColumns"
-                :mode="mode"
-                :unmasked="unmasked"
-                :columnOptions="columnOptions"
-                :validating="validating"
-                :columnError="columnError"
-                :setCurrentValue="setCurrentValue"
-                />
-              </div>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 
 </template>
