@@ -309,6 +309,7 @@ const admin = new AdminForth({
           beforeSave: demoChecker,
         },
       },
+      
       columns: [
         { 
           name: 'id', 
@@ -399,7 +400,7 @@ const admin = new AdminForth({
         },
         {
           name: 'apartment_image',
-          showIn: ['show'],
+          showIn: ['show',],
           required: false,
           editingNote: 'Upload image of apartment',
         },
@@ -434,13 +435,13 @@ const admin = new AdminForth({
             { value: 4, label: '4 rooms' },
             { value: 5, label: '5 rooms' },
           ],
-          showIn: ['filter', 'show', 'edit'],
+          showIn: ['filter', 'show', 'create', 'edit'],
         },
         { 
           name: 'description',
           sortable: false,
           type: AdminForthDataTypes.RICHTEXT,
-          showIn: ['filter', 'show', 'edit'],
+          showIn: ['filter', 'show', 'edit', 'create'],
         },
         {
           name: 'property_type',
@@ -462,7 +463,7 @@ const admin = new AdminForth({
         },
         {
           name: 'user_id',
-          showIn: [ 'filter', 'show', 'edit', 'list'],
+          showIn: [ 'filter', 'show', 'edit', 'list', 'create'],
           foreignResource: {
             resourceId: 'users',
             hooks: {
@@ -571,6 +572,16 @@ const admin = new AdminForth({
         },
         listPageSize: 25,
         // listTableClickUrl: async (record, adminUser) => null,
+        createEditGroups: [
+          {
+            groupName: 'Main info',
+            columns: ['id','title', 'description', 'country', 'apartment_image']
+          },
+          {
+            groupName: 'Characteristics',
+            columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+          }
+        ],
         bulkActions: [
           {
             label: 'Mark as listed',

@@ -1045,6 +1045,14 @@ export type AdminForthResource = {
       allowedActions?: AllowedActions,
 
       /** 
+       * Allows to make groups of columns in create/edit resource pages.
+       */
+      createEditGroups?: {
+        groupName: string;
+        columns: string[];
+      }[];
+
+      /** 
        * Page size for list view
        */
       listPageSize?: number,
