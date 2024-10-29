@@ -22,6 +22,12 @@ const limitHeightToPage = computed(() => {
   if (route.name !== 'resource-list' ) {
     return false;
   }
+  // for mobile phones disable shrinking table at all because of the issues with HEADER and general UX
+  // use navigator.userAgent to detect mobile phones
+  if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+    return false;
+  }
+
   if (!coreStore.resource?.options?.pageInjections?.list) {
     return true;
   }

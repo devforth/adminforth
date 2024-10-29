@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remove initFlowbite call from components which used tooltip, and moved tooltip to seaparate component. 
 This fixed extra resources allocation on the page, improved scroll performance
 - applied shrink table strategy on list table for better UX (scrolls are now inside of table so you can switch pages without scrolling to the end of the page)
+- fix border radius between show/edit/create pages
 
 
 ## [1.3.55] - 2024-10-21
