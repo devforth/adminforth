@@ -35,11 +35,11 @@
         <IconCaretUpSolid v-else class="h-5 w-5 text-gray-400" />
       </div>
     </div>
-    <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+    <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
       <div
         v-for="item in filteredItems"
         :key="item.value"
-        class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+        class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
         :class="{ 'bg-lightPrimaryOpacity': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
