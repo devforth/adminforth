@@ -4,6 +4,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
+import React, { useState } from 'react';
 
 import styles from './index.module.css';
 
@@ -74,10 +75,39 @@ const images = [
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
+
+  const [ theme, setTheme ] = useState('light');
+  
+
+  // implement theme switching like in horror movie- wailt a little bit and then switch aggressively blinking
+  async function wait(ms: number) {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+    
+  }
+
+  const HORROR_DELAYS_MS = [5000, 100, 3100, 200, 3200, 20, 10, 20, 10, 1200, 50, 30, 50, 4100, 10, 10, 10, 1000, 300];  
+
+  async function switchThemeHorrific() {
+    
+
+    for (let i = 0; i < HORROR_DELAYS_MS.length; i++) {
+      await wait(HORROR_DELAYS_MS[i]);
+      setTheme(i % 2 === 0 ? 'dark' : 'light');
+    }
+    switchThemeHorrific();
+  }
+  if (!window.horrorStarted ) {
+    switchThemeHorrific();
+    window.horrorStarted = true;
+  }
+  
+
   return (
     <>
-      <header className={clsx('hero', styles.heroBanner)} style={{paddingBottom: '30vw'}}>
-        <div className="container">
+      <header className={clsx('hero', styles.heroBanner)}>
+        <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
             Create Admin Panels faster on Node and Vue with AdminForth Framework
           </Heading>
@@ -97,15 +127,20 @@ function HomepageHeader() {
           </div>
         </div>
       </header>
-      <img src={require('@site/static/img/preview.png').default} alt="AdminForth" style={{
-        width: '100%',
-        maxWidth: 1200,
-        zIndex: 100,
-        margin: '0 auto',
-        marginTop: '-28vw',
-        // transform: 'translateY(10%)',
-        marginBottom: 80,
-      }} />
+
+
+        <div className="laptop_container">
+          <div className="laptop">
+            <div className="laptop__screen">
+              <img src={theme === 'light' ? "/img/prev_light.png" : "/img/prev_dark.png"} alt="Screen" />
+            </div>
+            <div className="laptop__bottom">
+              <div className="laptop__under"></div>
+            </div>
+            <div className="laptop__shadow"></div>
+          </div>
+        </div>
+
     </>
   );
 }
