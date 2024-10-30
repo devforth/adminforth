@@ -1,22 +1,19 @@
 <template>
-  <span class="flex items-center"  
-    :data-tooltip-target="visualValue ? `tooltip-${id}` : undefined"
-    data-tooltip-placement="top"
-  >
-    {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>
-
-    <div :id="`tooltip-${id}`" role="tooltip" v-if="visualValue"
-          class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+  <AfTooltip>
+    <span class="flex items-center">
+      {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>
+    </span>
+    <template #tooltip v-if="visualValue">
       {{ props.record[props.column.name] }}
-      <div class="tooltip-arrow" data-popper-arrow></div>
-    </div>
-  </span>
+    </template>
+  </AfTooltip>
+  
 </template>
 
 <script setup>  
 import { computed, ref, onMounted } from 'vue';
 import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
-import { initFlowbite } from 'flowbite';
+import AfTooltip from '@/components/AfTooltip.vue';
 
 const visualValue = computed(() => {
   // if lenght is more then 8, show only first 4 and last 4 characters, ... in the middle
@@ -42,7 +39,6 @@ function copyToCB() {
 onMounted(async () => {
   id.value = Math.random().toString(36).substring(7);
   await new Promise(resolve => setTimeout(resolve, 0));
-  initFlowbite();
 });
 
 </script>

@@ -1,19 +1,15 @@
 <template>
-    <span class="flex items-center"  
-          :data-tooltip-target="formattedValue && `tooltip-${id}`"
-          data-tooltip-placement="left">
+    <AfTooltip class="flex items-center" >
       {{ formattedValue }} 
-      <div :id="`tooltip-${id}`" role="tooltip" v-if="formattedValue"
-           class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+      <template #tooltip v-if="formattedValue">
         {{ formattedTooltipValue }}
-        <div class="tooltip-arrow" data-popper-arrow></div>
-      </div>
-    </span>
+      </template>
+    </AfTooltip>
   </template>
   
   <script setup>
   import { computed, ref, onMounted } from 'vue';
-  import { initFlowbite } from 'flowbite';
+  import AfTooltip from '@/components/AfTooltip.vue';
   
   const props = defineProps(['column', 'record']);
   const id = ref();
@@ -57,6 +53,5 @@ function formatNumberUsingIntl(num, locale) {
   onMounted(async () => {
     id.value = Math.random().toString(36).substring(7);
     await new Promise(resolve => setTimeout(resolve, 0));
-    initFlowbite();
   });
   </script>
