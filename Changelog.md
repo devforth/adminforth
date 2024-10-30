@@ -25,6 +25,7 @@ This fixed extra resources allocation on the page, improved scroll performance
 ### Added
 
 - URL renderer `@/renderers/URL.vue`
+- Fields grouping
 
 ## [1.3.55] - 2024-10-21
 
