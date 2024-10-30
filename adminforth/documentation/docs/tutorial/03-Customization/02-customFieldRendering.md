@@ -276,3 +276,22 @@ It formats large numbers into a human-readable format (e.g., 10k, 1.5M) and supp
 ```
 
 ![alt text](<HumanNumber.png>)
+
+
+### URL
+
+If your field has absolute URLs as text strings you can use `URLs` renderer to render them as clickable links.
+
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'url',
+  //diff-add
+      components: {
+  //diff-add
+        list: '@/renderers/URL.vue'
+  //diff-add
+      },
+    ...
+```

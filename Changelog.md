@@ -22,6 +22,10 @@ This fixed extra resources allocation on the page, improved scroll performance
 
 - Isolate cookies for case when you have multiple adminForth apps on one machine
 
+### Added
+
+- URL renderer `@/renderers/URL.vue`
+
 ## [1.3.55] - 2024-10-21
 
 ### Fixed
