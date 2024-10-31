@@ -314,10 +314,14 @@ const admin = new AdminForth({
         { 
           name: 'id', 
           label: 'Identifier',  // if you wish you can redefine label
-          showIn: ['filter', 'show'], // show in filter and in show page
+          showIn: ['filter', 'show', 'list'], // show in filter and in show page
           primaryKey: true,
           // @ts-ignore
-          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // initialRecord is values user entered, adminUser object of user who creates record
+          // fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  
+          fillOnCreate: ({initialRecord}: any) => randomUUID(),
+          components: {
+            list: '@/renderers/CompactUUID.vue'
+          }// initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
             name: 'title',

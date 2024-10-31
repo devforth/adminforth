@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { callAdminForthApi } from '@/utils';
-import { initFlowbite } from 'flowbite'
 import { useCoreStore } from './core';
 import router from '@/router';
 
@@ -26,9 +25,6 @@ export const useUserStore = defineStore('user', () => {
         await router.push('/');
         await router.isReady();
         await coreStore.fetchMenuAndResource();
-        setTimeout(() => {
-            initFlowbite();
-        }); 
     }
 
     async function logout() {

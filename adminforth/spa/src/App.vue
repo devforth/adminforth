@@ -238,7 +238,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, defineComponent, onBeforeMount } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
-import { initFlowbite, Dropdown } from 'flowbite'
+import { Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
@@ -357,8 +357,6 @@ watch (()=>coreStore.menu, () => {
 watch([loggedIn,  routerIsReady, loginRedirectCheckIsReady], ([l,r,lr]) => {
   if (l && r && lr) {
     setTimeout(() => {
-      initFlowbite();
-
       const dd = new Dropdown(
         document.querySelector('#dropdown-user') as HTMLElement,
         document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
