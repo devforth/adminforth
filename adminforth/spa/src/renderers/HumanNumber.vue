@@ -8,7 +8,7 @@
   </template>
   
   <script setup>
-  import { computed, ref, onMounted } from 'vue';
+  import { computed, ref, onMounted, nextTick } from 'vue';
   import AfTooltip from '@/components/AfTooltip.vue';
   
   const props = defineProps(['column', 'record']);
@@ -52,6 +52,6 @@
 
   onMounted(async () => {
     id.value = Math.random().toString(36).substring(7);
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await nextTick();
   });
 </script>
