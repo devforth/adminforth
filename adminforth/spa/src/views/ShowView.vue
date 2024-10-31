@@ -61,19 +61,19 @@
     >
      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
       <!-- table fixed layour used to prevent double scroll in inline list plugins -->
-        <thead class="text-xs text-gray-700 uppercase bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-                <th scope="col" class="px-6 py-3">
-                    Field
-                </th>
-                <th scope="col" class="px-6 py-3 w-5/6">
-                    Value
-                </th>
-            </tr>
+        <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
+          <tr>
+            <th scope="col" class="px-6 py-3 hidden md:table-cell">
+                Field
+            </th>
+            <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
+                Value
+            </th>
+          </tr>
         </thead>
         <tbody>
             <tr v-for="column,i in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
-              class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700"
+              class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700 block md:table-row"
               :class="{ 'border-b': i !== coreStore.resource.columns.filter(c => c.showIn.includes('show')).length - 1 }"
             >
               <component
@@ -85,7 +85,7 @@
                   :record="coreStore.record"
               />
               <template v-else>
-                <td class="px-6 py-4 whitespace-nowrap "> <!--align-top-->
+                <td class="px-6 py-4 whitespace-nowrap relative block md:table-cell"> <!--align-top-->
                   {{ column.label }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap" :data-af-column="column.name">
