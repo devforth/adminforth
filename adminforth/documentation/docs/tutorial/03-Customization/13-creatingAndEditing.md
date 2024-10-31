@@ -64,15 +64,25 @@ In some cases, you may want to organize data fields into specific groups for bet
       ...
       options: {
         ...
+          //diff-add
         createEditGroups: [
+          //diff-add
           {
+          //diff-add
             groupName: 'Main info',
+          //diff-add
             columns: ['id','title', 'description', 'country', 'apartment_image']
+          //diff-add
           },
+          //diff-add
           {
+          //diff-add
             groupName: 'Characteristics',
+          //diff-add
             columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+          //diff-add
           }
+          //diff-add
         ],
       }
     }

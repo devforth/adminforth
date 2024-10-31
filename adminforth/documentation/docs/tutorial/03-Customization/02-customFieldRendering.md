@@ -295,3 +295,21 @@ If your field has absolute URLs as text strings you can use `URLs` renderer to r
       },
     ...
 ```
+
+### Relative Time
+
+To format your date fields to display the elapsed time, you can utilize the RelativeTime renderer.
+ 
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'created_at',
+  //diff-add
+      components: {
+  //diff-add
+        list: '@/renderers/RelativeTime.vue'
+  //diff-add
+      },
+    ...
+```
