@@ -4,8 +4,8 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
-import React, { useState } from 'react';
-
+import { useState } from 'react';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import styles from './index.module.css';
 
 
@@ -75,34 +75,39 @@ const images = [
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
-
+  
   const [ theme, setTheme ] = useState('light');
-  
 
-  // implement theme switching like in horror movie- wailt a little bit and then switch aggressively blinking
-  async function wait(ms: number) {
-    return new Promise(resolve => {
-      setTimeout(resolve, ms);
-    });
-    
-  }
+  if (ExecutionEnvironment.canUseDOM) {
 
-  const HORROR_DELAYS_MS = [5000, 100, 3100, 200, 3200, 20, 10, 20, 10, 1200, 50, 30, 50, 4100, 10, 10, 10, 1000, 300];  
-
-  async function switchThemeHorrific() {
-    
-
-    for (let i = 0; i < HORROR_DELAYS_MS.length; i++) {
-      await wait(HORROR_DELAYS_MS[i]);
-      setTheme(i % 2 === 0 ? 'dark' : 'light');
+    // implement theme switching like in horror movie- wailt a little bit and then switch aggressively blinking
+    async function wait(ms: number) {
+      return new Promise(resolve => {
+        setTimeout(resolve, ms);
+      });
+      
     }
-    switchThemeHorrific();
-  }
-  if (!window.horrorStarted ) {
-    switchThemeHorrific();
-    window.horrorStarted = true;
-  }
-  
+
+    const HORROR_DELAYS_MS = [2800, 150, 2100, 200, 50, 50, 1200, 300, 3124, 337, 1000, 200, 3124, 4200, 10, 10, 1000, 300];  
+
+    async function switchThemeHorrific() {
+      
+
+      for (let i = 0; i < HORROR_DELAYS_MS.length; i++) {
+        await wait(HORROR_DELAYS_MS[i]);
+        if (HORROR_DELAYS_MS[i] === 3124) {
+          setTheme('screem');
+          continue;
+        }
+        setTheme(i % 2 === 0 ? 'dark' : 'light');
+      }
+      switchThemeHorrific();
+    }
+    if (!window.horrorStarted ) {
+      switchThemeHorrific();
+      window.horrorStarted = true;
+    }
+  } 
 
   return (
     <>
@@ -132,7 +137,14 @@ function HomepageHeader() {
         <div className="laptop_container">
           <div className="laptop">
             <div className="laptop__screen">
-              <img src={theme === 'light' ? "/img/prev_light.png" : "/img/prev_dark.png"} alt="Screen" />
+              <img 
+                src={{
+                    light: require('@site/static/img/preview_light.png').default,
+                    dark: require('@site/static/img/preview_dark.png').default,
+                    screem: require('@site/static/img/screem.png').default,
+                  }[theme]
+                } alt="Screen" />
+                
             </div>
             <div className="laptop__bottom">
               <div className="laptop__under"></div>
