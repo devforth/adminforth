@@ -1,6 +1,6 @@
 {
   "name": "@adminforth/audit-log",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "description": "AdminForth plugin for logging all actions (who did what and when)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -17,6 +17,7 @@ This fixed extra resources allocation on the page, improved scroll performance
 - applied shrink table strategy on list table for better UX (scrolls are now inside of table so you can switch pages without scrolling to the end of the page)
 - fix border radius between show/edit/create pages
 - fix loginPageInjections is not getting listified and might crash plugin which uses it
+- AuditLog plugin diff field on mobile screens now works with more convenient unified mode
 
 ### Improved
 
