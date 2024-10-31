@@ -189,6 +189,20 @@ class AdminForth implements IAdminForth {
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
+      
+      res.options.createEditGroups?.forEach(group => {
+        const allColumns = Object.keys(fieldTypes);
+        group.columns.forEach((col, i) => {
+          if (!allColumns.includes(col)) {
+            const similar = suggestIfTypo(allColumns, col);
+            throw new Error(
+              `Group '${group.groupName}' has an unknown column '${col}'. ${
+                similar ? `Did you mean '${similar}'?` : ''
+              }`
+            );
+          }
+        });
+      });
 
       this.configValidator.postProcessAfterDiscover(res);
 
