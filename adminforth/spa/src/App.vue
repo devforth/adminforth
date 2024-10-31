@@ -236,8 +236,8 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, defineComponent, onBeforeMount } from 'vue';
-import { RouterLink, RouterView } from 'vue-router';
+import { computed, onMounted, ref, watch, onBeforeMount } from 'vue';
+import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
@@ -263,10 +263,7 @@ const toastStore = useToastStore();
 const userStore = useUserStore();
 const frontendApi = new FrontendAPI();
 frontendApi.init();
-const splitAtLast = (str: string, separator: string) => {
-  const index = str.lastIndexOf(separator);
-  return [str.slice(0, index), str.slice(index + 1)];
-}
+
 createHead()
 const sideBarOpen = ref(false);
 const defaultLayout = ref(true);
@@ -303,9 +300,6 @@ async function logout() {
   await userStore.logout();
   router.push({ name: 'login' })
 }
-
-
-
 
 async function initRouter() {
   await router.isReady();
@@ -399,8 +393,6 @@ function closeCTA() {
   const hash = ctaBadge.value.hash;
   window.localStorage.setItem(`ctaBadge-${hash}`, '1');
 }
-
-
 
 
 </script>
