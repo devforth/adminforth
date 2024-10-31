@@ -19,6 +19,7 @@
     "debounce": "^2.1.0",
     "flowbite": "^2.3.0",
     "flowbite-datepicker": "^1.2.6",
+    "javascript-time-ago": "^2.5.11",
     "pinia": "^2.1.7",
     "sanitize-html": "^2.13.0",
     "unhead": "^1.9.12",
