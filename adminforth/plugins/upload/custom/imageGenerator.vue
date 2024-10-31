@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { Carousel } from 'flowbite';
 import { callAdminForthApi } from '@/utils';
 
@@ -197,7 +197,7 @@ async function generateImages() {
   //   'https://via.placeholder.com/600x400?text=Image+1',
   //   'https://via.placeholder.com/600x400?text=Image+2',
   // ];
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await nextTick();
 
   caurosel.value = new Carousel(
     document.getElementById('gallery'), 
@@ -213,7 +213,7 @@ async function generateImages() {
       override: true,
     }
   );
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await nextTick();
   loading.value = false;
 }
 

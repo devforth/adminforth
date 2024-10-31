@@ -11,9 +11,10 @@
 </template>
 
 <script setup>  
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, nextTick } from 'vue';
 import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
 import AfTooltip from '@/components/AfTooltip.vue';
+
 
 const visualValue = computed(() => {
   // if lenght is more then 8, show only first 4 and last 4 characters, ... in the middle
@@ -38,7 +39,7 @@ function copyToCB() {
 
 onMounted(async () => {
   id.value = Math.random().toString(36).substring(7);
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await nextTick();
 });
 
 </script>

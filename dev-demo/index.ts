@@ -144,7 +144,7 @@ const admin = new AdminForth({
     // datesFormat: 'D MMM YY',
     // timeFormat: 'HH:mm:ss',
     datesFormat: 'DD MMM',
-    timeFormat: 'hh:mm',
+    timeFormat: 'hh:mm a',
 
     title: 'Devforth Admin',
     // brandLogo: '@@/df.svg',
@@ -317,14 +317,15 @@ const admin = new AdminForth({
           showIn: ['filter', 'show', 'list'], // show in filter and in show page
           primaryKey: true,
           // @ts-ignore
-          // fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  
-          fillOnCreate: ({initialRecord}: any) => randomUUID(),
+          fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  
+          // fillOnCreate: ({initialRecord}: any) => randomUUID(),
           components: {
             list: '@/renderers/CompactUUID.vue'
           }// initialRecord is values user entered, adminUser object of user who creates record
         },
         { 
             name: 'title',
+            // type: AdminForthDataTypes.JSON,
             required: true,
             showIn: ['list', 'create', 'edit', 'filter', 'show'],  // the default is full set
             maxLength: 255,  // you can set max length for string fields
@@ -398,7 +399,9 @@ const admin = new AdminForth({
           type: AdminForthDataTypes.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
-
+          components: {
+            list: '@/renderers/RelativeTime.vue'
+          },
           // @ts-ignore
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },
