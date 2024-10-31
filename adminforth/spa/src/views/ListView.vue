@@ -116,7 +116,7 @@ import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
@@ -182,7 +182,7 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await nextTick();
 }
 
 async function startBulkAction(actionId) {

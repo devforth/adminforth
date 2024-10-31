@@ -45,7 +45,7 @@
   </div>
 </template>
 <script setup>
-import {ref, computed, onMounted, watch, onBeforeUnmount} from 'vue';
+import {ref, computed, onMounted, watch, onBeforeUnmount, nextTick} from 'vue';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -105,7 +105,7 @@ async function updateFromProps() {
     startTime.value = '';
   } else {
     // wait ref to initialize
-    await (new Promise(resolve => setTimeout(resolve, 0)));
+    await nextTick();
     datepickerObject.value.setDate(dayjs(props.valueStart).format('DD MMM YYYY'));
     startTime.value = dayjs(props.valueStart).format('HH:mm:ss')
   }

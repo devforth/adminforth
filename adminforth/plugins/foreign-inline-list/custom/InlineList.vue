@@ -102,7 +102,7 @@
 
 <script setup>
 import { callAdminForthApi } from '@/utils';
-import { ref, onMounted, watch, computed  } from 'vue';
+import { ref, onMounted, watch, computed, nextTick  } from 'vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import Filters from '@/components/Filters.vue';
 import {
@@ -111,7 +111,6 @@ import {
   IconPlusOutline,
 } from '@iconify-prerendered/vue-flowbite';
 import { showErrorTost } from '@/composables/useFrontendApi';
-
 import { getIcon } from '@/utils';
 
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
@@ -227,7 +226,7 @@ async function getList() {
   });
   totalRows.value = data.total;
 
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await nextTick();
 }
 
 onMounted( async () => {
