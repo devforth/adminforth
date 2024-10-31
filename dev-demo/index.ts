@@ -398,7 +398,9 @@ const admin = new AdminForth({
           type: AdminForthDataTypes.DATETIME ,
           allowMinMaxQuery: true,
           showIn: ['list', 'filter', 'show', 'edit'],
-
+          components: {
+            list: '@/renderers/RelativeTime.vue'
+          },
           // @ts-ignore
           fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
         },

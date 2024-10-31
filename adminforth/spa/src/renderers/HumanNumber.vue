@@ -46,12 +46,12 @@
   return new Intl.NumberFormat(locale).format(num);
 }
 
-function formatNumberUsingIntl(num, locale) {
-    return new Intl.NumberFormat(locale).format(num);
-}
+  function formatNumberUsingIntl(num, locale) {
+      return new Intl.NumberFormat(locale).format(num);
+  }
 
   onMounted(async () => {
     id.value = Math.random().toString(36).substring(7);
     await new Promise(resolve => setTimeout(resolve, 0));
   });
-  </script>
+</script>
