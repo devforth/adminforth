@@ -9,12 +9,13 @@ app.use(VueDiff);
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 const coreStore = useCoreStore();
 const theme = computed(() => coreStore.theme);; 
+const isMobile = computed(() => navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPhone|iPad|iPod/i));
 
 </script>
 
 <template>
     <Diff
-      :mode="'split'"
+      :mode="isMobile ? 'unified' : 'split'"
       :theme="theme"
       :language="'JSON'"
       :prev="JSON.stringify(props.record[props.meta.resourceColumns.resourceDataColumnName].oldRecord, null, 2)"
