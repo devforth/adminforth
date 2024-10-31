@@ -9,7 +9,6 @@ app.use(VueDiff);
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 const coreStore = useCoreStore();
 const theme = computed(() => coreStore.theme);; 
-// define is mobile using navigator
 const isMobile = computed(() => navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPhone|iPad|iPod/i));
 
 </script>
