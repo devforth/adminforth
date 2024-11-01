@@ -1,4 +1,5 @@
 import type { Express } from 'express';
+import { FastifyInstance } from 'fastify';
 import type { Writable } from 'stream';
 
 export interface ICodeInjector {
@@ -86,6 +87,32 @@ export interface IExpressHttpServer extends IHttpServer {
    * 
    * ```ts
    * expressApp.get('/myApi', authorize((req, res) => \{
+   *  console.log('User is authorized', req.adminUser);
+   *  res.json(\{ message: 'Hello World' \});
+   * \}));
+   * ``
+   * 
+   */
+  authorize(callable: Function): void;
+}
+
+export interface IFastifyHttpServer extends IHttpServer {
+
+  /**
+   * Call this method to serve AdminForth SPA from Fastify instance.
+   * @param app : Fastify instance
+   */
+  serve(app: FastifyInstance ): void;
+
+  /**
+   * Method (middleware) to wrap fastify endpoints with authorization check.
+   * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
+   * @param callable : Function which will be called if user is authorized.
+   * 
+   * Example:
+   * 
+   * ```ts
+   * fastifyApp.get('/myApi', authorize((req, res) => \{
    *  console.log('User is authorized', req.adminUser);
    *  res.json(\{ message: 'Hello World' \});
    * \}));
