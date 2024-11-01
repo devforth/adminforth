@@ -232,7 +232,9 @@
 
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
-        Showing <span class="font-semibold text-gray-900 dark:text-white">
+        <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">Wrong Page </span>
+        <span v-else>Showing </span> 
+        <span class="font-semibold text-gray-900 dark:text-white">
           {{ ((page || 1) - 1) * pageSize + 1 }}
         </span> to <span class="font-semibold text-gray-900 dark:text-white">
           {{ Math.min((page || 1) * pageSize, totalRows) }}
