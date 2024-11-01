@@ -330,7 +330,7 @@ class CodeInjector implements ICodeInjector {
       for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
         const to = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', dest);
         if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲⚙️ fsExtra.copy from ${src}, ${to}`);
+          console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);
         }
 
         await fsExtra.copy(src, to, {

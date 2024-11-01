@@ -63,10 +63,10 @@
       <!-- table fixed layour used to prevent double scroll in inline list plugins -->
         <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
           <tr>
-            <th scope="col" class="px-6 py-3 hidden md:table-cell">
+            <th scope="col" class="px-6 py-3 hidden md:w-52 md:table-cell">
                 Field
             </th>
-            <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
+            <th scope="col" class="px-6 py-3 hidden md:table-cell">
                 Value
             </th>
           </tr>
@@ -85,10 +85,10 @@
                   :record="coreStore.record"
               />
               <template v-else>
-                <td class="px-6 py-4 whitespace-nowrap relative block md:table-cell"> <!--align-top-->
+                <td class="px-6 py-4 relative block md:table-cell font-bold md:font-normal pb-0 md:pb-4"> <!--align-top-->
                   {{ column.label }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap" :data-af-column="column.name">
+                <td class="px-6 py-4 whitespace-pre-wrap" :data-af-column="column.name">
                   <component
                     v-if="column?.components?.show"
                     :is="getCustomComponent(column?.components?.show)"
