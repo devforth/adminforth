@@ -6,10 +6,10 @@
     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
         <tr>
-          <th scope="col" class="px-6 py-3 hidden md:table-cell">
+          <th scope="col" class="px-6 py-3 hidden md:w-52 md:table-cell">
               Field
           </th>
-          <th scope="col" class="px-6 py-3 w-5/6 hidden md:table-cell">
+          <th scope="col" class="px-6 py-3 hidden md:table-cell">
               Value
           </th>
         </tr>
@@ -22,7 +22,8 @@
           class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
           :class="{ 'border-b': i !== group.columns.length - 1 }"
         >
-          <td class="px-6 py-4 whitespace-nowrap flex items-center block md:table-cell" :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
+          <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
+              :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
             <span class="flex items-center gap-1">                     
               {{ column.label }}
               <AfTooltip v-if="column.required[mode]">
@@ -39,7 +40,8 @@
             
             
           </td>
-          <td class="px-6 py-4 whitespace-nowrap whitespace-pre-wrap relative block md:table-cell rounded-br-lg" :class="{'rounded-br-lg': i === group.columns.length - 1}">
+          <td class="px-6 py-4  whitespace-pre-wrap relative block md:table-cell rounded-br-lg " 
+              :class="{'rounded-br-lg': i === group.columns.length - 1}">
             <template v-if="column?.components?.[props.source]?.file">
               <component
                 :is="getCustomComponent(column.components[props.source])"

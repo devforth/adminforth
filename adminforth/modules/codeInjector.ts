@@ -10,7 +10,6 @@ import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
 import { AdminForthConfigMenuItem, ICodeInjector } from '../types/AdminForthConfig.js';
 import { StylesGenerator } from './styleGenerator.js';
-import { title } from 'process';
 
 
 let TMP_DIR;
@@ -18,7 +17,7 @@ let TMP_DIR;
 try {
   TMP_DIR = os.tmpdir();
 } catch (e) {
-  TMP_DIR = '/tmp';
+  TMP_DIR = '/tmp'; //maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
 }
 
 
@@ -71,9 +70,14 @@ class CodeInjector implements ICodeInjector {
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
 
-  // TODO: we should use brandSlug here to improve development experience for users who have couple of
-  // projects in adminforth
-  static SPA_TMP_PATH = path.join(TMP_DIR, 'adminforth', 'spa_tmp');
+
+  spaTmpPath(): string {
+    const brandSlug = this.adminforth.config.customization._brandNameSlug
+    if (!brandSlug) {
+      throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
+    }
+    return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+  }
 
   cleanup() {
     console.log('Cleaning up...');
@@ -127,10 +131,15 @@ class CodeInjector implements ICodeInjector {
   async rmTmpDir() {
     // remove spa_tmp folder if it is exists
     try {
-      await fs.promises.rm(CodeInjector.SPA_TMP_PATH, { recursive: true });
+      await fs.promises.rm(
+        this.spaTmpPath(), { recursive: true });
     } catch (e) {
       // ignore
     }
+  }
+
+  getServeDir() {
+    return path.join(this.getSpaDir(), 'dist');
   }
 
   async packagesFromNpm(dir: string): Promise<[string, string[]]> {
@@ -183,11 +192,12 @@ class CodeInjector implements ICodeInjector {
   }
 
   async prepareSources({ filesUpdated }: { filesUpdated?: string[] }) {
-    // check SPA_TMP_PATH exists and create if not
+    // check spa tmp folder exists and create if not
     try {
-      await fs.promises.access(CodeInjector.SPA_TMP_PATH, fs.constants.F_OK);
+      await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
+        
     } catch (e) {
-      await fs.promises.mkdir(CodeInjector.SPA_TMP_PATH, { recursive: true });
+      await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
     }
 
     const icons = [];
@@ -269,7 +279,7 @@ class CodeInjector implements ICodeInjector {
       // copy only updated files
       await Promise.all(filesUpdated.map(async (file) => {
         const src = path.join(spaDir, file);
-        const dest = path.join(CodeInjector.SPA_TMP_PATH, file);
+        const dest = path.join(this.spaTmpPath(), file);
  
         // overwrite:true can't be used to not destroy cache
         await fsExtra.copy(src, dest, {
@@ -284,19 +294,19 @@ class CodeInjector implements ICodeInjector {
       let spaDir = this.getSpaDir();
 
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${CodeInjector.SPA_TMP_PATH}`);
+        console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
       }
 
-      // try to rm SPA_TMP_PATH/src/types directory 
+      // try to rm <spa tmp path>/src/types directory 
       try {
-        await fs.promises.rm(path.join(CodeInjector.SPA_TMP_PATH, 'src', 'types'), { recursive: true });
+        await fs.promises.rm(path.join(this.spaTmpPath(), 'src', 'types'), { recursive: true });
       } catch (e) {
         // ignore
       }
 
       // overwrite can't be used to not destroy cache
     
-      await fsExtra.copy(spaDir, CodeInjector.SPA_TMP_PATH, {
+      await fsExtra.copy(spaDir, this.spaTmpPath(), {
         filter: (src) => {
           const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
           if (process.env.HEAVY_DEBUG && !filterPasses) {
@@ -320,7 +330,7 @@ class CodeInjector implements ICodeInjector {
       if (customFav) {
 
         const faviconPath = path.join(this.adminforth.config.customization?.customComponentsDir, customFav.replace('@@/', ''));
-        const dest = path.join(CodeInjector.SPA_TMP_PATH, 'public', 'assets', customFav.replace('@@/', ''));
+        const dest = path.join(this.spaTmpPath(), 'public', 'assets', customFav.replace('@@/', ''));
         // make sure all folders in dest exist
         await fsExtra.ensureDir(path.dirname(dest));
 
@@ -328,9 +338,9 @@ class CodeInjector implements ICodeInjector {
       }
 
       for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
-        const to = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', dest);
+        const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
         if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲⚙️ fsExtra.copy from ${src}, ${to}`);
+          console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);
         }
 
         await fsExtra.copy(src, to, {
@@ -447,7 +457,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     // inject that code into spa_tmp/src/App.vue
-    const appVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'main.ts');
+    const appVuePath = path.join(this.spaTmpPath(), 'src', 'main.ts');
     let appVueContent = await fs.promises.readFile(appVuePath, 'utf-8');
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH IMPORTS */', imports);
     appVueContent = appVueContent.replace('/* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */', iconComponents + '\n' + customComponentsComponents + '\n');
@@ -459,19 +469,19 @@ class CodeInjector implements ICodeInjector {
     // generate tailwind extend styles
     const stylesGenerator = new StylesGenerator(this.adminforth.config.customization?.styles); 
     const  stylesText = JSON.stringify(stylesGenerator.mergeStyles(), null, 2).slice(1, -1);
-    let tailwindConfigPath = path.join(CodeInjector.SPA_TMP_PATH, 'tailwind.config.js');
+    let tailwindConfigPath = path.join(this.spaTmpPath(), 'tailwind.config.js');
     let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
     tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
     await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     
 
-    const routerVuePath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'router', 'index.ts');
+    const routerVuePath = path.join(this.spaTmpPath(), 'src', 'router', 'index.ts');
 
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */', routerComponents);
 
     // inject title to index.html
-    const indexHtmlPath = path.join(CodeInjector.SPA_TMP_PATH, 'index.html');
+    const indexHtmlPath = path.join(this.spaTmpPath(), 'index.html');
     let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
     indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization.title || 'AdminForth'}`);
     
@@ -512,7 +522,7 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    const spaPackageLockPath = path.join(CodeInjector.SPA_TMP_PATH, 'package-lock.json');
+    const spaPackageLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
     const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
     const spaLockHash = hashify(spaPackageLock);
 
@@ -549,7 +559,7 @@ class CodeInjector implements ICodeInjector {
     const iconPackagesNamesHash = hashify(iconPackageNames);
 
     const fullHash = `spa>${spaLockHash}::icons>${iconPackagesNamesHash}::user/custom>${usersLockHash}::${pluginsLockHash}`;
-    const hashPath = path.join(CodeInjector.SPA_TMP_PATH, 'node_modules', '.adminforth_hash');
+    const hashPath = path.join(this.spaTmpPath(), 'node_modules', '.adminforth_hash');
 
     try {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
@@ -564,7 +574,7 @@ class CodeInjector implements ICodeInjector {
       process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
     }
 
-    await this.runNpmShell({command: 'ci', cwd: CodeInjector.SPA_TMP_PATH});
+    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath()});
 
     const allPacks = [
       ...iconPackageNames,
@@ -583,7 +593,7 @@ class CodeInjector implements ICodeInjector {
 
     if (allPacks.length) {
       const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: CodeInjector.SPA_TMP_PATH});
+      await this.runNpmShell({command: npmInstallCommand, cwd: this.spaTmpPath()});
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
@@ -688,7 +698,7 @@ class CodeInjector implements ICodeInjector {
         }
         const isFile = fs.lstatSync(fileOrDir).isFile();
         if (isFile) {
-          const destPath = path.join(CodeInjector.SPA_TMP_PATH, 'src', 'custom', destination, relativeFilename);
+          const destPath = path.join(this.spaTmpPath(), 'src', 'custom', destination, relativeFilename);
           process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
           await fsExtra.copy(fileOrDir, destPath);
           return;
@@ -724,11 +734,22 @@ class CodeInjector implements ICodeInjector {
 
     console.log('AdminForth bundling');
     
-    const cwd = CodeInjector.SPA_TMP_PATH;
+    const cwd = this.spaTmpPath();
 
     if (!hotReload) {
       // probably add option to build with tsh check (plain 'build')
+      const serveDir = this.getServeDir();
       await this.runNpmShell({command: 'run build-only', cwd});
+      // remove serveDir if exists
+      try {
+        await fs.promises.rm(serveDir, { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+      await fs.promises.mkdir(serveDir, { recursive: true });
+      // coy dist to serveDir
+      await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
+
     } else {
       const command = 'run dev';
       console.log(`🪲⚙️ spawn: npm ${command}...`);

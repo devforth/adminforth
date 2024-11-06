@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.56] -  next
+## [1.3.57] -  next
+
+### Fixed
+- Indicate pagination wrong page
+
+### Improved
+- after bundling in tmp location, copy dist folder back to the dist of spa (in node_modules),
+after this we can apply /tmp caching in docker using RUN --mount=type=cache,target=/tmp and keep spa served from container
+- use brandName for tmp folder isolations so you can develop multiple apps on the same machine
+- implement Frontend API for silet table refresh and silent row update
+- add option listRowsAutoRefreshSeconds - to silently auto-refresh rows in list every N seconds
+- add JSONB and JSON data types support for Postgres
+
+## [1.3.56]
 
 ### Fixed
 
@@ -18,6 +31,7 @@ This fixed extra resources allocation on the page, improved scroll performance
 - fix border radius between show/edit/create pages
 - fix loginPageInjections is not getting listified and might crash plugin which uses it
 - AuditLog plugin diff field on mobile screens now works with more convenient unified mode
+- make table label column fixed width
 
 ### Improved
 

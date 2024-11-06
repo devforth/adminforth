@@ -4,6 +4,8 @@ import type { Writable } from 'stream';
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
+
+  getServeDir(): string;
 }
 
 export interface IConfigValidator {
@@ -1084,6 +1086,11 @@ export type AdminForthResource = {
        * @returns 
        */
       listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string | null>,
+
+      /**
+       * Whether to refresh existing list rows automatically every N seconds.
+       */
+      listRowsAutoRefreshSeconds?: number, 
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.

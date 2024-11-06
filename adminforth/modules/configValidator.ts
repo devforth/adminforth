@@ -125,7 +125,7 @@ export default class ConfigValidator implements IConfigValidator {
 
     // slug should have only lowercase letters, dashes and numbers
     this.config.customization._brandNameSlug = this.config.customization.brandName.toLowerCase().replace(/[^a-z0-9-]/g, '');
-
+   
     if (this.config.customization.loginPageInjections === undefined) {
       this.config.customization.loginPageInjections = {};
     }

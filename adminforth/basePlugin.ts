@@ -24,7 +24,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     this.pluginDir = currentFileDir(metaUrl);
     this.customFolderPath = path.join(this.pluginDir, this.customFolderName);
     this.pluginOptions = pluginOptions;
-    console.log(`🪲 🪲 🪲 🪲 🪲 🪲 AdminForthPlugin.constructor`, this.constructor.name);
+    process.env.HEAVY_DEBUG && console.log(`🪲 🪲  AdminForthPlugin.constructor`, this.constructor.name);
     this.className = this.constructor.name;
   }
 
@@ -48,6 +48,11 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     this.adminforth = adminforth;
   }
 
+  /** 
+    * This method des next:
+    * - fills this.adminforth.codeInjector.srcFoldersToSync with the custom folder path mapped to `./plugins/${this.constructor.name}/`
+    * - fills this.adminforth.codeInjector.allComponentNames with the component name mapped to the component path
+    */
   componentPath(componentFile: string) {
     const key = `@@/plugins/${this.constructor.name}/${componentFile}`;
     const componentName = getComponentNameFromPath(key);
