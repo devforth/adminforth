@@ -242,7 +242,6 @@ export const admin = new AdminForth({
         //   openAiApiKey: process.env.OPENAI_API_KEY as string,
         //   fieldName: 'title',
         // }),
-        
         new UploadPlugin({
           pathColumnName: 'apartment_image',
           s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
