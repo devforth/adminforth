@@ -238,10 +238,10 @@ export const admin = new AdminForth({
             }
           }
         }),
-        new ChatGptPlugin({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-          fieldName: 'title',
-        }),
+        // new ChatGptPlugin({
+        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //   fieldName: 'title',
+        // }),
         
         new UploadPlugin({
           pathColumnName: 'apartment_image',
