@@ -109,7 +109,7 @@ const demoChecker = async ({ record, adminUser, resource }) => {
   return { ok: true };
 }
 
-const admin = new AdminForth({
+export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   // deleteConfirmation: false,
   auth: {
