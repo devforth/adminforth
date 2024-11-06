@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 import UploadPlugin from '@adminforth/upload';
-import ChatGptPlugin from '@adminforth/chat-gpt';
+// import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import RichEditorPlugin from '@adminforth/rich-editor';
