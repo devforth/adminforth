@@ -17,7 +17,7 @@ after this we can apply /tmp caching in docker using RUN --mount=type=cache,targ
 - implement Frontend API for silet table refresh and silent row update
 - add option listRowsAutoRefreshSeconds - to silently auto-refresh rows in list every N seconds
 - add JSONB and JSON data types support for Postgres
-- allow to set `column.extra.extra.jsonCollapsedLevel` to collapse JSON fields in the show/list views.
+- allow to set `column.extra.jsonCollapsedLevel` to collapse JSON fields in the show/list views.
       
 
 ## [1.3.56]
