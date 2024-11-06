@@ -14,12 +14,11 @@ Create file `Dockerfile` in `myadmin`:
 ```Dockerfile title="./myadmin/Dockerfile"
 # use the same node version which you used during dev
 FROM node:20-alpine
-RUN --mount=type=cache,target=/tmp
 WORKDIR /code/
 ADD package.json package-lock.json /code/
 RUN npm ci  
 ADD . /code/
-RUN npx tsx bundleNow.ts
+RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
 CMD ["npm", "run", "startLive"]
 ```
 
