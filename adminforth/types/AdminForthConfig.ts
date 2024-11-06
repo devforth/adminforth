@@ -557,7 +557,7 @@ export type AdminForthResourceColumn = {
      */
 
     extra?: {
-      jsonCollapsedLevel: number
+      jsonCollapsedLevel?: number
     }
 
     /**
