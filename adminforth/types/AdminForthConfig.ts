@@ -555,7 +555,6 @@ export type AdminForthResourceColumn = {
     /**
      * An optional configuration object for extra settings.
      */
-
     extra?: {
       jsonCollapsedLevel?: number
     }
@@ -565,7 +564,6 @@ export type AdminForthResourceColumn = {
      * Only one column can be primary key.
      * AdminForth tries to guess primary key automatically first.
      */
-    
     primaryKey?: boolean,
 
     /**
