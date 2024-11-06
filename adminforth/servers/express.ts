@@ -109,9 +109,10 @@ class ExpressServer implements IExpressHttpServer {
       this.expressApp.get(`${prefix}*`, handler);
 
     } else {
+      const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(`${slashedPrefix}assets/*`, (req, res) => {
         res.sendFile(
-          path.join(CodeInjector.SPA_TMP_PATH, 'dist', replaceAtStart(req.url, prefix)),
+          path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix)),
           {
             cacheControl: false,
             // store for a year
@@ -124,7 +125,7 @@ class ExpressServer implements IExpressHttpServer {
       })
 
       this.expressApp.get(`${prefix}*`, async (req, res) => {
-        const fullPath = path.join(CodeInjector.SPA_TMP_PATH, 'dist', 'index.html');
+        const fullPath = path.join(codeInjector.getServeDir(), 'index.html');
         
         let fileExists = true;
         try { 

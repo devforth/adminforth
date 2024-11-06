@@ -723,6 +723,9 @@ const admin = new AdminForth({
       hooks: {
         list: {
           afterDatasourceResponse: async ({ query, adminUser }: any) => {
+            response.data = response.data.map((r: any) => {
+              r.role = Math.random() > 0.5 ? 'admin' : 'user';
+            });
             return { ok: true, error: "" }
           }
         },

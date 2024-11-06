@@ -39,9 +39,21 @@ export interface FrontendAPIInterface {
     list: {
 
         /**
-         * Refresh the list
+         * Full refresh the list. Loader will be shown during fetching data. Will fully reload table data from the server. If new data available, it will be shown in the list.
          */
-        refresh(): void;
+        refresh(): Promise<{ error? : string }>;
+
+        /**
+         * Silently Refresh existing rows in the list (without loader). 
+         * Should be called when table data already loaded, otherwise method will return an error.
+         * If new data available, it will not appear in the list.
+         */
+        silentRefresh(): Promise<{ error? : string }>;
+
+        /**
+         * Refresh a specific row in the list without loader, row should be already shown in the list, otherwise method will return an error
+         */
+        silentRefreshRow (pk: any): Promise<{ error? : string }>;
 
         /**
          * Close the three dots dropdown

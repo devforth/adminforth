@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.57] -  next
 
-WIP
+### Fixed
+- Indicate pagination wrong page
 
+### Improved
+- after bundling in tmp location, copy dist folder back to the dist of spa (in node_modules),
+after this we can apply /tmp caching in docker using RUN --mount=type=cache,target=/tmp and keep spa served from container
+- use brandName for tmp folder isolations so you can develop multiple apps on the same machine
+- implement Frontend API for silet table refresh and silent row update
+- add option listRowsAutoRefreshSeconds - to silently auto-refresh rows in list every N seconds
+- add JSONB and JSON data types support for Postgres
 
 ## [1.3.56]
 
