@@ -578,10 +578,19 @@ export type AdminForthResourceColumn = {
     type?: AdminForthDataTypes,
 
     /**
+     * An optional configuration object for extra settings.
+     */
+
+    extra?: {
+      jsonCollapsedLevel: number
+    }
+
+    /**
      * Whether to use this column as record identifier.
      * Only one column can be primary key.
      * AdminForth tries to guess primary key automatically first.
      */
+    
     primaryKey?: boolean,
 
     /**
