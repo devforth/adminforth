@@ -559,8 +559,8 @@ export type AdminForthResourceColumn = {
 
       /**
        * How many levels of JSON should be collapsed. 
-       * 0 means - root level will be already collapsed e.g. {a:1} will show {...} where '...' is clickable
-       * 1 means - root level will be shown, but next sub-level will be collapsed e.g. {a: {b: 1}} will show {a: ...} where '...' is clickable
+       * `0` means - root level will be already collapsed e.g. `{a:1}` will show `{...}` where `'...'` is clickable
+       * `1` means - root level will be shown, but next sub-level will be collapsed e.g. `{a: {b: 1}}` will show `{a: ...}` where `'...'` is clickable
        * 
        * Default is 1. 
        */
