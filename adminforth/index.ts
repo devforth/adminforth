@@ -5,6 +5,7 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
+// import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
@@ -62,6 +63,7 @@ class AdminForth implements IAdminForth {
 
   config: AdminForthConfig;
   express: ExpressServer;
+  // fastify: FastifyServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
   connectors: {
@@ -93,6 +95,7 @@ class AdminForth implements IAdminForth {
     this.configValidator.validateConfig();   // revalidate after plugins
 
     this.express = new ExpressServer(this);
+    // this.fastify = new FastifyServer(this);
     this.auth = new AdminForthAuth(this);
     this.connectors = {};
     this.statuses = {
