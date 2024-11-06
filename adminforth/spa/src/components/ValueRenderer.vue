@@ -67,8 +67,6 @@ const props = defineProps({
   record: Object
 });
 
-console.log('props', props.column?.extra?.jsonCollapsedLevel);
-
 
 function protectAgainstXSS(value) {
   return sanitizeHtml(value, {
