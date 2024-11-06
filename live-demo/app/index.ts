@@ -6,10 +6,10 @@ import { v4 as uuid } from 'uuid';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 import UploadPlugin from '@adminforth/upload';
-// import ChatGptPlugin from '@adminforth/chat-gpt';
+import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
 import fs from 'fs';
-// import RichEditorPlugin from '@adminforth/rich-editor';
+import RichEditorPlugin from '@adminforth/rich-editor';
 import importExport from '@adminforth/import-export';
 dotenv.config();
 
@@ -242,23 +242,23 @@ export const admin = new AdminForth({
         //   openAiApiKey: process.env.OPENAI_API_KEY as string,
         //   fieldName: 'title',
         // }),
-        // new UploadPlugin({
-        //   pathColumnName: 'apartment_image',
-        //   s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
-        //   s3Region: 'eu-north-1', // ❗ Selected region
-        //   s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        //   s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        //   s3ACL: 'public-read',
-        //   allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
-        //   maxFileSize: 1024 * 1024 * 20, // 5MB
-        //   s3Path: ({originalFilename, originalExtension, contentType}) => 
-        //         `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
-        //   // You can use next to change preview URLs (if it is image) in list and show views
-        //   preview: {
-        //     showInList: true,
-        //     previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
-        //   }
-        // })
+        new UploadPlugin({
+          pathColumnName: 'apartment_image',
+          s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
+          s3Region: 'eu-north-1', // ❗ Selected region
+          s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          s3ACL: 'public-read',
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+          maxFileSize: 1024 * 1024 * 20, // 5MB
+          s3Path: ({originalFilename, originalExtension, contentType}) => 
+                `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+          // You can use next to change preview URLs (if it is image) in list and show views
+          preview: {
+            showInList: true,
+            previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
+          }
+        })
       ],
       options: {
         listPageSize: 8,
