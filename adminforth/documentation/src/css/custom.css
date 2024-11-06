@@ -197,3 +197,47 @@ pre code:has(.code-block-diff-remove-line) {
 .laptop_container {
   margin-bottom: 5rem;
 }
+
+.laptop .theme_switcher {
+  position: absolute;
+  cursor: pointer;
+  top: 2.56vw;
+  right: 5.28vw;
+  width: 2vw;
+  height: 2vw;
+  font-size: 1.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2vw;
+  border-width: 2px;
+  z-index: 2;
+  /* disable text selection */
+  user-select: none;  
+
+  background: #555;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+}
+
+
+
+.laptop .theme_switcher:hover {
+  opacity: 0.3;
+}
