@@ -8,6 +8,9 @@
   "files": [
     "dist/**/*"
   ],
+  "bin": {
+    "adminforth": "./commands/cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run prepareDist && tsc",
@@ -34,6 +37,7 @@
     "@faker-js/faker": "^9.0.3",
     "better-sqlite3": "^10.0.0",
     "dayjs": "^1.11.11",
+    "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "fastify": "^5.1.0",
     "filewatcher": "^3.0.1",
