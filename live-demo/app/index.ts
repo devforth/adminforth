@@ -362,11 +362,7 @@ export const admin = new AdminForth({
     },
   ],
   menu: [
-    {
-      label: 'Audit Logs',
-      icon: 'flowbite:search-outline',
-      resourceId: 'audit_logs',
-    },
+
     {
         label: 'Dashboard',
         path: '/overview',
@@ -400,7 +396,12 @@ export const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
-    }
+    },
+    {
+      label: 'Audit Logs',
+      icon: 'flowbite:search-outline',
+      resourceId: 'audit_logs',
+    },
   ],
 });
 
