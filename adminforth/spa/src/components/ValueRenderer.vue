@@ -30,8 +30,7 @@
       <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
     </span>
     <span v-else-if="column.type === 'json'">
-      <JsonViewer :value="record[column.name]" :expandDepth="column?.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme" />
-
+      <JsonViewer :value="record[column.name]" :expandDepth="column.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme" />
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
@@ -66,8 +65,6 @@ const props = defineProps({
   column: Object,
   record: Object
 });
-
-console.log('props', props.column?.extra?.jsonCollapsedLevel);
 
 
 function protectAgainstXSS(value) {

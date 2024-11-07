@@ -5,6 +5,8 @@ import type { Writable } from 'stream';
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
+
+  getServeDir(): string;
 }
 
 export interface IConfigValidator {
@@ -580,9 +582,16 @@ export type AdminForthResourceColumn = {
     /**
      * An optional configuration object for extra settings.
      */
-
     extra?: {
-      jsonCollapsedLevel: number
+
+      /**
+       * How many levels of JSON should be collapsed. 
+       * `0` means - root level will be already collapsed e.g. `{a:1}` will show `{...}` where `'...'` is clickable
+       * `1` means - root level will be shown, but next sub-level will be collapsed e.g. `{a: {b: 1}}` will show `{a: ...}` where `'...'` is clickable
+       * 
+       * Default is 1. 
+       */
+      jsonCollapsedLevel?: number
     }
 
     /**
@@ -1120,6 +1129,11 @@ export type AdminForthResource = {
        * @returns 
        */
       listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string | null>,
+
+      /**
+       * Whether to refresh existing list rows automatically every N seconds.
+       */
+      listRowsAutoRefreshSeconds?: number, 
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.

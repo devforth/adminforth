@@ -75,38 +75,13 @@ const images = [
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
-  
-  const [ theme, setTheme ] = useState('light');
+  // read theme from docusarus
+
+  const [theme, setTheme] = useState('light');
 
   if (ExecutionEnvironment.canUseDOM) {
 
-    // implement theme switching like in horror movie- wailt a little bit and then switch aggressively blinking
-    async function wait(ms: number) {
-      return new Promise(resolve => {
-        setTimeout(resolve, ms);
-      });
-      
-    }
-
-    const HORROR_DELAYS_MS = [2800, 150, 2100, 200, 50, 50, 1200, 300, 3124, 337, 1000, 200, 3124, 4200, 10, 10, 1000, 300];  
-
-    async function switchThemeHorrific() {
-      
-
-      for (let i = 0; i < HORROR_DELAYS_MS.length; i++) {
-        await wait(HORROR_DELAYS_MS[i]);
-        if (HORROR_DELAYS_MS[i] === 3124) {
-          setTheme('screem');
-          continue;
-        }
-        setTheme(i % 2 === 0 ? 'dark' : 'light');
-      }
-      switchThemeHorrific();
-    }
-    if (!window.horrorStarted ) {
-      switchThemeHorrific();
-      window.horrorStarted = true;
-    }
+    
   } 
 
   return (
@@ -141,10 +116,11 @@ function HomepageHeader() {
                 src={{
                     light: require('@site/static/img/preview_light.png').default,
                     dark: require('@site/static/img/preview_dark.png').default,
-                    screem: require('@site/static/img/screem.png').default,
                   }[theme]
                 } alt="Screen" />
+              <div className="theme_switcher" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
                 
+              </div>
             </div>
             <div className="laptop__bottom">
               <div className="laptop__under"></div>
@@ -178,11 +154,11 @@ export default function Home(): JSX.Element {
           padding: '1rem',
         }}>
           {images.map((item, index) => (
-            <div class="card-demo">
-              <div class="card shadow--md" style={{
+            <div className="card-demo">
+              <div className="card shadow--md" style={{
                       maxWidth: '500px',
                     }}> 
-                <div class="card__image">
+                <div className="card__image">
                   <img
                     src={item.original}
                     alt={item.title}
@@ -190,7 +166,7 @@ export default function Home(): JSX.Element {
                     
                   />
                 </div>
-                <div class="card__body">
+                <div className="card__body">
                   <h3>{item.title}</h3>
                   {
                     item.description ?
@@ -200,8 +176,8 @@ export default function Home(): JSX.Element {
                     <small></small>
                   }
                 </div>
-                <div class="card__footer">
-                  <a class="button button--primary button--block"
+                <div className="card__footer">
+                  <a className="button button--primary button--block"
                     href={item.link}
                   >Learn how</a>
                 </div>

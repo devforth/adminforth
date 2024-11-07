@@ -114,10 +114,12 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 field.type = AdminForthDataTypes.DATE;
                 field._underlineType = 'timestamp';
 
-            }  else if (baseType.includes('date') || baseType.includes('time')) {
+            } else if (baseType.includes('date') || baseType.includes('time')) {
                 field.type = AdminForthDataTypes.DATETIME;
                 field._underlineType = 'timestamp';
-
+            } else if (baseType == 'json' || baseType == 'jsonb') {
+                field.type = AdminForthDataTypes.JSON;
+                field._underlineType = 'json';
             } else {
                 field.type = 'unknown'
             }
@@ -183,6 +185,12 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value ? 1 : 0;
+      } else if (field.type == AdminForthDataTypes.JSON) {
+        if (field._underlineType == 'json') {
+            return value;
+        } else {
+            return JSON.stringify(value);
+        }
       }
       return value;
     }

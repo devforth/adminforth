@@ -110,13 +110,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
-import { computed, onMounted, ref, watch, nextTick } from 'vue';
+import { computed, onMounted, ref, watch, nextTick, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
@@ -147,7 +147,7 @@ watch(() => sort, async (to, from) => {
   filtersStore.setSort(sort.value);
 }, {deep: true});
 
-const rows = ref(null);
+const rows: Ref<any[]|null> = ref(null);
 const totalRows = ref(0);
 const checkboxes = ref([]);
 
@@ -175,7 +175,7 @@ async function getList() {
     showErrorTost(data.error);
     rows.value = [];
     totalRows.value = 0;
-    return;
+    return {error: data.error};
   }
   rows.value = data.data?.map(row => {
     row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
@@ -183,7 +183,58 @@ async function getList() {
   });
   totalRows.value = data.total;
   await nextTick();
+  return {}
 }
+
+async function refreshExistingList(pk?: any) {
+  const currentData = rows.value;
+  if (!currentData) {
+    throw new Error('No rows loaded yet. Silent refresh is possible only after some rows are loaded. COnsider calling getList() instead first');
+  }
+  if (!coreStore.resource) {
+    throw new Error('Resource not loaded yet');
+  }
+  let pks;
+  if (pk && !currentData.some(r => r._primaryKeyValue === pk)) {
+    return {error: `Primary key ${pk} not found in current data`};
+  }
+
+  if (pk) {
+    pks = [pk];
+  } else {
+    pks = currentData.map(r => r._primaryKeyValue);
+  }
+    
+  const data = await callAdminForthApi({
+    path: '/get_resource_data',
+    method: 'POST',
+    body: {
+      source: 'list',
+      resourceId: route.params.resourceId,
+      filters: [
+        {
+          field: coreStore.resource!.columns.find(c => c.primaryKey)!.name,
+          operator: 'in',
+          value: pks
+        }
+      ],
+      sort: sort.value,
+    }
+  });
+  if (data.error) {
+    return data;
+  }
+  data.data.forEach((row: any) => {
+    const pkKeyName = coreStore.resource!.columns.find(c => c.primaryKey)!.name;
+
+    const existingRow = currentData.find(r => r._primaryKeyValue === row[pkKeyName]);
+    if (existingRow) {
+      Object.assign(existingRow, row);
+    }
+  });
+  return {}
+}
+
 
 async function startBulkAction(actionId) {
   const action = coreStore.resource.options.bulkActions.find(a => a.id === actionId);
@@ -236,6 +287,7 @@ class SortQuerySerializer {
     }
 }
 
+let listAutorefresher: any = null;
 
 async function init() {
   
@@ -283,6 +335,16 @@ async function init() {
       resourceId: route.params.resourceId
     }
   });
+
+  if (listAutorefresher) {
+    clearInterval(listAutorefresher);
+    listAutorefresher = null;
+  }
+  if (coreStore.resource!.options?.listRowsAutoRefreshSeconds) {
+    listAutorefresher = setInterval(async () => {
+      await window.adminforth.list.silentRefresh();
+    }, coreStore.resource!.options.listRowsAutoRefreshSeconds * 1000);
+  }
 }
 
 watch([page, sort, () => filtersStore.filters], async () => {
@@ -292,7 +354,15 @@ watch([page, sort, () => filtersStore.filters], async () => {
 }, { deep: true });
 
 window.adminforth.list.refresh = async () => {
-  await getList();
+  return await getList();
+}
+
+window.adminforth.list.silentRefresh = async () => {
+  return await refreshExistingList();
+}
+
+window.adminforth.list.silentRefreshRow = async (pk: any) => {
+  return await refreshExistingList(pk);
 }
 
 let initInProcess = false;
