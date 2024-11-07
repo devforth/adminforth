@@ -3,6 +3,7 @@
     <form autocomplete="off" @submit.prevent>
       <div v-if="!coreStore.resource.options.createEditGroups || coreStore.resource.options.createEditGroups.length === 0">
         <GroupsTable
+        :source="source"
         :group="{groupName: '', columns: editableColumns}"
         :currentValues="currentValues"
         :editableColumns="editableColumns"
@@ -17,6 +18,7 @@
       <div v-else class="flex flex-col gap-4">
         <template v-for="group in groupedColumns" :key="group.groupName" class="flex flex-col gap-4"> 
           <GroupsTable
+          :source="source"
           :group="group"
           :currentValues="currentValues"
           :editableColumns="editableColumns"
@@ -30,6 +32,7 @@
         </template>
         <div v-if="otherColumns.length > 0">
           <GroupsTable
+          :source="source"
           :group="{groupName: 'Other', columns: otherColumns}"
           :currentValues="currentValues"
           :editableColumns="editableColumns"
