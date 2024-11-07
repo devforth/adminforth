@@ -297,7 +297,6 @@ export default class AdminForthRestAPI {
 
         const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
 
-
         const allowedBulkActions = [];
         await Promise.all(
           resource.options.bulkActions.map(async (action) => {

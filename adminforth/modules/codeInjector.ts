@@ -107,14 +107,13 @@ class CodeInjector implements ICodeInjector {
   async runNpmShell({command, cwd}) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
-
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
     };
 
-    console.log(`⚙️ exec: npm ${command}...`);
+    console.log(`⚙️ exec: npm ${command}`);
     console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
