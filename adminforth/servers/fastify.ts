@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import Fastify from 'fastify';
 import { FastifyInstance } from 'fastify';
-import CodeInjector from '../modules/codeInjector.js';
+import fastifyStatic from 'fastify-static';
 import fetch from 'node-fetch';
 import { IAdminForth, IFastifyHttpServer } from '../types/AdminForthConfig.js';
 
@@ -18,8 +18,6 @@ async function proxyTo(url, reply) {
     actual.headers.forEach((v, n) => reply.header(n, v));
     actual.body.pipe(reply);
   }
-  
-
 async function parseFastifyCookie(request): Promise<{key: string, value: string}[]> {
   const cookies = request.headers.cookie;
   if (!cookies) {
@@ -80,6 +78,7 @@ class FastifyServer implements IFastifyHttpServer{
     this.fastifyApp = Fastify({ logger: true });
     this.adminforth = adminforth;
   }
+  
 
   setupSpaServer() {
     const prefix = this.adminforth.config.baseUrl;
@@ -100,22 +99,25 @@ class FastifyServer implements IFastifyHttpServer{
       this.fastifyApp.get(`${prefix}*`, handler);
 
     } else {
-      this.fastifyApp.get(`${slashedPrefix}assets/*`, async (request, reply) => {
-        reply.sendFile(
-            path.join(CodeInjector.SPA_TMP_PATH, 'dist', replaceAtStart(request.raw.url, prefix),),
-            {
-                cacheControl: false,
-                // store for a year
-                headers: {
-                    'Cache-Control': 'public, max-age=31536000',
-                    'Pragma': 'public',
-                }
-            }
+      const codeInjector = this.adminforth.codeInjector;
+
+      this.fastifyApp.register(fastifyStatic.default, {
+        root: path.join(codeInjector.getServeDir(), 'dist'),
+        prefix: `${slashedPrefix}assets/`, // URL path prefix
+        cacheControl: false,
+      });
+
+      this.fastifyApp.get(`${slashedPrefix}assets/*`, (request, reply) => {
+        reply
+          .header('Cache-Control', 'public, max-age=31536000')
+          .header('Pragma', 'public')
+          .sendFile(
+            path.join(codeInjector.getServeDir(), 'dist', replaceAtStart(request.raw.url, prefix),),
         );
       });
 
       this.fastifyApp.get(`${prefix}*`, async (request, reply) => {
-        const fullPath = path.join(CodeInjector.SPA_TMP_PATH, 'dist', 'index.html');
+        const fullPath = path.join(codeInjector.getServeDir(), 'index.html');
         
         let fileExists = true;
         try { 
@@ -127,14 +129,12 @@ class FastifyServer implements IFastifyHttpServer{
           reply.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
-        reply.sendFile(fullPath, { 
-          cacheControl: false,
-          headers: { 
-            'Content-Type': 'text/html', 
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-         } });
+         reply
+         .header('Content-Type', 'text/html')
+         .header('Cache-Control', 'no-cache, no-store, must-revalidate')
+         .header('Pragma', 'no-cache')
+         .header('Expires', '0')
+         .sendFile(fullPath);
       });
     }
   }

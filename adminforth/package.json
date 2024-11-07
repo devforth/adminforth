@@ -36,6 +36,7 @@
     "dayjs": "^1.11.11",
     "express": "^4.21.0",
     "fastify": "^5.1.0",
+    "fastify-static": "^4.6.1",
     "filewatcher": "^3.0.1",
     "fs-extra": "^11.2.0",
     "fuse.js": "^7.0.0",
@@ -46,6 +47,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/fastify-static": "^0.14.0",
     "@types/node": "^20.14.2",
     "typescript": "^5.4.5"
   }
