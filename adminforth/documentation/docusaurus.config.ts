@@ -72,7 +72,8 @@ const config: Config = {
       "docusaurus-plugin-typedoc",
       {
         entryPoints: [
-          "../types/AdminForthConfig.ts", 
+          "../types/Back.ts",
+          "../types/Common.ts",
           "../types/FrontendAPI.ts", 
           "../plugins/**/types.ts",
         ],

@@ -1,5 +1,13 @@
-import { AdminForthResource, IAdminForthDataSourceConnectorBase, AdminForthSortDirections, AdminForthFilterOperators, AdminForthResourceColumn, IAdminForthSort, IAdminForthFilter } from "../types/AdminForthConfig.js";
+import { 
+  AdminForthResource, IAdminForthDataSourceConnectorBase, 
+  AdminForthResourceColumn, 
+  IAdminForthSort, IAdminForthFilter 
+} from "../types/Back.js";
+
+
+
 import { suggestIfTypo } from "../modules/utils.js";
+import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {

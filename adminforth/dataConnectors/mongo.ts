@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, 
-    IAdminForthDataSourceConnector, AdminForthResource } from '../types/AdminForthConfig.js';
+import { IAdminForthDataSourceConnector, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
+
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
     db: MongoClient

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import pkg from 'pg';
-import { AdminForthDataTypes, AdminForthResource, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector } from '../types/AdminForthConfig.js';
+import { AdminForthResource, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 const { Client } = pkg;
 

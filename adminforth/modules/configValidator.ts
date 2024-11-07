@@ -2,19 +2,22 @@ import {
   AdminForthConfig, 
   AdminForthResource, 
   IAdminForth, IConfigValidator, 
-  AdminForthComponentDeclaration , 
-  AdminForthResourcePages, AllowedActionsEnum,
-  type AdminForthComponentDeclarationFull,
   type AfterSaveFunction,
   AdminForthBulkAction,
-} from "../types/AdminForthConfig.js";
+} from "../types/Back.js";
 
 import fs from 'fs';
 import path from 'path';
 import { guessLabelFromName, suggestIfTypo } from './utils.js';
 
 import crypto from 'crypto';
-import { AdminForthSortDirections } from "../types/AdminForthConfig.js";
+import { 
+  AdminForthSortDirections,
+  type AdminForthComponentDeclarationFull,
+  AllowedActionsEnum,
+  AdminForthComponentDeclaration , 
+  AdminForthResourcePages, 
+} from "../types/Common.js";
 
 
 

@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { onMounted, ref, onUnmounted, watch, type Ref } from "vue";
 import { callAdminForthApi } from '@/utils';
-import { AdminForthColumn } from '@/types/AdminForthConfig';
+import { AdminForthColumnCommon } from '@/types/Common';
 import AsyncQueue from './async-queue';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";

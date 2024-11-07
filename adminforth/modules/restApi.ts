@@ -1,26 +1,20 @@
 import { 
   type IAdminForth, 
-  type IHttpServer, type AdminUser, 
-  AdminForthFilterOperators, 
-  AdminForthDataTypes,
+  type IHttpServer,
   BeforeLoginConfirmationFunction,
   AdminForthResource,
   AllowedActionValue,
-  AllowedActionsEnum,
   AllowedActions,
-  ActionCheckSource,
   BeforeSaveFunction,
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
   AfterSaveFunction,
-  AllowedActionsResolved,
-  AdminForthResourcePages
-
-} from "../types/AdminForthConfig.js";
+} from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
+import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages, AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
 
 
 export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {

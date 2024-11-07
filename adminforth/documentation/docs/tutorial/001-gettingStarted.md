@@ -514,4 +514,4 @@ This will create records during first launch. Now you should see:
 
 ## Possible configuration options
 
-Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
+Check [AdminForthConfig](/docs/api/types/Back/interfaces/AdminForthConfig.md) for all possible options.
