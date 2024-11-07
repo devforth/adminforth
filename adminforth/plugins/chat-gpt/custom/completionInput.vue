@@ -14,13 +14,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, Ref  } from 'vue';
 import { callAdminForthApi } from '@/utils';
-import { AdminForthColumn } from '@/types/AdminForthConfig';
+import { AdminForthColumnCommon } from '@/types/Common';
 import SuggestionInput from 'vue-suggestion-input';
 import 'vue-suggestion-input/dist/style.css';
 
 
 const props = defineProps<{
-  column: AdminForthColumn,
+  column: AdminForthColumnCommon,
   record: any,
   meta: any,
 }>();

@@ -77,5 +77,3 @@ Here is how it looks:
 
 !![alt text](dashboard_test2.gif)
 
-
-Check all plugin options in the [API reference](https://adminforth.dev/docs/api/plugins/chat-gpt/types/interfaces/PluginOptions).

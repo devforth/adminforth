@@ -8,7 +8,7 @@ import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
-import { AdminForthConfigMenuItem, ICodeInjector } from '../types/AdminForthConfig.js';
+import { AdminForthConfigMenuItem, ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 
 

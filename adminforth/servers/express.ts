@@ -4,7 +4,7 @@ import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { IAdminForth, IExpressHttpServer } from '../types/AdminForthConfig.js';
+import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
 
 
 function replaceAtStart(string, substring) {
