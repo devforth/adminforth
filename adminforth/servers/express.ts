@@ -253,6 +253,11 @@ class ExpressServer implements IExpressHttpServer {
 
     console.log(`Adding endpoint ${method} ${fullPath}`);
     this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
+
+    this.expressApp.use((err, req, res, next) => {
+      console.error(err.stack)
+      res.status(500).send('Something broken! Check logs');
+    })
   }
 
 }
