@@ -31,7 +31,6 @@
     </span>
     <span v-else-if="column.type === 'json'">
       <JsonViewer :value="record[column.name]" :expandDepth="column.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme" />
-
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
