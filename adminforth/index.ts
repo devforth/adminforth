@@ -7,19 +7,25 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
+
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
   type IConfigValidator,
   IOperationalResource,
-  AdminForthFilterOperators,
-  AdminForthDataTypes, IHttpServer, 
+  IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
-  AdminUser,
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
-} from './types/AdminForthConfig.js';
+} from './types/Back.js';
+
+import {
+  AdminForthFilterOperators,
+  AdminForthDataTypes,
+  AdminUser,
+} from './types/Common.js';
+
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
@@ -27,7 +33,8 @@ import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
 
 // exports
-export * from './types/AdminForthConfig.js'; 
+export * from './types/Back.js';
+export * from './types/Common.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, getClinetIp };

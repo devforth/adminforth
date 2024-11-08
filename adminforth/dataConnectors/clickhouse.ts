@@ -1,8 +1,9 @@
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, IAdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig.js';
+import { IAdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
 
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 

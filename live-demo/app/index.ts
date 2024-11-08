@@ -1,10 +1,9 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, Filters,  AdminForthResource, AdminForthResourceColumn  } from 'adminforth';
 import AuditLogPlugin from '@adminforth/audit-log';
 import { v4 as uuid } from 'uuid';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
-import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 import UploadPlugin from '@adminforth/upload';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import dotenv from 'dotenv';
@@ -225,23 +224,23 @@ export const admin = new AdminForth({
       ],
       plugins: [
         new importExport({}),
-        // new RichEditorPlugin({
-        //   htmlFieldName: 'description',
-        //   completion: {
-        //     provider: 'openai-chat-gpt',
-        //     params: {
-        //       apiKey: process.env.OPENAI_API_KEY as string,
-        //       // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
-        //     },
-        //     expert: {
-        //       debounceTime: 250,
-        //     }
-        //   }
-        // }),
-        // new ChatGptPlugin({
-        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
-        //   fieldName: 'title',
-        // }),
+        new RichEditorPlugin({
+          htmlFieldName: 'description',
+          completion: {
+            provider: 'openai-chat-gpt',
+            params: {
+              apiKey: process.env.OPENAI_API_KEY as string,
+              // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
+            },
+            expert: {
+              debounceTime: 250,
+            }
+          }
+        }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          fieldName: 'title',
+        }),
         new UploadPlugin({
           pathColumnName: 'apartment_image',
           s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
@@ -362,11 +361,7 @@ export const admin = new AdminForth({
     },
   ],
   menu: [
-    {
-      label: 'Audit Logs',
-      icon: 'flowbite:search-outline',
-      resourceId: 'audit_logs',
-    },
+
     {
         label: 'Dashboard',
         path: '/overview',
@@ -400,7 +395,12 @@ export const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
-    }
+    },
+    {
+      label: 'Audit Logs',
+      icon: 'flowbite:search-outline',
+      resourceId: 'audit_logs',
+    },
   ],
 });
 
