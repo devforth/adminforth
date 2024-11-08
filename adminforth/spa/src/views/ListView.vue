@@ -211,6 +211,8 @@ async function refreshExistingList(pk?: any) {
     body: {
       source: 'list',
       resourceId: route.params.resourceId,
+      limit: pks.length,
+      offset: 0,
       filters: [
         {
           field: coreStore.resource!.columns.find(c => c.primaryKey)!.name,
