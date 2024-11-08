@@ -573,7 +573,7 @@ export const admin = new AdminForth({
       ],
 
       options:{
-        listRowsAutoRefreshSeconds: 1,
+        listRowsAutoRefreshSeconds: 100,
         pageInjections: {
           list: {
             customActionIcons: '@@/IdShow.vue',

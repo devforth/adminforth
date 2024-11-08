@@ -171,7 +171,17 @@ class ExpressServer implements IExpressHttpServer {
         res.status(401).send('Unauthorized by AdminForth');
         return
       }
-      const adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+      let adminforthUser;
+      try {
+        adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+      } catch (e) {
+        // this might happen if e.g. database intialization in progress.
+        // so we can't answer with 401 (would logout user)
+        // reproduced during usage of listRowsAutoRefreshSeconds
+        console.error(e.stack);
+        res.status(500).send('Failed to verify JWT token - something went wrong');
+        return;
+      }
       if (!adminforthUser) {
         res.status(401).send('Unauthorized by AdminForth');
       } else {
@@ -253,11 +263,6 @@ class ExpressServer implements IExpressHttpServer {
 
     console.log(`Adding endpoint ${method} ${fullPath}`);
     this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
-
-    this.expressApp.use((err, req, res, next) => {
-      console.error(err.stack)
-      res.status(500).send('Something broken! Check logs');
-    })
   }
 
 }
