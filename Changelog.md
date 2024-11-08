@@ -19,6 +19,7 @@ after this we can apply /tmp caching in docker using `RUN --mount=type=cache,tar
 - add JSONB and JSON data types support for Postgres
 - allow to set `column.extra.jsonCollapsedLevel` to collapse JSON fields in the show/list views.
 - significant types refactor to split Common types (both front and back) and back types     
+- fix bug when clear filter
 
 ## [1.3.56]
 
