@@ -4,7 +4,8 @@ import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
+import { IAdminForth } from '../types/Back.js';
+import GenericServer from './genericServer.js';
 
 
 function replaceAtStart(string, substring) {
@@ -39,54 +40,11 @@ async function parseExpressCookie(req): Promise<
   return result;
 }
 
-
-
-const respondNoServer = (title, explanation) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>AdminForth</title>
-    </head>
-    <body>
-      <div class="center">
-        <h1>Oops!</h1>
-        <h2>${title}</h2>
-        <p>${explanation}</p>
-      </div>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f0f0f0;
-          margin: 0;
-          padding: 0;
-        }
-        .center {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          flex-direction: column;
-        }
-      </style>
-      <script>
-        setTimeout(() => {
-          location.reload();
-        }, 1500);
-      </script>
-    </body>
-    `;
-}
-class ExpressServer implements IExpressHttpServer {
-
+class ExpressServer extends GenericServer {
   expressApp: Express;
-  adminforth: IAdminForth;
 
   constructor(adminforth: IAdminForth) {
-    this.adminforth = adminforth;
+    super(adminforth);
   }
 
   setupSpaServer() {
@@ -101,7 +59,7 @@ class ExpressServer implements IExpressHttpServer {
           await proxyTo(`http://localhost:5173${req.url}`, res);
         } catch (e) {
           // console.log('Failed to proxy', e);
-          res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
+          res.status(500).send(this.respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
           return;
         }
       }
@@ -134,7 +92,7 @@ class ExpressServer implements IExpressHttpServer {
           fileExists = false;
         }
         if (!fileExists) {
-          res.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
+          res.status(500).send(this.respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
         res.sendFile(fullPath, { 
@@ -254,7 +212,6 @@ class ExpressServer implements IExpressHttpServer {
     console.log(`Adding endpoint ${method} ${fullPath}`);
     this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
   }
-
 }
 
 export default ExpressServer;

@@ -4,7 +4,8 @@ import Fastify from 'fastify';
 import { FastifyInstance } from 'fastify';
 import fastifyStatic from 'fastify-static';
 import fetch from 'node-fetch';
-import { IAdminForth, IFastifyHttpServer } from '../types/AdminForthConfig.js';
+import { IAdminForth } from '../types/Back.js';
+import GenericServer from './genericServer.js';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -32,53 +33,14 @@ async function parseFastifyCookie(request): Promise<{key: string, value: string}
   return result;
 }
 
-const respondNoServer = (title, explanation) => `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdminForth</title>
-  </head>
-  <body>
-    <div class="center">
-      <h1>Oops!</h1>
-      <h2>${title}</h2>
-      <p>${explanation}</p>
-    </div>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-    </style>
-    <script>
-        setTimeout(() => {
-            location.reload();
-        }, 1500);
-    </script>
-  </body>
-  </html>`;
-
-class FastifyServer implements IFastifyHttpServer{
-
+class FastifyServer extends GenericServer{
   fastifyApp: FastifyInstance;
-  adminforth: IAdminForth;
-  constructor(adminforth: IAdminForth) {
-    this.fastifyApp = Fastify({ logger: true });
-    this.adminforth = adminforth;
-  }
   
+
+  constructor(adminforth: IAdminForth) {
+    super(adminforth);
+    this.fastifyApp = Fastify({ logger: true });
+  } 
 
   setupSpaServer() {
     const prefix = this.adminforth.config.baseUrl;
@@ -91,7 +53,7 @@ class FastifyServer implements IFastifyHttpServer{
           await proxyTo(`http://localhost:5173${request.url}`, reply);
         } catch (e) {
             // console.log('Failed to proxy', e);
-          reply.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
+          reply.status(500).send(this.respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
           return;
         }
       };
@@ -126,7 +88,7 @@ class FastifyServer implements IFastifyHttpServer{
           fileExists = false;
         }
         if (!fileExists) {
-          reply.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
+          reply.status(500).send(this.respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
          reply
@@ -139,13 +101,13 @@ class FastifyServer implements IFastifyHttpServer{
     }
   }
 
-  serve(app) {
+  serve(app: FastifyInstance): void {
     this.fastifyApp = app;
-    this.adminforth.setupEndpoints(this); 
-    this.setupSpaServer(); 
+    this.adminforth.setupEndpoints(this);
+    this.setupSpaServer();
   }
 
-  authorize(handler) {
+  authorize(handler: Function): Function {
     return async (request, reply, next) => {
       const cookies = await parseFastifyCookie(request);
       const brandSlug = this.adminforth.config.customization._brandNameSlug;
@@ -171,10 +133,21 @@ class FastifyServer implements IFastifyHttpServer{
     };
   }
 
-  endpoint({ method = 'GET', path, handler, noAuth = false }) {
+  endpoint({
+    method = 'GET',
+    path,
+    handler,
+    noAuth = false,
+  }: {
+    method?: string;
+    path: string;
+    handler: Function;
+    noAuth?: boolean;
+  }): void {
     if (!path.startsWith('/')) {
-        throw new Error(`Path must start with /, got: ${path}`);
+      throw new Error(`Path must start with /, got: ${path}`);
     }
+
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
     const fastifyHandler = async (request, reply) => {
@@ -188,63 +161,26 @@ class FastifyServer implements IFastifyHttpServer{
         }
       }
 
-      const response = {
-        headers: [],
-        status: 200,
-        message: undefined,
-
-        setHeader(name, value) {
-          process.env.HEAVY_DEBUG && console.log(' 🪲Setting header', name, value);
-          this.headers.push([name, value]);
-        },
-        
-        setStatus(code, message) {
-          this.status = code;
-          this.message = message;
-        },
-
-        blobStream() {
-          return reply;
-        }
-        
-      };
-
       const input = {
         body,
         query: request.query,
         headers: request.headers,
         cookies: await parseFastifyCookie(request),
         adminUser: request.adminUser,
-        response,
-        _raw_request: request.raw,
-        _raw_reply: reply.raw
       };
+
       let output;
       try {
         output = await handler(input);
       } catch (e) {
         console.error('Error in handler', e);
-        // Print full stack trace
-        console.error(e.stack);
         reply.status(500).send({ error: 'Internal server error' });
         return;
       }
-      response.headers.forEach(([name, value]) => {
-        reply.header(name, value);
-      });
-      
-      reply.status(response.status);
-      if (response.message) {
-        reply.send(response.message);
-        return;
-      }
-      
-      if (output === null) {
-        return;
-      }
-      
-      reply.send(output);
+
+      reply.status(200).send(output);
     };
+
     console.log(`Adding endpoint ${method} ${fullPath}`);
     this.fastifyApp[method.toLowerCase()](fullPath, noAuth ? fastifyHandler : this.authorize(fastifyHandler));
   }
