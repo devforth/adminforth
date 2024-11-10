@@ -164,7 +164,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     getTotals: boolean,
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
-      filters.map((f) => {
+      for (const f of filters) {
         if (!f.field) {
           throw new Error(`Field "field" not specified in filter object: ${JSON.stringify(f)}`);
         }
@@ -181,7 +181,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         } else {
           f.value = this.setFieldValue(fieldObj, f.value);
         }
-      });
+        if (f.operator === AdminForthFilterOperators.IN && f.value.length === 0) {
+          // nonsense
+          return { data: [], total: 0 };
+        }
+      };
     }
 
     const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters })];

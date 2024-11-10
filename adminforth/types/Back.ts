@@ -1091,7 +1091,7 @@ export interface AdminForthResource extends Omit<AdminForthResourceCommon, 'opti
 
   columns: Array<AdminForthResourceColumn>,
 
-  dataSourceColumns: Array<AdminForthResourceColumn>,
+  dataSourceColumns?: Array<AdminForthResourceColumn>,
 }
 
 export interface AdminForthBulkAction extends AdminForthBulkActionCommon {

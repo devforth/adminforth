@@ -162,6 +162,8 @@ Create database using `prisma migrate`:
 npx -y prisma migrate dev --name init
 ```
 
+> in future if you will need to update schema, you can run `npx prisma migrate dev --name <name>` where `<name>` is a name of migration.
+
 ## Step 4: Setting up AdminForth
 
 
@@ -944,7 +946,7 @@ stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
 
 [program:prisma]
-command=npx --yes prisma migrate dev --name init
+command=npx --yes prisma migrate deploy
 directory=/app
 autostart=true
 stdout_logfile=/dev/stdout

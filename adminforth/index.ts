@@ -158,6 +158,7 @@ class AdminForth implements IAdminForth {
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
+      'postgresql': PostgresConnector,
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
     };

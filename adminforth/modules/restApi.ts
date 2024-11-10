@@ -386,10 +386,7 @@ export default class AdminForthRestAPI {
               }
           }
 
-          if (filter.operator === AdminForthFilterOperators.IN && filter.value.length === 0) {
-              // nonsense
-              return { data: [], total: 0 };
-          }
+          
         }
 
         const data = await this.adminforth.connectors[resource.dataSource].getData({

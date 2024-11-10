@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.57] -  next
+## [1.4.3] - next
+
+# FFixed
+
+- postgresql now can be accessed via `postgresql` scheme in addition to `postgres` scheme
+- Postgres wrap table names in quotes in SQL queries to prevent any issues with reserved words
+- move nonesense "IN" blank array check to not pass this case to any data connector for both data API and standard pages 
+
+## [1.4.2]
+
+- fix type mismatch in dataSourceColumns
+
+## [1.4.1]
 
 ### Fixed
 - Indicate pagination wrong page
