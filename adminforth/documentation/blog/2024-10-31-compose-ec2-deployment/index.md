@@ -52,8 +52,6 @@ services:
       - "traefik.http.services.myadmin.loadbalancer.server.port=3500"
       - "traefik.http.routers.myadmin.priority=2"
 
-
-
 volumes:
   myadmin-db:
 ```
@@ -190,6 +188,7 @@ resource "null_resource" "sync_files_and_run" {
     # heredoc syntax
     command = <<-EOF
     rsync -t -av \
+      --delete \
       --exclude 'node_modules' \
       --exclude '.git' \
       --exclude '.terraform' \
@@ -239,7 +238,6 @@ To run the deployment first time, you need to run:
 
 ```bash
 terraform init
-
 ```
 
 Then with any change in code:

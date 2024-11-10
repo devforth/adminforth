@@ -136,6 +136,8 @@ Create database using `prisma migrate`:
 npx --yes prisma migrate dev --name init
 ```
 
+> ☝️ In future, if you will need to change schema, you can create new migration with `npx prisma migrate dev --name <name>`
+
 
 Create `index.ts` file in root directory with following content:
 
