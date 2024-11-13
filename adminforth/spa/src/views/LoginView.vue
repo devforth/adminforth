@@ -149,7 +149,6 @@ const backgroundPosition = computed(() => {
 });
 
 onMounted(async () => {
-    await coreStore.getPublicConfig();
     if (coreStore.config?.demoCredentials) {
       console.log('Setting demo credentials');
       const [username, password] = coreStore.config.demoCredentials.split(':');

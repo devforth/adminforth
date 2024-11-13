@@ -41,7 +41,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npx --yes prisma migrate dev --name init
+npx --yes prisma migrate dev --name add-audit-logs
 ```
 
 Also to make this code start 

@@ -136,6 +136,8 @@ Create database using `prisma migrate`:
 npx --yes prisma migrate dev --name init
 ```
 
+> ☝️ In future, if you will need to change schema, you can create new migration with `npx prisma migrate dev --name <name>`
+
 
 Create `index.ts` file in root directory with following content:
 
@@ -514,4 +516,4 @@ This will create records during first launch. Now you should see:
 
 ## Possible configuration options
 
-Check [AdminForthConfig](/docs/api/types/AdminForthConfig/type-aliases/AdminForthConfig.md) for all possible options.
+Check [AdminForthConfig](/docs/api/types/Back/interfaces/AdminForthConfig.md) for all possible options.

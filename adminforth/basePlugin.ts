@@ -1,4 +1,4 @@
-import { AdminForthResource, IAdminForthPlugin, IAdminForth } from './types/AdminForthConfig.js';
+import { AdminForthResource, IAdminForthPlugin, IAdminForth } from './types/Back.js';
 import { getComponentNameFromPath } from './modules/utils.js';
 import { currentFileDir } from './modules/utils.js';
 import path from 'path';

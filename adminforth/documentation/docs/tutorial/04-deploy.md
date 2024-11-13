@@ -73,7 +73,7 @@ Add `bundleNow` and `startLive` to `package.json`:
 //diff-add
         "startLive": "NODE_ENV=production tsx index.ts"
 //diff-add
-        "migrate": "npx prisma migrate dev --name init"
+        "migrate": "npx --yes prisma migrate deploy",
 //diff-add
         "migrateLiveAndStart": "npm run migrate && npm run startLive"
     },

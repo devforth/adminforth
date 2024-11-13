@@ -1,6 +1,15 @@
 import type { Express } from 'express';
 import type { Writable } from 'stream';
 
+import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
+  type AdminForthComponentDeclaration, 
+  type AdminForthResourceCommon, 
+  type AdminUser, type AllowedActionsResolved, 
+  type AdminForthBulkActionCommon, 
+  type AdminForthForeignResourceCommon,
+  type AdminForthResourceColumnCommon
+} from './Common.js';
+
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
@@ -9,7 +18,7 @@ export interface ICodeInjector {
 }
 
 export interface IConfigValidator {
-  validateConfig()
+  validateConfig(): void;
   postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
@@ -54,22 +63,6 @@ export interface IHttpServer {
 
 }
 
-export type AdminUser = {
-  /**
-   * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.usersResourceId}
-   */
-  pk: string | null,
-
-  /**
-   * Username which taken from {@link AdminForthConfig.auth.usernameField} field in user resource {@link AdminForthConfig.auth.usersResourceId}
-   */
-  username: string,
-
-  /**
-   * User record fetched from database, from resource defined in {@link AdminForthConfig.auth.usersResourceId}
-   */
-  dbUser: any,
-}
 
 export interface IExpressHttpServer extends IHttpServer {
 
@@ -228,7 +221,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
   createRecord({ resource, record, adminUser }: { 
     resource: AdminForthResource, 
     record: any 
-    adminUser: AdminUser
+    adminUser: AdminUser,
   }): Promise<{ok: boolean, error?: string, createdRecord?: any}>;
 
   updateRecord({ resource, recordId, newValues }: { 
@@ -425,14 +418,7 @@ export enum AdminForthMenuTypes {
   divider = 'divider',
 }
 
-export enum AdminForthResourcePages {
-  list = 'list',
-  show = 'show',
-  edit = 'edit',
-  create = 'create',
-  filter = 'filter',
-  
-}
+
 
 
 /**
@@ -526,182 +512,10 @@ export type AdminForthConfigMenuItem = {
      * Result of callback if not null will be used as a small badge near the menu item.
      */
     badge?: string | ((user: AdminUser) => Promise<string>),
-  }
-  
-
-/**
- * Column describes one field in the table or collection in database.
- */
-export type AdminForthResourceColumn = {
-    /**
-     * Column name in database.
-     */
-    name: string,
-
-    /**
-     * How column can be labled in the admin panel.
-     * Use it for renaming columns. Defaulted to column name with Uppercased first letter.
-     */
-    label?: string,
-
-    /**
-     * Type of data in column.
-     * AdminForth will use this information to render proper input fields in the admin panel.
-     * AdminForth tries to guess type of data from database column type automatically for typed databases like SQL-based.
-     * However you can explicitly set it to any value. E.g. set AdminForthDataTypes.DATETIME for your string column in SQLite, which stores ISO date strings.
-     */
-    type?: AdminForthDataTypes,
-
-    /**
-     * Whether to use this column as record identifier.
-     * Only one column can be primary key.
-     * AdminForth tries to guess primary key automatically first.
-     */
-    primaryKey?: boolean,
-
-    /**
-     * Whether AdminForth will require this field to be filled in create and edit forms.
-     * Can be set to boolean or object with create and edit properties.
-     * If boolean, it will be used for both create and edit forms.
-     */
-    required?: boolean | { create?: boolean, edit?: boolean },
-
-    /**
-     * Whether AdminForth will show editing note near the field in edit/create form.
-     */
-    editingNote?: string | { create?: string, edit?: string },
-
-    /**
-     * On which AdminForth pages this field will be shown. By default all.
-     * Example: if you want to show field only in create and edit pages, set it to 
-     * 
-     * ```ts
-     * showIn: [AdminForthResourcePages.CREATE, AdminForthResourcePages.EDIT]
-     * ```
-     * 
-     */
-    showIn?: Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>,
-
-    /**
-     * Whether AdminForth will show this field in show view.
-     */
-    fillOnCreate?: Function,
-
-    /**
-     * Whether AdminForth will request user to enter unique value during creating or editing record.
-     * This option causes AdminForth to make a request to database to check if value is unique. 
-     * (Constraints are not used, so for large-tables performance make sure you have unique index in database if you set this option to true)
-     */
-    isUnique?: boolean,
-
-    /**
-     * Will automatically convert any capital letters to lowercase in input during editing
-     */
-    enforceLowerCase?: boolean,
-
-    /**
-     * Runtime validation Regexp rules for this field.
-     */
-    validation?: Array<ValidationObject>,
-
-    /**
-     * Allows to make the field which does not exist in database table.
-     * Examples: add custom show field with user country flag:
-     * 
-     * ```ts
-     * {
-     *  label: 'Country Flag',
-     *  type: AdminForthDataTypes.STRING,
-     *  virtual: true,
-     *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
-     *  components: {
-     *    show: '@@/CountryFlag.vue',
-     *    list: '@@/CountryFlag.vue',
-     *   },
-     * }
-     * ```
-     * 
-     * This field will be displayed in show and list views with custom component `CountryFlag.vue`. CountryFlag.vue should be placed in custom folder and can be next:
-     * 
-     * ```html
-     * <template>
-     *  {{ getFlagEmojiFromIso(record.ipCountry) }}
-     * </template>
-     * 
-     * <script setup>
-     * const props = defineProps(['record']);
-     * 
-     * function getFlagEmojiFromIso(iso) {
-     *    return iso.toUpperCase().replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
-     * }
-     * </script>
-     * ```
-     * 
-     */
-    virtual?: boolean,
-
-    /**
-     * Whether AdminForth will show this field in list view.
-     */
-    allowMinMaxQuery?: boolean,
-
-    /**
-     * Custom components which will be used to render this field in the admin panel.
-     */
-    components?: AdminForthFieldComponents
-
-    /**
-     * Maximum length of string that can be entered in this field.
-     */
-    maxLength?: number, 
-
-    /**
-     * Minimum length of string that can be entered in this field.
-     */
-    minLength?: number,
-
-    min?: number,
-    max?: number,
-
-    /**
-     * Minimum value that can be entered in this field.
-     */
-    minValue?: number,
-
-    /**
-     * Maximum value that can be entered in this field.
-     */
-    maxValue?: number,
-
-    /**
-     * Enum of possible values for this field.
-     */
-    enum?: Array<AdminForthColumnEnumItem>,
-
-    /**
-     * Foreign resource which has pk column with values same that written in this column.
-     */
-    foreignResource?:AdminForthForeignResource,
-
-    sortable?: boolean,
-
-    /**
-     * if true field will !not be passed to UI under no circumstances, but will be presented in hooks
-     */
-    backendOnly?: boolean,
-
-    /**
-     * Masked fields will be displayed as `*****` on Edit and Create pages.
-     */
-    masked?: boolean,
-
-
-    /**
-     * Internal type which indicates original type of column in database.
-     */
-    _underlineType?: string,
 }
   
+
+
 
 /**
  * Modify query to change how data is fetched from database.
@@ -759,410 +573,6 @@ export type BeforeLoginConfirmationFunction = (params?: {
   }
 }>;
 
-
-export type AdminForthBulkAction = {
-  id?: string,
-
-  /**
-   * Label for action button which will be displayed in the list view
-   */
-  label: string,
-  state: string,
-
-  /**
-   * Icon for action button which will be displayed in the list view
-   */
-  icon?: string,
-
-  /**
-   * Callback which will be called on backend when user clicks on action button.
-   * It should return Promise which will be resolved when action is done.
-   */
-  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
-
-  /**
-   * Confirmation message which will be displayed to user before action is executed.
-   */
-  confirm?: string,
-
-  /**
-   * Success message which will be displayed to user after action is executed.
-   */
-  successMessage?: string,
-  /**
-   * Allowed callback called to check whether action is allowed for user.
-   * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
-   * 2. This same callback called second time when user clicks an action button. If callback returns false, action will not be executed.
-   * In second time selectedIds will be passed to callback (because checkbox for items are selected), so you can use this to make additional 
-   * checks ( for example to check if user has permission for certain records ).
-   * 
-   * Example:
-   * 
-   * ```ts
-   * allowed: async ({ resource, adminUser, selectedIds }) => {
-   *   if (adminUser.dbUser.role !== 'superadmin') {
-   *    return false;
-   *   } 
-   *   return true;
-   * }
-   * ```
-   * 
-   */
-  allowed?: ({ resource, adminUser, selectedIds, allowedActions }: {
-
-    /**
-     * recordIds will be passed only once user tries to perform bulk action by clicking on button
-     */
-    selectedIds?: Array<any>,
-    resource: AdminForthResource,
-
-    /**
-     * Admin user object
-     */
-    adminUser: AdminUser,
-
-    /**
-     * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
-     * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
-     * might want to allow it only for users who have "edit" action allowed:
-     * 
-     * Example:
-     * 
-     * ```ts
-     * 
-     * options: \{
-     *   bulkActions: [
-     *     \{
-     *       label: 'Mark as read',
-     *       action: async (\{ resource, recordIds \}) => \{
-     *         await markAsRead(recordIds);
-     *       \},
-     *       allowed: (\{ allowedActions \}) => allowedActions.edit,
-     *     \}
-     *   ],
-     *   allowedActions: \{
-     *     edit: (\{ resource, adminUser, recordIds \}) => \{
-     *       return adminUser.dbUser.role === 'superadmin';
-     *     \}
-     *   \}
-     * \}
-     * ```
-     * 
-     */
-    allowedActions: AllowedActionsResolved,
-    }) => Promise<boolean>,
-}
-
-
-/**
- * Resource describes one table or collection in database.
- * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
- */
-export type AdminForthResource = {
-    /**
-     * Unique identifier of resource. By default it equals to table name in database. 
-     * If you wish you can explicitly set it to any string.
-     * We added to support cases when 2 datasources have tables with the same name.
-     */
-    resourceId?: string,
-
-    /**
-     * Label for resource which will be displayed in the admin panel.
-     * By default it equals to table name in database.
-     */
-    label?: string,
-
-    /**
-     * Table name in database which will be used to fetch data from. Might be case sensitive.
-     */
-    table: string,
-
-    /**
-     * ID of datasource which will be used to fetch data from.
-     */
-    dataSource: string,
-
-    /**
-     * Array of columns which will be displayed in the admin panel.
-     * Each column has its own configuration.
-     */
-    columns: Array<AdminForthResourceColumn>,
-
-    /**
-     * Internal array of columns which are not virtual. You should not edit it. 
-     */
-    dataSourceColumns?: Array<AdminForthResourceColumn>,  // TODO, mark as private
-
-    /**
-     * Hook which allow you to modify record label
-     * 
-     * Example:
-     * 
-     * ```ts
-     * recordLabel: (record) => `${record.name} - ${record.id}`,
-     * ```
-     * 
-     */
-    recordLabel?: Function,
-
-    /**
-     * Array of plugins which will be used to modify resource configuration.
-     * 
-     */
-    plugins?: Array<IAdminForthPlugin>,
-
-    /**
-     * Hooks allow you to change the data on different stages of resource lifecycle.
-     * Hooks are functions which will be called on backend side (only backend side).
-     */
-    hooks?: {
-      show?: {
-        /**
-         * Typical use-cases: 
-         * - request additional data from database before returning to frontend for soft-join 
-         */
-        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
-
-        /**
-         * Typical use-cases:
-         * - Transform value for some field for record returned from database before returning to frontend (minimize, sanitize, etc)
-         * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
-         * - Attach additional data to record before returning to frontend 
-         */
-        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
-      },
-      list?: {
-        /**
-         * Typical use-cases:
-         * - add additional filters in addition to what user selected before fetching data from database.
-         * - same as hooks.show.beforeDatasourceRequest 
-         */
-        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
-
-        /**
-         * Typical use-cases:
-         * - Same as hooks.show.afterDatasourceResponse but applied for all records returned from database for 
-         * showing in list view, e.g. add new field to each record in list view
-         */
-        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
-      },
-      create?: {
-        /**
-         * Typical use-cases:
-         * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
-         * - fill-in adminUser as creator of record
-         * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
-         */
-        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
-
-        /**
-         * Typical use-cases:
-         * - Initiate some trigger after record saved to database (e.g sync to another datasource)
-         */
-        afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
-      },
-      edit?: {
-        /**
-         * Typical use-cases:
-         * - Same as hooks.create.beforeSave but for edit page
-         */
-        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
-
-        /**
-         * Typical use-cases:
-         * - Same as hooks.create.afterSave but for edit page
-         */
-        afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
-      },
-      delete?: {
-        /**
-         * Typical use-cases:
-         * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
-         */
-        beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
-        /**
-         * Typical use-cases:
-         * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
-         */
-        afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
-      },
-    },
-
-    /**
-     * General options for resource.
-     */
-    options?: {
-
-      /**
-       * Default sort for list view.
-       * Example:
-       * 
-       * ```ts
-       * import { AdminForthSortDirections } from 'adminforth';
-       * 
-       * ...
-       * 
-       * defaultSort: {
-       *   columnName: 'created_at',
-       *   direction: AdminForthSortDirections.ASC, 
-       * }
-       * ```
-       * 
-       */
-      defaultSort?: {
-
-        /**
-         * Column name which will be used to sort records.
-         */
-        columnName: string,
-
-        /**
-         * Direction of sorting. Can be 'asc' or 'desc'.
-         */
-        direction: AdminForthSortDirections | string,
-      }
-
-      /** 
-       * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
-       * using checkboxes.
-       */
-      bulkActions?: AdminForthBulkAction[],
-
-      /**
-       * Allowed actions for resource.
-       * 
-       * Example: 
-       * 
-       * ```ts
-       * allowedActions: {
-       *  create: ({ resource, adminUser }) => {
-       *    // Allow only superadmin to create records
-       *    return adminUser.dbUser.role === 'superadmin';
-       *  },
-       *  delete: false, // disable delete action for all users
-       * }
-       * ```
-       * 
-       */
-      allowedActions?: AllowedActions,
-
-      /** 
-       * Allows to make groups of columns in create/edit resource pages.
-       */
-      createEditGroups?: {
-        groupName: string;
-        columns: string[];
-      }[];
-
-      /** 
-       * Page size for list view
-       */
-      listPageSize?: number,
-
-      /**
-       * Callback to define what happens when user clicks on record in list view.
-       * By default show view will be opened.
-       * If you wish to open custom page, return URL to the custom page (can start with https://, or relative adminforth path)
-       * If you wish to open page in new tab, add `target=_blank` get param to returned URL, example:
-       * 
-       * ```ts
-       * listTableClickUrl: async (record, adminUser) => {
-       *   return `https://google.com/search?q=${record.name}&target=_blank`;
-       * }
-       * ```
-       * 
-       * If you wish to do nothing on click, return null.
-       * 
-       * Example:
-       * 
-       * ```ts
-       * listTableClickUrl: async (record, adminUser) => {
-       *   return null;
-       * }
-       * ```
-       * 
-       * @param record - record which was clicked
-       * @param adminUser - user who clicked
-       * @returns 
-       */
-      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string | null>,
-
-      /**
-       * Whether to refresh existing list rows automatically every N seconds.
-       */
-      listRowsAutoRefreshSeconds?: number, 
-
-      /** 
-       * Custom components which can be injected into AdminForth CRUD pages.
-       * Each injection is a path to a custom component which will be displayed in the admin panel.
-       * Can be also array to render multiple injections one after another.
-       * 
-       * Example:
-       * 
-       * ```ts
-       * pageInjections: {
-       *  list: {
-       *   beforeBreadcrumbs: '@@/Announcement.vue',
-       *  }
-       * }
-       * ```
-       * 
-       * 
-       */
-      pageInjections?: {
-
-
-        /**
-         * Custom components which can be injected into resource list page.
-         * 
-         * Component accepts next props: [resource, adminUser, meta]
-         */
-        list?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        },
-
-        /**
-         * Custom components which can be injected into resource show page.
-         * 
-         * Component accepts next props: [record, resource, adminUser, meta]
-         */
-        show?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        },
-
-        /**
-         * Custom components which can be injected into resource edit page.
-         * 
-         * Component accepts next props: [record, resource, adminUser, meta]
-         */
-        edit?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        },
-
-        /**
-         * Custom components which can be injected into resource create page.
-         * 
-         * Component accepts next props: [resource, adminUser, meta]
-         */
-        create?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        },
-      }
-    },
-  }
   
 /**
  * Data source describes database connection which will be used to fetch data for resources.
@@ -1188,7 +598,7 @@ export type AdminForthDataSource = {
 /**
  * Main configuration object for AdminForth
  */
-export type AdminForthConfig = {
+export interface AdminForthConfig {
 
     /**
      * Authorization module configuration
@@ -1538,16 +948,8 @@ export interface IOperationalResource {
 
   delete: (primaryKey: any) => Promise<boolean>;
 }
-  
 
-export enum AllowedActionsEnum {
-  show = 'show',
-  list = 'list',
-  edit = 'edit',
-  create = 'create',
-  delete = 'delete',
-  filter = 'filter',
-}
+
 
 /**
  * Defines whether user has access to an action, can statically be Boolean
@@ -1569,16 +971,8 @@ export type AllowedActionValue = boolean | (({adminUser, resource, meta, source}
   source: ActionCheckSource,
 }) => Promise<boolean | string>);
 
-export enum ActionCheckSource {
-  DisplayButtons = 'displayButtons',
-  ListRequest = 'listRequest',
-  ShowRequest = 'showRequest',
-  EditRequest = 'editRequest',
-  CreateRequest = 'createRequest',
-  DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',
-}
 
+  
 /**
  * Object which describes allowed actions for user.
  */
@@ -1587,215 +981,214 @@ export type AllowedActions = {
 } & {
   all?: AllowedActionValue;
 }
-  
-export type AllowedActionsResolved = {
-  [key in AllowedActionsEnum]?: boolean
+
+/**
+ * General options for resource.
+ */
+export type ResourceOptions = Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> & {
+
+  /** 
+   * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
+   * using checkboxes.
+   */
+  bulkActions?: Array<AdminForthBulkAction>,
+
+  /**
+   * Allowed actions for resource.
+   * 
+   * Example: 
+   * 
+   * ```ts
+   * allowedActions: {
+   *  create: ({ resource, adminUser }) => {
+   *    // Allow only superadmin to create records
+   *    return adminUser.dbUser.role === 'superadmin';
+   *  },
+   *  delete: false, // disable delete action for all users
+   * }
+   * ```
+   * 
+   */
+  allowedActions?: AllowedActions,
+};
+
+/**
+ * Resource describes one table or collection in database.
+ * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
+ */
+export interface AdminForthResource extends Omit<AdminForthResourceCommon, 'options'> {
+  /**
+   * Array of plugins which will be used to modify resource configuration.
+   * 
+   */
+  plugins?: Array<IAdminForthPlugin>,
+
+  /**
+   * Hooks allow you to change the data on different stages of resource lifecycle.
+   * Hooks are functions which will be called on backend side (only backend side).
+   */
+  hooks?: {
+    show?: {
+      /**
+       * Typical use-cases: 
+       * - request additional data from database before returning to frontend for soft-join 
+       */
+      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Transform value for some field for record returned from database before returning to frontend (minimize, sanitize, etc)
+       * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
+       * - Attach additional data to record before returning to frontend 
+       */
+      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+    },
+    list?: {
+      /**
+       * Typical use-cases:
+       * - add additional filters in addition to what user selected before fetching data from database.
+       * - same as hooks.show.beforeDatasourceRequest 
+       */
+      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Same as hooks.show.afterDatasourceResponse but applied for all records returned from database for 
+       * showing in list view, e.g. add new field to each record in list view
+       */
+      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+    },
+    create?: {
+      /**
+       * Typical use-cases:
+       * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
+       * - fill-in adminUser as creator of record
+       * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Initiate some trigger after record saved to database (e.g sync to another datasource)
+       */
+      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+    },
+    edit?: {
+      /**
+       * Typical use-cases:
+       * - Same as hooks.create.beforeSave but for edit page
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Same as hooks.create.afterSave but for edit page
+       */
+      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+    },
+    delete?: {
+      /**
+       * Typical use-cases:
+       * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      /**
+       * Typical use-cases:
+       * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
+       */
+      afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+    },
+  },
+
+  options?: ResourceOptions,
+
+  columns: Array<AdminForthResourceColumn>,
+
+  dataSourceColumns?: Array<AdminForthResourceColumn>,
 }
 
-export type ValidationObject = {
-    /**
-     * Should be pure string (not RegExp string)
-     * 
-     * Example:
-     * 
-     * ```ts
-     * // regex for email
-     * regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-     * ```
-     * 
-     */
-    regExp: string,
+export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
 
-    /**
-     * Error message shown to user if validation fails
-     * 
-     * Example: "Invalid email format"
-     */
-    message: string,
-
-    /**
-     * Whether to check case sensitivity (i flag)
-     */
-    caseSensitive?: boolean,
-    
-    /**
-     * Whether to check Multiline strings (m flag)
-     */
-    multiline?: boolean, 
-    
-    /**
-     * Whether to check global strings (g flag)
-     */
-    global?: boolean
-  }
-
-export type AdminForthComponentDeclarationFull = {
   /**
-   * Path to custom component which will be used to render field in the admin panel.
-   * e.g. `@@/MyCustomComponent.vue`
+   * Callback which will be called on backend when user clicks on action button.
+   * It should return Promise which will be resolved when action is done.
    */
-  file : string,
+  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
-   * Optional Meta object which will be passed to custom component as props. For example used by plugins
-   * to pass plugin options to custom components.
+   * Allowed callback called to check whether action is allowed for user.
+   * 1. It called first time when user goes to list view. If callback returns false, action button will be hidden on list view.
+   * 2. This same callback called second time when user clicks an action button. If callback returns false, action will not be executed.
+   * In second time selectedIds will be passed to callback (because checkbox for items are selected), so you can use this to make additional 
+   * checks ( for example to check if user has permission for certain records ).
    * 
    * Example:
    * 
    * ```ts
-   * {
-   *    name: 'Country Flag',
-   *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
-   *    components: {
-   *      show: {
-   *        file: '@@/Flag.vue',
-   *        meta: {
-   *          flagType: 'country',
-   *        },
-   *      },
-   *    },
-   * },
-   * {
-   *    name: 'Team Flag',
-   *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
-   *    components: {
-   *      show: {
-   *        file: '@@/Flag.vue',
-   *        meta: {
-   *          flagType: 'team',
-   *        },
-   *     },
-   *    },
+   * allowed: async ({ resource, adminUser, selectedIds }) => {
+   *   if (adminUser.dbUser.role !== 'superadmin') {
+   *    return false;
+   *   } 
+   *   return true;
    * }
    * ```
    * 
-   * In Flag.vue you can access this meta object like this:
-   * 
-   * ```html
-   * <template>
-   *  <img :src="loadFile(`@@/flags/${meta.flagType}/${meta.flagType === 'country' ? record.countryIso : record.teamCode}.png`)" />
-   * </template>
-   * 
-   * <script setup>
-   * import { loadFile } from '@/utils';
-   * defineProps(['meta', 'record']);
-   * </script>
-   * 
    */
-  meta?: any,
-}
-
-
-export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
-
-export type AdminForthFieldComponents = {
+  allowed?: ({ resource, adminUser, selectedIds, allowedActions }: {
+  
     /**
-     * Show component is used to redefine cell which renders field value in show view.
-     * Component accepts next properties: [record, column, resource, adminUser, meta].
+     * recordIds will be passed only once user tries to perform bulk action by clicking on button
+     */
+    selectedIds?: Array<any>,
+    resource: AdminForthResource,
+
+    /**
+     * Admin user object
+     */
+    adminUser: AdminUser,
+
+    /**
+     * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
+     * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
+     * might want to allow it only for users who have "edit" action allowed:
      * 
-     * Example: `FullName.vue`
-     * 
-     * ```html
-     * <template>
-     *   {{ record.firstName }} {{ record.lastName }}
-     * </template>
-     * 
-     * <script setup>
-     * defineProps(['record']);
-     * </script>
+     * Example:
      * 
      * ```ts
-     * {
-     *  label: 'Full Name',
-     *  virtual: true,
-     *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
-     *  components: {
-     *   show: '@@/FullName.vue',
-     *   list: '@@/FullName.vue',
-     *  },
-     * }
+     * 
+     * options: \{
+     *   bulkActions: [
+     *     \{
+     *       label: 'Mark as read',
+     *       action: async (\{ resource, recordIds \}) => \{
+     *         await markAsRead(recordIds);
+     *       \},
+     *       allowed: (\{ allowedActions \}) => allowedActions.edit,
+     *     \}
+     *   ],
+     *   allowedActions: \{
+     *     edit: (\{ resource, adminUser, recordIds \}) => \{
+     *       return adminUser.dbUser.role === 'superadmin';
+     *     \}
+     *   \}
+     * \}
      * ```
      * 
      */
-    show?: AdminForthComponentDeclaration,
+    allowedActions: AllowedActionsResolved,
+  }) => Promise<boolean>,
 
-    /**
-     * showRow component is similar to {@link AdminForthFieldComponent.show} but rewrites full table row (both \<td\> tags)
-     * Accepts next properties: [record, column, resource, adminUser]
-     */
-    showRow?: AdminForthComponentDeclaration, 
-
-    /**
-     * Create component is used to redefine input field in create view.
-     * Component accepts next properties: [record, column, resource, adminUser].
-     */
-    create?: AdminForthComponentDeclaration,
-
-    /**
-     * Edit component is used to redefine input field in edit view.
-     * Component accepts next properties: [record, column, resource, adminUser].
-     */
-    edit?: AdminForthComponentDeclaration,
-
-    /**
-     * List component is used to redefine cell which renders field value in list view.
-     * Component accepts next properties: [record, column, resource, adminUser].
-     * Component can emit events:
-     * - `update:value` - to update record value.
-     * - `update:inValidity` - emit true once entered value became not valid (e.g. emit('update:inValidity', true) ). Emit false once entered value became valid. Emit default value in mounted hook.
-     * - `update:emptiness` - emit true once entered value became empty (e.g. emit('update:emptiness', true) ). Emit false once entered value became not empty. Emit default value in mounted hook.
-     * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
-     */
-    list?: AdminForthComponentDeclaration,
 }
 
-export enum AdminForthDataTypes {
-  STRING = 'string',
-  INTEGER = 'integer',
-  FLOAT = 'float',
-  DECIMAL = 'decimal',
-  BOOLEAN = 'boolean',
-  DATE = 'date',
-  DATETIME = 'datetime',
-  TIME = 'time',
-  TEXT = 'text',
-  JSON = 'json',
-  RICHTEXT = 'richtext',
-}
-
-export enum AdminForthFilterOperators {
-  EQ = 'eq',
-  NE = 'ne',
-  GT = 'gt',
-  LT = 'lt',
-  GTE = 'gte',
-  LTE = 'lte',
-  LIKE = 'like',
-  ILIKE = 'ilike',
-  IN = 'in',
-  NIN = 'nin',
-};
-
-export enum AdminForthSortDirections {
-  asc = 'asc',
-  desc = 'desc',
-};
-
-
-export type AdminForthColumnEnumItem = {
-    value: any | null,
-    label: string,
-} 
-
-export type AdminForthForeignResource = {
-    resourceId: string,
-    hooks?: {
-      dropdownList?: {
-        beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
-        afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
-      },
+export interface AdminForthForeignResource extends AdminForthForeignResourceCommon {
+  hooks?: {
+    dropdownList?: {
+      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
     },
-  }
+  },
+}
 
+export interface AdminForthResourceColumn extends AdminForthResourceColumnCommon {
+  foreignResource?: AdminForthForeignResource,
+}

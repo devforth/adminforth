@@ -7,3 +7,18 @@ plugin:
   label: Plugin
   permalink: /plugin
   description: Plugins are extensions that add new features or functionality to a AdminForth.
+
+aws:
+  label: AWS
+  permalink: /aws
+  description: Amazon Web Services (AWS) is a cloud computing platform that provides a wide range of services for building and deploying applications.
+
+terraform:
+  label: Terraform
+  permalink: /terraform
+  description: Terraform is an open-source infrastructure as code software tool created by HashiCorp that enables users to define and provision data center infrastructure using a declarative configuration language.
+
+nuxt:
+  label: Nuxt.js
+  permalink: /nuxt
+  description: Nuxt.js is a free and open-source web application framework based on Vue.js, Node.js, Webpack, and Babel.js.

@@ -14,7 +14,6 @@ import fs from 'fs';
 import ImportExportPlugin from '../adminforth/plugins/import-export/index.js';
 import { generate } from "random-words";
 
-
 const ADMIN_BASE_URL = '';
 
 // create test1.db
@@ -109,7 +108,7 @@ const demoChecker = async ({ record, adminUser, resource }) => {
   return { ok: true };
 }
 
-const admin = new AdminForth({
+export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   // deleteConfirmation: false,
   auth: {
@@ -282,6 +281,7 @@ const admin = new AdminForth({
             allowedActions: {
                 edit: false,
                 delete: false,
+                create: false,
             },
         },
         plugins: [
@@ -308,8 +308,20 @@ const admin = new AdminForth({
         delete: {
           beforeSave: demoChecker,
         },
+        list: {
+          afterDatasourceResponse: async ({ response }: { response: any }) => { 
+            response.forEach((r: any) => {
+              // random country
+              const countries = ['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA', 
+                'CA', 'AU', 'BR', 'JP', 'CN', 'IN', 'KR', 'TR', 'MX', 'ID',
+                'NG', 'SA', 'EG', 'ZA', 'AR', 'SE', 'CH', 'AT', 'BE', 'FI', 'NO', 'PT', 'GR', 'HU', 'IE', 'IL', 'LU', 'SK', 'SI', 'LT', 'LV', 'EE', 'HR', 'CZ', 'BG', 'RO', 'RS', 'IS', 'MT', 'CY', 'AL', 'MK', 'ME', 'BA', 'XK', 'MD', 'LI', 'AD', 'MC', 'SM', 'VA', 'UA', 'BY'
+              ]
+              r.country = countries[Math.floor(Math.random() * countries.length)];
+            })
+            return { ok: true, error: "" }
+          }
+        }
       },
-      
       columns: [
         { 
           name: 'id', 
@@ -562,7 +574,7 @@ const admin = new AdminForth({
       ],
 
       options:{
-          
+        listRowsAutoRefreshSeconds: 100,
         pageInjections: {
           list: {
             customActionIcons: '@@/IdShow.vue',
@@ -721,14 +733,6 @@ const admin = new AdminForth({
         }
       ],
       hooks: {
-        list: {
-          afterDatasourceResponse: async ({ query, adminUser }: any) => {
-            response.data = response.data.map((r: any) => {
-              r.role = Math.random() > 0.5 ? 'admin' : 'user';
-            });
-            return { ok: true, error: "" }
-          }
-        },
         create: {
           beforeSave: async ({ record, adminUser, resource }: any) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
@@ -1012,7 +1016,7 @@ const port = 3000;
 (async () => {
 
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: false || process.env.NODE_ENV === 'development'});
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
 
 })();

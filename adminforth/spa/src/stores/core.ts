@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
-import type { AdminForthResource, AdminForthResourceColumn } from '@/types/AdminForthConfig';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
 import type { Ref } from 'vue'
 
 export const useCoreStore = defineStore('core', () => {
@@ -11,16 +11,16 @@ export const useCoreStore = defineStore('core', () => {
   const menu = ref([]);
   const config = ref({});
   const record: Ref<any | null> = ref({});
-  const resource: Ref<AdminForthResource | null> = ref(null);
+  const resource: Ref<AdminForthResourceCommon | null> = ref(null);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
       return [];
     }
-    return resource.value.columns.filter((col: AdminForthResourceColumn) => col.showIn?.includes('filter'));
+    return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.includes('filter'));
   })
 
-  const resourceOptions = ref(null);
+  const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
   const resourceColumnsError = ref('');
   const resourceColumnsId = ref(null);
   const adminUser = ref(null);

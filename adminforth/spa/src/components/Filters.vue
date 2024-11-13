@@ -25,13 +25,13 @@
             <Dropdown
               v-if="c.foreignResource"
               :options="columnOptions[c.name] || []"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             <Dropdown
               v-else-if="c.type === 'boolean'"
-              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: undefined }]"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
@@ -39,7 +39,7 @@
               v-else-if="c.enum"
               :options="c.enum"
               :allowCustom="c.allowCustom"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event })"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 

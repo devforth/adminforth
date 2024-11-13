@@ -5,20 +5,27 @@ import PostgresConnector from './dataConnectors/postgres.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
+// import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
+
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
   type IConfigValidator,
   IOperationalResource,
-  AdminForthFilterOperators,
-  AdminForthDataTypes, IHttpServer, 
+  IHttpServer, 
   BeforeSaveFunction,
   AfterSaveFunction,
-  AdminUser,
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
-} from './types/AdminForthConfig.js';
+} from './types/Back.js';
+
+import {
+  AdminForthFilterOperators,
+  AdminForthDataTypes,
+  AdminUser,
+} from './types/Common.js';
+
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
@@ -26,7 +33,8 @@ import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
 
 // exports
-export * from './types/AdminForthConfig.js'; 
+export * from './types/Back.js';
+export * from './types/Common.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, getClinetIp };
@@ -62,6 +70,7 @@ class AdminForth implements IAdminForth {
 
   config: AdminForthConfig;
   express: ExpressServer;
+  // fastify: FastifyServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
   connectors: {
@@ -93,6 +102,7 @@ class AdminForth implements IAdminForth {
     this.configValidator.validateConfig();   // revalidate after plugins
 
     this.express = new ExpressServer(this);
+    // this.fastify = new FastifyServer(this);
     this.auth = new AdminForthAuth(this);
     this.connectors = {};
     this.statuses = {
@@ -148,6 +158,7 @@ class AdminForth implements IAdminForth {
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
+      'postgresql': PostgresConnector,
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
     };
