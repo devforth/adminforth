@@ -9,7 +9,6 @@
         :placeholder="selectedItems.length ? '' : placeholder || 'Select...'"
       />
       <div class="absolute inset-y-0 left-2 flex items-center pr-2 flex-wrap">
-        {{  }}
         <div v-for="item in selectedItems" :key="item?.name" class="bg-lightPrimaryOpacity text-lightPrimary text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkPrimaryOpacity dark:text-darkPrimary">
           <span>{{ item.label }}</span>
           <button

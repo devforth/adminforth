@@ -1,4 +1,4 @@
-import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/AdminForthConfig.js';
+import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/Back.js';
 
 
 function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): IAdminForthFilter[] {

@@ -151,13 +151,15 @@
 </template>
 
 <script setup>
-  import { defineProps } from 'vue';
   import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Dropdown from '@/components/Dropdown.vue';
   import AfTooltip from "./AfTooltip.vue";
+  import { getCustomComponent } from '@/utils';
+
 
   const props = defineProps({
+    source: 'create' | 'edit',
     group: Object,
     mode: String,
     validating: Boolean,

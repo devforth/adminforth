@@ -5,18 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.57] -  next
+## [1.4.3] - next
+
+# Fixed
+
+- postgresql now can be accessed via `postgresql` scheme in addition to `postgres` scheme
+- Postgres wrap table names in quotes in SQL queries to prevent any issues with reserved words
+- move nonesense "IN" blank array check to not pass this case to any data connector for both data API and standard pages 
+- reduce login /logout CLS
+
+## [1.4.2]
+
+- fix type mismatch in dataSourceColumns
+
+## [1.4.1]
 
 ### Fixed
 - Indicate pagination wrong page
 
 ### Improved
 - after bundling in tmp location, copy dist folder back to the dist of spa (in node_modules),
-after this we can apply /tmp caching in docker using RUN --mount=type=cache,target=/tmp and keep spa served from container
+after this we can apply /tmp caching in docker using `RUN --mount=type=cache,target=/tmp` and keep spa served from container
 - use brandName for tmp folder isolations so you can develop multiple apps on the same machine
 - implement Frontend API for silet table refresh and silent row update
-- add option listRowsAutoRefreshSeconds - to silently auto-refresh rows in list every N seconds
+- add option `listRowsAutoRefreshSeconds` - to silently auto-refresh rows in list every N seconds
 - add JSONB and JSON data types support for Postgres
+- allow to set `column.extra.jsonCollapsedLevel` to collapse JSON fields in the show/list views.
+- significant types refactor to split Common types (both front and back) and back types     
+- fix bug when clear filter
 
 ## [1.3.56]
 

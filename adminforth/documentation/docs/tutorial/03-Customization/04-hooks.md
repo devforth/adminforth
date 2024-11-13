@@ -60,4 +60,4 @@ import type { AdminUser } from  'adminforth';
 
 ## All hooks
 
-Check all hooks in the [API reference](https://adminforth.dev/docs/api/types/AdminForthConfig/type-aliases/AdminForthResource).
+Check all hooks in the [API reference](/docs/api/types/Back/interfaces/AdminForthResource).

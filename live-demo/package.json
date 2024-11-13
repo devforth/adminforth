@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "adminforth": "^1.3.57-next.4",
-    "express": "^4.21.0"
-  }
-}

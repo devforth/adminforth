@@ -4,7 +4,7 @@ import fs from 'fs';
 import CodeInjector from '../modules/codeInjector.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { IAdminForth, IExpressHttpServer } from '../types/AdminForthConfig.js';
+import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
 
 
 function replaceAtStart(string, substring) {
@@ -171,7 +171,17 @@ class ExpressServer implements IExpressHttpServer {
         res.status(401).send('Unauthorized by AdminForth');
         return
       }
-      const adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+      let adminforthUser;
+      try {
+        adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+      } catch (e) {
+        // this might happen if e.g. database intialization in progress.
+        // so we can't answer with 401 (would logout user)
+        // reproduced during usage of listRowsAutoRefreshSeconds
+        console.error(e.stack);
+        res.status(500).send('Failed to verify JWT token - something went wrong');
+        return;
+      }
       if (!adminforthUser) {
         res.status(401).send('Unauthorized by AdminForth');
       } else {

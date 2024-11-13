@@ -1,11 +1,10 @@
-import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '../types/FrontendAPI';
-import type { AdminForthFilterOperators } from '@/types/AdminForthConfig';
+import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '@/types/FrontendAPI';
+import type { AdminForthFilterOperators, AdminForthResourceColumn } from '@/types/Common';
 import { useToastStore } from '../stores/toast';
 import { useModalStore } from '../stores/modal';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import router from '@/router'
-import type { AdminForthResourceColumn } from '@/types/AdminForthConfig';
 
 type FilterParams = {
   /**

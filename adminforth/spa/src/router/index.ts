@@ -10,7 +10,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { title: 'login' },
+      meta: { title: 'login', customLayout: true },
       beforeEnter: async (to, from, next) => {
         if(localStorage.getItem('isAuthorized') === 'true'){
           next({name: 'home'})
