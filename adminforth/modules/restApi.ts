@@ -156,6 +156,8 @@ export default class AdminForthRestAPI {
       path: '/get_public_config',
       handler: async ({ body }) => {
 
+        // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
+
         // find resource
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
@@ -185,10 +187,18 @@ export default class AdminForthRestAPI {
         let username = ''
         let userFullName = ''
     
+        // find resource
+        if (!this.adminforth.config.auth) {
+          throw new Error('No config.auth defined');
+        }
+
         const dbUser = adminUser.dbUser;
         username = dbUser[this.adminforth.config.auth.usernameField]; 
         userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        
+        const usernameField = this.adminforth.config.auth.usernameField;
+        const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
@@ -244,6 +254,32 @@ export default class AdminForthRestAPI {
 
         const announcementBadge = this.adminforth.config.customization.announcementBadge?.(adminUser);
 
+        const publicPart = {
+          brandName: this.adminforth.config.customization.brandName,
+          usernameFieldName: usernameColumn.label,
+          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
+          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          title: this.adminforth.config.customization?.title,
+          demoCredentials: this.adminforth.config.auth.demoCredentials,
+          loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
+          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
+          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+        }
+
+        const loggedInPart = {
+          showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
+          brandLogo: this.adminforth.config.customization.brandLogo,
+          datesFormat: this.adminforth.config.customization.datesFormat,
+          timeFormat: this.adminforth.config.customization.timeFormat,
+          deleteConfirmation: this.adminforth.config.deleteConfirmation,
+          auth: this.adminforth.config.auth,
+          usernameField: this.adminforth.config.auth.usernameField,
+          title: this.adminforth.config.customization?.title,
+          emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
+          announcementBadge,
+          globalInjections: this.adminforth.config.customization?.globalInjections,
+        }
+
         return {
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
@@ -252,18 +288,8 @@ export default class AdminForthRestAPI {
           })),
           menu: newMenu,
           config: { 
-            brandName: this.adminforth.config.customization.brandName,
-            showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
-            brandLogo: this.adminforth.config.customization.brandLogo,
-            datesFormat: this.adminforth.config.customization.datesFormat,
-            timeFormat: this.adminforth.config.customization.timeFormat,
-            deleteConfirmation: this.adminforth.config.deleteConfirmation,
-            auth: this.adminforth.config.auth,
-            usernameField: this.adminforth.config.auth.usernameField,
-            title: this.adminforth.config.customization?.title,
-            emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
-            announcementBadge,
-            globalInjections: this.adminforth.config.customization?.globalInjections,
+            ...publicPart,
+            ...loggedInPart,
           },
           adminUser,
           version: ADMINFORTH_VERSION,

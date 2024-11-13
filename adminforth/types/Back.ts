@@ -982,19 +982,32 @@ export type AllowedActions = {
   all?: AllowedActionValue;
 }
 
+/**
+ * General options for resource.
+ */
+export type ResourceOptions = Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> & {
 
-
-type ResourceOptions = Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> & {
-
-  /**
-   * Array of bulk actions which will be displayed in the list view.
-   * Bulk actions allow user to perform actions on multiple records at once.
-   * 
+  /** 
+   * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
+   * using checkboxes.
    */
   bulkActions?: Array<AdminForthBulkAction>,
 
   /**
-   * Object which describes allowed actions for user.
+   * Allowed actions for resource.
+   * 
+   * Example: 
+   * 
+   * ```ts
+   * allowedActions: {
+   *  create: ({ resource, adminUser }) => {
+   *    // Allow only superadmin to create records
+   *    return adminUser.dbUser.role === 'superadmin';
+   *  },
+   *  delete: false, // disable delete action for all users
+   * }
+   * ```
+   * 
    */
   allowedActions?: AllowedActions,
 };
