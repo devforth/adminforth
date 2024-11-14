@@ -22,3 +22,8 @@ nuxt:
   label: Nuxt.js
   permalink: /nuxt
   description: Nuxt.js is a free and open-source web application framework based on Vue.js, Node.js, Webpack, and Babel.js.
+
+github-actions:
+  label: GitHub Actions
+  permalink: /github-actions
+  description: GitHub Actions is a continuous integration and continuous deployment (CI/CD) service provided by GitHub that allows you to automate your software development workflows.

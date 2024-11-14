@@ -1,6 +1,6 @@
 ---
 slug: compose-ec2-deployment
-title: Deploy AdminForth to EC2 with terraform
+title: Deploy AdminForth to EC2 with terraform (without CI)
 authors: ivanb
 tags: [aws, terraform]
 ---
