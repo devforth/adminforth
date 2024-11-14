@@ -91,9 +91,9 @@ tfplan
 ## Step 5 - Main terraform file main.tf
 
 
-Create file `main.tf`:
+Create file `main.tf` in `deploy` folder:
 
-```hcl title="main.tf"
+```hcl title="deploy/main.tf"
 
 locals {
   app_name = "<your_app_name>"
