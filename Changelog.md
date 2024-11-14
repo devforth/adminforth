@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.3] - next
 
-# Fixed
+### Fixed
 
 - postgresql now can be accessed via `postgresql` scheme in addition to `postgres` scheme
 - Postgres wrap table names in quotes in SQL queries to prevent any issues with reserved words
 - move nonesense "IN" blank array check to not pass this case to any data connector for both data API and standard pages 
 - reduce login /logout CLS
+
+### Improved
+
+- primary color adoption for login page
+
+### Added
+
+-Start creating ACL - AdminForth Components Library
 
 ## [1.4.2]
 
