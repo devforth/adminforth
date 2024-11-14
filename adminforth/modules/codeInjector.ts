@@ -628,7 +628,7 @@ class CodeInjector implements ICodeInjector {
     watcher.on(
       'change',
       async (file, x) => {
-        console.log(`File ${file} changed ${x}, preparing sources...`);
+        console.log(`File ${file} changed ${JSON.stringify(x)}, preparing sources...`);
         await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
