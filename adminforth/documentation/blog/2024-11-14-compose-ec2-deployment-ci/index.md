@@ -1,5 +1,5 @@
 ---
-slug: compose-ec2-deployment
+slug: compose-ec2-deployment-github-actions
 title: Deploy AdminForth to EC2 with terraform on CI
 authors: ivanb
 tags: [aws, terraform, github-actions]
