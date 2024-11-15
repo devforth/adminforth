@@ -5,7 +5,9 @@
       Statistics.</h1>
     
     <div class="p-10 mb-96">
-
+      <Select class="w-full" :options="[{label: 'Last 7 days', value: 1}, {label: 'Last 30 days', value: 2}]"
+        v-model="selected" />
+      <div>1</div>
       <Input type="number" class="w-full">
         <template #suffix>
           USD
@@ -70,7 +72,7 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Input } from '@/afcl';
+import { Input, Select } from '@/afcl';
 
 const selected = ref(null);
 
