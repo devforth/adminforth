@@ -25,7 +25,7 @@ const visualValue = computed(() => {
   return val;
 });
 
-const props = defineProps(['column', 'record', 'meta']);
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 
 const id = ref();
 

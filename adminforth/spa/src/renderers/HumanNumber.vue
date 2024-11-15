@@ -1,5 +1,5 @@
 <template>
-    <AfTooltip class="flex items-center" >
+    <AfTooltip>
       {{ formattedValue }} 
       <template #tooltip v-if="formattedValue">
         {{ formattedTooltipValue }}
@@ -11,7 +11,8 @@
   import { computed, ref, onMounted, nextTick } from 'vue';
   import AfTooltip from '@/components/AfTooltip.vue';
   
-  const props = defineProps(['column', 'record']);
+  const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
+
   const id = ref();
   const userLocale = ref(navigator.language || 'en-US'); 
 

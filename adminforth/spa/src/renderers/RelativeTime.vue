@@ -1,5 +1,5 @@
 <template>
-  <AfTooltip class="flex items-center">
+  <AfTooltip>
     {{ relativeTime }}
     <template #tooltip v-if="relativeTime">
         {{ fullTime }}
@@ -14,11 +14,12 @@ import en from 'javascript-time-ago/locale/en';
 import TimeAgo from 'javascript-time-ago';
 import dayjs from 'dayjs';
 
+
 const id = ref();
 
 TimeAgo.addLocale(en);
 
-const props = defineProps(['column', 'record']);
+const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 
 const userLocale = ref(navigator.language || 'en-US');
 const timeAgoFormatter = new TimeAgo(userLocale.value);
