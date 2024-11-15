@@ -1,12 +1,12 @@
 <template>
   <div class="relative inline-block afcl-select">
-    <div class="relative">
+    <div class="relative h-full">
       <input
         type="text"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        class="block w-full h-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? 'Search' : placeholder || 'Select...') 
         "
@@ -24,8 +24,9 @@
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid v-if="!showDropdown" class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50" />
-        <IconCaretUpSolid v-else class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50" />
+        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-300 ease-in"
+          :class="{ 'transform rotate-180': showDropdown }"
+        />
       </div>
     </div>
     <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-96">
