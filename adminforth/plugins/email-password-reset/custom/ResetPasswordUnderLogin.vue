@@ -8,6 +8,6 @@
 </template>
 
 <script setup>
-import Link from '@/acl/Link.vue';
+import Link from '@/afcl/Link.vue';
 
 </script>

@@ -155,8 +155,8 @@ import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
-import Button from '@/acl/Button.vue';
-import Link from '@/acl/Link.vue';
+import Button from '@/afcl/Button.vue';
+import Link from '@/afcl/Link.vue';
 
 const inProgress = ref(false);
 

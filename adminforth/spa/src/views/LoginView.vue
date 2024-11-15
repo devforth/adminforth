@@ -123,7 +123,7 @@ import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
-import Button from '@/acl/Button.vue';
+import Button from '@/afcl/Button.vue';
 
 const passwordInput = ref(null);
 const usernameInput = ref(null);

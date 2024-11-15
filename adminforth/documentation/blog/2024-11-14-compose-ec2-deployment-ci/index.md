@@ -429,7 +429,7 @@ jobs:
       - run: echo "🍏 This job's status is ${{ job.status }}."
 ```
 
-### Step 6.1 - Create deploy script
+### Step 7.1 - Create deploy script
 
 Now create file `deploy/deploy.sh`:
 
@@ -462,7 +462,7 @@ terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
-### Step 6.2 - Add secrets to GitHub
+### Step 7.2 - Add secrets to GitHub
 
 Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository secret` and add:
 
