@@ -20,7 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--Start creating ACL - AdminForth Components Library
+- Start creating AFCL - AdminForth Components Library
+- AFCL Link
+- AFCL Button
+- AFCL Select
 
 ## [1.4.2]
 
