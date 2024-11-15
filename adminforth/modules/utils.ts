@@ -358,7 +358,6 @@ export function suggestIfTypo(names: string[], name: string): string {
 
 
 export function getClinetIp(headers: object) {
-  console.log('headers', headers);
   return headers['CF-Connecting-IP'] || 
     headers['x-forwarded-for'] || 
     headers['x-real-ip'] || 
@@ -371,6 +370,8 @@ export function getClinetIp(headers: object) {
     headers['x-client-ip'] || 
     headers['x-real-ip'] || 'unknown';
 }
+
+
 
 
 export class RateLimiter {
