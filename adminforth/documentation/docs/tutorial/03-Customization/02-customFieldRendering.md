@@ -24,7 +24,7 @@ defineProps({
   resource: Object,
   adminUser: Object,
   meta: Object,
-  columns: Object
+  column: Object
 });
 </script>
 ```
@@ -134,7 +134,7 @@ defineProps({
   resource: Object,
   adminUser: Object,
   meta: Object
-  columns: Object
+  column: Object
 });
 </script>
 ```
@@ -260,12 +260,6 @@ It formats large numbers into a human-readable format (e.g., 10k, 1.5M) and supp
             list: {
           //diff-add
               file: '@/renderers/HumanNumber.vue',
-          //diff-add
-              meta: {
-          //diff-add
-                showCountryName: true,
-          //diff-add
-              }
           //diff-add
             }
           //diff-add
