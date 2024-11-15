@@ -20,6 +20,10 @@ try {
   TMP_DIR = '/tmp'; //maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
 }
 
+function stripAnsiCodes(str) {
+  // Regular expression to match ANSI escape codes
+  return str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+}
 
 function findHomePage(menuItem: AdminForthConfigMenuItem[]): AdminForthConfigMenuItem | undefined {
   for (const item of menuItem) {
@@ -69,7 +73,7 @@ class CodeInjector implements ICodeInjector {
   adminforth: AdminForth;
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
-
+  devServerPort: number = null;
 
   spaTmpPath(): string {
     const brandSlug = this.adminforth.config.customization._brandNameSlug
@@ -766,12 +770,22 @@ class CodeInjector implements ICodeInjector {
       });
       devServer.stdout.on('data', (data) => {
         console.log(`[AdminForth SPA]:`);
-        process.stdout.write(data);
+        if (data.includes('➜')) {
+          // parse port from message "  ➜  Local:   http://localhost:xyz/"
+          const s = stripAnsiCodes(data.toString());
+          
+          process.env.HEAVY_DEBUG && console.log('🪲 devServer stdout ➜ (port detect):', s);
+          const portMatch = s.match(/.+?http:\/\/.+?:(\d+).+?/m);
+          if (portMatch) {
+            this.devServerPort = parseInt(portMatch[1]);
+          }
+        } else {
+          process.stdout.write(data);
+        }
       });
       devServer.stderr.on('data', (data) => {
         console.error(`[AdminForth SPA ERR]:`);
         process.stdout.write(data);
-
       });
 
     }

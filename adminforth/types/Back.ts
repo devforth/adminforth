@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
+  devServerPort: number;
 
   getServeDir(): string;
 }

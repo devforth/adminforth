@@ -98,7 +98,10 @@ class ExpressServer implements IExpressHttpServer {
       const handler = async (req, res) => {
         // proxy using fetch to webpack dev server 
         try {
-          await proxyTo(`http://localhost:5173${req.url}`, res);
+          if (this.adminforth.codeInjector.devServerPort === null) {
+            throw new Error('Dev server port is not set');
+          }
+          await proxyTo(`http://localhost:${this.adminforth.codeInjector.devServerPort}${req.url}`, res);
         } catch (e) {
           // console.log('Failed to proxy', e);
           res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
