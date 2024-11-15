@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Postgres wrap table names in quotes in SQL queries to prevent any issues with reserved words
 - move nonesense "IN" blank array check to not pass this case to any data connector for both data API and standard pages 
 - reduce login /logout CLS
-
+- allocate new port for dev server if old one is busy, allow parallel development on 2 apps
 ### Improved
 
 - primary color adoption for login page
@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - after bundling in tmp location, copy dist folder back to the dist of spa (in node_modules),
 after this we can apply /tmp caching in docker using `RUN --mount=type=cache,target=/tmp` and keep spa served from container
 - use brandName for tmp folder isolations so you can develop multiple apps on the same machine
-- implement Frontend API for silet table refresh and silent row update
+- implement Frontend API for silent table refresh and silent row update
 - add option `listRowsAutoRefreshSeconds` - to silently auto-refresh rows in list every N seconds
 - add JSONB and JSON data types support for Postgres
 - allow to set `column.extra.jsonCollapsedLevel` to collapse JSON fields in the show/list views.

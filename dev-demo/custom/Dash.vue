@@ -6,12 +6,14 @@
     
     <div class="p-10 mb-96">
       
-      <div> {{ selected }}</div>
-      <Input type="number" class="w-full" v-model="selected">
-        <template #suffix>
-          USD
-        </template>
-      </Input>
+      <div class="flex align-center" > 
+        <Select :options="[{label: 'USD', value: 'USD'}, {label: 'EUR', value: 'EUR'}]" v-model="selected" />
+        <Input type="number" class="w-full" v-model="selected">
+          <template #suffix>
+            USD
+          </template>
+        </Input>
+      </div>
 
     </div>
 
