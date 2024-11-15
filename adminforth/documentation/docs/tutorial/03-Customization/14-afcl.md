@@ -103,5 +103,17 @@ const selected = ref(null)
 ```
 
 
+![alt text](<Group 21.jpg>)
 
-![alt text](image-16.png)
+
+### Input
+
+```vue
+
+<Input type="number" class="w-full">
+  <template #suffix>
+    USD
+  </template>
+</Input>
+
+```
