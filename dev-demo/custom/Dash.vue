@@ -3,6 +3,30 @@
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
         class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Apartments</span>
       Statistics.</h1>
+    
+    <div class="p-10 mb-96">
+
+      <Select
+        :options="[
+          {label: 'Last 7 days', value: '7', records: 110},
+          {label: 'Last 30 days', value: '30', records: 320},
+          {label: 'Last 90 days', value: '90', records: 310},
+          {label: 'None', value: null}
+        ]"
+        v-model="selected"
+      >
+        <template #item="{option}">
+          <div>
+            <span>{{ option.label }}</span>
+            <span class="ml-2 opacity-50">{{ option.records }} records</span>
+          </div>
+        </template>
+
+        <template #selected-item="{option}">
+          <span>{{ option.label }} 💫</span>
+        </template>
+      </Select>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
@@ -61,6 +85,9 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
+import { Select } from '@/afcl';
+
+const selected = ref(null);
 
 const data = ref({});
 

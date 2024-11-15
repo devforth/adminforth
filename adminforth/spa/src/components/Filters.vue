@@ -11,7 +11,7 @@
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       Filters
 
-      <button type="button"   @click="$emit('hide')"  class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
+      <button type="button" @click="$emit('hide')" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
         <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
         <span class="sr-only">Close menu</span>
       </button>
@@ -22,23 +22,28 @@
          <li v-for="c in columnsWithFilter" :key="c">
             <p class="dark:text-gray-400">{{ c.label }}</p>
 
-            <Dropdown
+            <Select
               v-if="c.foreignResource"
+              multiple
+              class="w-full"
               :options="columnOptions[c.name] || []"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
-            <Dropdown
+            <Select
+              multiple
+              class="w-full"
               v-else-if="c.type === 'boolean'"
               :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: undefined }]"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
-            <Dropdown 
+            <Select 
+              multiple
+              class="w-full"
               v-else-if="c.enum"
               :options="c.enum"
-              :allowCustom="c.allowCustom"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
@@ -123,6 +128,7 @@ import { useRouter } from 'vue-router';
 import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
+import Select from '@/afcl/Select.vue';
 
 const filtersStore = useFiltersStore();
 

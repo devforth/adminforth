@@ -55,28 +55,28 @@
               />
             </template>
             <template v-else>
-              <Dropdown
-                  single
-                  v-if="column.foreignResource"
-                  :options="columnOptions[column.name] || []"
-                  :placeholder = "columnOptions[column.name]?.length ?'Select...': 'There are no options available'"
-                  :modelValue="currentValues[column.name]"
-                  @update:modelValue="setCurrentValue(column.name, $event)"
-              ></Dropdown>
-              <Dropdown
-                  single
-                  v-else-if="column.enum"
-                  :options="column.enum"
-                  :modelValue="currentValues[column.name]"
-                  @update:modelValue="setCurrentValue(column.name, $event)"
-              />
-              <Dropdown
-                  single
-                  v-else-if="column.type === 'boolean'"
-                  :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
-                  :modelValue="currentValues[column.name]"
-                  @update:modelValue="setCurrentValue(column.name, $event)"
-              />
+              <Select
+                class="w-full"
+                v-if="column.foreignResource"
+                :options="columnOptions[column.name] || []"
+                :placeholder = "columnOptions[column.name]?.length ?'Select...': 'There are no options available'"
+                :modelValue="currentValues[column.name]"
+                @update:modelValue="setCurrentValue(column.name, $event)"
+              ></Select>
+              <Select
+                class="w-full"
+                v-else-if="column.enum"
+                :options="column.enum"
+                :modelValue="currentValues[column.name]"
+                @update:modelValue="setCurrentValue(column.name, $event)"
+              ></Select>
+              <Select
+                class="w-full"
+                v-else-if="column.type === 'boolean'"
+                :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: null }]"
+                :modelValue="currentValues[column.name]"
+                @update:modelValue="setCurrentValue(column.name, $event)"
+              ></Select>
               <input 
                   v-else-if="['integer'].includes(column.type)"
                   type="number" 
@@ -153,7 +153,7 @@
 <script setup>
   import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
-  import Dropdown from '@/components/Dropdown.vue';
+  import Select from '@/afcl/Select.vue';
   import AfTooltip from "./AfTooltip.vue";
   import { getCustomComponent } from '@/utils';
 
