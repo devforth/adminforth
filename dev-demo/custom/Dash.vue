@@ -5,15 +5,16 @@
       Statistics.</h1>
     
     <div class="p-10 mb-96">
-      <Select class="w-full" :options="[{label: 'Last 7 days', value: 1}, {label: 'Last 30 days', value: 2}]"
-        v-model="selected" />
-      <div>1</div>
-      <Input type="number" class="w-full">
+      
+      <div> {{ selected }}</div>
+      <Input type="number" class="w-full" v-model="selected">
         <template #suffix>
           USD
         </template>
       </Input>
+
     </div>
+
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
