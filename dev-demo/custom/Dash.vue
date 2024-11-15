@@ -6,26 +6,11 @@
     
     <div class="p-10 mb-96">
 
-      <Select
-        :options="[
-          {label: 'Last 7 days', value: '7', records: 110},
-          {label: 'Last 30 days', value: '30', records: 320},
-          {label: 'Last 90 days', value: '90', records: 310},
-          {label: 'None', value: null}
-        ]"
-        v-model="selected"
-      >
-        <template #item="{option}">
-          <div>
-            <span>{{ option.label }}</span>
-            <span class="ml-2 opacity-50">{{ option.records }} records</span>
-          </div>
+      <Input type="number" class="w-full">
+        <template #suffix>
+          USD
         </template>
-
-        <template #selected-item="{option}">
-          <span>{{ option.label }} 💫</span>
-        </template>
-      </Select>
+      </Input>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -85,7 +70,7 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Select } from '@/afcl';
+import { Input } from '@/afcl';
 
 const selected = ref(null);
 
