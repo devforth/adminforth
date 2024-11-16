@@ -601,7 +601,7 @@ class CodeInjector implements ICodeInjector {
 
   async watchForReprepare({}) {
     const spaPath = this.getSpaDir();
-    // get list of all subdirectories in spa recursively
+    // get list of all subdirectories in spa recursively (for SPA development)
     const directories = [];
     const collectDirectories = async (dir) => {
       const files = await fs.promises.readdir(dir, { withFileTypes: true });
@@ -637,7 +637,7 @@ class CodeInjector implements ICodeInjector {
     watcher.on(
       'change',
       async (file) => {
-        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed, preparing sources...`);
+        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
         await this.updatePartials({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
