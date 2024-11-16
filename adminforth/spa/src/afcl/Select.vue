@@ -1,12 +1,12 @@
 <template>
   <div class="relative inline-block afcl-select">
-    <div class="relative h-full">
+    <div class="relative">
       <input
         type="text"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full h-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        class="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? 'Search' : placeholder || 'Select...') 
         "
@@ -24,7 +24,7 @@
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-300 ease-in"
+        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
@@ -75,8 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { IconCaretDownSolid, IconCaretUpSolid } from '@iconify-prerendered/vue-flowbite';
+import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
+import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 
 
 const props = defineProps({
@@ -99,7 +99,7 @@ const emit = defineEmits(['update:modelValue']);
 const search = ref('');
 const showDropdown = ref(false);
 
-const selectedItems = ref([]);
+const selectedItems: Ref<any[]> = ref([]);
 
 function inputInput() {
   if (!props.multiple && selectedItems.value.length) {

@@ -100,7 +100,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 field.type = AdminForthDataTypes.TEXT;
                 field._underlineType = 'text';
 
-            } else if (baseType.includes('decimal(')) {
+            } else if (baseType.includes('decimal(') || baseType.includes('numeric(')) {
                 field.type = AdminForthDataTypes.DECIMAL;
                 field._underlineType = 'decimal';
                 const [precision, scale] = baseType.match(/\d+/g);

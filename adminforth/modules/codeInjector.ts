@@ -194,11 +194,29 @@ class CodeInjector implements ICodeInjector {
     return spaDir;
   }
 
-  async prepareSources({ filesUpdated }: { filesUpdated?: string[] }) {
+  async updatePartials({ filesUpdated }: { filesUpdated: string[] }) {
+    const spaDir = this.getSpaDir();
+
+    // copy only updated files
+    await Promise.all(filesUpdated.map(async (file) => {
+      const src = path.join(spaDir, file);
+      const dest = path.join(this.spaTmpPath(), file);
+
+      // overwrite:true can't be used to not destroy cache
+      await fsExtra.copy(src, dest, {
+        dereference: true, // needed to dereference types
+        // preserveTimestamps: true, // needed to not invalidate any caches
+      });
+      if (process.env.HEAVY_DEBUG) {
+        console.log('🪲⚙️ fsExtra.copy copy single file', src, dest);
+      }
+    }));
+  }
+
+  async prepareSources() {
     // check spa tmp folder exists and create if not
     try {
       await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
-        
     } catch (e) {
       await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
     }
@@ -271,86 +289,67 @@ class CodeInjector implements ICodeInjector {
                 })
             }
           },`})
-        
     }}
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
 
     const spaDir = this.getSpaDir();
-    if (filesUpdated) {
-      // copy only updated files
-      await Promise.all(filesUpdated.map(async (file) => {
-        const src = path.join(spaDir, file);
-        const dest = path.join(this.spaTmpPath(), file);
- 
-        // overwrite:true can't be used to not destroy cache
-        await fsExtra.copy(src, dest, {
-          dereference: true, // needed to dereference types
-        });
-        if (process.env.HEAVY_DEBUG) {
-          console.log('🪲⚙️ fsExtra.copy copy single file', src, dest);
+
+    if (process.env.HEAVY_DEBUG) {
+      console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
+    }
+
+    // try to rm <spa tmp path>/src/types directory 
+    try {
+      await fs.promises.rm(path.join(this.spaTmpPath(), 'src', 'types'), { recursive: true });
+    } catch (e) {
+      // ignore
+    }
+
+    // overwrite can't be used to not destroy cache
+  
+    await fsExtra.copy(spaDir, this.spaTmpPath(), {
+      filter: (src) => {
+        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
+        if (process.env.HEAVY_DEBUG && !filterPasses) {
+          console.log('🪲⚙️ fsExtra.copy filtered out', src);
         }
 
-      }));
-    } else {
-      let spaDir = this.getSpaDir();
+        return filterPasses
+      },
+      dereference: true, // needed to dereference types
+    });
 
+    // copy whole custom directory
+    if (this.adminforth.config.customization?.customComponentsDir) {
+      // resolve customComponentsDir to absolute path, so ./aa will be resolved to /path/to/current/dir/aa
+      const customCompAbsPath = path.resolve(this.adminforth.config.customization.customComponentsDir);
+      this.srcFoldersToSync[customCompAbsPath] = './'
+    }
+
+    // if this.adminforth.config.customization.favicon is set, copy it to assets
+    const customFav = this.adminforth.config.customization?.favicon;
+    if (customFav) {
+
+      const faviconPath = path.join(this.adminforth.config.customization?.customComponentsDir, customFav.replace('@@/', ''));
+      const dest = path.join(this.spaTmpPath(), 'public', 'assets', customFav.replace('@@/', ''));
+      // make sure all folders in dest exist
+      await fsExtra.ensureDir(path.dirname(dest));
+
+      await fsExtra.copy(faviconPath, dest);
+    }
+
+    for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
+      const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
       if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
+        console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);
       }
 
-      // try to rm <spa tmp path>/src/types directory 
-      try {
-        await fs.promises.rm(path.join(this.spaTmpPath(), 'src', 'types'), { recursive: true });
-      } catch (e) {
-        // ignore
-      }
-
-      // overwrite can't be used to not destroy cache
-    
-      await fsExtra.copy(spaDir, this.spaTmpPath(), {
-        filter: (src) => {
-          const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
-          if (process.env.HEAVY_DEBUG && !filterPasses) {
-            console.log('🪲⚙️ fsExtra.copy filtered out', src);
-          }
-
-          return filterPasses
-        },
-        dereference: true, // needed to dereference types
+      await fsExtra.copy(src, to, {
+        recursive: true,
+        dereference: true,
       });
-
-      // copy whole custom directory
-      if (this.adminforth.config.customization?.customComponentsDir) {
-        // resolve customComponentsDir to absolute path, so ./aa will be resolved to /path/to/current/dir/aa
-        const customCompAbsPath = path.resolve(this.adminforth.config.customization.customComponentsDir);
-        this.srcFoldersToSync[customCompAbsPath] = './'
-      }
-
-      // if this.adminforth.config.customization.favicon is set, copy it to assets
-      const customFav = this.adminforth.config.customization?.favicon;
-      if (customFav) {
-
-        const faviconPath = path.join(this.adminforth.config.customization?.customComponentsDir, customFav.replace('@@/', ''));
-        const dest = path.join(this.spaTmpPath(), 'public', 'assets', customFav.replace('@@/', ''));
-        // make sure all folders in dest exist
-        await fsExtra.ensureDir(path.dirname(dest));
-
-        await fsExtra.copy(faviconPath, dest);
-      }
-
-      for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
-        const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
-        if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);
-        }
-
-        await fsExtra.copy(src, to, {
-          recursive: true,
-          dereference: true,
-        });
-      }
     }
 
     //collect all 'icon' fields from resources bulkActions
@@ -498,8 +497,6 @@ class CodeInjector implements ICodeInjector {
 
 
     /* generate custom routes */
-
-
     let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
     if (!homepageMenuItem) {
       // find first item with path or resourceId. If we face a menu item with children earlier then path/resourceId, we should search in children
@@ -624,16 +621,24 @@ class CodeInjector implements ICodeInjector {
       console.log('🪲🔎 Watch for:', directories.join(','));
     }
 
-    const watcher = filewatcher();
+    const watcher = filewatcher({ debounce: 30 });
     directories.forEach((dir) => {
-      watcher.add(dir);
+      // read directory files and add to watcher, only files not directories
+      const files = fs.readdirSync(dir);
+      files.forEach((file) => {
+        const fullPath = path.join(dir, file);
+        if (fs.lstatSync(fullPath).isFile()) {
+          process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${fullPath}`);
+          watcher.add(fullPath);
+        }
+      })
     });
 
     watcher.on(
       'change',
-      async (file, x) => {
-        console.log(`File ${file} changed ${JSON.stringify(x)}, preparing sources...`);
-        await this.prepareSources({ filesUpdated: [file.replace(spaPath + '/', '')] });
+      async (file) => {
+        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed, preparing sources...`);
+        await this.updatePartials({ filesUpdated: [file.replace(spaPath + '/', '')] });
       }
     )
     watcher.on('fallback', notifyWatcherIssue);
@@ -678,7 +683,7 @@ class CodeInjector implements ICodeInjector {
 
     await collectDirectories(customComponentsDir);
 
-    const watcher = filewatcher();
+    const watcher = filewatcher({ debounce: 30 });
     files.forEach((file) => {
       process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${file}`);
       watcher.add(file);
@@ -720,7 +725,7 @@ class CodeInjector implements ICodeInjector {
     console.log(`AdminForth bundling ${hotReload ? ' and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
-    await this.prepareSources({});
+    await this.prepareSources();
 
     if (hotReload) {
       await Promise.all([
@@ -769,7 +774,6 @@ class CodeInjector implements ICodeInjector {
         env,
       });
       devServer.stdout.on('data', (data) => {
-        console.log(`[AdminForth SPA]:`);
         if (data.includes('➜')) {
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
@@ -780,6 +784,7 @@ class CodeInjector implements ICodeInjector {
             this.devServerPort = parseInt(portMatch[1]);
           }
         } else {
+          console.log(`[AdminForth SPA]:`);
           process.stdout.write(data);
         }
       });

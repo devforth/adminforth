@@ -110,6 +110,7 @@ class ExpressServer implements IExpressHttpServer {
       }
       this.expressApp.get(`${slashedPrefix}assets/*`, handler);
       this.expressApp.get(`${prefix}*`, handler);
+     
 
     } else {
       const codeInjector = this.adminforth.codeInjector;
