@@ -85,8 +85,6 @@
                           {{ error }}
                           </div>
                         </div>
-                        
-                        
 
                         <div v-if="coreStore.config?.loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-400" role="alert"
@@ -97,13 +95,10 @@
                           <span class="sr-only">Info</span>
                           <div v-html="coreStore.config?.loginPromptHTML"></div>
                         </div>
-
                         <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
                           Login to your account
                         </Button>
                     </form>
-
-                    
 
                 </div>
             </div>
