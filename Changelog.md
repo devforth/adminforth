@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Start creating AFCL - AdminForth Components Library
 - AFCL Link
 - AFCL Button
-- AFCL Select
+- AFCL Select (based on old Dropdown component, add slots to it)
+- move old AfTooltip to @/afcl/Tooltip
 
 ## [1.4.2]
 
