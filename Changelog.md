@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - move nonesense "IN" blank array check to not pass this case to any data connector for both data API and standard pages 
 - reduce login /logout CLS
 - allocate new port for dev server if old one is busy, allow parallel development on 2 apps
+- fix HMR in vite, now Vue files during adminforth dev and app dev are reloaded smoothly
+- add INotify watchers to files instead of dirs to minimaze CP operation volume and CPU usage
+- add adminforth instance into hooks
+
+
+
 ### Improved
 
 - primary color adoption for login page
