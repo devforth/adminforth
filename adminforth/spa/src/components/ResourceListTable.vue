@@ -160,9 +160,9 @@
                 </template>
               </AfTooltip>
                 
-              <template v-if="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons">
+              <template v-if="customActionsInjection">
                 <component 
-                  v-for="c in coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
+                  v-for="c in customActionsInjection"
                   :is="getCustomComponent(c)" 
                   :meta="c.meta"
                   :resource="coreStore.resource" 
@@ -244,7 +244,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -270,17 +270,17 @@ import AfTooltip from './AfTooltip.vue';
 
 const coreStore = useCoreStore();
 
-
-const props = defineProps([
-  'page',
-  'resource', 
-  'rows',
-  'totalRows',
-  'pageSize',
-  'checkboxes',
-  'sort',
-  'noRoundings'
-])
+const props = defineProps<{
+  page: number,
+  resource: any,
+  rows: any[],
+  totalRows: number,
+  pageSize: number,
+  checkboxes: any[],
+  sort: any[],
+  noRoundings: boolean,
+  customActionsInjection: any[],
+}>();
 
 // emits, update page
 const emits = defineEmits([

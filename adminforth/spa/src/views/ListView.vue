@@ -97,6 +97,7 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
+      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActions"
     />
 
     <component 

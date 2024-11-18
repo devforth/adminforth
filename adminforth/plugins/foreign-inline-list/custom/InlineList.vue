@@ -95,6 +95,7 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
+      :customActionsInjection="listResource?.options?.pageInjections?.list?.customActions"
     />
 
   </td>

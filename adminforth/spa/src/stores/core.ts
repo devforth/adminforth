@@ -12,6 +12,7 @@ export const useCoreStore = defineStore('core', () => {
   const config = ref({});
   const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
+  const userData = ref(null);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -52,7 +53,8 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
-    adminUser.value = resp.user;
+    adminUser.value = resp.adminUser;
+    userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
   }
 
@@ -130,16 +132,15 @@ export const useCoreStore = defineStore('core', () => {
     config.value = {...config.value, ...res};
   }
 
- 
 
   const username = computed(() => {
     const usernameField = config.value.usernameField;
-    return adminUser.value && adminUser.value[usernameField];
+    return userData.value && userData.value[usernameField];
   });
 
   const userFullname = computed(() => {
     const userFullnameField = config.value.userFullnameField;
-    return adminUser.value && adminUser.value[userFullnameField];
+    return userData.value && userData.value[userFullnameField];
   })
 
 
