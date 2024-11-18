@@ -1,15 +1,15 @@
 <template>
-  <AfTooltip>
+  <Tooltip>
     {{ relativeTime }}
     <template #tooltip v-if="relativeTime">
         {{ fullTime }}
     </template>
-  </AfTooltip>
+  </Tooltip>
 </template>
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import AfTooltip from '@/components/AfTooltip.vue';
+import Tooltip from '@/afcl/Tooltip.vue';
 import en from 'javascript-time-ago/locale/en';
 import TimeAgo from 'javascript-time-ago';
 import dayjs from 'dayjs';

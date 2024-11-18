@@ -26,7 +26,7 @@
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
             <span class="flex items-center gap-1">                     
               {{ column.label }}
-              <AfTooltip v-if="column.required[mode]">
+              <Tooltip v-if="column.required[mode]">
 
                 <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
                   :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
@@ -35,7 +35,7 @@
                 <template #tooltip>
                   Required field
                 </template>
-              </AfTooltip>
+              </Tooltip>
             </span>
             
             
@@ -154,7 +154,7 @@
   import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Select from '@/afcl/Select.vue';
-  import AfTooltip from "./AfTooltip.vue";
+  import Tooltip from "./Tooltip.vue";
   import { getCustomComponent } from '@/utils';
 
 

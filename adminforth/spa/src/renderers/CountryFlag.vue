@@ -1,5 +1,5 @@
 <template>
-    <AfTooltip>
+    <Tooltip>
       <span class="flex items-center">
         <span 
           :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
@@ -10,7 +10,7 @@
       <template v-if="shouldShowTooltip" #tooltip>
         {{ countryName }}
       </template>
-    </AfTooltip>
+    </Tooltip>
 </template>
 
 <script setup>  
@@ -19,7 +19,7 @@ import { computed, ref, onMounted } from 'vue';
 import 'flag-icons/css/flag-icons.min.css';
 import isoCountries from 'i18n-iso-countries';
 import enLocal from 'i18n-iso-countries/langs/en.json';
-import AfTooltip from '@/components/AfTooltip.vue';
+import Tooltip from '@/afcl/Tooltip.vue';
 
 isoCountries.registerLocale(enLocal);
 
