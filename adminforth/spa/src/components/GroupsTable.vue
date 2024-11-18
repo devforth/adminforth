@@ -154,8 +154,8 @@
   import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Select from '@/afcl/Select.vue';
-  import Tooltip from "./Tooltip.vue";
   import { getCustomComponent } from '@/utils';
+  import { Tooltip } from '@/afcl';
 
 
   const props = defineProps({

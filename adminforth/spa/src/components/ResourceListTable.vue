@@ -266,7 +266,7 @@ import {
   IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
-import Tooltip from './Tooltip.vue';
+import { Tooltip } from '@/afcl';
 
 const coreStore = useCoreStore();
 
