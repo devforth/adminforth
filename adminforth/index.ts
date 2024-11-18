@@ -275,7 +275,13 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
-      const resp = await hook({ recordId: undefined, resource, record, adminUser });
+      const resp = await hook({ 
+        recordId: undefined, 
+        resource, 
+        record, 
+        adminUser,
+        adminforth: this,
+      });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
       }
@@ -307,7 +313,8 @@ class AdminForth implements IAdminForth {
         recordId: primaryKey, 
         resource, 
         record: createdRecord, 
-        adminUser
+        adminUser,
+        adminforth: this,
       });
 
       if (!resp || (!resp.ok && !resp.error)) {
@@ -337,7 +344,8 @@ class AdminForth implements IAdminForth {
         resource,
         record,
         oldRecord,
-        adminUser 
+        adminUser,
+        adminforth: this,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -372,6 +380,7 @@ class AdminForth implements IAdminForth {
         adminUser, 
         oldRecord,
         recordId,
+        adminforth: this,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -395,6 +404,7 @@ class AdminForth implements IAdminForth {
         record, 
         adminUser,
         recordId,
+        adminforth: this,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -415,6 +425,7 @@ class AdminForth implements IAdminForth {
         record, 
         adminUser,
         recordId,
+        adminforth: this,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
