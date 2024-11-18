@@ -1,15 +1,15 @@
 <template>
-    <AfTooltip>
+    <Tooltip>
       {{ formattedValue }} 
       <template #tooltip v-if="formattedValue">
         {{ formattedTooltipValue }}
       </template>
-    </AfTooltip>
+    </Tooltip>
   </template>
   
   <script setup>
   import { computed, ref, onMounted, nextTick } from 'vue';
-  import AfTooltip from '@/components/AfTooltip.vue';
+  import Tooltip from '@/afcl/Tooltip.vue';
   
   const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 

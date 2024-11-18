@@ -109,7 +109,7 @@
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
-              <AfTooltip>
+              <Tooltip>
                 <RouterLink
                   v-if="resource.options?.allowedActions.show"
                   :to="{ 
@@ -127,9 +127,9 @@
                 <template v-slot:tooltip>
                   Show item
                 </template>
-              </AfTooltip>
+              </Tooltip>
 
-              <AfTooltip>
+              <Tooltip>
                 <RouterLink
                   v-if="resource.options?.allowedActions.edit"
                   :to="{ 
@@ -145,9 +145,9 @@
                 <template v-slot:tooltip>
                   Edit item
                 </template>
-              </AfTooltip>
+              </Tooltip>
 
-              <AfTooltip>
+              <Tooltip>
                 <button
                   v-if="resource.options?.allowedActions.delete"
                   @click="deleteRecord(row)"
@@ -158,7 +158,7 @@
                 <template v-slot:tooltip>
                   Delete item
                 </template>
-              </AfTooltip>
+              </Tooltip>
                 
               <template v-if="customActionsInjection">
                 <component 
@@ -266,7 +266,7 @@ import {
   IconTrashBinSolid
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
-import AfTooltip from './AfTooltip.vue';
+import Tooltip from './Tooltip.vue';
 
 const coreStore = useCoreStore();
 

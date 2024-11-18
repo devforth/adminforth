@@ -117,3 +117,24 @@ const selected = ref(null)
 </Input>
 
 ```
+
+### Tooltip
+  
+Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
+  
+```js
+import { Tooltip } from '@/afcl'
+```
+
+```vue
+<Tooltip>
+    <a :href="`https://google.com?q=${record.title}`">
+        <IconCardSearch class="w-5 h-5 me-2"/>
+    </a>
+
+    <template #tooltip>
+        Search for competitive apartments in Google
+    </template>
+</Tooltip>
+```
+
