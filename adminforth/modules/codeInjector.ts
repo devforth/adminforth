@@ -775,6 +775,8 @@ class CodeInjector implements ICodeInjector {
       });
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
+          // TODO: maybe be tter use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
+          
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           
