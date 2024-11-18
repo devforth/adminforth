@@ -819,7 +819,7 @@ export const admin = new AdminForth({
         columns: [
             {
               name: 'id', 
-              readOnly: true, required: false, 
+              required: false, 
               label: 'Identifier', fillOnCreate: ({initialRecord}: any) => uuid(),
               showIn: ['list', 'filter', 'show'],  // the default is full set
             },
@@ -887,12 +887,21 @@ export const admin = new AdminForth({
     {
         dataSource: 'db3', table: 'game',
         columns: [
-            { name: '_id', primaryKey: true, "type": "string", "maxLength": 255,  "required": true, "default": "" },
-            { name: 'bb_enabled', "type": "boolean", "required": false, "default": false, backendOnly: true },
-            { name: 'bb_rank', "type": "integer", "required": false, "default": 0 },
+            { name: '_id', primaryKey: true,
+              type: AdminForthDataTypes.STRING,
+               "maxLength": 255,  "required": true, },
+            { name: 'bb_enabled', 
+              "type": AdminForthDataTypes.BOOLEAN, 
+              "required": false, backendOnly: true 
+            },
+            { name: 'bb_rank',
+              "type": AdminForthDataTypes.INTEGER,
+              "required": false, 
+            },
             {
                 name: 'blocked_countries',
-                "type": "string", "maxLength": 255, "required": false, "default": "",
+                "type": AdminForthDataTypes.STRING, 
+                "maxLength": 255, "required": false,
                 enum: [
                     { value: 'TR', label: 'Turkey' },
                     { value: 'DE', label: 'Germany' },
@@ -920,7 +929,9 @@ export const admin = new AdminForth({
                     { value: 'TR', label: 'Turkey' }
                 ]
             },
-            { name: 'release_date', "type": "datetime", "required": false, "default": "" },
+            { name: 'release_date', "type": AdminForthDataTypes.DATETIME, 
+               "required": false, 
+            },
         ]
     }
   ],
