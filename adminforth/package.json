@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.4.3-next.20",
+  "version": "1.4.3-next.25",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run prepareDist && tsc",
+    "build": "rm -rf dist && tsc && npm run prepareDist",
     "--comment": "to supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
     "put-git-tag": "git tag v$(node -p \"require('./package.json').version\") && git push --tags",

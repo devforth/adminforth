@@ -15,8 +15,6 @@ import { ADMINFORTH_VERSION, listify } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages, AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
-import { admin } from "../../dev-demo/index.js";
-
 
 export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
   // if (process.env.HEAVY_DEBUG) {
@@ -483,6 +481,7 @@ export default class AdminForthRestAPI {
         }
 
         // only after adminforth made all post processing, give user ability to edit it
+        process.env.HEAVY_DEBUG && console.log('🪲🚥adminforth', this.adminforth)
         for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
           const resp = await hook({ 
             resource, 
