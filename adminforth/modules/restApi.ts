@@ -283,6 +283,16 @@ export default class AdminForthRestAPI {
           globalInjections: this.adminforth.config.customization?.globalInjections,
         }
 
+
+        // strip all backendOnly fields or not described in adminForth fields from dbUser
+        // (when user defines column and does not set backendOnly, we assume it is not backendOnly)
+        Object.keys(adminUser.dbUser).forEach((key) => {
+          const col = userResource.columns.find((col) => col.name === key);
+          if (!col || col.backendOnly) {
+            delete adminUser.dbUser[key];
+          }
+        })
+
         return {
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
