@@ -15,6 +15,7 @@ import { ADMINFORTH_VERSION, listify } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages, AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
+import { admin } from "../../dev-demo/index.js";
 
 
 export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
@@ -106,7 +107,11 @@ export default class AdminForthRestAPI {
           const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
           if (beforeLoginConfirmation?.length){
             for (const hook of beforeLoginConfirmation) {
-              const resp = await hook({ adminUser, response });
+              const resp = await hook({ 
+                adminUser, 
+                response,
+                adminforth: this.adminforth,
+              });
               
               if (resp?.body?.redirectTo) {
                 toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
@@ -385,7 +390,8 @@ export default class AdminForthRestAPI {
             adminUser, 
             extra: {
               body, query, headers, cookies
-            } 
+            },
+            adminforth: this.adminforth,
           });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -485,7 +491,9 @@ export default class AdminForthRestAPI {
             adminUser, 
             extra: {
               body, query, headers, cookies
-            }});
+            },
+            adminforth: this.adminforth,
+          });
 
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -529,10 +537,13 @@ export default class AdminForthRestAPI {
 
         for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
           const resp = await hook({ 
-            query: body, adminUser, resource: targetResource, 
+            query: body, 
+            adminUser, 
+            resource: targetResource, 
             extra: {
               body, query, headers, cookies
-            }
+            },
+            adminforth: this.adminforth,
           });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
@@ -570,7 +581,8 @@ export default class AdminForthRestAPI {
             resource: targetResource,
             extra: {
               body, query, headers, cookies
-            }
+            },
+            adminforth: this.adminforth,
            });
           if (!resp || (!resp.ok && !resp.error)) {
             throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);

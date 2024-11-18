@@ -522,13 +522,17 @@ export type AdminForthConfigMenuItem = {
  * Modify query to change how data is fetched from database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeDataSourceRequestFunction = (params: {resource: AdminForthResource, adminUser: AdminUser, query: any, 
+export type BeforeDataSourceRequestFunction = (params: {
+  resource: AdminForthResource, 
+  adminUser: AdminUser, 
+  query: any, 
   extra: {
     body: any,
     query: Record<string, string>,
     headers: Record<string, string>,
     cookies: Record<string, string>,
-  }
+  },
+  adminforth: IAdminForth,
 }) => Promise<{ok: boolean, error?: string}>;
 
 /**
@@ -544,7 +548,8 @@ export type AfterDataSourceResponseFunction = (params: {
     query: Record<string, string>,
     headers: Record<string, string>,
     cookies: { key: string, value: string }[],
-  }
+  },
+  adminforth: IAdminForth,
 }) => Promise<{ok: boolean, error?: string}>;
 
 /**

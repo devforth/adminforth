@@ -326,6 +326,7 @@ export default class ConfigValidator implements IConfigValidator {
                           resource: res, 
                           record, 
                           adminUser,
+                          adminforth: this.adminforth
                         }); 
                         if (!error && resp.error) {
                           error = resp.error;
@@ -347,7 +348,8 @@ export default class ConfigValidator implements IConfigValidator {
                           resource: res, 
                           record, 
                           adminUser,
-                          recordId: recordId
+                          recordId: recordId,
+                          adminforth: this.adminforth,
                         }); 
                       }
                     )
