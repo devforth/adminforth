@@ -182,6 +182,6 @@ This is done because of architecture of AdminForth: `show` callback is called be
  }
 ```
 
-Please note that show callback is called not only when user visits show page (source will be 'showRequest' during this check) but also
-when user visits edit page (source will be 'editRequest').
+Please note that show callback is called not only when user visits show page (source will be `'showRequest'` during this check) but also
+when user visits edit page (source will be `'editRequest'`).
 
