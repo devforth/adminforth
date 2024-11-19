@@ -617,7 +617,13 @@ export const admin = new AdminForth({
         allowedActions:{
           edit: true,
           delete: async (p) => { return true; },
-          show: true,
+          show: async ({adminUser, meta, source, adminforth}: any) => {
+            if (source === 'showRequest' || source === 'editRequest') {
+              const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
+              return record.realtor_id === adminUser.dbUser.id;
+            }
+            return true;
+          },
           filter: true,
           create: true,
         },

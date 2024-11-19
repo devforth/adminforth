@@ -89,7 +89,7 @@ export const useCoreStore = defineStore('core', () => {
   }
 
 
-  async function fetchRecord({ resourceId, primaryKey }) {
+  async function fetchRecord({ resourceId, primaryKey, source }: { resourceId: string, primaryKey: string, source: string }) {
     record.value = null;
     
     if (!resource.value) {
@@ -104,7 +104,7 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_resource_data',
       method: 'POST',
       body: {
-        source: 'show',
+        source: source,
         resourceId: resourceId,
         filters: [
           {
