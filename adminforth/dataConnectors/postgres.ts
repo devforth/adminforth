@@ -255,8 +255,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
       const d = [...filterValues, limit, offset];
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       const selectQuery = `SELECT ${columns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
-      if (process.env.HEAVY_DEBUG) {
-        console.log('🪲 PG selectQuery:', selectQuery, 'params:', d);
+      if (process.env.HEAVY_DEBUG_QUERY) {
+        console.log('🪲📜 PG Q:', selectQuery, 'params:', d);
       }
       const stmt = await this.db.query(selectQuery, d);
       const rows = stmt.rows;
@@ -272,7 +272,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
     async getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string, operator: AdminForthFilterOperators, value: any }[]; }): Promise<number> {
         const tableName = resource.table;
         const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
-        const stmt = await this.db.query(`SELECT COUNT(*) FROM "${tableName}" ${where}`, filterValues);
+        const q = `SELECT COUNT(*) FROM "${tableName}" ${where}`;
+        if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 PG Q:', q, 'values:', filterValues);
+        }
+        const stmt = await this.db.query(q, filterValues);
         return stmt.rows[0].count;
     }
   
@@ -280,7 +284,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const tableName = resource.table;
         const result = {};
         await Promise.all(columns.map(async (col) => {
-            const stmt = await this.db.query(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM "${tableName}"`);
+            const q = `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM "${tableName}"`;
+            if (process.env.HEAVY_DEBUG_QUERY) {
+                console.log('🪲📜 PG Q:', q);
+            }
+            const stmt = await this.db.query(q);
             const { min, max } = stmt.rows[0];
             result[col.name] = {
                 min, max,
@@ -297,18 +305,30 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         for (let i = 0; i < columns.length; i++) {
             columns[i] = `"${columns[i]}"`;
         }
-        await this.db.query(`INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders})`, values);
+        const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders})`;
+        if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 PG Q:', q, 'values:', values);
+        }
+        await this.db.query(q, values);
     }
 
     async updateRecordOriginalValues({ resource, recordId,  newValues }) {
         const values = [...Object.values(newValues), recordId];
         const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `"${col}" = $${i + 1}`).join(', ');
-        await this.db.query(`UPDATE "${resource.table}" SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`, values);
+        const q = `UPDATE "${resource.table}" SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`;
+        if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 PG Q:', q, 'values:', values);
+        }
+        await this.db.query(q, values);
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
-      const res = await this.db.query(`DELETE FROM "${resource.table}" WHERE "${this.getPrimaryKey(resource)}" = $1`, [recordId]);
-      return res.rowCount > 0;
+        const q = `DELETE FROM "${resource.table}" WHERE "${this.getPrimaryKey(resource)}" = $1`;
+        if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 PG Q:', q, 'values:', [recordId]);
+        }
+        const res = await this.db.query(q, [recordId]);
+        return res.rowCount > 0;
     }
 
     async close() {

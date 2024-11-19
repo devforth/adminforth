@@ -425,7 +425,7 @@ export enum AdminForthMenuTypes {
 /**
  * Menu item which displayed in the left sidebar of the admin panel.
  */
-export type AdminForthConfigMenuItem = {
+export interface AdminForthConfigMenuItem {
     type?: AdminForthMenuTypes | keyof typeof AdminForthMenuTypes,
 
     /**
@@ -513,6 +513,11 @@ export type AdminForthConfigMenuItem = {
      * Result of callback if not null will be used as a small badge near the menu item.
      */
     badge?: string | ((user: AdminUser) => Promise<string>),
+
+    /**
+     * Item id will be automatically generated from hashed resourceId+Path+label
+     */
+    _itemId?: string,
 }
   
 

@@ -273,13 +273,13 @@ const coreStore = useCoreStore();
 const props = defineProps<{
   page: number,
   resource: any,
-  rows: any[],
+  rows: any[] | null,
   totalRows: number,
   pageSize: number,
   checkboxes: any[],
   sort: any[],
-  noRoundings: boolean,
-  customActionsInjection: any[],
+  noRoundings?: boolean,
+  customActionsInjection?: any[],
 }>();
 
 // emits, update page

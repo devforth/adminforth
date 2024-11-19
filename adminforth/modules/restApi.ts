@@ -11,7 +11,7 @@ import {
   AfterSaveFunction,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages, AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
@@ -153,6 +153,16 @@ export default class AdminForthRestAPI {
         },
     })
 
+    async function generateItemId(menuItem: AdminForthConfigMenuItem) {
+      const _itemId = md5hash(`menu-item-${menuItem.label}-${menuItem.resourceId || ''}-${menuItem.path || ''}`);
+      menuItem._itemId = _itemId;
+      if (menuItem.children) {
+        for (let child of menuItem.children) {
+          await generateItemId(child);
+        }
+      }
+    }
+
     server.endpoint({
       noAuth: true,
       method: 'GET',
@@ -218,17 +228,8 @@ export default class AdminForthRestAPI {
             }
             return toReturn;
           }
-        
-          
         }
 
-        async function processMenuItem(menuItem) {
-            if (menuItem.badge) {
-                if (typeof menuItem.badge === 'function') {
-                    menuItem.badge = await menuItem.badge(adminUser);
-                }
-            }
-        }
         let newMenu = []
         for (let menuItem of this.adminforth.config.menu) {
           let newMenuItem = {...menuItem,}
@@ -237,7 +238,7 @@ export default class AdminForthRestAPI {
               continue
             }
           }
-          if (menuItem.children){
+          if (menuItem.children) {
             let newChildren = []
             for (let child of menuItem.children){
               let newChild = {...child,}
@@ -246,12 +247,11 @@ export default class AdminForthRestAPI {
                   continue
                 }
               }
-              await processMenuItem(newChild)
               newChildren.push(newChild)
             }
             newMenuItem = {...newMenuItem, children: newChildren}
           }
-          await processMenuItem(newMenuItem)
+          await generateItemId(newMenuItem)
           newMenu.push(newMenuItem)
         }
 
@@ -309,6 +309,39 @@ export default class AdminForthRestAPI {
         };
       },
     });
+
+    server.endpoint({
+      method: 'GET', 
+      path: '/get_menu_badges',
+      handler: async ({ adminUser }) => {
+        const badges = {};
+
+        const badgeFunctions = [];
+
+        function processMenuItem(menuItem) {
+          if (menuItem.badge) {
+            if (typeof menuItem.badge === 'function') {
+              badgeFunctions.push(async () => {
+                badges[menuItem._itemId] = await menuItem.badge(adminUser);
+              });
+            } else {
+              badges[menuItem._itemId] = menuItem.badge;
+            }
+          }
+          if (menuItem.children) {
+            menuItem.children.forEach(processMenuItem);
+          }
+        }
+
+        this.adminforth.config.menu.map((menuItem) => {
+          generateItemId(menuItem);
+          processMenuItem(menuItem)
+        })
+
+        await Promise.all(badgeFunctions.map((fn) => fn()));
+        return badges;
+      }
+    }); 
 
     function checkAccess(action: AllowedActionsEnum, allowedActions: AllowedActions): { allowed: boolean, error?: string } {
       const allowed = (allowedActions[action] as boolean | string | undefined);
@@ -491,7 +524,6 @@ export default class AdminForthRestAPI {
         }
 
         // only after adminforth made all post processing, give user ability to edit it
-        process.env.HEAVY_DEBUG && console.log('🪲🚥adminforth', this.adminforth)
         for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
           const resp = await hook({ 
             resource, 

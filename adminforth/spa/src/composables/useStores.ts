@@ -50,6 +50,9 @@ export class FrontendAPI {
         setFilter: () => this.setListFilter.bind(this),
         updateFilter: () => this.updateListFilter.bind(this),
         clearFilters: () => this.clearListFilters.bind(this),
+      },
+      menu: {
+        refreshMenuBadges: () => {/* will be redefined */}
       }
     };
   }

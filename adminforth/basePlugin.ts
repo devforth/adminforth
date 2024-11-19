@@ -1,5 +1,5 @@
 import { AdminForthResource, IAdminForthPlugin, IAdminForth } from './types/Back.js';
-import { getComponentNameFromPath } from './modules/utils.js';
+import { getComponentNameFromPath, md5hash } from './modules/utils.js';
 import { currentFileDir } from './modules/utils.js';
 import path from 'path';
 import fs from 'fs';
@@ -41,9 +41,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
 
     const seed = `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${uniqueness}`;
-    this.pluginInstanceId = crypto.createHash('sha256').update(
-      seed
-    ).digest('hex')
+    this.pluginInstanceId = md5hash(seed);
     process.env.HEAVY_DEBUG && console.log(`🪲 AdminForthPlugin.modifyResourceConfig`, seed, 'id', this.pluginInstanceId);
     this.adminforth = adminforth;
   }
