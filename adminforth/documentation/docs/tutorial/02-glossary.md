@@ -38,7 +38,9 @@ There are next [actions](/docs/api/types/Common/enumerations/AllowedActionsEnum.
 * show
 * filter
 
+## allowedAction
 
+Static boolean value or async function which returns boolean and defines whether the action is allowed for the user.
 
 ## adminUser
 
