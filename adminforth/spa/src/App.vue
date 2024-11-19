@@ -356,9 +356,13 @@ onMounted(async () => {
   loadMenu(); // run this in async mode
   loadPublicConfig(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
-  await initRouter()
-  handleCustomLayout()
-  
+  await initRouter();
+  handleCustomLayout();
+  await coreStore.fetchMenuBadges();
+
+  window.adminforth.menu.refreshMenuBadges = async () => {
+    await coreStore.fetchMenuBadges();
+  }
 })
 
 onBeforeMount(()=>{

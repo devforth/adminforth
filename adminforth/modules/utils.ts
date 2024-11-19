@@ -2,6 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
+import crypto from 'crypto';
 // @ts-ignore-next-line
 
 
@@ -356,7 +357,6 @@ export function suggestIfTypo(names: string[], name: string): string {
   }
 }
 
-
 export function getClinetIp(headers: object) {
   return headers['CF-Connecting-IP'] || 
     headers['x-forwarded-for'] || 
@@ -371,8 +371,9 @@ export function getClinetIp(headers: object) {
     headers['x-real-ip'] || 'unknown';
 }
 
-
-
+export function md5hash(str:string) {
+  return crypto.createHash('md5').update(str).digest('hex');
+}
 
 export class RateLimiter {
   static counterData = {};

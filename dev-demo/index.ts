@@ -956,9 +956,9 @@ export const admin = new AdminForth({
           label: 'Apartments',
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
-          // badge: async (adminUser) => {
-          //   return '10'
-          // }
+          badge: async (adminUser) => {
+            return '10'
+          }
         },
         {
           label: 'Description Images',

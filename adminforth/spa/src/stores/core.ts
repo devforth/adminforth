@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
 import type { Ref } from 'vue'
+import type { AdminForthConfigMenuItem } from '@/types/Back';
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById: Ref<Object> = ref({});
@@ -57,6 +58,36 @@ export const useCoreStore = defineStore('core', () => {
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
   }
+
+  function findItemWithId(items: AdminForthConfigMenuItem[], _itemId: string): AdminForthConfigMenuItem | undefined {
+    for (const item of items) {
+      if (item._itemId === _itemId) {
+        return item;
+      }
+      if (item.children) {
+        const found = findItemWithId(item.children, _itemId);
+        if (found) {
+          return found;
+        }
+      }
+    }
+  }
+  async function fetchMenuBadges() {
+    const resp: Record<string, string> = await callAdminForthApi({
+      path: '/get_menu_badges',
+      method: 'GET',
+    });
+    if (!resp) {
+      return;
+    }
+    Object.entries(resp).forEach(([_itemId, badge]: [string, string]) => {
+      const item: AdminForthConfigMenuItem | undefined = findItemWithId(menu.value, _itemId);
+      if (item) {
+        item.badge = badge;
+      }
+    });
+  }
+
 
   async function fetchRecord({ resourceId, primaryKey }) {
     record.value = null;
@@ -162,5 +193,6 @@ export const useCoreStore = defineStore('core', () => {
     resourceColumnsWithFilters,
     toggleTheme,
     theme,
+    fetchMenuBadges,
   }
 })

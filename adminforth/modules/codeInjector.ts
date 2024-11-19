@@ -1,5 +1,4 @@
 import { exec, spawn } from 'child_process';
-import crypto from 'crypto';
 import filewatcher from 'filewatcher';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
@@ -7,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import AdminForth from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash } from './utils.js';
 import { AdminForthConfigMenuItem, ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 
@@ -57,8 +56,7 @@ async function findFirstMenuItemWithResource(menuItem: AdminForthConfigMenuItem[
 const execAsync = promisify(exec);
 
 function hashify(obj) {
-  return crypto.createHash
-    ('sha256').update(JSON.stringify(obj)).digest('hex');
+  return md5hash(JSON.stringify(obj));
 }
 
 function notifyWatcherIssue(limit) {
@@ -776,7 +774,7 @@ class CodeInjector implements ICodeInjector {
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
           // TODO: maybe be tter use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
-          
+
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           

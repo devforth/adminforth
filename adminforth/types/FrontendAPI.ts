@@ -98,6 +98,13 @@ export interface FrontendAPIInterface {
          */
         clearFilters(): void;
     }
+
+    menu: {
+        /**
+         * Refreshes the badges in the menu, by recalling the badge function for each menu item
+         */
+        refreshMenuBadges(): void;
+    }
 }
 
 export type ConfirmParams = {

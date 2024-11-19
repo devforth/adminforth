@@ -151,7 +151,7 @@ You can add a badge near the menu item title (e.g. to get count of unread messag
       label: 'Posts',
       icon: 'flowbite:book-open-outline',
       resourceId: 'posts',
-      badge:  (adminUser: AdminUser) => {
+      badge:  async (adminUser: AdminUser) => {
         return 10
       },
       ...,
@@ -159,4 +159,12 @@ You can add a badge near the menu item title (e.g. to get count of unread messag
   ],
   ...
 }
+```
+
+Badge function is async, but all badges are loaded in "lazy" to not block the menu rendering.
+
+To refresh all badges in menu from the frontend component you can use the following code:
+
+```
+window.adminforth.menu.refreshMenuBadges()
 ```

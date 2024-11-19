@@ -351,8 +351,7 @@ async function init() {
 }
 
 watch([page, sort, () => filtersStore.filters], async () => {
-  console.log('🔄️ page/sort/filter change fired, page:', page.value);
-
+  // console.log('🔄️ page/sort/filter change fired, page:', page.value);
   await getList();
 }, { deep: true });
 

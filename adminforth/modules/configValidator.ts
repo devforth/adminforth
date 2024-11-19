@@ -8,9 +8,7 @@ import {
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, suggestIfTypo } from './utils.js';
-
-import crypto from 'crypto';
+import { guessLabelFromName, md5hash, suggestIfTypo } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -368,9 +366,7 @@ export default class ConfigValidator implements IConfigValidator {
 
         bulkActions.map((action) => {
           if (!action.id) {
-            action.id = crypto.createHash('sha256').update(
-              action.label,
-            ).digest('hex');
+            action.id = md5hash(action.label);
           }
         });
         res.options.bulkActions = bulkActions;

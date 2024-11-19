@@ -32,7 +32,6 @@ const limitHeightToPage = computed(() => {
     return true;
   }
   const listPageInjects = coreStore.resource.options.pageInjections.list;
-  console.log('asdcoreStore.resource', JSON.stringify(listPageInjects, null, 2))
   
   for (const pi of [listPageInjects.beforeBreadcrumbs, listPageInjects.afterBreadcrumbs, listPageInjects.bottom]) {
     if (pi) {

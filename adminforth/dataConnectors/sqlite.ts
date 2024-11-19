@@ -190,7 +190,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const stmt = this.db.prepare(q);
       const d = [...filterValues, limit, offset];
 
-      if (process.env.HEAVY_DEBUG) {
+      if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 SQLITE Q', q, 'params:', d);
       }
       const rows = await stmt.all(d);
@@ -208,7 +208,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const tableName = resource.table;
       const where = this.whereClause(filters);
       const filterValues = this.whereParams(filters);
-      const totalStmt = this.db.prepare(`SELECT COUNT(*) FROM ${tableName} ${where}`);
+      const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
+      if (process.env.HEAVY_DEBUG_QUERY) {
+        console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
+      }
+      const totalStmt = this.db.prepare(q);
       return totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
@@ -237,12 +241,12 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
       const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
       const values = [...Object.values(newValues), recordId];
-
-      const q = this.db.prepare(
-          `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`
-      )
-      process.env.HEAVY_DEBUG && console.log('🪲 SQLITE Query', `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`, 'params:', values);
-      await q.run(values);
+      const q = `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`;
+      if (process.env.HEAVY_DEBUG_QUERY) {
+        console.log('🪲📜 SQLITE Q', q, 'params:', values);
+      }
+      const query = this.db.prepare(q);        
+      await query.run(values);
     }
 
     async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean> {
