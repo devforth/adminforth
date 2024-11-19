@@ -277,7 +277,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             console.log('🪲📜 PG Q:', q, 'values:', filterValues);
         }
         const stmt = await this.db.query(q, filterValues);
-        return stmt.rows[0].count;
+        return +stmt.rows[0].count;
     }
   
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
