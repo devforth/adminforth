@@ -9,12 +9,14 @@ import {
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
   AfterSaveFunction,
+  AdminForthConfigMenuItem,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages, AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
+import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages,
+   AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
 
 export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
   // if (process.env.HEAVY_DEBUG) {
@@ -633,6 +635,11 @@ export default class AdminForthRestAPI {
             return { error: resp.error };
           }
         }
+
+        // remove _item from response (might expose sensitive data like backendOnly fields)
+        response.items.forEach((item) => {
+          delete item._item;
+        });
        
         return response;
       },

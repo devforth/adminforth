@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import ResourceParent from '@/views/ResourceParent.vue';
+import PageNotFound from '@/views/PageNotFound.vue';
 
 /* IMPORTANT:ADMINFORTH ROUTES IMPORTS */
 
@@ -53,6 +54,7 @@ const router = createRouter({
       ]
     },
     /* IMPORTANT:ADMINFORTH ROUTES */
+    { path: "/:pathMatch(.*)*", component: PageNotFound },
   ]
 })
 

@@ -11,14 +11,11 @@ This allows to keep the design consistent with minimal efforts. ACL components w
 import { Button } from '@/afcl'
 ```
 
-
 ```vue
 <Button @click="doSmth" :loader="showLoader" class="w-full">
   Your button text
 </Button>
 ```
-
-
 
 loader prop would show loader when it's true.
 
@@ -33,7 +30,17 @@ import { Link } from '@/afcl'
 <Link to="/login">Go to login</Link>
 ```
 
+## LinkButton
 
+Looks like button but works like link. Uses `router-link` under the hood.
+
+```js
+import { LinkButton } from '@/afcl'
+```
+
+```vue
+<LinkButton to="/login">Go to login</LinkButton>
+```
 
 ## Select
 

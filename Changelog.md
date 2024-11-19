@@ -17,12 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix HMR in vite, now Vue files during adminforth dev and app dev are reloaded smoothly
 - add INotify watchers to files instead of dirs to minimaze CP operation volume and CPU usage
 - add adminforth instance into hooks
-
+- removed several warnings and unneded outputs in console
+- security fix: remove full item after fetch in `get_resource_foreign_data` (foreign requests exposed backendOnly fields)
 
 
 ### Improved
 
 - primary color adoption for login page
+- menu badges now loaded in "lazy" mode to not block the menu rendering
+- added `adminforth.menu.refreshMenuBadges()` to refresh all badges in menu from the frontend component
+- created env HEAVY_DEBUG_QUERY to log SQL queries in the console
 
 ### Added
 
