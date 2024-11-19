@@ -18,11 +18,26 @@ import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
 
-export async function interpretResource(adminUser: AdminUser, resource: AdminForthResource, meta: any, source: ActionCheckSource): Promise<{allowedActions: AllowedActionsResolved}> {
+export async function interpretResource(
+  adminUser: AdminUser, 
+  resource: AdminForthResource, 
+  meta: any, 
+  source: ActionCheckSource, 
+  adminforth: IAdminForth
+): Promise<{allowedActions: AllowedActionsResolved}> {
   // if (process.env.HEAVY_DEBUG) {
   //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
   // }
   const allowedActions = {};
+
+  // we need to compute only allowed actions for this source:
+  // 'show' needed for ActionCheckSource.showRequest and ActionCheckSource.editRequest and ActionCheckSource.displayButtons
+  // 'edit' needed for ActionCheckSource.editRequest and ActionCheckSource.displayButtons
+  // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
+  // 'list' needed for ActionCheckSource.listRequest
+  // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
+  
+
 
   await Promise.all(
     Object.entries(resource.options?.allowedActions || {}).map(
@@ -33,7 +48,7 @@ export async function interpretResource(adminUser: AdminUser, resource: AdminFor
       
         // if callable then call
         if (typeof value === 'function') {
-          allowedActions[key] = await value({ adminUser, resource, meta, source });
+          allowedActions[key] = await value({ adminUser, resource, meta, source, adminforth });
         } else {
           allowedActions[key] = value;
         }
@@ -369,7 +384,7 @@ export default class AdminForthRestAPI {
           return { error: `Resource ${resourceId} not found` };
         }
 
-        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
+        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
 
         const allowedBulkActions = [];
         await Promise.all(
@@ -405,7 +420,7 @@ export default class AdminForthRestAPI {
       handler: async ({ body, adminUser, headers, query, cookies }) => {
 
         const { resourceId, source } = body;
-        if (['show', 'list'].includes(source) === false) {
+        if (['show', 'list', 'edit'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };
         }
         if (!this.adminforth.statuses.dbDiscover) {
@@ -418,8 +433,23 @@ export default class AdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        
+        const meta = { requestBody: body, pk: undefined };
+        if (source === 'edit' || source === 'show') {
+          meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
+        }
 
-        const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.DisplayButtons);
+        const { allowedActions } = await interpretResource(
+          adminUser, 
+          resource, 
+          meta,
+          {
+            'show': ActionCheckSource.ShowRequest,
+            'list': ActionCheckSource.ListRequest,
+            'edit': ActionCheckSource.EditRequest,
+          }[source],
+          this.adminforth
+        );
 
         const { allowed, error } = checkAccess(source as AllowedActionsEnum, allowedActions);
         if (!allowed) {
@@ -682,7 +712,9 @@ export default class AdminForthRestAPI {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body}, ActionCheckSource.CreateRequest);
+            const { allowedActions } = await interpretResource(
+              adminUser, resource, { requestBody: body }, ActionCheckSource.CreateRequest, this.adminforth
+            );
 
             const { allowed, error } = checkAccess(AllowedActionsEnum.create, allowedActions);
             if (!allowed) {
@@ -731,7 +763,13 @@ export default class AdminForthRestAPI {
             }
             const record = body['record'];
 
-            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body, newRecord: record, oldRecord}, ActionCheckSource.EditRequest);
+            const { allowedActions } = await interpretResource(
+              adminUser, 
+              resource, 
+              { requestBody: body, newRecord: record, oldRecord}, 
+              ActionCheckSource.EditRequest,
+              this.adminforth
+            );
 
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
@@ -763,7 +801,13 @@ export default class AdminForthRestAPI {
                 return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             }
 
-            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.DeleteRequest);
+            const { allowedActions } = await interpretResource(
+              adminUser, 
+              resource, 
+              { requestBody: body, record: record }, 
+              ActionCheckSource.DeleteRequest,
+              this.adminforth
+            );
 
             const { allowed, error } = checkAccess(AllowedActionsEnum.delete, allowedActions);
             if (!allowed) {
@@ -789,7 +833,13 @@ export default class AdminForthRestAPI {
             if (!resource) {
                 return { error: `Resource '${resourceId}' not found` };
             }
-            const { allowedActions } = await interpretResource(adminUser, resource, { requestBody: body }, ActionCheckSource.BulkActionRequest);
+            const { allowedActions } = await interpretResource(
+              adminUser, 
+              resource, 
+              { requestBody: body },
+              ActionCheckSource.BulkActionRequest,
+              this.adminforth
+            );
 
             const action = resource.options.bulkActions.find((act) => act.id == actionId);
             if (!action) {

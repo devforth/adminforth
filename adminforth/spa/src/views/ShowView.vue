@@ -158,6 +158,7 @@ onMounted(async () => {
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
+    source: 'show',
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   loading.value = false;

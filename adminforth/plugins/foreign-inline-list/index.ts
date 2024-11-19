@@ -35,7 +35,7 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
         }
         // exclude "plugins" key
         const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
-        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons);
+        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
 
         
         if (this.options.modifyTableResourceConfig) {

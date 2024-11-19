@@ -124,6 +124,7 @@ onMounted(async () => {
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId, 
     primaryKey: route.params.primaryKey,
+    source: 'edit',
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
   loading.value = false;

@@ -92,7 +92,13 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
 
 ## Customizing the access control based on resource values
 
-More advanced case, allow to edit apartments only if user is a realtor of the apartment (defined as realtor_id), otherwise return error
+In more advanced cases you might need to check access based on record value. 
+Generally it happens in multi-tenant applications where you need to check if user has access to the record based on some field value.
+
+
+### Disable editing of the resource based on owner
+
+For example, allow to edit apartments only if user is a realtor of the apartment (defined as realtor_id), otherwise return error
 "You are not assigned to this apartment and can't edit it":
 
 ```ts title="./index.ts"
@@ -128,3 +134,54 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
   }
 }
 ```
+
+### Disable deletion of the resource based on owner
+
+If we need to allow only owner to delete the apartment:
+
+```ts title="./index.ts"
+import type { AdminUser } from  'adminforth';
+
+async function canDeleteAppart({ adminUser, meta }: { adminUser: AdminUser, meta: any }): Promise<boolean | string> {
+  const { record } = meta;
+  if (record.realtor_id !== adminUser.dbUser.id) {
+    return "You are not assigned to this apartment and can't delete it";
+  }
+  return true;
+}
+
+{
+  ...
+  resourceId: 'aparts',
+  ...
+  options: {
+    allowedActions: {
+      delete: canDeleteAppart,
+    }
+    ...
+  }
+}
+```
+
+### Disable showing the resource based on owner
+
+This one might sound pretty tricky. If Update and Delete callbackes in allowedActions were called with `meta` object which already had a records values,
+here we need to fetch the record from the database to check if user is the owner of the record.
+This is done because of architecture of AdminForth: `show` callback is called before action `list` or `show` hooks and requests.
+
+```ts title="./index.ts"
+ allowedActions: {
+    ...
+    show: async ({adminUser, meta, source, adminforth}: any) => {
+      if (source === 'showRequest' || source === 'editRequest') {
+        const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
+        return record.realtor_id === adminUser.dbUser.id;
+      }
+      return true;
+    },
+ }
+```
+
+Please note that show callback is called not only when user visits show page (source will be 'showRequest' during this check) but also
+when user visits edit page (source will be 'editRequest').
+
