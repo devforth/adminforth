@@ -982,7 +982,7 @@ export interface IOperationalResource {
  * or function which returns Boolean or string with error message
  * 
  */
-export type AllowedActionValue = boolean | (({adminUser, resource, meta, source}: {
+export type AllowedActionValue = boolean | (({adminUser, resource, meta, source, adminforth}: {
   adminUser: AdminUser,
   resource: AdminForthResource,
 
@@ -995,6 +995,11 @@ export type AllowedActionValue = boolean | (({adminUser, resource, meta, source}
    * Source of the check
    */
   source: ActionCheckSource,
+
+  /**
+   * Instance of AdminForth, can be used e.g. to call data API adminforth.resource(resourceId)...
+   */
+  adminforth: IAdminForth,
 }) => Promise<boolean | string>);
 
 
