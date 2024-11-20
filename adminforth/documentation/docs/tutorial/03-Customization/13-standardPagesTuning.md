@@ -8,7 +8,7 @@
 
 In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other."
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
  resources: [
     {
       ...
@@ -48,7 +48,7 @@ Here is how it looks:
 
 ### Default Sorting
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
 import { AdminForthSortDirections } from 'adminforth';
 
 ...
@@ -73,7 +73,7 @@ import { AdminForthSortDirections } from 'adminforth';
 
 use `options.listPageSize` to define how many records will be shown on the page
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
   resources: [
     {
       resourceId: 'aparts',
@@ -94,7 +94,7 @@ You can change this behavior by using `options.listTableClickUrl`.
 
 To disable any action (don't open show) return null:
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
   resources: [
     {
       resourceId: 'aparts',
@@ -109,7 +109,7 @@ To disable any action (don't open show) return null:
 
 To open a custom page, return URL to the custom page (can start with https://, or relative adminforth path):
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
       options: {
         ...
 //diff-add
@@ -121,7 +121,7 @@ To open a custom page, return URL to the custom page (can start with https://, o
 
 If you wish to open the page in a new tab, add `target=_blank` get param to the returned URL:
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
       options: {
         ...
 //diff-add
@@ -138,7 +138,7 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
 `options.listRowsAutoRefreshSeconds` might be used to silently refresh records that are loaded (no new records will be fetched if
 they appear)
   
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
   resources: [
       {
         resourceId: 'aparts',
@@ -192,13 +192,13 @@ they appear)
 Sometimes you want to generate some field value without asking user to fill it. For example createdAt oftenly store time of creation of the record. You can do this by using fillOnCreate:
 
 
-```typescript title="./resources/appartments.ts" 
+```typescript title="./resources/apartments.ts" 
 
 new AdminForth({
   ...
   resources: [
     {
-      name: 'appartments',
+      name: 'apartments',
       fields: [
         ...
         {
@@ -216,12 +216,12 @@ new AdminForth({
 
 Also you can assign adminUser ID by adminUser.dbUser.id in same hook:
 
-```typescript title="./resources/appartments.ts"
+```typescript title="./resources/apartments.ts"
 new AdminForth({
   ...
   resources: [
     {
-      name: 'appartments',
+      name: 'apartments',
       fields: [
         ...
         {

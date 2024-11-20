@@ -101,12 +101,12 @@ Generally it happens in multi-tenant applications where you need to check if use
 For example, allow to edit apartments only if user is a realtor of the apartment (defined as realtor_id), otherwise return error
 "You are not assigned to this apartment and can't edit it":
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.ts"
 import type { AdminUser } from  'adminforth';
 import { ActionCheckSource } from  'adminforth';
 
 
-async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): Promise<boolean | string> {
+async function canModifyApart({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): Promise<boolean | string> {
   if (source === ActionCheckSource.DisplayButtons) {
     // if check is done for displaying button - we show button to everyone
     return true; 
@@ -128,7 +128,7 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
   ...
   options: {
     allowedActions: {
-      edit: canModifyAppart,
+      edit: canModifyApart,
     }
     ...
   }
@@ -139,10 +139,10 @@ async function canModifyAppart({ adminUser, source, meta }: { adminUser: AdminUs
 
 If we need to allow only owner to delete the apartment:
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.ts"
 import type { AdminUser } from  'adminforth';
 
-async function canDeleteAppart({ adminUser, meta }: { adminUser: AdminUser, meta: any }): Promise<boolean | string> {
+async function canDeleteApart({ adminUser, meta }: { adminUser: AdminUser, meta: any }): Promise<boolean | string> {
   const { record } = meta;
   if (record.realtor_id !== adminUser.dbUser.id) {
     return "You are not assigned to this apartment and can't delete it";
@@ -156,7 +156,7 @@ async function canDeleteAppart({ adminUser, meta }: { adminUser: AdminUser, meta
   ...
   options: {
     allowedActions: {
-      delete: canDeleteAppart,
+      delete: canDeleteApart,
     }
     ...
   }
@@ -165,11 +165,11 @@ async function canDeleteAppart({ adminUser, meta }: { adminUser: AdminUser, meta
 
 ### Disable showing the resource based on owner
 
-This one might sound pretty tricky. If Update and Delete callbackes in allowedActions were called with `meta` object which already had a records values,
+This one might sound pretty tricky. If Update and Delete callbacks in allowedActions were called with `meta` object which already had a records values,
 here we need to fetch the record from the database to check if user is the owner of the record.
 This is done because of architecture of AdminForth: `show` callback is called before action `list` or `show` hooks and requests.
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.ts"
  allowedActions: {
     ...
     show: async ({adminUser, meta, source, adminforth}: any) => {

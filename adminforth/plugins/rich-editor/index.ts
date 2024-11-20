@@ -161,11 +161,11 @@ export default class RichEditorPlugin extends AdminForthPlugin {
             // field was not changed, do nothing
             return { ok: true };
           }
-          const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list([
+          const existingAparts = await adminforth.resource(this.options.attachments.attachmentResource).list([
             Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, recordId),
             Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
           ]);
-          const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+          const existingS3Paths = existingAparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
           const newS3Paths = getAttachmentPathes(record[this.options.htmlFieldName]);
           process.env.HEAVY_DEBUG && console.log('📸 Existing s3Paths (from db)', existingS3Paths)
           process.env.HEAVY_DEBUG && console.log('📸 Found new s3Paths (from text)', newS3Paths);
@@ -187,13 +187,13 @@ export default class RichEditorPlugin extends AdminForthPlugin {
       // after delete we need to delete all attachments
       (resourceConfig.hooks.delete.afterSave as Array<AfterSaveFunction>).push(
         async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
-          const existingApparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
+          const existingAparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
             [
               Filters.EQ(this.options.attachments.attachmentRecordIdFieldName, record[editorRecordPkField.name]),
               Filters.EQ(this.options.attachments.attachmentResourceIdFieldName, resourceConfig.resourceId)
             ]
           );
-          const existingS3Paths = existingApparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
+          const existingS3Paths = existingAparts.map((a: any) => a[this.options.attachments.attachmentFieldName]);
           process.env.HEAVY_DEBUG && console.log('📸 Found s3Paths to delete', existingS3Paths);
           await deleteAttachmentRecords(adminforth, this.options, existingS3Paths, adminUser);
 
