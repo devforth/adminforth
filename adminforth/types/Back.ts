@@ -255,6 +255,7 @@ export interface IAdminForth {
   codeInjector: ICodeInjector;
   express: IHttpServer;
 
+  restApi: AdminForthRestAPI;
   activatedPlugins: Array<IAdminForthPlugin>;
 
   baseUrlSlashed: string;
@@ -591,8 +592,8 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
 }) => Promise<{
-  ok:boolean, 
-  error?:string, 
+  ok: boolean, 
+  error?: string, 
   body: {
     redirectTo?: string, 
     allowedLogin?: boolean,

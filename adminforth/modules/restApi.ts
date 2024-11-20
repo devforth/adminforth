@@ -66,6 +66,28 @@ export default class AdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean, error?: string }, response: any) {
+    const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
+    if (beforeLoginConfirmation?.length){
+      for (const hook of beforeLoginConfirmation) {
+        const resp = await hook({ 
+          adminUser, 
+          response,
+          adminforth: this.adminforth,
+        });
+        
+        if (resp?.body?.redirectTo || resp?.error) {
+          // delete all items from toReturn and add these:
+          toReturn.ok = resp.ok;
+          toReturn.redirectTo = resp?.body?.redirectTo;
+          toReturn.allowedLogin = resp?.body?.allowedLogin;
+          toReturn.error = resp?.error;
+          break;
+        }
+      }
+    }
+  }
+
   registerEndpoints(server: IHttpServer) {
     server.endpoint({
       noAuth: true,
@@ -76,7 +98,7 @@ export default class AdminForthRestAPI {
         const INVALID_MESSAGE = 'Invalid Username or Password';
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
-        let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean } = { ok: true, allowedLogin:true};
+        let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean, error?: string } = { ok: true, allowedLogin: true};
 
         // get resource from db
         if (!this.adminforth.config.auth) {
@@ -119,22 +141,9 @@ export default class AdminForthRestAPI {
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
             username,
           };
-          const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
-          if (beforeLoginConfirmation?.length){
-            for (const hook of beforeLoginConfirmation) {
-              const resp = await hook({ 
-                adminUser, 
-                response,
-                adminforth: this.adminforth,
-              });
-              
-              if (resp?.body?.redirectTo) {
-                toReturn = {ok:resp.ok, redirectTo:resp?.body?.redirectTo, allowedLogin:resp?.body?.allowedLogin};
-                break;
-              }
-            }
-          }
-          if (toReturn.allowedLogin){
+          await this.processLoginCallbacks(adminUser, toReturn, response);
+
+          if (toReturn.allowedLogin) {
             const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
             this.adminforth.auth.setAuthCookie({ 
               expireInDays,
