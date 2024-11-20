@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add adminforth instance into hooks
 - removed several warnings and unneded outputs in console
 - security fix: remove full item after fetch in `get_resource_foreign_data` (foreign requests exposed backendOnly fields)
-
+- count in postgress forced to return number
+- fixed sources for allowedActions in hooks
 
 ### Improved
 

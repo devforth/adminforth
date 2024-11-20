@@ -60,7 +60,7 @@ import type { AdminUser } from  'adminforth';
 
 For example we can prevent the user to see Apartments created by other users. Superadmin user still can see all:
 
-```ts title='./resources/aparts.ts'
+```ts title='./resources/apartments.ts'
 {
   ...
   hooks: {
@@ -91,14 +91,14 @@ For example we can prevent the user to see Apartments created by other users. Su
 ```
 
 This hook will prevent the user to see Apartments created by other users in list, however user if will be able to discover
-the appartment id, will be able to use show page to see the appartment details. Let's limit it as well:
+the apartment id, will be able to use show page to see the apartment details. Let's limit it as well:
 
 ### Dropdown list of foreignResource
 
 By default if there is `foreignResource` like we use for demo on `realtor_id` column, the filter will suggest a
 select dropdown with list of all Realtors. This might be a leak to get id's of other users. Let's limit it:
 
-```ts title='./resources/aparts.ts'
+```ts title='./resources/apartments.ts'
 {
   ...
   hooks: {
@@ -120,7 +120,7 @@ In our case we limit the dropdown list to show only the current user, however yo
 
 ### Show entity
 
-```ts title='./resources/aparts.ts'
+```ts title='./resources/apartments.ts'
 {
   ...
   hooks: {
