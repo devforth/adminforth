@@ -89,11 +89,11 @@
             <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
             ">{{ item.label }}</div>
             <li v-else-if="item.children" class="  ">
-              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover" 
+              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
-                
+
                 <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
                 <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
@@ -110,13 +110,13 @@
               <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
-                      <MenuLink :item="child" isChild="true" />
+                      <MenuLink :item="child" isChild="true" @click="hideSidebar"/>
                     </li>
                 </template>
-            </ul> 
+            </ul>
         </li>
         <li v-else>
-              <MenuLink :item="item" />
+              <MenuLink :item="item" @click="hideSidebar"/>
             </li>
           </template>
         </ul>
@@ -189,10 +189,10 @@
       </transition-group>
     </div>
 
-    <div v-if="sideBarOpen" 
-    @click="sideBarOpen = false"
-    
-    drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-5"></div>
+    <div v-if="sideBarOpen"
+         @click="hideSidebar"
+         drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-5">
+    </div>
 
   </div>
 
@@ -265,17 +265,21 @@ const loggedIn = computed(() => route.name !== 'login');
 
 const theme = ref('light');
 
+function hideSidebar(): void {
+  sideBarOpen.value = false;
+}
+
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem (label: string) {
-if (opened.value.includes(label)) {
-  opened.value = opened.value.filter((item) => item !== label);
-} else {
-  opened.value.push(label);
-}
+function clickOnMenuItem(label: string) {
+  if (opened.value.includes(label)) {
+    opened.value = opened.value.filter((item) => item !== label);
+  } else {
+    opened.value.push(label);
+  }
  
 }
 
