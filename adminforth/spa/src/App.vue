@@ -67,7 +67,7 @@
 
     <aside 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
-      id="logo-lightSidebar" class="fixed border-none top-0 left-0 z-20 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder" 
+      id="logo-lightSidebar" class="fixed border-none top-0 left-0 z-30 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder"
       :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
       aria-label="Sidebar"
     >
@@ -192,7 +192,7 @@
     <div v-if="sideBarOpen" 
     @click="sideBarOpen = false"
     
-    drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-5"></div>
+    drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-20"></div>
 
   </div>
 
