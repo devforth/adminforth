@@ -238,3 +238,28 @@ new AdminForth({
 
 > Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#modify-the-data-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
 
+
+## Editing
+
+You can set a column `editReadonly` so it will be shown in the edit form but will be disabled.  
+This might be useful to better identify the record during editing or to show some additional information that should not be changed but can help to edit the record.
+
+```typescript title="./resources/apartments.ts"
+new AdminForth({
+  ...
+  resources: [
+    {
+      name: 'apartments',
+      fields: [
+        ...
+        {
+          name: 'created_at',
+          type: AdminForthDataTypes.DATETIME,
+//diff-add
+          editReadonly: true,
+        },
+      ],
+    },
+    ...
+  ],
+``` 

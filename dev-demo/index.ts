@@ -10,6 +10,7 @@ import UploadPlugin from '../adminforth/plugins/upload/index.js';
 import ChatGptPlugin from '../adminforth/plugins/chat-gpt/index.js';
 import RichEditorPlugin from '../adminforth/plugins/rich-editor/index.js';
 import EmailResetPasswordPlugin from '../adminforth/plugins/email-password-reset/index.js';
+import OpenSignupPlugin from '../adminforth/plugins/open-signup/index.js';
 import fs from 'fs';
 import ImportExportPlugin from '../adminforth/plugins/import-export/index.js';
 import { generate } from "random-words";
@@ -676,6 +677,14 @@ export const admin = new AdminForth({
           },
           passwordField: 'password',
         }),
+        new OpenSignupPlugin({
+          emailField: 'email',
+          passwordField: 'password',
+          passwordHashField: 'password_hash',
+          defaultFieldValues: {
+            role: 'user',
+          },
+        }),
       ],
       options: {
         allowedActions: {
@@ -1013,9 +1022,9 @@ export const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'users',
-      visible:(user) => {
-        return user.dbUser.role === 'superadmin'
-      }
+      // visible:(user) => {
+      //   return user.dbUser.role === 'superadmin'
+      // }
     },
     {
       label: 'Logs',

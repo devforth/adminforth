@@ -19,10 +19,10 @@ export interface PluginOptions {
   passwordHashField: string;
 
   /**
-   * Attributes which will be assigned to user by default
+   * Default which will be assigned to user by default
    * e.g. can be used to set default role
    */
-  defaultAttributes?: {
+  defaultFieldValues?: {
     [key: string]: any;
   }
 

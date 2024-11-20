@@ -38,10 +38,6 @@ There are next [actions](/docs/api/types/Common/enumerations/AllowedActionsEnum.
 * show
 * filter
 
-## allowedAction
-
-Static boolean value or async function which returns boolean and defines whether the action is allowed for the user.
-
 ## adminUser
 
 [Object](/docs/api/types/Common/interfaces/AdminUser) which represents a user who logged in to the AdminForth. 
@@ -49,7 +45,14 @@ Static boolean value or async function which returns boolean and defines whether
 
 ## hook
 
-Hook is a optional async function which allows to inject in backend logic before executing the datasource query or after it
+Hook is a optional async function which allows to inject in backend logic before executing the datasource query or after it. 
+Hooks exist for all database queries including data read queries like list, show, and data write queries like create, edit, delete.
+
+## allowedAction
+
+Static boolean value or async function which returns boolean and defines whether the action is allowed for the user.
+allowedAction checked before any hooks or datasource queries: this means that if your allowed action function
+returned false you can be sure that user attempt to perform the action or get the data will be strictly prohibited on backend side.
 
 ## component
 
@@ -57,4 +60,4 @@ Component is a Vue component which is used to add or modify UI elements in Admin
 
 ## field
 
-Value of the column in the record.
+The column in the record.

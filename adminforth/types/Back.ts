@@ -250,12 +250,29 @@ export interface IAdminForthAuth {
   removeAuthCookie(response: any): void;
 }
 
+export interface IAdminForthRestAPI {
+
+  /**
+   * Called by AdminForth to initialize all endpoints for REST API.
+   */
+  registerEndpoints(server: IHttpServer): void;
+
+  /**
+   * Called by login endpoint to process login callbacks. Also might be called by plugins, to prevent action if user is not allowed to login.
+   * For example signup or login via google might want to check if user is allowed to login by calling this method.
+   * @param adminUser - plugin/af pases current adminUser
+   * @param toReturn - this is an object which will get status of login process. If at least one callback returns error or redirectTo, login process will be stopped (future callbacks will not be called).
+   * @param response - http response object
+   */
+  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any): Promise<void>;
+}
+
 export interface IAdminForth {
   config: AdminForthConfig;
   codeInjector: ICodeInjector;
   express: IHttpServer;
 
-  restApi: AdminForthRestAPI;
+  restApi: IAdminForthRestAPI;
   activatedPlugins: Array<IAdminForthPlugin>;
 
   baseUrlSlashed: string;
@@ -592,7 +609,6 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
 }) => Promise<{
-  ok: boolean, 
   error?: string, 
   body: {
     redirectTo?: string, 

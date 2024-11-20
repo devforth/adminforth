@@ -285,7 +285,6 @@ class AdminForth implements IAdminForth {
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
       }
-
       if (resp.error) {
         return { error: resp.error };
       }
