@@ -20,7 +20,7 @@
           :key="column.name"
           v-if="currentValues !== null"
           class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
-          :class="{ 'border-b': i !== group.columns.length - 1 }"
+          :class="{ 'border-b': i !== group.columns.length - 1, 'opacity-50 pointer-events-none': column.editReadonly && source === 'edit'}"
         >
           <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->

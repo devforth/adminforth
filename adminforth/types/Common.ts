@@ -571,8 +571,13 @@ export type AdminForthResourceColumnCommon = {
   editingNote?: string | { create?: string, edit?: string },
 
   /**
+   * Whether AdminForth will allow to edit this field in editing mode.
+   */
+  editReadonly?: boolean,
+
+  /**
    * On which AdminForth pages this field will be shown. By default all.
-   * Example: if you want to show field only in create and edit pages, set it to 
+   * Example: if you want to show field only in create and edit pages, set it to
    * 
    * ```ts
    * showIn: [AdminForthResourcePages.CREATE, AdminForthResourcePages.EDIT]
