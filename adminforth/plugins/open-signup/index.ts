@@ -1,11 +1,10 @@
-import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo } from "adminforth";
-import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthDataTypes, AdminForthResource, BeforeLoginConfirmationFunction } from "adminforth";
+import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthDataTypes } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
-import validator from 'validator';
-import { error } from "console";
 
-export default class OpenSignup extends AdminForthPlugin {
+
+export default class OpenSignupPlugin extends AdminForthPlugin {
   options: PluginOptions;
   emailField: AdminForthResourceColumn;
   passwordField: AdminForthResourceColumn;
@@ -100,7 +99,8 @@ export default class OpenSignup extends AdminForthPlugin {
       if (!adminforth.config.auth.beforeLoginConfirmation) {
         adminforth.config.auth.beforeLoginConfirmation = [];
       }
-      (adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).push(
+      // unshift because if e.g. 2fa set it's hook, this one should be first
+      (adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).unshift(
         async ({ adminUser }) => {
           if (!adminUser.dbUser[this.emailConfirmedField.name]) {
             return { body: { allowedLogin: false }, error: 'You need to confirm your email to be able to login' };
@@ -108,7 +108,6 @@ export default class OpenSignup extends AdminForthPlugin {
         }
       );
     }
-
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
@@ -121,8 +120,7 @@ export default class OpenSignup extends AdminForthPlugin {
     return `single`;
   }
 
-  async doLogin(email: string, response: any): Promise<{ error?: string; ok: boolean; }> {
-
+  async doLogin(email: string, response: any): Promise<{ error?: string; allowedLogin: boolean; redirectTo?: string; }> {
 
     const username = email;
     const userRecord = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
@@ -130,21 +128,21 @@ export default class OpenSignup extends AdminForthPlugin {
       dbUser: userRecord,
       pk: userRecord[this.authResource.columns.find((col) => col.primaryKey).name], 
       username,
-    };p
-    const toReturn = {};
+    };
+    const toReturn = { allowedLogin: true, error: '' };
 
     await this.adminforth.restApi.processLoginCallbacks(adminUser, toReturn, response);
     if (toReturn.allowedLogin) {
-      const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
       this.adminforth.auth.setAuthCookie({ 
-        expireInDays,
         response, 
         username, 
-        pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
+        pk: userRecord[
+          this.authResource.columns.find((col) => col.primaryKey).name
+        ] 
       });
     }
 
-    return { ok: true };
+    return toReturn;
   }
 
 
@@ -155,7 +153,7 @@ export default class OpenSignup extends AdminForthPlugin {
       noAuth: true,
       handler: async ({ body, response }) => {
         const { token } = body;
-        const { email } = this.adminforth.auth.verifyJWT(token, 'tempVerifyEmailToken');
+        const { email } = await this.adminforth.auth.verify(token, 'tempVerifyEmailToken');
         if (!email) {
           return { error: 'Invalid token', ok: false };
         }
@@ -178,9 +176,6 @@ export default class OpenSignup extends AdminForthPlugin {
         const { email, url, password } = body;
 
         // validate email
-        if (!validator.isEmail(email)) {
-          return { error: 'Invalid email address', ok: false };
-        }
         if (this.emailField.validation) {
           for (const { regExp, message } of this.emailField.validation) {
             if (!new RegExp(regExp).test(password)) {
@@ -212,15 +207,15 @@ export default class OpenSignup extends AdminForthPlugin {
 
         // create user
         const created = await this.adminforth.resource(this.authResource.resourceId).create({
-          ...(this.options.defaultAttributes || {}),
+          ...(this.options.defaultFieldValues || {}),
           ...(this.options.confirmEmails ? { [this.options.confirmEmails.emailConfirmedField]: false } : {}),  
           [this.emailField.name]: email,
           [this.options.passwordHashField]: await AdminForth.Utils.generatePasswordHash(password),
         });
         
         if (!this.options.confirmEmails) {
-          await this.doLogin(email, response);
-          return { ok: true };
+          const resp = await this.doLogin(email, response);
+          return resp;
         }
 
         // send confirmation email
@@ -231,10 +226,10 @@ export default class OpenSignup extends AdminForthPlugin {
 
         // send email with AWS SES this.options.providerOptions.AWS_SES
         const ses = new SESClient({
-          region: this.options.providerOptions.AWS_SES.region,
+          region: this.options.confirmEmails.providerOptions.AWS_SES.region,
           credentials: {
-            accessKeyId: this.options.providerOptions.AWS_SES.accessKeyId,
-            secretAccessKey: this.options.providerOptions.AWS_SES.secretAccessKey
+            accessKeyId: this.options.confirmEmails.providerOptions.AWS_SES.accessKeyId,
+            secretAccessKey: this.options.confirmEmails.providerOptions.AWS_SES.secretAccessKey
           }
         });
 
@@ -290,7 +285,7 @@ export default class OpenSignup extends AdminForthPlugin {
               Data: `Signup request at ${brandName}`
             }
           },
-          Source: `${this.options.sendFrom}`
+          Source: `${this.options.confirmEmails.sendFrom}`
         });
 
         try {

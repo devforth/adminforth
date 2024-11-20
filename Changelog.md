@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - security fix: remove full item after fetch in `get_resource_foreign_data` (foreign requests exposed backendOnly fields)
 - count in postgress forced to return number
 - fixed sources for allowedActions in hooks
+- menu now auto-closes on mobile after selecting item
+- backplate on mobile now is higher then table sticky header
 
 ### Improved
 
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - menu badges now loaded in "lazy" mode to not block the menu rendering
 - added `adminforth.menu.refreshMenuBadges()` to refresh all badges in menu from the frontend component
 - created env HEAVY_DEBUG_QUERY to log SQL queries in the console
+- simplified logic on detecting whether to init user Dropdown or not
 
 ### Added
 
@@ -36,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AFCL Button
 - AFCL Select (based on old Dropdown component, add slots to it)
 - move old AfTooltip to @/afcl/Tooltip
+- Ability to set read-only fields
 
 ## [1.4.2]
 

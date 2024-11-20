@@ -10,6 +10,7 @@ import {
   BeforeDataSourceRequestFunction,
   AfterSaveFunction,
   AdminForthConfigMenuItem,
+  IAdminForthRestAPI,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
@@ -58,7 +59,7 @@ export async function interpretResource(
   return { allowedActions };
 }
 
-export default class AdminForthRestAPI {
+export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
 
@@ -66,7 +67,7 @@ export default class AdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean, error?: string }, response: any) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
     if (beforeLoginConfirmation?.length){
       for (const hook of beforeLoginConfirmation) {
@@ -78,7 +79,6 @@ export default class AdminForthRestAPI {
         
         if (resp?.body?.redirectTo || resp?.error) {
           // delete all items from toReturn and add these:
-          toReturn.ok = resp.ok;
           toReturn.redirectTo = resp?.body?.redirectTo;
           toReturn.allowedLogin = resp?.body?.allowedLogin;
           toReturn.error = resp?.error;
@@ -98,7 +98,7 @@ export default class AdminForthRestAPI {
         const INVALID_MESSAGE = 'Invalid Username or Password';
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
-        let toReturn: { ok: boolean, redirectTo?: string, allowedLogin:boolean, error?: string } = { ok: true, allowedLogin: true};
+        let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
 
         // get resource from db
         if (!this.adminforth.config.auth) {
