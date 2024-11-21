@@ -178,7 +178,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         // validate email
         if (this.emailField.validation) {
           for (const { regExp, message } of this.emailField.validation) {
-            if (!new RegExp(regExp).test(password)) {
+            if (!new RegExp(regExp).test(email)) {
               return { error: message, ok: false };
             }
           }

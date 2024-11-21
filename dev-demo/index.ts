@@ -713,6 +713,9 @@ export const admin = new AdminForth({
           isUnique: true,
           required: true,
           enforceLowerCase: true,
+          validation: [
+            AdminForth.Utils.EMAIL_VALIDATOR,
+          ],
         },
         { 
           name: 'created_at', 
