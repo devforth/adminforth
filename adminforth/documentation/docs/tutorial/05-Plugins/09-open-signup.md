@@ -1,7 +1,7 @@
 # Open Signup
 
-Open signup plugin allows users to sign up for an account without an invitation. 
-This is useful when you want to allow anyone to sign up for an account and assign some low-level permissions to them.
+Open Signup plugin allows users to register in adminforth by them-selfs without admin. 
+This is useful when you want to allow anyone to sign up and assign some low-level permissions to them.
 
 ## Installation
 
@@ -17,8 +17,7 @@ npm install @adminforth/open-signup
 To use the plugin, instantiate to to user resource:
 
 ```typescript title="./resources/user.ts"
-import OpenSignupPlugin from '../adminforth/plugins/open-signup/index.js';
-
+import OpenSignupPlugin from '@adminforth/open-signup';
 ```
 
 Like this:
