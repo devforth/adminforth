@@ -41,7 +41,8 @@
                       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
                       <input type="email" name="email" id="email" 
                         tabindex="1"
-                        @keydown.enter="passwordInput.focus()"
+                        autocomplete="username"  
+                        @keydown.enter="passwordInput?.focus()"
                         ref="emailInput"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
                         placeholder="name@company.com" 
@@ -52,11 +53,12 @@
                       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
                       <input 
                         tabindex="2"
+                        autocomplete="new-password"
                         ref="passwordInput"
                         :type="unmasked ? 'text' : 'password'"
                         name="password" id="password" 
                         v-model="password"
-                        @keydown.enter="passwordConfirmationInput.focus()"
+                        @keydown.enter="passwordConfirmationInput?.focus()"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
                         placeholder="New password" required 
                       />
@@ -75,6 +77,7 @@
                       <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm new password</label>
                       <input 
                         ref="passwordConfirmationInput"
+                        autocomplete="new-password"
                         :type="unmasked ? 'text' : 'password'"
                         name="password_confirmation" id="password_confirmation" 
                         tabindex="3"
@@ -142,9 +145,9 @@ const inProgress = ref(false);
 const coreStore = useCoreStore();
 const requestSent = ref(false);
 
-const emailInput = ref(null);
-const passwordInput = ref(null);
-const passwordConfirmationInput = ref(null);
+const emailInput: Ref<HTMLInputElement | null> = ref(null);
+const passwordInput: Ref<HTMLInputElement | null> = ref(null);
+const passwordConfirmationInput: Ref<HTMLInputElement | null> = ref(null);
 
 const password = ref("");
 const passwordConfirmation = ref("");
@@ -219,7 +222,7 @@ onMounted(async () => {
     return;
 
   }
-  emailInput.value.focus();
+  emailInput.value?.focus();
 });
 
 

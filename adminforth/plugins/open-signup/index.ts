@@ -101,7 +101,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       }
       // unshift because if e.g. 2fa set it's hook, this one should be first
       (adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).unshift(
-        async ({ adminUser }) => {
+        async ({ adminUser }: { adminUser: AdminUser }): Promise<{ body: { allowedLogin: boolean }; error?: string; }> => {
           if (!adminUser.dbUser[this.emailConfirmedField.name]) {
             return { body: { allowedLogin: false }, error: 'You need to confirm your email to be able to login' };
           }

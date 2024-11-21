@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fixed sources for allowedActions in hooks
 - menu now auto-closes on mobile after selecting item
 - backplate on mobile now is higher then table sticky header
+- fix split js error when going to 404 page in logged out state
 
 ### Improved
 
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added `adminforth.menu.refreshMenuBadges()` to refresh all badges in menu from the frontend component
 - created env HEAVY_DEBUG_QUERY to log SQL queries in the console
 - simplified logic on detecting whether to init user Dropdown or not
+- add autocomplete suggestion for password inputs
+
 
 ### Added
 
