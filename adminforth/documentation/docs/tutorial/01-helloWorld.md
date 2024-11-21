@@ -153,7 +153,7 @@ export const admin = new AdminForth({
           isUnique: true,
           enforceLowerCase: true,
           validation: [
-            AdminForth.Utils.EMAIL,
+            AdminForth.Utils.EMAIL_VALIDATOR,
           ]
         },
         {
