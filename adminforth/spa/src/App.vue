@@ -68,6 +68,7 @@
     </nav>
 
     <aside 
+      ref="sidebarAside"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       id="logo-lightSidebar" class="fixed border-none top-0 left-0 z-30 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder"
       :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
@@ -118,10 +119,10 @@
             </ul>
         </li>
         <li v-else>
-              <MenuLink :item="item" @click="hideSidebar"/>
-            </li>
-          </template>
-        </ul>
+          <MenuLink :item="item" @click="hideSidebar"/>
+        </li>
+        </template>
+      </ul>
 
 
         <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
@@ -262,6 +263,7 @@ const opened = ref<string[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
+const sidebarAside = ref(null);
 
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
@@ -326,14 +328,15 @@ function humanizeSnake(str: string): string {
 watch([route, () => coreStore.resourceById], async () => {
   handleCustomLayout()
   await new Promise((resolve) => setTimeout(resolve, 0));
-  const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || humanizeSnake(Object.values(route.params)[0] as string);
+  const firstParam = Object.values(route.params)[0];
+  const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || (firstParam ? humanizeSnake(firstParam as string) : null);
   title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
   useHead({
     title: title.value,
   })
 });
 
-watch (()=>coreStore.menu, () => {
+watch(()=>coreStore.menu, () => {
     coreStore.menu.forEach((item, i) => {
     if (item.open) {
       opened.value.push(i);
@@ -358,6 +361,12 @@ async function loadPublicConfig() {
   publicConfigLoaded.value = true;
 }
 
+watch(sidebarAside, (sidebarAside) => {
+  if (sidebarAside) {
+    coreStore.fetchMenuBadges();
+  }
+})
+
 // initialize components based on data attribute selectors
 onMounted(async () => {
   loadMenu(); // run this in async mode
@@ -365,7 +374,6 @@ onMounted(async () => {
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
   handleCustomLayout();
-  await coreStore.fetchMenuBadges();
 
   window.adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
