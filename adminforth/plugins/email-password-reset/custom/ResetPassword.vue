@@ -41,7 +41,8 @@
                       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
                       <input 
                         :type="unmasked ? 'text' : 'password'"
-                        name="password" id="password" 
+                        name="password" id="password"
+                        autocomplete="new-password"
                         v-model="password"
                         @keydown.enter="passwordConfirmationInput.focus()"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
@@ -63,6 +64,7 @@
                       <input 
                         :type="unmasked ? 'text' : 'password'"
                         name="password_confirmation" id="password_confirmation" 
+                        autocomplete="new-password"
                         v-model="passwordConfirmation"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
                         placeholder="Confirm new password" required 

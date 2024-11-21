@@ -328,7 +328,10 @@ function humanizeSnake(str: string): string {
 watch([route, () => coreStore.resourceById], async () => {
   handleCustomLayout()
   await new Promise((resolve) => setTimeout(resolve, 0));
-  const firstParam = Object.values(route.params)[0];
+  let firstParam: string | null | string[] = Object.values(route.params)[0];
+  if (typeof firstParam !== 'string') {
+    firstParam = null;
+  }
   const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || (firstParam ? humanizeSnake(firstParam as string) : null);
   title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
   useHead({
