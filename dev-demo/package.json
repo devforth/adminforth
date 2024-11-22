@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "HEAVY_DEBUG=true tsx watch --env-file=.env index.ts"
+    "start": "tsx watch --env-file=.env index.ts"
   },
   "author": "",
   "license": "ISC",
