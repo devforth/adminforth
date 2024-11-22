@@ -1,7 +1,7 @@
 
 import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser, AfterSaveFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
-import { AdminForthPlugin, Filters, getClinetIp, RateLimiter } from "adminforth";
+import { AdminForthPlugin, Filters, getClientIp, RateLimiter } from "adminforth";
 import * as cheerio from 'cheerio';
 
 
@@ -265,7 +265,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
           const { error } = RateLimiter.checkRateLimit(
             this.pluginInstanceId, 
             this.options.completion.rateLimit?.limit,
-            getClinetIp(headers),
+            getClientIp(headers),
           );
           if (error) {
             return {

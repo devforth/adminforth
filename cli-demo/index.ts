@@ -164,7 +164,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
   });
 
-  app.listen(port, () => {
+  admin.express.listen(port, () => {
     console.log(`\n⚡ AdminForth is available at http://localhost:${port}\n`)
   });
 }

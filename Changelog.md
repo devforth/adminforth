@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.3] - next
+## [1.5.1]
 
 ### Fixed
 
@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AFCL Select (based on old Dropdown component, add slots to it)
 - move old AfTooltip to @/afcl/Tooltip
 - Ability to set read-only fields
+- Websockets
+
 
 ## [1.4.2]
 
@@ -129,7 +131,7 @@ This fixed extra resources allocation on the page, improved scroll performance
 
 ### Added
 
-- Util function to get client IP address from request import { getClinetIp } from 'adminforth';
+- Util function to get client IP address from request import { getClientIp } from 'adminforth';
 - Util to Rate limit requests import { RateLimiter } from 'adminforth';
 
 ## [1.3.51] - 2024-10-03

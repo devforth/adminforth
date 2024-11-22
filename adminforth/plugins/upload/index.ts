@@ -4,7 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
 import { Readable } from "stream";
-import { RateLimiter, getClinetIp } from "adminforth";
+import { RateLimiter, getClientIp } from "adminforth";
 
 const ADMINFORTH_NOT_YET_USED_TAG = 'adminforth-candidate-for-cleanup';
 
@@ -464,7 +464,7 @@ export default class UploadPlugin extends AdminForthPlugin {
           const { error } = RateLimiter.checkRateLimit(
             this.pluginInstanceId, 
             this.options.generation.rateLimit?.limit,
-            getClinetIp(headers),
+            getClientIp(headers),
           );
           if (error) {
             return { error: this.options.generation.rateLimit.errorMessage };

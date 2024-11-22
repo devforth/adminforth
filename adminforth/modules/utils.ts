@@ -357,7 +357,7 @@ export function suggestIfTypo(names: string[], name: string): string {
   }
 }
 
-export function getClinetIp(headers: object) {
+export function getClientIp(headers: object) {
   return headers['CF-Connecting-IP'] || 
     headers['x-forwarded-for'] || 
     headers['x-real-ip'] || 

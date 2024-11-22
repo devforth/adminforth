@@ -615,9 +615,7 @@ class CodeInjector implements ICodeInjector {
     };
     await collectDirectories(spaPath);
 
-    if (process.env.HEAVY_DEBUG) {
-      console.log('🪲🔎 Watch for:', directories.join(','));
-    }
+    process.env.HEAVY_DEBUG && console.log('🪲🔎 Watch for:', directories.join(','));
 
     const watcher = filewatcher({ debounce: 30 });
     directories.forEach((dir) => {
@@ -687,9 +685,7 @@ class CodeInjector implements ICodeInjector {
       watcher.add(file);
     });
 
-    if (process.env.HEAVY_DEBUG) {
-      console.log('🪲🔎 Watch for:', directories.join(','));
-    }
+    process.env.HEAVY_DEBUG && console.log('🪲🔎 Watch for:', directories.join(','));
     
     watcher.on(
       'change',
@@ -758,7 +754,7 @@ class CodeInjector implements ICodeInjector {
 
     } else {
       const command = 'run dev';
-      console.log(`🪲⚙️ spawn: npm ${command}...`);
+      console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
       const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
