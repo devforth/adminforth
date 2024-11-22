@@ -22,11 +22,17 @@ export const useUserStore = defineStore('user', () => {
     async function finishLogin() {
         const coreStore = useCoreStore();
         authorize(); // TODO not sure we need this approach with localStorage
+        // print traceback to this place
+        try {
+            null.test();
+        } catch (e) {
+            console.log(e);
+        }
+
         reconnect();
         await router.push('/');
         await router.isReady();
         await coreStore.fetchMenuAndResource();
-        
     }
 
     async function logout() {

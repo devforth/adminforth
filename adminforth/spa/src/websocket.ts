@@ -34,16 +34,22 @@ async function connect () {
   state.ws.addEventListener('open', () => {
     console.log('🔌 AFWS connected');
     state.status = 'connected';
-    Object.keys(subscriptions).forEach((topic) => {
-      doPhysicalSubscribe(topic);
-    });
+
   });
   state.ws.addEventListener('message', (event) => {
     const data = event.data.toString();
+    console.log('🔌 AFWS message', data);
     if (data === 'pong') {
       return;
     }
+    
     const message = JSON.parse(data);
+    if (message.type === 'ready') {
+      Object.keys(subscriptions).forEach((topic) => {
+        doPhysicalSubscribe(topic);
+      });
+      return
+    }
     if (message.type === 'message') {
       const topic = message.topic;
       const data = message.data;
@@ -56,11 +62,12 @@ async function connect () {
   });
   state.ws.addEventListener('close', () => {
     console.log('🔌 AFWS disconnected');
-    state.status = 'disconnected';
     setTimeout(() => {
       console.log('🔌 AFWS reconnecting after close');
       connect();
-    }, 2_000);
+      // if it is first time, reconnect instantly
+    }, state.status === 'connected' ? 0 : 2_000);
+    state.status = 'disconnected';
   });
 }
 

@@ -155,10 +155,14 @@ onMounted(async () => {
 
 
 async function login() {
+  
   const username = usernameInput.value.value;
   const password = passwordInput.value.value;
 
   if (!username || !password) {
+    return;
+  }
+  if (inProgress.value) {
     return;
   }
   inProgress.value = true;
@@ -171,7 +175,6 @@ async function login() {
       rememberMe: rememberInput.value?.checked,
     }
   });
-  inProgress.value = false;
   if (resp.error) {
     error.value = resp.error;
   } else if (resp.redirectTo) {
@@ -180,6 +183,8 @@ async function login() {
     error.value = null;
     await user.finishLogin();
   }
+  inProgress.value = false;
+
 }
 
 
