@@ -734,8 +734,6 @@ class CodeInjector implements ICodeInjector {
       ]);
     }
 
-    console.log('AdminForth bundling');
-    
     const cwd = this.spaTmpPath();
 
     if (!hotReload) {
