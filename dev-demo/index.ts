@@ -211,11 +211,16 @@ export const admin = new AdminForth({
       }
     },
 
+    // loginPageInjections: {
+    //   underInputs: '@@/login2.vue',
+    // }
+    
     loginPageInjections: {
-      underInputs: '@@/login2.vue',
-    }
+      underInputs: '@@/CustomLoginFooter.vue',
+    },
    },
  
+
 
   dataSources: [
     {

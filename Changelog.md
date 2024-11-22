@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - add websocket reconnect on disconnect
 - fixed bundleNow.ts to exit process
+- not collected loginPageInjections of user
 
 ### [1.5.2]
 
