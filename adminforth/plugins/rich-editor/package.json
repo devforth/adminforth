@@ -1,6 +1,6 @@
 {
   "name": "@adminforth/rich-editor",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
