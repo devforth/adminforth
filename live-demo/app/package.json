@@ -22,7 +22,7 @@
     "@adminforth/rich-editor": "^1.0.14",
     "@adminforth/two-factors-auth": "^1.0.21",
     "@adminforth/upload": "^1.0.19",
-    "adminforth": "^1.5.1",
+    "adminforth": "^1.5.2",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
