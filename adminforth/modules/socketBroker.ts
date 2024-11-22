@@ -1,0 +1,111 @@
+import { IAdminForth, IWebSocketBroker, IWebSocketClient } from "../types/Back.js";
+
+export default class SocketBroker implements IWebSocketBroker {
+  clients: IWebSocketClient[] = [];
+  topics: { [key: string]: IWebSocketClient[] } = {};
+  adminforth: IAdminForth;
+
+  constructor(adminforth: IAdminForth) {
+    this.adminforth = adminforth;
+    this.startChecker();
+  }
+
+  async startChecker() {
+    while (true) {
+      await this.checkDeadClients();
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
+    }
+  }
+
+  async checkDeadClients() {
+    const now = Date.now();
+    const deadClients = [];
+    for (const client of this.clients) {
+      if (now - client.lastPing > 30_000) {
+        deadClients.push(client);
+      }
+    }
+    deadClients.forEach(client => {
+      client.close();
+      delete this.clients[client.id];
+    });
+  }
+
+  deleteClientFromTopic(client: IWebSocketClient, topic: string) {
+    if (!this.topics[topic]) {
+      return;
+    }
+    this.topics[topic] = this.topics[topic].filter(c => c !== client);
+  }
+
+  cleanupTopicIfEmpty(topic: string) {
+    if (!this.topics[topic]) {
+      return;
+    }
+    if (this.topics[topic].length === 0) {
+      delete this.topics[topic];
+    }
+  }
+  
+  registerWsClient(client: IWebSocketClient): void {
+    if (!this.clients[client.id]) {
+      this.clients[client.id] = client;
+    }
+    client.onMessage(async (message) => {
+      if (message.toString() === 'ping') {
+        client.send('pong');
+        client.lastPing = Date.now();
+      } else {
+        const data = JSON.parse(message);
+        if (data.type === 'subscribe') {
+          if (this.adminforth.config.auth.websocketTopicAuth) {
+            const authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
+            if (!authResult) {
+              client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+              return;
+            }
+          }
+          if (!data.topic) {
+            client.send(JSON.stringify({ type: 'error', message: 'No topic provided' }));
+          }
+          if (!this.topics[data.topic]) {
+            this.topics[data.topic] = [];
+          }
+          this.topics[data.topic].push(client);
+          client.topics.add(data.topic);
+          if (this.adminforth.config.auth.websocketSubscribed) {
+            this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
+          }
+        } else if (data.type === 'unsubscribe') {
+          if (!data.topic) {
+            client.send(JSON.stringify({ type: 'error', message: 'No topic provided' }));
+          }
+         
+          this.deleteClientFromTopic(client, data.topic);
+          this.cleanupTopicIfEmpty(data.topic);
+
+          client.topics.delete(data.topic);
+        }
+      }
+    });
+    
+    client.onClose(() => {
+      for (const topic of client.topics) {
+        this.deleteClientFromTopic(client, topic);
+        this.cleanupTopicIfEmpty(topic);
+      }
+      delete this.clients[client.id];
+    });
+
+  }
+
+  publish(topic: string, data: any) {
+    if (!this.topics[topic]) {
+      return;
+    }
+    for (const client of this.topics[topic]) {
+      client.send(JSON.stringify({ type: 'message', topic, data }));
+    }
+  }
+ 
+}

@@ -775,7 +775,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowedActions } = await interpretResource(
               adminUser, 
               resource, 
-              { requestBody: body, newRecord: record, oldRecord}, 
+              { requestBody: body, newRecord: record, oldRecord, pk: recordId }, 
               ActionCheckSource.EditRequest,
               this.adminforth
             );
