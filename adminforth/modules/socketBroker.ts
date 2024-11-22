@@ -4,13 +4,18 @@ export default class SocketBroker implements IWebSocketBroker {
   clients: IWebSocketClient[] = [];
   topics: { [key: string]: IWebSocketClient[] } = {};
   adminforth: IAdminForth;
+  deadCheckerRunning = false;
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
-    this.startChecker();
   }
 
   async startChecker() {
+    if (this.deadCheckerRunning) {
+      return;
+    }
+    this.deadCheckerRunning = true;
+    
     while (true) {
       await this.checkDeadClients();
       await new Promise((resolve) => setTimeout(resolve, 10_000));
@@ -48,6 +53,8 @@ export default class SocketBroker implements IWebSocketBroker {
   }
   
   registerWsClient(client: IWebSocketClient): void {
+    this.startChecker();
+
     if (!this.clients[client.id]) {
       this.clients[client.id] = client;
     }

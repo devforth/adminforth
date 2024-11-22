@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.5.3-next.0",
+  "version": "1.5.3",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,8 @@
     "rollout-doc": "cd documentation && npm run build && npm run deploy",
     "docs": "typedoc",
     "--comment_pi": "postinstall executed after package installed in other project package",
-    "postinstall": "cd ./dist/spa/src/ && test ! -d ./types && ln -sf ../../types ./types || echo 'types linked'"
+    "postinstall": "cd ./dist/spa/src/ && test ! -d ./types && ln -sf ../../types ./types || echo 'types linked'",
+    "ci-plugins": "for d in plugins/*; do cd $d && npm ci && cd ../..; done"
   },
   "exports": {
     ".": {

@@ -50,14 +50,14 @@ Features:
 cd adminforth
 npm ci
 npm run build
+
+# create link to built "adminforth" package in local system
 npm link
 
-cd plugins/audit-log
-npm ci
-# repeat for each plugin
-cd plugins/chat-gpt
-npm ci
+# this will install deps in all plugins and link adminforth package
+npm run ci-plugins
 
+# this is dev demo for development
 cd dev-demo
 cp .env.sample .env
 npm ci && npm start

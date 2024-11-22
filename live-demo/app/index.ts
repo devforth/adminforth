@@ -6,11 +6,9 @@ import { v4 as uuid } from 'uuid';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import UploadPlugin from '@adminforth/upload';
 import ChatGptPlugin from '@adminforth/chat-gpt';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import importExport from '@adminforth/import-export';
-dotenv.config();
 
 try { fs.mkdirSync('db') } catch (e) {} 
 const DB_FILE = 'db/test.sqlite';
