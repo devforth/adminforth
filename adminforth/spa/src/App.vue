@@ -16,6 +16,7 @@
           </div>
           <div class="flex items-center">
             <component 
+              v-if="coreStore?.adminUser"
               v-for="c in coreStore?.config?.globalInjections?.header || []"
               :is="getCustomComponent(c)"
               :meta="c.meta"

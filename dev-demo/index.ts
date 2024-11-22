@@ -124,6 +124,10 @@ export const admin = new AdminForth({
     // loginBackgroundImage: '@@/pho.jpg',
     rememberMeDays: 30,
     websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
+      if (!adminUser) {
+        // don't allow anonymous users to subscribe
+        return false;
+      }
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
       console.log(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
       if (subject === 'property-cost') {
