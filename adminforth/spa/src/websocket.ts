@@ -28,7 +28,7 @@ async function init() {
   }://${window.location.host}/afws`);
   state.status = 'connecting';
   state.ws.addEventListener('open', () => {
-    console.log('connected');
+    console.log('🔌 AFWS connected');
     state.status = 'connected';
     Object.keys(subscriptions).forEach((topic) => {
       doPhysicalSubscribe(topic);
@@ -51,10 +51,10 @@ async function init() {
     }
   });
   state.ws.addEventListener('close', () => {
-    console.log('disconnected');
+    console.log('🔌 AFWS disconnected');
     state.status = 'disconnected';
     setTimeout(() => {
-      console.log('reconnecting');
+      console.log('🔌 AFWS reconnecting');
       init();
     }, 1000);
   });

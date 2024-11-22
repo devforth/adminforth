@@ -205,6 +205,10 @@ export const admin = new AdminForth({
         closable: true,
         title: 'Support us for free',
       }
+    },
+
+    loginPageInjections: {
+      underInputs: '@@/login2.vue',
     }
    },
  
