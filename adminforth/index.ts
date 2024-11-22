@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClinetIp } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClientIp } from './modules/utils.js';
 
 import { 
   type AdminForthConfig, 
@@ -18,6 +18,7 @@ import {
   AfterSaveFunction,
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
+  IWebSocketBroker,
 } from './types/Back.js';
 
 import {
@@ -31,13 +32,14 @@ import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
+import SocketBroker from './modules/socketBroker.js';
 
 // exports
 export * from './types/Back.js';
 export * from './types/Common.js';
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, getClinetIp };
+export { suggestIfTypo, RateLimiter, getClientIp };
 
 
 class AdminForth implements IAdminForth {
@@ -81,6 +83,9 @@ class AdminForth implements IAdminForth {
   activatedPlugins: Array<AdminForthPlugin>;
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
+
+  websocket: IWebSocketBroker;
+
   operationalResources: {
     [resourceId: string]: IOperationalResource,
   }
@@ -95,6 +100,7 @@ class AdminForth implements IAdminForth {
     this.codeInjector = new CodeInjector(this);
     this.configValidator = new ConfigValidator(this, this.config);
     this.restApi = new AdminForthRestAPI(this);
+    this.websocket = new SocketBroker(this);
     this.activatedPlugins = [];
     
     this.configValidator.validateConfig();
@@ -458,6 +464,7 @@ class AdminForth implements IAdminForth {
   setupEndpoints(server: IHttpServer) {
     this.restApi.registerEndpoints(server);
   }
+
 }
 
 export default AdminForth;

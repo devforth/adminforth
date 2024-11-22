@@ -1,11 +1,14 @@
 
 import path from 'path';
 import fs from 'fs';
-import CodeInjector from '../modules/codeInjector.js';
 import { Express } from 'express';
 import fetch from 'node-fetch';
 import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
-
+import { WebSocketServer } from 'ws';
+import { WebSocketClient } from './common.js';
+import { AdminUser } from '../types/Common.js';
+import http from 'http';
+import { randomUUID } from 'crypto';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -20,6 +23,19 @@ async function proxyTo(url, res) {
   actual.body.pipe(res);
 }
 
+function parseCookiesString(cookiesString: string): Array<{
+  key: string, 
+  value: string
+}> {
+  const parts = cookiesString.split('; ');
+  const result = [];
+  parts.forEach(part => {
+    const [key, value] = part.split('=');
+    result.push({key, value});
+  });
+  return result;
+}
+
 async function parseExpressCookie(req): Promise<
   Array<{
     key: string, 
@@ -30,16 +46,8 @@ async function parseExpressCookie(req): Promise<
   if (!cookies) {
     return [];
   }
-  const parts = cookies.split('; ');
-  const result = [];
-  parts.forEach(part => {
-    const [key, value] = part.split('=');
-    result.push({key, value});
-  });
-  return result;
+  return parseCookiesString(cookies);
 }
-
-
 
 const respondNoServer = (title, explanation) => {
   return `
@@ -84,6 +92,7 @@ class ExpressServer implements IExpressHttpServer {
 
   expressApp: Express;
   adminforth: IAdminForth;
+  server: http.Server;
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
@@ -153,11 +162,54 @@ class ExpressServer implements IExpressHttpServer {
     }
   }
 
+  setupWsServer() {
+    this.server = http.createServer(this.expressApp);
+    const wss = new WebSocketServer({ server: this.server, path: '/afws' });
+    console.log(' 🌐WebSocket server started');
+    // Handle WebSocket connections
+    wss.on('connection', async (ws, req) => {
+      try {
+        // get cookies and parse
+        let adminUser: AdminUser | null = null;
+        const cookies = req.headers.cookie;
+        if (cookies) {
+          const parsedCookies = parseCookiesString(cookies);
+          // find adminforth_jwt
+          const brandSlug = this.adminforth.config.customization._brandNameSlug;
+          const jwt = parsedCookies.find(({key}) => key === `adminforth_${brandSlug}_jwt`);
+          if (jwt) {
+            adminUser = await this.adminforth.auth.verify(jwt.value, 'auth');
+          }
+        }
+
+        this.adminforth.websocket.registerWsClient(
+          new WebSocketClient({
+            id: randomUUID(),
+            adminUser,
+            send: (data) => ws.send(data),
+            close: () => ws.close(),
+            onMessage: (handler) => ws.on('message', handler),
+            onClose: (handler) => ws.on('close', handler),
+          })
+        );
+      } catch (e) {
+        console.error('Failed to handle WS connection', e);
+        
+      }
+    });
+  }
+
   serve(app) {
     this.expressApp = app;
+    this.setupWsServer();
     this.adminforth.setupEndpoints(this);
     this.setupSpaServer();
   }
+
+  listen(...args) {
+    this.server.listen(...args);
+  }
+
 
   authorize(handler) {
     return async (req, res, next) => {
