@@ -18,6 +18,11 @@ function doPhysicalUnsubscribe(topic: string) {
 
 
 async function init() {
+  // if socket is not supported return
+  if (!window.WebSocket) {
+    console.error('Websocket not supported by this browser');
+    return;
+  }
   state.ws = new WebSocket(`${
     window.location.protocol === 'http:' ? 'ws' : 'wss'
   }://${window.location.host}/afws`);
@@ -48,6 +53,10 @@ async function init() {
   state.ws.addEventListener('close', () => {
     console.log('disconnected');
     state.status = 'disconnected';
+    setTimeout(() => {
+      console.log('reconnecting');
+      init();
+    }, 1000);
   });
 }
 
