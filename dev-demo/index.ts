@@ -123,11 +123,29 @@ export const admin = new AdminForth({
     loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
     // loginBackgroundImage: '@@/pho.jpg',
     rememberMeDays: 30,
+    websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
+      const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
+      console.log(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
+      if (subject === 'property-cost') {
+        return param === adminUser.dbUser.id;
+      }
+      return false;
+    },
+    websocketSubscribed: async (topic, adminUser) => {
+      const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
+
+      if (subject === 'property-cost') {
+        const userId = param;
+        const totalCost = (await admin.resource('aparts').list(Filters.EQ('user_id', userId))).map((r) => r.price).reduce((a, b) => a + b, 0);
+        admin.websocket.publish(topic, { type: 'message', totalCost });
+      }
+    }
   },
   customization: {
     customComponentsDir: './custom',
     globalInjections: {
       userMenu: '@@/login2.vue',
+      header: '@@/PropertyCost.vue',
     },
     customPages:[{
       path : '/login2',
@@ -279,22 +297,22 @@ export const admin = new AdminForth({
         ],
         
         options: {
-            allowedActions: {
-                edit: false,
-                delete: false,
-                create: false,
-            },
+          allowedActions: {
+            edit: false,
+            delete: false,
+            create: false,
+          },
         },
         plugins: [
           new AuditLogPlugin({
-              resourceColumns: {
-                  resourceUserIdColumnName: 'user_id',
-                  resourceRecordIdColumnName: 'record_id',
-                  resourceActionColumnName: 'action',
-                  resourceDataColumnName: 'diff',
-                  resourceCreatedColumnName: 'created_at',
-                  resourceIdColumnName: 'resource_id',
-              },
+            resourceColumns: {
+              resourceUserIdColumnName: 'user_id',
+              resourceRecordIdColumnName: 'record_id',
+              resourceActionColumnName: 'action',
+              resourceDataColumnName: 'diff',
+              resourceCreatedColumnName: 'created_at',
+              resourceIdColumnName: 'resource_id',
+            },
           }),
         ],
        
@@ -306,6 +324,16 @@ export const admin = new AdminForth({
       label: 'Apartments',   // label is defaulted to table name but you can change it
       recordLabel: (r: any) => `🏡 ${r.title}`,
       hooks: {
+        edit: {
+          afterSave: async ({ record, adminUser, resource, adminforth }) => {
+            //  if realtor id is set, recalculate total cost of all apartments
+            if (record.user_id) {
+              const totalCost = (await adminforth.resource('aparts').list(Filters.EQ('user_id', record.user_id))).map((r) => r.price).reduce((a, b) => a + b, 0);
+              adminforth.websocket.publish(`/property-cost/${record.user_id}`, { type: 'message', totalCost });
+            }
+            return { ok: true }
+          }
+        },
         delete: {
           beforeSave: demoChecker,
         },
@@ -621,7 +649,7 @@ export const admin = new AdminForth({
           show: async ({adminUser, meta, source, adminforth}: any) => {
             if (source === 'showRequest' || source === 'editRequest') {
               const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
-              return record.realtor_id === adminUser.dbUser.id;
+              return record.user_id === adminUser.dbUser.id;
             }
             return true;
           },
@@ -1141,7 +1169,7 @@ admin.discoverDatabases().then(async () => {
   }
 });
 
-app.listen(port, () => {
+admin.express.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
   console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
 });

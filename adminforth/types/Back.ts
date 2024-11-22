@@ -74,6 +74,12 @@ export interface IExpressHttpServer extends IHttpServer {
   serve(app: Express): void;
 
   /**
+   * Method to start listening on port.
+   */
+  listen(port: number, callback: Function): void;
+  listen(port: number, host: string, callback: Function): void;
+
+  /**
    * Method (middleware) to wrap express endpoints with authorization check.
    * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
    * @param callable : Function which will be called if user is authorized.
@@ -90,6 +96,7 @@ export interface IExpressHttpServer extends IHttpServer {
    */
   authorize(callable: Function): void;
 }
+
 
 export interface IAdminForthFilter {
   field: string;
@@ -277,6 +284,8 @@ export interface IAdminForth {
 
   baseUrlSlashed: string;
 
+  websocket: IWebSocketBroker;
+
   statuses: {
     dbDiscover: 'running' | 'done',
   };
@@ -329,6 +338,7 @@ export interface IAdminForth {
    * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
    */
   setupEndpoints(server: IHttpServer): void;
+
 }
 
 
@@ -721,6 +731,23 @@ export interface AdminForthConfig {
        * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
        */
       rememberMeDays?: number,
+
+
+      /**
+       * Can be used to limit user access when subscribing from frontend to websocket topics.
+       * @param topic - topic where user is trying to subscribe
+       * @param user - user object
+       * @returns - boolean, true if user is allowed to subscribe to this topic, false otherwise
+       */
+      websocketTopicAuth?: (topic: string, user: AdminUser) => Promise<boolean>,
+
+      /**
+       * callback which will be called after user subscribes to websocket topic
+       * @param topic - topic on which user subscribed
+       * @param user - user object
+       * @returns 
+       */
+      websocketSubscribed?: (topic: string, user: AdminUser) => void,
     },
      /**
       * Array of resources which will be displayed in the admin panel.
@@ -1239,4 +1266,22 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
 
 export interface AdminForthResourceColumn extends AdminForthResourceColumnCommon {
   foreignResource?: AdminForthForeignResource,
+}
+
+export interface IWebSocketClient {
+  id: string;
+  lastPing: number;
+  topics: Set<string>;
+  adminUser: AdminUser;
+  
+  send: (message: string) => void;
+  close: () => void;
+  onMessage: (handler: (message: string) => void) => void;
+  onClose: (handler: () => void) => void;
+}
+
+export interface IWebSocketBroker {
+  publish: (topic: string, data: any) => void;
+
+  registerWsClient: (client: IWebSocketClient) => void;
 }

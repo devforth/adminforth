@@ -39,6 +39,7 @@
     "@faker-js/faker": "^9.0.3",
     "@types/express": "^5.0.0",
     "better-sqlite3": "^11.5.0",
+    "bintrees": "^1.0.2",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
@@ -53,6 +54,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "ws": "^8.18.0"
   }
 }

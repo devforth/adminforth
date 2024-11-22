@@ -1,5 +1,5 @@
 
-import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes, getClinetIp, RateLimiter } from "adminforth";
+import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes, getClientIp, RateLimiter } from "adminforth";
 import { PluginOptions } from './types.js';
 
 
@@ -77,7 +77,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
           const { error } = RateLimiter.checkRateLimit(
             this.pluginInstanceId, 
             this.options.rateLimit?.limit,
-            getClinetIp(headers),
+            getClientIp(headers),
           );
           if (error) {
             return {

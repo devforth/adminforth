@@ -53,7 +53,7 @@ export class FrontendAPI {
       },
       menu: {
         refreshMenuBadges: () => {/* will be redefined */}
-      }
+      },
     };
   }
 

@@ -15,7 +15,7 @@ async function getNextAvailablePort(startPort) {
 
 const appPort = await getNextAvailablePort(5173);
 const hmrPort = await getNextAvailablePort(5273);
-console.log(`App port: ${appPort}. HMR port: ${hmrPort}`);
+console.log(`SPA port: ${appPort}. HMR port: ${hmrPort}`);
 // https://vitejs.dev/config/
 export default defineConfig({
   base: process.env.VITE_ADMINFORTH_PUBLIC_PATH || '/',
