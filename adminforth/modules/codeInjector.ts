@@ -419,6 +419,12 @@ class CodeInjector implements ICodeInjector {
       });
     }
 
+    if (this.adminforth.config.customization?.loginPageInjections) {
+      Object.values(this.adminforth.config.customization.loginPageInjections).forEach((injection) => {
+        checkInjections(injection);
+      });
+    }
+
 
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
