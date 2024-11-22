@@ -59,7 +59,7 @@ cd plugins/chat-gpt
 npm ci
 
 cd dev-demo
-create .env file
+cp .env.sample .env
 npm ci && npm start
 ```
 
