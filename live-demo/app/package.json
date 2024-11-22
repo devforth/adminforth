@@ -15,7 +15,7 @@
   "description": "",
   "dependencies": {
     "@adminforth/audit-log": "^1.0.42",
-    "@adminforth/chat-gpt": "^1.0.17",
+    "@adminforth/chat-gpt": "^1.0.18",
     "@adminforth/email-password-reset": "^1.0.5",
     "@adminforth/foreign-inline-list": "^1.0.24",
     "@adminforth/import-export": "^1.0.2",

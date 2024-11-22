@@ -561,14 +561,14 @@ export const admin = new AdminForth({
           }),
         ]: []),
         new ImportExportPlugin({}),
-        // new ChatGptPlugin({
-        //   openAiApiKey: process.env.OPENAI_API_KEY as string,
-        //   model: 'gpt-4o',
-        //   fieldName: 'title',
-        //   expert: {
-        //     debounceTime: 250,
-        //   }
-        // }),
+        new ChatGptPlugin({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4o',
+          fieldName: 'title',
+          expert: {
+            debounceTime: 250,
+          }
+        }),
         // new ChatGptPlugin({
         //   openAiApiKey: process.env.OPENAI_API_KEY as string,
         //   fieldName: 'description',
