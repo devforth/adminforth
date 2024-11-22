@@ -59,6 +59,7 @@ export default class SocketBroker implements IWebSocketBroker {
       this.clients[client.id] = client;
     }
     client.onMessage(async (message) => {
+      process.env.HEAVY_DEBUG && console.log('🐛 🪨🪨 Received message', message);
       if (message.toString() === 'ping') {
         client.send('pong');
         client.lastPing = Date.now();
@@ -109,13 +110,19 @@ export default class SocketBroker implements IWebSocketBroker {
       delete this.clients[client.id];
     });
 
+    // send ready message
+    client.send(JSON.stringify({ type: 'ready' }));
+
   }
 
   publish(topic: string, data: any) {
     if (!this.topics[topic]) {
+      process.env.HEAVY_DEBUG && console.log('No clients subscribed to topic', topic);
       return;
     }
     for (const client of this.topics[topic]) {
+      process.env.HEAVY_DEBUG && console.log('Sending data to soket', topic, data);
+
       client.send(JSON.stringify({ type: 'message', topic, data }));
     }
   }

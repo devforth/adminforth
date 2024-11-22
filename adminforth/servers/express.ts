@@ -181,6 +181,7 @@ class ExpressServer implements IExpressHttpServer {
             adminUser = await this.adminforth.auth.verify(jwt.value, 'auth');
           }
         }
+        process.env.HEAVY_DEBUG && console.log('🐛 🪨🪨 Received connection from user', adminUser?.username)
 
         this.adminforth.websocket.registerWsClient(
           new WebSocketClient({
