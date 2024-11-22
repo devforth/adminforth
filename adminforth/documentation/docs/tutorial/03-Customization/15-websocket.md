@@ -63,6 +63,11 @@ onMounted(() => {
   });
 });
 
+onOnUnmounted(() => {
+  // will be called on logout
+  websocket.unsubscribeAll();
+});
+
 </script>
 ```
 
@@ -168,6 +173,13 @@ const admin = new AdminForth({
   auth: {
 //diff-add
     websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
+//diff-add
+      if (!adminUser) {
+//diff-add
+        // don't allow anonymous users to subscribe
+//diff-add
+        return false;
+      }
 //diff-add
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
 //diff-add

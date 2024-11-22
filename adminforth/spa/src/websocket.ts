@@ -17,10 +17,14 @@ function doPhysicalUnsubscribe(topic: string) {
 }
 
 
-async function init() {
+async function connect () {
   // if socket is not supported return
   if (!window.WebSocket) {
     console.error('Websocket not supported by this browser');
+    return;
+  }
+  if (state.ws?.connected) {
+    console.error('🔌 AFWS already connected');
     return;
   }
   state.ws = new WebSocket(`${
@@ -54,10 +58,25 @@ async function init() {
     console.log('🔌 AFWS disconnected');
     state.status = 'disconnected';
     setTimeout(() => {
-      console.log('🔌 AFWS reconnecting');
-      init();
-    }, 1000);
+      console.log('🔌 AFWS reconnecting after close');
+      connect();
+    }, 2_000);
   });
+}
+
+try {
+  connect();
+} catch (e) {
+  console.error('🔌 AFWS failed to connect', e);
+}
+
+export function reconnect() {
+  console.log('🔌 AFWS reconnect initiated');
+  // disconnect if already connected
+  if (state.status === 'connected') {
+    state.ws!.close();
+  }
+  
 }
 
 setInterval(() => {
@@ -66,11 +85,6 @@ setInterval(() => {
   }
 }, 10_000);
 
-try {
-  init();
-} catch (e) {
-  console.error('Failed to initialize websocket', e);
-}
 
 export default {
   subscribe(topic: string, callback: (data: any) => void): void {
@@ -88,6 +102,15 @@ export default {
     if (state.status === 'connected') {
       doPhysicalUnsubscribe(topic);
     }
+  },
+
+  unsubscribeAll(): void {
+    Object.keys(subscriptions).forEach((topic) => {
+      delete subscriptions[topic];
+      if (state.status === 'connected') {
+        doPhysicalUnsubscribe(topic);
+      }
+    });
   }
   
 }

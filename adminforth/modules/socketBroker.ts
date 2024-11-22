@@ -66,7 +66,12 @@ export default class SocketBroker implements IWebSocketBroker {
         const data = JSON.parse(message);
         if (data.type === 'subscribe') {
           if (this.adminforth.config.auth.websocketTopicAuth) {
-            const authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
+            let authResult = false;
+            try {
+              authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
+            } catch (e) {
+              console.error('Error in websocketTopicAuth, assuming connection not allowed', e);
+            }
             if (!authResult) {
               client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
               return;

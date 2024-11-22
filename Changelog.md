@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### [1.5.3]
+## [1.5.4] - next
+
+### Fixed
+- decimal null check in mongo
+- socket now is reconnected on logout and reconnected (to reset user and permissions on current connection)
+- also socket is reconnected on login to improve user auth and permissions on current connection
+
+## [1.5.3]
 
 ### Fixed
 - add websocket reconnect on disconnect

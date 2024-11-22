@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { callAdminForthApi } from '@/utils';
 import { useCoreStore } from './core';
 import router from '@/router';
-
+import { reconnect } from '@/websocket';
 
 
 export const useUserStore = defineStore('user', () => {
@@ -22,17 +22,24 @@ export const useUserStore = defineStore('user', () => {
     async function finishLogin() {
         const coreStore = useCoreStore();
         authorize(); // TODO not sure we need this approach with localStorage
+        reconnect();
         await router.push('/');
         await router.isReady();
         await coreStore.fetchMenuAndResource();
+        
     }
 
     async function logout() {
+        const coreStore = useCoreStore();
+
         await callAdminForthApi({
           path: '/logout',
           method: 'POST',
         });
+        reconnect();
+        coreStore.resetAdminUser();
         unauthorize();
+        
       }
 
     // async function checkAuth( skipApiCall = false){
