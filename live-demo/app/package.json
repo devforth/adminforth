@@ -17,11 +17,11 @@
     "@adminforth/audit-log": "^1.0.42",
     "@adminforth/chat-gpt": "^1.0.17",
     "@adminforth/email-password-reset": "^1.0.5",
-    "@adminforth/foreign-inline-list": "^1.0.22",
+    "@adminforth/foreign-inline-list": "^1.0.24",
     "@adminforth/import-export": "^1.0.2",
     "@adminforth/rich-editor": "^1.0.14",
     "@adminforth/two-factors-auth": "^1.0.21",
-    "@adminforth/upload": "^1.0.19",
+    "@adminforth/upload": "^1.0.20",
     "adminforth": "^1.5.2",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
