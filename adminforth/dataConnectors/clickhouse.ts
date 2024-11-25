@@ -224,7 +224,6 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         sort: { field: string, direction: AdminForthSortDirections }[], 
         filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
     }): Promise<any[]> {
-      console.log('getDataWithOriginalTypes', resource, limit, offset, sort, filters);
       const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
       const tableName = resource.table;
 

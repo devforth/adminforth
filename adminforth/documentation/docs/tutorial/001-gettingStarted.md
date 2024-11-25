@@ -32,9 +32,19 @@ npm install express
 You can use AdminForth in pure Node, but we recommend using TypeScript for better development experience:
 
 ```bash
-npm install typescript@5.4.5 tsx@4.11.2  @types/express  @types/node --save-dev
-npx --yes tsc --init --module NodeNext --target ESNext
+npm install typescript@5.4.5 tsx@4.11.2 @types/express @types/node --save-dev
+echo '{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
+  },
+  "exclude": ["node_modules", "dist"]
+}' > tsconfig.json
 ```
+
 
 ## Basic Philosophy
 

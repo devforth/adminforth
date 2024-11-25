@@ -12,6 +12,26 @@ npm init -y
 npm install apexcharts --save-dev
 ```
 
+> 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
+> ```json
+> {
+>   "compilerOptions": {
+>     "baseUrl": ".",
+>     "paths": {
+>       "@/*": [
+>         "../node_modules/adminforth/dist/spa/src/*"
+>       ],
+>       "*": [
+>         "../node_modules/adminforth/dist/spa/node_modules/*"
+>       ],
+>       "@@/*": [
+>         "."
+>       ]
+>     }
+>   }
+> }
+> ```
+
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
 ```html title="./custom/Dashboard.vue"

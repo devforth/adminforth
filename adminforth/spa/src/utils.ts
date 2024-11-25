@@ -43,7 +43,7 @@ export async function callAdminForthApi({ path, method, body=undefined }: {
   }
 }
 
-export function getCustomComponent({ file, meta }: { file: string, meta: any }) {
+export function getCustomComponent({ file, meta }: { file: string, meta?: any }) {
   const name = file.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
   return resolveComponent(name);
 }
@@ -157,4 +157,8 @@ export function setQuery(query: any) {
   router.replace({
     query: currentQuery,
   });
+}
+
+export function verySimpleHash(str: string): string {
+  return `${str.split('').reduce((a, b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)}`;
 }

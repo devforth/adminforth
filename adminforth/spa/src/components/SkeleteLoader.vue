@@ -8,16 +8,11 @@
     </tr>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
-const props = defineProps({
-    columns: Number,
-    rows: Number
-});
-
+const props = defineProps<{
+    columns: number;
+    rows: number;
+}>();
 
 </script>
-
-<style lang="scss" scoped>
-
-</style>

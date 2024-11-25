@@ -5,19 +5,18 @@ import {
   AdminForthResource,
   AllowedActionValue,
   AllowedActions,
-  BeforeSaveFunction,
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
-  AfterSaveFunction,
-  AdminForthConfigMenuItem,
   IAdminForthRestAPI,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourcePages,
-   AdminUser, AllowedActionsEnum, AllowedActionsResolved } from "../types/Common.js";
+import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
+   AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
+   AnnouncementBadgeResponse, 
+   GetBaseConfigResponse} from "../types/Common.js";
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -29,7 +28,7 @@ export async function interpretResource(
   // if (process.env.HEAVY_DEBUG) {
   //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
   // }
-  const allowedActions = {};
+  const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
   // 'show' needed for ActionCheckSource.showRequest and ActionCheckSource.editRequest and ActionCheckSource.displayButtons
@@ -37,11 +36,9 @@ export async function interpretResource(
   // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
   // 'list' needed for ActionCheckSource.listRequest
   // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
-  
-
 
   await Promise.all(
-    Object.entries(resource.options?.allowedActions || {}).map(
+    Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
         if (process.env.HEAVY_DEBUG) {
           console.log(`🪲🚥check allowed ${key}, ${value}`)
@@ -219,10 +216,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
     });
 
+    
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies}) => {
+      handler: async ({input, adminUser, cookies}): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -281,7 +279,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           newMenu.push(newMenuItem)
         }
 
-        const announcementBadge = this.adminforth.config.customization.announcementBadge?.(adminUser);
+        const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -300,13 +298,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           brandLogo: this.adminforth.config.customization.brandLogo,
           datesFormat: this.adminforth.config.customization.datesFormat,
           timeFormat: this.adminforth.config.customization.timeFormat,
-          deleteConfirmation: this.adminforth.config.deleteConfirmation,
           auth: this.adminforth.config.auth,
           usernameField: this.adminforth.config.auth.usernameField,
-          title: this.adminforth.config.customization?.title,
-          emptyFieldPlaceholder: this.adminforth.config.customization?.emptyFieldPlaceholder,
+          title: this.adminforth.config.customization.title,
+          emptyFieldPlaceholder: this.adminforth.config.customization.emptyFieldPlaceholder,
           announcementBadge,
-          globalInjections: this.adminforth.config.customization?.globalInjections,
+          globalInjections: this.adminforth.config.customization.globalInjections,
+          userFullnameField: this.adminforth.config.auth.userFullNameField,
         }
 
 
@@ -380,7 +378,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource',
-      handler: async ({ body, adminUser }) => {
+      handler: async ({ body, adminUser }): Promise<{ resource?: AdminForthResourceCommon, error?: string }> => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -409,17 +407,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        // exclude "plugins" key
-        return { 
-          resource: { 
+        const toReturn = {
             ...resource,
-            plugins: undefined, 
             options: {
               ...resource.options,
               bulkActions: allowedBulkActions,
               allowedActions,
             } 
-          }
+        }
+        delete toReturn.hooks;
+        delete toReturn.plugins;
+
+        return { 
+          resource: toReturn,
         };
       },
     });

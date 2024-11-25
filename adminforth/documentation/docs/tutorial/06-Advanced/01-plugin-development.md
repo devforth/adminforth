@@ -11,7 +11,6 @@ Every plugin simply does modification of AdminForth config which developer passe
 Plugin can modify both config of resource where it is installed or whole global config.
 
 To perform modification plugin defines a method `modifyResourceConfig` which accepts `config` object. The `modifyResourceConfig` method called after first config validation and preprocessing. 
-After all plugins did modifications, AdminForth calls validation and preprocessing again second time to make sure all plugins did not screw up the config.
 
 Also plugins can define custom components and custom APIs.
 

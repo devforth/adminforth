@@ -247,7 +247,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -267,12 +267,13 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
+import type { AdminForthResourceCommon } from '@/types/Common';
 
 const coreStore = useCoreStore();
 
 const props = defineProps<{
   page: number,
-  resource: any,
+  resource: AdminForthResourceCommon,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
@@ -291,7 +292,7 @@ const emits = defineEmits([
 
 ]);
 
-const checkboxesInternal = ref([]);
+const checkboxesInternal: Ref<any[]> = ref([]);
 const page = ref(1);
 const sort = ref([]);
 

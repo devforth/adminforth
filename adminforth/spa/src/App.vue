@@ -225,18 +225,17 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, onBeforeMount, nextTick } from 'vue';
+import { computed, onMounted, ref, watch, onBeforeMount, nextTick, type Ref } from 'vue';
 import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import {useModalStore} from '@/stores/modal';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import AcceptModal from './components/AcceptModal.vue';
 import MenuLink from './components/MenuLink.vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getIcon } from '@/utils';
+import { getIcon, verySimpleHash } from '@/utils';
 import { useHead } from 'unhead'
 import { createHead } from 'unhead'
 import { loadFile } from '@/utils';
@@ -244,10 +243,10 @@ import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
 import { FrontendAPI } from '@/composables/useStores';
 import { getCustomComponent } from '@/utils';
+import type { AnnouncementBadgeResponse } from './types/Common';
 
 // import { link } from 'fs';
 const coreStore = useCoreStore();
-const modalStore = useModalStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
 const frontendApi = new FrontendAPI();
@@ -390,12 +389,12 @@ onBeforeMount(()=>{
 })
 
 
-const ctaBadge = computed(() => {
+const ctaBadge: Ref<(AnnouncementBadgeResponse & { hash: string; }) | null> = computed(() => {
   const badge = coreStore.config?.announcementBadge;
   if (!badge) {
     return null;
   }
-  const hash = badge.closable ? JSON.stringify(badge).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0) : '';
+  const hash = badge.closable ? verySimpleHash(JSON.stringify(badge)) : '';
   if (badge.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
     return null;
   }
@@ -403,6 +402,9 @@ const ctaBadge = computed(() => {
 });
 
 function closeCTA() {
+  if (!ctaBadge.value) {
+    return;
+  }
   const hash = ctaBadge.value.hash;
   window.localStorage.setItem(`ctaBadge-${hash}`, '1');
 }

@@ -111,9 +111,8 @@ const demoChecker = async ({ record, adminUser, resource }) => {
 
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
-  // deleteConfirmation: false,
   auth: {
-    resourceId: 'users',  // resource for getting user
+    usersResourceId: 'users',  // resource for getting user
     usernameField: 'email',
     passwordHashField: 'password_hash',
     userFullNameField: 'fullName', // optional
@@ -131,7 +130,6 @@ export const admin = new AdminForth({
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
       console.log(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
       if (subject === 'property-cost') {
-        console.log(`Subscribtion green`, adminUser.dbUser.id === param);
         return param === adminUser.dbUser.id;
       }
       return false;

@@ -28,7 +28,7 @@ export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   auth: {
     //loginBackgroundImage: '@@/adminforthloginimg.avif',
-    resourceId: 'users',  // resource to get user during login
+    usersResourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
     demoCredentials: "demo@adminforth.dev:demo",  // never use it for production

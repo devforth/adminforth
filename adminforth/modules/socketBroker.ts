@@ -59,7 +59,6 @@ export default class SocketBroker implements IWebSocketBroker {
       this.clients[client.id] = client;
     }
     client.onMessage(async (message) => {
-      process.env.HEAVY_DEBUG && console.log('🐛 🪨🪨 Received message', message);
       if (message.toString() === 'ping') {
         client.send('pong');
         client.lastPing = Date.now();

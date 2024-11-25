@@ -27,7 +27,6 @@ export type CoreConfig = {
     timeFormat: string,
     usernameField: string,
     usernameFieldName?: string,
-    deleteConfirmation?: boolean,
     auth?: {
         resourceId: string,
         usernameField: string,
@@ -37,9 +36,8 @@ export type CoreConfig = {
         userFullnameField: string,
     },
     emptyFieldPlaceholder?: {
-        show: string,
-        list: string,
-       
+        show?: string,
+        list?: string,
     } | string,
 }
 

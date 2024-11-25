@@ -43,7 +43,7 @@ class AdminForthAuth {
   }
 
   removeAuthCookie(response) {
-    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
@@ -60,12 +60,12 @@ class AdminForthAuth {
     const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
     
-    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
   }
 
   removeCustomCookie({response, name}) {
-    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
@@ -73,7 +73,7 @@ class AdminForthAuth {
     response: any, payload: {name: string, value: string, expiry: number, httpOnly: boolean}
   }) {
     const {name, value, expiry, httpOnly} = payload;
-    const brandSlug = this.adminforth.config.customization._brandNameSlug;
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
       httpOnly ? ' HttpOnly;' : ''
     } SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);

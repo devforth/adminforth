@@ -10,9 +10,17 @@
     </Tooltip>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { IconCardSearch } from '@iconify-prerendered/vue-mdi';
 import Tooltip from '@/afcl/Tooltip.vue';
+import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common';
 
-const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
+const props = defineProps<{
+    column: AdminForthResourceColumnCommon;
+    record: any;
+    meta: any;
+    resource: AdminForthResourceCommon;
+    adminUser: AdminUser
+}>();
+
 </script>

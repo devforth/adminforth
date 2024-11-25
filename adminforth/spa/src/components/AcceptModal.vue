@@ -1,5 +1,4 @@
-<script setup>
-import { ref,onMounted } from 'vue'
+<script setup lang="ts">
 import { useModalStore } from '@/stores/modal';
 
 const modalStore = useModalStore();

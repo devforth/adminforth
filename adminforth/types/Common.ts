@@ -62,7 +62,7 @@ export enum AllowedActionsEnum {
 
 
 export type AllowedActionsResolved = {
-  [key in AllowedActionsEnum]?: boolean
+  [key in AllowedActionsEnum]: boolean
 }
 
 export interface AdminUser {
@@ -235,7 +235,7 @@ export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull 
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
-export interface AdminForthResourceCommon {
+export interface AdminForthResourceInputCommon {
     /**
      * Unique identifier of resource. By default it equals to table name in database. 
      * If you wish you can explicitly set it to any string.
@@ -263,12 +263,7 @@ export interface AdminForthResourceCommon {
      * Array of columns which will be displayed in the admin panel.
      * Each column has its own configuration.
      */
-    columns: Array<AdminForthResourceColumnCommon>,
-
-    /**
-     * Internal array of columns which are not virtual. You should not edit it. 
-     */
-    dataSourceColumns?: Array<AdminForthResourceColumnCommon>,  // TODO, mark as private
+    columns: Array<AdminForthResourceColumnInputCommon>,
 
     /**
      * Hook which allow you to modify record label
@@ -280,7 +275,7 @@ export interface AdminForthResourceCommon {
      * ```
      * 
      */
-    recordLabel?: Function,
+    recordLabel?: (item: any) => string,
 
 
     /**
@@ -459,6 +454,13 @@ export interface AdminForthResourceCommon {
     },
 }
 
+export interface AdminForthResourceCommon extends AdminForthResourceInputCommon {
+  resourceId: string,
+  label: string,
+
+  columns: Array<AdminForthResourceColumnCommon>,
+}
+
 
 export type ValidationObject = {
     /**
@@ -516,7 +518,7 @@ export interface AdminForthForeignResourceCommon {
 /**
  * Column describes one field in the table or collection in database.
  */
-export type AdminForthResourceColumnCommon = {
+export interface AdminForthResourceColumnInputCommon {
   /**
    * Column name in database.
    */
@@ -699,9 +701,216 @@ export type AdminForthResourceColumnCommon = {
    */
   masked?: boolean,
 
+}
+
+export interface AdminForthResourceColumnCommon extends AdminForthResourceColumnInputCommon {
 
   /**
    * Internal type which indicates original type of column in database.
    */
   _underlineType?: string,
+
+}
+
+export enum AdminForthMenuTypes {
+  /**
+   * HEADING is just a label in the menu.
+   * Respect `label` and `icon` property in {@link AdminForthConfigMenuItem}
+   */
+  heading = 'heading',
+
+  /**
+   * GROUP is a group of menu items.
+   * Respects `label`, `icon` and `children` properties in {@link AdminForthConfigMenuItem}
+   * use @AdminForthMenuTypes.open to set if group is open by default
+   */
+  group = 'group',
+
+  /**
+   * RESOURCE is a link to a resource.
+   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in {@link AdminForthConfigMenuItem}
+   */
+  resource = 'resource',
+
+  /**
+   * PAGE is a link to a custom page.
+   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in {@link AdminForthConfigMenuItem}
+   * 
+   * Example:
+   * 
+   * ```ts
+   * \{
+   *  type: AdminForthMenuTypes.PAGE,
+   *  label: 'Custom Page',
+   *  icon: 'home',
+   *  path: '/dash',
+   *  component: '@@/Dashboard.vue',
+   *  homepage: true,
+   * \}
+   * ```
+   * 
+   */
+  page = 'page',
+
+  /**
+   * GAP ads some space between menu items.
+   */
+  gap = 'gap',
+
+  /**
+   * DIVIDER is a divider between menu items.
+   */
+  divider = 'divider',
+}
+
+
+/**
+ * Menu item which displayed in the left sidebar of the admin panel.
+ */
+export interface AdminForthConfigMenuItem {
+  type?: AdminForthMenuTypes | keyof typeof AdminForthMenuTypes,
+
+  /**
+   * Label for menu item which will be displayed in the admin panel.
+   */
+  label?: string,
+
+  /**
+   * Icon for menu item which will be displayed in the admin panel.
+   * Supports iconify icons in format `<icon set name>:<icon name>`
+   * Browse available icons here: https://icon-sets.iconify.design/
+   * 
+   * Example:
+   * 
+   * ```ts
+   * icon: 'flowbite:brain-solid', 
+   * ```
+   * 
+   */
+  icon?: string,
+
+  /**
+   * Path to custom component which will be displayed in the admin panel.
+   * 
+   */
+  path?: string,
+
+  /**
+   * Component to be used for this menu item. Component should be placed in custom folder and referenced with `@@/` prefix.
+   * Supported for AdminForthMenuTypes.PAGE only!
+   * Example:
+   * 
+   * ```ts
+   * component: '@@/Dashboard.vue',
+   * ```
+   * 
+   */
+  component?: string,
+
+  /**
+   * Resource ID which will be used to fetch data from.
+   * Supported for AdminForthMenuTypes.RESOURCE only!
+   * 
+   */
+  resourceId?: string,
+
+  /**
+   * If true, group will be open by default after user login to the admin panel.
+   * Also will be used to redirect from root path.
+   */
+  homepage?: boolean,
+
+  /**
+   * Where Group is open by default
+   * Supported for AdminForthMenuTypes.GROUP only!
+   * 
+   */    
+  open?: boolean,
+
+  /**
+   * Children menu items which will be displayed in this group.
+   * Supported for AdminForthMenuTypes.GROUP only!
+   */
+  children?: Array<AdminForthConfigMenuItem>,
+
+  /**
+   * By default all pages are imported dynamically with lazy import().
+   * If you wish to import page statically, set this option to true.
+   * Homepage will be imported statically by default. but you can override it with this option.
+   */
+  isStaticRoute?: boolean,
+
+  meta?: {
+    title?: string,
+  },
+
+  /**
+   * Optional callback which will be called before rendering the menu for each item.
+   * You can use it to hide menu items depending on some user
+   */
+  visible?: (user: AdminUser) => boolean,
+
+  /**
+   * Optional callback which will be called before rendering the menu for each item.
+   * Result of callback if not null will be used as a small badge near the menu item.
+   */
+  badge?: string | ((user: AdminUser) => Promise<string>),
+
+  /**
+   * Item id will be automatically generated from hashed resourceId+Path+label
+   */
+  _itemId?: string,
+}
+
+
+export interface ResourceVeryShort {
+  resourceId: string,
+  label: string,
+}
+
+export interface UserData {
+  pk: string,
+  [key: string]: any,
+}
+
+export type AnnouncementBadgeResponse = { text?: string, html?: string, closable?: boolean, title?: string };
+
+export interface AdminForthConfigForFrontend {
+  brandName: string,
+  usernameFieldName: string,
+  loginBackgroundImage: string,
+  loginBackgroundPosition: string,
+  title?: string,
+  demoCredentials?: string,
+  loginPromptHTML?: string,
+  loginPageInjections: {
+    underInputs: Array<AdminForthComponentDeclaration>,
+  },
+  rememberMeDays: number,
+  showBrandNameInSidebar: boolean,
+  brandLogo?: string,
+  datesFormat: string,
+  timeFormat: string,
+  auth: any,
+  userFullnameField: string,
+  usernameField: string,
+  emptyFieldPlaceholder?: string | {
+    show?: string,
+    list?: string,
+  },
+  announcementBadge?: AnnouncementBadgeResponse | null,
+  globalInjections: {
+    userMenu: Array<AdminForthComponentDeclarationFull>,
+    header: Array<AdminForthComponentDeclarationFull>,
+    sidebar: Array<AdminForthComponentDeclarationFull>,
+  }
+}
+
+export interface GetBaseConfigResponse {
+  user: UserData,
+  resources: ResourceVeryShort[],
+  menu: AdminForthConfigMenuItem[],
+  config: AdminForthConfigForFrontend,
+  adminUser: AdminUser,
+  version: string,
 }
