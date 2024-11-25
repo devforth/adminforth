@@ -1016,9 +1016,9 @@ export const admin = new AdminForth({
       path: '/dashboard',
       // homepage: true,
       isStaticRoute:false,
-      meta:{
-        title: 'Dashboard',
-      }
+      // meta:{
+      //   title: 'Dashboard',
+      // }
     },
     {
       label: 'Core',
