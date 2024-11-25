@@ -242,7 +242,7 @@ Create file `completionInput.vue`:
 <script setup lang="ts">
 import { ref, onMounted, watch, Ref  } from 'vue';
 import { callAdminForthApi } from '@/utils';
-import { AdminForthColumnCommon } from '@/types/Common';
+import type { AdminForthColumnCommon } from '@/types/Common';
 import SuggestionInput from 'vue-suggestion-input';
 import 'vue-suggestion-input/dist/style.css';
 
