@@ -212,9 +212,9 @@ export default class ConfigValidator implements IConfigValidator {
     return allowedActions as AllowedActions;
   }
 
-  validateAndNormalizeBulkActions(res: Partial<AdminForthResource>, errors: string[]): AdminForthBulkAction[] {
+  validateAndNormalizeBulkActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): AdminForthBulkAction[] {
     //check if resource has bulkActions
-    let bulkActions: AdminForthBulkAction[] = res?.options?.bulkActions || [];
+    let bulkActions: AdminForthBulkAction[] = resInput?.options?.bulkActions || [];
 
     if (!Array.isArray(bulkActions)) {
       errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
@@ -420,7 +420,7 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
-      options.bulkActions = this.validateAndNormalizeBulkActions(res, errors);
+      options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];

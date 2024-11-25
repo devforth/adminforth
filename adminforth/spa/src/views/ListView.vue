@@ -183,6 +183,9 @@ async function getList() {
     return row;
   });
   totalRows.value = data.total;
+  
+  // if checkboxes have items which are not in current data, remove them
+  checkboxes.value = checkboxes.value.filter(pk => rows.value!.some(r => r._primaryKeyValue === pk));
   await nextTick();
   return {}
 }
@@ -330,7 +333,7 @@ async function init() {
     page.value = parseInt(route.query.page);
   }
 
-  // await getList(); - Not needed here, watch will trigger it
+  // getList(); - Not needed here, watch will trigger it
   columnsMinMax.value = await callAdminForthApi({
     path: '/get_min_max_for_columns',
     method: 'POST',
@@ -375,7 +378,7 @@ watch(() => filtersStore.filters, async (to, from) => {
   }
   console.log('🔄️ filters changed', JSON.stringify(to))
   page.value = 1;
-  checkboxes.value = [];
+  checkboxes.value = []; // TODO: not sure absolutely needed here
   // update query param for each filter as filter_<column_name>=value
   const query = {};
   const currentQ = currentQuery();

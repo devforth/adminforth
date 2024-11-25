@@ -635,7 +635,7 @@ export const admin = new AdminForth({
         createEditGroups: [
           {
             groupName: 'Main info',
-            columns: ['id','title', 'description', 'country', 'apartment_image']
+            columns: ['id', 'title', 'description', 'country', 'apartment_image']
           },
           {
             groupName: 'Characteristics',
