@@ -173,7 +173,7 @@ This is done because of architecture of AdminForth: `show` callback is called be
  allowedActions: {
     ...
     show: async ({adminUser, meta, source, adminforth}: any) => {
-      if (source === 'showRequest' || source === 'editRequest') {
+      if (source === 'showRequest' || source === 'editLoadRequest') {
         const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
         return record.realtor_id === adminUser.dbUser.id;
       }
@@ -183,5 +183,5 @@ This is done because of architecture of AdminForth: `show` callback is called be
 ```
 
 Please note that show callback is called not only when user visits show page (source will be `'showRequest'` during this check) but also
-when user visits edit page (source will be `'editRequest'`).
+when user visits edit page (source will be `'editLoadRequest'`).
 
