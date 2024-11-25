@@ -31,14 +31,15 @@ export async function interpretResource(
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
-  // 'show' needed for ActionCheckSource.showRequest and ActionCheckSource.editRequest and ActionCheckSource.displayButtons
+  // 'show' needed for ActionCheckSource.showRequest and ActionCheckSource.editLoadRequest and ActionCheckSource.displayButtons
   // 'edit' needed for ActionCheckSource.editRequest and ActionCheckSource.displayButtons
   // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
   // 'list' needed for ActionCheckSource.listRequest
   // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
   const neededActions = {
     [ActionCheckSource.ShowRequest]: ['show'],
-    [ActionCheckSource.EditRequest]: ['show', 'edit'],
+    [ActionCheckSource.EditRequest]: ['edit'],
+    [ActionCheckSource.EditLoadRequest]: ['show'],
     [ActionCheckSource.DeleteRequest]: ['delete'],
     [ActionCheckSource.ListRequest]: ['list'],
     [ActionCheckSource.CreateRequest]: ['create'],
@@ -468,12 +469,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           {
             'show': ActionCheckSource.ShowRequest,
             'list': ActionCheckSource.ListRequest,
-            'edit': ActionCheckSource.EditRequest,
+            'edit': ActionCheckSource.EditLoadRequest,
           }[source],
           this.adminforth
         );
 
-        const { allowed, error } = checkAccess(source as AllowedActionsEnum, allowedActions);
+        const { allowed, error } = checkAccess({
+          'show': AllowedActionsEnum.show,
+          'list': AllowedActionsEnum.list,
+          'edit': AllowedActionsEnum.show // here we check show, bacuse by convention show request is called for edit
+        }[source], allowedActions);
+
         if (!allowed) {
           return { error };
         }
@@ -795,7 +801,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
-              return { allowedError };
+              return { error: allowedError };
             }
 
             const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId });

@@ -45,6 +45,7 @@ export enum ActionCheckSource {
   DisplayButtons = 'displayButtons',
   ListRequest = 'listRequest',
   ShowRequest = 'showRequest',
+  EditLoadRequest = 'editLoadRequest',  // when data for edit page is loaded
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',

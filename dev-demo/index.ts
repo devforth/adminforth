@@ -1,6 +1,6 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes, Filters } from '../adminforth/index.js';
+import AdminForth, { AdminForthResource, AdminForthResourceColumn, AdminUser, AllowedActionsEnum, AdminForthDataTypes, Filters, ActionCheckSource } from '../adminforth/index.js';
 import { v1 as uuid } from 'uuid';
 
 import ForeignInlineListPlugin from '../adminforth/plugins/foreign-inline-list/index.js';
@@ -656,13 +656,28 @@ export const admin = new AdminForth({
           }
         ],
         allowedActions:{
-          edit: true,
+          edit: async ({ adminUser, source, meta }: { adminUser: AdminUser, meta: any, source: ActionCheckSource }): Promise<boolean | string> => {
+            console.log('edit aa check 🔒', meta, source, adminUser);
+            if (source === ActionCheckSource.DisplayButtons) {
+              // if check is done for displaying button - we show button to everyone
+              return true; 
+            }
+            const { oldRecord, newRecord } = meta;
+            if (oldRecord.realtor_id !== adminUser.dbUser.id) {
+              return "You are not assigned to this apartment and can't edit it";
+            }
+            if (newRecord.realtor_id !== oldRecord.realtor_id) {
+              return "You can't change the owner of the apartment";
+            }
+            return true;
+          },
           delete: async (p) => { return true; },
           show: async ({adminUser, meta, source, adminforth}: any) => {
-            if (source === 'showRequest' || source === 'editRequest') {
-              const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
-              return record.user_id === adminUser.dbUser.id;
-            }
+            console.log('show aa check 🔒', meta);
+            // if (source === 'showRequest' || source === 'editLoadRequest') {
+            //   const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
+            //   return record.user_id === adminUser.dbUser.id;
+            // }
             return true;
           },
           filter: true,
