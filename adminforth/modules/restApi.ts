@@ -37,7 +37,7 @@ export async function interpretResource(
   // 'list' needed for ActionCheckSource.listRequest
   // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
   const neededActions = {
-    [ActionCheckSource.ShowReques]: ['show'],
+    [ActionCheckSource.ShowRequest]: ['show'],
     [ActionCheckSource.EditRequest]: ['show', 'edit'],
     [ActionCheckSource.DeleteRequest]: ['delete'],
     [ActionCheckSource.ListRequest]: ['list'],
