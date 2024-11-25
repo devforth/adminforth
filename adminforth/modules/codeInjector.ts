@@ -309,7 +309,9 @@ class CodeInjector implements ICodeInjector {
   
     await fsExtra.copy(spaDir, this.spaTmpPath(), {
       filter: (src) => {
-        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist')
+        // /adminforth/* used for local development and /dist/* used for production
+        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist') && \
+                             !src.includes('/dist/spa/node_modules') && !src.includes('/dist/spa/dist');
         if (process.env.HEAVY_DEBUG && !filterPasses) {
           console.log('🪲⚙️ fsExtra.copy filtered out', src);
         }
