@@ -50,6 +50,7 @@
   import { callAdminForthApi, loadFile } from '@/utils';
   import { useRouter } from 'vue-router';
   import { showErrorTost } from '@/composables/useFrontendApi';
+  import { Button } from '@/afcl';
   import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
   import VOtpInput from "vue3-otp-input";
 
