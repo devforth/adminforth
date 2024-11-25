@@ -36,12 +36,25 @@ export async function interpretResource(
   // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
   // 'list' needed for ActionCheckSource.listRequest
   // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
+  const neededActions = {
+    [ActionCheckSource.ShowReques]: ['show'],
+    [ActionCheckSource.EditRequest]: ['show', 'edit'],
+    [ActionCheckSource.DeleteRequest]: ['delete'],
+    [ActionCheckSource.ListRequest]: ['list'],
+    [ActionCheckSource.CreateRequest]: ['create'],
+    [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create'],
+    [ActionCheckSource.BulkActionRequest]: ['delete'],
+  }[source];
 
   await Promise.all(
     Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
         if (process.env.HEAVY_DEBUG) {
           console.log(`🪲🚥check allowed ${key}, ${value}`)
+        }
+        if (!neededActions.includes(key as AllowedActionsEnum)) {
+          allowedActions[key] = false;
+          return;
         }
       
         // if callable then call

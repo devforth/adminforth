@@ -253,7 +253,7 @@ Next step you need to create `resources` folder.
 
 Create `apartments.ts` in `resources`:
 ```ts title="/apartments.ts"
-import { AdminForthDataTypes, AdminForthResource } from 'adminforth';
+import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
 
 export default {
   dataSource: 'maindb',
@@ -369,12 +369,12 @@ export default {
       filter: true,
     },
   },
-} as AdminForthResource;
+} as AdminForthResourceInput;
 ```
 
 Create `users.ts` in `resources`:
 ```ts title="/users.ts"
-import AdminForth, { AdminForthDataTypes, AdminForthResource } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
 export default {
   dataSource: 'maindb',
   table: 'users',
@@ -446,7 +446,7 @@ export default {
       },
     },
   }
-} as AdminForthResource;
+} as AdminForthResourceInput;
 ```
 
 
