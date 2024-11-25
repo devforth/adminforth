@@ -18,13 +18,13 @@
       {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label || record[column.name], route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
-      {{ checkEmptyValues(formatDateTime(record[column.name]),route.meta.type) }}
+      {{ checkEmptyValues(formatDateTime(record[column.name]), route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'date'" class="whitespace-nowrap">
-      {{ checkEmptyValues(formatDate(record[column.name]),route.meta.type) }}
+      {{ checkEmptyValues(formatDate(record[column.name]), route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'time'" class="whitespace-nowrap">
-      {{ checkEmptyValues(formatTime(record[column.name]),route.meta.type) }}
+      {{ checkEmptyValues(formatTime(record[column.name]), route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'richtext'">
       <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
@@ -42,7 +42,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -52,10 +52,9 @@ import { useRoute, useRouter } from 'vue-router';
 import sanitizeHtml from 'sanitize-html';
 import { JsonViewer } from "vue3-json-viewer";
 import "vue3-json-viewer/dist/index.css";
-
+import type { AdminForthResourceColumnCommon } from '@/types/Common';
 
 import { useCoreStore } from '@/stores/core';
-import { computed } from 'vue';
 
 const coreStore = useCoreStore();
 const route = useRoute();
@@ -64,13 +63,13 @@ const route = useRoute();
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const props = defineProps({
-  column: Object,
-  record: Object
-});
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon,
+  record: any
+}>();
 
 
-function protectAgainstXSS(value) {
+function protectAgainstXSS(value: string) {
   return sanitizeHtml(value, {
     allowedTags: [
       "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
@@ -89,17 +88,17 @@ function protectAgainstXSS(value) {
 }
 
 
-function formatDateTime(date) {
+function formatDateTime(date: string) {
   if (!date) return '';
   return dayjs.utc(date).local().format(`${coreStore.config?.datesFormat} ${coreStore.config?.timeFormat}` || 'YYYY-MM-DD HH:mm:ss');
 }
 
-function formatDate(date) {
+function formatDate(date: string) {
   if (!date) return '';
   return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD');
 }
 
-function formatTime(time) {
+function formatTime(time: string) {
   if (!time) return '';
   return dayjs(`0000-00-00 ${time}`).format(coreStore.config?.timeFormat || 'HH:mm:ss');
 }

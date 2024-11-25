@@ -66,10 +66,6 @@ class AdminForth implements IAdminForth {
     }
   }
 
-  #defaultConfig = {
-    deleteConfirmation: true,
-  }
-
   config: AdminForthConfig;
   express: ExpressServer;
   // fastify: FastifyServer;
@@ -89,23 +85,20 @@ class AdminForth implements IAdminForth {
   operationalResources: {
     [resourceId: string]: IOperationalResource,
   }
-  baseUrlSlashed: string;
 
   statuses: {
     dbDiscover: 'running' | 'done',
   }
 
   constructor(config: AdminForthConfig) {
-    this.config = {...this.#defaultConfig,...config};
     this.codeInjector = new CodeInjector(this);
-    this.configValidator = new ConfigValidator(this, this.config);
+    this.configValidator = new ConfigValidator(this, config);
     this.restApi = new AdminForthRestAPI(this);
     this.websocket = new SocketBroker(this);
     this.activatedPlugins = [];
     
     this.configValidator.validateConfig();
     this.activatePlugins();
-    this.configValidator.validateConfig();   // revalidate after plugins
 
     this.express = new ExpressServer(this);
     // this.fastify = new FastifyServer(this);

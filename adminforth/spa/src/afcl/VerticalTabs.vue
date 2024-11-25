@@ -33,7 +33,7 @@
   ]);
   onMounted(() => {
     const slots = useSlots();
-    tabs.value = Object.keys(slots).reduce((tbs, tb) => {
+    tabs.value = Object.keys(slots).reduce((tbs: string[], tb: string) => {
       if (tb.startsWith('tab:')) {
         tbs.push(tb.replace('tab:', ''));
       }

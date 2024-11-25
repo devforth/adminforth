@@ -1,19 +1,18 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
-import type { AdminForthConfigMenuItem } from '@/types/Back';
 
 export const useCoreStore = defineStore('core', () => {
-  const resourceById: Ref<Object> = ref({});
+  const resourceById: Ref<Record<string, ResourceVeryShort>> = ref({});
   const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem('af__theme') as ('light'|'dark') || 'light');
 
-  const menu = ref([]);
-  const config = ref({});
+  const menu: Ref<AdminForthConfigMenuItem[]> = ref([]);
+  const config: Ref<AdminForthConfigForFrontend | null> = ref(null);
   const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
-  const userData = ref(null);
+  const userData: Ref<UserData | null> = ref(null);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -23,9 +22,9 @@ export const useCoreStore = defineStore('core', () => {
   })
 
   const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
-  const resourceColumnsError = ref('');
-  const resourceColumnsId = ref(null);
-  const adminUser = ref(null);
+  const resourceColumnsError: Ref<string> = ref('');
+  const resourceColumnsId: Ref<string | null> = ref(null);
+  const adminUser: Ref<null | AdminUser> = ref(null);
 
   
   async function resetAdminUser() {
@@ -46,7 +45,7 @@ export const useCoreStore = defineStore('core', () => {
   }
 
   async function fetchMenuAndResource() {
-    const resp = await callAdminForthApi({
+    const resp: GetBaseConfigResponse = await callAdminForthApi({
       path: '/get_base_config',
       method: 'GET',
     });
@@ -54,7 +53,7 @@ export const useCoreStore = defineStore('core', () => {
       return
     }
     menu.value = resp.menu;
-    resourceById.value = resp.resources.reduce((acc: Object, resource: AdminForthResource) => {
+    resourceById.value = resp.resources.reduce((acc: Record<string, ResourceVeryShort>, resource: ResourceVeryShort) => {
       acc[resource.resourceId] = resource;
       return acc;
     }, {});
@@ -100,7 +99,7 @@ export const useCoreStore = defineStore('core', () => {
     if (!resource.value) {
       throw new Error('Columns not fetched yet');
     }
-    const col = resource.value.columns.find((col: AdminForthResourceColumn) => col.primaryKey);
+    const col = resource.value.columns.find((col: AdminForthResourceColumnCommon) => col.primaryKey);
     if (!col) {
       throw new Error(`Primary key not found in resource ${resourceId}`);
     }
@@ -170,13 +169,13 @@ export const useCoreStore = defineStore('core', () => {
 
 
   const username = computed(() => {
-    const usernameField = config.value.usernameField;
-    return userData.value && userData.value[usernameField];
+    const usernameField = config.value?.usernameField;
+    return userData.value && usernameField && userData.value[usernameField];
   });
 
   const userFullname = computed(() => {
-    const userFullnameField = config.value.userFullnameField;
-    return userData.value && userData.value[userFullnameField];
+    const userFullnameField = config.value?.userFullnameField;
+    return userData.value && userFullnameField && userData.value[userFullnameField];
   })
 
 

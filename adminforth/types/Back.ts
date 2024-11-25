@@ -7,7 +7,11 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminUser, type AllowedActionsResolved, 
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
-  type AdminForthResourceColumnCommon
+  type AdminForthResourceColumnCommon,
+  AdminForthResourceInputCommon,
+  AdminForthComponentDeclarationFull,
+  AdminForthConfigMenuItem,
+  AnnouncementBadgeResponse
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -282,7 +286,6 @@ export interface IAdminForth {
   restApi: IAdminForthRestAPI;
   activatedPlugins: Array<IAdminForthPlugin>;
 
-  baseUrlSlashed: string;
 
   websocket: IWebSocketBroker;
 
@@ -396,160 +399,6 @@ export interface IAdminForthPlugin {
   setupEndpoints(server: IHttpServer): void;
 }
 
-export enum AdminForthMenuTypes {
-  /**
-   * HEADING is just a label in the menu.
-   * Respect `label` and `icon` property in {@link AdminForthConfigMenuItem}
-   */
-  heading = 'heading',
-
-  /**
-   * GROUP is a group of menu items.
-   * Respects `label`, `icon` and `children` properties in {@link AdminForthConfigMenuItem}
-   * use @AdminForthMenuTypes.open to set if group is open by default
-   */
-  group = 'group',
-
-  /**
-   * RESOURCE is a link to a resource.
-   * Respects `label`, `icon`,  `resourceId`, `homepage`, `isStaticRoute` properties in {@link AdminForthConfigMenuItem}
-   */
-  resource = 'resource',
-
-  /**
-   * PAGE is a link to a custom page.
-   * Respects `label`, `icon`, `path`, `component`, `homepage`, `isStaticRoute`, properties in {@link AdminForthConfigMenuItem}
-   * 
-   * Example:
-   * 
-   * ```ts
-   * \{
-   *  type: AdminForthMenuTypes.PAGE,
-   *  label: 'Custom Page',
-   *  icon: 'home',
-   *  path: '/dash',
-   *  component: '@@/Dashboard.vue',
-   *  homepage: true,
-   * \}
-   * ```
-   * 
-   */
-  page = 'page',
-
-  /**
-   * GAP ads some space between menu items.
-   */
-  gap = 'gap',
-
-  /**
-   * DIVIDER is a divider between menu items.
-   */
-  divider = 'divider',
-}
-
-
-
-
-/**
- * Menu item which displayed in the left sidebar of the admin panel.
- */
-export interface AdminForthConfigMenuItem {
-    type?: AdminForthMenuTypes | keyof typeof AdminForthMenuTypes,
-
-    /**
-     * Label for menu item which will be displayed in the admin panel.
-     */
-    label?: string,
-
-    /**
-     * Icon for menu item which will be displayed in the admin panel.
-     * Supports iconify icons in format `<icon set name>:<icon name>`
-     * Browse available icons here: https://icon-sets.iconify.design/
-     * 
-     * Example:
-     * 
-     * ```ts
-     * icon: 'flowbite:brain-solid', 
-     * ```
-     * 
-     */
-    icon?: string,
-
-    /**
-     * Path to custom component which will be displayed in the admin panel.
-     * 
-     */
-    path?: string,
-
-    /**
-     * Component to be used for this menu item. Component should be placed in custom folder and referenced with `@@/` prefix.
-     * Supported for AdminForthMenuTypes.PAGE only!
-     * Example:
-     * 
-     * ```ts
-     * component: '@@/Dashboard.vue',
-     * ```
-     * 
-     */
-    component?: string,
-
-    /**
-     * Resource ID which will be used to fetch data from.
-     * Supported for AdminForthMenuTypes.RESOURCE only!
-     * 
-     */
-    resourceId?: string,
-
-    /**
-     * If true, group will be open by default after user login to the admin panel.
-     * Also will be used to redirect from root path.
-     */
-    homepage?: boolean,
-
-    /**
-     * Where Group is open by default
-     * Supported for AdminForthMenuTypes.GROUP only!
-     * 
-     */    
-    open?: boolean,
-
-    /**
-     * Children menu items which will be displayed in this group.
-     * Supported for AdminForthMenuTypes.GROUP only!
-     */
-    children?: Array<AdminForthConfigMenuItem>,
-
-    /**
-     * By default all pages are imported dynamically with lazy import().
-     * If you wish to import page statically, set this option to true.
-     * Homepage will be imported statically by default. but you can override it with this option.
-     */
-    isStaticRoute?: boolean,
-
-    meta?: {
-      title?: string,
-    },
-
-    /**
-     * Optional callback which will be called before rendering the menu for each item.
-     * You can use it to hide menu items depending on some user
-     */
-    visible?: (user: AdminUser) => boolean,
-
-    /**
-     * Optional callback which will be called before rendering the menu for each item.
-     * Result of callback if not null will be used as a small badge near the menu item.
-     */
-    badge?: string | ((user: AdminUser) => Promise<string>),
-
-    /**
-     * Item id will be automatically generated from hashed resourceId+Path+label
-     */
-    _itemId?: string,
-}
-  
-
-
 
 /**
  * Modify query to change how data is fetched from database.
@@ -647,11 +496,254 @@ export type AdminForthDataSource = {
   url: string,
 }
 
+type AdminForthPageDeclaration = {
+  path: string,
+  component: AdminForthComponentDeclaration,
+}
+
+interface AdminForthInputConfigCustomization {
+  /**
+   * Your app name
+   */
+  brandName?: string,
+
+  /**
+   * Whether to show brand name in sidebar
+   * default is true
+   */
+  showBrandNameInSidebar?: boolean,
+
+  /**
+   * Path to your app logo
+   * 
+   * Example:
+   * Place file `logo.svg` to `./custom` folder and set this option:
+   * 
+   * ```ts
+   * brandLogo: '@@/logo.svg',
+   * ```
+   * 
+   */
+  brandLogo?: string,
+
+  /**
+   * Path to your app favicon
+   * 
+   * Example: 
+   * Place file `favicon.png` to `./custom` folder and set this option:
+   * 
+   * ```ts
+   * favicon: '@@/favicon.png',
+   * ```
+   */
+  favicon?: string,
+
+  /**
+   * DayJS format string for all dates in the app.
+   * Defaulted to 'MMM D, YYYY'
+   */
+  datesFormat?: string,
+
+  /**
+   * DayJS format string for all datetimes in the app.
+   * Defaulted to 'HH:mm:ss'
+   */
+  timeFormat?: string,
+
+  /**
+   * HTML title tag value, defaults to brandName
+   */
+  title?: string,
+
+  /**
+   * Placeholder for empty fields in lists and show views, by default empty string ''
+   */
+  emptyFieldPlaceholder?: {
+    show?: string,
+    list?: string,
+    
+  } | string,
+
+  /**
+   * Relative or absolute path to custom components directory
+   * By default equals  `./custom`.
+   * 
+   * Custom .vue files, images, and any other assets placed in this directory can be accessed in AdminForth components and configs with `@@/`.
+   * 
+   * For example if file path is `./custom/comp/my.vue`, you can use it in AdminForth config like this:
+   * 
+   * ```ts
+   * components: {
+   *  show: '@@/comp/my.vue',
+   * }
+   * ```
+   * 
+   */
+  customComponentsDir?: string,
+
+  /**
+   * Path to custom .ts file which allows to inject custom Vue uses in SPA or add custom imports.
+   * 
+   * Example: Create file: `./custom/vue-uses.ts` with next content:
+   * 
+   * ```ts
+   * import HighchartsVue from 'highcharts-vue';
+   * // import '@@/custom.scss'; // here is how you can import custom styles
+   *
+   * export default function (app) {
+   *    app.use(HighchartsVue);
+   * }
+   * ```
+   * 
+   * Install HighCharts into custom folder:
+   * 
+   * ```bashcreating rec
+   * cd custom
+   * npm init -y
+   * npm install highcharts highcharts-vue
+   * ```
+   * 
+   * And specify vueUsesFile in AdminForth config:
+   * 
+   * ```ts
+   * vueUsesFile: '@@/vue-uses.ts',
+   * ```
+   * 
+   */
+  vueUsesFile?: string,
+    /** 
+   * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
+   */
+  styles?: Object,
+
+  /**
+   * Description of custom pages which will let register custom pages for custom routes in AdminForth.
+   */
+  customPages?: Array<AdminForthPageDeclaration>,
+
+  /**
+   * Function to return custom badge in side bar for users. Can return text or html
+   * If function is not passed or returns null, badge will not be shown.
+   * Execution is done on admin app load. 
+   */
+  announcementBadge?: (user: AdminUser) => AnnouncementBadgeResponse,
+  
+  /**
+   * Custom panel components or array of components which will be displayed in the login form 
+   * right after the inputs. Use it to add custom authorization methods like social login or other custom fields e.g. 'reset' 
+   * password link.
+   */
+  loginPageInjections?: {
+    underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+  }
+
+  /**
+   * Custom panel components or array of components which will be displayed in different parts of the admin panel.
+   */
+  globalInjections?: {
+    userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+  }
+}
+
+
+export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
+
+  /**
+   * Array of plugins which will be used to modify resource configuration.
+   * 
+   */
+  plugins?: Array<IAdminForthPlugin>,
+
+  /**
+   * Hooks allow you to change the data on different stages of resource lifecycle.
+   * Hooks are functions which will be called on backend side (only backend side).
+   */
+  hooks?: {
+    show?: {
+      /**
+       * Typical use-cases: 
+       * - request additional data from database before returning to frontend for soft-join 
+       */
+      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Transform value for some field for record returned from database before returning to frontend (minimize, sanitize, etc)
+       * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
+       * - Attach additional data to record before returning to frontend 
+       */
+      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+    },
+    list?: {
+      /**
+       * Typical use-cases:
+       * - add additional filters in addition to what user selected before fetching data from database.
+       * - same as hooks.show.beforeDatasourceRequest 
+       */
+      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Same as hooks.show.afterDatasourceResponse but applied for all records returned from database for 
+       * showing in list view, e.g. add new field to each record in list view
+       */
+      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+    },
+    create?: {
+      /**
+       * Typical use-cases:
+       * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
+       * - fill-in adminUser as creator of record
+       * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Initiate some trigger after record saved to database (e.g sync to another datasource)
+       */
+      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+    },
+    edit?: {
+      /**
+       * Typical use-cases:
+       * - Same as hooks.create.beforeSave but for edit page
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+
+      /**
+       * Typical use-cases:
+       * - Same as hooks.create.afterSave but for edit page
+       */
+      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+    },
+    delete?: {
+      /**
+       * Typical use-cases:
+       * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
+       */
+      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      /**
+       * Typical use-cases:
+       * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
+       */
+      afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+    },
+  },
+
+  options?: ResourceOptionsInput,
+
+  columns: Array<AdminForthResourceColumn>,
+
+  dataSourceColumns?: Array<AdminForthResourceColumn>,
+}
 
 /**
  * Main configuration object for AdminForth
  */
-export interface AdminForthConfig {
+export interface AdminForthInputConfig {
 
     /**
      * Authorization module configuration
@@ -749,12 +841,13 @@ export interface AdminForthConfig {
        */
       websocketSubscribed?: (topic: string, user: AdminUser) => void,
     },
+
      /**
       * Array of resources which will be displayed in the admin panel.
       * Resource represents one table or collection in database.
       * Each resource has its own configuration.
       */ 
-    resources: Array<AdminForthResource>,
+    resources: Array<AdminForthResourceInput>,
 
     /**
      * Array of left sidebar menu items which will be displayed in the admin panel.
@@ -783,160 +876,7 @@ export interface AdminForthConfig {
      * Settings which allow you to customize AdminForth
      * 
      */
-    customization?: {
-      /**
-       * Your app name
-       */
-      brandName?: string,
-
-      /**
-       * Slug which will be used on tech side e.g. to store cookies separately.
-       * Created automatically from brandName if not set. 
-       */
-      _brandNameSlug?: string,
-
-      /**
-       * Whether to show brand name in sidebar
-       * default is true
-       */
-      showBrandNameInSidebar?: boolean,
-
-      /**
-       * Path to your app logo
-       * 
-       * Example:
-       * Place file `logo.svg` to `./custom` folder and set this option:
-       * 
-       * ```ts
-       * brandLogo: '@@/logo.svg',
-       * ```
-       * 
-       */
-      brandLogo?: string,
-
-      /**
-       * Path to your app favicon
-       * 
-       * Example: 
-       * Place file `favicon.png` to `./custom` folder and set this option:
-       * 
-       * ```ts
-       * favicon: '@@/favicon.png',
-       * ```
-       */
-      favicon?: string,
-
-      /**
-       * DayJS format string for all dates in the app.
-       * Defaulted to 'MMM D, YYYY'
-       */
-      datesFormat?: string,
-
-      /**
-       * DayJS format string for all datetimes in the app.
-       * Defaulted to 'HH:mm:ss'
-       */
-      timeFormat?: string,
-
-      /**
-       * HTML title tag value, defaults to brandName
-       */
-      title?: string,
-
-      /**
-       * Placeholder for empty fields in lists and show views, by default empty string ''
-       */
-      emptyFieldPlaceholder?: {
-        show?: string,
-        list?: string,
-        
-      } | string,
-
-      /**
-       * Relative or absolute path to custom components directory
-       * By default equals  `./custom`.
-       * 
-       * Custom .vue files, images, and any other assets placed in this directory can be accessed in AdminForth components and configs with `@@/`.
-       * 
-       * For example if file path is `./custom/comp/my.vue`, you can use it in AdminForth config like this:
-       * 
-       * ```ts
-       * components: {
-       *  show: '@@/comp/my.vue',
-       * }
-       * ```
-       * 
-       */
-      customComponentsDir?: string,
-
-      /**
-       * Path to custom .ts file which allows to inject custom Vue uses in SPA or add custom imports.
-       * 
-       * Example: Create file: `./custom/vue-uses.ts` with next content:
-       * 
-       * ```ts
-       * import HighchartsVue from 'highcharts-vue';
-       * // import '@@/custom.scss'; // here is how you can import custom styles
-       *
-       * export default function (app) {
-       *    app.use(HighchartsVue);
-       * }
-       * ```
-       * 
-       * Install HighCharts into custom folder:
-       * 
-       * ```bashcreating rec
-       * cd custom
-       * npm init -y
-       * npm install highcharts highcharts-vue
-       * ```
-       * 
-       * And specify vueUsesFile in AdminForth config:
-       * 
-       * ```ts
-       * vueUsesFile: '@@/vue-uses.ts',
-       * ```
-       * 
-       */
-      vueUsesFile?: string,
-        /** 
-       * Object to redefine default styles for AdminForth components.  Use this file as reference for all possible adjustments https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts
-       */
-      styles?: Object,
-
-      /**
-       * Description of custom pages which will let register custom pages for custom routes in AdminForth.
-       */
-      customPages?: Array<{
-        path: string,
-        component: AdminForthComponentDeclaration,
-      }>,
-
-      /**
-       * Function to return custom badge in side bar for users. Can return text or html
-       * If function is not passed or returns null, badge will not be shown.
-       * Execution is done on admin app load. 
-       */
-      announcementBadge?: (user: AdminUser) => { text?: string, html?: string, closable?: boolean, title?: string } | null,
-      
-      /**
-       * Custom panel components or array of components which will be displayed in the login form 
-       * right after the inputs. Use it to add custom authorization methods like social login or other custom fields e.g. 'reset' 
-       * password link.
-       */
-      loginPageInjections?: {
-        underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-      }
-
-      /**
-       * Custom panel components or array of components which will be displayed in different parts of the admin panel.
-       */
-      globalInjections?: {
-        userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-        sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-      }
-    }
+    customization?: AdminForthInputConfigCustomization,
 
     /**
      * If you want to Serve AdminForth from a subdirectory, e.g. on example.com/backoffice, you can specify it like:
@@ -947,16 +887,45 @@ export interface AdminForthConfig {
      * 
      */
     baseUrl?: string,
-    
-    
-    /**
-     * Whether to show delete confirmation dialog before deleting record.
-     * By default it is true.
-     */
-    deleteConfirmation?: boolean,
-    
-   
+ 
 }
+
+
+export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfigCustomization, 'loginPageInjections' | 'globalInjections'> {
+  brandName: string,
+
+  dateFormats: string,
+  timeFormat: string,
+  
+  /**
+   * Slug which will be used on tech side e.g. to store cookies separately.
+   * Created automatically from brandName if not set. 
+   */
+  brandNameSlug: string,
+  showBrandNameInSidebar: boolean,
+  customPages: Array<AdminForthPageDeclaration>,
+
+  loginPageInjections: {
+    underInputs: Array<AdminForthComponentDeclarationFull>,
+  },
+
+  globalInjections: {
+    userMenu: Array<AdminForthComponentDeclarationFull>,
+    header: Array<AdminForthComponentDeclarationFull>,
+    sidebar: Array<AdminForthComponentDeclarationFull>,
+  },
+}
+
+export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {
+  baseUrl: string;
+  baseUrlSlashed: string;
+
+  customization: AdminForthConfigCustomization,
+
+  resources: Array<AdminForthResource>,
+
+}
+
 
 // define typescript objects which I can instantiate as Filters.EQ(field, value) and they woudl
 // return { field: field, operator: 'eq', value: value }. They should be exported with Filters namespace so I can import Filters from this file
@@ -1051,16 +1020,20 @@ export type AllowedActionValue = boolean | (({adminUser, resource, meta, source,
 /**
  * Object which describes allowed actions for user.
  */
-export type AllowedActions = {
+export type AllowedActionsInput = {
   [key in AllowedActionsEnum]?: AllowedActionValue
 } & {
   all?: AllowedActionValue;
 }
 
+export type AllowedActions = {
+  [key in AllowedActionsEnum]: AllowedActionValue
+}
+
 /**
  * General options for resource.
  */
-export type ResourceOptions = Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> & {
+export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
@@ -1084,14 +1057,18 @@ export type ResourceOptions = Omit<AdminForthResourceCommon['options'], 'allowed
    * ```
    * 
    */
-  allowedActions?: AllowedActions,
+  allowedActions?: AllowedActionsInput,
 };
+
+export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActions'> {
+  allowedActions: AllowedActions,
+}
 
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
-export interface AdminForthResource extends Omit<AdminForthResourceCommon, 'options'> {
+export interface AdminForthResource extends Omit<AdminForthResourceInput, 'options'> {
   /**
    * Array of plugins which will be used to modify resource configuration.
    * 
@@ -1175,11 +1152,17 @@ export interface AdminForthResource extends Omit<AdminForthResourceCommon, 'opti
     },
   },
 
-  options?: ResourceOptions,
+  options: ResourceOptions,
 
   columns: Array<AdminForthResourceColumn>,
 
-  dataSourceColumns?: Array<AdminForthResourceColumn>,
+  dataSourceColumns: Array<AdminForthResourceColumn>,
+
+  recordLabel: (record: any) => string,
+
+  label: string,
+
+  resourceId: string,
 }
 
 export interface AdminForthBulkAction extends AdminForthBulkActionCommon {

@@ -175,13 +175,12 @@ class ExpressServer implements IExpressHttpServer {
         if (cookies) {
           const parsedCookies = parseCookiesString(cookies);
           // find adminforth_jwt
-          const brandSlug = this.adminforth.config.customization._brandNameSlug;
+          const brandSlug = this.adminforth.config.customization.brandNameSlug;
           const jwt = parsedCookies.find(({key}) => key === `adminforth_${brandSlug}_jwt`);
           if (jwt) {
             adminUser = await this.adminforth.auth.verify(jwt.value, 'auth');
           }
         }
-        process.env.HEAVY_DEBUG && console.log('🐛 🪨🪨 Received connection from user', adminUser?.username)
 
         this.adminforth.websocket.registerWsClient(
           new WebSocketClient({
@@ -215,7 +214,7 @@ class ExpressServer implements IExpressHttpServer {
   authorize(handler) {
     return async (req, res, next) => {
       const cookies = await parseExpressCookie(req);
-      const brandSlug = this.adminforth.config.customization._brandNameSlug;
+      const brandSlug = this.adminforth.config.customization.brandNameSlug;
       // check if multiple adminforth_jwt providerd and show warning
       const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
       if (jwts.length > 1) {

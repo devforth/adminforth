@@ -11,7 +11,7 @@
     <input
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', $event.target?.value)"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
       class="inline-flex bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 

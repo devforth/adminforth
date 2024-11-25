@@ -5,9 +5,9 @@ import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
-import AdminForth from '../index.js';
+import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash } from './utils.js';
-import { AdminForthConfigMenuItem, ICodeInjector } from '../types/Back.js';
+import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 
 
@@ -74,7 +74,7 @@ class CodeInjector implements ICodeInjector {
   devServerPort: number = null;
 
   spaTmpPath(): string {
-    const brandSlug = this.adminforth.config.customization._brandNameSlug
+    const brandSlug = this.adminforth.config.customization.brandNameSlug
     if (!brandSlug) {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
@@ -493,9 +493,9 @@ class CodeInjector implements ICodeInjector {
     
     indexHtmlContent = indexHtmlContent.replace(
       '/* IMPORTANT:ADMINFORTH FAVICON */',
-      this.adminforth.config.customization.favicon?.replace('@@/', `${this.adminforth.baseUrlSlashed}assets/`)
+      this.adminforth.config.customization.favicon?.replace('@@/', `${this.adminforth.config.baseUrlSlashed}assets/`)
           ||
-       `${this.adminforth.baseUrlSlashed}assets/favicon.png`
+       `${this.adminforth.config.baseUrlSlashed}assets/favicon.png`
     );
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
@@ -773,7 +773,7 @@ class CodeInjector implements ICodeInjector {
       });
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
-          // TODO: maybe be tter use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
+          // TODO: maybe better use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
 
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());

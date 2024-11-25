@@ -18,14 +18,16 @@ Create directory `custom`. Create a file `RoomsCell.vue` in it:
   </div>
 </template>
 
-<script setup>
-defineProps({
-  record: Object,
-  resource: Object,
-  adminUser: Object,
-  meta: Object,
-  column: Object
-});
+<script setup lang="ts">
+import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common';
+
+const props = defineProps<{
+    column: AdminForthResourceColumnCommon;
+    record: any;
+    meta: any;
+    resource: AdminForthResourceCommon;
+    adminUser: AdminUser
+}>();
 </script>
 ```
 
@@ -128,14 +130,16 @@ Now our component can read `filler` from `meta` prop:
   </div>
 </template>
 
-<script setup>
-defineProps({
-  record: Object,
-  resource: Object,
-  adminUser: Object,
-  meta: Object
-  column: Object
-});
+<script setup lang="ts">
+import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common';
+
+const props = defineProps<{
+    column: AdminForthResourceColumnCommon;
+    record: any;
+    meta: any;
+    resource: AdminForthResourceCommon;
+    adminUser: AdminUser
+}>();
 </script>
 ```
 
@@ -146,6 +150,26 @@ To install 3rd-party npm packages you should create npm package in the `custom` 
 ```bash
 cd custom
 npm init -y
+```
+
+> 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
+> ```json
+> {
+>   "compilerOptions": {
+>     "baseUrl": ".",
+>     "paths": {
+>       "@/*": [
+>         "../node_modules/adminforth/dist/spa/src/*"
+>       ],
+>       "*": [
+>         "../node_modules/adminforth/dist/spa/node_modules/*"
+>       ],
+>       "@@/*": [
+>         "."
+>       ]
+>     }
+>   }
+> }
 ```
 
 And simply do `npm install` for the package you need:
@@ -208,7 +232,8 @@ Renders string fields containing ISO-3166-1 alpha-2 country codes as flags (e.g.
         list: '@/renderers/CountryFlag.vue'
   //diff-add
       },
-    ...
+      ...
+    }
 ```
 
 ![alt text](<Group 13.png>)
@@ -250,21 +275,21 @@ It formats large numbers into a human-readable format (e.g., 10k, 1.5M) and supp
   columns: [
     ...
     { 
-          name: 'square_meter', 
-          label: 'Square', 
-          minValue: 1,  // you can set min /max value for number fields
-          maxValue: 100000000,
-          //diff-add
-          components: {
-          //diff-add
-            list: {
-          //diff-add
-              file: '@/renderers/HumanNumber.vue',
-          //diff-add
-            }
-          //diff-add
-          }
-        },
+      name: 'square_meter', 
+      label: 'Square', 
+      minValue: 1,  // you can set min /max value for number fields
+      maxValue: 100000000,
+      //diff-add
+      components: {
+      //diff-add
+        list: {
+      //diff-add
+          file: '@/renderers/HumanNumber.vue',
+      //diff-add
+        }
+      //diff-add
+      }
+    },
     {
     ...
 ```

@@ -49,7 +49,7 @@ export default class EmailPasswordReset extends AdminForthPlugin {
     }
 
 
-    (adminforth.config.customization.loginPageInjections.underInputs as AdminForthComponentDeclaration[]).push({ 
+    adminforth.config.customization.loginPageInjections.underInputs.push({ 
       file: this.componentPath('ResetPasswordUnderLogin.vue') }
     );
     adminforth.config.customization.customPages.push({

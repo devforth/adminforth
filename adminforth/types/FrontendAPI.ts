@@ -60,10 +60,6 @@ export interface FrontendAPIInterface {
          */
         closeThreeDotsDropdown(): void;
 
-        /**
-         * Close the user menu dropdown
-         */
-        closeUserMenuDropdown(): void;
 
         /**
          * Set a filter in the list
@@ -105,6 +101,11 @@ export interface FrontendAPIInterface {
          */
         refreshMenuBadges(): void;
     }
+
+    /**
+     * Close the user menu dropdown
+     */
+    closeUserMenuDropdown(): void;
 }
 
 export type ConfirmParams = {
