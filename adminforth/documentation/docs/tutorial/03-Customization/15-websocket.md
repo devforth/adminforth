@@ -50,8 +50,10 @@ import websocket from '@/websocket';
 import { IconDollarOutline } from '@iconify-prerendered/vue-flowbite';
 import { Tooltip } from '@/afcl';
 
+import type { AdminUser } from '@/types/Common';
+
 const props = defineProps({
-  adminUser: Object,
+  adminUser: AdminUser,
 });
 
 const totalCost: Ref<number|null> = ref(null);

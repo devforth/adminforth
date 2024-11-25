@@ -48,9 +48,17 @@ columns: [
     {{ getFlagEmojiFromIso(record.country) }}
 </template>
    
-<script setup>
-   const props = defineProps(['record']);
-   
+<script setup lang="ts">
+  import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common';
+
+  const props = defineProps<{
+      column: AdminForthResourceColumnCommon;
+      record: any;
+      meta: any;
+      resource: AdminForthResourceCommon;
+      adminUser: AdminUser
+  }>();
+    
    function getFlagEmojiFromIso(iso) {
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
    }
