@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - socket now is reconnected on logout and reconnected (to reset user and permissions on current connection)
 - also socket is reconnected on login to improve user auth and permissions on current connection
 
+### Imporved
+- fixed several typechecks for frontend and cusotm user frontend components
+- reshaped types on backend to distinguish inputs from runtime
+
 ## [1.5.3]
 
 ### Fixed
