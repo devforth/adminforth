@@ -325,7 +325,7 @@ function humanizeSnake(str: string): string {
   return str.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-watch([route, () => coreStore.resourceById], async () => {
+watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
   handleCustomLayout()
   await new Promise((resolve) => setTimeout(resolve, 0));
   let firstParam: string | null | string[] = Object.values(route.params)[0];

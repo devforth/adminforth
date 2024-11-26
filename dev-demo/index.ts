@@ -167,7 +167,7 @@ export const admin = new AdminForth({
     datesFormat: 'DD MMM',
     timeFormat: 'hh:mm a',
 
-    title: 'Devforth Admin',
+    // title: 'Devforth Admin',
     // brandLogo: '@@/df.svg',
     emptyFieldPlaceholder: '-',
     // styles:{
