@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - if selected checkboxes after refresh have no relevant items, they are now cleared (e.g. after delete manually or switching page)
+- for custom pages try use their label (same as in menu) after meta.title for the <meta> <title> tags
 
 ## [1.5.4]
 
