@@ -11,7 +11,7 @@ This allows to keep the design consistent with minimal efforts. ACL components w
 import { Button } from '@/afcl'
 ```
 
-```vue
+```html
 <Button @click="doSmth" :loader="showLoader" class="w-full">
   Your button text
 </Button>
@@ -26,7 +26,7 @@ loader prop would show loader when it's true.
 import { Link } from '@/afcl'
 ```
 
-```vue
+```html
 <Link to="/login">Go to login</Link>
 ```
 
@@ -38,7 +38,7 @@ Looks like button but works like link. Uses `router-link` under the hood.
 import { LinkButton } from '@/afcl'
 ```
 
-```vue
+```html
 <LinkButton to="/login">Go to login</LinkButton>
 ```
 
@@ -53,7 +53,7 @@ const selected = ref(null)
 
 ### Single
 
-```vue
+```html
 <Select
   :options="[
     {label: 'Last 7 days', value: '7'}, 
@@ -67,7 +67,7 @@ const selected = ref(null)
 
 ### Multiple
 
-```vue
+```html
 <Select
   :options="[
     {label: 'Last 7 days', value: '7'}, 
@@ -83,7 +83,7 @@ const selected = ref(null)
 
 ### Custom slots for item
 
-```vue
+```html
 <Select
     :options="[
       {label: 'Last 7 days', value: '7', records: 110},
@@ -114,7 +114,7 @@ const selected = ref(null)
 
 You might need to put some extra item at bottom of list
 
-```vue
+```html
 <Select
   :options="prices.map(price => ({label: price, value: price}))"
   v-model="selected"
@@ -127,7 +127,7 @@ You might need to put some extra item at bottom of list
 
 ## Input
 
-```vue
+```html
 
 <Input type="number" class="w-full">
   <template #suffix>
@@ -145,7 +145,7 @@ Wrap an element on which you would like to show a tooltip with the `Tooltip` com
 import { Tooltip } from '@/afcl'
 ```
 
-```vue
+```html
 <Tooltip>
     <a :href="`https://google.com?q=${record.title}`">
         <IconCardSearch class="w-5 h-5 me-2"/>
@@ -166,7 +166,7 @@ import { VerticalTabs } from '@/afcl'
 import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
 ```
 
-```vue
+```html
   <VerticalTabs>
     <template #tab:Profile>
       <IconUserCircleSolid class="w-5 h-5 me-2"/>
@@ -184,4 +184,36 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
       Dashboard Tab Content 
     </template>
   </VerticalTabs>
+```
+
+## Checkbox
+
+```html
+<Checkbox v-model="enable">
+  Enable
+</Checkbox>
+```
+
+```ts
+import { Checkbox } from '@/afcl'
+const enable = ref(false)
+```
+
+## Dropzone
+
+```html
+<Dropzone
+  :extensions="['.jpg', '.jpeg', '.png']"
+  :maxSizeBytes="1024 * 1024 * 2"
+  :multiple="false"
+  @select="onFileChange"
+/>
+
+```
+
+```ts
+import { Dropzone } from '@/afcl'
+const onFileChange = (files: File[]) => {
+  console.log(files)
+}
 ```

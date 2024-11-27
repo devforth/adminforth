@@ -17,9 +17,13 @@
       </template>
       <template #Dashboard>
       
-        
+        <Dropzone
+          :extensions="['.jpg', '.jpeg', '.png']"
+          :maxSizeBytes="1024 * 1024 * 2"
+          @select="onFileChange"
+        />
 
-        <Select
+        <!-- <Select
           v-model="selected"
           :options="[
             { label: 'Last 7 days', value: 'last7' },
@@ -45,7 +49,7 @@
               Create new apartment
             </LinkButton>
           </template>
-        </Select>
+        </Select> -->
       </template>
     </VerticalTabs>
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
@@ -109,7 +113,7 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Input, Select, VerticalTabs, LinkButton } from '@/afcl';
+import { Input, Select, VerticalTabs, LinkButton, Dropzone } from '@/afcl';
 import { useCoreStore } from '@/stores/core';
 
 const coreStore = useCoreStore();
@@ -118,6 +122,10 @@ const selected = ref(null);
 const activeTab = ref('Dashboard');
 
 const data = ref({});
+
+function onFileChange(file) {
+  console.log(12, file);
+}
 
 const optionsC1 = {
   chart: {
