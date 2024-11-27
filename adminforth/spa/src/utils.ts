@@ -24,7 +24,7 @@ export async function callApi({path, method, body=undefined}: {
   const r = await fetch(fullPath, options);
   if (r.status == 401 ) {
     useUserStore().unauthorize();
-    router.push({ name: 'login' });
+    await router.push({ name: 'login' });
     return null;
   } 
   return await r.json();

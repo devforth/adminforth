@@ -173,7 +173,7 @@
     </div> 
 
     <div v-else-if="routerIsReady && loginRedirectCheckIsReady && publicConfigLoaded">
-      <RouterView/>
+      <RouterView />
     </div>
 
     <div v-else class="flex items-center justify-center h-screen">
@@ -268,7 +268,7 @@ const sidebarAside = ref(null);
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
 
-const loggedIn = computed(() => route.name !== 'login');
+const loggedIn = computed(() => !!coreStore?.adminUser);
 
 const theme = ref('light');
 
