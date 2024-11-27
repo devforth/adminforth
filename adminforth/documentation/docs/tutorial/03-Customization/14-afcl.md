@@ -65,8 +65,6 @@ const selected = ref(null)
 ></Select>
 ```
 
-
-
 ### Multiple
 
 ```vue
@@ -112,8 +110,22 @@ const selected = ref(null)
 
 ![alt text](<Group 21.jpg>)
 
+### Extra item
 
-### Input
+You might need to put some extra item at bottom of list
+
+```vue
+<Select
+  :options="prices.map(price => ({label: price, value: price}))"
+  v-model="selected"
+>
+  <template #extra-item>
+    <LinkButton to="/prices">Manage prices</LinkButton>
+  </template>
+</Select>
+```
+
+## Input
 
 ```vue
 
@@ -125,7 +137,7 @@ const selected = ref(null)
 
 ```
 
-### Tooltip
+## Tooltip
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
   
@@ -145,7 +157,7 @@ import { Tooltip } from '@/afcl'
 </Tooltip>
 ```
 
-### VerticalTabs
+## VerticalTabs
 
 Wrap each tab lable in tamplate with v-slot value `tab:TAB_ALIAS`. Wrap each tab content in tamplate with v-slot value `TAB_ALIAS`. `TAB_ALIAS` is a unique identifier for each tab here. Place all templates inside `VerticalTabs` component.
 
