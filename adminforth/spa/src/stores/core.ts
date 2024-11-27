@@ -49,6 +49,7 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_base_config',
       method: 'GET',
     });
+
     if(!resp){
       return
     }

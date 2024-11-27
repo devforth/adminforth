@@ -16,7 +16,36 @@
         <p class="mb-2">This is some placeholder content the Profile tab's associated content, clicking another tab will toggle the visibility of this one for the next.</p>
       </template>
       <template #Dashboard>
-        Dashboard Tab Content 
+      
+        
+
+        <Select
+          v-model="selected"
+          :options="[
+            { label: 'Last 7 days', value: 'last7' },
+            { label: 'Last 30 days', value: 'last30' },
+            { label: 'Last 90 days', value: 'last90' },
+          ]"
+          class="w-48"
+        >
+          <template #extra-item>
+            <LinkButton
+              :to="{
+                name: 'resource-create',
+                params: {
+                  resourceId: 'aparts',
+                },
+                query: {
+                  values: encodeURIComponent(JSON.stringify({
+                    user_id: coreStore?.adminUser.dbUser.id 
+                  })),
+                },
+              }"
+            >
+              Create new apartment
+            </LinkButton>
+          </template>
+        </Select>
       </template>
     </VerticalTabs>
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
@@ -80,7 +109,10 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Input, Select, VerticalTabs } from '@/afcl';
+import { Input, Select, VerticalTabs, LinkButton } from '@/afcl';
+import { useCoreStore } from '@/stores/core';
+
+const coreStore = useCoreStore();
 
 const selected = ref(null);
 const activeTab = ref('Dashboard');
