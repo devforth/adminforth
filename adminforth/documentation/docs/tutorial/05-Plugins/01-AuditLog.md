@@ -73,6 +73,7 @@ Add this code in `auditLogs.ts`:
       allowedActions: {
         edit: false,
         delete: false,
+        create: false
       }
     },
     plugins: [
