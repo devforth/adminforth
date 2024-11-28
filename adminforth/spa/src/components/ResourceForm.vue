@@ -13,6 +13,8 @@
         :validating="validating"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
+        :customComponentsInValidity="customComponentsInValidity"
+        :customComponentsEmptiness="customComponentsEmptiness"
         />
       </div>
       <div v-else class="flex flex-col gap-4">
@@ -28,6 +30,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
+          :customComponentsInValidity="customComponentsInValidity"
+          :customComponentsEmptiness="customComponentsEmptiness"
           />
         </template>
         <div v-if="otherColumns.length > 0">
@@ -42,6 +46,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
+          :customComponentsInValidity="customComponentsInValidity"
+          :customComponentsEmptiness="customComponentsEmptiness"
           />
         </div>
       </div>

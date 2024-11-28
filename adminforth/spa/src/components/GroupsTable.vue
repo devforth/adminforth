@@ -50,8 +50,8 @@
                 @update:value="setCurrentValue(column.name, $event)"
                 :meta="column.components[props.source].meta"
                 :record="currentValues"
-                @update:inValidity="customComponentsInValidity[column.name] = $event"
-                @update:emptiness="customComponentsEmptiness[column.name] = $event"
+                @update:inValidity="localValidity.value[column.name] = $event"
+                @update:emptiness="localEmptiness.value[column.name] = $event"
               />
             </template>
             <template v-else>
@@ -156,10 +156,10 @@
   import Select from '@/afcl/Select.vue';
   import { getCustomComponent } from '@/utils';
   import { Tooltip } from '@/afcl';
-
+  import { ref, watch } from 'vue';
 
   const props = defineProps({
-    source: 'create' | 'edit',
+    source: String,
     group: Object,
     mode: String,
     validating: Boolean,
@@ -167,6 +167,19 @@
     unmasked: Object,
     columnError: Function,
     setCurrentValue: Function,
-    columnOptions: Object
+    columnOptions: Object,
+    customComponentsInValidity: Object,
+    customComponentsEmptiness: Object,
   });
+
+  const localValidity = ref({ ...props.customComponentsInValidity });
+  const localEmptiness = ref({ ...props.customComponentsEmptiness });
+
+  watch(localValidity, (newValue) => {
+    emit('update:customComponentsInValidity', newValue);
+  }, { deep: true });
+
+  watch(localEmptiness, (newValue) => {
+    emit('update:customComponentsEmptiness', newValue);
+  }, { deep: true });
 </script>

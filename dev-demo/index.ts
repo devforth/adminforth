@@ -460,7 +460,7 @@ export const admin = new AdminForth({
         },
         {
           name: 'apartment_image',
-          showIn: ['show',],
+          showIn: ['show', 'create', 'edit'],
           required: false,
           editingNote: 'Upload image of apartment',
         },

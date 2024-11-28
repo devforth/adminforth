@@ -16,6 +16,8 @@ const DB_FILE = 'db/test.sqlite';
 let db;
 
 const ADMIN_BASE_URL = '';
+const DEMO_EMAIL  = 'demo@adminfoth.dev';
+const DEMO_PASSWORD = 'demo';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
@@ -31,8 +33,8 @@ export const admin = new AdminForth({
     usersResourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
-    demoCredentials: "demo@adminforth.dev:demo",  // never use it for production
-    loginPromptHTML: "Use email <b>demo@adminforth.dev</b> and password <b>demo</b> to login",
+    demoCredentials: `${DEMO_EMAIL}:${DEMO_PASSWORD}`,  // never use it for production
+    loginPromptHTML: `Use email <b>${DEMO_EMAIL}</b> and password <b>${DEMO_PASSWORD}</b> to login`,
   },
   customization: {
     brandName: 'My Admin',
@@ -554,6 +556,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       await admin.resource('users').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+    if (!await admin.resource('users').get([Filters.EQ('email', DEMO_EMAIL)])) {
+      await admin.resource('users').create({
+        email: DEMO_EMAIL,
+        password_hash: await AdminForth.Utils.generatePasswordHash(DEMO_PASSWORD ),
         role: 'superadmin',
       });
     }
