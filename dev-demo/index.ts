@@ -599,6 +599,11 @@ export const admin = new AdminForth({
             },
             expert: {
               debounceTime: 250,
+              
+            },
+            rateLimit: {
+              limit: '2/1m',
+              errorMessage: 'For demo purposes, you can generate only 2 completions per minute',
             }
           }, 
           // requires to have table 'description_images' with upload plugin installed on attachment field

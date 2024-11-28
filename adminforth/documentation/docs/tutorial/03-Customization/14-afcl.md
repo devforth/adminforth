@@ -212,9 +212,10 @@ const enable = ref(false)
 ```
 
 ```ts
+import { Ref } from 'vue'
 import { Dropzone } from '@/afcl'
 
-const files = ref<File[]>([])
+const files: Ref<File[]> = ref([])
 
 watch(files, (files) => {
   console.log('files selected', files);

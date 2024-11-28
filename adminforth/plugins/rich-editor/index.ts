@@ -1,7 +1,7 @@
 
 import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser, AfterSaveFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
-import { AdminForthPlugin, Filters, getClientIp, RateLimiter } from "adminforth";
+import { AdminForthPlugin, Filters, RateLimiter } from "adminforth";
 import * as cheerio from 'cheerio';
 
 
@@ -22,6 +22,8 @@ export default class RichEditorPlugin extends AdminForthPlugin {
   activationOrder: number = 100000;
 
   attachmentResource: AdminForthResource = undefined;
+
+  adminforth: IAdminForth;
   
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -30,6 +32,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
+    this.adminforth = adminforth;
 
     const c = resourceConfig.columns.find(c => c.name === this.options.htmlFieldName);
     if (!c) {
@@ -204,6 +207,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    this.adminforth = adminforth;
     // optional method where you can safely check field types after database discovery was performed
     if (this.options.completion && this.options.completion.provider !== 'openai-chat-gpt') {
       throw new Error(`Invalid provider ${this.options.completion.provider}`);
@@ -265,7 +269,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
           const { error } = RateLimiter.checkRateLimit(
             this.pluginInstanceId, 
             this.options.completion.rateLimit?.limit,
-            getClientIp(headers),
+            this.adminforth.auth.getClientIp(headers),
           );
           if (error) {
             return {

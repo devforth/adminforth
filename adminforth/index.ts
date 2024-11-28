@@ -64,6 +64,7 @@ class AdminForth implements IAdminForth {
       regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
       message: 'Email is not valid, must be in format example@test.com',
     }
+
   }
 
   config: AdminForthConfig;
