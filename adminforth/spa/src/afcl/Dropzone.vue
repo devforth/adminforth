@@ -55,6 +55,7 @@ const props = defineProps<{
   extensions: string[],
   maxSizeBytes: number,
   multiple: boolean,
+  modelValue: FileList,
 }>();
 
 const emit = defineEmits(['update:modelValue']);
@@ -66,6 +67,14 @@ const selectedFiles: Ref<{
   size: number,
   mime: string,
 }[]> = ref([]);
+
+watch(() => props.modelValue, (files) => {
+  selectedFiles.value = Array.from(files).map(file => ({
+    name: file.name,
+    size: file.size,
+    mime: file.type,
+  }));
+});
 
 function doEmit(filesIn: FileList) {
 
@@ -81,8 +90,9 @@ function doEmit(filesIn: FileList) {
     mime: file.type,
   }));
 
-  emit('select', Array.from(files));
+  emit('update:modelValue', Array.from(files));
 }
 
 const dragging = ref(false);
+
 </script>
