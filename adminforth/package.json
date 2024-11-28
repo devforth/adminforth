@@ -39,7 +39,7 @@
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
     "@types/express": "^5.0.0",
-    "adminforth": "^1.5.5-next.3",
+    "adminforth": "^1.5.5-next.4",
     "better-sqlite3": "^11.5.0",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
