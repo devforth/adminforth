@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import AdminForth from './index.js';
+import { IAdminForthAuth } from './types/Back.js';
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -35,11 +36,39 @@ function parseTimeToSeconds(time: string): number {
   }
 }
 
-class AdminForthAuth {
+class AdminForthAuth implements IAdminForthAuth {
   adminforth: AdminForth;
 
   constructor(adminforth) {
     this.adminforth = adminforth;
+  }
+
+  getClientIp(headers: object) {
+    const clientIpHeader = this.adminforth.config.auth.clientIpHeader;
+
+    const headersLower = Object.keys(headers).reduce((acc, key) => {
+      acc[key.toLowerCase()] = headers[key];
+      return acc;
+    }, {});
+    if (clientIpHeader) {
+      return headersLower[clientIpHeader.toLowerCase()] || 'unknown';
+    } else {
+      // first try common headers which can't bee spoofed, in other words
+      // most common to nginx/traefik/apache
+      // then fallback to less secure headers
+      return headersLower['x-forwarded-for']?.split(',').shift().trim() ||
+       headersLower['x-real-ip'] || 
+       headersLower['x-client-ip'] || 
+       headersLower['x-cluster-client-ip'] || 
+       headersLower['forwarded'] || 
+       headersLower['remote-addr'] || 
+       headersLower['client-ip'] || 
+       headersLower['client-address'] || 
+       headersLower['client'] || 
+       headersLower['x-host'] || 
+       headersLower['host'] || 
+       'unknown';
+    }
   }
 
   removeAuthCookie(response) {

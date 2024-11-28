@@ -252,6 +252,7 @@ export interface IAdminForthDataSourceConnectorConstructor {
 
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
+
   issueJWT(payload: Object, type: string, expiresIn?: string): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
@@ -259,6 +260,8 @@ export interface IAdminForthAuth {
   setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
+
+  getClientIp(headers: any): string;
 }
 
 export interface IAdminForthRestAPI {
@@ -840,6 +843,13 @@ export interface AdminForthInputConfig {
        * @returns 
        */
       websocketSubscribed?: (topic: string, user: AdminUser) => void,
+
+      /**
+       * Client IP header name. If set, AdminForth will use this header to get client IP address.
+       * Otherwise it will use first IP address from X-Forwarded-For header.
+       * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
+       */
+      clientIpHeader?: string,
     },
 
      /**

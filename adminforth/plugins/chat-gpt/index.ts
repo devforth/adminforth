@@ -1,5 +1,5 @@
 
-import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes, getClientIp, RateLimiter } from "adminforth";
+import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminForthDataTypes, RateLimiter } from "adminforth";
 import { PluginOptions } from './types.js';
 
 
@@ -9,6 +9,8 @@ export default class ChatGptPlugin extends AdminForthPlugin {
   resourceConfig!: AdminForthResource;
 
   columnType!: AdminForthDataTypes;
+
+  adminforth!: IAdminForth;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -21,6 +23,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
 
  
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    this.adminforth = adminforth;
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
     if (![AdminForthDataTypes.STRING, AdminForthDataTypes.TEXT].includes(column!.type!)) {
       throw new Error(`Field ${this.options.fieldName} should be string or text type, but it is ${column!.type}`);
@@ -77,7 +80,7 @@ export default class ChatGptPlugin extends AdminForthPlugin {
           const { error } = RateLimiter.checkRateLimit(
             this.pluginInstanceId, 
             this.options.rateLimit?.limit,
-            getClientIp(headers),
+            this.adminforth.auth.getClientIp(headers),
           );
           if (error) {
             return {

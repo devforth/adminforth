@@ -50,6 +50,7 @@
 import { humanifySize } from '@/utils';
 import { ref } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
+import { watch } from 'vue';
 
 const props = defineProps<{
   extensions: string[],
