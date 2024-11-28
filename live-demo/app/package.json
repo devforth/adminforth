@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsx --env-file=.env watch index.ts",
+    "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
     "startLive": "tsx index.ts"
@@ -22,7 +22,7 @@
     "@adminforth/rich-editor": "^1.0.14",
     "@adminforth/two-factors-auth": "^1.0.21",
     "@adminforth/upload": "^1.0.20",
-    "adminforth": "^1.5.3",
+    "adminforth": "^1.5.5-next.4",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
