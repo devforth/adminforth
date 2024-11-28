@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - afcl Select now supports `extra-item` slot to add extra item at the bottom of the list
 
+### Added
+
+- afcl Checkbox and afcl Dropzone
+
 
 ## [1.5.4]
 
