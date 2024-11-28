@@ -43,6 +43,11 @@
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
         No results found
       </div>
+
+      <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
+        <slot name="extra-item"></slot>
+      </div>
+
     </div>
 
     <div v-if="multiple && selectedItems.length"

@@ -239,6 +239,40 @@ new AdminForth({
 > Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#modify-the-data-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
 
 
+### Link to create form with preset values
+
+Sometimes you might need to create a link that will open the create form with some fields pre-filled. For example, you might want to create a link that will open the create form with the realtor_id field pre-filled with the current user's ID.
+
+```html title="./resources/Dashboard.vue
+<template>
+  ...
+  <LinkButton
+    :to="{
+      name: 'resource-create',
+      params: {
+        resourceId: 'aparts',
+      },
+      query: {
+        values: encodeURIComponent(JSON.stringify({
+          realtor_id: coreStore?.adminUser.dbUser.id 
+        })),
+      },
+    }"
+  >
+    Create new apartment
+  </LinkButton>
+  ...
+</template>
+
+<script setup lang="ts">
+import { LinkButton } from '@afcl';
+import { useCoreStore } from '@/stores/core';
+
+const coreStore = useCoreStore();
+</script>
+```
+
+
 ## Editing
 
 You can set a column `editReadonly` so it will be shown in the edit form but will be disabled.  
