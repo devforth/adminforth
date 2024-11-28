@@ -108,7 +108,6 @@ const initalValues = computed(() => {
 });
 
 
-
 async function onUpdateRecord(newRecord) {
   console.log('newRecord', newRecord);
   record.value = newRecord;

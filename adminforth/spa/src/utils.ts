@@ -24,7 +24,7 @@ export async function callApi({path, method, body=undefined}: {
   const r = await fetch(fullPath, options);
   if (r.status == 401 ) {
     useUserStore().unauthorize();
-    router.push({ name: 'login' });
+    await router.push({ name: 'login' });
     return null;
   } 
   return await r.json();
@@ -161,4 +161,17 @@ export function setQuery(query: any) {
 
 export function verySimpleHash(str: string): string {
   return `${str.split('').reduce((a, b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)}`;
+}
+
+export function humanifySize(size) {
+  if (!size) {
+    return '';
+  }
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let i = 0
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024
+    i++
+  }
+  return `${size.toFixed(1)} ${units[i]}`
 }

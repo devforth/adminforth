@@ -28,7 +28,7 @@ Let's say we want to show realtor sum of all his properties in the AdminForth in
 
 Create a component `PropertyCost.vue`:
 
-```vue title="./custom/PropertyCost.vue"
+```html title="./custom/PropertyCost.vue"
 <template>
   <div v-show="totalCost !== null" 
     class="flex items-center justify-center w-full h-full bg-gray-100 text-gray-800 text-xs font-medium p-1 rounded 
