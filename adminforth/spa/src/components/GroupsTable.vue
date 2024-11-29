@@ -150,31 +150,31 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { IconExclamationCircleSolid, IconEyeSlashSolid, IconEyeSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import { getCustomComponent } from '@/utils';
   import { Tooltip } from '@/afcl';
-  import { ref, computed, watch } from 'vue';
+  import { ref, computed, watch, type Ref } from 'vue';
 
-  const props = defineProps({
-    source: String,
-    group: Object,
-    mode: String,
-    validating: Boolean,
-    currentValues: Object,
-    unmasked: Object,
-    columnError: Function,
-    setCurrentValue: Function,
-    columnOptions: Object,
-  });
+  const props = defineProps<{
+    source: 'create' | 'edit',
+    group: any,
+    mode: string,
+    validating: boolean,
+    currentValues: any,
+    unmasked: any,
+    columnError: (column: any) => string,
+    setCurrentValue: (columnName: string, value: any) => void,
+    columnOptions: (column: any) => any,
+  }>();
 
   const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
 
 
-  const customComponentsInValidity = ref({});
-  const customComponentsEmptiness = ref({});
+  const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
+  const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
 
   watch(customComponentsInValidity, (newVal) => {
     emit('update:customComponentsInValidity', newVal);
