@@ -206,14 +206,22 @@ const enable = ref(false)
   :extensions="['.jpg', '.jpeg', '.png']"
   :maxSizeBytes="1024 * 1024 * 2"
   :multiple="false"
-  @select="onFileChange"
+  v-model="files"
 />
 
 ```
 
 ```ts
+import { Ref } from 'vue'
 import { Dropzone } from '@/afcl'
-const onFileChange = (files: File[]) => {
-  console.log(files)
-}
+
+const files: Ref<File[]> = ref([])
+
+watch(files, (files) => {
+  console.log('files selected', files);
+  setTimeout(() => {
+    // clear
+    files.length = 0;
+  }, 5000);
+})
 ```
