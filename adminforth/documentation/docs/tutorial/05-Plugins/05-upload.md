@@ -101,7 +101,7 @@ export const admin = new AdminForth({
 //diff-add
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
 //diff-add
-      maxFileSize: 1024 * 1024 * 20, // 5MB
+      maxFileSize: 1024 * 1024 * 20, // 20 MB
 //diff-add
       s3Path: ({originalFilename, originalExtension, contentType}) => 
 //diff-add
