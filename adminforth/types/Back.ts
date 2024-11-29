@@ -301,15 +301,15 @@ export interface IAdminForth {
   };
 
   createResourceRecord(
-    params: { resource: AdminForthResource, record: any, adminUser: AdminUser }
+    params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser }
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }>;
 
   deleteResourceRecord(
-    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any }
+    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any, extra?: HttpExtra }
   ): Promise<{ error?: string }>;
 
   auth: IAdminForthAuth;
@@ -437,6 +437,12 @@ export type AfterDataSourceResponseFunction = (params: {
   adminforth: IAdminForth,
 }) => Promise<{ok: boolean, error?: string}>;
 
+export interface HttpExtra {
+  body: any,
+  query: Record<string, string>,
+  headers: Record<string, string>,
+  cookies: Record<string, string>,
+}
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
@@ -448,6 +454,7 @@ export type BeforeSaveFunction = (params: {
   record: any, 
   oldRecord?: any,
   adminforth: IAdminForth,
+  extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
 /**
@@ -461,6 +468,7 @@ export type AfterSaveFunction = (params: {
   record: any, 
   oldRecord?: any,
   adminforth: IAdminForth,
+  extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
 /**
@@ -470,6 +478,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     adminUser: AdminUser,
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
+    extra?: HttpExtra,
 }) => Promise<{
   error?: string, 
   body: {

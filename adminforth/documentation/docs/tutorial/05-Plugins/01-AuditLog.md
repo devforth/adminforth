@@ -153,9 +153,68 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         null, // recordId can be null if not applicable
         'visitedDashboard',
         { dashboard: 'main' },
-        req.adminUser
+        req.adminUser,
+        req.headers //required if you want log client ip
       )
 
       ....
 
+```
+
+## Logging client ip address
+
+Audit log can also log the client's IP address if needed.
+
+First, you need to migrate the `audit_logs` table in `./schema.prisma`:
+
+```ts title='./schema.prisma'
+model audit_logs {
+  id                String      @id
+  created_at        DateTime  /// timestamp of applied change
+  resource_id       String    /// identifier of resource where change were applied
+  user_id           String    /// identifier of user who made the changes
+  action            String    /// type of change (create, edit, delete)
+  diff              String?   /// delta betwen before/after versions
+  record_id         String?   /// identifier of record that been changed
+  //diff-add
+  ip_address        STRING?   /// client ip address
+}
+```
+
+And `prisma migrate`:
+
+```bash
+npx --yes prisma migrate dev --name add-ip-address-to-audit-logs
+```
+
+Also, update the resource configuration in `./resources/auditLogs.ts`:
+
+```ts title='./resources/auditLogs.ts'
+  export default {
+    dataSource: 'maindb', 
+    table: 'audit_logs',
+    columns: [
+      ...
+      { name: 'action', required: false },
+      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
+      { name: 'record_id', required: false },
+      //diff-add
+      { name: 'ip_address', required: false },
+    ],
+    ...
+    plugins: [
+      new AuditLogPlugin({
+        resourceColumns: {
+          resourceIdColumnName: 'resource_id',
+          resourceActionColumnName: 'action',
+          resourceDataColumnName: 'diff',
+          resourceUserIdColumnName: 'user_id',
+          resourceRecordIdColumnName: 'record_id',
+          resourceCreatedColumnName: 'created_at'
+          //diff-add
+          resourceIpColumnName: "ip_address",
+        }
+      }),
+    ],
+  }
 ```

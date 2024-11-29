@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -29,7 +29,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
-  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object) => {
+  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object, extra?: HttpExtra) => {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
     const connector = this.adminforth.connectors[resource.dataSource];
@@ -73,7 +73,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       // utc iso string
-      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format()
+      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
+      ...(this.options.resourceColumns.resourceIpColumnName && extra?.headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(extra.headers)} : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
@@ -88,7 +89,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
    * @param data - The data to be stored in the audit log
    * @param user - The adminUser user performing the action
    */
-  logCustomAction = async (resourceId: string | null=null, recordId: string | null=null, actionId: string, data: Object, user: AdminUser) => {
+  logCustomAction = async (resourceId: string | null=null, recordId: string | null=null, actionId: string, data: Object, user: AdminUser, headers?: Record<string, string>) => {
     if (resourceId) {
       const resource = this.adminforth.config.resources.find((r) => r.resourceId === resourceId);
       if (!resource) {
@@ -103,7 +104,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': {}, 'newRecord': data },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
-      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format()
+      [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
+      ...(this.options.resourceColumns.resourceIpColumnName && headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(headers)} : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
@@ -147,8 +149,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
 
       ['edit', 'create', 'delete'].forEach((hook) => {
-        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord}) => {
-          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord)
+        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord, extra}) => {
+          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord, extra)
         })
       })
     })

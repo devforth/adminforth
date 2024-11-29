@@ -1,0 +1,52 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_FILE_URL")
+}
+
+model users {
+    id            String   @id
+    created_at    DateTime
+    email         String   @unique
+    role          String
+    password_hash String
+    secret2fa     String?
+    last_login_ip String?
+}
+
+model apartments {
+    id              String    @id
+    created_at      DateTime?
+    title           String
+    square_meter    Float?
+    price           Decimal
+    number_of_rooms Int?
+    description     String?
+    country         String?
+    listed          Boolean   @default(false)
+    realtor_id      String?
+    property_type   String    @default("apartment")
+    user_id         String?
+}
+
+model audit_log {
+    id          String   @id
+    created_at  DateTime
+    resource_id String
+    user_id     String
+    action      String
+    diff        String?
+    record_id   String?
+    ip_address  String?
+}
+
+model description_image {
+    id          String   @id
+    created_at  DateTime
+    resource_id String
+    record_id   String
+    image_path  String
+}
