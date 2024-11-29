@@ -257,7 +257,6 @@ const sideBarOpen = ref(false);
 const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
-const title = ref('');
 //create a ref to store the opened menu items with ts type;
 const opened = ref<string[]>([]);
 const publicConfigLoaded = ref(false);
@@ -325,19 +324,27 @@ function humanizeSnake(str: string): string {
   return str.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
-  handleCustomLayout()
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  let firstParam: string | null | string[] = Object.values(route.params)[0];
+const title = computed(() => {
+  let firstParam: string | null | string[] = route?.params ? Object.values(route.params)[0] : null;
   if (typeof firstParam !== 'string') {
     firstParam = null;
   }
   const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || (firstParam ? humanizeSnake(firstParam as string) : null);
-  title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
-  
-  useHead({
-    title: title.value,
-  })
+  return `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
+});
+
+// TODO - useHead not working in this way
+// useHead({
+//   title: title.value
+// })
+watch(title, (title) => {
+  document.title = title;
+})
+
+watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
+  handleCustomLayout()
+  await new Promise((resolve) => setTimeout(resolve, 0));
+ 
 });
 
 watch(()=>coreStore.menu, () => {
