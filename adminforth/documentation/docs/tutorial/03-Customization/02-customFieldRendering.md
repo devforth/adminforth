@@ -43,13 +43,13 @@ Now you can use this component in the configuration of the resource:
       ...
       name: 'number_of_rooms',
 //diff-add
-     components: {
+      components: {
 //diff-add
-       show: '@@/RoomsCell.vue',
+        show: '@@/RoomsCell.vue',
 //diff-add
-       list: '@@/RoomsCell.vue',
+        list: '@@/RoomsCell.vue',
 //diff-add
-     }
+      }
     },
     ...
   ],
