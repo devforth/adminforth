@@ -50,8 +50,8 @@
                 @update:value="setCurrentValue(column.name, $event)"
                 :meta="column.components[props.source].meta"
                 :record="currentValues"
-                @update:inValidity="localValidity.value[column.name] = $event"
-                @update:emptiness="localEmptiness.value[column.name] = $event"
+                @update:inValidity="customComponentsInValidity[column.name] = $event"
+                @update:emptiness="customComponentsEmptiness[column.name] = $event"
               />
             </template>
             <template v-else>
@@ -156,7 +156,7 @@
   import Select from '@/afcl/Select.vue';
   import { getCustomComponent } from '@/utils';
   import { Tooltip } from '@/afcl';
-  import { ref, watch } from 'vue';
+  import { ref, computed, watch } from 'vue';
 
   const props = defineProps({
     source: String,
@@ -168,18 +168,20 @@
     columnError: Function,
     setCurrentValue: Function,
     columnOptions: Object,
-    customComponentsInValidity: Object,
-    customComponentsEmptiness: Object,
   });
 
-  const localValidity = ref({ ...props.customComponentsInValidity });
-  const localEmptiness = ref({ ...props.customComponentsEmptiness });
+  const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
 
-  watch(localValidity, (newValue) => {
-    emit('update:customComponentsInValidity', newValue);
-  }, { deep: true });
 
-  watch(localEmptiness, (newValue) => {
-    emit('update:customComponentsEmptiness', newValue);
-  }, { deep: true });
+  const customComponentsInValidity = ref({});
+  const customComponentsEmptiness = ref({});
+
+  watch(customComponentsInValidity, (newVal) => {
+    emit('update:customComponentsInValidity', newVal);
+  });
+
+  watch(customComponentsEmptiness, (newVal) => {
+    emit('update:customComponentsEmptiness', newVal);
+  });
+
 </script>
