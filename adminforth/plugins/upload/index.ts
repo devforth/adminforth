@@ -410,7 +410,6 @@ export default class UploadPlugin extends AdminForthPlugin {
         let previewUrl;
         if (this.options.preview?.previewUrl) {
           previewUrl = this.options.preview.previewUrl({ s3Path });
-          return;
         } else if (this.options.s3ACL === 'public-read') {
           previewUrl = `https://${this.options.s3Bucket}.s3.${this.options.s3Region}.amazonaws.com/${s3Path}`;
         } else {
