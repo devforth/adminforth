@@ -72,6 +72,11 @@ export type PluginOptions = {
     showInShow?: boolean,
 
     /**
+     * Maximum width of the preview image
+     */
+    maxWidth?: string,
+
+    /**
      * Used to display preview (if it is image) in list and show views.
      * Defaulted to the AWS S3 presigned URL if resource is private or public URL if resource is public.
      * Can be used to generate custom e.g. CDN(e.g. Cloudflare) URL to worm up cache and deliver preview faster.
