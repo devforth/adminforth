@@ -18,7 +18,7 @@
         />
       </div>
       <div v-else class="flex flex-col gap-4">
-        <template v-for="group in groupedColumns" :key="group.groupName" class="flex flex-col gap-4"> 
+        <template v-for="group in groupedColumns" :key="group.groupName"> 
           <GroupsTable
           :source="source"
           :group="group"
