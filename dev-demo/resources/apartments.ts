@@ -357,6 +357,7 @@ export default {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
               showInList: true,
+              maxWidth: '200px',
             },
           }),
         ]
