@@ -19,6 +19,7 @@ import {
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
   IWebSocketBroker,
+  HttpExtra,
 } from './types/Back.js';
 
 import {
@@ -64,6 +65,7 @@ class AdminForth implements IAdminForth {
       regExp: '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$',
       message: 'Email is not valid, must be in format example@test.com',
     }
+
   }
 
   config: AdminForthConfig;
@@ -268,8 +270,8 @@ class AdminForth implements IAdminForth {
   }
 
   async createResourceRecord(
-    { resource, record, adminUser }: 
-    { resource: AdminForthResource, record: any, adminUser: AdminUser }
+    { resource, record, adminUser, extra }: 
+    { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
     // execute hook if needed
@@ -280,6 +282,7 @@ class AdminForth implements IAdminForth {
         record, 
         adminUser,
         adminforth: this,
+        extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -313,6 +316,7 @@ class AdminForth implements IAdminForth {
         record: createdRecord, 
         adminUser,
         adminforth: this,
+        extra,
       });
 
       if (!resp || (!resp.ok && !resp.error)) {
@@ -331,8 +335,8 @@ class AdminForth implements IAdminForth {
    * record is partial record with only changed fields
    */
   async updateResourceRecord(
-    { resource, recordId, record, oldRecord, adminUser }:
-    { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser }
+    { resource, recordId, record, oldRecord, adminUser, extra }:
+    { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
 
     // execute hook if needed
@@ -344,6 +348,7 @@ class AdminForth implements IAdminForth {
         oldRecord,
         adminUser,
         adminforth: this,
+        extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -379,6 +384,7 @@ class AdminForth implements IAdminForth {
         oldRecord,
         recordId,
         adminforth: this,
+        extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
@@ -392,8 +398,8 @@ class AdminForth implements IAdminForth {
   }
 
   async deleteResourceRecord(
-    { resource, recordId, adminUser, record }:
-    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any }
+    { resource, recordId, adminUser, record, extra }:
+    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.beforeSave as BeforeSaveFunction[])) {
@@ -403,6 +409,7 @@ class AdminForth implements IAdminForth {
         adminUser,
         recordId,
         adminforth: this,
+        extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
@@ -424,6 +431,7 @@ class AdminForth implements IAdminForth {
         adminUser,
         recordId,
         adminforth: this,
+        extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
         throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);

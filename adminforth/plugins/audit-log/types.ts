@@ -35,6 +35,8 @@ export type PluginOptions = {
         resourceRecordIdColumnName: string
 
         resourceCreatedColumnName: string
+        
+        resourceIpColumnName?: string
     }
 
 }

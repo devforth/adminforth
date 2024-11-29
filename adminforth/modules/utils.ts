@@ -357,18 +357,10 @@ export function suggestIfTypo(names: string[], name: string): string {
   }
 }
 
+
+// TODO, remove, legacy
 export function getClientIp(headers: object) {
-  return headers['CF-Connecting-IP'] || 
-    headers['x-forwarded-for'] || 
-    headers['x-real-ip'] || 
-    headers['x-client-ip'] || 
-    headers['x-proxy-user'] || 
-    headers['x-cluster-client-ip'] || 
-    headers['forwarded'] || 
-    headers['remote-addr'] || 
-    headers['client-ip'] || 
-    headers['x-client-ip'] || 
-    headers['x-real-ip'] || 'unknown';
+  throw new Error('getClientIp is deprecated, use admin.auth.getClientIp. If this error dropped from plugin, please update the plugin');
 }
 
 export function md5hash(str:string) {
