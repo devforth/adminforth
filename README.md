@@ -60,6 +60,8 @@ npm run ci-plugins
 # this is dev demo for development
 cd dev-demo
 cp .env.sample .env
-npm ci && npm start
+npm ci
+npm run migrate
+npm start
 ```
 
