@@ -284,3 +284,34 @@ new UploadPlugin({
   }
       ...
 });
+```
+
+### Max-width for preview image
+
+You can set the maximum width for the preview image in the `./resources/apartments.ts` file by adding the `maxWidth` property to the `preview` configuration:
+
+```ts title="./resources/apartments.ts"
+  ...
+  new UploadPlugin({
+    pathColumnName: 'apartment_image',
+    s3Bucket: 'my-bucket', // ❗ Your bucket name
+    s3Region: 'us-east-1', // ❗ Selected region
+    s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+    maxFileSize: 1024 * 1024 * 20, // 20 MB
+    s3Path: ({originalFilename, originalExtension, contentType}) => 
+      `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+    preview: {
+    showInList: true,
+    //diff-add
+    maxWidth: '200px', // Set the maximum width for the preview image
+    ...
+    }
+
+  })
+  
+  ...
+
+});
+```
