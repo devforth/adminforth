@@ -334,6 +334,7 @@ watch([route, () => coreStore.resourceById, () => coreStore.config], async () =>
   }
   const resourceTitle = coreStore.resourceById[route.params?.resourceId as string]?.label || (firstParam ? humanizeSnake(firstParam as string) : null);
   title.value = `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
+  
   useHead({
     title: title.value,
   })
