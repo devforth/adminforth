@@ -13,10 +13,12 @@
         :validating="validating"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
+        @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
+        @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
         />
       </div>
       <div v-else class="flex flex-col gap-4">
-        <template v-for="group in groupedColumns" :key="group.groupName" class="flex flex-col gap-4"> 
+        <template v-for="group in groupedColumns" :key="group.groupName"> 
           <GroupsTable
           :source="source"
           :group="group"
@@ -28,6 +30,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
           />
         </template>
         <div v-if="otherColumns.length > 0">
@@ -42,6 +46,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
           />
         </div>
       </div>
@@ -77,7 +83,6 @@ const mode = computed(() => route.name === 'resource-create' ? 'create' : 'edit'
 const emit = defineEmits(['update:record', 'update:isValid']);
 
 const currentValues = ref(null);
-
 const customComponentsInValidity = ref({});
 const customComponentsEmptiness = ref({});
 
