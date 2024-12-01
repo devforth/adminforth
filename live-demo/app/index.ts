@@ -80,7 +80,7 @@ export const admin = new AdminForth({
       options: {
         allowedActions: {
             edit: false,
-            delete: false,
+            // delete: false,
         }
       },
       plugins: [
@@ -552,18 +552,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // serve after you added all api
   admin.express.serve(app)
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
-        email: 'adminforth',
-        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
-        role: 'superadmin',
-      });
-    }
     if (!await admin.resource('users').get([Filters.EQ('email', DEMO_EMAIL)])) {
       await admin.resource('users').create({
         email: DEMO_EMAIL,
         password_hash: await AdminForth.Utils.generatePasswordHash(DEMO_PASSWORD ),
-        role: 'superadmin',
+        role: 'user',
       });
     }
   });
