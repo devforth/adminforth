@@ -2,6 +2,7 @@
   <div class="relative inline-block afcl-select">
     <div class="relative">
       <input
+        ref="inputEl"
         type="text"
         v-model="search"
         @click="inputClick"
@@ -29,7 +30,7 @@
         />
       </div>
     </div>
-    <div v-if="showDropdown" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-96">
+    <div v-if="showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}" class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-96">
       <div
         v-for="item in filteredItems"
         :key="item.value"
@@ -82,6 +83,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+import { useElementSize } from '@vueuse/core'
 
 
 const props = defineProps({
@@ -103,6 +105,14 @@ const emit = defineEmits(['update:modelValue']);
 
 const search = ref('');
 const showDropdown = ref(false);
+const inputEl = ref<HTMLElement | null>(null);
+const dropdownEl = ref<HTMLElement | null>(null);
+const { height: dropdownHeight } = useElementSize(dropdownEl);
+const isTop = ref<boolean>(false);
+
+const dropdownStyle = ref<{ top?: string; }>({
+  top: "0px",
+});
 
 const selectedItems: Ref<any[]> = ref([]);
 
@@ -137,6 +147,24 @@ function inputClick() {
     }
   }
 }
+
+watch(
+  () => ({ show: showDropdown.value, dropdownHeight: dropdownHeight.value }),
+  (value) => {
+    if (value.show && value.dropdownHeight) {
+      const inputRect = inputEl.value?.getBoundingClientRect();
+      const dropdownTopOverflowed =
+        -(value.dropdownHeight ?? 0) - (inputEl.value?.offsetHeight ?? 0)/2 + "px";
+      isTop.value =
+        (value.dropdownHeight ?? 0) +
+          (inputRect?.top ?? 0) +
+          (inputRect?.height ?? 0) +
+          12 >
+        window.innerHeight;
+      dropdownStyle.value =  isTop.value ? { top: dropdownTopOverflowed } : {};
+    }
+  }
+);
 
 onMounted(() => {
   updateFromProps();
