@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Form hooks to fix file upload plugin
 - fixed inability to use multiple upload plugins on one resource
 - wrong title which not respects title/brandname sometimes or uncovers AdminForth instead of brandName in some cases
+- Added dynamic positioning for dropdown in Select component
+- Added validation to dropzone
 
 
 ## [v1.5.5]
