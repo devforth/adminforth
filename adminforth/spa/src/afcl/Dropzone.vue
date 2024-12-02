@@ -78,20 +78,48 @@ watch(() => props.modelValue, (files) => {
 });
 
 function doEmit(filesIn: FileList) {
-
+  
   const multiple = props.multiple || false;
   const files = Array.from(filesIn);
+  const allowedExtensions = props.extensions.map(ext => ext.toLowerCase());
+  const maxSizeBytes = props.maxSizeBytes;
+
   if (!files.length) return;
+
+  const validFiles: File[] = [];
+
+  files.forEach(file => {
+    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+    const size = file.size;
+
+    if (!allowedExtensions.includes(`.${extension}`)) {
+      window.adminforth.alert({
+        message: `Sorry, the file type .${extension} is not allowed. Please upload a file with one of the following extensions: ${allowedExtensions.join(', ')}`,
+        variant: 'danger',
+      });
+      return;
+    }
+    if (size > maxSizeBytes) {
+      window.adminforth.alert({
+        message: `Sorry, the file size ${humanifySize(size)} exceeds the maximum allowed size of ${humanifySize(maxSizeBytes)}.`,
+        variant: 'danger',
+      });
+      return;
+    }
+
+    validFiles.push(file);
+  });
+
   if (!multiple) {
-    files.splice(1);
+    validFiles.splice(1);
   }
-  selectedFiles.value = files.map(file => ({
+  selectedFiles.value = validFiles.map(file => ({
     name: file.name,
     size: file.size,
     mime: file.type,
   }));
 
-  emit('update:modelValue', Array.from(files));
+  emit('update:modelValue', validFiles);
 }
 
 const dragging = ref(false);
