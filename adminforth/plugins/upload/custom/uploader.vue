@@ -59,7 +59,7 @@
               </div>
               
           </div>
-          <input :id="inputId" type="file" class="hidden" @change="onFileChange" ref="uploadInputRef" />
+          <input :id="inputId" type="file" :accept="allowedExtensionsAttribute"  class="hidden" @change="onFileChange" ref="uploadInputRef" />
       </label>
   </div> 
 
@@ -132,6 +132,13 @@ const allowedExtensionsLabel = computed(() => {
   // last comma to 'or'
   label = label.replace(/,([^,]*)$/, ' or$1')
   return label
+});
+
+const allowedExtensionsAttribute = computed(() => {
+  const allowedExtensions = props.meta.allowedExtensions || [];
+  return allowedExtensions.length > 0 
+    ? allowedExtensions.map(ext => `.${ext}`).join(', ') 
+    : '';
 });
 
 function clear() {
