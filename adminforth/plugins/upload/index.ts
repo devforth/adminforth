@@ -123,6 +123,7 @@ export default class UploadPlugin extends AdminForthPlugin {
       generateImages: this.options.generation ? true : false,
       pathColumnLabel: resourceConfig.columns[pathColumnIndex].label,
       fieldsForContext: this.options.generation?.fieldsForContext,
+      maxWidth: this.options.preview?.maxWidth,
     };
     // define components which will be imported from other components
     this.componentPath('imageGenerator.vue');

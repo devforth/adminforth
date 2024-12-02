@@ -357,6 +357,7 @@ export default {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
               showInList: true,
+              maxWidth: '200px',
             },
           }),
         ]
@@ -468,19 +469,20 @@ export default {
         source: ActionCheckSource;
       }): Promise<boolean | string> => {
         console.log("edit aa check 🔒", meta, source, adminUser);
-        return true;
-        if (source === ActionCheckSource.DisplayButtons) {
-          // if check is done for displaying button - we show button to everyone
-          return true;
-        }
-        const { oldRecord, newRecord } = meta;
-        if (oldRecord.realtor_id !== adminUser.dbUser.id) {
-          return "You are not assigned to this apartment and can't edit it";
-        }
-        if (newRecord.realtor_id !== oldRecord.realtor_id) {
-          return "You can't change the owner of the apartment";
-        }
-        return true;
+        return adminUser.dbUser.role === "superadmin";
+        // return true;
+        // if (source === ActionCheckSource.DisplayButtons) {
+        //   // if check is done for displaying button - we show button to everyone
+        //   return true;
+        // }
+        // const { oldRecord, newRecord } = meta;
+        // if (oldRecord.realtor_id !== adminUser.dbUser.id) {
+        //   return "You are not assigned to this apartment and can't edit it";
+        // }
+        // if (newRecord.realtor_id !== oldRecord.realtor_id) {
+        //   return "You can't change the owner of the apartment";
+        // }
+        // return true;
       },
       delete: async (p) => {
         return true;

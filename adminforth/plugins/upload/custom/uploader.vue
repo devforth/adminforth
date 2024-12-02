@@ -11,7 +11,7 @@
           <IconMagic class="w-5 h-5"/>
       </button>
 
-      <label for="dropzone-file" 
+      <label :for="inputId" 
         class="flex flex-col px-3 items-center justify-center w-full h-64 border-2  border-dashed rounded-lg cursor-pointer  dark:hover:bg-gray-800 hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
         @dragover.prevent="() => dragging = true"
         @dragleave.prevent="() => dragging = false"
@@ -59,7 +59,7 @@
               </div>
               
           </div>
-          <input id="dropzone-file" type="file" class="hidden" @change="onFileChange" />
+          <input :id="inputId" type="file" class="hidden" @change="onFileChange" ref="uploadInputRef" />
       </label>
   </div> 
 
@@ -70,6 +70,7 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils'
 import { IconMagic } from '@iconify-prerendered/vue-mdi';
 
+const inputId = computed(() => `dropzone-file-${props.meta.pluginInstanceId}`);
 
 import ImageGenerator from '@@/plugins/UploadPlugin/imageGenerator.vue';
 
@@ -84,6 +85,8 @@ const emit = defineEmits([
   'update:inValidity',
   'update:emptiness',
 ]);
+
+const uploadInputRef = ref(null);
 
 const showImageGen = ref(false);
 const dragging = ref(false);
@@ -136,6 +139,7 @@ function clear() {
   progress.value = 0;
   uploaded.value = false;
   uploadedSize.value = 0;
+  uploadInputRef.value.value = null;
   emit('update:value', null);
 }
 
@@ -154,6 +158,11 @@ function humanifySize(size) {
 
 
 const onFileChange = async (e) => {
+  // if empty then return
+  if (!e.target.files || e.target.files.length === 0) {
+    return;
+  }
+
   imgPreview.value = null;
   progress.value = 0;
   uploaded.value = false;
