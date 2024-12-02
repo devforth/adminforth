@@ -5,6 +5,7 @@
         v-if="contentType && contentType.startsWith('image')"
         :src="url" 
         class="rounded-md" 
+        :style="maxWidth"
         ref="img"
         data-zoomable
         @click.stop="zoom.open()" 
@@ -69,6 +70,8 @@ const props = defineProps({
 const url = computed(() => {
   return props.record[`previewUrl_${props.meta.pluginInstanceId}`];
 });
+
+const maxWidth = computed(() => props.meta.maxWidth ? { maxWidth: props.meta.maxWidth } : {});
 
 
 // since we have no way to know the content type of the file, we will try to guess it from extension

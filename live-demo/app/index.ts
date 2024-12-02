@@ -552,18 +552,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // serve after you added all api
   admin.express.serve(app)
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
-        email: 'adminforth',
-        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
-        role: 'superadmin',
-      });
-    }
+    //
+    // !!! IMPORTANT !!!
+    // NEVER COMMIT ANY COMMANDS TO INSERT USER WITH superadmin ROLE HERE!!!
+    // it is live demo and can be read easily
+    //
     if (!await admin.resource('users').get([Filters.EQ('email', DEMO_EMAIL)])) {
       await admin.resource('users').create({
         email: DEMO_EMAIL,
         password_hash: await AdminForth.Utils.generatePasswordHash(DEMO_PASSWORD ),
-        role: 'superadmin',
+        role: 'user',  // THE DEMO user role is 'user' not 'superadmin', he can't do any destructive actions
       });
     }
   });

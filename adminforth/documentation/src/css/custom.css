@@ -40,10 +40,11 @@
 }
 
 .code-block-diff-add-line::before {
-  position: absolute;
-  left: 8px;
+  content: "+";
+  left: -32px;
+  margin-right: -16px;
   padding-right: 8px;
-  content: '+';
+  position: relative;
 }
 
 .code-block-diff-remove-line {
@@ -54,10 +55,11 @@
 }
 
 .code-block-diff-remove-line::before {
-  position: absolute;
-  left: 8px;
+  content: "-";
+  left: -32px;
+  margin-right: -16px;
   padding-right: 8px;
-  content: '-';
+  position: relative;
 }
 
 /**

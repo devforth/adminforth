@@ -491,7 +491,7 @@ class CodeInjector implements ICodeInjector {
     // inject title to index.html
     const indexHtmlPath = path.join(this.spaTmpPath(), 'index.html');
     let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
-    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization.title || 'AdminForth'}`);
+    indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization?.title || this.adminforth.config.customization?.brandName || 'AdminForth'}`);
     
     indexHtmlContent = indexHtmlContent.replace(
       '/* IMPORTANT:ADMINFORTH FAVICON */',
