@@ -555,7 +555,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     //
     // !!! IMPORTANT !!!
     // NEVER COMMIT ANY COMMANDS TO INSERT USER WITH superadmin ROLE HERE!!!
-    // it is live demo and can be read easily
+    // it is live demo and can be read easily if secret is
     //
     if (!await admin.resource('users').get([Filters.EQ('email', DEMO_EMAIL)])) {
       await admin.resource('users').create({
