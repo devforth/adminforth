@@ -24,7 +24,6 @@
                         v-model:value="bindValue"
                         :should-auto-focus="true"
                         :should-focus-order="true"
-                        @on-change="handleOnChange"
                         @on-complete="handleOnComplete"
                       />
                     </div>
@@ -98,13 +97,12 @@
   
   onMounted(async () => {
     coreStore.getPublicConfig();
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('paste', handlePaste);
   });
 
   onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener('paste', handlePaste);
   });
-
   
   async function sendCode (value) {
     inProgress.value = true;
@@ -129,16 +127,14 @@
   //   }
   // })
 
-  function handleKeydown(event) {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-      event.preventDefault();
-      navigator.clipboard.readText().then((pastedData) => {
-        if (pastedData) {
-          fillInput(pastedData);
-        }
-      }).catch(err => {
-        console.error('Failed to read clipboard contents: ', err);
-      });
+  function handlePaste(event) {
+    event.preventDefault();
+    if (event.target.classList.contains('otp-input')) {
+      return;
+    }
+    const pastedText = event.clipboardData?.getData('text') || '';
+    if (pastedText.length === 6) { 
+      code.value?.fillInput(pastedText);
     }
   }
   </script>
