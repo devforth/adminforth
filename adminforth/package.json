@@ -38,6 +38,7 @@
   "dependencies": {
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
+    "@iconify-prerendered/vue-flowbite": "^0.28.1728668053",
     "@types/express": "^5.0.0",
     "better-sqlite3": "^11.5.0",
     "dayjs": "^1.11.11",
