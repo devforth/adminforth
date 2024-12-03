@@ -258,7 +258,7 @@ const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
 //create a ref to store the opened menu items with ts type;
-const opened = ref<string[]>([]);
+const opened = ref<number[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
@@ -280,11 +280,11 @@ function toggleTheme() {
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem(label: string) {
-  if (opened.value.includes(label)) {
-    opened.value = opened.value.filter((item) => item !== label);
+function clickOnMenuItem(item: number) {
+  if (opened.value.includes(item)) {
+    opened.value = opened.value.filter((item) => item !== item);
   } else {
-    opened.value.push(label);
+    opened.value.push(item);
   }
  
 }
@@ -351,7 +351,7 @@ watch(()=>coreStore.menu, () => {
     coreStore.menu.forEach((item, i) => {
     if (item.open) {
       opened.value.push(i);
-    };
+    }
   });
 })
 
