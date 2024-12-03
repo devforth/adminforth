@@ -166,7 +166,7 @@ function humanifySize(size) {
 
 const onFileChange = async (e) => {
   // if empty then return
-  if (!e.target.files || e.target.files.length === 0) {
+  if ((!e.target.files || e.target.files.length === 0) && (!e.dataTransfer.files || e.dataTransfer.files.length === 0)) {
     return;
   }
 
@@ -181,7 +181,7 @@ const onFileChange = async (e) => {
 
   uploadedSize.value = size;
 
-
+  
   const extension = name.split('.').pop();
   const nameNoExtension = name.replace(`.${extension}`, '');
   console.log('File details:', { name, extension, size, type });
