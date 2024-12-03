@@ -13,7 +13,7 @@
         </a>
       </li>
     </ul>
-    <div class="p-6  text-medium text-gray-500 dark:text-gray-400  rounded-lg w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+    <div class="ps-6  text-medium text-gray-500 dark:text-gray-400  w-full ">
       <slot :name="activeTab"></slot>
     </div>
   </div>
