@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added dynamic positioning for dropdown in Select component
 - Added validation to dropzone
 
+## Updated
+
+- flowbite icons package
+
 
 ## [v1.5.5]
 
