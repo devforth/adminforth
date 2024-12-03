@@ -1,8 +1,6 @@
 import type { EmailAdapter } from "../../types/Adapters.js";
 
 export interface PluginOptions {
-  emailProvider: "AWS_SES";
-
   /**
    * Field name in auth resource which contains email
    */

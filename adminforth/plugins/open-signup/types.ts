@@ -1,3 +1,5 @@
+import { EmailAdapter } from '../../types/Adapters.js';
+
 export interface PluginOptions {
 
   /**
@@ -41,11 +43,6 @@ export interface PluginOptions {
     emailConfirmedField: string;
 
     /**
-     * Required to confirm email
-     */
-    emailProvider: 'AWS_SES' ;
-
-    /**
      * From which email to send password reset emails
      * e.g. no-reply@example.com
      * Example.com must be allowed in provider to send emails
@@ -53,15 +50,9 @@ export interface PluginOptions {
     sendFrom: string;
 
     /**
-     * Options for email provider
+     * Adapter to send emails
      */
-    providerOptions: {
-      AWS_SES: {
-        region: string;
-        accessKeyId: string;
-        secretAccessKey: string;
-      }
-    }
+    adapter: EmailAdapter;
   }
   
 
