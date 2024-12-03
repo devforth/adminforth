@@ -1,15 +1,15 @@
 <template>
-  <div class="shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl">
+  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl">
     <div v-if="group.groupName" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
       {{ group.groupName }}
     </div>
     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
         <tr>
-          <th scope="col" class="px-6 py-3 hidden md:w-52 md:table-cell">
+          <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-6 py-3 hidden md:w-52 md:table-cell">
               Field
           </th>
-          <th scope="col" class="px-6 py-3 hidden md:table-cell">
+          <th scope="col" :class="{'rounded-tr-lg': !group.groupName}" class="px-6 py-3 hidden md:table-cell">
               Value
           </th>
         </tr>
@@ -37,8 +37,6 @@
                 </template>
               </Tooltip>
             </span>
-            
-            
           </td>
           <td class="px-6 py-4  whitespace-pre-wrap relative block md:table-cell rounded-br-lg " 
               :class="{'rounded-br-lg': i === group.columns.length - 1}">
