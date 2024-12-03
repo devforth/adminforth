@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - flowbite icons package
 
+## Improved
+
+- Remove border/background and surrounding padding from tab widget
+
 
 ## [v1.5.5]
 
