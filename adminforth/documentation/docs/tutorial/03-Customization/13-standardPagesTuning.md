@@ -9,34 +9,32 @@
 In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other."
 
 ```typescript title="./resources/apartments.ts"
- resources: [
-    {
-      ...
-      options: {
-        ...
-          //diff-add
-        createEditGroups: [
-          //diff-add
-          {
-          //diff-add
-            groupName: 'Main info',
-          //diff-add
-            columns: ['id','title', 'description', 'country', 'apartment_image']
-          //diff-add
-          },
-          //diff-add
-          {
-          //diff-add
-            groupName: 'Characteristics',
-          //diff-add
-            columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
-          //diff-add
-          }
-          //diff-add
-        ],
+export default {
+  ...
+  options: {
+    ...
+      //diff-add
+    createEditGroups: [
+      //diff-add
+      {
+      //diff-add
+        groupName: 'Main info',
+      //diff-add
+        columns: ['id','title', 'description', 'country', 'apartment_image']
+      //diff-add
+      },
+      //diff-add
+      {
+      //diff-add
+        groupName: 'Characteristics',
+      //diff-add
+        columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+      //diff-add
       }
-    }
- ]
+      //diff-add
+    ],
+  }
+}
 ```
 Here is how it looks:
 ![alt text](<createEditGroups.png>)
@@ -52,21 +50,19 @@ Here is how it looks:
 import { AdminForthSortDirections } from 'adminforth';
 
 ...
-  resources: [
-    {
-      resourceId: 'aparts',
-      options: {
+export default {
+  resourceId: 'aparts',
+  options: {
 //diff-add
-        defaultSort: {
+    defaultSort: {
 //diff-add
-          columnName: 'created_at',
+      columnName: 'created_at',
 //diff-add
-          direction: AdminForthSortDirections.ASC, 
+      direction: AdminForthSortDirections.asc, 
 //diff-add
-        }
-      }
     }
-  ]
+  }
+}
 ```
 
 ### Page size 
@@ -74,8 +70,7 @@ import { AdminForthSortDirections } from 'adminforth';
 use `options.listPageSize` to define how many records will be shown on the page
 
 ```typescript title="./resources/apartments.ts"
-  resources: [
-    {
+export default {
       resourceId: 'aparts',
       options: {
         ...
@@ -95,8 +90,7 @@ You can change this behavior by using `options.listTableClickUrl`.
 To disable any action (don't open show) return null:
 
 ```typescript title="./resources/apartments.ts"
-  resources: [
-    {
+export default {
       resourceId: 'aparts',
       options: {
         ...
@@ -139,8 +133,7 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
 they appear)
   
 ```typescript title="./resources/apartments.ts"
-  resources: [
-      {
+export default {
         resourceId: 'aparts',
         hooks: {
 //diff-add
@@ -194,10 +187,7 @@ Sometimes you want to generate some field value without asking user to fill it. 
 
 ```typescript title="./resources/apartments.ts" 
 
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
@@ -217,10 +207,7 @@ new AdminForth({
 Also you can assign adminUser ID by adminUser.dbUser.id in same hook:
 
 ```typescript title="./resources/apartments.ts"
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
@@ -279,10 +266,7 @@ You can set a column `editReadonly` so it will be shown in the edit form but wil
 This might be useful to better identify the record during editing or to show some additional information that should not be changed but can help to edit the record.
 
 ```typescript title="./resources/apartments.ts"
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
