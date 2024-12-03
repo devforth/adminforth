@@ -46,7 +46,6 @@ export default {
       },
     }),
     new EmailResetPasswordPlugin({
-      emailProvider: "AWS_SES",
       emailField: "email",
       sendFrom: "no-reply@devforth.io",
       adapter: new EmailAdapterAwsSes({
@@ -63,6 +62,15 @@ export default {
       defaultFieldValues: {
         role: "user",
       },
+      // confirmEmails: {
+      //   emailConfirmedField: "email_confirmed",
+      //   sendFrom: "no-reply@devforth.io",
+      //   adapter: new EmailAdapterAwsSes({
+      //     region: "eu-central-1",
+      //     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      //   }),
+      // },
     }),
   ],
   options: {
