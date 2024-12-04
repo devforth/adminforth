@@ -12,6 +12,7 @@ import {
   type AdminForthConfig, 
   type IAdminForth, 
   type IConfigValidator,
+  type AdminForthResourceColumn,
   IOperationalResource,
   IHttpServer, 
   BeforeSaveFunction,
@@ -155,6 +156,30 @@ class AdminForth implements IAdminForth {
     return plugins[0] as T;
   }
 
+  validateFieldGroups(fieldGroups: {
+    groupName: string;
+    columns: string[];
+  }[], fieldTypes: {
+    [key: string]: AdminForthResourceColumn;
+}): void {
+    if (!fieldGroups) return;
+    const allColumns = Object.keys(fieldTypes);
+  
+    fieldGroups.forEach((group) => {
+      group.columns.forEach((col) => {
+        if (!allColumns.includes(col)) {
+          const similar = suggestIfTypo(allColumns, col);
+          throw new Error(
+            `Group '${group.groupName}' has an unknown column '${col}'. ${
+              similar ? `Did you mean '${similar}'?` : ''
+            }`
+          );
+        }
+      });
+    });
+  }
+
+
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
     this.connectorClasses = {
@@ -203,58 +228,10 @@ class AdminForth implements IAdminForth {
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
       
-      res.options.fieldGroups?.forEach(group => {
-        const allColumns = Object.keys(fieldTypes);
-        group.columns.forEach((col, i) => {
-          if (!allColumns.includes(col)) {
-            const similar = suggestIfTypo(allColumns, col);
-            throw new Error(
-              `Group '${group.groupName}' has an unknown column '${col}'. ${
-                similar ? `Did you mean '${similar}'?` : ''
-              }`
-            );
-          }
-        });
-      });
-      res.options.showFieldGroups?.forEach(group => {
-        const allColumns = Object.keys(fieldTypes);
-        group.columns.forEach((col, i) => {
-          if (!allColumns.includes(col)) {
-            const similar = suggestIfTypo(allColumns, col);
-            throw new Error(
-              `Group '${group.groupName}' has an unknown column '${col}'. ${
-                similar ? `Did you mean '${similar}'?` : ''
-              }`
-            );
-          }
-        });
-      });
-      res.options.createFieldGroups?.forEach(group => {
-        const allColumns = Object.keys(fieldTypes);
-        group.columns.forEach((col, i) => {
-          if (!allColumns.includes(col)) {
-            const similar = suggestIfTypo(allColumns, col);
-            throw new Error(
-              `Group '${group.groupName}' has an unknown column '${col}'. ${
-                similar ? `Did you mean '${similar}'?` : ''
-              }`
-            );
-          }
-        });
-      });
-      res.options.editFieldGroups?.forEach(group => {
-        const allColumns = Object.keys(fieldTypes);
-        group.columns.forEach((col, i) => {
-          if (!allColumns.includes(col)) {
-            const similar = suggestIfTypo(allColumns, col);
-            throw new Error(
-              `Group '${group.groupName}' has an unknown column '${col}'. ${
-                similar ? `Did you mean '${similar}'?` : ''
-              }`
-            );
-          }
-        });
-      });
+      this.validateFieldGroups(res.options.fieldGroups, fieldTypes);
+      this.validateFieldGroups(res.options.showFieldGroups, fieldTypes);
+      this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
+      this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
 
       this.configValidator.postProcessAfterDiscover(res);
 
