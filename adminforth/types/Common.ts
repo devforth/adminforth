@@ -347,15 +347,15 @@ export interface AdminForthResourceInputCommon {
       createFieldGroups?: {
         groupName: string;
         columns: string[];
-      }
+      }[];
       editFieldGroups?: {
         groupName: string;
         columns: string[];
-      }
+      }[];
       showFieldGroups?: {
         groupName: string;
         columns: string[];
-      }
+      }[];
 
       /** 
        * Page size for list view
