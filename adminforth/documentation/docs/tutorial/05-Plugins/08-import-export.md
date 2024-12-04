@@ -28,16 +28,13 @@ Add plugin instantiation to the `plugins` array of resource where you want to us
 
 ```typescript
 
-new AdminForth({
-  ...
-  resources: [
-    {
-      resourceId: 'aparts',
-      plugins: [
-        ...
-        new importExport({}),
-      ],
-    },
+export default {
+  resourceId: 'aparts',
+  plugins: [
+    ...
+    new importExport({}),
   ],
-});
+  ...
+}
+  
 ```

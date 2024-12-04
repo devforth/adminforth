@@ -17,14 +17,13 @@
                     <div class="my-4 flex justify-center items-center">
                       <v-otp-input
                         ref="code"
-                        input-classes="h-10 w-10 border border-[2px] rounded-md flex otp-input dark:bg-gray-700 dark:text-gray-400 font-bold"
+                        input-classes="bg-gray-50 text-center flex justify-center otp-input  border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10 h-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         :conditionalClass="['one', 'two', 'three', 'four', 'five', 'six']"
                         inputType="number"
                         :num-inputs="6"
                         v-model:value="bindValue"
                         :should-auto-focus="true"
                         :should-focus-order="true"
-                        @on-change="handleOnChange"
                         @on-complete="handleOnComplete"
                       />
                     </div>
@@ -98,13 +97,12 @@
   
   onMounted(async () => {
     coreStore.getPublicConfig();
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('paste', handlePaste);
   });
 
   onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener('paste', handlePaste);
   });
-
   
   async function sendCode (value) {
     inProgress.value = true;
@@ -129,16 +127,14 @@
   //   }
   // })
 
-  function handleKeydown(event) {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-      event.preventDefault();
-      navigator.clipboard.readText().then((pastedData) => {
-        if (pastedData) {
-          fillInput(pastedData);
-        }
-      }).catch(err => {
-        console.error('Failed to read clipboard contents: ', err);
-      });
+  function handlePaste(event) {
+    event.preventDefault();
+    if (event.target.classList.contains('otp-input')) {
+      return;
+    }
+    const pastedText = event.clipboardData?.getData('text') || '';
+    if (pastedText.length === 6) { 
+      code.value?.fillInput(pastedText);
     }
   }
   </script>

@@ -4,3 +4,4 @@
 
 ### Fixed
 - preview maxWidth to limit max width of image
+- Added accept attribute to input

@@ -100,7 +100,8 @@ Then you need to import `./resources/auditLogs`:
 import auditLogsResource from "./resources/auditLogs"
 
 
-dataSources: [
+... new AdminForth({
+  dataSources: [...],
     ...
   resources: [
     apartmentsResource,

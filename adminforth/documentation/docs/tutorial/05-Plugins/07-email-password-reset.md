@@ -34,11 +34,12 @@ To Setup SES, you need to have an AWS account and SES service enabled. You can f
 Add plugin to user resource:
 
 ```typescript ./resources/users.ts
+import EmailResetPasswordPlugin from '@adminforth/email-password-reset';
+import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
 ...
 plugins: [
   ...
   new EmailResetPasswordPlugin({
-    emailProvider: 'AWS_SES',
     // field in user resource which contains email
     emailField: 'email',
 
@@ -48,14 +49,12 @@ plugins: [
     // domain part should be verified in SES
     sendFrom: 'no-reply@devforth.io',
 
-    providerOptions: {
-      AWS_SES: {
+    adapter: new EmailAdapterAwsSes({
         // region where SES is setup
-        region: 'eu-central-1',
+        region: "eu-central-1",
         accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-      }
-    }
+      }),
 
   }),
 ]

@@ -74,21 +74,19 @@ Here is how it looks:
 import { AdminForthSortDirections } from 'adminforth';
 
 ...
-  resources: [
-    {
-      resourceId: 'aparts',
-      options: {
+export default {
+  resourceId: 'aparts',
+  options: {
 //diff-add
-        defaultSort: {
+    defaultSort: {
 //diff-add
-          columnName: 'created_at',
+      columnName: 'created_at',
 //diff-add
-          direction: AdminForthSortDirections.ASC, 
+      direction: AdminForthSortDirections.asc, 
 //diff-add
-        }
-      }
     }
-  ]
+  }
+}
 ```
 
 ### Page size 
@@ -96,8 +94,7 @@ import { AdminForthSortDirections } from 'adminforth';
 use `options.listPageSize` to define how many records will be shown on the page
 
 ```typescript title="./resources/apartments.ts"
-  resources: [
-    {
+export default {
       resourceId: 'aparts',
       options: {
         ...
@@ -117,8 +114,7 @@ You can change this behavior by using `options.listTableClickUrl`.
 To disable any action (don't open show) return null:
 
 ```typescript title="./resources/apartments.ts"
-  resources: [
-    {
+export default {
       resourceId: 'aparts',
       options: {
         ...
@@ -161,8 +157,7 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
 they appear)
   
 ```typescript title="./resources/apartments.ts"
-  resources: [
-      {
+export default {
         resourceId: 'aparts',
         hooks: {
 //diff-add
@@ -216,10 +211,7 @@ Sometimes you want to generate some field value without asking user to fill it. 
 
 ```typescript title="./resources/apartments.ts" 
 
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
@@ -239,10 +231,7 @@ new AdminForth({
 Also you can assign adminUser ID by adminUser.dbUser.id in same hook:
 
 ```typescript title="./resources/apartments.ts"
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
@@ -301,10 +290,7 @@ You can set a column `editReadonly` so it will be shown in the edit form but wil
 This might be useful to better identify the record during editing or to show some additional information that should not be changed but can help to edit the record.
 
 ```typescript title="./resources/apartments.ts"
-new AdminForth({
-  ...
-  resources: [
-    {
+export default {
       name: 'apartments',
       fields: [
         ...
