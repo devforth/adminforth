@@ -202,7 +202,46 @@ class AdminForth implements IAdminForth {
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
       
-      res.options.createEditGroups?.forEach(group => {
+      res.options.fieldGroups?.forEach(group => {
+        const allColumns = Object.keys(fieldTypes);
+        group.columns.forEach((col, i) => {
+          if (!allColumns.includes(col)) {
+            const similar = suggestIfTypo(allColumns, col);
+            throw new Error(
+              `Group '${group.groupName}' has an unknown column '${col}'. ${
+                similar ? `Did you mean '${similar}'?` : ''
+              }`
+            );
+          }
+        });
+      });
+      res.options.showFieldGroups?.forEach(group => {
+        const allColumns = Object.keys(fieldTypes);
+        group.columns.forEach((col, i) => {
+          if (!allColumns.includes(col)) {
+            const similar = suggestIfTypo(allColumns, col);
+            throw new Error(
+              `Group '${group.groupName}' has an unknown column '${col}'. ${
+                similar ? `Did you mean '${similar}'?` : ''
+              }`
+            );
+          }
+        });
+      });
+      res.options.createFieldGroups?.forEach(group => {
+        const allColumns = Object.keys(fieldTypes);
+        group.columns.forEach((col, i) => {
+          if (!allColumns.includes(col)) {
+            const similar = suggestIfTypo(allColumns, col);
+            throw new Error(
+              `Group '${group.groupName}' has an unknown column '${col}'. ${
+                similar ? `Did you mean '${similar}'?` : ''
+              }`
+            );
+          }
+        });
+      });
+      res.options.editFieldGroups?.forEach(group => {
         const allColumns = Object.keys(fieldTypes);
         group.columns.forEach((col, i) => {
           if (!allColumns.includes(col)) {

@@ -57,55 +57,33 @@
     </div>
     <div 
       v-else-if="coreStore.record"
-      class="relative w-full overflow-x-auto rounded-default shadow-resourseFormShadow"
+      class="relative w-full flex flex-col gap-4"
     >
-     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
-      <!-- table fixed layour used to prevent double scroll in inline list plugins -->
-        <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
-          <tr>
-            <th scope="col" class="px-6 py-3 hidden md:w-52 md:table-cell">
-                Field
-            </th>
-            <th scope="col" class="px-6 py-3 hidden md:table-cell">
-                Value
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr v-for="column,i in coreStore.resource?.columns.filter(c => c.showIn.includes('show'))" :key="column.name"
-              class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700 block md:table-row"
-              :class="{ 'border-b': i !== coreStore.resource.columns.filter(c => c.showIn.includes('show')).length - 1 }"
-            >
-              <component
-                v-if="column.components?.showRow"
-                  :is="getCustomComponent(column.components.showRow)"
-                  :meta="column.components.showRow.meta"
-                  :column="column"
-                  :resource="coreStore.resource"
-                  :record="coreStore.record"
-              />
-              <template v-else>
-                <td class="px-6 py-4 relative block md:table-cell font-bold md:font-normal pb-0 md:pb-4"> <!--align-top-->
-                  {{ column.label }}
-                </td>
-                <td class="px-6 py-4 whitespace-pre-wrap" :data-af-column="column.name">
-                  <component
-                    v-if="column?.components?.show"
-                    :is="getCustomComponent(column?.components?.show)"
-                    :resource="coreStore.resource"
-                    :meta="column.components.show.meta"
-                    :column="column"
-                    :record="coreStore.record"
-                  />
-                  <ValueRenderer v-else 
-                    :column="column" 
-                    :record="coreStore.record"
-                  />
-                </td>
-              </template>
-            </tr>
-        </tbody>
-     </table>
+    <div v-if="!groups.length && allColumns.length">
+      <ShowTable
+        :columns="allColumns"
+        :resource="coreStore.resource"
+        :record="coreStore.record"
+      />
+    </div>
+    <template v-else>
+      <template v-for="group in groups" :key="group.groupName">
+        <ShowTable
+          :columns="group.columns"
+          :groupName="group.groupName"
+          :resource="coreStore.resource"
+          :record="coreStore.record"
+        />
+      </template>
+      <template v-if="otherColumns.length > 0">
+        <ShowTable
+          :columns="otherColumns"
+          groupName="Other Fields"
+          :resource="coreStore.resource"
+          :record="coreStore.record"
+        />
+      </template>
+    </template>
     </div>
 
     <div v-else class="text-center text-gray-500 dark:text-gray-400 mt-10">
@@ -132,15 +110,15 @@
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
-import ValueRenderer from '@/components/ValueRenderer.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
+import ShowTable from '@/components/ShowTable.vue';
 
 
 const route = useRoute();
@@ -162,6 +140,40 @@ onMounted(async () => {
   });
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   loading.value = false;
+});
+
+const groups = computed(() => {
+  let fieldGroupType;
+  if (coreStore.resource.options?.showFieldGroups) {
+    fieldGroupType = coreStore.resource.options.showFieldGroups;
+  } else if (coreStore.resource.options?.showFieldGroups === null) {
+    fieldGroupType = [];
+  } else {
+    fieldGroupType = coreStore.resource.options?.fieldGroups;
+  }
+
+  const activeGroups = fieldGroupType ?? [];
+
+  return activeGroups.map(group => ({
+    ...group,
+    columns: coreStore.resource.columns.filter(
+      col => group.columns.includes(col.name) && col.showIn.includes('show')
+    ),
+  }));
+});
+
+const allColumns = computed(() => {
+  return coreStore.resource.columns.filter(col => col.showIn.includes('show'));
+});
+
+const otherColumns = computed(() => {
+  const groupedColumnNames = new Set(
+    groups.value.flatMap(group => group.columns.map(col => col.name))
+  );
+
+  return coreStore.resource.columns.filter(
+    col => !groupedColumnNames.has(col.name) && col.showIn.includes('show')
+  );
 });
 
 async function deleteRecord(row) {
