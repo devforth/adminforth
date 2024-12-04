@@ -38,6 +38,7 @@ import SocketBroker from './modules/socketBroker.js';
 // exports
 export * from './types/Back.js';
 export * from './types/Common.js';
+export * from './types/Adapters.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, getClientIp };
