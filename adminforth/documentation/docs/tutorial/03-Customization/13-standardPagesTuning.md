@@ -9,8 +9,7 @@
 In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other." You can also specify the page on which you want to create or disable groups. 
 
 ```typescript title="./resources/apartments.ts"
- resources: [
-    {
+export default {
       ...
       options: {
         ...
@@ -60,7 +59,6 @@ In some cases, you may want to organize data fields into specific groups for bet
         showFieldGroups: null,
       }
     }
- ]
 ```
 Here is how it looks:
 ![alt text](<createEditGroups.png>)
