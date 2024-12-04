@@ -424,7 +424,7 @@ export default {
     },
     listPageSize: 25,
     // listTableClickUrl: async (record, adminUser) => null,
-    createEditGroups: [
+    fieldGroups: [
       {
         groupName: "Main info",
         columns: ["id", "title", "description", "country", "apartment_image"],

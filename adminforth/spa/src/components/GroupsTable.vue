@@ -165,7 +165,7 @@
     unmasked: any,
     columnError: (column: any) => string,
     setCurrentValue: (columnName: string, value: any) => void,
-    columnOptions: (column: any) => any,
+    columnOptions: any,
   }>();
 
   const getBooleanOptions = (column: any) => {

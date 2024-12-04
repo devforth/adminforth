@@ -6,7 +6,7 @@
 ## Fields Grouping
  
 
-In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other."
+In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other." You can also specify the page on which you want to create or disable groups. 
 
 ```typescript title="./resources/apartments.ts"
  resources: [
@@ -15,7 +15,7 @@ In some cases, you may want to organize data fields into specific groups for bet
       options: {
         ...
           //diff-add
-        createEditGroups: [
+        fieldGroups: [
           //diff-add
           {
           //diff-add
@@ -34,6 +34,30 @@ In some cases, you may want to organize data fields into specific groups for bet
           }
           //diff-add
         ],
+        //diff-add
+        createFieldGroups: [
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Main info',
+          //diff-add
+            columns: ['id','title']
+          //diff-add
+          },
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Characteristics',
+          //diff-add
+            columns: ['description', 'country', 'price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+          //diff-add
+          }
+          //diff-add
+        ],
+          //diff-add
+        editFieldGroups: null,
+          //diff-add
+        showFieldGroups: null,
       }
     }
  ]
