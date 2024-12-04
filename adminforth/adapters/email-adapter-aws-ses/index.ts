@@ -1,6 +1,6 @@
 import type { AdapterOptions } from "./types.js";
 import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
-import type { EmailAdapter } from "../../types/Adapters.js";
+import type { EmailAdapter } from "adminforth";
 
 export default class EmailAdapterAwsSes implements EmailAdapter {
   options: AdapterOptions;

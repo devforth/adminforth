@@ -1,4 +1,4 @@
-import type { EmailAdapter } from "../../types/Adapters.js";
+import type { EmailAdapter } from "adminforth";
 
 export interface PluginOptions {
   /**
