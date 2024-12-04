@@ -8,13 +8,14 @@ datasource db {
 }
 
 model users {
-    id            String   @id
-    created_at    DateTime
-    email         String   @unique
-    role          String
-    password_hash String
-    secret2fa     String?
-    last_login_ip String?
+    id              String   @id
+    created_at      DateTime
+    email           String   @unique
+    role            String
+    password_hash   String
+    secret2fa       String?
+    last_login_ip   String?
+    email_confirmed Boolean? @default(false)
 }
 
 model apartments {

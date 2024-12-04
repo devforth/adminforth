@@ -1,7 +1,6 @@
 import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthDataTypes } from "adminforth";
-import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction, HttpExtra } from "adminforth";
 import type { PluginOptions } from './types.js';
-import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 
 
 export default class OpenSignupPlugin extends AdminForthPlugin {
@@ -47,9 +46,6 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         `);
       }
       this.emailConfirmedField = emailConfirmedField;
-      if (this.emailConfirmedField.type !== AdminForthDataTypes.BOOLEAN) {
-        throw new Error(`Field ${this.emailConfirmedField.name} must be of type boolean`);
-      }
     }
 
     const emailField = authResource.columns.find(f => f.name === this.options.emailField);
@@ -89,7 +85,8 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
             minLength: passwordField.minLength,
             maxLength: passwordField.maxLength,
             validation: passwordField.validation
-          }
+          },
+          requestEmailConfirmation: !!this.options.confirmEmails
         }
       }
     });
@@ -99,19 +96,16 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       if (!adminforth.config.auth.beforeLoginConfirmation) {
         adminforth.config.auth.beforeLoginConfirmation = [];
       }
-      // unshift because if e.g. 2fa set it's hook, this one should be first
-      (adminforth.config.auth.beforeLoginConfirmation as BeforeLoginConfirmationFunction[]).unshift(
-        async ({ adminUser }: { adminUser: AdminUser }): Promise<{ body: { allowedLogin: boolean }; error?: string; }> => {
-          if (!adminUser.dbUser[this.emailConfirmedField.name]) {
-            return { body: { allowedLogin: false }, error: 'You need to confirm your email to be able to login' };
-          }
-        }
-      );
     }
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    // optional method where you can safely check field types after database discovery was performed
+    if(this.options.confirmEmails){
+      const emailConfirmedColumn = this.resourceConfig.columns.find(f => f.name === this.options.confirmEmails.emailConfirmedField);
+      if (emailConfirmedColumn.type !== AdminForthDataTypes.BOOLEAN) {
+        throw new Error(`Field ${this.emailConfirmedField.name} must be of type boolean`);
+      }
+    }
   }
 
   instanceUniqueRepresentation(pluginOptions: any) : string {
@@ -120,7 +114,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
     return `single`;
   }
 
-  async doLogin(email: string, response: any): Promise<{ error?: string; allowedLogin: boolean; redirectTo?: string; }> {
+  async doLogin(email: string, response: any, extra: HttpExtra): Promise<{ error?: string; allowedLogin: boolean; redirectTo?: string; }> {
 
     const username = email;
     const userRecord = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
@@ -131,7 +125,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
     };
     const toReturn = { allowedLogin: true, error: '' };
 
-    await this.adminforth.restApi.processLoginCallbacks(adminUser, toReturn, response);
+    await this.adminforth.restApi.processLoginCallbacks(adminUser, toReturn, response, extra);
     if (toReturn.allowedLogin) {
       this.adminforth.auth.setAuthCookie({ 
         response, 
@@ -149,22 +143,32 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
       method: 'POST',
-      path: `/plugin/${this.pluginInstanceId}/completeVerifiedSignup`,
+      path: `/plugin/${this.pluginInstanceId}/complete-verified-signup`,
       noAuth: true,
-      handler: async ({ body, response }) => {
-        const { token } = body;
-        const { email } = await this.adminforth.auth.verify(token, 'tempVerifyEmailToken');
+      handler: async ({ body, response, headers, query, cookies }) => {
+        const { token, password } = body;
+        const { email } = await this.adminforth.auth.verify(token, 'tempVerifyEmailToken', false);
         if (!email) {
           return { error: 'Invalid token', ok: false };
+        }
+
+        if(!password) {
+          return { error: 'Password is required', ok: false };
         }
         const userRecord = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
         if (!userRecord) {
           return { error: 'User not found', ok: false };
         }
+
+        if (userRecord[this.options.confirmEmails.emailConfirmedField]) {
+          return { error: 'Email already confirmed', ok: false };
+        }
+
         await this.adminforth.resource(this.authResource.resourceId).update(userRecord[this.authResource.columns.find((col) => col.primaryKey).name], {
-          [this.options.confirmEmails.emailConfirmedField]: true
+          [this.options.confirmEmails.emailConfirmedField]: true,
+          [this.options.passwordHashField]: await AdminForth.Utils.generatePasswordHash(password),
         });
-        return await this.doLogin(email, response);
+        return await this.doLogin(email, response, { body, headers, query, cookies });
       }
     });
 
@@ -172,7 +176,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/signup`,
       noAuth: true,
-      handler: async ({ body, response }) => {
+      handler: async ({ body, response, headers, query, cookies }) => {
         const { email, url, password } = body;
 
         // validate email
@@ -185,36 +189,40 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         }
 
         // validate password
-        if (password.length < this.passwordField.minLength) {
-          return { error: `Password must be at least ${this.passwordField.minLength} characters long`, ok: false };
-        }
-        if (password.length > this.passwordField.maxLength) {
-          return { error: `Password must be at most ${this.passwordField.maxLength} characters long`, ok: false };
-        }
-        if (this.passwordField.validation) {
-          for (const { regExp, message } of this.passwordField.validation) {
-            if (!new RegExp(regExp).test(password)) {
-              return { error: message, ok: false };
+        if (!this.options.confirmEmails) {
+          if (password.length < this.passwordField.minLength) {
+            return { error: `Password must be at least ${this.passwordField.minLength} characters long`, ok: false };
+          }
+          if (password.length > this.passwordField.maxLength) {
+            return { error: `Password must be at most ${this.passwordField.maxLength} characters long`, ok: false };
+          }
+          if (this.passwordField.validation) {
+            for (const { regExp, message } of this.passwordField.validation) {
+              if (!new RegExp(regExp).test(password)) {
+                return { error: message, ok: false };
+              }
             }
           }
         }
 
         // first check again if email already exists
-        const existing = await this.adminforth.resource(this.authResource.resourceId).count(Filters.EQ(this.emailField.name, email));
-        if (existing > 0) {
+        const existingUser = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
+        if ((!this.options.confirmEmails && existingUser) || (this.options.confirmEmails && existingUser?.[this.emailConfirmedField.name])) {
           return { error: 'Email already exists', ok: false };
         }
 
         // create user
-        const created = await this.adminforth.resource(this.authResource.resourceId).create({
-          ...(this.options.defaultFieldValues || {}),
-          ...(this.options.confirmEmails ? { [this.options.confirmEmails.emailConfirmedField]: false } : {}),  
-          [this.emailField.name]: email,
-          [this.options.passwordHashField]: await AdminForth.Utils.generatePasswordHash(password),
-        });
+        if (!existingUser) {
+          const created = await this.adminforth.resource(this.authResource.resourceId).create({
+            ...(this.options.defaultFieldValues || {}),
+            ...(this.options.confirmEmails ? { [this.options.confirmEmails.emailConfirmedField]: false } : {}),  
+            [this.emailField.name]: email,
+            [this.options.passwordHashField]: password ? await AdminForth.Utils.generatePasswordHash(password) : '',
+          });
+        }
         
         if (!this.options.confirmEmails) {
-          const resp = await this.doLogin(email, response);
+          const resp = await this.doLogin(email, response, { body, headers, query, cookies });
           return resp;
         }
 
