@@ -48,6 +48,10 @@ export default class EmailPasswordReset extends AdminForthPlugin {
       `);
     }
 
+    if (!this.options.adapter) {
+      throw new Error('Adapter is required. Please provide a valid adapter in the plugin options.');
+    }
+
 
     adminforth.config.customization.loginPageInjections.underInputs.push({ 
       file: this.componentPath('ResetPasswordUnderLogin.vue') }
