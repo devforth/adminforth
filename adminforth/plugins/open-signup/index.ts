@@ -25,9 +25,16 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       throw new Error(`emailField is required and should be a name of field in auth resource`);
     }
 
+    // find field with name resourceConfig.emailField in adminforth.auth.usersResourceId and show error if it doesn't exist
+    const authResource = adminforth.config.resources.find(r => r.resourceId === adminforth.config.auth.usersResourceId);
+    if (!authResource) {
+      throw new Error(`Resource with id config.auth.usersResourceId=${adminforth.config.auth.usersResourceId} not found`);
+    }
+    this.authResource = authResource;
+
     if (this.options.confirmEmails) {
-      if (!this.options.confirmEmails.emailProvider) {
-        throw new Error(`confirmEmails.emailProvider is required and should be a name of field in auth resource`);
+      if (!this.options.confirmEmails.adapter) {
+        throw new Error(`confirmEmails.adapter is required and should be a name of field in auth resource`);
       }
       if (!this.options.confirmEmails.emailConfirmedField) {
         throw new Error(`confirmEmails.emailConfirmedField is required and should be a name of field in auth resource`);
@@ -44,13 +51,6 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         throw new Error(`Field ${this.emailConfirmedField.name} must be of type boolean`);
       }
     }
-
-    // find field with name resourceConfig.emailField in adminforth.auth.usersResourceId and show error if it doesn't exist
-    const authResource = adminforth.config.resources.find(r => r.resourceId === adminforth.config.auth.usersResourceId);
-    if (!authResource) {
-      throw new Error(`Resource with id config.auth.usersResourceId=${adminforth.config.auth.usersResourceId} not found`);
-    }
-    this.authResource = authResource;
 
     const emailField = authResource.columns.find(f => f.name === this.options.emailField);
     if (!emailField) {
@@ -223,27 +223,8 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         const brandName = this.adminforth.config.customization.brandName;
 
         const verifyToken = this.adminforth.auth.issueJWT({email, issuer: brandName }, 'tempVerifyEmailToken', '2h');
-
-        // send email with AWS SES this.options.providerOptions.AWS_SES
-        const ses = new SESClient({
-          region: this.options.confirmEmails.providerOptions.AWS_SES.region,
-          credentials: {
-            accessKeyId: this.options.confirmEmails.providerOptions.AWS_SES.accessKeyId,
-            secretAccessKey: this.options.confirmEmails.providerOptions.AWS_SES.secretAccessKey
-          }
-        });
-
         process.env.HEAVY_DEBUG && console.log('🐛Sending reset tok to', verifyToken);
-
-        const emailCommand = new SendEmailCommand({
-          Destination: {
-            ToAddresses: [email]
-          },
-          Message: {
-            Body: {
-              Text: {
-                Charset: "UTF-8",
-                Data: `
+        const emailText = `
                   Dear user,
                   Welcome to ${brandName}! 
                   
@@ -257,11 +238,9 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
                   Thanks,
                   The ${brandName} Team
                                     
-                `
-              },
-              Html: {
-                Charset: "UTF-8",
-                Data: `
+                `;
+          
+          const emailHtml = `
                 <html>
                   <head></head>
                   <body>
@@ -277,26 +256,11 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
                 </html>
 
 
-                `
-              }
-            },
-            Subject: {
-              Charset: "UTF-8",
-              Data: `Signup request at ${brandName}`
-            }
-          },
-          Source: `${this.options.confirmEmails.sendFrom}`
-        });
+                `;
+          const emailSubject = `Signup request at ${brandName}`;
 
-        try {
-          const sRes = await ses.send(emailCommand);
-        } catch (e) {
-          console.error('Error sending email', e);
-          if (process.env.NODE_ENV === 'development') {
-            return { error: 'Some thing went wrong, please check the console', ok: false };
-          }
-          return { error: 'Something went wrong, please contact support', ok: false };
-        }
+        // send email with AWS SES this.options.providerOptions.AWS_SES
+        this.options.confirmEmails.adapter.sendEmail(this.options.confirmEmails.sendFrom, email, emailText, emailHtml, emailSubject);
 
         return { ok: true };
       }

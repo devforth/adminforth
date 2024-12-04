@@ -10,6 +10,7 @@ import OpenSignupPlugin from "../../adminforth/plugins/open-signup";
 import TwoFactorsAuthPlugin from "../../adminforth/plugins/two-factors-auth";
 import EmailResetPasswordPlugin from "../../adminforth/plugins/email-password-reset/index.js";
 import { v1 as uuid } from "uuid";
+import EmailAdapterAwsSes from "../../adminforth/adapters/email-adapter-aws-ses/index.js";
 
 export default {
   dataSource: "maindb",
@@ -45,16 +46,13 @@ export default {
       },
     }),
     new EmailResetPasswordPlugin({
-      emailProvider: "AWS_SES",
       emailField: "email",
       sendFrom: "no-reply@devforth.io",
-      providerOptions: {
-        AWS_SES: {
-          region: "eu-central-1",
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-        },
-      },
+      adapter: new EmailAdapterAwsSes({
+        region: "eu-central-1",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      }),
       passwordField: "password",
     }),
     new OpenSignupPlugin({
@@ -64,6 +62,15 @@ export default {
       defaultFieldValues: {
         role: "user",
       },
+      // confirmEmails: {
+      //   emailConfirmedField: "email_confirmed",
+      //   sendFrom: "no-reply@devforth.io",
+      //   adapter: new EmailAdapterAwsSes({
+      //     region: "eu-central-1",
+      //     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      //   }),
+      // },
     }),
   ],
   options: {
