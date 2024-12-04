@@ -1,7 +1,6 @@
+import type { EmailAdapter } from "../../types/Adapters.js";
+
 export interface PluginOptions {
-
-  emailProvider: 'AWS_SES' ;
-
   /**
    * Field name in auth resource which contains email
    */
@@ -14,14 +13,8 @@ export interface PluginOptions {
    */
   sendFrom: string;
 
-  providerOptions: {
-    AWS_SES: {
-      region: string;
-      accessKeyId: string;
-      secretAccessKey: string;
-    }
-  }
-  
+  adapter: EmailAdapter;
+
   /**
    * To work properly, this plugin requires a virtual password field in auth resource.
    * If you don't need it, you can add it and set showIn = []

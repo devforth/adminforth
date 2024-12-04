@@ -100,27 +100,9 @@ export default class EmailPasswordReset extends AdminForthPlugin {
 
           const resetToken = this.adminforth.auth.issueJWT({email, issuer: brandName }, 'tempResetPassword', '2h');
 
-
-          // send email with AWS SES this.options.providerOptions.AWS_SES
-          const ses = new SESClient({
-            region: this.options.providerOptions.AWS_SES.region,
-            credentials: {
-              accessKeyId: this.options.providerOptions.AWS_SES.accessKeyId,
-              secretAccessKey: this.options.providerOptions.AWS_SES.secretAccessKey
-            }
-          });
-
           console.log('Sending reset tok to', resetToken);
 
-          const emailCommand = new SendEmailCommand({
-            Destination: {
-              ToAddresses: [email]
-            },
-            Message: {
-              Body: {
-                Text: {
-                  Charset: "UTF-8",
-                  Data: `
+          const emailText = `
                     Dear user,
                     To reset your ${brandName} password, click the link below:\n\n
 
@@ -132,11 +114,9 @@ export default class EmailPasswordReset extends AdminForthPlugin {
                     Thanks,
                     The ${brandName} Team
                                       
-                  `
-                },
-                Html: {
-                  Charset: "UTF-8",
-                  Data: `
+                  `;
+          
+          const emailHtml = `
                   <html>
                     <head></head>
                     <body>
@@ -151,27 +131,10 @@ export default class EmailPasswordReset extends AdminForthPlugin {
                   </html>
 
 
-                  `
-                }
-              },
-              Subject: {
-                Charset: "UTF-8",
-                Data: `Password reset request at ${brandName}`
-              }
-            },
-            Source: `${this.options.sendFrom}`
-          });
-
-          try {
-            const sRes = await ses.send(emailCommand);
-          } catch (e) {
-            console.error('Error sending email', e);
-            if (process.env.NODE_ENV === 'development') {
-              return { error: 'Some thing went wrong, please check the console', ok: false };
-            }
-            return { error: 'Something went wrong, please contact support', ok: false };
-          }
-        
+                  `;
+          const emailSubject = `Password reset request at ${brandName}`;
+          // send email with AWS SES this.options.providerOptions.AWS_SES
+          this.options.adapter.sendEmail(this.options.sendFrom, email, emailText, emailHtml, emailSubject);
         }
 
         return { ok: true };
