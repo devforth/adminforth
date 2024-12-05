@@ -6,41 +6,72 @@
 ## Fields Grouping
  
 
-In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other."
+In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other.
 
 ```typescript title="./resources/apartments.ts"
 export default {
-  ...
-  options: {
-    ...
-      //diff-add
-    createEditGroups: [
-      //diff-add
-      {
-      //diff-add
-        groupName: 'Main info',
-      //diff-add
-        columns: ['id','title', 'description', 'country', 'apartment_image']
-      //diff-add
-      },
-      //diff-add
-      {
-      //diff-add
-        groupName: 'Characteristics',
-      //diff-add
-        columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
-      //diff-add
+      ...
+      options: {
+        ...
+          //diff-add
+        fieldGroups: [
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Main info',
+          //diff-add
+            columns: ['id','title', 'description', 'country', 'apartment_image']
+          //diff-add
+          },
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Characteristics',
+          //diff-add
+            columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+          //diff-add
+          }
+          //diff-add
+        ],
       }
-      //diff-add
-    ],
-  }
-}
+    }
 ```
 Here is how it looks:
 ![alt text](<createEditGroups.png>)
 
+You can also specify on which page you want to create or delete groups. If you assign null, the groups will disappear from this page.
 
-
+```typescript title="./resources/apartments.ts"
+export default {
+      ...
+      options: {
+        //diff-add
+        createFieldGroups: [
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Main info',
+          //diff-add
+            columns: ['id','title']
+          //diff-add
+          },
+          //diff-add
+          {
+          //diff-add
+            groupName: 'Characteristics',
+          //diff-add
+            columns: ['description', 'country', 'price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+          //diff-add
+          }
+          //diff-add
+        ],
+          //diff-add
+        editFieldGroups: null,
+          //diff-add
+        showFieldGroups: null,
+      }
+    }
+```
 ## List
 
 
