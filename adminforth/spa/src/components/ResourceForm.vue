@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-default">
     <form autocomplete="off" @submit.prevent>
-      <div v-if="!coreStore.resource.options.createEditGroups || coreStore.resource.options.createEditGroups.length === 0">
+      <div v-if="!groups || groups.length === 0">
         <GroupsTable
         :source="source"
         :group="{groupName: '', columns: editableColumns}"
@@ -178,7 +178,6 @@ const setCurrentValue = (key, value) => {
 };
 
 onMounted(() => {
-
   currentValues.value = Object.assign({}, props.record);
   // json values should transform to string
   props.resource.columns.forEach((column) => {
@@ -220,19 +219,29 @@ const isValid = computed(() => {
 });
 
 
-const groups = coreStore.resource.options.createEditGroups;
+const groups = computed(() => {
+  let fieldGroupType;
+  if (mode.value === 'edit' && coreStore.resource.options?.editFieldGroups !== undefined) {
+    fieldGroupType = coreStore.resource.options.editFieldGroups;
+  } else if (mode.value === 'create' && coreStore.resource.options?.createFieldGroups !== undefined) {
+    fieldGroupType = coreStore.resource.options.createFieldGroups;
+  } else {
+    fieldGroupType = coreStore.resource.options?.fieldGroups;
+  }
+  return fieldGroupType ?? [];
+});
 
 const groupedColumns = computed(() => {
-  if (!groups || groups.length === 0) return [];
+  if (!groups.value || groups.value.length === 0) return [];
 
-  return groups.map(group => ({
+  return groups.value.map(group => ({
     ...group,
     columns: props.resource.columns.filter(col => group.columns.includes(col.name) && editableColumns.value.includes(col))
   }));
 });
 
 const getOtherColumns = () => {
-  if (!groups || groups.length === 0) return;
+  if (!groups.value || groups.value.length === 0) return;
 
   const groupedColumnNames = new Set(groupedColumns.value.flatMap(group => group.columns.map(col => col.name)));
   return editableColumns.value.filter(col => !groupedColumnNames.has(col.name));

@@ -338,9 +338,21 @@ export interface AdminForthResourceInputCommon {
       allowedActions?: AllowedActionsResolved,
 
       /** 
-       * Allows to make groups of columns in create/edit resource pages.
+       * Allows to make groups of columns in show, create and edit resource pages.
        */
-      createEditGroups?: {
+      fieldGroups?: {
+        groupName: string;
+        columns: string[];
+      }[];
+      createFieldGroups?: {
+        groupName: string;
+        columns: string[];
+      }[];
+      editFieldGroups?: {
+        groupName: string;
+        columns: string[];
+      }[];
+      showFieldGroups?: {
         groupName: string;
         columns: string[];
       }[];
