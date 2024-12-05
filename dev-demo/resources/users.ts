@@ -38,7 +38,7 @@ export default {
       // optional callback to define which users should be enforced to use 2FA
       usersFilterToApply: (adminUser: AdminUser) => {
         if (process.env.NODE_ENV === "development") {
-          return true;
+          return false;
         }
         // return true if user should be enforced to use 2FA,
         // return true;

@@ -47,9 +47,9 @@
                   </div>
                   <!-- <Vue2FACodeInput v-model="code" autofocus /> -->
                    <div class="flex flex-row gap-2.5">
-                  <Button @click="()=>{router.push('./login')}" class="w-full">
+                  <LinkButton to="/login" class="w-full">
                     Back to login
-                  </Button>
+                  </LinkButton>
                   <Button v-if="skipAllowed" @click="handleSkip" class="w-full">
                     Skip for now
                   </Button>
@@ -73,7 +73,7 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
-import { Button } from '@/afcl';
+import { Button, LinkButton } from '@/afcl';
 import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
 import VOtpInput from "vue3-otp-input";
 
@@ -187,9 +187,6 @@ const handleSkip = async () => {
   const resp = await callAdminForthApi({
     method: 'POST',
     path: '/plugin/twofa/confirmSetup',
-    body: {
-      skip: true,
-    }
   });
   if (resp.allowedLogin){
     await user.finishLogin()
