@@ -142,6 +142,9 @@ export default {
     {
       name: "last_login_ip",
     },
+    // {
+    //   name: "email_confirmed",
+    // },
   ],
   hooks: {
     create: {

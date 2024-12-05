@@ -37,5 +37,70 @@ Please note that in this mode users will be able to sign up without email verifi
 
 ## Email verification
 
-Work in progress
+First, you need to migrate the `users` table in `./schema.prisma`:
 
+```ts title='./schema.prisma'
+model users {
+  ...
+  //diff-add
+  email_confirmed Boolean? @default(false)
+}
+```
+
+And prisma migrate:
+
+```bash
+npx --yes prisma migrate dev --name add-email-confirmed-to-users
+```
+
+Also, update the resource configuration in `./resources/users.ts`:
+
+```ts title='./resources/users.ts'
+...
+//diff-add
+import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
+
+export default {
+  dataSource: 'maindb',
+  table: 'users',
+  resourceId: 'users',
+  label: 'Users',
+  recordLabel: (r) => `👤 ${r.email}`,
+  columns: [
+    ...
+    //diff-add
+    { name: 'email_confirmed' }
+  ],
+  ...
+  plugins: [
+    ...
+    new OpenSignupPlugin({
+      emailField: "email",
+      passwordField: "password",
+      passwordHashField: "password_hash",
+      defaultFieldValues: {
+        role: "user",
+      },
+      //diff-add
+      confirmEmails: {
+        //diff-add
+        emailConfirmedField: "email_confirmed",
+        //diff-add
+        sendFrom: "no-reply@devforth.io",
+        //diff-add
+        adapter: new EmailAdapterAwsSes({
+          //diff-add
+          region: "eu-central-1",
+          //diff-add
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          //diff-add
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          //diff-add
+        }),
+      },
+    }),
+    ...
+  ],
+  ...
+}
+```
