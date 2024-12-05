@@ -204,7 +204,6 @@ export interface IAdminForthDataSourceConnector {
    */
   updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void>;
 
-
   /**
    * Used to delete record in database.
    */
