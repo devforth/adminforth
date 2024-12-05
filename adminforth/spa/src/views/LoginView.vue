@@ -31,14 +31,14 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                      Sign in to {{ coreStore.config?.brandName }}
+                      {{ $t('Sign in to') }} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
                     <form class="space-y-4" @submit.prevent>
                         <div>
-                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
+                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
                             <input 
                               autocomplete="username"  
                               type="username" 
@@ -49,7 +49,7 @@
                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
                         </div>
                         <div class="relative">
-                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
+                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your password') }}</label>
                             <input 
                               ref="passwordInput"
                               autocomplete="current-password"
@@ -66,7 +66,7 @@
                             :title="`Stay logged in for ${coreStore.config.rememberMeDays} days`"
                         >
                           <Checkbox v-model="rememberMeValue" class="mr-2">
-                            Remember me
+                            {{ $t('Remember me') }}
                           </Checkbox>
                           
                         </div>
@@ -81,9 +81,9 @@
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
-                          <span class="sr-only">Info</span>
+                          <span class="sr-only">{{ $t('Info') }}</span>
                           <div>
-                          {{ error }}
+                            {{ error }}
                           </div>
                         </div>
 
@@ -93,11 +93,11 @@
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
-                          <span class="sr-only">Info</span>
+                          <span class="sr-only">{{ $t('Info') }}</span>
                           <div v-html="coreStore.config?.loginPromptHTML"></div>
                         </div>
                         <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
-                          Login to your account
+                          {{ $t('Login to your account') }}
                         </Button>
                     </form>
 
@@ -141,7 +141,6 @@ const backgroundPosition = computed(() => {
 
 onMounted(async () => {
     if (coreStore.config?.demoCredentials) {
-      console.log('Setting demo credentials');
       const [username, password] = coreStore.config.demoCredentials.split(':');
       usernameInput.value.value = username;
       passwordInput.value.value = password;

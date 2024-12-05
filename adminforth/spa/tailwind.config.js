@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import flowbitePlugin from 'flowbite/plugin';
+
 export default {
   content:  ["./src/**/*.{vue, js, ts, tsx}","./src/*.{vue, js, ts, tsx}", "./index.html", "./node_modules/flowbite/**/*.js"],
   theme: {
@@ -9,7 +11,7 @@ export default {
 
   darkMode: 'class',
   plugins: [
-    require('flowbite/plugin')({
+    flowbitePlugin({
       charts: true,
     }),
   ],

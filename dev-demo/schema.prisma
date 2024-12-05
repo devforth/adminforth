@@ -50,3 +50,11 @@ model description_image {
     record_id   String
     image_path  String
 }
+
+model translations {
+    en_string   @id
+    created_at  DateTime
+    uk_string   String
+    jp_string   String
+    fr_string   String
+}
