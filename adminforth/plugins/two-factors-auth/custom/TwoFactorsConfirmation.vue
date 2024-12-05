@@ -28,7 +28,7 @@
                       />
                     </div>
                     <!-- <Vue2FACodeInput v-model="code"/> -->
-                    <Button @click="() => {router.push('./login')}" class="w-full">Cancel</Button>
+                    <LinkButton to="/login" class="w-full">Back to login</LinkButton>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
   import { callAdminForthApi, loadFile } from '@/utils';
   import { useRouter } from 'vue-router';
   import { showErrorTost } from '@/composables/useFrontendApi';
-  import { Button } from '@/afcl';
+  import { LinkButton } from '@/afcl';
   import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
   import VOtpInput from "vue3-otp-input";
 

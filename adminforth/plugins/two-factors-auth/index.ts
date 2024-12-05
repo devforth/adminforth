@@ -1,4 +1,4 @@
-import {  AdminForthPlugin } from "adminforth";
+import {  AdminForthPlugin, Filters } from "adminforth";
 import type { AdminForthResource, AdminUser, IAdminForth, IHttpServer, IAdminForthAuth, BeforeLoginConfirmationFunction, IAdminForthHttpResponse } from "adminforth";
 import twofactor from 'node-2fa';
 import  { PluginOptions } from "./types.js"
@@ -61,11 +61,13 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return { body:{loginAllowed: true}, ok: true}
         }
 
+        const userCanSkipSetup = this.options.usersFilterToAllowSkipSetup ? this.options.usersFilterToAllowSkipSetup(adminUser) : false;
+
         if (!secret){
           const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
           newSecret = tempSecret.secret
         } else {
-          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk }, 'tempTotp', '2h');
+          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk, userCanSkipSetup }, 'tempTotp', '2h');
           response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; max-age=3600; `);
 
           return {
@@ -76,7 +78,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
             ok: true
           }
         }
-        const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk },'tempTotp', '2h'); 
+        const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk, userCanSkipSetup },'tempTotp', '2h'); 
         response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${totpTemporaryJWT}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + '1h').toUTCString() } `);
         
         return { 
@@ -115,11 +117,13 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return {status:'error',message:'Invalid token'}
         }
         if (decoded.newSecret) {
-          const verified = twofactor.verifyToken(decoded.newSecret, body.code);
-          if (verified) { 
+          const verified = decoded.userCanSkipSetup ? true : twofactor.verifyToken(decoded.newSecret, body.code);
+          if (verified) {
             this.connectors = this.adminforth.connectors
-            const connector = this.connectors[this.authResource.dataSource];
-            await connector.updateRecord({resource:this.authResource, recordId:decoded.pk, newValues:{[this.options.twoFaSecretFieldName]: decoded.newSecret}})
+            if (!decoded.userCanSkipSetup) {
+              const connector = this.connectors[this.authResource.dataSource];
+              await connector.updateRecord({resource:this.authResource, recordId:decoded.pk, newValues:{[this.options.twoFaSecretFieldName]: decoded.newSecret}})
+            }
             this.adminforth.auth.removeCustomCookie({response, name:'totpTemporaryJWT'})
             this.adminforth.auth.setAuthCookie({response, username:decoded.userName, pk:decoded.pk})
             return { status: 'ok', allowedLogin: true }
@@ -142,5 +146,30 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
         }
       }
     })
+    server.endpoint({
+      method: "GET",
+      path: "/plugin/twofa/skip-allow",
+      noAuth: true,
+      handler: async ({ cookies }) => {
+        const totpTemporaryJWT = cookies.find(
+          (cookie) => cookie.key === "adminforth_totpTemporaryJWT"
+        )?.value;
+        const decoded = await this.adminforth.auth.verify(
+          totpTemporaryJWT,
+          "tempTotp"
+        );
+        if (!decoded) {
+          return { status: "error", message: "Invalid token" };
+        }
+        if (!decoded.newSecret) {
+          return { status: "ok", skipAllowed: false };
+        } else {
+          return {
+            status: "ok",
+            skipAllowed: decoded.userCanSkipSetup,
+          };
+        }
+      },
+    });
   }
 }
