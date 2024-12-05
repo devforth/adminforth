@@ -61,11 +61,13 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return { body:{loginAllowed: true}, ok: true}
         }
 
+        const userCanSkipSetup = this.options.usersFilterToAllowSkipSetup ? this.options.usersFilterToAllowSkipSetup(adminUser) : false;
+
         if (!secret){
           const tempSecret = twofactor.generateSecret({name: brandName,account: userName})
           newSecret = tempSecret.secret
         } else {
-          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk }, 'tempTotp', '2h');
+          const value = this.adminforth.auth.issueJWT({userName,  issuer:brandName, pk:userPk, userCanSkipSetup }, 'tempTotp', '2h');
           response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${value}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; max-age=3600; `);
 
           return {
@@ -76,7 +78,7 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
             ok: true
           }
         }
-        const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk },'tempTotp', '2h'); 
+        const totpTemporaryJWT = this.adminforth.auth.issueJWT({userName, newSecret, issuer:brandName, pk:userPk, userCanSkipSetup },'tempTotp', '2h'); 
         response.setHeader('Set-Cookie', `adminforth_totpTemporaryJWT=${totpTemporaryJWT}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${new Date(Date.now() + '1h').toUTCString() } `);
         
         return { 
@@ -115,10 +117,10 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return {status:'error',message:'Invalid token'}
         }
         if (decoded.newSecret) {
-          const verified = body.skip ? true : twofactor.verifyToken(decoded.newSecret, body.code);
-          if (verified || body.skip) {
+          const verified = decoded.userCanSkipSetup ? true : twofactor.verifyToken(decoded.newSecret, body.code);
+          if (verified) {
             this.connectors = this.adminforth.connectors
-            if (!body.skip) {
+            if (!decoded.userCanSkipSetup) {
               const connector = this.connectors[this.authResource.dataSource];
               await connector.updateRecord({resource:this.authResource, recordId:decoded.pk, newValues:{[this.options.twoFaSecretFieldName]: decoded.newSecret}})
             }
@@ -162,23 +164,9 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
         if (!decoded.newSecret) {
           return { status: "ok", skipAllowed: false };
         } else {
-          const adminUser = await this.adminforth
-            .resource(this.authResource.resourceId)
-            .get(
-              Filters.EQ(
-                this.authResource.columns.find((c) => c.primaryKey).name,
-                decoded.pk
-              )
-            );
           return {
             status: "ok",
-            skipAllowed: this.options.usersFilterToAllowSkipSetup
-              ? this.options.usersFilterToAllowSkipSetup({
-                  pk: decoded.pk,
-                  dbUser: adminUser,
-                  username: decoded.userName,
-                })
-              : false,
+            skipAllowed: decoded.userCanSkipSetup,
           };
         }
       },
