@@ -38,11 +38,14 @@ export default {
       // optional callback to define which users should be enforced to use 2FA
       usersFilterToApply: (adminUser: AdminUser) => {
         if (process.env.NODE_ENV === "development") {
-          return false;
+          return true;
         }
         // return true if user should be enforced to use 2FA,
         // return true;
         return adminUser.dbUser.email !== "adminforth";
+      },
+      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+        return adminUser.dbUser.email === "adminforth";
       },
     }),
     new EmailResetPasswordPlugin({
@@ -141,6 +144,7 @@ export default {
     },
     {
       name: "last_login_ip",
+      showIn: ["show", "list", "filter"],
     },
     // {
     //   name: "email_confirmed",

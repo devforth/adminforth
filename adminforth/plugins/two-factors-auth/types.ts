@@ -16,5 +16,13 @@ export type PluginOptions = {
      * @param adminUser 
      * @returns true if 2FA should be applied to the user and false if AdminForth should not challenge the user with 2FA.
      */
-    usersFilterToApply: (adminUser: AdminUser) => boolean;
+    usersFilterToApply?: (adminUser: AdminUser) => boolean;
+
+    /**
+     * Optional function to allow users to skip 2FA setup.
+     * Should return true if the user should be allowed to skip the 2FA setup and false if AdminForth should require the user to set up 2FA.
+     * @param adminUser 
+     * @returns true if the user should be allowed to skip the 2FA setup and false if AdminForth should require the user to set up 2FA.
+     */
+    usersFilterToAllowSkipSetup?: (adminUser: AdminUser) => boolean;
 }

@@ -28,7 +28,7 @@
                       />
                     </div>
                     <!-- <Vue2FACodeInput v-model="code"/> -->
-                    <Button @click="() => {router.push('./login')}" class="w-full">Cancel</Button>
+                    <Button @click="() => {router.push('./login')}" class="w-full">Back to login</Button>
                 </div>
             </div>
         </div>
