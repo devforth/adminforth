@@ -37,7 +37,7 @@
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
                   <form v-if="!requestSent" class="space-y-4" role="alert" @submit.prevent>
-                    <div class="relative">
+                    <div v-if="!verifyToken" class="relative">
                       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
                       <input type="email" name="email" id="email" 
                         tabindex="1"
@@ -49,7 +49,7 @@
                         required
                       />
                     </div>
-                    <div class="relative">
+                    <div v-if="isPasswordNeeded" class="relative">
                       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
                       <input 
                         tabindex="2"
@@ -73,7 +73,7 @@
                       </button>
                     </div>
 
-                    <div class="relative">
+                    <div v-if="isPasswordNeeded" class="relative">
                       <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm new password</label>
                       <input 
                         ref="passwordConfirmationInput"
@@ -108,7 +108,7 @@
 
                     <Button
                       :disabled="inProgress || (validationRunning && validationError)"
-                      @click="doSignup"
+                      @click="() => verifyToken ? signupAfterEmailConfirmation() : doSignup()"
                       type="submit"
                       class="w-full"
                       :loader="inProgress"
@@ -118,9 +118,11 @@
                   </form>
 <!-- END of set new paasord -->
                   <div v-else class="flex items center justify-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-800 dark:text-green-400" role="alert">
-                    If user with specified email exists in our db, then request was sent. Please check your email at {{ sentToEmail }} to reset your password.
-                  </div>
-
+                    Please check your email at {{ sentToEmail }} to confirm your email address.
+                  </div> 
+                  <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
+                      or <Link to="/login">{{ toLoginText }}</Link>
+                  </p>
                 </div>
             </div>
         </div>
@@ -131,7 +133,6 @@
 
 
 <script setup lang="ts">
-
 import { onMounted, ref, computed, Ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
@@ -139,6 +140,7 @@ import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import Button from '@/afcl/Button.vue';
+import Link from '@/afcl/Link.vue';
 
 const inProgress = ref(false);
 
@@ -154,12 +156,17 @@ const passwordConfirmation = ref("");
 const unmasked = ref(false);
 const sentToEmail: Ref<string> = ref('');
 
+const requestEmailConfirmation = computed(() => route.meta.requestEmailConfirmation);
+const verifyToken = computed(() => route.query.token);
+const toLoginText = computed(() => `${verifyToken.value ? 'Go' : 'Back'} to login`);
+const isPasswordNeeded = computed(() => !requestEmailConfirmation.value || (requestEmailConfirmation.value && verifyToken.value));
+
 const user = useUserStore();
 
 const route = useRoute();
 const router = useRouter();
 
-function checkPassowrd() {
+function checkPassword() {
 
   if (!password.value || !passwordConfirmation.value) {
     return 'Please enter both password and password confirmation';
@@ -190,38 +197,14 @@ const validationRunning = ref(false);
 
 const validationError = computed(() => {
   if (validationRunning.value) {
-    return checkPassowrd();
+    return checkPassword();
   }
   return null;
 });
 
-const error: Ref<str | null> = ref(null);
+const error: Ref<string | null> = ref(null);
 
 onMounted(async () => {
-  if (route.query.token) {
-    // call method completeVerifiedSignup to confirm { token }
-    // if success, then redirect to login page
-
-    const resp = await callAdminForthApi({
-      path: `/plugin/${route.meta.pluginInstanceId}/complete-verified-signup`,
-      method: 'POST',
-      body: {
-        token: route.query.token,
-      }
-    });
-    if (resp.error) {
-      window.adminforth.alert({
-        message: `Error fetching data: ${error.message}`,
-        variant: 'danger',
-      });
-    } else if (resp.redirectTo) {
-      router.push(resp.redirectTo);
-    } else {
-      await user.finishLogin();
-    }
-    return;
-
-  }
   emailInput.value?.focus();
 });
 
@@ -245,7 +228,7 @@ async function doSignup() {
     error.value = 'Please enter your email';
     return;
   }
-  if (checkPassowrd()) {
+  if (!requestEmailConfirmation.value && checkPassword()) {
     validationRunning.value = true;
     return;
   }
@@ -257,7 +240,7 @@ async function doSignup() {
     body: {
       email,
       url: window.location.origin + window.location.pathname,
-      password: password.value,
+      ...(!requestEmailConfirmation.value ? {password: password.value} : {}),
     }
   });
   inProgress.value = false;
@@ -267,15 +250,37 @@ async function doSignup() {
     error.value = null;
     requestSent.value = true;
     sentToEmail.value = email;
-    if (resp.redirectTo) {
+    if (resp.redirectTo && !requestEmailConfirmation.value) {
       router.push(resp.redirectTo);
-    } else {
+    } else if (!requestEmailConfirmation.value) {
       error.value = null;
       await user.finishLogin();
     }
   }
 }
 
-
-
+const signupAfterEmailConfirmation = async () => {
+  if (checkPassword()) {
+    validationRunning.value = true;
+    return;
+  }
+  const resp = await callAdminForthApi({
+      path: `/plugin/${route.meta.pluginInstanceId}/complete-verified-signup`,
+      method: 'POST',
+      body: {
+        token: verifyToken.value,
+        password: password.value,
+      }
+    });
+    if (resp.error) {
+      window.adminforth.alert({
+        message: `Error fetching data: ${resp.error}`,
+        variant: 'danger',
+      });
+    } else if (resp.redirectTo) {
+      router.push(resp.redirectTo);
+    } else {
+      await user.finishLogin();
+    }
+}
 </script>
