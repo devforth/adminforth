@@ -99,7 +99,7 @@ By default plugin enforces Two-Factor Authentication for all users.
 
 If you wish to enforce 2FA only for specific users, you can again use `usersFilterToApply` option:
 
-```ts title='./index.ts'
+```ts title='./users.ts'
   usersFilterToApply: (adminUser: AdminUser) => {
     // disable 2FA for users which email is 'adminforth' or 'adminguest'
     return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
@@ -108,7 +108,7 @@ If you wish to enforce 2FA only for specific users, you can again use `usersFilt
  
 You can even add a boolean column to the user table to store whether the user should use 2FA or not:
 
-```ts title='./index.ts'
+```ts title='./users.ts'
 {
     resourceId: 'users',
     ...
@@ -145,4 +145,29 @@ You can even add a boolean column to the user table to store whether the user sh
         }),
     ],
 }
+```
+
+## Allow Specific Users to Skip Two-Factor Authentication Setup
+
+By default, all users are required to setup Two-Factor Authentication.
+
+If you want to allow specific users to skip the 2FA setup, you can use the `usersFilterToAllowSkipSetup` option:
+
+```ts title='./users.ts'
+...
+plugins: [
+        new TwoFactorsAuthPlugin ({ 
+          twoFaSecretFieldName: 'secret2fa',
+          ...
+        //diff-add
+          usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+            //diff-add
+            // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
+            //diff-add
+            return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
+            //diff-add
+          },
+        }),
+],
+...
 ```

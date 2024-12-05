@@ -1,3 +1,9 @@
+## [1.0.20] - 2024-12-05
+
+### Added
+
+- Added usersFilterToAllowSkipSetup to TwoFactorsAuthPlugin to allow skip 2FA setup for specific users
+
 ## [1.0.19] - 2024-12-02
 
 ### Fixed

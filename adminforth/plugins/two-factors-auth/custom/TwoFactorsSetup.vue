@@ -46,9 +46,14 @@
                     />
                   </div>
                   <!-- <Vue2FACodeInput v-model="code" autofocus /> -->
-                  <Button @click="()=>{router.push('./login')}" 
-                      class="w-full">Cancel
-                  </Button>      
+                   <div class="flex flex-row gap-2.5">
+                  <LinkButton to="/login" class="w-full">
+                    Back to login
+                  </LinkButton>
+                  <Button v-if="skipAllowed" @click="handleSkip" class="w-full">
+                    Skip for now
+                  </Button>
+                </div>
               </div>
           </div>
       </div>
@@ -68,7 +73,7 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
-import { Button } from '@/afcl';
+import { Button, LinkButton } from '@/afcl';
 import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
 import VOtpInput from "vue3-otp-input";
 
@@ -82,6 +87,8 @@ const inProgress = ref(false);
 
 const coreStore = useCoreStore();
 const user = useUserStore();
+
+const skipAllowed = ref(false);
 
 // use this simple function to automatically focus on the next input
 
@@ -127,9 +134,16 @@ onMounted(async () => {
     totpJWT.value = resp.totpJWT;
   } 
   
-
   totp.value=parseJwt(totpJWT.value);
+  
+  const allowSkipResp = await callAdminForthApi({
+    path: '/plugin/twofa/skip-allow',
+    method: 'GET',
+  });
 
+  if (allowSkipResp?.skipAllowed){
+    skipAllowed.value = true;
+  }
 
   window.addEventListener('paste', handlePaste);
 });
@@ -166,6 +180,18 @@ function handlePaste(event) {
   const pastedText = event.clipboardData?.getData('text') || '';
   if (pastedText.length === 6) { 
     code.value?.fillInput(pastedText);
+  }
+}
+
+const handleSkip = async () => {
+  const resp = await callAdminForthApi({
+    method: 'POST',
+    path: '/plugin/twofa/confirmSetup',
+  });
+  if (resp.allowedLogin){
+    await user.finishLogin()
+  } else {
+    showErrorTost('Something went wrong');
   }
 }
 </script>

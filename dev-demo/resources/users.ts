@@ -44,6 +44,9 @@ export default {
         // return true;
         return adminUser.dbUser.email !== "adminforth";
       },
+      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+        return adminUser.dbUser.email === "adminforth";
+      },
     }),
     new EmailResetPasswordPlugin({
       emailField: "email",
@@ -141,6 +144,7 @@ export default {
     },
     {
       name: "last_login_ip",
+      showIn: ["show", "list", "filter"],
     },
     // {
     //   name: "email_confirmed",
