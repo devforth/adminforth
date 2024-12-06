@@ -15,5 +15,8 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-ses": "^3.654.0"
+  },
+  "devDependencies": {
+    "i18n-iso-countries": "^7.13.0"
   }
 }

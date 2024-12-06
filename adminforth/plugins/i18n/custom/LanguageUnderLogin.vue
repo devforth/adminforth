@@ -15,8 +15,9 @@
 
 <script setup>
 import Select from '@/afcl/Select.vue';
+import { computed, ref, onMounted } from 'vue';
 
-const props = defineProps(['adminUser', 'meta', 'resource']);
+const props = defineProps(['meta', 'resource']);
 
 const selectedLanguage = ref('');
 
@@ -29,11 +30,11 @@ const options = computed(() => {
   });
 });
 
+const LS_LANG_KEY = `${props.meta.brandSlug}-lang`;
+
 onMounted(() => {
-  selectedLanguage.value = props.adminUser.language;
-  if (!selectedLanguage.value) {
-    selectedLanguage.value = props.meta.supportedLanguages[0].code;
-  }
+  console.log('LanguageUnderLogin mounted', props.meta.supportedLanguages);
+  selectedLanguage.value = localStorage.getItem(LS_LANG_KEY) || props.meta.supportedLanguages[0].code;
 });
 
 </script>

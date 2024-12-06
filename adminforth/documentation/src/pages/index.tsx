@@ -25,7 +25,7 @@ const images = [
   {
     original: require('@site/static/img/previews/ai_complete.png').default,
     title: 'AI autocomplete Plugin - write with ChatGPT',
-    link: '/docs/tutorial/Plugins/chat-gpt/',
+    link: '/docs/tutorial/Plugins/text-complete/',
     description: 'Provide your OpenAI API key to autocomplete plugin and AI will help you to write your content using record context'
   },
   {
