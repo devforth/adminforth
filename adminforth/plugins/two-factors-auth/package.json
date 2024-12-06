@@ -1,6 +1,6 @@
 {
   "name": "@adminforth/two-factors-auth",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "AdminForth plugin for two factors authentication",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
