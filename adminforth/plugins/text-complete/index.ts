@@ -3,7 +3,7 @@ import { IAdminForth, IHttpServer, AdminForthPlugin, AdminForthResource, AdminFo
 import { PluginOptions } from './types.js';
 
 
-export default class ChatGptPlugin extends AdminForthPlugin {
+export default class TextCompletePlugin extends AdminForthPlugin {
   options: PluginOptions;
 
   resourceConfig!: AdminForthResource;
@@ -28,9 +28,8 @@ export default class ChatGptPlugin extends AdminForthPlugin {
     if (![AdminForthDataTypes.STRING, AdminForthDataTypes.TEXT].includes(column!.type!)) {
       throw new Error(`Field ${this.options.fieldName} should be string or text type, but it is ${column!.type}`);
     }
-    // any validation better to do here e.g. because bundleNow migt no have enough environment
-    if (!this.options.openAiApiKey) {
-      throw new Error('OPENAI_API_KEY is required');
+    if (!this.options.adapter) {
+      throw new Error('adapter is required');
     }
   }
 
@@ -122,29 +121,10 @@ export default class ChatGptPlugin extends AdminForthPlugin {
         }
 
         process.env.HEAVY_DEBUG && console.log('🪲 OpenAI Prompt 🧠', content);
+        const { content: respContent, finishReason } = await this.options.adapter.complete(content, this.options.expert?.stop, this.options.expert?.maxTokens);
         const stop = this.options.expert?.stop || ['.'];
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.options.openAiApiKey}`
-          },
-          body: JSON.stringify({
-            model: this.options.model || 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'user', 
-                content,
-              }
-            ],
-            temperature: this.options.expert?.temperature || 0.7,
-            max_tokens: this.options.expert?.maxTokens || 50,
-            stop,
-          })
-        });
-        const data = await resp.json();
-        let suggestion = data.choices[0].message.content + (
-          data.choices[0].finish_reason === 'stop' ? (
+        let suggestion = respContent + (
+          finishReason === 'stop' ? (
             stop[0] === '.' && stop.length === 1 && this.columnType === AdminForthDataTypes.TEXT ? '. ' : ''
           ) : ''
         );
