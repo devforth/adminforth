@@ -1,11 +1,11 @@
 {
   "name": "@adminforth/email-adapter-aws-ses",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch",
+    "build": "tsc && npm version patch",
     "rollout": "npm run build && npm publish --access public",
     "prepare": "npm link adminforth"
   },
