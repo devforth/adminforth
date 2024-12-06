@@ -1,3 +1,5 @@
+import { CompletionAdapter } from "adminforth";
+
 // example options ussage:
 //{
 //  htmlFieldName: 'description',
@@ -52,27 +54,10 @@ export interface PluginOptions {
    */
   completion?: {
     /**
-     * The provider is the name of the plugin that will be used to provide completions.
+     * Adapter for completion.
      */
-    provider: string;
 
-    /**
-     * The params are the parameters that will be passed to the completion provider.
-     */
-    params: {
-      /**
-       * OpenAI API key. Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new secret key
-       * Paste value in your .env file OPENAI_API_KEY=your_key
-       * Set openAiApiKey: process.env.OPENAI_API_KEY to access it
-       */
-      apiKey: string;
-
-      /**
-       * Model name. Go to https://platform.openai.com/docs/models, select model and copy name.
-       * Default is `gpt-4o-mini`. Use e.g. more expensive `gpt-4o` for more powerful model.
-       */
-      model?: string;
-    }
+    adapter: CompletionAdapter;
 
     /**
      * Expert settings
@@ -82,11 +67,6 @@ export interface PluginOptions {
          * Number of tokens to generate. Default is 50. 1 token ~= ¾ words 
          */
         maxTokens?: number;
-
-        /**
-         * Temperature (0-1). Lower is more deterministic, higher is more unpredicted creative. Default is 0.7.
-         */
-        temperature?: number;
 
         /**
          * Maximum number of last characters which will be used for completion for target field. Default is 500.

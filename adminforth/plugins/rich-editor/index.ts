@@ -209,8 +209,8 @@ export default class RichEditorPlugin extends AdminForthPlugin {
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     this.adminforth = adminforth;
     // optional method where you can safely check field types after database discovery was performed
-    if (this.options.completion && this.options.completion.provider !== 'openai-chat-gpt') {
-      throw new Error(`Invalid provider ${this.options.completion.provider}`);
+    if (this.options.completion && !this.options.completion.adapter) {
+      throw new Error(`Completion adapter is required`);
     }
 
   }
@@ -310,29 +310,10 @@ export default class RichEditorPlugin extends AdminForthPlugin {
         }
 
         process.env.HEAVY_DEBUG && console.log('🪲 OpenAI Prompt 🧠', content);
+        const { content: respContent, finishReason } = await this.options.completion.adapter.complete(content, this.options.completion?.expert?.stop, this.options.completion?.expert?.maxTokens);
         const stop = this.options.completion.expert?.stop || ['.'];
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.options.completion.params.apiKey}`
-          },
-          body: JSON.stringify({
-            model: this.options.completion.params.model || 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'user', 
-                content,
-              }
-            ],
-            temperature: this.options.completion.expert?.temperature || 0.7,
-            max_tokens: this.options.completion.expert?.maxTokens || 50,
-            stop,
-          })
-        });
-        const data = await resp.json();
-        let suggestion = data.choices[0].message.content + (
-          data.choices[0].finish_reason === 'stop' ? (
+        let suggestion = respContent + (
+          finishReason === 'stop' ? (
             stop[0] === '.' && stop.length === 1 ? '. ' : ''
           ) : ''
         );

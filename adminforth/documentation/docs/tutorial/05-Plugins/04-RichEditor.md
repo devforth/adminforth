@@ -1,4 +1,3 @@
-
 # Rich editor
 
 Under the hood this plugin uses [Quill](https://quilljs.com/). Quill is a free, open source WYSIWYG editor built for the modern web.
@@ -16,7 +15,7 @@ npm i @adminforth/rich-editor --save
 Import plugin:
 
 ```ts title="./resources/apartments.ts"
-import RichEditorPlugin from '@adminforth/rich-editor';
+import RichEditorPlugin from "@adminforth/rich-editor";
 ```
 
 Now instantiate the plugin and add it to the configuration:
@@ -50,19 +49,15 @@ Now instantiate the plugin and add it to the configuration:
 }
 ```
 
-
-
 Now you can see Quill editor in the `description` field in the edit view:
 
 ![alt text](image-2.png)
-
-
 
 # Multiple editors in one resource
 
 If you need multiple fields in one resource which happens rarely, just add multiple instances of the plugin:
 
-```ts
+```ts title="./resources/apartments.ts"
 {
   ...
   resourceId: 'promotion',
@@ -94,26 +89,31 @@ If you need multiple fields in one resource which happens rarely, just add multi
 }
 ```
 
-
 ## Completion
 
 To get completion suggestions for the text in the editor, you can use the `completion` option. This option is an object with the following properties:
 
-```ts title="./index.ts"
+```ts title="./resources/apartments.ts"
+//diff-add
+  import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+
   new RichEditorPlugin({
       htmlFieldName: 'description',
 //diff-add
       completion: {
 //diff-add
-        provider: 'openai-chat-gpt',
+        adapter: new CompletionAdapterOpenAIChatGPT({
 //diff-add
-        params: {
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
-          apiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4o', //gpt-4o-mini is a default (cheapest one)
+          expert: {
 //diff-add
-          // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
+            temperature: 0.7; //Model temperature, default 0.7
 //diff-add
-        },
+        };
+//diff-add
+        }),
 //diff-add
         expert: {
 //diff-add
