@@ -4,12 +4,13 @@ import {
   AdminUser,
   Filters,
 } from "../../adminforth";
-import ChatGptPlugin from "../../adminforth/plugins/chat-gpt";
+import TextCompletePlugin from "../../adminforth/plugins/text-complete";
 import UploadPlugin from "../../adminforth/plugins/upload";
 import ImportExportPlugin from "../../adminforth/plugins/import-export/index.js";
 import { v1 as uuid } from "uuid";
 import RichEditorPlugin from "../../adminforth/plugins/rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
+import CompletionAdapterOpenAIChatGPT from "../../adminforth/adapters/completion-adapter-open-ai-chat-gpt/index.js";
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -357,24 +358,24 @@ export default {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
               showInList: true,
-              maxWidth: '200px',
+              maxWidth: "200px",
             },
           }),
         ]
       : []),
     new ImportExportPlugin({}),
-    new ChatGptPlugin({
-      openAiApiKey: process.env.OPENAI_API_KEY as string,
-      model: "gpt-4o",
+    new TextCompletePlugin({
       fieldName: "title",
       expert: {
         debounceTime: 250,
       },
+      adapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+      }),
     }),
-    // new ChatGptPlugin({
+    // new TextCompletePlugin({
     //   openAiApiKey: process.env.OPENAI_API_KEY as string,
     //   fieldName: 'description',
-    //   model: 'gpt-4o',
     //   expert: {
     //     debounceTime: 250,
     //   }
@@ -382,11 +383,9 @@ export default {
     new RichEditorPlugin({
       htmlFieldName: "description",
       completion: {
-        provider: "openai-chat-gpt",
-        params: {
-          apiKey: process.env.OPENAI_API_KEY as string,
-          model: "gpt-4o",
-        },
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+        }),
         expert: {
           debounceTime: 250,
         },
