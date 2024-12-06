@@ -20,14 +20,32 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
 
+    // check each supported language is valid ISO 639-1 code
+    this.options.supportedLanguages.forEach((lang) => {
+      console.log('lang', lang);
+      if (!isoCountries.isValid(lang)) {
+        throw new Error(`Invalid language code ${lang}, please define valid ISO 639-1 language code (2 lowercase letters)`);
+      }
+    });
+
+    await Promise.all(
+      this.options.supportedLanguages.map(async (lang) => {
+        const localeData = await import(`i18n-iso-countries/langs/${lang}.json`);
+        isoCountries.registerLocale(localeData);
+      })
+    ); 
+
+
+
     // add underLogin component
     (adminforth.config.customization.loginPageInjections.underInputs as AdminForthComponentDeclaration[]).push({ 
       file: this.componentPath('LanguageUnderLogin.vue'),
       meta: { 
+        brandSlug: adminforth.config.customization.brandNameSlug,
         pluginInstanceId: this.pluginInstanceId,
         supportedLanguages: this.options.supportedLanguages.map(lang => (
-          { 
-            code: lang, 
+          {
+            code: lang,
             // lang name on on language native name
             name: isoCountries.getName(lang, lang)
           }

@@ -53,7 +53,7 @@ model description_image {
 }
 
 model translations {
-    en_string   @id
+    en_string   String @id
     created_at  DateTime
     uk_string   String
     jp_string   String

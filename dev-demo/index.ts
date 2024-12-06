@@ -11,6 +11,7 @@ import usersResource from './resources/users.js';
 import gameResource from './resources/game.js';
 import gamesUsersResource from './resources/games_users.js';
 import gamesResource from './resources/games.js';
+import translationsResource from './resources/translation.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -195,6 +196,7 @@ export const admin = new AdminForth({
     gamesResource,
     gamesUsersResource,
     gameResource,
+    translationsResource,
   ],
   menu: [
     {
