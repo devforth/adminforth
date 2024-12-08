@@ -983,7 +983,7 @@ Now you can open `http://localhost` in your browser and see your blog.
 ### Deploy to EC2 with terraform
 
 
-First of all install Terraform as described here [https://developer.hashicorp.com/terraform/install#linux](terraform installation).
+First of all install Terraform as described here [terraform installation](https://developer.hashicorp.com/terraform/install#linux).
 
 If you are on Ubuntu(WSL2 or native) you can use the following commands:
 

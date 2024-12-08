@@ -91,6 +91,10 @@ tfplan
 ## Step 5 - Main terraform file main.tf
 
 
+
+First of all install Terraform as described here [terraform installation](https://developer.hashicorp.com/terraform/install#linux).
+
+
 Create file `main.tf` in `deploy` folder:
 
 ```hcl title="deploy/main.tf"
@@ -122,7 +126,7 @@ data "aws_vpc" "default" {
 
 
 resource "aws_eip" "eip" {
- vpc = true
+ domain = "vpc"
 }
 resource "aws_eip_association" "eip_assoc" {
  instance_id   = aws_instance.app_instance.id
@@ -189,7 +193,7 @@ resource "aws_instance" "app_instance" {
   key_name               = aws_key_pair.app_deployer.key_name
 
   root_block_device {
-    volume_size = 40 // Size in GB for root partition
+    volume_size = 20 // Size in GB for root partition
     volume_type = "gp2"
   }
 
@@ -238,8 +242,6 @@ resource "null_resource" "sync_files_and_run" {
       --exclude '.vscode' \
       --exclude '.env' \
       --exclude 'db' \
-      --exclude 'up-human/debug' \
-      --exclude 'up-human/storage' \
       ../ ubuntu@${aws_eip_association.eip_assoc.public_ip}:/home/ubuntu/app/
     EOF
   }
@@ -375,6 +377,7 @@ terraform {
    region         = "eu-central-1"
    profile        = "myaws"
    dynamodb_table = "<your_app_name>-terraform-lock-table"
+   use_lockfile   = true
  }
 }
 ```
@@ -394,6 +397,9 @@ Now run test deployment:
 ```bash
 terraform apply -auto-approve
 ```
+
+Now you can delete local `terraform.tfstate` file and `terraform.tfstate.backup` file as they are in the cloud now.
+
 
 ## Step 7 - CI/CD - Github Actions
 
