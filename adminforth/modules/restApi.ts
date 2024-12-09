@@ -44,7 +44,7 @@ export async function interpretResource(
     [ActionCheckSource.DeleteRequest]: ['delete'],
     [ActionCheckSource.ListRequest]: ['list'],
     [ActionCheckSource.CreateRequest]: ['create'],
-    [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create'],
+    [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create', 'filter'],
     [ActionCheckSource.BulkActionRequest]: ['delete'],
   }[source];
 
