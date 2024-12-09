@@ -25,7 +25,7 @@ export default {
   recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
     new I18nPlugin({
-      supportedLanguages: ['en', 'uk', 'jp', 'fr'],
+      supportedLanguages: ['en', 'uk', 'ja', 'fr'],
 
     }),
 
@@ -48,7 +48,7 @@ export default {
       name: "uk_string",
     },
     {
-      name: "jp_string",
+      name: "ja_string",
     },
     {
       name: "fr_string",

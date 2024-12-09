@@ -30,11 +30,12 @@ export async function callApi({path, method, body=undefined}: {
   return await r.json();
 }
 
-export async function callAdminForthApi({ path, method, body=undefined }: {
+export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
   path: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-  body?: any
-}) {
+  body?: any,
+  headers?: Record<string, string>
+}): Promise<any> {
   try {
     return callApi({path: `/adminapi/v1${path}`, method, body} );
   } catch (e) {

@@ -56,6 +56,7 @@ model translations {
     en_string   String @id
     created_at  DateTime
     uk_string   String
-    jp_string   String
+    ja_string   String
     fr_string   String
+    es_string   String
 }
