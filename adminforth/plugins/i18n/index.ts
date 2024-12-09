@@ -1,7 +1,7 @@
 import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthDataTypes } from "adminforth";
 import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction } from "adminforth";
 import type { PluginOptions } from './types.js';
-import isoCountries from 'i18n-iso-countries';
+import iso6391 from 'iso-639-1';
 
 export default class OpenSignupPlugin extends AdminForthPlugin {
   options: PluginOptions;
@@ -23,17 +23,11 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
     // check each supported language is valid ISO 639-1 code
     this.options.supportedLanguages.forEach((lang) => {
       console.log('lang', lang);
-      if (!isoCountries.isValid(lang)) {
+      if (!iso6391.validate(lang)) {
         throw new Error(`Invalid language code ${lang}, please define valid ISO 639-1 language code (2 lowercase letters)`);
       }
     });
 
-    await Promise.all(
-      this.options.supportedLanguages.map(async (lang) => {
-        const localeData = await import(`i18n-iso-countries/langs/${lang}.json`);
-        isoCountries.registerLocale(localeData);
-      })
-    ); 
 
 
 
@@ -47,7 +41,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           {
             code: lang,
             // lang name on on language native name
-            name: isoCountries.getName(lang, lang)
+            name: iso6391.getNativeName(lang),
           }
         ))
       }
@@ -71,9 +65,17 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       method: 'GET',
       path: `/plugin/${this.pluginInstanceId}/frontend_messages`,
       noAuth: true,
-      handler: async ({ body, response, request }) => {
-        const lang = request.headers['accept-language'] || 'en';
-       
+      handler: async ({ query }) => {
+        console.log('query', query);
+        const lang = query.lang;
+        if (lang === 'ja') {
+          return {
+            Info: '情報',
+            'Sign in to': 'サインイン',
+          }
+        }
+        return {
+        }
       }
     });
 

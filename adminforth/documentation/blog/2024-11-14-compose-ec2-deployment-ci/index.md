@@ -192,9 +192,20 @@ resource "aws_instance" "app_instance" {
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   key_name               = aws_key_pair.app_deployer.key_name
 
+  # prevent accidental termination of ec2 instance and data loss
+  # if you will need to recreate the instance still (not sure why it can be?), you will need to remove this block manually by next command:
+  # > terraform taint aws_instance.app_instance
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [ami]
+  }
+
   root_block_device {
     volume_size = 20 // Size in GB for root partition
     volume_type = "gp2"
+
+    # Even if the instance is terminated, the volume will not be deleted, delete it manually if needed
+    delete_on_termination = false
   }
 
   user_data = <<-EOF

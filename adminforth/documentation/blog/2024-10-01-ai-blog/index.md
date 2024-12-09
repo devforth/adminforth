@@ -1093,6 +1093,14 @@ resource "aws_instance" "docker_instance" {
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   key_name               = aws_key_pair.deployer.key_name
 
+  # prevent accidental termination of ec2 instance and data loss
+  # if you will need to recreate the instance still (not sure why it can be?), you will need to remove this block manually by next command:
+  # > terraform taint aws_instance.app_instance
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [ami]
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     yum update -y
