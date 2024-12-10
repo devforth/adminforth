@@ -26,7 +26,13 @@ export default {
   plugins: [
     new I18nPlugin({
       supportedLanguages: ['en', 'uk', 'ja', 'fr'],
-
+      translationFieldNames: {
+        en: 'en_string',
+        uk: 'uk_string',
+        ja: 'ja_string',
+        fr: 'fr_string',
+      },
+      sourceFieldName: 'source',
     }),
 
   ],
@@ -53,6 +59,9 @@ export default {
     {
       name: "fr_string",
     },
+    {
+      name: "source",
+    }
 
 
   ],
