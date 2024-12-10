@@ -1,5 +1,5 @@
 import { exec, spawn } from 'child_process';
-import filewatcher from 'filewatcher';
+import filewatcher from 'filewatcher';  // todo - replace this legacy (>8y old module) with chokidar
 import fs from 'fs';
 import fsExtra from 'fs-extra';
 import os from 'os';
@@ -349,6 +349,8 @@ class CodeInjector implements ICodeInjector {
       await fsExtra.copy(src, to, {
         recursive: true,
         dereference: true,
+        // exclue if node_modules comes after /custom/ in path
+        filter: (src) => !src.includes('/custom/node_modules'),
       });
     }
 
@@ -744,9 +746,15 @@ class CodeInjector implements ICodeInjector {
 
     const cwd = this.spaTmpPath();
 
+
+    await this.runNpmShell({command: 'run i18n:extract', cwd});
+
     if (!hotReload) {
       // probably add option to build with tsh check (plain 'build')
       const serveDir = this.getServeDir();
+
+      
+
       await this.runNpmShell({command: 'run build-only', cwd});
       // remove serveDir if exists
       try {
@@ -759,6 +767,7 @@ class CodeInjector implements ICodeInjector {
       await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
 
     } else {
+
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 

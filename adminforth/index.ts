@@ -233,7 +233,6 @@ class AdminForth implements IAdminForth {
       this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
       this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
 
-      this.configValidator.postProcessAfterDiscover(res);
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
@@ -243,6 +242,10 @@ class AdminForth implements IAdminForth {
     }));
 
     this.statuses.dbDiscover = 'done';
+
+    for (const res of this.config.resources) {
+      this.configValidator.postProcessAfterDiscover(res);
+    } 
 
     this.operationalResources = {};
     this.config.resources.forEach((resource) => {

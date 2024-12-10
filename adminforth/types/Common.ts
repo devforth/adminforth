@@ -723,6 +723,10 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
    */
   _underlineType?: string,
 
+  required?: { create?: boolean, edit?: boolean },
+
+  editingNote?: { create?: string, edit?: string },
+
 }
 
 export enum AdminForthMenuTypes {
