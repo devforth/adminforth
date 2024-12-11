@@ -60,7 +60,7 @@ plugins: [
 ]
 ```
 
-Make sure to to place your AWS credentials in `.env` file/environment.
+Make sure to place your AWS credentials in `.env` file/environment.
 
 ```bash /.env
 AWS_ACCESS_KEY_ID=your-access-key
