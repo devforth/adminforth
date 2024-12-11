@@ -14,7 +14,7 @@
       <button @click="$router.back()"
         class="flex items-center py-1 px-3 me-2 text-sm font-medium text-gray-900  rounded-default focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
-        Cancel
+        {{ $t('Cancel') }}
       </button>
 
       <button
@@ -23,7 +23,7 @@
         :disabled="saving || (validating && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
-        Save
+        {{ $t('Save') }}
       </button>
 
       <ThreeDotsMenu 

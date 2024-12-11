@@ -293,7 +293,11 @@ ${JSON.stringify(obj)}
         [this.enFieldName]: key,
         ...(this.options.sourceFieldName ? { [this.options.sourceFieldName]: `${source}:${file}` } : {}),
       };
-      await adminforth.resource(this.resourceConfig.resourceId).create(record);
+      try {
+        await adminforth.resource(this.resourceConfig.resourceId).create(record);
+      } catch (e) {
+        console.error('🐛 Error creating record', e);
+      }
     }))
 
 

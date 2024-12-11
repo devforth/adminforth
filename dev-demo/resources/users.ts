@@ -48,16 +48,20 @@ export default {
         return adminUser.dbUser.email === "adminforth";
       },
     }),
-    new EmailResetPasswordPlugin({
-      emailField: "email",
-      sendFrom: "no-reply@devforth.io",
-      adapter: new EmailAdapterAwsSes({
-        region: "eu-central-1",
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-      }),
-      passwordField: "password",
-    }),
+    ...(process.env.AWS_ACCESS_KEY_ID
+      ? [
+        new EmailResetPasswordPlugin({
+          emailField: "email",
+          sendFrom: "no-reply@devforth.io",
+          adapter: new EmailAdapterAwsSes({
+            region: "eu-central-1",
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          }),
+          passwordField: "password",
+        })]
+      : []
+    ),
     new OpenSignupPlugin({
       emailField: "email",
       passwordField: "password",

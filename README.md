@@ -57,6 +57,9 @@ npm link
 # this will install deps in all plugins and link adminforth package
 npm run ci-plugins
 
+# this will install deps in all plugins and link adminforth package
+npm run ci-adapters
+
 # this is dev demo for development
 cd dev-demo
 cp .env.sample .env
@@ -70,4 +73,11 @@ Add some columns to a database. Open .prisma file, modify it, and run:
 ```
 npm run migrate -- --name desctiption_of_changes
 ```
+
+Add some columns to a database. Open .prisma file, modify it, and run:
+
+```
+npm run migrate -- --name desctiption_of_changes
+```
+
 

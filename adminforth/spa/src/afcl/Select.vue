@@ -44,7 +44,7 @@
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
-        No results found
+        {{ $t('No results found') }}
       </div>
 
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
@@ -66,7 +66,7 @@
             @click="toogleItem(item)"
             class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 focus:bg-gray-100"
           >
-            <span class="sr-only">Remove item</span>
+            <span class="sr-only">{{ $t('Remove item') }}</span>
             <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
               <path
                 stroke-linecap="round"
