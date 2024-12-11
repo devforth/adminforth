@@ -1,4 +1,4 @@
-import { EmailAdapter } from 'adminforth';
+import { CompletionAdapter, EmailAdapter } from 'adminforth';
 import type { LanguageCode } from 'iso-639-1';
 
 
@@ -18,4 +18,9 @@ export interface PluginOptions {
    */
   sourceFieldName?: string;
 
+  /**
+   * Optionally translation plugin supports LLM completion adapter (like OpenAI) for generating translations
+   * semiautomatically (creates a bulk action for generating translations)
+   */
+  completeAdapter?: CompletionAdapter
 }

@@ -111,7 +111,7 @@ To get completion suggestions for the text in the editor, you can use the `compl
 //diff-add
             temperature: 0.7 //Model temperature, default 0.7
 //diff-add
-        }
+          }
 //diff-add
         }),
 //diff-add

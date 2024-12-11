@@ -1105,7 +1105,7 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * Typical use-cases: 
        * - request additional data from database before returning to frontend for soft-join 
        */
-      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+      beforeDatasourceRequest?: Array<BeforeDataSourceRequestFunction>,
 
       /**
        * Typical use-cases:
@@ -1113,7 +1113,7 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * - If some-why you can't use `backendOnly` you can cleanup sensitive fields here
        * - Attach additional data to record before returning to frontend 
        */
-      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+      afterDatasourceResponse?: Array<AfterDataSourceResponseFunction>,
     },
     list?: {
       /**
@@ -1121,14 +1121,14 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * - add additional filters in addition to what user selected before fetching data from database.
        * - same as hooks.show.beforeDatasourceRequest 
        */
-      beforeDatasourceRequest?: BeforeDataSourceRequestFunction | Array<BeforeDataSourceRequestFunction>,
+      beforeDatasourceRequest?: Array<BeforeDataSourceRequestFunction>,
 
       /**
        * Typical use-cases:
        * - Same as hooks.show.afterDatasourceResponse but applied for all records returned from database for 
        * showing in list view, e.g. add new field to each record in list view
        */
-      afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
+      afterDatasourceResponse?: Array<AfterDataSourceResponseFunction>,
     },
     create?: {
       /**
@@ -1137,38 +1137,38 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * - fill-in adminUser as creator of record
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeSaveFunction>,
 
       /**
        * Typical use-cases:
        * - Initiate some trigger after record saved to database (e.g sync to another datasource)
        */
-      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+      afterSave?: Array<AfterSaveFunction>,
     },
     edit?: {
       /**
        * Typical use-cases:
        * - Same as hooks.create.beforeSave but for edit page
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeSaveFunction>,
 
       /**
        * Typical use-cases:
        * - Same as hooks.create.afterSave but for edit page
        */
-      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+      afterSave?: Array<AfterSaveFunction>,
     },
     delete?: {
       /**
        * Typical use-cases:
        * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeSaveFunction>,
       /**
        * Typical use-cases:
        * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
        */
-      afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      afterSave?: Array<BeforeSaveFunction>,
     },
   },
 
