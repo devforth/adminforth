@@ -31,6 +31,7 @@ model apartments {
     realtor_id      String?
     property_type   String    @default("apartment")
     user_id         String?
+    apartment_image String?
 }
 
 model audit_log {
@@ -55,8 +56,9 @@ model description_image {
 model translations {
     en_string   String @id
     created_at  DateTime
-    uk_string   String
-    ja_string   String
-    fr_string   String
-    es_string   String
+    uk_string   String?
+    ja_string   String?
+    fr_string   String?
+    es_string   String?
+    source      String
 }

@@ -68,5 +68,16 @@ npm run migrate
 npm start
 ```
 
+Add some columns to a database. Open .prisma file, modify it, and run:
+
+```
+npm run migrate -- --name desctiption_of_changes
+```
+
+Add some columns to a database. Open .prisma file, modify it, and run:
+
+```
+npm run migrate -- --name desctiption_of_changes
+```
 
 

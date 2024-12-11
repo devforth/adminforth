@@ -20,6 +20,8 @@ export interface ICodeInjector {
   devServerPort: number;
 
   getServeDir(): string;
+
+  spaTmpPath(): string;
 }
 
 export interface IConfigValidator {

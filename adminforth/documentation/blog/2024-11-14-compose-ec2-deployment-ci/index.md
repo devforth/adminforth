@@ -331,18 +331,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
   }
 }
 
-# DynamoDB table for state locking
-resource "aws_dynamodb_table" "terraform_lock" {
-  name         = "${local.app_name}-terraform-lock-table"
-  billing_mode = "PAY_PER_REQUEST"  # Dynamically scales to meet demand
-
-  hash_key = "LockID"  # Primary key for the table
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-}
 
 ```
 
