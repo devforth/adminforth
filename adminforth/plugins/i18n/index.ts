@@ -72,6 +72,8 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           return {
             Info: '情報',
             'Sign in to': 'サインイン',
+            'Close modal': 'サ',
+            'Create': 'ン'
           }
         }
         return {

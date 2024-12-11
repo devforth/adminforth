@@ -7,10 +7,10 @@
       <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
         <tr>
           <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-6 py-3 hidden md:w-52 md:table-cell">
-              Field
+              {{ $t('Field') }}
           </th>
           <th scope="col" :class="{'rounded-tr-lg': !group.groupName}" class="px-6 py-3 hidden md:table-cell">
-              Value
+              {{ $t('Value') }}
           </th>
         </tr>
       </thead>
@@ -33,7 +33,7 @@
                 />
 
                 <template #tooltip>
-                  Required field
+                  {{ $t('Required field') }}
                 </template>
               </Tooltip>
             </span>

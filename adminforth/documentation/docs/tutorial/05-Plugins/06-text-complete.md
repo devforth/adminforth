@@ -49,9 +49,9 @@ export const admin = new AdminForth({
 //diff-add
         expert: {
 //diff-add
-            temperature: 0.7; //Model temperature, default 0.7
+            temperature: 0.7 //Model temperature, default 0.7
 //diff-add
-        };
+        }
 //diff-add
       }),
 //diff-add
