@@ -297,7 +297,7 @@ export default class ConfigValidator implements IConfigValidator {
       return [];
     }
     return this.inputConfig.resources.map((resInput: AdminForthResourceInput) => {
-      const res: Partial<AdminForthResource> = { ...resInput, options: undefined };
+      const res: Partial<AdminForthResource> = { ...resInput, options: undefined, hooks: undefined,  };
       if (!res.table) {
         errors.push(`Resource in "${res.dataSource}" is missing table`);
       }
@@ -448,44 +448,62 @@ export default class ConfigValidator implements IConfigValidator {
       res.options = options as AdminForthResource['options'];
 
       // transform all hooks Functions to array of functions
-      if (!res.hooks) {
-        res.hooks = {};
-      }
+      res.hooks = {};
       for (const hookName of ['show', 'list']) {
-        if (!res.hooks[hookName]) {
-          res.hooks[hookName] = {};
-        }
-        if (!res.hooks[hookName].beforeDatasourceRequest) {
-          res.hooks[hookName].beforeDatasourceRequest = [];
+        res.hooks[hookName] = {};
+        res.hooks[hookName].beforeDatasourceRequest = [];
+
+        const bdr = resInput.hooks?.[hookName]?.beforeDatasourceRequest;
+        if (!Array.isArray(bdr)) {
+          if (bdr) {
+            res.hooks[hookName].beforeDatasourceRequest = [bdr];
+          } else {
+            res.hooks[hookName].beforeDatasourceRequest = [];
+          }
+        } else {
+          res.hooks[hookName].beforeDatasourceRequest = bdr;
         }
 
-        if (!Array.isArray(res.hooks[hookName].beforeDatasourceRequest)) {
-          res.hooks[hookName].beforeDatasourceRequest = [res.hooks[hookName].beforeDatasourceRequest];
-        }
+        res.hooks[hookName].afterDatasourceResponse = [];
 
-        if (!res.hooks[hookName].afterDatasourceResponse) {
-          res.hooks[hookName].afterDatasourceResponse = [];
-        }
+        const adr = resInput.hooks?.[hookName]?.afterDatasourceResponse;
 
-        if (!Array.isArray(res.hooks[hookName].afterDatasourceResponse)) {
-          res.hooks[hookName].afterDatasourceResponse = [res.hooks[hookName].afterDatasourceResponse];
+        if (!Array.isArray(adr)) {
+          if (adr) {
+            res.hooks[hookName].afterDatasourceResponse = [adr];
+          } else {
+            res.hooks[hookName].afterDatasourceResponse = [];
+          }
+        } else {
+          res.hooks[hookName].afterDatasourceResponse = adr;
         }
       }
       for (const hookName of ['create', 'edit', 'delete']) {
-        if (!res.hooks[hookName]) {
-          res.hooks[hookName] = {};
+        res.hooks[hookName] = {};
+        res.hooks[hookName].beforeSave = [];
+
+        const bs = resInput.hooks?.[hookName]?.beforeSave;
+        if (!Array.isArray(bs)) {
+          if (bs) {
+            res.hooks[hookName].beforeSave = [bs];
+          } else {
+            res.hooks[hookName].beforeSave = [];
+          }
+        } else {
+          res.hooks[hookName].beforeSave = bs;
         }
-        if (!res.hooks[hookName].beforeSave) {
-          res.hooks[hookName].beforeSave = [];
-        }
-        if (!Array.isArray(res.hooks[hookName].beforeSave)) {
-          res.hooks[hookName].beforeSave = [res.hooks[hookName].beforeSave];
-        }
-        if (!res.hooks[hookName].afterSave) {
-          res.hooks[hookName].afterSave = [];
-        }
-        if (!Array.isArray(res.hooks[hookName].afterSave)) {
-          res.hooks[hookName].afterSave = [res.hooks[hookName].afterSave];
+
+        res.hooks[hookName].afterSave = [];
+
+        const as = resInput.hooks?.[hookName]?.afterSave;
+        if (!Array.isArray(as)) {
+          if (as) {
+            res.hooks[hookName].afterSave = [as];
+          } else {
+            res.hooks[hookName].afterSave = [];
+          }
+        } else {
+          res.hooks[hookName].afterSave = as;
         }
       }
 

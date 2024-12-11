@@ -268,7 +268,8 @@ resource "null_resource" "sync_files_and_run" {
       "docker system prune -f",
       # "docker buildx prune -f --filter 'type!=exec.cachemount'",
       "cd /home/ubuntu/app/deploy",
-      "docker compose -p app -f compose.yml up --build -d"
+      # COMPOSE_FORCE_NO_TTY is needed to run docker compose in non-interactive mode and prevent stdout mess up
+      "COMPOSE_FORCE_NO_TTY=1 docker compose -p app -f compose.yml up --build -d"
     ]
 
     connection {

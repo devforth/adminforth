@@ -5,6 +5,7 @@ import AdminForth, {
   AdminForthResourceInput,
   AdminUser,
 } from "../../adminforth";
+import CompletionAdapterOpenAIChatGPT from "../../adminforth/adapters/completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "../../adminforth/plugins/i18n";
 import { v1 as uuid } from "uuid";
 
@@ -33,6 +34,9 @@ export default {
         fr: 'fr_string',
       },
       sourceFieldName: 'source',
+      completeAdapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+      }),
     }),
 
   ],
