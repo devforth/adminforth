@@ -220,7 +220,8 @@ resource "null_resource" "sync_files_and_run" {
       # -a would destroy cache
       "docker system prune -f",
       "cd /home/ubuntu/app/",
-      "docker compose -f compose.yml up --build -d"
+      # COMPOSE_FORCE_NO_TTY is needed to run docker compose in non-interactive mode and prevent stdout mess up
+      "COMPOSE_FORCE_NO_TTY=1 docker compose -f compose.yml up --build -d"
     ]
 
     connection {

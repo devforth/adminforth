@@ -5,6 +5,7 @@ import iso6391, { LanguageCode } from 'iso-639-1';
 import path from 'path';
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
+import { th } from "@faker-js/faker";
 
 interface ICachingAdapter {
   get(key: string): Promise<any>;
@@ -109,6 +110,161 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       }
     });
 
+    // disable create allowedActions for translations
+    resourceConfig.options.allowedActions.create = false;
+
+
+    // add hook on edit of any translation
+    // resourceConfig.hooks.edit.afterSave.push(async ({ record }: { record: any }) => {
+    //   for (const lang of this.options.supportedLanguages) {
+    //     if (lang === 'en') {
+    //       continue;
+    //     }
+    //     this.cache.clear(`${resourceConfig.resourceId}:${lang}`);
+    //   }
+    // });
+
+
+    // options: {
+    //   bulkActions: [
+    //       {
+    //           label: 'Translate selected',
+    //           icon: 'flowbite:language-outline',
+    //           // if optional `confirm` is provided, user will be asked to confirm action
+    //           confirm: 'Are you sure you want to translate selected items?',
+    //           state: 'selected',
+    //           action: async function ({ selectedIds }) {
+    //               const data = await callBackofficeApi(
+    //                   'bulk_translate_with_openai',
+    //                   { en_strings: selectedIds }
+    //               );
+
+    //               return { ok: true, error: undefined, successMessage: `Translated ${selectedIds.length} items` };
+    //           },
+    //       }
+    //   ]
+    // },
+
+    // add bulk action
+    if (!resourceConfig.options.bulkActions) {
+      resourceConfig.options.bulkActions = [];
+    }
+    
+    if (this.options.completeAdapter) {
+      resourceConfig.options.bulkActions.push(
+        {
+          label: 'Translate selected',
+          icon: 'flowbite:language-outline',
+          // if optional `confirm` is provided, user will be asked to confirm action
+          confirm: 'Are you sure you want to translate selected items?',
+          state: 'selected',
+          action: async ({ selectedIds }) => {
+            const data = await this.bulkTranslate({ selectedIds });
+            return { ok: true, error: undefined, successMessage: `Translated ${selectedIds.length} items` };
+          },
+        }
+      );  
+    };
+
+
+  }
+
+  async bulkTranslate({ selectedIds }: { selectedIds: string[] }) {
+
+    const needToTranslateByLang : Partial<Record<LanguageCode, Record<string, string>>> = {};
+
+    const translations = await this.adminforth.resource(this.resourceConfig.resourceId).list(Filters.IN(this.enFieldName, selectedIds));
+
+    for (const lang of this.options.supportedLanguages) {
+      if (lang === 'en') {
+        // all strings are in English, no need to translate
+        continue;
+      }
+      for (const translation of translations) {
+        if (!translation[this.trFieldNames[lang]]) {
+          if (!needToTranslateByLang[lang]) {
+            needToTranslateByLang[lang] = {};
+          }
+          needToTranslateByLang[lang][translation[this.enFieldName]] = "";
+        }
+      }
+    }
+
+    const transDiff = {};
+    const maxKeysInOneReq = 10;
+
+
+    const translateToLang = async (langIsoCode: LanguageCode, obj: Record<string, string>) => {
+      if (Object.keys(obj).length > maxKeysInOneReq) {
+        for (let i = 0; i < Object.keys(obj).length; i += maxKeysInOneReq) {
+          const slicedObj = Object.fromEntries(Object.entries(obj).slice(i, i + maxKeysInOneReq));
+          await translateToLang(langIsoCode, slicedObj);
+        }
+        return;
+      }
+      const lang = langIsoCode;
+      const prompt = `
+I need to translate strings in JSON to ${lang} language from English for my casino website.
+Keep keys, as is, write translation into values! Here are the strings:
+
+\`\`\`json
+${JSON.stringify(obj)}
+\`\`\`
+`;
+      // call OpenAI
+      const resp = await this.options.completeAdapter.complete(
+        prompt,
+        [],
+        300,
+      );
+
+      console.log('🪲resp', resp);
+
+      // parse response like
+      // Here are the translations for the strings you provided:
+      // ```json
+      // [{"live": "canlı"}, {"Table Games": "Masa Oyunları"}]
+      // ```
+      let res;
+      try {
+        res = resp.content.split("```json")[1].split("```")[0];
+      } catch (e) {
+        console.error('error in parsing OpenAI', resp);
+        return;
+      }
+      res = JSON.parse(res);
+
+      for (const [enStr, translatedStr] of Object.entries(res)) {
+        const translation = translations.find(t => t[this.enFieldName] === enStr);
+        translation[this.trFieldNames[lang]] = translatedStr;
+        process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
+        this.adminforth.resource(this.resourceConfig.resourceId).update(translation.en_string, {
+          [this.trFieldNames[lang]]: translatedStr,
+        });
+
+        if (!transDiff[enStr]) {
+          transDiff[enStr] = {};
+        }
+      }
+
+    }
+    const langsInvolved = new Set(Object.keys(needToTranslateByLang));
+
+    await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, obj]: [LanguageCode, Record<string, string>]) => {
+      await translateToLang(lang, obj);
+    }));    
+
+    for (const lang of langsInvolved) {
+      this.cache.clear(`${this.resourceConfig.resourceId}:${lang}`);
+    }
+
+    return {
+      ok: true,
+      error: undefined,
+      successMessage: `Translated ${selectedIds.length} items`,
+
+    }
+
   }
 
   async processExtractedMessages(adminforth: IAdminForth, filePath: string) {
@@ -197,16 +353,23 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       path: `/plugin/${this.pluginInstanceId}/frontend_messages`,
       noAuth: true,
       handler: async ({ query }) => {
-        console.log('query', query);
         const lang = query.lang;
-        if (lang === 'ja') {
-          return {
-            Info: '情報',
-            'Sign in to': 'サインイン',
-          }
+        
+        // form map of translations
+        const resource = this.adminforth.resource(this.resourceConfig.resourceId);
+        const cacheKey = `${this.resourceConfig.resourceId}:${lang}`;
+        const cached = await this.cache.get(cacheKey);
+        if (cached) {
+          return cached;
         }
-        return {
+        const translations = {};
+        const allTranslations = await resource.list([]);
+        for (const tr of allTranslations) {
+          translations[tr[this.enFieldName]] = tr[this.trFieldNames[lang]];
         }
+        await this.cache.set(cacheKey, translations);
+        return translations;
+
       }
     });
 
