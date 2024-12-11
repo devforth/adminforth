@@ -15,21 +15,21 @@
         class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
       >
         <IconPlusOutline class="w-4 h-4 me-2"/>
-        Add new
+        {{ $t('Add new') }}
       </RouterLink>
 
       <RouterLink v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
         class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
         <IconPenSolid class="w-4 h-4" />
-        Edit
+        {{ $t('Edit') }}
       </RouterLink>
 
       <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
         class="flex items-center py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-white  border border-gray-300 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-red-500 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
       >
         <IconTrashBinSolid class="w-4 h-4" />
-        Delete
+        {{ $t('Delete') }}
       </button>
 
       <ThreeDotsMenu 
@@ -53,7 +53,7 @@
         <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
         <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
         <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
-        <span class="sr-only">Loading...</span>
+        <span class="sr-only">{{ $t('Loading...') }}</span>
     </div>
     <div 
       v-else-if="coreStore.record"
@@ -87,7 +87,7 @@
     </div>
 
     <div v-else class="text-center text-gray-500 dark:text-gray-400 mt-10">
-      Ooops. Record not found
+      {{ $t('Ooops. Record not found') }}
     </div>
 
     <component 

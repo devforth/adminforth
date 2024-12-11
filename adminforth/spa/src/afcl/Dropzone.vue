@@ -29,7 +29,7 @@
 
               </div>
 
-              <p v-if="!selectedFiles.length" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+              <p v-if="!selectedFiles.length" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">{{ $t('Click to upload') }}</span> {{ $t('or drag and drop') }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 {{ props.extensions.join(', ').toUpperCase().replace(/\./g, '') }}
                 <template v-if="props.maxSizeBytes">

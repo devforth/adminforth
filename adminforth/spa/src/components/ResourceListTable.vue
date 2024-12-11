@@ -22,7 +22,7 @@
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
                     class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="checkbox-all-search" class="sr-only">checkbox</label>
+              <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
           </td>
 
@@ -56,7 +56,7 @@
           </td>
 
           <td scope="col" class="px-6 py-3">
-            Actions
+            {{ $t('Actions') }}
           </td>
         </tr>
         <!-- table header end -->
@@ -72,7 +72,7 @@
                 class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
                 role="alert">
               <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400"/>
-              <div class="ps-4 text-sm font-normal">No items here yet</div>
+              <div class="ps-4 text-sm font-normal">{{ $t('No items here yet') }}</div>
             </div>
 
           </td>
@@ -125,7 +125,7 @@
                 </RouterLink>
 
                 <template v-slot:tooltip>
-                  Show item
+                  {{ $t('Show item') }}
                 </template>
               </Tooltip>
 
@@ -143,7 +143,7 @@
                   <IconPenSolid class="w-5 h-5 me-2"/>
                 </RouterLink>
                 <template v-slot:tooltip>
-                  Edit item
+                  {{ $t('Edit item') }}
                 </template>
               </Tooltip>
 
@@ -156,7 +156,7 @@
                 </button>
 
                 <template v-slot:tooltip>
-                  Delete item
+                  {{ $t('Delete item') }}
                 </template>
               </Tooltip>
                 
