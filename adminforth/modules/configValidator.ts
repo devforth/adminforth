@@ -119,7 +119,6 @@ export default class ConfigValidator implements IConfigValidator {
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
         if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);
-          console.log('🐛🐛 loginPageInjections', JSON.stringify(loginPageInjections, null, 2));
         } else {
           const similar = suggestIfTypo(ALLOWED_LOGIN_INJECTIONS, injection);
           errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_LOGIN_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
@@ -325,7 +324,7 @@ export default class ConfigValidator implements IConfigValidator {
         res.columns = [];
       }
       res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon) => {
-        const col: Partial<AdminForthResourceColumn> = { ...inCol };
+        const col: Partial<AdminForthResourceColumn> = { ...inCol, required: undefined, editingNote: undefined };
 
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable

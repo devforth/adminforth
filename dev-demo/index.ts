@@ -39,12 +39,6 @@ async function seedDatabase() {
   };
 };
 
-// check column apartment_image in aparts table
-const columns = await db.prepare('PRAGMA table_info(apartments);').all();
-const columnExists = columns.some((c) => c.name === 'apartment_image');
-if (!columnExists) {
-  await db.prepare('ALTER TABLE apartments ADD COLUMN apartment_image VARCHAR(255);').run();
-}
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== 'superadmin') {
@@ -254,6 +248,11 @@ export const admin = new AdminForth({
           icon: 'flowbite:search-outline',
           resourceId: 'clicks',
         },
+        {
+          label: 'Translations',
+          icon: 'material-symbols:translate',
+          resourceId: 'translations',
+        }
       ]
     },
     {
@@ -288,7 +287,7 @@ app.use(express.json());
 const port = 3000;
 
 (async () => {
-
+    console.log('🅿️🅿️🅿️ 🅿️Bundling AdminForth...');
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
     await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
@@ -377,6 +376,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 // serve after you added all api
 admin.express.serve(app)
 admin.discoverDatabases().then(async () => {
+  console.log('🅿️🅿️🅿️ 🅿️Database discovered');
+
   if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
     await admin.resource('users').create({
       email: 'adminforth',

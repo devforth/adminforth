@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "i18n:extract": "echo '{}' > i18n-empty.json && vue-i18n-extract report --vueFiles './src/**/*.?(js|vue)' --output ./i18n-messages.json --languageFiles 'i18n-empty.json' --add"
   },
   "dependencies": {
     "@iconify-prerendered/vue-flowbite": "^0.23.1714023977",
@@ -49,6 +50,7 @@
     "tailwindcss": "^3.4.3",
     "typescript": "~5.4.0",
     "vite": "^5.2.13",
+    "vue-i18n-extract": "^2.0.7",
     "vue-tsc": "^2.0.11",
     "vue3-json-viewer": "^2.2.2"
   }
