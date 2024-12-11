@@ -110,6 +110,11 @@
   },
 
   // plugins/**/types.ts are still needed for documentation
-  "exclude": ["node_modules", "dist", "spa", "documentation", "plugins/**/*"],           /* Exclude files from compilation. */
+  "exclude": [
+    "node_modules",
+    "dist", "spa", "documentation", 
+    "plugins/**/*",
+    "adapters/**/*",
+    ],           /* Exclude files from compilation. */
 
 }

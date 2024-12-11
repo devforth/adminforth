@@ -1,4 +1,3 @@
-import { da } from "@faker-js/faker";
 import type { AdapterOptions } from "./types.js";
 import type { CompletionAdapter } from "adminforth";
 
