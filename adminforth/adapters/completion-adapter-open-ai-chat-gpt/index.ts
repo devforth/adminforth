@@ -34,7 +34,10 @@ export default class CompletionAdapterOpenAIChatGPT
       }),
     });
     const data = await resp.json();
-
+    if (data.error) {
+      console.error('ChatGPT was not able to generate a response', data.error);
+        return null;
+    }
     return {
       content: data.choices[0].message.content,
       finishReason: data.choices[0].finish_reason,

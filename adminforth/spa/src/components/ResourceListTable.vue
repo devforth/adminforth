@@ -93,7 +93,7 @@
                 :checked="checkboxesInternal.includes(row._primaryKeyValue)"
                 @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
-              <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
+              <label for="checkbox-table-search-1" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
           </td>
           <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
@@ -194,7 +194,7 @@
                   d="M13 5H1m0 0 4 4M1 5l4-4"/>
           </svg>
           <span class="hidden sm:inline">
-            Prev
+            {{ $t('Prev') }}
           </span>
         </button>
         <button
@@ -221,7 +221,7 @@
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page++" :disabled="page >= totalPages">
-          <span class="hidden sm:inline">Next</span>
+          <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -232,14 +232,14 @@
 
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
-        <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">Wrong Page </span>
-        <span v-else>Showing </span> 
+        <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
+        <span v-else>{{ $t('Showing') }} </span> 
         <span class="font-semibold text-gray-900 dark:text-white">
           {{ ((page || 1) - 1) * pageSize + 1 }}
-        </span> to <span class="font-semibold text-gray-900 dark:text-white">
+        </span> {{ $t('to') }} <span class="font-semibold text-gray-900 dark:text-white">
           {{ Math.min((page || 1) * pageSize, totalRows) }}
-        </span> of <span class="font-semibold text-gray-900 dark:text-white">{{
-          totalRows }}</span> <span class="hidden sm:inline">Entries</span>
+        </span> {{ $t('of') }} <span class="font-semibold text-gray-900 dark:text-white">{{
+          totalRows }}</span> <span class="hidden sm:inline">{{ $t('Entries') }}</span>
     </span>
   </div>
 </template>
