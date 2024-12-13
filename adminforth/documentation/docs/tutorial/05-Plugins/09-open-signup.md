@@ -53,6 +53,12 @@ And prisma migrate:
 npx --yes prisma migrate dev --name add-email-confirmed-to-users
 ```
 
+Next, install the `@adminforth/email-adapter-aws-ses` package:
+
+```bash
+npm i @adminforth/email-adapter-aws-ses --save
+```
+
 Also, update the resource configuration in `./resources/users.ts`:
 
 ```ts title='./resources/users.ts'
