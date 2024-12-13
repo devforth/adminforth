@@ -117,10 +117,10 @@ export default class TwoFactorsAuthPlugin extends AdminForthPlugin {
           return {status:'error',message:'Invalid token'}
         }
         if (decoded.newSecret) {
-          const verified = decoded.userCanSkipSetup ? true : twofactor.verifyToken(decoded.newSecret, body.code);
+          const verified = body.skip && decoded.userCanSkipSetup ? true : twofactor.verifyToken(decoded.newSecret, body.code);
           if (verified) {
             this.connectors = this.adminforth.connectors
-            if (!decoded.userCanSkipSetup) {
+            if (!body.skip) {
               const connector = this.connectors[this.authResource.dataSource];
               await connector.updateRecord({resource:this.authResource, recordId:decoded.pk, newValues:{[this.options.twoFaSecretFieldName]: decoded.newSecret}})
             }

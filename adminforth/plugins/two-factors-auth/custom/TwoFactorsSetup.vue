@@ -187,6 +187,9 @@ const handleSkip = async () => {
   const resp = await callAdminForthApi({
     method: 'POST',
     path: '/plugin/twofa/confirmSetup',
+    body: {
+      skip: true,
+    }
   });
   if (resp.allowedLogin){
     await user.finishLogin()
