@@ -91,6 +91,12 @@ If you need multiple fields in one resource which happens rarely, just add multi
 
 ## Completion
 
+First, install the completion adapter:
+
+```bash
+npm i @adminforth/completion-adapter-open-ai-chat-gpt --save
+```
+
 To get completion suggestions for the text in the editor, you can use the `completion` option. This option is an object with the following properties:
 
 ```ts title="./resources/apartments.ts"
