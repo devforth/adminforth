@@ -12,6 +12,7 @@ Installation:
 
 ```bash
 npm install @adminforth/email-password-reset
+npm install @adminforth/email-adapter-aws-ses
 ```
 
 Import plugin:
