@@ -58,7 +58,7 @@ export const findInstance = (fileContent) => {
 
 export async function getInstance(file, currentDirectory) {
   const initialFilePath = path.join(currentDirectory, file);
-  let filePath = path.join(currentDirectory, file);
+  let filePath = initialFilePath;
 
   if (file.endsWith(".ts")) {
     console.log(`Compiling TypeScript file: ${file}`);
@@ -76,11 +76,26 @@ export async function getInstance(file, currentDirectory) {
     filePath = filePath
       .replace(".ts", ".js")
       .replace(currentDirectory, path.join(currentDirectory, "dist"));
+
+    try {
+      const compiledContent = fs.readFileSync(filePath, "utf-8");
+      const updatedContent = compiledContent.replace(
+        /import (.+?) from ["'](.+?)["'];/g,
+        (match, imports, modulePath) => {
+          if (!modulePath.endsWith(".js") && (modulePath.startsWith("./") || modulePath.startsWith("../"))) {
+            return `import ${imports} from "${modulePath}.js";`; // Append .js to local imports
+          }
+          return match;
+        }
+      );
+      fs.writeFileSync(filePath, updatedContent, "utf-8");
+    } catch (error) {
+      console.error("Error during post-processing:", error);
+    }
   }
 
   const fileContent = fs.readFileSync(initialFilePath, "utf-8");
   const instanceName = findInstance(fileContent);
-
   if (instanceName) {
     try {
       const module = await import(`file://${filePath}`);
