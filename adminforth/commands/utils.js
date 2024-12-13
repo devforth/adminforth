@@ -56,6 +56,37 @@ export const findInstance = (fileContent) => {
   return matches[0][2];
 };
 
+function processAllJsFilesInDir(directory) {
+  const files = fs.readdirSync(directory);
+
+  files.forEach((file) => {
+    const filePath = path.join(directory, file);
+
+    if (fs.statSync(filePath).isDirectory()) {
+      processAllJsFilesInDir(filePath);
+    } else if (file.endsWith(".js")) {
+      try {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        const updatedContent = fileContent.replace(
+          /import (.+?) from ["'](.+?)["'];/g,
+          (match, imports, modulePath) => {
+            if (
+              !modulePath.endsWith(".js") &&
+              (modulePath.startsWith("./") || modulePath.startsWith("../"))
+            ) {
+              return `import ${imports} from "${modulePath}.js";`;
+            }
+            return match;
+          }
+        );
+        fs.writeFileSync(filePath, updatedContent, "utf-8");
+      } catch (error) {
+        console.error(`Error processing file '${filePath}':`, error);
+      }
+    }
+  });
+}
+
 export async function getInstance(file, currentDirectory) {
   const initialFilePath = path.join(currentDirectory, file);
   let filePath = initialFilePath;
@@ -73,25 +104,12 @@ export async function getInstance(file, currentDirectory) {
       console.log(`Error: Could not compile TypeScript file '${file}'`);
     }
 
+    const distDir = path.join(currentDirectory, "dist");
+    processAllJsFilesInDir(distDir);
+
     filePath = filePath
       .replace(".ts", ".js")
-      .replace(currentDirectory, path.join(currentDirectory, "dist"));
-
-    try {
-      const compiledContent = fs.readFileSync(filePath, "utf-8");
-      const updatedContent = compiledContent.replace(
-        /import (.+?) from ["'](.+?)["'];/g,
-        (match, imports, modulePath) => {
-          if (!modulePath.endsWith(".js") && (modulePath.startsWith("./") || modulePath.startsWith("../"))) {
-            return `import ${imports} from "${modulePath}.js";`; // Append .js to local imports
-          }
-          return match;
-        }
-      );
-      fs.writeFileSync(filePath, updatedContent, "utf-8");
-    } catch (error) {
-      console.error("Error during post-processing:", error);
-    }
+      .replace(currentDirectory, distDir);
   }
 
   const fileContent = fs.readFileSync(initialFilePath, "utf-8");
