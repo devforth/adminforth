@@ -5,7 +5,6 @@ import iso6391, { LanguageCode } from 'iso-639-1';
 import path from 'path';
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
-import { th } from "@faker-js/faker";
 
 interface ICachingAdapter {
   get(key: string): Promise<any>;
@@ -22,12 +21,19 @@ class CachingAdapterMemory implements ICachingAdapter {
     this.cache[key] = value;
   }
   async clear(key: string) {
-    delete this.cache[key];
+    if (this.cache[key]) {
+      delete this.cache[key];
+    }
   }
 }
 
-
-export default class OpenSignupPlugin extends AdminForthPlugin {
+class AiTranslateError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AiTranslateError';
+  }
+}
+export default class I18N extends AdminForthPlugin {
   options: PluginOptions;
   emailField: AdminForthResourceColumn;
   passwordField: AdminForthResourceColumn;
@@ -36,14 +42,33 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
   trFieldNames: Partial<Record<LanguageCode, string>>;
   enFieldName: string;
   cache: ICachingAdapter;
+  primaryKeyFieldName: string;
 
   adminforth: IAdminForth;
+
+  // sorted by name list of all supported languages, without en e.g. 'al|ro|uk'
+  fullCompleatedFieldValue: string;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
     this.cache = new CachingAdapterMemory();
     this.trFieldNames = {};
+  }
+
+  async computeCompletedFieldValue(record: any) {
+    return this.options.supportedLanguages.reduce((acc: string, lang: LanguageCode): string => {
+      if (lang === 'en') {
+        return acc;
+      }
+      if (record[this.trFieldNames[lang]]) {
+        if (acc !== '') {
+          acc += '|';
+        }
+        acc += (lang as string);
+      }
+      return acc;
+    }, '');
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
@@ -55,6 +80,15 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         throw new Error(`Invalid language code ${lang}, please define valid ISO 639-1 language code (2 lowercase letters)`);
       }
     });
+
+    
+
+    // find primary key field
+    this.primaryKeyFieldName = resourceConfig.columns.find(c => c.primaryKey)?.name;
+
+    if (!this.primaryKeyFieldName) {
+      throw new Error(`Primary key field not found in resource ${resourceConfig.resourceId}`);
+    }
 
 
     // parse trFieldNames
@@ -77,14 +111,21 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
 
     this.enFieldName = this.trFieldNames['en'] || 'en_string';
 
+    this.fullCompleatedFieldValue = this.options.supportedLanguages.reduce((acc: string, lang: LanguageCode) => {
+      if (lang === 'en') {
+        return acc;
+      }
+      if (acc !== '') {
+        acc += '|';
+      }
+      acc += lang as string;
+      return acc;
+    }, '');
+
     // if not enFieldName column is not found, throw error
     const enColumn = resourceConfig.columns.find(c => c.name === this.enFieldName);
     if (!enColumn) {
       throw new Error(`Field ${this.enFieldName} not found column to store english original string in resource ${resourceConfig.resourceId}`);
-    }
-    // for faster performance it should be a primary key
-    if (!enColumn.primaryKey) {
-      throw new Error(`Field ${this.enFieldName} should be primary key in resource ${resourceConfig.resourceId}`);
     }
 
     // if sourceFieldName defined, check it exists
@@ -92,6 +133,27 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       if (!resourceConfig.columns.find(c => c.name === this.options.sourceFieldName)) {
         throw new Error(`Field ${this.options.sourceFieldName} not found in resource ${resourceConfig.resourceId}`);
       }
+    }
+
+    // if completedFieldName defined, check it exists and should be string
+    if (this.options.completedFieldName) {
+      const column = resourceConfig.columns.find(c => c.name === this.options.completedFieldName);
+      if (!column) {
+        const similar = suggestIfTypo(resourceConfig.columns.map((col) => col.name), this.options.completedFieldName);
+        throw new Error(`Field ${this.options.completedFieldName} not found in resource ${resourceConfig.resourceId}${similar ? `Did you mean '${similar}'?` : ''}`);
+      }
+
+      // if showIn is not defined, add it as empty
+      column.showIn = [];
+
+      // add virtual field for incomplete
+      resourceConfig.columns.push({
+        name: 'fully_translated',
+        label: 'Fully translated',
+        virtual: true,
+        showIn: ['list', 'show', 'filter'],
+        type: AdminForthDataTypes.BOOLEAN,
+      });
     }
 
     // add underLogin component
@@ -115,35 +177,87 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
 
 
     // add hook on edit of any translation
-    // resourceConfig.hooks.edit.afterSave.push(async ({ record }: { record: any }) => {
-    //   for (const lang of this.options.supportedLanguages) {
-    //     if (lang === 'en') {
-    //       continue;
-    //     }
-    //     this.cache.clear(`${resourceConfig.resourceId}:${lang}`);
-    //   }
-    // });
+    resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord?: any }): Promise<{ ok: boolean, error?: string }> => {
+      if (oldRecord) {
+        // find lang which changed
+        let langsChanged: LanguageCode[] = [];
+        for (const lang of this.options.supportedLanguages) {
+          if (lang === 'en') {
+            continue;
+          }
+          if (record[this.trFieldNames[lang]] !== oldRecord[this.trFieldNames[lang]]) {
+            langsChanged.push(lang);
+          }
+        }
+
+        // clear frontend cache for all langsChanged
+        for (const lang of langsChanged) {
+          this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+        }
 
 
-    // options: {
-    //   bulkActions: [
-    //       {
-    //           label: 'Translate selected',
-    //           icon: 'flowbite:language-outline',
-    //           // if optional `confirm` is provided, user will be asked to confirm action
-    //           confirm: 'Are you sure you want to translate selected items?',
-    //           state: 'selected',
-    //           action: async function ({ selectedIds }) {
-    //               const data = await callBackofficeApi(
-    //                   'bulk_translate_with_openai',
-    //                   { en_strings: selectedIds }
-    //               );
+      }
+      // clear frontend cache for all lan
 
-    //               return { ok: true, error: undefined, successMessage: `Translated ${selectedIds.length} items` };
-    //           },
-    //       }
-    //   ]
-    // },
+      return { ok: true };
+    });
+
+    if (this.options.completedFieldName) {
+      // on show and list add a list hook which will add incomplete field to record if translation is missing for at least one language
+      const addIncompleteField = (record: any) => {
+        // form list of all langs, sorted by alphabet, without en, to get 'al|ro|uk'
+        
+      
+        record.fully_translated = this.fullCompleatedFieldValue === record[this.options.completedFieldName];
+      }
+      resourceConfig.hooks.list.afterDatasourceResponse.push(async ({ response }: { response: any[] }): Promise<{  ok: boolean, error?: string }> => {
+        response.forEach(addIncompleteField);
+        return { ok: true }
+      });
+      resourceConfig.hooks.show.afterDatasourceResponse.push(async ({ response }: { response: any }): Promise<{  ok: boolean, error?: string }> => {
+        addIncompleteField(response.length && response[0]);
+        return { ok: true }
+      });
+
+      // also add edit hook beforeSave to update completedFieldName
+      resourceConfig.hooks.edit.beforeSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }): Promise<{ ok: boolean, error?: string }> => {
+        const futureRecord = { ...oldRecord, ...record };
+        
+        const futureCompletedFieldValue = this.computeCompletedFieldValue(futureRecord);
+    
+        record[this.options.completedFieldName] = futureCompletedFieldValue;
+        return { ok: true };
+      });
+
+      // add list hook to support filtering by fully_translated virtual field
+      resourceConfig.hooks.list.beforeDatasourceRequest.push(async ({ query }: { query: any }): Promise<{ ok: boolean, error?: string }> => {
+        if (!query.filters || query.filters.length === 0) {
+          query.filters = [];
+        }
+
+        // get fully_translated field from filter if it is there
+        const fullyTranslatedFilter = query.filters.find((f: any) => f.field === 'fully_translated');
+        if (fullyTranslatedFilter) {
+          // remove it from filters because it is virtual field
+          query.filters = query.filters.filter((f: any) => f.field !== 'fully_translated');
+          if (fullyTranslatedFilter.value) {
+            query.filters.push({
+              field: this.options.completedFieldName,
+              value: this.fullCompleatedFieldValue,
+              operator: 'eq',
+            });
+          } else {
+            query.filters.push({
+              field: this.options.completedFieldName,
+              value: this.fullCompleatedFieldValue,
+              operator: 'ne',
+            });
+          }
+        }
+
+        return { ok: true };
+      });
+    }
 
     // add bulk action
     if (!resourceConfig.options.bulkActions) {
@@ -159,21 +273,35 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           confirm: 'Are you sure you want to translate selected items?',
           state: 'selected',
           action: async ({ selectedIds }) => {
-            const data = await this.bulkTranslate({ selectedIds });
+            try {
+              const data = await this.bulkTranslate({ selectedIds });
+            } catch (e) {
+              if (e instanceof AiTranslateError) {
+                return { ok: false, error: e.message };
+              }
+            }
             return { ok: true, error: undefined, successMessage: `Translated ${selectedIds.length} items` };
           },
         }
       );  
     };
-
-
   }
 
   async bulkTranslate({ selectedIds }: { selectedIds: string[] }) {
 
-    const needToTranslateByLang : Partial<Record<LanguageCode, Record<string, string>>> = {};
+    const needToTranslateByLang : Partial<
+      Record<
+        LanguageCode,
+        {
+          en_string: string;
+          category: string;
+        }[]
+      >
+    > = {};
 
-    const translations = await this.adminforth.resource(this.resourceConfig.resourceId).list(Filters.IN(this.enFieldName, selectedIds));
+    const translations = await this.adminforth.resource(this.resourceConfig.resourceId).list(Filters.IN(this.primaryKeyFieldName, selectedIds));
+
+    console.log('🪲translations', translations);
 
     for (const lang of this.options.supportedLanguages) {
       if (lang === 'en') {
@@ -183,34 +311,49 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       for (const translation of translations) {
         if (!translation[this.trFieldNames[lang]]) {
           if (!needToTranslateByLang[lang]) {
-            needToTranslateByLang[lang] = {};
+            needToTranslateByLang[lang] = [];
           }
-          needToTranslateByLang[lang][translation[this.enFieldName]] = "";
+          needToTranslateByLang[lang].push({
+            'en_string': translation[this.enFieldName],
+            category: translation[this.options.categoryFieldName],
+          })
         }
       }
     }
 
-    const transDiff = {};
+    console.log('🪲needToTranslateByLang', needToTranslateByLang);
+
     const maxKeysInOneReq = 10;
 
+    const updateStrings: Record<string, { 
+      updates: any, category: string, strId: string
+     }> = {};
 
-    const translateToLang = async (langIsoCode: LanguageCode, obj: Record<string, string>) => {
-      if (Object.keys(obj).length > maxKeysInOneReq) {
-        for (let i = 0; i < Object.keys(obj).length; i += maxKeysInOneReq) {
-          const slicedObj = Object.fromEntries(Object.entries(obj).slice(i, i + maxKeysInOneReq));
-          await translateToLang(langIsoCode, slicedObj);
+    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[]) => {
+
+
+      if (strings.length > maxKeysInOneReq) {
+        for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
+          const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
+          await translateToLang(langIsoCode, slicedStrings);
         }
         return;
       }
       const lang = langIsoCode;
       const prompt = `
-I need to translate strings in JSON to ${lang} language from English for my casino website.
+I need to translate strings in JSON to ${lang} language from English for my web app.
 Keep keys, as is, write translation into values! Here are the strings:
 
 \`\`\`json
-${JSON.stringify(obj)}
+${
+  JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object => {
+    acc[s.en_string] = '';
+    return acc;
+  }, {}), null, 2)
+}
 \`\`\`
 `;
+    console.log('🪲prompt', prompt);
       // call OpenAI
       const resp = await this.options.completeAdapter.complete(
         prompt,
@@ -218,7 +361,9 @@ ${JSON.stringify(obj)}
         300,
       );
 
-      console.log('🪲resp', resp);
+      if (resp.error) {
+        throw new AiTranslateError(resp.error);
+      }
 
       // parse response like
       // Here are the translations for the strings you provided:
@@ -233,36 +378,57 @@ ${JSON.stringify(obj)}
         return;
       }
       res = JSON.parse(res);
-
       for (const [enStr, translatedStr] of Object.entries(res)) {
-        const translation = translations.find(t => t[this.enFieldName] === enStr);
-        translation[this.trFieldNames[lang]] = translatedStr;
-        process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
-        this.adminforth.resource(this.resourceConfig.resourceId).update(translation.en_string, {
-          [this.trFieldNames[lang]]: translatedStr,
-        });
-
-        if (!transDiff[enStr]) {
-          transDiff[enStr] = {};
+        const translationsTargeted = translations.filter(t => t[this.enFieldName] === enStr);
+        // might be several with same en_string
+        for (const translation of translationsTargeted) {
+          translation[this.trFieldNames[lang]] = translatedStr;
+          process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
+          if (!updateStrings[enStr]) {
+            updateStrings[enStr] = {
+              updates: {},
+              category: translation[this.options.categoryFieldName],
+              strId: translation[this.primaryKeyFieldName],
+            };
+          }
+          updateStrings[enStr].updates[this.trFieldNames[lang]] = translatedStr;
         }
       }
 
     }
+
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
 
-    await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, obj]: [LanguageCode, Record<string, string>]) => {
-      await translateToLang(lang, obj);
+    await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
+      await translateToLang(lang, strings);
     }));    
 
+    console.log('🪲updateStrings', updateStrings);
+    await Promise.all(
+      Object.entries(updateStrings).map(
+        async ([_, { updates, strId }]: [string, { updates: any, category: string, strId: string }]) => {
+          // because this will translate all languages, we can set completedLangs to all languages
+          const futureCompletedFieldValue = this.fullCompleatedFieldValue; 
+
+          await this.adminforth.resource(this.resourceConfig.resourceId).update(strId, {
+            ...updates,
+            [this.options.completedFieldName]: futureCompletedFieldValue,
+          });
+        }
+      )
+    );
+
     for (const lang of langsInvolved) {
-      this.cache.clear(`${this.resourceConfig.resourceId}:${lang}`);
+      this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+      for (const [enStr, { category }] of Object.entries(updateStrings)) {
+        this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
+      }
     }
 
     return {
       ok: true,
       error: undefined,
       successMessage: `Translated ${selectedIds.length} items`,
-
     }
 
   }
@@ -278,20 +444,19 @@ ${JSON.stringify(obj)}
       process.env.HEAVY_DEBUG && console.error('🐛 Messages file not yet exists, probably npm run i18n:extract not finished/started yet, might be ok');
       return;
     }
-    console.log('🪲messages', messages);
     // loop over missingKeys[i].path and add them to database if not exists
     await Promise.all(messages.missingKeys.map(async (missingKey: any) => {
       const key = missingKey.path;
       const file = missingKey.file;
-      const source = 'frontend';
+      const category = 'frontend';
       const exists = await adminforth.resource(this.resourceConfig.resourceId).count(Filters.EQ(this.enFieldName, key));
-      console.log('🪲exists', exists);
       if (exists) {
         return;
       }
       const record = {
         [this.enFieldName]: key,
-        ...(this.options.sourceFieldName ? { [this.options.sourceFieldName]: `${source}:${file}` } : {}),
+        [this.options.categoryFieldName]: category,
+        ...(this.options.sourceFieldName ? { [this.options.sourceFieldName]: file } : {}),
       };
       try {
         await adminforth.resource(this.resourceConfig.resourceId).create(record);
@@ -338,10 +503,43 @@ ${JSON.stringify(obj)}
         throw new Error(`Field ${this.trFieldNames[lang]} should be not required in resource ${resourceConfig.resourceId}`);
       }
     }
-    
+
+    // ensure categoryFieldName defined and is string
+    if (!this.options.categoryFieldName) {
+      throw new Error(`categoryFieldName option is not defined. It is used to categorize translations and return only specific category e.g. to frontend`);
+    }
+    const categoryColumn = resourceConfig.columns.find(c => c.name === this.options.categoryFieldName);
+    if (!categoryColumn) {
+      throw new Error(`Field ${this.options.categoryFieldName} not found in resource ${resourceConfig.resourceId}`);
+    }
+    if (categoryColumn.type !== AdminForthDataTypes.STRING && categoryColumn.type !== AdminForthDataTypes.TEXT) {
+      throw new Error(`Field ${this.options.categoryFieldName} should be of type string in resource ${resourceConfig.resourceId}, but it is ${categoryColumn.type}`);
+    }
+
     // in this plugin we will use plugin to fill the database with missing language messages
     this.tryProcessAndWatch(adminforth);
 
+    adminforth.tr = async (msg: string, category: string, lang: string): Promise<string> => {
+      console.log('🪲tr', msg, category, lang);
+      // try to get translation from cache
+      const cacheKey = `${resourceConfig.resourceId}:${category}:${lang}:${msg}`;
+      const cached = await this.cache.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+      const resource = adminforth.resource(resourceConfig.resourceId);
+      const translation = await resource.get([Filters.EQ(this.enFieldName, msg), Filters.EQ(this.options.categoryFieldName, category)]);
+      if (!translation) {
+        await resource.create({
+          [this.enFieldName]: msg,
+          [this.options.categoryFieldName]: category,
+        });
+        return msg;
+      }
+      const result = translation[this.trFieldNames[lang]];
+      await this.cache.set(cacheKey, result);
+      return result;
+    }
   }
 
   instanceUniqueRepresentation(pluginOptions: any) : string {
@@ -361,13 +559,13 @@ ${JSON.stringify(obj)}
         
         // form map of translations
         const resource = this.adminforth.resource(this.resourceConfig.resourceId);
-        const cacheKey = `${this.resourceConfig.resourceId}:${lang}`;
+        const cacheKey = `${this.resourceConfig.resourceId}:frontend:${lang}`;
         const cached = await this.cache.get(cacheKey);
         if (cached) {
           return cached;
         }
         const translations = {};
-        const allTranslations = await resource.list([]);
+        const allTranslations = await resource.list([Filters.EQ(this.options.categoryFieldName, 'frontend')]);
         for (const tr of allTranslations) {
           translations[tr[this.enFieldName]] = tr[this.trFieldNames[lang]];
         }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.5.8] - next
 
+# Added
+
+- Command to generate typescript models `npx -y adminforth generate-models --env-file=.env`
+
+# Improved
+
+- Added separate BeforeCreateSave function in types without oldRecord and make oldRecord Mandatory in existing BeforeSaveFunction
+
 ## [v1.5.7] - 2024-12-09
 
 ### Fixed

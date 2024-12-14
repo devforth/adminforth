@@ -290,7 +290,10 @@ class ExpressServer implements IExpressHttpServer {
         }
         
       };
-      const input = { body, query, headers, cookies, adminUser, response, _raw_express_req: req, _raw_express_res: res};
+
+      const acceptLang = headers['accept-language'];
+      const tr = (msg: string, category: string): Promise<string> => this.adminforth.tr(msg, category, acceptLang);
+      const input = { body, query, headers, cookies, adminUser, response, _raw_express_req: req, _raw_express_res: res, tr};
       
       let output;
       try {
