@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx watch --env-file=.env index.ts",
-    "migrate": "prisma migrate deploy && prisma migrate dev"
+    "migrate": "prisma migrate deploy",
+    "makemigration": "prisma migrate dev"
   },
   "author": "",
   "license": "ISC",

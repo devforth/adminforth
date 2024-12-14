@@ -27,13 +27,26 @@ export default {
   plugins: [
     new I18nPlugin({
       supportedLanguages: ['en', 'uk', 'ja', 'fr'],
+
+      // names of the fields in the resource which will store translations
       translationFieldNames: {
         en: 'en_string',
         uk: 'uk_string',
         ja: 'ja_string',
         fr: 'fr_string',
       },
+
+      // name of the field which will store the category of the string
+      // this helps to categorize strings and deliver them efficiently
+      categoryFieldName: 'category',
+
+      // optional field to store the source (e.g. source file name)
       sourceFieldName: 'source',
+
+      // optional field store list of completed translations
+      // will hel to filter out incomplete translations
+      completedFieldName: 'completedLangs',
+
       completeAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
       }),
@@ -47,8 +60,12 @@ export default {
   },
   columns: [
     {
-      name: "en_string",
+      name: "id",
+      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       primaryKey: true,
+    },
+    {
+      name: "en_string",
     },
     {
       name: "created_at",
@@ -64,7 +81,15 @@ export default {
       name: "fr_string",
     },
     {
+      name: "completedLangs",
+    },
+    {
       name: "source",
+      showIn: ['filter', 'show']
+    },
+    {
+      name: "category",
+      showIn: ['filter', 'show', 'list']
     }
 
 

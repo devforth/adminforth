@@ -301,6 +301,8 @@ export interface IAdminForth {
     [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
+  tr(msg: string, category: string, lang: string): Promise<string>;
+
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }>;
@@ -453,7 +455,16 @@ export type BeforeSaveFunction = (params: {
   recordId: any, 
   adminUser: AdminUser, 
   record: any, 
-  oldRecord?: any,
+  oldRecord: any,
+  adminforth: IAdminForth,
+  extra?: HttpExtra,
+}) => Promise<{ok: boolean, error?: string}>;
+
+export type BeforeCreateSaveFunction = (params: {
+  resource: AdminForthResource, 
+  recordId: any, 
+  adminUser: AdminUser, 
+  record: any, 
   adminforth: IAdminForth,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -711,7 +722,7 @@ export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCom
        * - fill-in adminUser as creator of record
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: BeforeCreateSaveFunction | Array<BeforeCreateSaveFunction>,
 
       /**
        * Typical use-cases:
@@ -1137,7 +1148,7 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * - fill-in adminUser as creator of record
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
-      beforeSave?: Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeCreateSaveFunction>,
 
       /**
        * Typical use-cases:

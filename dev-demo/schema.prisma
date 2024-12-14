@@ -54,11 +54,18 @@ model description_image {
 }
 
 model translations {
-    en_string   String @id
-    created_at  DateTime
-    uk_string   String?
-    ja_string   String?
-    fr_string   String?
-    es_string   String?
-    source      String
+    id              String   @id
+    en_string       String
+    created_at      DateTime
+    uk_string       String?
+    ja_string       String?
+    fr_string       String?
+    es_string       String?
+    category        String?
+    source          String
+    completedLangs   String?
+    
+    // we need both indexes on en_string+category and separately on category
+    @@index([en_string, category])
+    @@index([category])
 }
