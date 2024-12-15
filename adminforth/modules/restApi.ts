@@ -206,7 +206,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'GET',
       path: '/get_public_config',
-      handler: async ({ body }) => {
+      handler: async ({ tr }) => {
 
         // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
 
@@ -225,7 +225,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: this.adminforth.config.auth.loginPromptHTML,
+          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
         };
@@ -236,7 +236,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies}): Promise<GetBaseConfigResponse>=> {
+      handler: async ({input, adminUser, cookies, tr}): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -323,6 +323,25 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           userFullnameField: this.adminforth.config.auth.userFullNameField,
         }
 
+        // translate menu labels
+        const translateRoutines: Promise<void>[] = [];
+        newMenu.forEach((menuItem) => {
+          translateRoutines.push((async () => {
+            if (menuItem.label) {
+              menuItem.label = await tr(menuItem.label, `menu.${menuItem._itemId}`);
+            }
+          })())
+          if (menuItem.children) {
+            menuItem.children.forEach((child) => {
+              translateRoutines.push((async () => {
+                if (child.label) {
+                  child.label = await tr(child.label, `menu.${child._itemId}`);
+                }
+              })())
+            })
+          }
+        });
+        await Promise.all(translateRoutines);
 
         // strip all backendOnly fields or not described in adminForth fields from dbUser
         // (when user defines column and does not set backendOnly, we assume it is not backendOnly)
@@ -423,19 +442,51 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        // translate
+        const translateRoutines: Record<string, Promise<string>> = {};
+        translateRoutines.resLabel = tr(resource.label, `resource.${resource.resourceId}`);
+        resource.columns.forEach((col, i) => {
+          translateRoutines[`resCol${i}`] = tr(col.label, `resource.${resource.resourceId}`);
+        })
+        allowedBulkActions.forEach((action, i) => {
+          if (action.label) {
+            translateRoutines[`bulkAction${i}`] = tr(action.label, `resource.${resource.resourceId}`);
+          }
+          if (action.confirm) {
+            translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+          }
+        });
+
+        const translated: Record<string, string> = {};
+        await Promise.all(
+          Object.entries(translateRoutines).map(async ([key, value]) => {
+            translated[key] = await value;
+          })
+        );
+
+        console.log('🗣️translated', translated);
+
+        
         const toReturn = {
             ...resource,
-            columns: await Promise.all(
-              resource.columns.map(async (col) => {
+            label: translated.resLabel,
+            columns: resource.columns.map(
+              (col, i) => {
                 return {
                   ...col,
-                  label: await tr(col.label, `resource.${resource.resourceId}`),
+                  label: translated[`resCol${i}`],
                 }
-              })
+              }
             ),
             options: {
               ...resource.options,
-              bulkActions: allowedBulkActions,
+              bulkActions: allowedBulkActions.map(
+                (action, i) => ({
+                  ...action,
+                  label: action.label ? translated[`bulkAction${i}`] : action.label,
+                  confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
+                })
+              ),
               allowedActions,
             } 
         }
@@ -865,11 +916,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body, adminUser }) => {
+        handler: async ({ body, adminUser, tr }) => {
             const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
-                return { error: `Resource '${resourceId}' not found` };
+                return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
             }
             const { allowedActions } = await interpretResource(
               adminUser, 
@@ -881,16 +932,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const action = resource.options.bulkActions.find((act) => act.id == actionId);
             if (!action) {
-              return { error: `Action '${actionId}' not found` };
+              return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
             } 
             
             if (action.allowed) {
               const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
               if (!execAllowed) {
-                return { error: `Action '${actionId}' is not allowed` };
+                return { error: await tr(`Action {actionId} not allowed`, 'errors', { actionId }) };
               }
             }
-            const response = await action.action({selectedIds: recordIds, adminUser, resource});
+            const response = await action.action({selectedIds: recordIds, adminUser, resource, tr});
             
             return {
               actionId,

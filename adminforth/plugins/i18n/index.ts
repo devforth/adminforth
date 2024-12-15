@@ -229,7 +229,7 @@ export default class I18N extends AdminForthPlugin {
       resourceConfig.hooks.edit.beforeSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }): Promise<{ ok: boolean, error?: string }> => {
         const futureRecord = { ...oldRecord, ...record };
         
-        const futureCompletedFieldValue = this.computeCompletedFieldValue(futureRecord);
+        const futureCompletedFieldValue = await this.computeCompletedFieldValue(futureRecord);
     
         record[this.options.completedFieldName] = futureCompletedFieldValue;
         return { ok: true };
@@ -246,7 +246,7 @@ export default class I18N extends AdminForthPlugin {
         if (fullyTranslatedFilter) {
           // remove it from filters because it is virtual field
           query.filters = query.filters.filter((f: any) => f.field !== 'fully_translated');
-          if (fullyTranslatedFilter.value) {
+          if (fullyTranslatedFilter.value[0]) {
             query.filters.push({
               field: this.options.completedFieldName,
               value: this.fullCompleatedFieldValue,
@@ -278,16 +278,19 @@ export default class I18N extends AdminForthPlugin {
           // if optional `confirm` is provided, user will be asked to confirm action
           confirm: 'Are you sure you want to translate selected items?',
           state: 'selected',
-          action: async ({ selectedIds }) => {
+          action: async ({ selectedIds, tr }) => {
             try {
-              const data = await this.bulkTranslate({ selectedIds });
+              await this.bulkTranslate({ selectedIds });
             } catch (e) {
               if (e instanceof AiTranslateError) {
                 return { ok: false, error: e.message };
               }
             }
-            return { ok: true, error: undefined, successMessage: `Translated ${selectedIds.length} items` };
-          },
+            return { 
+              ok: true, error: undefined, 
+              successMessage: await tr(`Translated {count} items`, 'frontend', {count: selectedIds.length}),
+            };
+          }
         }
       );  
     };
@@ -355,7 +358,6 @@ ${
 }
 \`\`\`
 `;
-    console.log('🪲prompt', prompt);
       // call OpenAI
       const resp = await this.options.completeAdapter.complete(
         prompt,
@@ -385,7 +387,7 @@ ${
         // might be several with same en_string
         for (const translation of translationsTargeted) {
           translation[this.trFieldNames[lang]] = translatedStr;
-          process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
+          // process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
           if (!updateStrings[enStr]) {
             updateStrings[enStr] = {
               updates: {},
@@ -405,7 +407,6 @@ ${
       await translateToLang(lang, strings);
     }));    
 
-    console.log('🪲updateStrings', updateStrings);
     await Promise.all(
       Object.entries(updateStrings).map(
         async ([_, { updates, strId }]: [string, { updates: any, category: string, strId: string }]) => {
@@ -425,12 +426,6 @@ ${
       for (const [enStr, { category }] of Object.entries(updateStrings)) {
         this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
       }
-    }
-
-    return {
-      ok: true,
-      error: undefined,
-      successMessage: `Translated ${selectedIds.length} items`,
     }
 
   }
@@ -521,42 +516,50 @@ ${
     // in this plugin we will use plugin to fill the database with missing language messages
     this.tryProcessAndWatch(adminforth);
 
-    adminforth.tr = async (msg: string, category: string, lang: string): Promise<string> => {
-      console.log('🪲tr', msg, category, lang);
+    adminforth.tr = async (msg: string, category: string, lang: string, params): Promise<string> => {
+      // console.log('🪲tr', msg, category, lang);
 
       // if lang is not supported , throw
       if (!this.options.supportedLanguages.includes(lang as LanguageCode)) {
         throw new Error(`Language ${lang} is not entered to be supported by requested by browser in request headers accept-language`);
       }
 
+      let result;
       // try to get translation from cache
       const cacheKey = `${resourceConfig.resourceId}:${category}:${lang}:${msg}`;
       const cached = await this.cache.get(cacheKey);
       if (cached) {
-        return cached;
+        result = cached;
       }
-      const resource = adminforth.resource(resourceConfig.resourceId);
-      const translation = await resource.get([Filters.EQ(this.enFieldName, msg), Filters.EQ(this.options.categoryFieldName, category)]);
-      if (!translation) {
-        await resource.create({
-          [this.enFieldName]: msg,
-          [this.options.categoryFieldName]: category,
-        });
-        return msg;
-      }
-
-      // do this check here, to faster register missing translations
-      // also not cache it - no sense to cache english strings
-      if (lang === 'en') {
-        return msg;
-      }
-
-      const result = translation[this.trFieldNames[lang]];
       if (!result) {
-        // return english
-        return msg;
+        const resource = adminforth.resource(resourceConfig.resourceId);
+        const translation = await resource.get([Filters.EQ(this.enFieldName, msg), Filters.EQ(this.options.categoryFieldName, category)]);
+        if (!translation) {
+          await resource.create({
+            [this.enFieldName]: msg,
+            [this.options.categoryFieldName]: category,
+          });
+        }
+
+        // do this check here, to faster register missing translations
+        // also not cache it - no sense to cache english strings
+        if (lang === 'en') {
+          // set to cache to return faster next time
+          result = msg;
+        } else {
+          result = translation?.[this.trFieldNames[lang]];
+          if (!result) {
+            // return english
+            result = msg;
+          }
+        }
+        await this.cache.set(cacheKey, result);
       }
-      await this.cache.set(cacheKey, result);
+      if (params) {
+        for (const [key, value] of Object.entries(params)) {
+          result = result.replace(`{${key}}`, value);
+        }
+      }
       return result;
     }
   }

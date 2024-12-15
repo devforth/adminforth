@@ -1,21 +1,20 @@
 import { createApp } from 'vue'
-import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 /* IMPORTANT:ADMINFORTH IMPORTS */
 
 
 import App from './App.vue'
 import router from './router'
+import { initI18n } from './i18n'
 
-export const app = createApp(App)
+export const app: ReturnType<typeof createApp> = createApp(App)
 /* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */
 
-const i18n = createI18n({
-  // something vue-i18n options here ...
-})
 app.use(createPinia())
 app.use(router)
-app.use(i18n)
+
+initI18n(app);
+
 
 /* IMPORTANT:ADMINFORTH CUSTOM USES */
 

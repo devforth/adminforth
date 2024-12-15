@@ -301,7 +301,7 @@ export interface IAdminForth {
     [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
-  tr(msg: string, category: string, lang: string): Promise<string>;
+  tr(msg: string, category: string, lang: string, params: any): Promise<string>;
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
@@ -1202,7 +1202,9 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser }: { resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
+  action: ({ resource, selectedIds, adminUser, tr }: { 
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, tr: (key: string, category?: string) => string
+  }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
    * Allowed callback called to check whether action is allowed for user.

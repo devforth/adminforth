@@ -233,13 +233,18 @@
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
         <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
-        <span v-else>{{ $t('Showing') }}&nbsp;</span> 
-        <span class="font-semibold text-gray-900 dark:text-white">
-          {{ ((page || 1) - 1) * pageSize + 1 }}
-        </span> {{ $t('to') }} <span class="font-semibold text-gray-900 dark:text-white">
-          {{ Math.min((page || 1) * pageSize, totalRows) }}
-        </span> {{ $t('of') }} <span class="font-semibold text-gray-900 dark:text-white">{{
-          totalRows }}</span> <span class="hidden sm:inline">{{ $t('Entries') }}</span>
+        <template v-else>
+          <span class="hidden sm:inline"
+            v-html="$t('Showing {from} to {to} of {total} Entries', {from: ((page || 1) - 1) * pageSize + 1, to: Math.min((page || 1) * pageSize, totalRows), total: totalRows})
+              .replace(/\d+/g, '<strong>$&</strong>')">
+          </span>
+          <span class="sm:hidden"
+            v-html="$t('{from} - {to} of {total}', {from: ((page || 1) - 1) * pageSize + 1, to: Math.min((page || 1) * pageSize, totalRows), total: totalRows})
+              .replace(/\d+/g, '<strong>$&</strong>')
+            ">
+          </span>
+
+        </template>
     </span>
   </div>
 </template>
