@@ -233,7 +233,7 @@
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
         <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
-        <span v-else>{{ $t('Showing') }} </span> 
+        <span v-else>{{ $t('Showing') }}&nbsp;</span> 
         <span class="font-semibold text-gray-900 dark:text-white">
           {{ ((page || 1) - 1) * pageSize + 1 }}
         </span> {{ $t('to') }} <span class="font-semibold text-gray-900 dark:text-white">

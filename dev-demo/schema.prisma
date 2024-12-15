@@ -61,8 +61,8 @@ model translations {
     ja_string       String?
     fr_string       String?
     es_string       String?
-    category        String?
-    source          String
+    category        String
+    source          String?
     completedLangs   String?
     
     // we need both indexes on en_string+category and separately on category

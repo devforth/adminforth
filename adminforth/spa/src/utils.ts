@@ -8,6 +8,7 @@ import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
 
+const LS_LANG_KEY = `afLanguage`;
 
 export async function callApi({path, method, body=undefined}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
@@ -17,6 +18,7 @@ export async function callApi({path, method, body=undefined}: {
     method,
     headers: {
       'Content-Type': 'application/json',
+      'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
     },
     body: JSON.stringify(body),
   };

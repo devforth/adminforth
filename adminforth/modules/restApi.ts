@@ -394,7 +394,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource',
-      handler: async ({ body, adminUser }): Promise<{ resource?: AdminForthResourceCommon, error?: string }> => {
+      handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceCommon, error?: string }> => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -425,6 +425,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const toReturn = {
             ...resource,
+            columns: await Promise.all(
+              resource.columns.map(async (col) => {
+                return {
+                  ...col,
+                  label: await tr(col.label, `resource.${resource.resourceId}`),
+                }
+              })
+            ),
             options: {
               ...resource.options,
               bulkActions: allowedBulkActions,
