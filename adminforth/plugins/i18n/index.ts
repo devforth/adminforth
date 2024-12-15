@@ -156,20 +156,26 @@ export default class I18N extends AdminForthPlugin {
       });
     }
 
+    const compMeta = { 
+      brandSlug: adminforth.config.customization.brandNameSlug,
+      pluginInstanceId: this.pluginInstanceId,
+      supportedLanguages: this.options.supportedLanguages.map(lang => (
+        {
+          code: lang,
+          // lang name on on language native name
+          name: iso6391.getNativeName(lang),
+        }
+      ))
+    };
     // add underLogin component
-    (adminforth.config.customization.loginPageInjections.underInputs as AdminForthComponentDeclaration[]).push({ 
+    (adminforth.config.customization.loginPageInjections.underInputs).push({ 
       file: this.componentPath('LanguageUnderLogin.vue'),
-      meta: { 
-        brandSlug: adminforth.config.customization.brandNameSlug,
-        pluginInstanceId: this.pluginInstanceId,
-        supportedLanguages: this.options.supportedLanguages.map(lang => (
-          {
-            code: lang,
-            // lang name on on language native name
-            name: iso6391.getNativeName(lang),
-          }
-        ))
-      }
+      meta: compMeta
+    });
+
+    (adminforth.config.customization.globalInjections.userMenu).push({
+      file: this.componentPath('LanguageInUserMenu.vue'),
+      meta: compMeta
     });
 
     // disable create allowedActions for translations
@@ -301,8 +307,6 @@ export default class I18N extends AdminForthPlugin {
 
     const translations = await this.adminforth.resource(this.resourceConfig.resourceId).list(Filters.IN(this.primaryKeyFieldName, selectedIds));
 
-    console.log('🪲translations', translations);
-
     for (const lang of this.options.supportedLanguages) {
       if (lang === 'en') {
         // all strings are in English, no need to translate
@@ -320,8 +324,6 @@ export default class I18N extends AdminForthPlugin {
         }
       }
     }
-
-    console.log('🪲needToTranslateByLang', needToTranslateByLang);
 
     const maxKeysInOneReq = 10;
 
@@ -521,6 +523,12 @@ ${
 
     adminforth.tr = async (msg: string, category: string, lang: string): Promise<string> => {
       console.log('🪲tr', msg, category, lang);
+
+      // if lang is not supported , throw
+      if (!this.options.supportedLanguages.includes(lang as LanguageCode)) {
+        throw new Error(`Language ${lang} is not entered to be supported by requested by browser in request headers accept-language`);
+      }
+
       // try to get translation from cache
       const cacheKey = `${resourceConfig.resourceId}:${category}:${lang}:${msg}`;
       const cached = await this.cache.get(cacheKey);
@@ -536,7 +544,18 @@ ${
         });
         return msg;
       }
+
+      // do this check here, to faster register missing translations
+      // also not cache it - no sense to cache english strings
+      if (lang === 'en') {
+        return msg;
+      }
+
       const result = translation[this.trFieldNames[lang]];
+      if (!result) {
+        // return english
+        return msg;
+      }
       await this.cache.set(cacheKey, result);
       return result;
     }
