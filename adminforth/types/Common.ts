@@ -876,7 +876,7 @@ export interface AdminForthConfigMenuItem {
   /**
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
-  _itemId?: string,
+  _itemId?: string,  // todo move to runtime type
 }
 
 

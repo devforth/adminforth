@@ -4,7 +4,6 @@
       v-model="selectedLanguage"
       :options="options"
       :placeholder="$t('Select language')"
-      @change="changeLanguage"
     >
       <template #item="{ option }">
         <span class="mr-1">

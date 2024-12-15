@@ -23,7 +23,7 @@ export default {
   resourceId: "translations",
   label: "Translations",
 
-  recordLabel: (r: any) => `👤 ${r.email}`,
+  recordLabel: (r: any) => `👤 ${r.en_string}`,
   plugins: [
     new I18nPlugin({
       supportedLanguages: ['en', 'uk', 'ja', 'fr'],
@@ -57,15 +57,18 @@ export default {
     allowedActions: {
     
     },
+    listPageSize: 30,
   },
   columns: [
     {
       name: "id",
       fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       primaryKey: true,
+      showIn: [],
     },
     {
       name: "en_string",
+      type: AdminForthDataTypes.STRING,
     },
     {
       name: "created_at",
@@ -73,23 +76,28 @@ export default {
     },
     {
       name: "uk_string",
+      type: AdminForthDataTypes.STRING,
     },
     {
       name: "ja_string",
+      type: AdminForthDataTypes.STRING,
     },
     {
       name: "fr_string",
+      type: AdminForthDataTypes.STRING,
     },
     {
       name: "completedLangs",
     },
     {
       name: "source",
-      showIn: ['filter', 'show']
+      showIn: ['filter', 'show'],
+      type: AdminForthDataTypes.STRING,
     },
     {
       name: "category",
-      showIn: ['filter', 'show', 'list']
+      showIn: ['filter', 'show', 'list'],
+      type: AdminForthDataTypes.STRING,
     }
 
 

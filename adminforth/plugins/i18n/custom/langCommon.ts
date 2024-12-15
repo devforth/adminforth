@@ -23,7 +23,6 @@ setInterval(() => {
 // i18n is vue-i18n instance
 export async function setLang({ setLocaleMessage, locale }: any, pluginInstanceId: string, langIso: string) {
 
-
     if (!messagesCache[langIso]) {
         const messages = await callAdminForthApi({
             path: `/plugin/${pluginInstanceId}/frontend_messages?lang=${langIso}`,

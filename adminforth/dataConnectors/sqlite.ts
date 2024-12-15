@@ -158,6 +158,16 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           placeholder = `LOWER(?)`;
           field = `LOWER(${f.field})`;
           operator = 'LIKE';
+        } else if (f.operator == AdminForthFilterOperators.NE) {
+          if (f.value === null) {
+            operator = 'IS NOT';
+            placeholder = 'NULL';
+          } else {
+            // for not equal, we need to add a null check
+            // because nullish field will not match != value
+            placeholder = `${placeholder} OR ${field} IS NULL)`;
+            field = `(${field}`;
+          }
         }
 
         return `${field} ${operator} ${placeholder}`
