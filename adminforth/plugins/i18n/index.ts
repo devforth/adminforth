@@ -1,5 +1,5 @@
 import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthDataTypes } from "adminforth";
-import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction, AdminForthConfigMenuItem } from "adminforth";
 import type { PluginOptions } from './types.js';
 import iso6391, { LanguageCode } from 'iso-639-1';
 import path from 'path';
@@ -147,7 +147,7 @@ export default class I18N extends AdminForthPlugin {
       column.showIn = [];
 
       // add virtual field for incomplete
-      resourceConfig.columns.push({
+      resourceConfig.columns.unshift({
         name: 'fully_translated',
         label: 'Fully translated',
         virtual: true,
@@ -294,6 +294,30 @@ export default class I18N extends AdminForthPlugin {
         }
       );  
     };
+
+
+    // if there is menu item with resourceId, add .badge function showing number of untranslated strings
+    
+    const addBadgeCountToMenuItem = (menuItem: AdminForthConfigMenuItem) => {
+      console.log('🪲menuItem, registring ', menuItem);
+      menuItem.badge = async () => {
+        const resource = adminforth.resource(menuItem.resourceId);
+        const count = await resource.count([Filters.NEQ(this.options.completedFieldName, this.fullCompleatedFieldValue)]);
+        return `${count}`;
+      };
+    }
+    adminforth.config.menu.forEach((menuItem) => {
+      if (menuItem.resourceId === resourceConfig.resourceId) {
+        addBadgeCountToMenuItem(menuItem);
+      }
+      if (menuItem.children) {
+        menuItem.children.forEach((child) => {
+          if (child.resourceId === resourceConfig.resourceId) {
+            addBadgeCountToMenuItem(child);
+          }
+        });
+      }
+    });
   }
 
   async bulkTranslate({ selectedIds }: { selectedIds: string[] }) {
