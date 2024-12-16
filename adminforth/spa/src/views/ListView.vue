@@ -281,8 +281,8 @@ async function startBulkAction(actionId) {
 
     }
   });
+  bulkActionLoadingStates.value[actionId] = false;
   if (data?.ok) {
-    bulkActionLoadingStates.value[actionId] = false;
     checkboxes.value = [];
     await getList();
 
@@ -295,7 +295,6 @@ async function startBulkAction(actionId) {
 
   }
   if (data?.error) {
-    bulkActionLoadingStates.value[actionId] = false;
     showErrorTost(data.error);
   }
 }
