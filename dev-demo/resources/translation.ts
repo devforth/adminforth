@@ -7,7 +7,6 @@ import I18nPlugin from "../../adminforth/plugins/i18n";
 import { v1 as uuid } from "uuid";
 
 
-
 export default {
   dataSource: "maindb",
   table: "translations",
