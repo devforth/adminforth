@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Added
 
 - Command to generate typescript models `npx -y adminforth generate-models --env-file=.env`
+- add i18n support: add vue-i18n to frontend and tr function to backend. This will allow to implement translation plugins
 
 # Improved
 

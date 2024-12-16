@@ -116,8 +116,13 @@ class AdminForth implements IAdminForth {
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
   }
 
-  async tr(this, msg: string, category: string = 'default', lang: string = 'en'): Promise<string> {
+  async tr(this, msg: string, category: string = 'default', lang: string = 'en', params: any): Promise<string> {
     // stub function to make a translation
+    if (params) {
+      for (const key in params) {
+        msg = msg.replace(new RegExp(`{${key}}`, 'g'), params[key]);
+      }
+    }
     return msg;
   }
 

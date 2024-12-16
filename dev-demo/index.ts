@@ -88,7 +88,7 @@ export const admin = new AdminForth({
   customization: {
     customComponentsDir: './custom',
     globalInjections: {
-      userMenu: '@@/login2.vue',
+      // userMenu: '@@/login2.vue',
       header: '@@/PropertyCost.vue',
     },
     customPages:[{
@@ -307,69 +307,72 @@ app.get(
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
-      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
-        'aparts',
-        null,
-        'visitedDashboard',
-        { dashboard: 'main' },
-        req.adminUser,
-        req.headers
-      )
+    admin.express.translatable(
+      async (req, res) => {
+        admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
+          'aparts',
+          null,
+          'visitedDashboard',
+          { dashboard: 'main' },
+          req.adminUser,
+          req.headers
+        )
 
-      const days = req.body.days || 7;
-      const apartsByDays = await db.prepare(
-        `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
-          COUNT(*) as count 
-        FROM apartments 
-        GROUP BY day 
-        ORDER BY day DESC
-        LIMIT ?;
-        `
-      ).all(days);
+        const days = req.body.days || 7;
+        const apartsByDays = await db.prepare(
+          `SELECT 
+            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY day 
+          ORDER BY day DESC
+          LIMIT ?;
+          `
+        ).all(days);
 
-      const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
+        const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
 
-      // add listed, unlisted, listedPrice, unlistedPrice
-      const listedVsUnlistedByDays = await db.prepare(
-        `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
-          SUM(listed) as listed, 
-          COUNT(*) - SUM(listed) as unlisted,
-          SUM(listed * price) as listedPrice,
-          SUM((1 - listed) * price) as unlistedPrice
-        FROM apartments
-        GROUP BY day
-        ORDER BY day DESC
-        LIMIT ?;
-        `
-      ).all(days);
+        // add listed, unlisted, listedPrice, unlistedPrice
+        const listedVsUnlistedByDays = await db.prepare(
+          `SELECT 
+            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            SUM(listed) as listed, 
+            COUNT(*) - SUM(listed) as unlisted,
+            SUM(listed * price) as listedPrice,
+            SUM((1 - listed) * price) as unlistedPrice
+          FROM apartments
+          GROUP BY day
+          ORDER BY day DESC
+          LIMIT ?;
+          `
+        ).all(days);
 
-      const listedVsUnlistedPriceByDays = await db.prepare(
-        `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
-          SUM(listed * price) as listedPrice,
-          SUM((1 - listed) * price) as unlistedPrice
-        FROM apartments
-        GROUP BY day
-        ORDER BY day DESC
-        LIMIT ?;
-        `
-      ).all(days);
-        
-      const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { listedPrice }) => acc + listedPrice, 0));
-      const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { unlistedPrice }) => acc + unlistedPrice, 0));
+        const listedVsUnlistedPriceByDays = await db.prepare(
+          `SELECT 
+            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            SUM(listed * price) as listedPrice,
+            SUM((1 - listed) * price) as unlistedPrice
+          FROM apartments
+          GROUP BY day
+          ORDER BY day DESC
+          LIMIT ?;
+          `
+        ).all(days);
+          
+        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { listedPrice }) => acc + listedPrice, 0));
+        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { unlistedPrice }) => acc + unlistedPrice, 0));
 
-      res.json({ 
-        apartsByDays,
-        totalAparts,
-        listedVsUnlistedByDays,
-        totalListedPrice,
-        totalUnlistedPrice,
-        listedVsUnlistedPriceByDays,
-      });
-    }
+        res.json({ 
+          apartsByDays,
+          totalAparts,
+          listedVsUnlistedByDays,
+          totalListedPrice,
+          totalUnlistedPrice,
+          listedVsUnlistedPriceByDays,
+          greeting: await req.tr('Welcome, {name}', 'customApis', { name: req.adminUser.username }),
+        });
+      }
+    )
   )
 );
 
