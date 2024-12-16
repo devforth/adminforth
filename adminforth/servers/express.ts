@@ -247,6 +247,15 @@ class ExpressServer implements IExpressHttpServer {
     };
   }
 
+  translatable(handler) {
+    // same as authorize, but injects tr function into request
+    return async (req, res, next) => {
+      const tr = (msg: string, category: string, params: any): Promise<string> => this.adminforth.tr(msg, category, req.headers['accept-language'], params);
+      req.tr = tr;
+      handler(req, res, next);
+    }
+  }
+
   endpoint({ method='GET', path, handler, noAuth=false }) {
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
