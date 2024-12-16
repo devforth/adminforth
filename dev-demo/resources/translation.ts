@@ -1,22 +1,13 @@
 import AdminForth, {
   AdminForthDataTypes,
-  AdminForthResource,
-  AdminForthResourceColumn,
   AdminForthResourceInput,
-  AdminUser,
 } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adminforth/adapters/completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "../../adminforth/plugins/i18n";
 import { v1 as uuid } from "uuid";
 
 
-// model translations {
-//   en_string   @id
-//   created_at  DateTime
-//   uk_string   String
-//   jp_string   String
-//   fr_string   String
-// }
+
 export default {
   dataSource: "maindb",
   table: "translations",
@@ -99,10 +90,5 @@ export default {
       showIn: ['filter', 'show', 'list'],
       type: AdminForthDataTypes.STRING,
     }
-
-
   ],
-  hooks: {
-    
-  },
 } as AdminForthResourceInput;

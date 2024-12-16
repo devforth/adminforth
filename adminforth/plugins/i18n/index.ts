@@ -553,6 +553,7 @@ ${
             result = msg;
           }
         }
+        // cache so even if key does not exist, we will not hit database
         await this.cache.set(cacheKey, result);
       }
       if (params) {
