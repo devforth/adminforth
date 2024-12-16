@@ -103,7 +103,7 @@
               <textarea
                   v-else-if="['text', 'richtext'].includes(column.type)"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
               >
@@ -111,7 +111,7 @@
               <textarea
                   v-else-if="['json'].includes(column.type)"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
               >
@@ -120,7 +120,7 @@
                   v-else
                   :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
                   autocomplete="false"
