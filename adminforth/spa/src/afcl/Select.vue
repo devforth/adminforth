@@ -9,7 +9,7 @@
         @input="inputInput"
         class="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :placeholder="
-          selectedItems.length && !multiple ? '' :  (showDropdown ? 'Search' : placeholder || 'Select...') 
+          selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
         "
       />
 
