@@ -1203,7 +1203,7 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * It should return Promise which will be resolved when action is done.
    */
   action: ({ resource, selectedIds, adminUser, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, tr: (key: string, category?: string) => string
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, tr: (key: string, category?: string, params?: any) => string
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**

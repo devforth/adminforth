@@ -1,35 +1,48 @@
 <template>
-  <p class="text-gray-500 dark:text-gray-400 font-sm text-left mt-3 flex items-center justify-center">
-    <Select
-      v-model="selectedLanguage"
-      :options="options"
-      :placeholder="$t('Select language')"
+  <div>
+    <div class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black 
+      hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive 
+      w-full select-none	"
+      :class="{ 'bg-black bg-opacity-10	': showDropdown }"
+      @click="showDropdown = !showDropdown"
     >
-      <template #item="{ option }">
-        <span class="mr-1">
-          <span class="flag-icon"
-            :class="`flag-icon-${getCountryCodeFromLangCode(option.value)}`"
-          ></span> 
+      <span class="mr-1">
+        <span class="flag-icon"
+          :class="`flag-icon-${getCountryCodeFromLangCode(selectedOption.value)}`"
+        ></span>
+      </span>
+      <span>{{ selectedOption.label }}</span>
 
-        </span>
-        <span>{{ option.label }}</span>
-      </template>
+      <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-150 ease-in"
+          :class="{ 'transform rotate-180': showDropdown }"
+      />
+    </div>
 
-      <template #selected-item="{option}">
-        <span class="mr-1">
-          <span class="flag-icon"
-            :class="`flag-icon-${getCountryCodeFromLangCode(option.value)}`"
-          ></span>
-        </span>
-        <span>{{ option.label }}</span>
-      </template>
-    </Select>
-  </p>
+    <div v-if="showDropdown" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm 
+      text-black dark:text-darkSidebarTextHover
+      bg-black bg-opacity-10	
+      hover:bg-html dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive 
+      w-full text-select-none pl-5 select-none"
+      v-for="option in options.filter((opt) => opt.value !== selectedOption.value)"
+      @click="doChangeLang(option.value)"
+    >
+      <span class="mr-1">
+        <span class="flag-icon"
+          :class="`flag-icon-${getCountryCodeFromLangCode(option.value)}`"
+        ></span>
+      </span>
+      <span>{{ option.label }}</span>
+    
+    </div>
+
+   
+  </div>
 </template>
 
 <script setup>
-import Select from '@/afcl/Select.vue';
 import 'flag-icon-css/css/flag-icons.min.css';
+import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+
 import { setLang, getCountryCodeFromLangCode, getLocalLang } from './langCommon';
 
 import { computed, ref, onMounted, watch } from 'vue';
@@ -37,15 +50,17 @@ import { useI18n } from 'vue-i18n';
 
 const { setLocaleMessage, locale } = useI18n();
 
-
+const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);
 
 const selectedLanguage = ref('');
 
+function doChangeLang(lang) {
+  setLang({ setLocaleMessage, locale }, props.meta.pluginInstanceId, lang);
+  // unfortunately, we need this to recall all APIs
+  document.location.reload();
 
-watch(() => selectedLanguage.value, (newVal) => {
-  setLang({ setLocaleMessage, locale }, props.meta.pluginInstanceId, newVal);
-});
+}
 
 
 const options = computed(() => {
@@ -55,6 +70,14 @@ const options = computed(() => {
       label: lang.name,
     };
   });
+});
+
+const selectedOption = computed(() => {
+  const val = options.value.find((option) => option.value === selectedLanguage.value);
+  if (val) {
+    return val;
+  }
+  return options.value[0];
 });
 
 
