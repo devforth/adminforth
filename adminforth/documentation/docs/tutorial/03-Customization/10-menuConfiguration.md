@@ -151,10 +151,11 @@ You can add a badge near the menu item title (e.g. to get count of unread messag
       label: 'Posts',
       icon: 'flowbite:book-open-outline',
       resourceId: 'posts',
-      badge:  async (adminUser: AdminUser) => {
+      badge: async (adminUser: AdminUser) => {
         return 10
       },
-      ...,
+      badgeTooltip: 'New posts',  // explain user what this badge means
+      ...
     },
   ],
   ...
@@ -163,8 +164,64 @@ You can add a badge near the menu item title (e.g. to get count of unread messag
 
 Badge function is async, but all badges are loaded in "lazy" to not block the menu rendering.
 
-To refresh all badges in menu from the frontend component you can use the following code:
+### Refreshing the badges
 
+
+Most times you need to refresh the badge from some backend API or hook. To do this you can do next:
+
+1) Add `itemId` to menu item to identify it:
+
+```ts title='./index.ts'
+{
+  ...
+  menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+//diff-add
+      itemId: 'postsMenuItem',
+      badge: async (adminUser: AdminUser) => {
+        return 10
+      },
+      badgeTooltip: 'Unverified posts',  // explain user what this badge means
+      ...
+    },
+  ],
+  ...
+}
 ```
+
+2) On backend point where you need to refresh the badge, you can publish a message to the websocket topic:
+
+```ts title='./index.ts'
+{
+  resourceId: 'posts',
+  table: 'posts',
+  hooks: {
+    edit: {
+//diff-add
+      afterSave: async ({ record, adminUser, resource, adminforth }) => {
+//diff-add
+        const newCount = await adminforth.resource('posts').count(Filters.EQ('verified', false));
+//diff-add
+        adminforth.websocket.publish(`/opentopic/update-menu-badge/postsMenuItem`, { badge: newCount });
+//diff-add
+        return { ok: true }
+//diff-add
+      }
+    }
+  }
+}
+```
+
+
+> 👆 Please note that any `/opentopic/` publish can be listened by anyone without authorization. If count published in this channel might be
+> a subject of security or privacy concerns, you should add [publish authorization](/docs/tutorial/Customization/websocket/#publish-authorization) to the topic.
+
+More rare case when you need to refresh menu item from the frontend component. You can achieve this by calling the next method:
+
+```typescript
 window.adminforth.menu.refreshMenuBadges()
 ```
+

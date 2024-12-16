@@ -39,6 +39,11 @@ export default {
 
       completeAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-4o-mini',
+        expert: {
+          // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
+          temperature: 0.5,
+        },
       }),
     }),
 

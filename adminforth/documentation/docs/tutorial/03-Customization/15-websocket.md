@@ -162,9 +162,13 @@ const admin = new AdminForth({
 
 ```
 
-### Authorization
+### Subscribing authorization
 
-Currently, any user can subscribe to the any topic. Though topic already has user id in it, we should explicitly check that user can subscribe to his own topic using `config.auth.websocketTopicAuth`
+Currently, any user can subscribe to the any topic and receive published messages.
+
+However you can prevent some users from subscribing to some topics and prevent them to get data streamed to the topic. Or vise-versa you can prevent all users and allow only some users to subscribe to the topic.
+
+In our example though topic already has user id in it, we should explicitly check that user can subscribe to his own topic using `config.auth.websocketTopicAuth`
 
 
 ```javascript title="./index.ts"
@@ -204,3 +208,33 @@ const admin = new AdminForth({
 });
   
 ``` 
+
+There is still method to bypass this websocketTopicAuth check by using special topic `/opentopic/`. In other words if topic starts with `/opentopic/` it will be allowed to subscribe by any user bypassing `websocketTopicAuth` call at all.
+
+### Publish authorization
+
+Best way to secure the data published to websoket is use websocketTopicAuth method. It will be called once on subscription and if it will not allow access it will completely prevent user from subscribing to the topic.
+
+However you can move auth check to publish call. It has a third parameter of publish function. Imagine you rewrite `websocketTopicAuth` to allow all users to subscribe to any topic:
+
+```typescript title="./index.ts"
+...
+websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
+  return true;
+},
+...
+```
+
+(Or you are using `/opentopic/`)
+
+Now you can move the check to publish call:
+
+```typescript title="./index.ts"
+
+admin.websocket.publish(topic, { type: 'message', totalCost }, async (adminUser: AdminUser): Promise<boolean> => {
+  return adminUser.dbUser.id === record.realtor_id;
+});
+
+```
+
+In this case during publish call it will check all users who subscribed to the topic and do actual publish to only those who are allowed to receive the message. This method requires more CPU resources and generally is not recommended.

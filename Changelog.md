@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Command to generate typescript models `npx -y adminforth generate-models --env-file=.env`
 - add i18n support: add vue-i18n to frontend and tr function to backend. This will allow to implement translation plugins
+- badgeTooltip - now you can add a tooltip to the badge to explain what it means
+- ability to authorize not only subscription on websocket but filter out whom users message will be published (updated doc)
+- added ability to refresh menu item badge from the backend using websocket publish
 
 # Improved
 

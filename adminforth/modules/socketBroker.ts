@@ -1,4 +1,5 @@
 import { IAdminForth, IWebSocketBroker, IWebSocketClient } from "../types/Back.js";
+import { AdminUser } from "../types/Common.js";
 
 export default class SocketBroker implements IWebSocketBroker {
   clients: IWebSocketClient[] = [];
@@ -65,16 +66,18 @@ export default class SocketBroker implements IWebSocketBroker {
       } else {
         const data = JSON.parse(message);
         if (data.type === 'subscribe') {
-          if (this.adminforth.config.auth.websocketTopicAuth) {
-            let authResult = false;
-            try {
-              authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
-            } catch (e) {
-              console.error('Error in websocketTopicAuth, assuming connection not allowed', e);
-            }
-            if (!authResult) {
-              client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
-              return;
+          if (!data.topic.startsWith('/opentopic/')) {
+            if (this.adminforth.config.auth.websocketTopicAuth) {
+              let authResult = false;
+              try {
+                authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
+              } catch (e) {
+                console.error('Error in websocketTopicAuth, assuming connection not allowed', e);
+              }
+              if (!authResult) {
+                client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+                return;
+              }
             }
           }
           if (!data.topic) {
@@ -114,12 +117,18 @@ export default class SocketBroker implements IWebSocketBroker {
 
   }
 
-  publish(topic: string, data: any) {
+  async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<void> {
     if (!this.topics[topic]) {
       process.env.HEAVY_DEBUG && console.log('No clients subscribed to topic', topic);
       return;
     }
     for (const client of this.topics[topic]) {
+      if (filterUsers) {
+        if (! (await filterUsers(client.adminUser)) ) {
+          process.env.HEAVY_DEBUG && console.log('Client not authorized to receive message', topic, client.adminUser);
+          continue;
+        }
+      }
       process.env.HEAVY_DEBUG && console.log('Sending data to soket', topic, data);
 
       client.send(JSON.stringify({ type: 'message', topic, data }));

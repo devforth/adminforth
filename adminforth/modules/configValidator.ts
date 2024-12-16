@@ -534,6 +534,13 @@ export default class ConfigValidator implements IConfigValidator {
       errors.push('No config.menu defined');
     }
 
+    async function generateItemId(menuItem: AdminForthConfigMenuItem) {
+      if (!menuItem.itemId) {
+        const itemId = md5hash(`menu-item-${menuItem.label}-${menuItem.resourceId || ''}-${menuItem.path || ''}`);
+        menuItem.itemId = itemId;
+      }
+    }
+
     // check if there is only one homepage: true in menu, recursivly
     let homepages: number = 0;
     const browseMenu = (menu: AdminForthConfigMenuItem[]) => {
@@ -570,6 +577,8 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Menu item component "${item.component.replace('@@', '')}" does not exist in "${newConfig.customization.customComponentsDir}"`);
           }
         }
+
+        generateItemId(item);
 
         if (item.homepage) {
           homepages++;

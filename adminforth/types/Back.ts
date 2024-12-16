@@ -1297,7 +1297,7 @@ export interface IWebSocketClient {
 }
 
 export interface IWebSocketBroker {
-  publish: (topic: string, data: any) => void;
+  publish: (topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>) => void;
 
   registerWsClient: (client: IWebSocketClient) => void;
 }

@@ -27,7 +27,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     OperatorsMap = {
         [AdminForthFilterOperators.EQ]: '=',
-        [AdminForthFilterOperators.NE]: '!=',
+        [AdminForthFilterOperators.NE]: 'IS DISTINCT FROM',
         [AdminForthFilterOperators.GT]: '>',
         [AdminForthFilterOperators.LT]: '<',
         [AdminForthFilterOperators.GTE]: '>=',
@@ -215,6 +215,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             totalCounter += 1;
         }
 
+
         if (fieldData._underlineType == 'uuid') {
           field = `cast("${field}" as text)`
         } else { 
@@ -232,6 +233,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
           filterValues.push(`%${v}%`);
         } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
           filterValues.push(...v);
+
+        
         } else {
           filterValues.push(v);
         }
