@@ -31,7 +31,7 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                      Reset your password on {{ coreStore.config?.brandName }}
+                      {{$t('Reset your password on')}} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
                 <!-- Modal body -->
@@ -46,7 +46,7 @@
                         v-model="password"
                         @keydown.enter="passwordConfirmationInput.focus()"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
-                        placeholder="New password" required 
+                        :placeholder="$t('New password')" required 
                       />
                       
                       <button
@@ -67,7 +67,7 @@
                         autocomplete="new-password"
                         v-model="passwordConfirmation"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
-                        placeholder="Confirm new password" required 
+                        :placeholder="$t('Confirm new password')" required 
                       />
 
                       <button

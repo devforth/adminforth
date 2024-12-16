@@ -8,7 +8,7 @@
 
         <input ref="datepickerStartEl" type="text"
                class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-               placeholder="From">
+               :placeholder="$t('From')">
       </div>
 
       <div class="relative">
@@ -18,7 +18,7 @@
 
         <input ref="datepickerEndEl" type="text"
                class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-               placeholder="To">
+               :placeholder="$t('To')">
       </div>
     </div>
 
@@ -51,7 +51,7 @@
 
       <button type="button"
               class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
-              @click="toggleTimeInputs">{{ showTimeInputs ? 'Hide time' : 'Show time' }}
+              @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
         <svg class="w-8 h-8 ms-0.5 relative top-px" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
              fill="none" viewBox="0 0 24 24">
