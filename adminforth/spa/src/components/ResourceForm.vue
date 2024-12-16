@@ -64,9 +64,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
+import { useI18n } from 'vue-i18n';
+
 
 const coreStore = useCoreStore();
-
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
@@ -78,7 +80,7 @@ const props = defineProps({
 
 const unmasked = ref({});
 
-const mode = computed(() => route.name === 'resource-create' ? $t('create') : $t('edit'));
+const mode = computed(() => route.name === 'resource-create' ? t('create') : t('edit'));
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
