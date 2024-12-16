@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.5.8-next.0",
+  "version": "1.5.8-next.5",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && tsc && npm run prepareDist",
+    "build": "rm -rf dist && tsc && npm run prepareDist && npm link",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
     "put-git-tag": "git tag v$(node -p \"require('./package.json').version\") && git push --tags",
@@ -26,7 +26,6 @@
     "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi",
     "ci-plugins": "for d in plugins/*; do cd $d && npm ci && cd ../..; done",
     "ci-adapters": "for d in adapters/*; do cd $d && npm ci && cd ../..; done"
-
   },
   "exports": {
     ".": {
@@ -41,6 +40,7 @@
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
     "@types/express": "^5.0.0",
+    "adminforth": "^1.5.8-next.0",
     "better-sqlite3": "^11.5.0",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",

@@ -14,9 +14,22 @@ export interface PluginOptions {
   translationFieldNames: Partial<Record<LanguageCode, string>>;
 
   /**
-   * Optional field name for storing source language file name
+   * Each string has a category, e.g. it might come from 'frontend' or some message from backend or column name on backend
+   * To deliver translations efficiently we need to store the category of each string.
+   * We recommend to put index on this column
+   */
+  categoryFieldName: string;
+
+  /**
+   * Optional source field to store e.g. file name where it first was captured
    */
   sourceFieldName?: string;
+
+  /**
+   * Optional field to save list of completed translations
+   * Helps to filter out strings which are not translated. If you define this field plugin will automatically
+   */
+  completedFieldName?: string;
 
   /**
    * Optionally translation plugin supports LLM completion adapter (like OpenAI) for generating translations

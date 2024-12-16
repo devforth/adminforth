@@ -13,7 +13,11 @@ export default class CompletionAdapterOpenAIChatGPT
     }
   }
 
-  complete = async (content: string, stop = ["."], maxTokens = 50) => {
+  complete = async (content: string, stop = ["."], maxTokens = 50): Promise<{
+    content?: string;
+    finishReason?: string;
+    error?: string;
+  }> => {
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -35,8 +39,7 @@ export default class CompletionAdapterOpenAIChatGPT
     });
     const data = await resp.json();
     if (data.error) {
-      console.error('ChatGPT was not able to generate a response', data.error);
-        return null;
+      return { error: data.error.message };
     }
     return {
       content: data.choices[0].message.content,

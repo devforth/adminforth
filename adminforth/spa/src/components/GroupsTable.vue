@@ -20,7 +20,7 @@
           :key="column.name"
           v-if="currentValues !== null"
           class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
-          :class="{ 'border-b': i !== group.columns.length - 1, 'opacity-50 pointer-events-none': column.editReadonly && source === 'edit'}"
+          :class="{ 'border-b': i !== group.columns.length - 1, 'opacity-50 pointer-events-none': column.editReadonly && source === $t('edit')}"
         >
           <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
@@ -103,7 +103,7 @@
               <textarea
                   v-else-if="['text', 'richtext'].includes(column.type)"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
               >
@@ -111,7 +111,7 @@
               <textarea
                   v-else-if="['json'].includes(column.type)"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
               >
@@ -120,7 +120,7 @@
                   v-else
                   :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Text"
+                  :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
                   autocomplete="false"

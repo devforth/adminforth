@@ -21,6 +21,7 @@ import {
   IAdminForthDataSourceConnectorBase,
   IWebSocketBroker,
   HttpExtra,
+  BeforeCreateSaveFunction,
 } from './types/Back.js';
 
 import {
@@ -113,6 +114,16 @@ class AdminForth implements IAdminForth {
     };
 
     console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
+  }
+
+  async tr(this, msg: string, category: string = 'default', lang: string = 'en', params: any): Promise<string> {
+    // stub function to make a translation
+    if (params) {
+      for (const key in params) {
+        msg = msg.replace(new RegExp(`{${key}}`, 'g'), params[key]);
+      }
+    }
+    return msg;
   }
 
   activatePlugins() {
@@ -295,7 +306,7 @@ class AdminForth implements IAdminForth {
   ): Promise<{ error?: string, createdRecord?: any }> {
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeCreateSaveFunction[])) {
       console.log('🪲 Hook beforeSave', hook);
       const resp = await hook({ 
         recordId: undefined, 

@@ -146,13 +146,20 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             direction: AdminForthSortDirections.desc
         }
         return;
-      }
+      };
 
-      ['edit', 'create', 'delete'].forEach((hook) => {
+      ['edit', 'delete'].forEach((hook) => {
         resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord, extra}) => {
           return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord, extra)
         })
-      })
+      });
+
+      ['create'].forEach((hook) => {
+        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, extra}) => {
+          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, undefined, extra)
+        })
+      });
+      
     })
   }
 }
