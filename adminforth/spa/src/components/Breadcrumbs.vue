@@ -25,7 +25,7 @@
             </svg>
             <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400
               max-w-80 truncate">
-              {{ $route.name === 'resource-edit' ? 'Edit' : 'Show' }} {{ coreStore.record?._label }}</span>
+              {{ $route.name === 'resource-edit' ? $t('Edit') : $t('Show') }} {{ coreStore.record?._label }}</span>
           </div>
         </li>
 
