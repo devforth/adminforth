@@ -51,8 +51,8 @@ const countryName = computed(() => {
 <style scoped lang="scss">
 
 .flag-icon {
-  width: 1.8rem;
-  height: 1.35rem;
+  width: 1.6rem;
+  height: 1.2rem;
   flex-shrink: 0;
 
   // border radius  for background

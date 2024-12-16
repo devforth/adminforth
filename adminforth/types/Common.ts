@@ -874,9 +874,16 @@ export interface AdminForthConfigMenuItem {
   badge?: string | ((user: AdminUser) => Promise<string>),
 
   /**
+   * Tooltip shown on hover for badge
+   */
+  badgeTooltip?: string,
+
+
+
+  /**
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
-  _itemId?: string,  // todo move to runtime type
+  itemId?: string,  // todo move to runtime type
 }
 
 

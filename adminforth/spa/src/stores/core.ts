@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
+import websocket from '@/websocket';
+
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
@@ -64,18 +66,39 @@ export const useCoreStore = defineStore('core', () => {
     console.log('🌍 AdminForth v', resp.version);
   }
 
-  function findItemWithId(items: AdminForthConfigMenuItem[], _itemId: string): AdminForthConfigMenuItem | undefined {
+  function findItemWithId(items: AdminForthConfigMenuItem[], itemId: string): AdminForthConfigMenuItem | undefined {
     for (const item of items) {
-      if (item._itemId === _itemId) {
+      if (item.itemId === itemId) {
         return item;
       }
       if (item.children) {
-        const found = findItemWithId(item.children, _itemId);
+        const found = findItemWithId(item.children, itemId);
         if (found) {
           return found;
         }
       }
     }
+  }
+  async function subscribeToMenuBadges() {
+    const processItem = (mi: AdminForthConfigMenuItem) => {
+      if (mi.badge) {
+        console.log('mi 🧪 subsc', mi)
+        websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
+          mi.badge = badge;
+        });
+      }
+    }
+  
+    menu.value.forEach((mi) => {
+      processItem(mi);
+      if (mi.children) {
+        mi.children.forEach((child) => {
+          console.log('mi 🧪', JSON.stringify(child), mi.badge)
+  
+          processItem(child);
+        })
+      }
+    })
   }
   async function fetchMenuBadges() {
     const resp: Record<string, string> = await callAdminForthApi({
@@ -85,12 +108,15 @@ export const useCoreStore = defineStore('core', () => {
     if (!resp) {
       return;
     }
-    Object.entries(resp).forEach(([_itemId, badge]: [string, string]) => {
-      const item: AdminForthConfigMenuItem | undefined = findItemWithId(menu.value, _itemId);
+    Object.entries(resp).forEach(([itemId, badge]: [string, string]) => {
+      const item: AdminForthConfigMenuItem | undefined = findItemWithId(menu.value, itemId);
       if (item) {
         item.badge = badge;
       }
     });
+
+    subscribeToMenuBadges();
+
   }
 
 

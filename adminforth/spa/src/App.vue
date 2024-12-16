@@ -102,8 +102,18 @@
 
                 <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
 
-                <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-                    fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">{{ item.badge }}</span>
+                  <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+                    fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
+                    <Tooltip v-if="item.badgeTooltip">
+                      {{ item.badge }}
+                      <template #tooltip>
+                        {{ item.badgeTooltip }}
+                      </template>
+                    </Tooltip>
+                    <template v-else>
+                      {{ item.badge }}
+                    </template> 
+                  </span>
                 </span>
 
                 <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
@@ -236,16 +246,16 @@ import AcceptModal from './components/AcceptModal.vue';
 import MenuLink from './components/MenuLink.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getIcon, verySimpleHash } from '@/utils';
-import { useHead } from 'unhead'
 import { createHead } from 'unhead'
 import { loadFile } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
 import { FrontendAPI } from '@/composables/useStores';
 import { getCustomComponent } from '@/utils';
-import type { AnnouncementBadgeResponse } from './types/Common';
+import type { AdminForthConfigMenuItem, AnnouncementBadgeResponse } from './types/Common';
+import { Tooltip } from '@/afcl';
 
-// import { link } from 'fs';
+
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();

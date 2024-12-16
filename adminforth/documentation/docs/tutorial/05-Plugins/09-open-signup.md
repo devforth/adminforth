@@ -8,7 +8,7 @@ This is useful when you want to allow anyone to sign up and assign some low-leve
 To install the plugin:
 
 ```bash
-npm install @adminforth/open-signup
+npm install @adminforth/open-signup --save
 ```
 
 

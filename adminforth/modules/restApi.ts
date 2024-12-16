@@ -192,16 +192,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         },
     })
 
-    async function generateItemId(menuItem: AdminForthConfigMenuItem) {
-      const _itemId = md5hash(`menu-item-${menuItem.label}-${menuItem.resourceId || ''}-${menuItem.path || ''}`);
-      menuItem._itemId = _itemId;
-      if (menuItem.children) {
-        for (let child of menuItem.children) {
-          await generateItemId(child);
-        }
-      }
-    }
-
     server.endpoint({
       noAuth: true,
       method: 'GET',
@@ -291,7 +281,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             newMenuItem = {...newMenuItem, children: newChildren}
           }
-          await generateItemId(newMenuItem)
           newMenu.push(newMenuItem)
         }
 
@@ -325,21 +314,28 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // translate menu labels
         const translateRoutines: Promise<void>[] = [];
-        newMenu.forEach((menuItem) => {
-          translateRoutines.push((async () => {
-            if (menuItem.label) {
-              menuItem.label = await tr(menuItem.label, `menu.${menuItem._itemId}`);
-            }
-          })())
-          if (menuItem.children) {
-            menuItem.children.forEach((child) => {
-              translateRoutines.push((async () => {
-                if (child.label) {
-                  child.label = await tr(child.label, `menu.${child._itemId}`);
-                }
-              })())
-            })
+
+        const processItem = (menuItem) => {
+          if (menuItem.label) {
+            translateRoutines.push(
+              (async () => {
+                menuItem.label = await tr(menuItem.label, `menu.${menuItem.itemId}`);
+              })()
+            );
           }
+          if (menuItem.badgeTooltip) {
+            translateRoutines.push(
+              (async () => {
+                menuItem.badgeTooltip = await tr(menuItem.badgeTooltip, `menu.${menuItem.itemId}`);
+              })()
+            );
+          }
+          if (menuItem.children) {
+            menuItem.children.forEach(processItem);
+          }
+        }
+        newMenu.forEach((menuItem) => {
+          processItem(menuItem);
         });
         await Promise.all(translateRoutines);
 
@@ -381,10 +377,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.badge) {
             if (typeof menuItem.badge === 'function') {
               badgeFunctions.push(async () => {
-                badges[menuItem._itemId] = await menuItem.badge(adminUser);
+                badges[menuItem.itemId] = await menuItem.badge(adminUser);
               });
             } else {
-              badges[menuItem._itemId] = menuItem.badge;
+              badges[menuItem.itemId] = menuItem.badge;
             }
           }
           if (menuItem.children) {
@@ -393,7 +389,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         this.adminforth.config.menu.map((menuItem) => {
-          generateItemId(menuItem);
           processMenuItem(menuItem)
         })
 

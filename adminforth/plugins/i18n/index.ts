@@ -6,6 +6,20 @@ import path from 'path';
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
 
+const SLAVIC_PLURAL_EXAMPLES = {
+  uk: 'яблук | Яблуко | Яблука | Яблук', // zero | singular | 2-4 | 5+
+  bg: 'ябълки | ябълка | ябълки | ябълки', // zero | singular | 2-4 | 5+
+  cs: 'jablek | jablko | jablka | jablek', // zero | singular | 2-4 | 5+
+  hr: 'jabuka | jabuka | jabuke | jabuka', // zero | singular | 2-4 | 5+
+  mk: 'јаболка | јаболко | јаболка | јаболка', // zero | singular | 2-4 | 5+
+  pl: 'jabłek | jabłko | jabłka | jabłek', // zero | singular | 2-4 | 5+
+  sk: 'jabĺk | jablko | jablká | jabĺk', // zero | singular | 2-4 | 5+
+  sl: 'jabolk | jabolko | jabolka | jabolk', // zero | singular | 2-4 | 5+
+  sr: 'јабука | јабука | јабуке | јабука', // zero | singular | 2-4 | 5+
+  be: 'яблыкаў | яблык | яблыкі | яблыкаў', // zero | singular | 2-4 | 5+
+  ru: 'яблок | яблоко | яблока | яблок', // zero | singular | 2-4 | 5+
+};
+
 interface ICachingAdapter {
   get(key: string): Promise<any>;
   set(key: string, value: any): Promise<void>;
@@ -43,6 +57,7 @@ export default class I18N extends AdminForthPlugin {
   enFieldName: string;
   cache: ICachingAdapter;
   primaryKeyFieldName: string;
+  menuItemWithBadgeId: string;
 
   adminforth: IAdminForth;
 
@@ -71,6 +86,18 @@ export default class I18N extends AdminForthPlugin {
     }, '');
   }
 
+  async updateUntranslatedMenuBadge() {
+    if (this.menuItemWithBadgeId) {
+      const resource = this.adminforth.resource(this.resourceConfig.resourceId);
+      const count = await resource.count([Filters.NEQ(this.options.completedFieldName, this.fullCompleatedFieldValue)]);
+
+      this.adminforth.websocket.publish(`/opentopic/update-menu-badge/${this.menuItemWithBadgeId}`, {
+        badge: count || null
+      });
+    }
+  }
+
+
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
 
@@ -80,7 +107,6 @@ export default class I18N extends AdminForthPlugin {
         throw new Error(`Invalid language code ${lang}, please define valid ISO 639-1 language code (2 lowercase letters)`);
       }
     });
-
     
 
     // find primary key field
@@ -89,7 +115,6 @@ export default class I18N extends AdminForthPlugin {
     if (!this.primaryKeyFieldName) {
       throw new Error(`Primary key field not found in resource ${resourceConfig.resourceId}`);
     }
-
 
     // parse trFieldNames
     for (const lang of this.options.supportedLanguages) {
@@ -201,6 +226,7 @@ export default class I18N extends AdminForthPlugin {
           this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
         }
 
+        this.updateUntranslatedMenuBadge();
 
       }
       // clear frontend cache for all lan
@@ -286,6 +312,8 @@ export default class I18N extends AdminForthPlugin {
                 return { ok: false, error: e.message };
               }
             }
+            console.log('🪲bulkTranslate done', selectedIds);
+            this.updateUntranslatedMenuBadge();
             return { 
               ok: true, error: undefined, 
               successMessage: await tr(`Translated {count} items`, 'frontend', {count: selectedIds.length}),
@@ -295,16 +323,15 @@ export default class I18N extends AdminForthPlugin {
       );  
     };
 
-
     // if there is menu item with resourceId, add .badge function showing number of untranslated strings
-    
     const addBadgeCountToMenuItem = (menuItem: AdminForthConfigMenuItem) => {
-      console.log('🪲menuItem, registring ', menuItem);
+      this.menuItemWithBadgeId = menuItem.itemId;
       menuItem.badge = async () => {
         const resource = adminforth.resource(menuItem.resourceId);
         const count = await resource.count([Filters.NEQ(this.options.completedFieldName, this.fullCompleatedFieldValue)]);
-        return `${count}`;
+        return count ? `${count}` : null;
       };
+      menuItem.badgeTooltip = 'Untranslated count';
     }
     adminforth.config.menu.forEach((menuItem) => {
       if (menuItem.resourceId === resourceConfig.resourceId) {
@@ -369,8 +396,12 @@ export default class I18N extends AdminForthPlugin {
         return;
       }
       const lang = langIsoCode;
+
+      const isSlavikPlural = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang);
+
       const prompt = `
 I need to translate strings in JSON to ${lang} language from English for my web app.
+${isSlavikPlural ? `If string contains '|' it means it is plural form, you should provide 4 translations (zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
 Keep keys, as is, write translation into values! Here are the strings:
 
 \`\`\`json
@@ -382,12 +413,17 @@ ${
 }
 \`\`\`
 `;
+
+      process.env.HEAVY_DEBUG && console.log('llm prompt', prompt);
+
       // call OpenAI
       const resp = await this.options.completeAdapter.complete(
         prompt,
         [],
         300,
       );
+
+      process.env.HEAVY_DEBUG && console.log('llm resp', resp);
 
       if (resp.error) {
         throw new AiTranslateError(resp.error);
@@ -474,6 +510,9 @@ ${
       if (exists) {
         return;
       }
+      if (!key) {
+        throw new Error(`Faced an empty key in Fronted messages, file ${file}`);
+      }
       const record = {
         [this.enFieldName]: key,
         [this.options.categoryFieldName]: category,
@@ -484,7 +523,10 @@ ${
       } catch (e) {
         console.error('🐛 Error creating record', e);
       }
-    }))
+    }));
+
+    // updateBadge
+    this.updateUntranslatedMenuBadge()
 
 
   }
@@ -540,7 +582,10 @@ ${
     // in this plugin we will use plugin to fill the database with missing language messages
     this.tryProcessAndWatch(adminforth);
 
-    adminforth.tr = async (msg: string, category: string, lang: string, params): Promise<string> => {
+    adminforth.tr = async (msg: string | null | undefined, category: string, lang: string, params): Promise<string> => {
+      if (!msg) {
+        return msg;
+      }
       // console.log('🪲tr', msg, category, lang);
 
       // if lang is not supported , throw
@@ -563,6 +608,7 @@ ${
             [this.enFieldName]: msg,
             [this.options.categoryFieldName]: category,
           });
+          this.updateUntranslatedMenuBadge();
         }
 
         // do this check here, to faster register missing translations
