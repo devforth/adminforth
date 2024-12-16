@@ -78,7 +78,7 @@ const props = defineProps({
 
 const unmasked = ref({});
 
-const mode = computed(() => route.name === 'resource-create' ? 'create' : 'edit');
+const mode = computed(() => route.name === 'resource-create' ? $t('create') : $t('edit'));
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
