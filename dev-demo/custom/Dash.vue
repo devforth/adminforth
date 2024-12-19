@@ -46,7 +46,7 @@
         <div class="flex justify-between mb-5">
           <div>
             <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-              Unlisted vs Listed price
+              {{ $('Unlisted vs Listed price' ) }}
             </p>
           </div>
         </div>
@@ -63,13 +63,15 @@ import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { Input, Select, VerticalTabs, LinkButton, Dropzone } from '@/afcl';
 import { useCoreStore } from '@/stores/core';
-
+import { useI18n } from 'vue-i18n';
 const coreStore = useCoreStore();
 
 const selected = ref(null);
 const activeTab = ref('Dashboard');
 
 const data = ref({});
+
+const  { t } = useI18n();
 
 function onFileChange(file) {
   console.log(12, file);
@@ -119,7 +121,7 @@ const optionsC1 = {
   },
   series: [
     {
-      name: "Added apartments",
+      name: t("Added apartments"),
       data: [],
       color: "#1A56DB",
     },
@@ -279,12 +281,12 @@ const optionsC3 = {
   },
   series: [
     {
-      name: "Listed Price",
+      name: t("Listed Price"),
       data: [],
       color: "#1A56DB",
     },
     {
-      name: "Unlisted Price",
+      name: t("Unlisted Price"),
       data: [],
       color: "#7E3BF2",
     },
