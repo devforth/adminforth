@@ -465,13 +465,30 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const toReturn = {
             ...resource,
             label: translated.resLabel,
-            columns: resource.columns.map(
-              (col, i) => {
-                return {
-                  ...col,
-                  label: translated[`resCol${i}`],
-                }
-              }
+            columns:
+              await Promise.all(
+                resource.columns.map(
+                  async (col, i) => {
+                    let validation = null;
+                    if (col.validation) {
+                      validation = await Promise.all(                  
+                        col.validation.map(async (val) => {
+                          return  {
+                            ...val,
+                            message: await tr(val.message, `resource.${resource.resourceId}`),
+                          }
+                        })
+                      );
+                        
+                    }
+
+                    return {
+                      ...col,
+                      validation,
+                      label: translated[`resCol${i}`],
+                    }
+                  }
+                ),
             ),
             options: {
               ...resource.options,
