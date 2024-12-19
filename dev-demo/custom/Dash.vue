@@ -46,7 +46,7 @@
         <div class="flex justify-between mb-5">
           <div>
             <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-              {{ $('Unlisted vs Listed price' ) }}
+              {{ $t('Unlisted vs Listed price' ) }}
             </p>
           </div>
         </div>
