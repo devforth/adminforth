@@ -499,19 +499,6 @@ admin.discoverDatabases();
 mongoose, or just use raw SQL queries against your tables.
 
 
-> ☝️ To call API from frontend component we use Adminforth's callApi method.
-> However this is not mandatory. Alternatively you can just use plain fetch:
->
-> ```ts
-> //diff-remove
->   data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
-> //diff-add
->   const response = await fetch('/api/dashboard/');
-> //diff-add
->   data.value = await response.json();
-> ```
-> however, the callApi function will handle path prefixing(you can change baseUrl and it will take this into account) and 401 redirect to login when user is logged out
-
 Demo:
 
 ![alt text](dashDemo.gif)
