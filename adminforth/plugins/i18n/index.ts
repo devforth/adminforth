@@ -347,7 +347,8 @@ export default class I18N extends AdminForthPlugin {
     });
   }
 
-  async bulkTranslate({ selectedIds }: { selectedIds: string[] }) {
+  // returns translated count
+  async bulkTranslate({ selectedIds }: { selectedIds: string[] }): Promise<number> {
 
     const needToTranslateByLang : Partial<
       Record<
@@ -382,26 +383,33 @@ export default class I18N extends AdminForthPlugin {
     const maxKeysInOneReq = 10;
 
     const updateStrings: Record<string, { 
-      updates: any, category: string, strId: string
+      updates: any, 
+      category: string,
+      strId: string,
+      translatedStr: string
      }> = {};
 
-    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[]) => {
-
+    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[], plurals=false): Promise<number> => {
+      if (strings.length === 0) {
+        return 0;
+      }
 
       if (strings.length > maxKeysInOneReq) {
+        let totalTranslated = 0;
         for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
           const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
-          await translateToLang(langIsoCode, slicedStrings);
+          console.log('🪲🔪slicedStrings ', slicedStrings);
+          totalTranslated += await translateToLang(langIsoCode, slicedStrings, plurals);
         }
-        return;
+        return totalTranslated;
       }
       const lang = langIsoCode;
 
-      const isSlavikPlural = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang);
+      const requestSlavicPlurals = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang) && plurals;
 
       const prompt = `
 I need to translate strings in JSON to ${lang} language from English for my web app.
-${isSlavikPlural ? `If string contains '|' it means it is plural form, you should provide 4 translations (zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
+${requestSlavicPlurals ? `You should provide 4 translations (in format zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
 Keep keys, as is, write translation into values! Here are the strings:
 
 \`\`\`json
@@ -442,29 +450,42 @@ ${
         return;
       }
       res = JSON.parse(res);
-      for (const [enStr, translatedStr] of Object.entries(res)) {
+
+
+      for (const [enStr, translatedStr] of Object.entries(res) as [string, string][]) {
         const translationsTargeted = translations.filter(t => t[this.enFieldName] === enStr);
         // might be several with same en_string
         for (const translation of translationsTargeted) {
-          translation[this.trFieldNames[lang]] = translatedStr;
+          //translation[this.trFieldNames[lang]] = translatedStr;
           // process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
-          if (!updateStrings[enStr]) {
-            updateStrings[enStr] = {
+          if (!updateStrings[translation[this.primaryKeyFieldName]]) {
+
+            updateStrings[translation[this.primaryKeyFieldName]] = {
               updates: {},
+              translatedStr,
               category: translation[this.options.categoryFieldName],
               strId: translation[this.primaryKeyFieldName],
             };
           }
-          updateStrings[enStr].updates[this.trFieldNames[lang]] = translatedStr;
+          updateStrings[
+            translation[this.primaryKeyFieldName]
+          ].updates[this.trFieldNames[lang]] = translatedStr;
         }
       }
 
+      return res.length;
     }
 
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
 
+    let totalTranslated = 0;
     await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
-      await translateToLang(lang, strings);
+      // first translate without plurals
+      const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
+      totalTranslated += await translateToLang(lang, stringsWithoutPlurals, false);
+
+      const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
+      totalTranslated += await translateToLang(lang, stringsWithPlurals, true);
     }));    
 
     await Promise.all(
@@ -487,6 +508,8 @@ ${
         this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
       }
     }
+
+    return totalTranslated;
 
   }
 
