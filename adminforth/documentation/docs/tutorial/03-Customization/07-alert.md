@@ -13,17 +13,21 @@ Create a Vue component in the custom directory of your project, e.g. Alerts.vue:
 ```html title="./custom/Alerts.vue"
 <template>
     <div class="ml-3 mt-16">
-        <button @click="callAlert('Example success alert')" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Call alert</button>
-        <button @click="callConfirmation" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Confirmation</button>
-        <button @click="callAlert('Example danger alert','warning')" class="focus:outline-none text-white bg-orange-500 hover:bg-orange-400 focus:ring-4 focus:ring-orange-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-900">Danger alert</button>
+        <button @click="callAlert('Example success alert')" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">{{$t('Call alert')}}</button>
+        <button @click="callConfirmation" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">{{$t('Confirmation')}}</button>
+        <button @click="callAlert('Example danger alert','warning')" class="focus:outline-none text-white bg-orange-500 hover:bg-orange-400 focus:ring-4 focus:ring-orange-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-900">{{$t('Danger alert')}}</button>
     </div>
 </template>
 <script setup>
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 function callAlert(message,variant='success'){
     window.adminforth.alert({message: message, variant: variant})
 };
 async function callConfirmation(){
-    const isConfirmed = await window.adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
+    const isConfirmed = await window.adminforth.confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
 }
 </script>
 ```
