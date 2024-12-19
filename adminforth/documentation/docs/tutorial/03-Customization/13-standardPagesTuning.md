@@ -277,7 +277,7 @@ Sometimes you might need to create a link that will open the create form with so
       },
     }"
   >
-    Create new apartment
+    {{$t('Create new apartment')}}
   </LinkButton>
   ...
 </template>
