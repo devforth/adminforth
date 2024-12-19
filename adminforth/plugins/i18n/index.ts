@@ -326,7 +326,7 @@ export default class I18N extends AdminForthPlugin {
             this.updateUntranslatedMenuBadge();
             return { 
               ok: true, error: undefined, 
-              successMessage: await tr(`Translated {count} items`, 'frontend', {count: selectedIds.length}),
+              successMessage: await tr(`Translated {count} items`, 'backend', {count: selectedIds.length}),
             };
           }
         }
@@ -619,11 +619,18 @@ ${
       if (!msg) {
         return msg;
       }
+
+      if (category === 'frontend') {
+        throw new Error(`Category 'frontend' is reserved for frontend messages, use any other category for backend messages`);
+      }
       // console.log('🪲tr', msg, category, lang);
 
       // if lang is not supported , throw
       if (!this.options.supportedLanguages.includes(lang as LanguageCode)) {
-        throw new Error(`Language ${lang} is not entered to be supported by requested by browser in request headers accept-language`);
+        lang = 'en'; // for now simply fallback to english
+
+        // throwing like line below might be too strict, e.g. for custom apis made with fetch which don't pass accept-language
+        // throw new Error(`Language ${lang} is not entered to be supported by requested by browser in request headers accept-language`);
       }
 
       let result;
