@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11]
+
+### Fixed
+
+- cache invalidations on delete
+
 ## [v1.0.10]
 
-## Fixed
+### Fixed
 
 - fix automatic translations for duplicate strings
 - improve slavik pluralization generations by splitting the requests
