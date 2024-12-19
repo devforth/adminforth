@@ -43,7 +43,7 @@
 import 'flag-icon-css/css/flag-icons.min.css';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 
-import { setLang, getCountryCodeFromLangCode, getLocalLang } from './langCommon';
+import { setLang, getCountryCodeFromLangCode, getLocalLang, setLocalLang } from './langCommon';
 
 import { computed, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -56,7 +56,7 @@ const props = defineProps(['meta', 'resource']);
 const selectedLanguage = ref('');
 
 function doChangeLang(lang) {
-  setLang({ setLocaleMessage, locale }, props.meta.pluginInstanceId, lang);
+  setLocalLang(lang);
   // unfortunately, we need this to recall all APIs
   document.location.reload();
 
