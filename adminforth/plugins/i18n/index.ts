@@ -318,18 +318,22 @@ export default class I18N extends AdminForthPlugin {
           confirm: 'Are you sure you want to translate selected items?',
           state: 'selected',
           action: async ({ selectedIds, tr }) => {
+            let translatedCount = 0;
             try {
-              await this.bulkTranslate({ selectedIds });
+              translatedCount = await this.bulkTranslate({ selectedIds });
             } catch (e) {
               if (e instanceof AiTranslateError) {
+                process.env.HEAVY_DEBUG && console.error('🪲⛔ bulkTranslate error', e);
                 return { ok: false, error: e.message };
               }
             }
-            console.log('🪲bulkTranslate done', selectedIds);
+            process.env.HEAVY_DEBUG && console.log('🪲bulkTranslate done', selectedIds);
             this.updateUntranslatedMenuBadge();
             return { 
               ok: true, error: undefined, 
-              successMessage: await tr(`Translated {count} items`, 'backend', {count: selectedIds.length}),
+              successMessage: await tr(`Translated {count} items`, 'backend', {
+                count: translatedCount,
+              }),
             };
           }
         }
@@ -411,7 +415,7 @@ export default class I18N extends AdminForthPlugin {
         let totalTranslated = 0;
         for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
           const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
-          console.log('🪲🔪slicedStrings ', slicedStrings);
+          process.env.HEAVY_DEBUG && console.log('🪲🔪slicedStrings len', slicedStrings.length);
           totalTranslated += await translateToLang(langIsoCode, slicedStrings, plurals);
         }
         return totalTranslated;
@@ -435,7 +439,7 @@ ${
 \`\`\`
 `;
 
-      process.env.HEAVY_DEBUG && console.log('llm prompt', prompt);
+      process.env.HEAVY_DEBUG && console.log('🧠 llm prompt', prompt);
 
       // call OpenAI
       const resp = await this.options.completeAdapter.complete(
@@ -444,7 +448,7 @@ ${
         300,
       );
 
-      process.env.HEAVY_DEBUG && console.log('llm resp', resp);
+      process.env.HEAVY_DEBUG && console.log('🧠 llm resp', resp);
 
       if (resp.error) {
         throw new AiTranslateError(resp.error);
@@ -460,7 +464,7 @@ ${
         res = resp.content.split("```json")[1].split("```")[0];
       } catch (e) {
         console.error('error in parsing OpenAI', resp);
-        return;
+        throw new AiTranslateError('Error in parsing OpenAI response');
       }
       res = JSON.parse(res);
 
@@ -486,7 +490,7 @@ ${
         }
       }
 
-      return res.length;
+      return Object.keys(updateStrings).length;
     }
 
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
