@@ -5,6 +5,9 @@ import iso6391, { LanguageCode } from 'iso-639-1';
 import path from 'path';
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
+import  { AsyncQueue } from '@sapphire/async-queue';
+
+const processFrontendMessagesQueue = new AsyncQueue();
 
 const SLAVIC_PLURAL_EXAMPLES = {
   uk: 'яблук | Яблуко | Яблука | Яблук', // zero | singular | 2-4 | 5+
@@ -524,6 +527,7 @@ ${
   }
 
   async processExtractedMessages(adminforth: IAdminForth, filePath: string) {
+    await processFrontendMessagesQueue.wait();
     // messages file is in i18n-messages.json
     let messages;
     try {
@@ -535,7 +539,15 @@ ${
       return;
     }
     // loop over missingKeys[i].path and add them to database if not exists
-    await Promise.all(messages.missingKeys.map(async (missingKey: any) => {
+    
+    const missingKeysDeduplicated = messages.missingKeys.reduce((acc: any[], missingKey: any) => {
+      if (!acc.find((a) => a.path === missingKey.path)) {
+        acc.push(missingKey);
+      }
+      return acc;
+    }, []);
+
+    await Promise.all(missingKeysDeduplicated.map(async (missingKey: any) => {
       const key = missingKey.path;
       const file = missingKey.file;
       const category = 'frontend';
@@ -567,15 +579,22 @@ ${
     const serveDir = adminforth.codeInjector.getServeDir();
     // messages file is in i18n-messages.json
     const messagesFile = path.join(serveDir, 'i18n-messages.json');
-    console.log('🪲messagesFile', messagesFile);
+    process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile read started', messagesFile);
     this.processExtractedMessages(adminforth, messagesFile);
     // we use watcher because file can't be yet created when we start - bundleNow can be done in build time or can be done now
     // that is why we make attempt to process it now and then watch for changes
-    const w = chokidar.watch(messagesFile, { persistent: true });
+    const w = chokidar.watch(messagesFile, { 
+      persistent: true,
+      ignoreInitial: true, // don't trigger 'add' event for existing file on start
+    });
     w.on('change', () => {
+      process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile change', messagesFile);
+
       this.processExtractedMessages(adminforth, messagesFile);
     });
     w.on('add', () => {
+      process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile add', messagesFile);
+
       this.processExtractedMessages(adminforth, messagesFile);
     });
 
