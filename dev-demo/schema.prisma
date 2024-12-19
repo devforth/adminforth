@@ -57,10 +57,26 @@ model translations {
     id              String   @id
     en_string       String
     created_at      DateTime
-    uk_string       String?
-    ja_string       String?
-    fr_string       String?
-    es_string       String?
+    
+    uk_string       String?  // translation for Ukrainian language
+    ar_string       String?  // translation for Arabic language
+    ru_string       String?  // translation for Russian language
+    zh_string       String?  // translation for Chinese language
+    es_string       String?  // translation for Spanish language
+    hi_string       String?  // translation for Hindi language
+    bn_string       String?  // translation for Bengali language
+    pt_string       String?  // translation for Portuguese language
+    ja_string       String?  // translation for Japanese language
+    de_string       String?  // translation for German language
+    tr_string       String?  // translation for Turkish language
+    fr_string       String?  // translation for French language
+    pa_string       String?  // translation for Punjabi language
+    ko_string       String?  // translation for Korean language
+    ur_string       String?  // translation for Urdu language
+    az_string       String?  // translation for Azerbaijani language
+    vi_string       String?  // translation for Vietnamese language
+    it_string       String?  // translation for Italian language
+
     category        String
     source          String?
     completedLangs   String?
