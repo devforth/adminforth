@@ -459,8 +459,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        console.log('🗣️translated', translated);
-
         
         const toReturn = {
             ...resource,
