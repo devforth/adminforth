@@ -406,17 +406,18 @@ export default class I18N extends AdminForthPlugin {
       translatedStr: string
      }> = {};
 
-    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[], plurals=false): Promise<number> => {
+    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[], plurals=false): Promise<string[]> => {
       if (strings.length === 0) {
-        return 0;
+        return [];
       }
 
       if (strings.length > maxKeysInOneReq) {
-        let totalTranslated = 0;
+        let totalTranslated = [];
         for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
           const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
           process.env.HEAVY_DEBUG && console.log('🪲🔪slicedStrings len', slicedStrings.length);
-          totalTranslated += await translateToLang(langIsoCode, slicedStrings, plurals);
+          const madeKeys = await translateToLang(langIsoCode, slicedStrings, plurals);
+          totalTranslated = totalTranslated.concat(madeKeys);
         }
         return totalTranslated;
       }
@@ -490,19 +491,20 @@ ${
         }
       }
 
-      return Object.keys(updateStrings).length;
+      return Object.keys(updateStrings);
     }
 
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
 
-    let totalTranslated = 0;
+    let totalTranslated = [];
     await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
       // first translate without plurals
       const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
-      totalTranslated += await translateToLang(lang, stringsWithoutPlurals, false);
+      const noPluralKeys = await translateToLang(lang, stringsWithoutPlurals, false);
 
       const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
-      totalTranslated += await translateToLang(lang, stringsWithPlurals, true);
+      const pluralKeys = await translateToLang(lang, stringsWithPlurals, true);
+      totalTranslated = totalTranslated.concat(noPluralKeys, pluralKeys);
     }));    
 
     await Promise.all(
@@ -526,7 +528,7 @@ ${
       }
     }
 
-    return totalTranslated;
+    return new Set(totalTranslated).size;
 
   }
 
