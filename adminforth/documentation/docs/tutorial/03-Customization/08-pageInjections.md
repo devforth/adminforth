@@ -357,7 +357,7 @@ Now create file `SearchForApartmentInGoogle.vue` in the `custom` folder of your 
         </a>
 
         <template #tooltip>
-            Search for competitive apartments in Google
+            {{$t('Search for competitive apartments in Google')}}
         </template>
     </Tooltip>
 </template>
