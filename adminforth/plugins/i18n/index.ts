@@ -560,15 +560,13 @@ ${
 
     // updateBadge
     this.updateUntranslatedMenuBadge()
-
-
   }
 
 
   async tryProcessAndWatch(adminforth: IAdminForth) {
-    const spaDir = adminforth.codeInjector.spaTmpPath();
+    const serveDir = adminforth.codeInjector.getServeDir();
     // messages file is in i18n-messages.json
-    const messagesFile = path.join(spaDir, '..', 'spa_tmp', 'i18n-messages.json');
+    const messagesFile = path.join(serveDir, 'i18n-messages.json');
     console.log('🪲messagesFile', messagesFile);
     this.processExtractedMessages(adminforth, messagesFile);
     // we use watcher because file can't be yet created when we start - bundleNow can be done in build time or can be done now

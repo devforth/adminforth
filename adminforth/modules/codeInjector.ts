@@ -749,23 +749,24 @@ class CodeInjector implements ICodeInjector {
 
     await this.runNpmShell({command: 'run i18n:extract', cwd});
 
+    // probably add option to build with tsh check (plain 'build')
+    const serveDir = this.getServeDir();
+    // remove serveDir if exists
+    try {
+      await fs.promises.rm(serveDir, { recursive: true });
+    } catch (e) {
+      // ignore
+    }
+    await fs.promises.mkdir(serveDir, { recursive: true });
+  
+    // copy i18n messages to serve dir
+    await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+
     if (!hotReload) {
-      // probably add option to build with tsh check (plain 'build')
-      const serveDir = this.getServeDir();
-
-      
-
       await this.runNpmShell({command: 'run build-only', cwd});
-      // remove serveDir if exists
-      try {
-        await fs.promises.rm(serveDir, { recursive: true });
-      } catch (e) {
-        // ignore
-      }
-      await fs.promises.mkdir(serveDir, { recursive: true });
+
       // coy dist to serveDir
       await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
-
     } else {
 
       const command = 'run dev';
