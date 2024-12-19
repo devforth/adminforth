@@ -234,6 +234,16 @@ export default class I18N extends AdminForthPlugin {
       return { ok: true };
     });
 
+    // add hook on delete of any translation to reset cache
+    resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }): Promise<{ ok: boolean, error?: string }> => {
+      for (const lang of this.options.supportedLanguages) {
+        this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+        this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}:${record[this.enFieldName]}`);
+      }
+      this.updateUntranslatedMenuBadge();
+      return { ok: true };
+    });
+
     if (this.options.completedFieldName) {
       // on show and list add a list hook which will add incomplete field to record if translation is missing for at least one language
       const addIncompleteField = (record: any) => {
