@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Resolved issue with filters being displayed incorrectly
+- USe  `IS DISTINCT FROM` for [AdminForthFilterOperators.NE] in postgress to properly compare for note equal when values hold zero
 
 ### Added
 - Added adapters
