@@ -71,6 +71,7 @@ export default {
     
     },
     listPageSize: 30,
+    
   },
   columns: [
     {
@@ -82,6 +83,7 @@ export default {
     {
       name: "en_string",
       type: AdminForthDataTypes.STRING,
+      label: "English",
     },
     {
       name: "created_at",

@@ -202,12 +202,15 @@ export default class RichEditorPlugin extends AdminForthPlugin {
 
           return { ok: true };
         }
-    );
+      );
     }
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     this.adminforth = adminforth;
+    if (this.options.completion?.adapter) {
+      this.options.completion?.adapter.validate();
+    }
     // optional method where you can safely check field types after database discovery was performed
     if (this.options.completion && !this.options.completion.adapter) {
       throw new Error(`Completion adapter is required`);

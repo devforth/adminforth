@@ -77,6 +77,8 @@ export default class EmailPasswordReset extends AdminForthPlugin {
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     // optional method where you can safely check field types after database discovery was performed
+
+    this.options.adapter.validate();
   }
 
   instanceUniqueRepresentation(pluginOptions: any) : string {

@@ -629,3 +629,75 @@ import SubComponent from '@@/plugins/ChatGptPlugin/subComponent.vue';
 ```
 
 Pay attention that `ChatGptPlugin` is a class name of your plugin so it should be used in path.
+
+
+## Using Adapters
+
+
+There are couple of adapter interfaces in AdminForth like `EmailAdapter` for sending emails and `CompletionAdapter`.
+Adapter is a way to provide same function from different vendors. For example plugin created in this guide uses exactly OpenAI API to get completion.
+But in fact OpenAI is not only one API provider for completion, so `CompletionAdapter` interface is created to be easily extended. 
+Here is code from AdminForth:
+
+```ts
+export interface CompletionAdapter {
+
+  validate();
+
+  complete(
+    content: string,
+    stop: string[],
+    maxTokens: number,
+  ): Promise<{
+    content?: string;
+    finishReason?: string;
+    error?: string;
+  }>;
+}
+```
+
+To use adapter in plugin you should define it in plugin options:
+
+```ts title='./af-plugin-any-complete/types.ts'
+
+import { CompletionAdapter } from "adminforth";
+
+export interface PluginOptions {
+  ...
+
+//diff-add
+  /**
+//diff-add
+   * Adapter for completion
+//diff-add
+   */
+//diff-add
+  adapter: CompletionAdapter;
+}
+```
+
+Then, in your plugin you should call `this.options.validate()`, this function will throw error if adminforth app developer did not pass
+required parameter (e.g. API token for OpenAI). You can do it in `modifyResourceConfig` but, then it will be called at build time (e.g. in Dockerfile). However build time not always has access to all environment variables including `OPENAI_API_KEY`.
+
+So we recommend calling validation in `validateConfigAfterDiscover` method because it called only in runtime on app start and not in build time.
+
+```ts title='./af-plugin-any-complete/index.ts'
+  validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+//diff-add
+    this.options.adapter.validate();
+
+    ...
+  }
+```
+
+If some issue with config will happen, validate method will throw error and instance will be crashed so AdminForth app developer will see error message in console and will have to fix it before starting app.
+
+Now you can simply use adapter:
+
+```ts title='./af-plugin-any-complete/index.ts'
+handler: async (a) => {
+  ...
+  const resp = await this.options.adapter.complete(content, ['.'], this.options.expert?.maxTokens || 50);
+  ...
+}
+``` 
