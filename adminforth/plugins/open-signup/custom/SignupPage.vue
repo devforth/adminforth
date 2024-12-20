@@ -31,14 +31,14 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                      Sign up into {{ coreStore.config?.brandName }}
+                      {{$t('Sign up into')}} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
                   <form v-if="!requestSent" class="space-y-4" role="alert" @submit.prevent>
                     <div v-if="!verifyToken" class="relative">
-                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
+                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your email')}}</label>
                       <input type="email" name="email" id="email" 
                         tabindex="1"
                         autocomplete="username"  
@@ -50,7 +50,7 @@
                       />
                     </div>
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
+                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('New password')}}</label>
                       <input 
                         tabindex="2"
                         autocomplete="new-password"
@@ -74,7 +74,7 @@
                     </div>
 
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm new password</label>
+                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Confirm new password')}}</label>
                       <input 
                         ref="passwordConfirmationInput"
                         autocomplete="new-password"
@@ -100,7 +100,7 @@
                       <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                       </svg>
-                      <span class="sr-only">Info</span>
+                      <span class="sr-only">{{$t('Info')}}</span>
                       <div>
                         {{ validationError || error }}
                       </div>
@@ -113,15 +113,15 @@
                       class="w-full"
                       :loader="inProgress"
                     >
-                      Sign up
+                      {{$t('Sign up')}}
                     </Button>
                   </form>
 <!-- END of set new paasord -->
                   <div v-else class="flex items center justify-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-800 dark:text-green-400" role="alert">
-                    Please check your email at {{ sentToEmail }} to confirm your email address.
+                    {{$t('Please check your email at')}} {{ sentToEmail }} {{$t('to confirm your email address.')}}
                   </div> 
                   <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
-                      or <Link to="/login">{{ toLoginText }}</Link>
+                      {{$t('or')}} <Link to="/login">{{ toLoginText }}</Link>
                   </p>
                 </div>
             </div>
