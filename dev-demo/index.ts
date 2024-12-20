@@ -77,7 +77,11 @@ export const admin = new AdminForth({
     },
     websocketSubscribed: async (topic, adminUser) => {
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
-      console.log(`Websocket user ${adminUser.username} subscribed to topic ${subject} with param ${param}`);
+      if (adminUser) {
+        console.log(`Websocket user ${adminUser.username} subscribed to topic ${subject} with param ${param}`);
+      } else {
+        console.log(`Unauthenticated user subscribed to topic ${subject} with param ${param}`);
+      }
       if (subject === 'property-cost') {
         const userId = param;
         const totalCost = (await admin.resource('aparts').list(Filters.EQ('user_id', userId))).map((r) => r.price).reduce((a, b) => a + b, 0);

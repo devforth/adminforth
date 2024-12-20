@@ -477,13 +477,31 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                           }
                         })
                       );
-                        
+                    }
+                    let enumItems = undefined;
+                    if (col.enum) {
+                      enumItems = await Promise.all(
+                        col.enum.map(async (item) => {
+                          return {
+                            ...item,
+                            label: await tr(item.label, `resource.${resource.resourceId}.enum.${col.name}`),
+                          }
+                        })
+                      );
+                    }
+                    // TODO: better to move all coroutines to translationRoutines
+                    if (col.editingNote?.create) {
+                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote.create`);
+                    }
+                    if (col.editingNote?.edit) {
+                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote.edit`);
                     }
 
                     return {
                       ...col,
                       validation,
                       label: translated[`resCol${i}`],
+                      enum: enumItems,
                     }
                   }
                 ),

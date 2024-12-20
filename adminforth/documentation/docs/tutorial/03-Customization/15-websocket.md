@@ -162,6 +162,8 @@ const admin = new AdminForth({
 
 ```
 
+> 👆 Please not that `adminUser` might be undefined in `websocketSubscribed` callback if unauthorized client subscribes to `/opentopic/` (see authorization section below)
+
 ### Subscribing authorization
 
 Currently, any user can subscribe to the any topic and receive published messages.
@@ -210,6 +212,7 @@ const admin = new AdminForth({
 ``` 
 
 There is still method to bypass this websocketTopicAuth check by using special topic `/opentopic/`. In other words if topic starts with `/opentopic/` it will be allowed to subscribe by any user bypassing `websocketTopicAuth` call at all.
+Internally AdminForth uses `/opentopic/` for menu badges and possibly for other internal purposes.
 
 ### Publish authorization
 

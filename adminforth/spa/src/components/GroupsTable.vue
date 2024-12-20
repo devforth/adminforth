@@ -155,6 +155,9 @@
   import { getCustomComponent } from '@/utils';
   import { Tooltip } from '@/afcl';
   import { ref, computed, watch, type Ref } from 'vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     source: 'create' | 'edit',
@@ -170,11 +173,11 @@
 
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [
-      { label: 'Yes', value: true },
-      { label: 'No', value: false },
+      { label: t('Yes'), value: true },
+      { label: t('No'), value: false },
     ];
     if (!column.required[props.mode]) {
-      options.push({ label: 'Unset', value: null });
+      options.push({ label: t('Unset'), value: null });
     }
     return options;
   };
