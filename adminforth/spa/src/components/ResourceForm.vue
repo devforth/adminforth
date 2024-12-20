@@ -39,7 +39,7 @@
         <div v-if="otherColumns.length > 0">
           <GroupsTable
           :source="source"
-          :group="{groupName: 'Other', columns: otherColumns}"
+          :group="{groupName: $t('Other'), columns: otherColumns}"
           :currentValues="currentValues"
           :editableColumns="editableColumns"
           :mode="mode"
@@ -68,6 +68,7 @@ import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 
 const coreStore = useCoreStore();
 const router = useRouter();
@@ -106,18 +107,18 @@ const columnError = (column) => {
       (customComponentsEmptiness.value[column.name] !== false)
     
     ) {
-      return 'This field is required';
+      return t('This field is required');
     }
     if (column.type === 'json' && currentValues.value[column.name]) {
       try {
         JSON.parse(currentValues.value[column.name]);
       } catch (e) {
-        return 'Invalid JSON';
+        return t('Invalid JSON');
       }
     }
     if ( column.type === 'string' || column.type === 'text' ) {
       if ( column.maxLength && currentValues.value[column.name]?.length > column.maxLength ) {
-        return `This field must be shorter than ${column.maxLength} characters`;
+        return t('This field must be shorter than {maxLength} characters', { maxLength: column.maxLength });
       }
       
       if ( column.minLength && currentValues.value[column.name]?.length < column.minLength ) {
@@ -126,7 +127,7 @@ const columnError = (column) => {
         if (!needToCheckEmpty) {
           return null;
         }
-        return `This field must be longer than ${column.minLength} characters`;
+        return t('This field must be longer than {minLength} characters', { minLength: column.minLength });
       }
     }
     if ( ['integer', 'decimal', 'float'].includes(column.type) ) {
@@ -134,10 +135,10 @@ const columnError = (column) => {
         && currentValues.value[column.name] !== null 
         && currentValues.value[column.name] < column.minValue 
       ) {
-        return `This field must be greater than ${column.minValue}`;
+        return t('This field must be greater than {minValue}', { minValue: column.minValue });
       }
       if ( column.maxValue !== undefined && currentValues.value[column.name] > column.maxValue ) {
-        return `This field must be less than ${column.maxValue}`;
+        return t('This field must be less than {maxValue}', { maxValue: column.maxValue });
       }
     }
     if (currentValues.value[column.name] && column.validation) {
