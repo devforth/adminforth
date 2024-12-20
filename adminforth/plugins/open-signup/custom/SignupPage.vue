@@ -141,6 +141,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import Button from '@/afcl/Button.vue';
 import Link from '@/afcl/Link.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const inProgress = ref(false);
 
@@ -158,7 +161,7 @@ const sentToEmail: Ref<string> = ref('');
 
 const requestEmailConfirmation = computed(() => route.meta.requestEmailConfirmation);
 const verifyToken = computed(() => route.query.token);
-const toLoginText = computed(() => `${verifyToken.value ? 'Go' : 'Back'} to login`);
+const toLoginText = computed(() => verifyToken.value ? t('Go to login') : t('Back to login'));
 const isPasswordNeeded = computed(() => !requestEmailConfirmation.value || (requestEmailConfirmation.value && verifyToken.value));
 
 const user = useUserStore();
@@ -169,22 +172,25 @@ const router = useRouter();
 function checkPassword() {
 
   if (!password.value || !passwordConfirmation.value) {
-    return 'Please enter both password and password confirmation';
+    return t('Please enter both password and password confirmation');
   }
   if (password.value !== passwordConfirmation.value) {
-    return 'Passwords do not match';
+    return t('Passwords do not match');
   }
 
-  if (password.value.length < passwordField.value.minLength) {
-    return `Password must be at least ${passwordField.value.minLength} characters long`;
+  if (!passwordConstraints.value) {
+    return null;
+  }
+  if (password.value.length < passwordConstraints.value.minLength) {
+    return t(`Password must be at least {minLength} characters long`, { minLength: passwordConstraints.value.minLength });
   }
 
-  if (password.value.length > passwordField.value.maxLength) {
-    return `Password must be at most ${passwordField.value.maxLength} characters long`;
+  if (password.value.length > passwordConstraints.value.maxLength) {
+    return t(`Password must be at most {maxLength} characters long`, { maxLength: passwordConstraints.value.maxLength });
   }
 
-  if (passwordField.value.validation) {
-    const valError = applyRegexValidation(password.value, passwordField.value.validation);
+  if (passwordConstraints.value.validation) {
+    const valError = applyRegexValidation(password.value, passwordConstraints.value.validation);
     if (valError) {
       return valError;
     }
@@ -213,19 +219,31 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-const passwordField = computed(
-  () => route.meta.passwordField
-)
+
+const passwordConstraints: Ref<{
+  minLength: number;
+  maxLength: number;
+  validation: string;
+}> = ref({
+  minLength: 8,
+  maxLength: 100,
+  validation: '',
+});
 
 onMounted(async () => {
   await coreStore.getPublicConfig();
+  // getPasswordConstraints
+  passwordConstraints.value = await callAdminForthApi({
+    path: `/plugin/${route.meta.pluginInstanceId}/password-constraints`,
+    method: 'GET',
+  });
 });
 
 async function doSignup() {
   error.value = null;
   const email = emailInput.value!.value;
   if (!email) {
-    error.value = 'Please enter your email';
+    error.value = t('Please enter your email');
     return;
   }
   if (!requestEmailConfirmation.value && checkPassword()) {
@@ -274,7 +292,7 @@ const signupAfterEmailConfirmation = async () => {
     });
     if (resp.error) {
       window.adminforth.alert({
-        message: `Error fetching data: ${resp.error}`,
+        message: t(`Error fetching data: {error}`, { error: resp.error }),
         variant: 'danger',
       });
     } else if (resp.redirectTo) {

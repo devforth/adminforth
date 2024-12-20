@@ -24,7 +24,8 @@
         text-black dark:text-darkSidebarTextHover
         bg-black bg-opacity-10	
         hover:brightness-110
-        hover:bg-lightPrimaryContrast dark:hover:bg-darkPrimaryContrasts
+        hover:text-lightPrimary dark:hover:text-darkPrimary
+        hover:bg-lightPrimaryContrast dark:hover:bg-darkPrimaryContrast
         w-full text-select-none pl-5 select-none"
         v-for="option in options.filter((opt) => opt.value !== selectedOption.value)"
         @click="doChangeLang(option.value)"
