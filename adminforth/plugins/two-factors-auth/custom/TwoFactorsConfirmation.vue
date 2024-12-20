@@ -13,7 +13,7 @@
             <!-- Modal content -->
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black text-gray-500" >
                 <div class="p-8 w-full max-w-md max-h-full" >
-                    <div class="m-3">Please enter your authenticator code </div>
+                    <div class="m-3">{{$t('Please enter your authenticator code')}} </div>
                     <div class="my-4 flex justify-center items-center">
                       <v-otp-input
                         ref="code"
@@ -28,7 +28,7 @@
                       />
                     </div>
                     <!-- <Vue2FACodeInput v-model="code"/> -->
-                    <LinkButton to="/login" class="w-full">Back to login</LinkButton>
+                    <LinkButton to="/login" class="w-full">{{$t('Back to login')}}</LinkButton>
                 </div>
             </div>
         </div>
