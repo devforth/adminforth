@@ -7,6 +7,11 @@ import fs from 'fs-extra';
 import chokidar from 'chokidar';
 import  { AsyncQueue } from '@sapphire/async-queue';
 
+
+console.log = (...args) => {
+  process.stdout.write(args.join(" ") + "\n");
+};
+
 const processFrontendMessagesQueue = new AsyncQueue();
 
 const SLAVIC_PLURAL_EXAMPLES = {
@@ -155,6 +160,8 @@ export default class I18N extends AdminForthPlugin {
     if (!enColumn) {
       throw new Error(`Field ${this.enFieldName} not found column to store english original string in resource ${resourceConfig.resourceId}`);
     }
+
+    enColumn.editReadonly = true;
 
     // if sourceFieldName defined, check it exists
     if (this.options.sourceFieldName) {
@@ -322,15 +329,16 @@ export default class I18N extends AdminForthPlugin {
             try {
               translatedCount = await this.bulkTranslate({ selectedIds });
             } catch (e) {
+              process.env.HEAVY_DEBUG && console.error('🪲⛔ bulkTranslate error', e);
               if (e instanceof AiTranslateError) {
-                process.env.HEAVY_DEBUG && console.error('🪲⛔ bulkTranslate error', e);
                 return { ok: false, error: e.message };
-              }
+              } 
+              throw e;
             }
-            process.env.HEAVY_DEBUG && console.log('🪲bulkTranslate done', selectedIds);
             this.updateUntranslatedMenuBadge();
             return { 
-              ok: true, error: undefined, 
+              ok: true, 
+              error: undefined, 
               successMessage: await tr(`Translated {count} items`, 'backend', {
                 count: translatedCount,
               }),
@@ -362,6 +370,103 @@ export default class I18N extends AdminForthPlugin {
         });
       }
     });
+  }
+
+  async translateToLang (
+      langIsoCode: LanguageCode, 
+      strings: { en_string: string, category: string }[], 
+      plurals=false,
+      translations: any[],
+      updateStrings: Record<string, { updates: any, category: string, strId: string, translatedStr: string }> = {}
+  ): Promise<string[]> {
+    const maxKeysInOneReq = 10;
+    if (strings.length === 0) {
+      return [];
+    }
+
+    if (strings.length > maxKeysInOneReq) {
+      let totalTranslated = [];
+      for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
+        const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
+        process.env.HEAVY_DEBUG && console.log('🪲🔪slicedStrings len', slicedStrings.length);
+        const madeKeys = await this.translateToLang(langIsoCode, slicedStrings, plurals, translations, updateStrings);
+        totalTranslated = totalTranslated.concat(madeKeys);
+      }
+      return totalTranslated;
+    }
+    const lang = langIsoCode;
+    const langName = iso6391.getName(lang);
+    const requestSlavicPlurals = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang) && plurals;
+
+    const prompt = `
+I need to translate strings in JSON to ${lang} (${langName}) language from English for my web app.
+${requestSlavicPlurals ? `You should provide 4 translations (in format zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
+Keep keys, as is, write translation into values! Here are the strings:
+
+\`\`\`json
+${
+JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object => {
+  acc[s.en_string] = '';
+  return acc;
+}, {}), null, 2)
+}
+\`\`\`
+`;  
+
+    // call OpenAI
+    const resp = await this.options.completeAdapter.complete(
+      prompt,
+      [],
+      300,
+    );
+
+    if (resp.error) {
+      throw new AiTranslateError(resp.error);
+    }
+
+    // parse response like
+    // Here are the translations for the strings you provided:
+    // ```json
+    // [{"live": "canlı"}, {"Table Games": "Masa Oyunları"}]
+    // ```
+    let res;
+    try {
+      res = resp.content.split("```json")[1].split("```")[0];
+    } catch (e) {
+      console.error(`Error in parsing LLM resp: ${resp}\n Prompt was: ${prompt}\n Resp was: ${JSON.stringify(resp)}`, );
+      return [];
+    }
+
+    try {
+      res = JSON.parse(res);
+    } catch (e) {
+      console.error(`Error in parsing LLM resp json: ${resp}\n Prompt was: ${prompt}\n Resp was: ${JSON.stringify(resp)}`, );
+      return [];
+    }
+
+
+    for (const [enStr, translatedStr] of Object.entries(res) as [string, string][]) {
+      const translationsTargeted = translations.filter(t => t[this.enFieldName] === enStr);
+      // might be several with same en_string
+      for (const translation of translationsTargeted) {
+        //translation[this.trFieldNames[lang]] = translatedStr;
+        // process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
+        if (!updateStrings[translation[this.primaryKeyFieldName]]) {
+
+          updateStrings[translation[this.primaryKeyFieldName]] = {
+            updates: {},
+            translatedStr,
+            category: translation[this.options.categoryFieldName],
+            strId: translation[this.primaryKeyFieldName],
+          };
+        }
+        updateStrings[
+          translation[this.primaryKeyFieldName]
+        ].updates[this.trFieldNames[lang]] = translatedStr;
+      }
+    }
+
+    return Object.keys(updateStrings);
   }
 
   // returns translated count
@@ -397,8 +502,6 @@ export default class I18N extends AdminForthPlugin {
       }
     }
 
-    const maxKeysInOneReq = 10;
-
     const updateStrings: Record<string, { 
       updates: any, 
       category: string,
@@ -406,106 +509,27 @@ export default class I18N extends AdminForthPlugin {
       translatedStr: string
      }> = {};
 
-    const translateToLang = async (langIsoCode: LanguageCode, strings: { en_string: string, category: string }[], plurals=false): Promise<string[]> => {
-      if (strings.length === 0) {
-        return [];
-      }
-
-      if (strings.length > maxKeysInOneReq) {
-        let totalTranslated = [];
-        for (let i = 0; i < strings.length; i += maxKeysInOneReq) {
-          const slicedStrings = strings.slice(i, i + maxKeysInOneReq);
-          process.env.HEAVY_DEBUG && console.log('🪲🔪slicedStrings len', slicedStrings.length);
-          const madeKeys = await translateToLang(langIsoCode, slicedStrings, plurals);
-          totalTranslated = totalTranslated.concat(madeKeys);
-        }
-        return totalTranslated;
-      }
-      const lang = langIsoCode;
-
-      const requestSlavicPlurals = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang) && plurals;
-
-      const prompt = `
-I need to translate strings in JSON to ${lang} language from English for my web app.
-${requestSlavicPlurals ? `You should provide 4 translations (in format zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
-Keep keys, as is, write translation into values! Here are the strings:
-
-\`\`\`json
-${
-  JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object => {
-    acc[s.en_string] = '';
-    return acc;
-  }, {}), null, 2)
-}
-\`\`\`
-`;
-
-      process.env.HEAVY_DEBUG && console.log('🧠 llm prompt', prompt);
-
-      // call OpenAI
-      const resp = await this.options.completeAdapter.complete(
-        prompt,
-        [],
-        300,
-      );
-
-      process.env.HEAVY_DEBUG && console.log('🧠 llm resp', resp);
-
-      if (resp.error) {
-        throw new AiTranslateError(resp.error);
-      }
-
-      // parse response like
-      // Here are the translations for the strings you provided:
-      // ```json
-      // [{"live": "canlı"}, {"Table Games": "Masa Oyunları"}]
-      // ```
-      let res;
-      try {
-        res = resp.content.split("```json")[1].split("```")[0];
-      } catch (e) {
-        console.error('error in parsing OpenAI', resp);
-        throw new AiTranslateError('Error in parsing OpenAI response');
-      }
-      res = JSON.parse(res);
-
-
-      for (const [enStr, translatedStr] of Object.entries(res) as [string, string][]) {
-        const translationsTargeted = translations.filter(t => t[this.enFieldName] === enStr);
-        // might be several with same en_string
-        for (const translation of translationsTargeted) {
-          //translation[this.trFieldNames[lang]] = translatedStr;
-          // process.env.HEAVY_DEBUG && console.log(`🪲translated to ${lang} ${translation.en_string}, ${translatedStr}`)
-          if (!updateStrings[translation[this.primaryKeyFieldName]]) {
-
-            updateStrings[translation[this.primaryKeyFieldName]] = {
-              updates: {},
-              translatedStr,
-              category: translation[this.options.categoryFieldName],
-              strId: translation[this.primaryKeyFieldName],
-            };
-          }
-          updateStrings[
-            translation[this.primaryKeyFieldName]
-          ].updates[this.trFieldNames[lang]] = translatedStr;
-        }
-      }
-
-      return Object.keys(updateStrings);
-    }
 
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
 
     let totalTranslated = [];
-    await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
-      // first translate without plurals
-      const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
-      const noPluralKeys = await translateToLang(lang, stringsWithoutPlurals, false);
 
-      const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
-      const pluralKeys = await translateToLang(lang, stringsWithPlurals, true);
-      totalTranslated = totalTranslated.concat(noPluralKeys, pluralKeys);
-    }));    
+    await Promise.all(
+      Object.entries(needToTranslateByLang).map(
+        async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
+          // first translate without plurals
+          const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
+          const noPluralKeys = await this.translateToLang(lang, stringsWithoutPlurals, false, translations, updateStrings);
+
+
+          const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
+
+          const pluralKeys = await this.translateToLang(lang, stringsWithPlurals, true, translations, updateStrings);
+
+          totalTranslated = totalTranslated.concat(noPluralKeys, pluralKeys);
+        }
+      )
+    );
 
     await Promise.all(
       Object.entries(updateStrings).map(
@@ -522,9 +546,9 @@ ${
     );
 
     for (const lang of langsInvolved) {
-      this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+      await this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
       for (const [enStr, { category }] of Object.entries(updateStrings)) {
-        this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
+        await this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
       }
     }
 
@@ -595,12 +619,10 @@ ${
     });
     w.on('change', () => {
       process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile change', messagesFile);
-
       this.processExtractedMessages(adminforth, messagesFile);
     });
     w.on('add', () => {
       process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile add', messagesFile);
-
       this.processExtractedMessages(adminforth, messagesFile);
     });
 
@@ -609,6 +631,10 @@ ${
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     // optional method where you can safely check field types after database discovery was performed
     // ensure each trFieldName (apart from enFieldName) is nullable column of type string
+    if (this.options.completeAdapter) {
+      this.options.completeAdapter.validate();
+    }
+
     for (const lang of this.options.supportedLanguages) {
       if (lang === 'en') {
         continue;

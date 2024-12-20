@@ -100,6 +100,11 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    if (this.options.confirmEmails) {
+      this.options.confirmEmails.adapter.validate();
+    }
+
+
     if(this.options.confirmEmails){
       const emailConfirmedColumn = this.resourceConfig.columns.find(f => f.name === this.options.confirmEmails.emailConfirmedField);
       if (emailConfirmedColumn.type !== AdminForthDataTypes.BOOLEAN) {
