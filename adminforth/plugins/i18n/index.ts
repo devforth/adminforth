@@ -156,6 +156,8 @@ export default class I18N extends AdminForthPlugin {
       throw new Error(`Field ${this.enFieldName} not found column to store english original string in resource ${resourceConfig.resourceId}`);
     }
 
+    enColumn.editReadonly = true;
+
     // if sourceFieldName defined, check it exists
     if (this.options.sourceFieldName) {
       if (!resourceConfig.columns.find(c => c.name === this.options.sourceFieldName)) {
@@ -330,7 +332,8 @@ export default class I18N extends AdminForthPlugin {
             process.env.HEAVY_DEBUG && console.log('🪲bulkTranslate done', selectedIds);
             this.updateUntranslatedMenuBadge();
             return { 
-              ok: true, error: undefined, 
+              ok: true, 
+              error: undefined, 
               successMessage: await tr(`Translated {count} items`, 'backend', {
                 count: translatedCount,
               }),
@@ -440,7 +443,7 @@ ${
 \`\`\`
 `;
 
-      process.env.HEAVY_DEBUG && console.log('🧠 llm prompt', prompt);
+      // process.env.HEAVY_DEBUG && console.log('🧠 llm prompt', prompt);
 
       // call OpenAI
       const resp = await this.options.completeAdapter.complete(
@@ -449,7 +452,7 @@ ${
         300,
       );
 
-      process.env.HEAVY_DEBUG && console.log('🧠 llm resp', resp);
+      // process.env.HEAVY_DEBUG && console.log('🧠 llm resp', resp);
 
       if (resp.error) {
         throw new AiTranslateError(resp.error);
@@ -500,12 +503,21 @@ ${
     await Promise.all(Object.entries(needToTranslateByLang).map(async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
       // first translate without plurals
       const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
+      process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} noplurals started ${stringsWithoutPlurals.length}`);
       const noPluralKeys = await translateToLang(lang, stringsWithoutPlurals, false);
+      process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} noplurals finished`);
+
 
       const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
+
+      process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} plurals started ${stringsWithPlurals.length}`);
       const pluralKeys = await translateToLang(lang, stringsWithPlurals, true);
+      process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} plurals finished`);
+
       totalTranslated = totalTranslated.concat(noPluralKeys, pluralKeys);
-    }));    
+    }));
+
+    process.env.HEAVY_DEBUG && console.log('updateStrings were formed', totalTranslated);
 
     await Promise.all(
       Object.entries(updateStrings).map(
@@ -522,9 +534,9 @@ ${
     );
 
     for (const lang of langsInvolved) {
-      this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+      await this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
       for (const [enStr, { category }] of Object.entries(updateStrings)) {
-        this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
+        await this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
       }
     }
 
@@ -595,12 +607,10 @@ ${
     });
     w.on('change', () => {
       process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile change', messagesFile);
-
       this.processExtractedMessages(adminforth, messagesFile);
     });
     w.on('add', () => {
       process.env.HEAVY_DEBUG && console.log('🪲🔔messagesFile add', messagesFile);
-
       this.processExtractedMessages(adminforth, messagesFile);
     });
 
@@ -609,6 +619,10 @@ ${
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     // optional method where you can safely check field types after database discovery was performed
     // ensure each trFieldName (apart from enFieldName) is nullable column of type string
+    if (this.options.completeAdapter) {
+      this.options.completeAdapter.validate();
+    }
+
     for (const lang of this.options.supportedLanguages) {
       if (lang === 'en') {
         continue;

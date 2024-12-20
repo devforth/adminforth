@@ -9,10 +9,13 @@ export interface EmailAdapter {
 }
 
 export interface CompletionAdapter {
+
+  validate();
+
   complete(
     content: string,
     stop: string[],
-    maxTokens: number
+    maxTokens: number,
   ): Promise<{
     content?: string;
     finishReason?: string;
