@@ -1,4 +1,6 @@
 export interface EmailAdapter {
+  validate()
+
   sendEmail(
     from: string,
     to: string,
