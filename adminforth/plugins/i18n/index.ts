@@ -329,12 +329,12 @@ export default class I18N extends AdminForthPlugin {
             try {
               translatedCount = await this.bulkTranslate({ selectedIds });
             } catch (e) {
+              process.env.HEAVY_DEBUG && console.error('🪲⛔ bulkTranslate error', e);
               if (e instanceof AiTranslateError) {
-                process.env.HEAVY_DEBUG && console.error('🪲⛔ bulkTranslate error', e);
                 return { ok: false, error: e.message };
-              }
+              } 
+              throw e;
             }
-            process.env.HEAVY_DEBUG && console.log('🪲bulkTranslate done', translatedCount);
             this.updateUntranslatedMenuBadge();
             return { 
               ok: true, 
@@ -395,11 +395,11 @@ export default class I18N extends AdminForthPlugin {
       return totalTranslated;
     }
     const lang = langIsoCode;
-
+    const langName = iso6391.getName(lang);
     const requestSlavicPlurals = Object.keys(SLAVIC_PLURAL_EXAMPLES).includes(lang) && plurals;
 
     const prompt = `
-I need to translate strings in JSON to ${lang} language from English for my web app.
+I need to translate strings in JSON to ${lang} (${langName}) language from English for my web app.
 ${requestSlavicPlurals ? `You should provide 4 translations (in format zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
 Keep keys, as is, write translation into values! Here are the strings:
 
@@ -411,9 +411,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
 }, {}), null, 2)
 }
 \`\`\`
-`;
-
-    // process.env.HEAVY_DEBUG && console.log('🧠 llm prompt', prompt);
+`;  
 
     // call OpenAI
     const resp = await this.options.completeAdapter.complete(
@@ -421,8 +419,6 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       [],
       300,
     );
-
-    // process.env.HEAVY_DEBUG && console.log('🧠 llm resp', resp);
 
     if (resp.error) {
       throw new AiTranslateError(resp.error);
@@ -437,10 +433,16 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     try {
       res = resp.content.split("```json")[1].split("```")[0];
     } catch (e) {
-      console.error(`Error in parsing OpenAI: ${resp}\n Prompt was: ${prompt}\n Resp was: ${resp}`, );
+      console.error(`Error in parsing LLM resp: ${resp}\n Prompt was: ${prompt}\n Resp was: ${JSON.stringify(resp)}`, );
       return [];
     }
-    res = JSON.parse(res);
+
+    try {
+      res = JSON.parse(res);
+    } catch (e) {
+      console.error(`Error in parsing LLM resp json: ${resp}\n Prompt was: ${prompt}\n Resp was: ${JSON.stringify(resp)}`, );
+      return [];
+    }
 
 
     for (const [enStr, translatedStr] of Object.entries(res) as [string, string][]) {
@@ -500,8 +502,6 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       }
     }
 
-    const maxKeysInOneReq = 10;
-
     const updateStrings: Record<string, { 
       updates: any, 
       category: string,
@@ -513,30 +513,23 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
 
     let totalTranslated = [];
-    process.env.HEAVY_DEBUG && console.log(' 🐛starting Promise.all Object.entries(needToTranslateByLang)');
 
     await Promise.all(
       Object.entries(needToTranslateByLang).map(
         async ([lang, strings]: [LanguageCode, { en_string: string, category: string }[]]) => {
           // first translate without plurals
           const stringsWithoutPlurals = strings.filter(s => !s.en_string.includes('|'));
-          process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} noplurals started ${stringsWithoutPlurals.length}`);
           const noPluralKeys = await this.translateToLang(lang, stringsWithoutPlurals, false, translations, updateStrings);
-          process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} noplurals finished`);
 
 
           const stringsWithPlurals = strings.filter(s => s.en_string.includes('|'));
 
-          process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} plurals started ${stringsWithPlurals.length}`);
           const pluralKeys = await this.translateToLang(lang, stringsWithPlurals, true, translations, updateStrings);
-          process.env.HEAVY_DEBUG && console.log(`🔗  ${lang} plurals finished`);
 
           totalTranslated = totalTranslated.concat(noPluralKeys, pluralKeys);
         }
       )
     );
-
-    process.env.HEAVY_DEBUG && console.log('✅ updateStrings were formed', (new Set(totalTranslated)));
 
     await Promise.all(
       Object.entries(updateStrings).map(

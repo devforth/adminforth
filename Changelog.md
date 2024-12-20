@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - badgeTooltip - now you can add a tooltip to the badge to explain what it means
 - ability to authorize not only subscription on websocket but filter out whom users message will be published (updated doc)
 - added ability to refresh menu item badge from the backend using websocket publish
+- fix bugs when e.g. UR (urdu) can't be recognized by LLM (define names explicitly)
+- make user menu switch shorter
 
 # Improved
 
