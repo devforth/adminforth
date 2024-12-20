@@ -11,7 +11,8 @@
 * [Full API reference](https://adminforth.dev/docs/api/).
 
 <div align="center">
-  <img src="![repl (1)](https://github.com/user-attachments/assets/d72dfe01-8d2b-404d-b0b2-1e9d3d276944)
+  <img src="![repl](https://github.com/user-attachments/assets/787b8c61-1476-498a-b16e-98f971d91f3a)
+
 " alt="Image description" width="800px">
 </div>
 
