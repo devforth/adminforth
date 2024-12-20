@@ -24,6 +24,10 @@ export default class TextCompletePlugin extends AdminForthPlugin {
  
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     this.adminforth = adminforth;
+
+    if (this.options.adapter) {
+      this.options.adapter.validate();
+    }
     const column = this.resourceConfig.columns.find(f => f.name === this.options.fieldName);
     if (![AdminForthDataTypes.STRING, AdminForthDataTypes.TEXT].includes(column!.type!)) {
       throw new Error(`Field ${this.options.fieldName} should be string or text type, but it is ${column!.type}`);
