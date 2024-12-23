@@ -50,7 +50,7 @@
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 <p class="ml-2 text-sm text-green-600 dark:text-green-400 flex items-center">
-                  {{ $('File uploaded') }}
+                  {{ $t('File uploaded') }}
                   <span class="text-xs text-gray-500 dark:text-gray-400">{{ humanifySize(uploadedSize) }}</span>
                 </p>
 
