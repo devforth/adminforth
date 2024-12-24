@@ -1,12 +1,11 @@
 import { onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from './spa_types/core';
 import type { ValidationObject } from './types/AdminForthConfig';
-
-
 import router from "./router";
 import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
+
 
 const LS_LANG_KEY = `afLanguage`;
 
@@ -23,13 +22,18 @@ export async function callApi({path, method, body=undefined}: {
     body: JSON.stringify(body),
   };
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
-  const r = await fetch(fullPath, options);
-  if (r.status == 401 ) {
-    useUserStore().unauthorize();
-    await router.push({ name: 'login' });
-    return null;
-  } 
-  return await r.json();
+  try {
+    const r = await fetch(fullPath, options);
+    if (r.status == 401 ) {
+      useUserStore().unauthorize();
+      await router.push({ name: 'login' });
+      return null;
+    } 
+    return await r.json();
+  } catch(e){
+    window.adminforth.alert({variant:'danger', message:window.i18n?.global?.t('Something went wrong, please try again later'),})
+    console.error(`error in callApi ${path}`,e);
+  }
 }
 
 export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
