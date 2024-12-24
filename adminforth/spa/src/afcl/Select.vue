@@ -4,6 +4,7 @@
       <input
         ref="inputEl"
         type="text"
+        :readonly="isReadonly"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
@@ -101,6 +102,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isReadonly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -141,6 +146,9 @@ function updateFromProps() {
 }
 
 function inputClick() {
+  if (props.isReadonly) {
+    return;
+  }
   if (!showDropdown.value) {
     showDropdown.value = true;
   } else {
