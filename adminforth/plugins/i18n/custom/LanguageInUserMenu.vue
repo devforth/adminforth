@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="min-w-40">
     <div class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black 
       hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive 
       w-full select-none	"
