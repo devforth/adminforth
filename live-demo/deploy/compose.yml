@@ -10,7 +10,7 @@ services:
       - OPENAI_API_KEY=${VAULT_OPENAI_API_KEY}
       - AWS_ACCESS_KEY_ID=${VAULT_AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${VAULT_AWS_SECRET_ACCESS_KEY}
-      - DATABASE_FILE_URL=file:./db/test.sqlite
+      - DATABASE_FILE_URL=file:./db/live.sqlite
     volumes:
       - af-db:/code/db/
       
