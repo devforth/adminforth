@@ -27,9 +27,15 @@ async function connect () {
     console.error('🔌 AFWS already connected');
     return;
   }
+
+  let base = import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || '';
+  if (base.endsWith('/')) {
+    base = base.slice(0, -1);
+  }
+
   state.ws = new WebSocket(`${
     window.location.protocol === 'http:' ? 'ws' : 'wss'
-  }://${window.location.host}/afws`);
+  }://${window.location.host}${base}/afws`);
   state.status = 'connecting';
   state.ws.addEventListener('open', () => {
     console.log('🔌 AFWS connected');

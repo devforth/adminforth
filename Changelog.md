@@ -16,12 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added ability to refresh menu item badge from the backend using websocket publish
 - fix bugs when e.g. UR (urdu) can't be recognized by LLM (define names explicitly)
 - make user menu switch shorter
+- next param support on login route
 
 # Improved
 
 - Added separate BeforeCreateSave function in types without oldRecord and make oldRecord Mandatory in existing BeforeSaveFunction
   
 - Added dataConnector: IAdminForthDataSourceConnectorBase; into IOperationalResource - for reusing connectors from users code
+
+# Fixed
+
+- WS on base URL
+
 
 ## [v1.5.7] - 2024-12-09
 
