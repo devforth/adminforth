@@ -210,7 +210,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!await admin.resource('users').get([Filters.EQ('email', DEMO_EMAIL)])) {
       await admin.resource('users').create({
         email: DEMO_EMAIL,
-        password_hash: await AdminForth.Utils.generatePasswordHash(DEMO_PASSWORD ),
+        password_hash: await AdminForth.Utils.generatePasswordHash(DEMO_PASSWORD),
+        role: 'user',  // THE DEMO user role is 'user' not 'superadmin', he can't do any destructive actions
+      });
+    }
+    if (!await admin.resource('users').get([Filters.EQ('email', "admin@adminfoth.dev")])) {
+      await admin.resource('users').create({
+        email: "admin@adminfoth.dev",
+        password_hash: await AdminForth.Utils.generatePasswordHash(process.env.ADMIN_PASSWORD),
         role: 'user',  // THE DEMO user role is 'user' not 'superadmin', he can't do any destructive actions
       });
     }
