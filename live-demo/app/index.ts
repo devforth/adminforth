@@ -49,7 +49,7 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: `sqlite://${process.env.DATABASE_FILE}`
+      url: `sqlite://${process.env.DATABASE_FILE?.replace('file:', '')}`,
     },
   ],
   resources: [
