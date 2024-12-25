@@ -121,7 +121,7 @@
                     {{$t('Please check your email at')}} {{ sentToEmail }} {{$t('to confirm your email address.')}}
                   </div> 
                   <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
-                      {{$t('or')}} <Link to="/login">{{ toLoginText }}</Link>
+                      {{$t('Already have an account?')}} <Link :to="`/login${route.query.next ? `?next=${route.query.next}` : ''}`">{{ $t('login here') }}</Link>
                   </p>
                 </div>
             </div>
@@ -161,7 +161,6 @@ const sentToEmail: Ref<string> = ref('');
 
 const requestEmailConfirmation = computed(() => route.meta.requestEmailConfirmation);
 const verifyToken = computed(() => route.query.token);
-const toLoginText = computed(() => verifyToken.value ? t('Go to login') : t('Back to login'));
 const isPasswordNeeded = computed(() => !requestEmailConfirmation.value || (requestEmailConfirmation.value && verifyToken.value));
 
 const user = useUserStore();

@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added ability to refresh menu item badge from the backend using websocket publish
 - fix bugs when e.g. UR (urdu) can't be recognized by LLM (define names explicitly)
 - make user menu switch shorter
-- next param support on login route
+- next param support on login route (also preserve next param between login/signup navigation)
+
 
 # Improved
 
