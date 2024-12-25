@@ -1,5 +1,4 @@
 <template>
-
   <div 
     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 
       focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
@@ -200,6 +199,7 @@ onMounted(() => {
 
   quill = new Quill(editor.value as HTMLElement, {
     theme: "snow",
+    readOnly:props.column?.editReadonly,
     placeholder: 'Type here...',
     // formats : ['complete'],
     modules: {
@@ -431,7 +431,7 @@ function approveCompletion(type: 'all' | 'word') {
 }
 
 async function startCompletion() {
-  if (!props.meta.shouldComplete) {
+  if (!props.meta.shouldComplete || props.column?.editReadonly ) {
     return;
   }
   completion.value = null;
