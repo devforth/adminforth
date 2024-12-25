@@ -4,6 +4,12 @@ import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-
 import I18nPlugin from "@adminforth/i18n";
 import { v1 as uuid } from "uuid";
 
+const blockDemoUsers = async ({ record, adminUser, resource }) => {
+  if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
+    return { ok: false, error: "You can't do this on demo.adminforth.dev" }
+  }
+  return { ok: true };
+}
 
 export default {
   dataSource: "maindb",
@@ -12,6 +18,17 @@ export default {
   label: "Translations",
 
   recordLabel: (r: any) => `✍️ ${r.en_string}`,
+  hooks: {
+    delete: {
+      beforeSave: blockDemoUsers,
+    },
+    edit: {
+      beforeSave: blockDemoUsers,
+    },
+    create: {
+      beforeSave: blockDemoUsers,
+    },
+  },
   plugins: [
     new I18nPlugin({
       supportedLanguages: ['en', 'uk', 'ja', 'fr'],
@@ -48,6 +65,7 @@ export default {
   ],
   options: {
     listPageSize: 30,
+      
   },
   columns: [
     {
