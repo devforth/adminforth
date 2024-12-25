@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_FILE_URL")
+}
+
+model users {
+  id            String     @id
+  created_at    DateTime 
+  email         String   @unique
+  role          String     
+  password_hash String
+}
+
+model apartments {
+  id                String     @id
+  created_at        DateTime?
+  title             String 
+  square_meter      Float?
+  price             Decimal
+  number_of_rooms   Int?
+  apartment_image   String?
+  description       String?
+  country           String?
+  listed            Boolean
+  realtor_id        String?
+}
+
+model audit_logs {
+  id                String      @id
+  created_at        DateTime  /// timestamp of applied change
+  resource_id       String    /// identifier of resource where change were applied
+  user_id           String    /// identifier of user who made the changes
+  action            String    /// type of change (create, edit, delete)
+  diff              String?   /// delta betwen before/after versions
+  record_id         String?   /// identifier of record that been changed
+}
+
+model translations {
+    id              String   @id
+    en_string       String
+    created_at      DateTime
+    uk_string       String?  // translation for Ukrainian language
+    ja_string       String?  // translation for Japanese language
+    fr_string       String?  // translation for French language
+    es_string       String?  // translation for Spanish language
+    category        String
+    source          String?
+    completedLangs   String?
+    
+    // we need both indexes on en_string+category and separately on category
+    @@index([en_string, category])
+    @@index([category])
+}

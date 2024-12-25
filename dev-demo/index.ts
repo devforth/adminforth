@@ -325,7 +325,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
           `SELECT 
-            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            strftime('%Y-%m-%d', created_at) as day, 
             COUNT(*) as count 
           FROM apartments 
           GROUP BY day 
@@ -339,7 +339,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         // add listed, unlisted, listedPrice, unlistedPrice
         const listedVsUnlistedByDays = await db.prepare(
           `SELECT 
-            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed) as listed, 
             COUNT(*) - SUM(listed) as unlisted,
             SUM(listed * price) as listedPrice,
@@ -353,7 +353,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
         const listedVsUnlistedPriceByDays = await db.prepare(
           `SELECT 
-            strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+            strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed * price) as listedPrice,
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
