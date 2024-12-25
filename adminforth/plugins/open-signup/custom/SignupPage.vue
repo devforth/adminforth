@@ -133,7 +133,7 @@
 
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref } from 'vue';
+import { onMounted, ref, computed, Ref, onBeforeMount } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
@@ -230,7 +230,36 @@ const passwordConstraints: Ref<{
   validation: '',
 });
 
+// implement something similar to beforeEnter
+// beforeEnter: async (to, from, next) => {
+//         if(localStorage.getItem('isAuthorized') === 'true') {
+//           // check if url has next=... and redirect to it
+//           console.log('to.query', to.query)
+//           if (to.query.next) {
+//             next(to.query.next.toString())
+//           } else {
+//             next({name: 'home'});
+//           }
+//         } else {
+//           next()
+//         }
+//       } 
+
+onBeforeMount(() => {
+  if (localStorage.getItem('isAuthorized') === 'true') {
+    // if route has next param, redirect
+    coreStore.fetchMenuAndResource();
+    if (route.query.next) {
+      router.push(route.query.next.toString());
+    } else {
+      router.push({ name: 'home' });
+    }
+  }
+})
+
 onMounted(async () => {
+
+
   await coreStore.getPublicConfig();
   // getPasswordConstraints
   passwordConstraints.value = await callAdminForthApi({

@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', () => {
     const isAuthorized = ref(false);
 
     function authorize() {
+        // syncing isAuthorized allows us to use navigation guards without waiting for user api response
         isAuthorized.value = true;
         localStorage.setItem('isAuthorized', 'true');
     }
@@ -21,9 +22,14 @@ export const useUserStore = defineStore('user', () => {
 
     async function finishLogin() {
         const coreStore = useCoreStore();
-        authorize(); // TODO not sure we need this approach with localStorage
+        authorize();
         reconnect();
-        await router.push('/');
+        // if next param in route, redirect to it
+        if (router.currentRoute.value.query.next) {
+            await router.push(router.currentRoute.value.query.next.toString());
+        } else {
+            await router.push('/');
+        }
         await router.isReady();
         await coreStore.fetchMenuAndResource();
     }
