@@ -47,6 +47,46 @@ export default {
       showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
       maxLength: 255,  // you can set max length for string fields
       minLength: 3,  // you can set min length for string fields
+    },
+    {
+      name: 'country',
+      components: {
+        list: '@/renderers/CountryFlag.vue'
+      },
+      enum: [{
+        value: 'US',
+        label: 'United States'
+      }, {
+        value: 'DE',
+        label: 'Germany'
+      }, {
+        value: 'FR',
+        label: 'France'
+      }, {
+        value: 'GB',
+        label: 'United Kingdom'
+      }, {
+        value:'NL',
+        label: 'Netherlands'
+      }, {
+        value: 'IT',
+        label: 'Italy'
+      }, {
+        value: 'ES',
+        label: 'Spain'
+      }, {
+        value: 'DK',
+        label: 'Denmark'
+      }, {
+        value: 'PL',
+        label: 'Poland'
+      }, {
+        value: 'UA',
+        label: 'Ukraine'
+      }, {
+        value: null,
+        label: 'Not defined'
+      }],
     }, 
     {
       name: 'apartment_image',
@@ -88,43 +128,6 @@ export default {
       type: AdminForthDataTypes.RICHTEXT,
       sortable: false,
       showIn: ['show', 'edit', 'create', 'filter'],
-    },
-    {
-      name: 'country',
-      enum: [{
-        value: 'US',
-        label: 'United States'
-      }, {
-        value: 'DE',
-        label: 'Germany'
-      }, {
-        value: 'FR',
-        label: 'France'
-      }, {
-        value: 'GB',
-        label: 'United Kingdom'
-      }, {
-        value:'NL',
-        label: 'Netherlands'
-      }, {
-        value: 'IT',
-        label: 'Italy'
-      }, {
-        value: 'ES',
-        label: 'Spain'
-      }, {
-        value: 'DK',
-        label: 'Denmark'
-      }, {
-        value: 'PL',
-        label: 'Poland'
-      }, {
-        value: 'UA',
-        label: 'Ukraine'
-      }, {
-        value: null,
-        label: 'Not defined'
-      }],
     },
     {
       name: 'listed',
