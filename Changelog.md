@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Improved
 
 - Added separate BeforeCreateSave function in types without oldRecord and make oldRecord Mandatory in existing BeforeSaveFunction
+  
+- Added dataConnector: IAdminForthDataSourceConnectorBase; into IOperationalResource - for reusing connectors from users code
 
 ## [v1.5.7] - 2024-12-09
 

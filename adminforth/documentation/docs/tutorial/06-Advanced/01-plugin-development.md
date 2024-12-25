@@ -23,7 +23,7 @@ mkdir -p af-plugin-chatgpt
 cd af-plugin-chatgpt
 npm init -y
 touch index.ts
-npm i --save-dev typescript @types/node
+npm i typescript @types/node -D
 ```
 
 Edit `package.json`:
@@ -221,7 +221,7 @@ npm init -y
 Now install our dependency:
 
 ```bash
-npm i --save-dev vue-suggestion-input 
+npm i vue-suggestion-input -D
 ```
 
 Create file `completionInput.vue`:

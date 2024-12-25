@@ -1,6 +1,6 @@
 {
   "name": "@adminforth/i18n",
-  "version": "1.0.19-next.0",
+  "version": "1.0.20-next.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
