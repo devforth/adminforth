@@ -216,7 +216,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
     if (!await admin.resource('users').get([Filters.EQ('email', "admin1@adminfoth.dev")])) {
       await admin.resource('users').create({
-        email: "admin@adminfoth.dev",
+        email: "admin1@adminfoth.dev",
         password_hash: await AdminForth.Utils.generatePasswordHash(process.env.ADMIN_PASSWORD),
         role: 'superadmin',  // THE DEMO user role is 'user' not 'superadmin', he can't do any destructive actions
       });
