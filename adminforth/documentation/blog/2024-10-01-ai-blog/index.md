@@ -41,8 +41,8 @@ nvm use 20
 mkdir ai-blog
 cd ai-blog
 npm init -y
-npm install adminforth @adminforth/upload @adminforth/rich-editor @adminforth/chat-gpt \
- express slugify http-proxy @types/express typescript tsx @types/node --save-dev
+npm i adminforth @adminforth/upload @adminforth/rich-editor @adminforth/chat-gpt \
+ express slugify http-proxy @types/express typescript tsx @types/node -D
 npx --yes tsc --init --module NodeNext --target ESNext
 ```
 

@@ -9,7 +9,7 @@ To add custom package to SPA bundle you have to initialize npm in `custom` direc
 ```bash
 cd ./custom
 npm init -y
-npm install apexcharts --save-dev
+npm i apexcharts -D
 ```
 
 > 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:

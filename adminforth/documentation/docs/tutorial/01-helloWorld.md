@@ -25,7 +25,7 @@ nvm use 20
 mkdir af-hello
 cd af-hello
 npm init -y
-npm install adminforth express @types/express typescript tsx @types/node --save-dev
+npm i adminforth express @types/express typescript tsx @types/node -D
 npx --yes tsc --init --module NodeNext --target ESNext
 ```
 

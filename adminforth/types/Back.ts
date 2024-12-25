@@ -1017,6 +1017,8 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
+
+  dataConnector: IAdminForthDataSourceConnectorBase;
 }
 
 

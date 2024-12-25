@@ -370,9 +370,6 @@ export function md5hash(str:string) {
 export class RateLimiter {
   static counterData = {};
 
-
-
-
   /**
    * Very dirty version of ratelimiter for demo purposes (should not be considered as production ready)
    * Will be used as RateLimiter.checkRateLimit('key', '5/24h', clientIp)
@@ -432,7 +429,6 @@ export class RateLimiter {
       RateLimiter.decrementCounter(key, clientIp);
     }, whenClear.getTime() - Date.now());
 
-
     return { error: false };
 
   }
@@ -445,7 +441,6 @@ export class RateLimiter {
       RateLimiter.counterData[key][ip] = 0;
     }
     RateLimiter.counterData[key][ip]++;
-    console.log('🔄️🔄️🔄️🔄️🔄️🔄️ incremented', key, ip, this.counterData[key][ip]);
   }
 
   static decrementCounter(key: string, ip: string) {
@@ -458,9 +453,6 @@ export class RateLimiter {
     if (RateLimiter.counterData[key][ip] > 0) {
       RateLimiter.counterData[key][ip]--;
     }
-    console.log('🔄️🔄️🔄️🔄️🔄️🔄️ decremented', key, ip, this.counterData[key][ip]);
-
   }
-
 
 }
