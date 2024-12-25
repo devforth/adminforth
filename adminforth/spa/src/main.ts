@@ -13,7 +13,8 @@ export const app: ReturnType<typeof createApp> = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-initI18n(app);
+// get access to i18n instance outside components
+window.i18n = initI18n(app);
 
 
 /* IMPORTANT:ADMINFORTH CUSTOM USES */

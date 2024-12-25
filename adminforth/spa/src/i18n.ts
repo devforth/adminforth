@@ -51,5 +51,5 @@ export function initI18n(app: ReturnType<typeof createApp>) {
   })
 
   app.use(i18n);
-
+  return i18n
 }
