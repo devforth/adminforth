@@ -6,7 +6,7 @@ const modalStore = useModalStore();
 
 <template>
   <Teleport to="body">
-    <div  v-if="modalStore.isOpened"  class="bg-gray-900/50 dark:bg-gray-900/80  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div  v-if="modalStore.isOpened"  class="bg-gray-900/50 dark:bg-gray-900/80  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
         <div class="relative p-4 w-full max-w-md max-h-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 " >
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black">
                 <button type="button"@click="modalStore.togleModal" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" >
