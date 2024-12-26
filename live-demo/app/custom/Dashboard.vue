@@ -1,8 +1,6 @@
 <template>
     <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
-      <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
-          class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">{{$t('Apartments')}}</span>
-        {{$t('Statistics.')}}</h1>
+      <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"v-html='$t("<span class=\"text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400\">Apartments</span> Statistics.")'></h1>
   
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6" v-if="data">
