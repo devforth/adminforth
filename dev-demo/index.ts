@@ -13,6 +13,7 @@ import gamesUsersResource from './resources/games_users.js';
 import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
 
+// const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
 
 // create test1.db 
@@ -177,7 +178,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'db3',
-      url: 'mongodb://127.0.0.1:27017/betbolt?retryWrites=true&w=majority&authSource=admin',
+      url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
     },
     {
       id: 'ch',
@@ -228,11 +229,11 @@ export const admin = new AdminForth({
 
         },
 
-        // {
-        //   label: 'Games',
-        //   icon: 'flowbite:caret-right-solid',
-        //   resourceId: 'games',
-        // },
+        {
+          label: 'Games',
+          icon: 'flowbite:caret-right-solid',
+          resourceId: 'game',
+        },
         // {
         //   label: 'Games Users',
         //   icon: 'flowbite:user-solid',
@@ -288,7 +289,7 @@ export const admin = new AdminForth({
 
 const app = express()
 app.use(express.json());
-const port = 3000;
+const port = 30000;
 
 (async () => {
     console.log('🅿️🅿️🅿️ 🅿️Bundling AdminForth...');

@@ -1,12 +1,13 @@
 {
   "name": "@adminforth/upload",
-  "version": "1.0.30",
+  "version": "1.0.31-next.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "rollout": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch && npm publish --access public",
     "prepare": "npm link adminforth",
+    "rollout-next": "npm run build && npm version prerelease --preid=next && npm publish --tag next",
     "build": "tsc"
   },
   "type": "module",
