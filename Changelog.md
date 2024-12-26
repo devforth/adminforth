@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - make user menu switch shorter
 - next param support on login route (also preserve next param between login/signup navigation)
 
+# Fixed
+
+- favicon when using BaseURL
+
 
 # Improved
 
