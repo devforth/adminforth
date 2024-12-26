@@ -2,7 +2,7 @@
 import { PluginOptions } from './types.js';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
-import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, Filters, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
 import { Readable } from "stream";
 import { RateLimiter } from "adminforth";
 
@@ -315,9 +315,9 @@ export default class UploadPlugin extends AdminForthPlugin {
 
 
     // add edit postSave hook to delete old file and remove tag from new file
-    resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord: any }) => {
+    resourceConfig.hooks.edit.afterSave.push(async ({ updates, oldRecord }: { record: any, oldRecord: any }) => {
 
-      if (record[virtualColumn.name] || record[virtualColumn.name] === null) {
+      if (updates[virtualColumn.name] || updates[virtualColumn.name] === null) {
         const s3 = new S3({
           credentials: {
             accessKeyId: this.options.s3AccessKeyId,
@@ -347,12 +347,12 @@ export default class UploadPlugin extends AdminForthPlugin {
             console.error(`Error setting tag ${ADMINFORTH_NOT_YET_USED_TAG} to true for object ${oldRecord[pathColumnName]}. File will not be auto-cleaned up`, e);
           }
         }
-        if (record[virtualColumn.name] !== null) {
+        if (updates[virtualColumn.name] !== null) {
           // remove tag from new file
           // in this case we let it crash if it fails: this is a new file which just was uploaded. 
           await s3.putObjectTagging({
             Bucket: this.options.s3Bucket,
-            Key: record[pathColumnName],
+            Key: updates[pathColumnName],
             Tagging: {
               TagSet: []
             }
@@ -376,7 +376,7 @@ export default class UploadPlugin extends AdminForthPlugin {
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/get_s3_upload_url`,
       handler: async ({ body }) => {
-        const { originalFilename, contentType, size, originalExtension } = body;
+        const { originalFilename, contentType, size, originalExtension, recordPk } = body;
 
         if (this.options.allowedFileExtensions && !this.options.allowedFileExtensions.includes(originalExtension)) {
           return {
@@ -384,7 +384,16 @@ export default class UploadPlugin extends AdminForthPlugin {
           };
         }
 
-        const s3Path: string = this.options.s3Path({ originalFilename, originalExtension, contentType });
+        let record = undefined;
+        if (recordPk) {
+          // get record by recordPk
+          const pkName = this.resourceConfig.columns.find((column: any) => column.primaryKey)?.name;
+          record = await this.adminforth.resource(this.resourceConfig.resourceId).get(
+            [Filters.EQ(pkName, recordPk)]
+          )
+        }
+
+        const s3Path: string = this.options.s3Path({ originalFilename, originalExtension, contentType, record });
         if (s3Path.startsWith('/')) {
           throw new Error('s3Path should not start with /, please adjust s3path function to not return / at the start of the path');
         }

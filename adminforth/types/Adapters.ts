@@ -1,5 +1,5 @@
 export interface EmailAdapter {
-  validate()
+  validate(): Promise<void>;
 
   sendEmail(
     from: string,
@@ -7,12 +7,12 @@ export interface EmailAdapter {
     text: string,
     html: string,
     subject: string
-  );
+  ): Promise<void>;
 }
 
 export interface CompletionAdapter {
 
-  validate();
+  validate(): Promise<void>;
 
   complete(
     content: string,
