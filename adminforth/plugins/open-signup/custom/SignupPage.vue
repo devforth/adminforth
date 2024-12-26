@@ -121,7 +121,7 @@
                     {{$t('Please check your email at')}} {{ sentToEmail }} {{$t('to confirm your email address.')}}
                   </div> 
                   <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
-                      {{$t('Already have an account?')}} <Link :to="`/login${route.query.next ? `?next=${route.query.next}` : ''}`">{{ $t('login here') }}</Link>
+                      {{$t('Already have an account?')}} <Link :to="`/login${route.query.next ? `?next=${encodeURIComponent(route.query.next)}` : ''}`">{{ $t('login here') }}</Link>
                   </p>
                 </div>
             </div>
