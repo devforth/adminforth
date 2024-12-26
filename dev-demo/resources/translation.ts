@@ -67,11 +67,10 @@ export default {
 
   ],
   options: {
-    allowedActions: {
-    
-    },
     listPageSize: 30,
-    
+    allowedActions: {
+      edit: true,
+    }
   },
   columns: [
     {

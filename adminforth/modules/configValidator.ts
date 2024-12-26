@@ -2,7 +2,6 @@ import {
   AdminForthConfig, 
   AdminForthResource, 
   IAdminForth, IConfigValidator, 
-  type AfterSaveFunction,
   AdminForthBulkAction,
   AdminForthInputConfig,
   AdminForthConfigCustomization,
@@ -20,7 +19,6 @@ import {
   AllowedActionsEnum,
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
-  AdminForthResourceInputCommon, 
   AdminForthResourceColumnInputCommon,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
@@ -237,7 +235,7 @@ export default class ConfigValidator implements IConfigValidator {
             const record = await connector.getRecordByPrimaryKey(res as AdminForthResource, recordId);
 
             await Promise.all(
-              (res.hooks.delete.beforeSave as AfterSaveFunction[]).map(
+              (res.hooks.delete.beforeSave).map(
                 async (hook) => {
                   const resp = await hook({ 
                     recordId: recordId,
@@ -260,7 +258,7 @@ export default class ConfigValidator implements IConfigValidator {
             await connector.deleteRecord({ resource: res as AdminForthResource, recordId });
             // call afterDelete hook
             await Promise.all(
-              (res.hooks.delete.afterSave as AfterSaveFunction[]).map(
+              (res.hooks.delete.afterSave).map(
                 async (hook) => {
                   await hook({ 
                     resource: res as AdminForthResource, 
