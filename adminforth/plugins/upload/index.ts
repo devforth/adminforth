@@ -25,14 +25,15 @@ export default class UploadPlugin extends AdminForthPlugin {
   async setupLifecycleRule() {
     // check that lifecyle rule "adminforth-unused-cleaner" exists
     const CLEANUP_RULE_ID = 'adminforth-unused-cleaner';
-    const s3 = new S3({
-      credentials: {
-        accessKeyId: this.options.s3AccessKeyId,
-        secretAccessKey: this.options.s3SecretAccessKey,
-      },
 
-      region: this.options.s3Region,
-    });
+    const s3 = new S3({
+        credentials: {
+          accessKeyId: this.options.s3AccessKeyId,
+          secretAccessKey: this.options.s3SecretAccessKey,
+        },
+        region: this.options.s3Region,
+      });
+   
     // check bucket exists
     const bucketExists = s3.headBucket({ Bucket: this.options.s3Bucket })
     if (!bucketExists) {
@@ -47,6 +48,8 @@ export default class UploadPlugin extends AdminForthPlugin {
         ruleExists = lifecycleConfig.Rules.some((rule: any) => rule.ID === CLEANUP_RULE_ID);
     } catch (e: any) {
       if (e.name !== 'NoSuchLifecycleConfiguration') {
+        console.error(`⛔ Error checking lifecycle configuration, please check keys have permissions to 
+getBucketLifecycleConfiguration on bucket ${this.options.s3Bucket} in region ${this.options.s3Region}. Exception:`, e);
         throw e;
       } else {
         ruleExists = false;
