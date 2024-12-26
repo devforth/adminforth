@@ -2,7 +2,7 @@
 import { PluginOptions } from './types.js';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpirationStatus, GetObjectCommand, ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
-import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResourcePages, Filters, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
+import { AdminForthPlugin, AdminForthResourceColumn, AdminForthResource, Filters, IAdminForth, IHttpServer, suggestIfTypo } from "adminforth";
 import { Readable } from "stream";
 import { RateLimiter } from "adminforth";
 
@@ -94,7 +94,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     record[`previewUrl_${this.pluginInstanceId}`] = previewUrl;
   }
 
-  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: any) {
+  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     // after column to store the path of the uploaded file, add new VirtualColumn,
     // show only in edit and create views
@@ -102,7 +102,7 @@ export default class UploadPlugin extends AdminForthPlugin {
     const { pathColumnName } = this.options;
     const pathColumnIndex = resourceConfig.columns.findIndex((column: any) => column.name === pathColumnName);
     if (pathColumnIndex === -1) {
-      throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.name}"`);
+      throw new Error(`Column with name "${pathColumnName}" not found in resource "${resourceConfig.label}"`);
     }
 
     if (this.options.generation?.fieldsForContext) {
@@ -315,7 +315,7 @@ export default class UploadPlugin extends AdminForthPlugin {
 
 
     // add edit postSave hook to delete old file and remove tag from new file
-    resourceConfig.hooks.edit.afterSave.push(async ({ updates, oldRecord }: { record: any, oldRecord: any }) => {
+    resourceConfig.hooks.edit.afterSave.push(async ({ updates, oldRecord }: { updates: any, oldRecord: any }) => {
 
       if (updates[virtualColumn.name] || updates[virtualColumn.name] === null) {
         const s3 = new S3({
