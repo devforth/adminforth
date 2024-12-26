@@ -1,4 +1,9 @@
 
+## [1.0.30] - 2024-12-26
+
+### Improved
+
+- Add 'record' param for s3Path callback in edit mode
 
 ## [1.0.24] - 2023-12-24
 
