@@ -37,6 +37,7 @@ export async function interpretResource(
   // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
   // 'list' needed for ActionCheckSource.listRequest
   // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
+  // for bulk actions we need to check all actions because bulk action can use any of them e.g sync allowed with edit
   const neededActions = {
     [ActionCheckSource.ShowRequest]: ['show'],
     [ActionCheckSource.EditRequest]: ['edit'],
@@ -45,7 +46,7 @@ export async function interpretResource(
     [ActionCheckSource.ListRequest]: ['list'],
     [ActionCheckSource.CreateRequest]: ['create'],
     [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create', 'filter'],
-    [ActionCheckSource.BulkActionRequest]: ['delete'],
+    [ActionCheckSource.BulkActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
   }[source];
 
   await Promise.all(
@@ -966,7 +967,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (action.allowed) {
               const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
               if (!execAllowed) {
-                return { error: await tr(`Action {actionId} not allowed`, 'errors', { actionId }) };
+                return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
               }
             }
             const response = await action.action({selectedIds: recordIds, adminUser, resource, tr});

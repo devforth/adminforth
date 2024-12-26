@@ -49,6 +49,17 @@ class CachingAdapterMemory implements ICachingAdapter {
   }
 }
 
+function ensureTemplateHasAllParams(template, newTemplate) {
+  // string ensureTemplateHasAllParams("a {b} c {d}", "я {b} і {d} в") // true
+  // string ensureTemplateHasAllParams("a {b} c {d}", "я і {d} в") // false
+  // string ensureTemplateHasAllParams("a {b} c {d}", "я {bb} і {d} в") // false
+  const existingParams = template.match(/{[^}]+}/g);
+  const newParams = newTemplate.match(/{[^}]+}/g);
+  const existingParamsSet = new Set(existingParams);
+  const newParamsSet = new Set(newParams);
+  return existingParamsSet.size === newParamsSet.size && [...existingParamsSet].every(p => newParamsSet.has(p));
+}
+
 class AiTranslateError extends Error {
   constructor(message: string) {
     super(message);
@@ -216,18 +227,30 @@ export default class I18N extends AdminForthPlugin {
     // disable create allowedActions for translations
     resourceConfig.options.allowedActions.create = false;
 
+    // add hook to validate user did not screw up with template params
+    resourceConfig.hooks.edit.beforeSave.push(async ({ updates, oldRecord }: { updates: any, oldRecord?: any }): Promise<{ ok: boolean, error?: string }> => {
+      for (const lang of this.options.supportedLanguages) {
+        if (lang === 'en') {
+          continue;
+        }
+        if (updates[this.trFieldNames[lang]]) {  // if user set '', it will have '' in updates, then it is fine, we shoudl nto check it
+          if (!ensureTemplateHasAllParams(oldRecord[this.enFieldName], updates[this.trFieldNames[lang]])) {
+            return { ok: false, error: `Template params mismatch for ${updates[this.enFieldName]}. Template param names should be the same as in original string. E. g. 'Hello {name}', should be 'Hola {name}' and not 'Hola {nombre}'!` };
+          }
+        }
+      }
+      return { ok: true };
+    });
 
     // add hook on edit of any translation
-    resourceConfig.hooks.edit.afterSave.push(async ({ record, oldRecord }: { record: any, oldRecord?: any }): Promise<{ ok: boolean, error?: string }> => {
+    resourceConfig.hooks.edit.afterSave.push(async ({ updates, oldRecord }: { updates: any, oldRecord?: any }): Promise<{ ok: boolean, error?: string }> => {
+      console.log('🪲edit.afterSave', JSON.stringify(updates, null, 2),'-----', JSON.stringify(oldRecord, null, 2));
       if (oldRecord) {
         // find lang which changed
         let langsChanged: LanguageCode[] = [];
         for (const lang of this.options.supportedLanguages) {
           if (lang === 'en') {
             continue;
-          }
-          if (record[this.trFieldNames[lang]] !== oldRecord[this.trFieldNames[lang]]) {
-            langsChanged.push(lang);
           }
         }
 
@@ -240,6 +263,7 @@ export default class I18N extends AdminForthPlugin {
 
       }
       // clear frontend cache for all lan
+
 
       return { ok: true };
     });
@@ -319,11 +343,16 @@ export default class I18N extends AdminForthPlugin {
     if (this.options.completeAdapter) {
       resourceConfig.options.bulkActions.push(
         {
+          id: 'translate_all',
           label: 'Translate selected',
           icon: 'flowbite:language-outline',
           // if optional `confirm` is provided, user will be asked to confirm action
           confirm: 'Are you sure you want to translate selected items?',
           state: 'selected',
+          allowed: ({ resource, adminUser, selectedIds, allowedActions }) => {
+            console.log('allowedActions', JSON.stringify(allowedActions));
+            return allowedActions.edit;
+          },
           action: async ({ selectedIds, tr }) => {
             let translatedCount = 0;
             try {
@@ -460,6 +489,11 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
             strId: translation[this.primaryKeyFieldName],
           };
         }
+        // make sure LLM did not screw up with template params
+        if (translation[this.enFieldName].includes('{') && !ensureTemplateHasAllParams(translation[this.enFieldName], translatedStr)) {
+          console.warn(`LLM Screwed up with template params mismatch for "${translation[this.enFieldName]}"on language ${lang}, it returned "${translatedStr}"`);
+          continue;
+        }
         updateStrings[
           translation[this.primaryKeyFieldName]
         ].updates[this.trFieldNames[lang]] = translatedStr;
@@ -507,7 +541,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       category: string,
       strId: string,
       translatedStr: string
-     }> = {};
+    }> = {};
 
 
     const langsInvolved = new Set(Object.keys(needToTranslateByLang));
@@ -535,7 +569,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       Object.entries(updateStrings).map(
         async ([_, { updates, strId }]: [string, { updates: any, category: string, strId: string }]) => {
           // because this will translate all languages, we can set completedLangs to all languages
-          const futureCompletedFieldValue = this.fullCompleatedFieldValue; 
+          const futureCompletedFieldValue = this.computeCompletedFieldValue(updates); 
 
           await this.adminforth.resource(this.resourceConfig.resourceId).update(strId, {
             ...updates,

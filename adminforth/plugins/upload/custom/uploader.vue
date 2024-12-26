@@ -70,7 +70,9 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils'
 import { IconMagic } from '@iconify-prerendered/vue-mdi';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const { t } = useI18n();
 
 const inputId = computed(() => `dropzone-file-${props.meta.pluginInstanceId}`);
@@ -233,6 +235,7 @@ const onFileChange = async (e) => {
           contentType: type,
           size,
           originalExtension: extension,
+          recordPk: route?.params?.primaryKey,
         },
     });
 

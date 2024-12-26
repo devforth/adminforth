@@ -15,8 +15,6 @@ import {
   type AdminForthResourceColumn,
   IOperationalResource,
   IHttpServer, 
-  BeforeSaveFunction,
-  AfterSaveFunction,
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
   IWebSocketBroker,
@@ -340,7 +338,7 @@ class AdminForth implements IAdminForth {
     const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.create?.afterSave as AfterSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.create?.afterSave)) {
       process.env.HEAVY_DEBUG && console.log('🪲 Hook afterSave', hook);
       const resp = await hook({ 
         recordId: primaryKey, 
@@ -372,11 +370,12 @@ class AdminForth implements IAdminForth {
   ): Promise<{ error?: string }> {
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.edit?.beforeSave as BeforeSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.edit?.beforeSave)) {
       const resp = await hook({
         recordId,
         resource,
         record,
+        updates: record,
         oldRecord,
         adminUser,
         adminforth: this,
@@ -408,10 +407,11 @@ class AdminForth implements IAdminForth {
     }
     
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.edit?.afterSave as AfterSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.edit?.afterSave)) {
       const resp = await hook({ 
         resource, 
-        record, 
+        record,
+        updates: record,
         adminUser, 
         oldRecord,
         recordId,
@@ -434,7 +434,7 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.delete?.beforeSave as BeforeSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
       const resp = await hook({ 
         resource, 
         record, 
@@ -456,7 +456,7 @@ class AdminForth implements IAdminForth {
     await connector.deleteRecord({ resource, recordId});
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.delete?.afterSave as BeforeSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.delete?.afterSave)) {
       const resp = await hook({ 
         resource, 
         record, 
