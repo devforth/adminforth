@@ -47,6 +47,7 @@ model translations {
     ja_string       String?  // translation for Japanese language
     fr_string       String?  // translation for French language
     es_string       String?  // translation for Spanish language
+    de_string       String?
     category        String
     source          String?
     completedLangs   String?
