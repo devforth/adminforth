@@ -31,7 +31,7 @@ export default {
   },
   plugins: [
     new I18nPlugin({
-      supportedLanguages: ['en', 'uk', 'ja', 'fr'],
+      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],
 
       // names of the fields in the resource which will store translations
       translationFieldNames: {
@@ -39,6 +39,7 @@ export default {
         uk: 'uk_string',
         ja: 'ja_string',
         fr: 'fr_string',
+        de: 'de_string',
       },
 
       // name of the field which will store the category of the string
@@ -77,6 +78,7 @@ export default {
     {
       name: "en_string",
       type: AdminForthDataTypes.STRING,
+      label: 'English',
     },
     {
       name: "created_at",
@@ -85,14 +87,22 @@ export default {
     {
       name: "uk_string",
       type: AdminForthDataTypes.STRING,
+      label: 'Ukrainian',
     },
     {
       name: "ja_string",
       type: AdminForthDataTypes.STRING,
+      label: 'Japanese',
     },
     {
       name: "fr_string",
       type: AdminForthDataTypes.STRING,
+      label: 'French',
+    },
+    {
+      name: "de_string",
+      type: AdminForthDataTypes.STRING,
+      label: 'German',
     },
     {
       name: "completedLangs",
