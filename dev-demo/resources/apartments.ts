@@ -337,8 +337,10 @@ export default {
             s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
             s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             // s3ACL: 'public-read', // ACL which will be set to uploaded file
-            s3Path: ({ originalFilename, originalExtension, contentType }) =>
-              `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+              console.log("🔥", JSON.stringify(record));
+              return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
+            },
             generation: {
               provider: "openai-dall-e",
               countToGenerate: 2,

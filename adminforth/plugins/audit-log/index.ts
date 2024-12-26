@@ -149,8 +149,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       };
 
       ['edit', 'delete'].forEach((hook) => {
-        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, oldRecord, extra}) => {
-          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, oldRecord, extra)
+        resource.hooks[hook].afterSave.push(async ({resource, updates, adminUser, oldRecord, extra}) => {
+          return await this.createLogRecord(resource, hook as AllowedActionsEnum, updates, adminUser, oldRecord, extra)
         })
       });
 

@@ -50,11 +50,16 @@ export type PluginOptions = {
    * example:
    * 
    * ```typescript
-   * s3Path: ({record, originalFilename}) => `/aparts/${record.id}/${originalFilename}`
+   * s3Path: ({originalFilename}) => `/aparts/${originalFilename}`
    * ```
    * 
    */
-  s3Path: ({originalFilename, originalExtension, contentType}) => string,
+  s3Path: ({originalFilename, originalExtension, contentType, record }: {
+    originalFilename: string,
+    originalExtension: string,
+    contentType: string,
+    record?: any,
+  }) => string,
 
 
   preview: {

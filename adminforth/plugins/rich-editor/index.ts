@@ -1,5 +1,5 @@
 
-import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser, AfterSaveFunction } from "adminforth";
+import type { IAdminForth, IHttpServer, AdminForthResource, AdminUser } from "adminforth";
 import type { PluginOptions } from './types.js';
 import { AdminForthPlugin, Filters, RateLimiter } from "adminforth";
 import * as cheerio from 'cheerio';
@@ -142,7 +142,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
       }
       
 
-      (resourceConfig.hooks.create.afterSave as Array<AfterSaveFunction>).push(async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
+      (resourceConfig.hooks.create.afterSave).push(async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
         // find all s3Paths in the html
         const s3Paths = getAttachmentPathes(record[this.options.htmlFieldName])
         
@@ -157,7 +157,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
 
       // after edit we need to delete attachments that are not in the html anymore
       // and add new ones
-      (resourceConfig.hooks.edit.afterSave as Array<AfterSaveFunction>).push(
+      (resourceConfig.hooks.edit.afterSave).push(
         async ({ recordId, record, adminUser }: { recordId: any, record: any, adminUser: AdminUser }) => {
           process.env.HEAVY_DEBUG && console.log('⚓ Cought hook', recordId, 'rec', record);
           if (record[this.options.htmlFieldName] === undefined) {
@@ -188,7 +188,7 @@ export default class RichEditorPlugin extends AdminForthPlugin {
       );
 
       // after delete we need to delete all attachments
-      (resourceConfig.hooks.delete.afterSave as Array<AfterSaveFunction>).push(
+      (resourceConfig.hooks.delete.afterSave).push(
         async ({ record, adminUser }: { record: any, adminUser: AdminUser }) => {
           const existingAparts = await adminforth.resource(this.options.attachments.attachmentResource).list(
             [
