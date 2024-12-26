@@ -1,7 +1,7 @@
 <template>
   <p class="text-gray-500 dark:text-gray-400 font-sm text-left mt-3">
     {{$t('Have no account?')}} 
-    <Link :to="`/signup${route.query.next ? `?next=${route.query.next}` : ''}`">
+    <Link :to="`/signup${route.query.next ? `?next=${encodeURIComponent(route.query.next)}` : ''}`">
       {{$t('sign up now')}}
     </Link>
   </p>
