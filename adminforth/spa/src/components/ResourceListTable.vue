@@ -234,16 +234,33 @@
     <span class="text-sm text-gray-700 dark:text-gray-400">
         <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
         <template v-else>
-          <span class="hidden sm:inline"
-            v-html="$t('Showing {from} to {to} of {total} Entries', {from: ((page || 1) - 1) * pageSize + 1, to: Math.min((page || 1) * pageSize, totalRows), total: totalRows})
-              .replace(/\d+/g, '<strong>$&</strong>')">
+          
+          <span class="hidden sm:inline">
+            <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
+              <template v-slot:from>
+                <strong>{{ from }}</strong>
+              </template>
+              <template v-slot:to>
+                <strong>{{ to }}</strong>
+              </template>
+              <template v-slot:total>
+                <strong>{{ totalRows }}</strong>
+              </template>
+            </i18n-t>
           </span>
-          <span class="sm:hidden"
-            v-html="$t('{from} - {to} of {total}', {from: ((page || 1) - 1) * pageSize + 1, to: Math.min((page || 1) * pageSize, totalRows), total: totalRows})
-              .replace(/\d+/g, '<strong>$&</strong>')
-            ">
-          </span>
-
+          <span class="sm:hidden">
+            <i18n-t keypath="{from} - {to} of {total}" tag="p"  >
+              <template v-slot:from>
+                <strong>{{ from }}</strong>
+              </template>
+              <template v-slot:to>
+                <strong>{{ to }}</strong>
+              </template>
+              <template v-slot:total>
+                <strong>{{ totalRows }}</strong>
+              </template>
+            </i18n-t>
+          </span> 
         </template>
     </span>
   </div>
@@ -302,6 +319,8 @@ const page = ref(1);
 const sort = ref([]);
 
 
+const from = computed(() => ((page.value || 1) - 1) * props.pageSize + 1);
+const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.totalRows));
 
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
