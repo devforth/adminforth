@@ -38,7 +38,7 @@
                 <div class="p-4 md:p-5">
                   <form v-if="!requestSent" class="space-y-4" role="alert" @submit.prevent>
                     <div v-if="!verifyToken" class="relative">
-                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your email')}}</label>
+                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your email address')}}</label>
                       <input type="email" name="email" id="email" 
                         tabindex="1"
                         autocomplete="username"  
@@ -50,7 +50,7 @@
                       />
                     </div>
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('New password')}}</label>
+                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your password')}}</label>
                       <input 
                         tabindex="2"
                         autocomplete="new-password"
@@ -74,7 +74,7 @@
                     </div>
 
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Confirm new password')}}</label>
+                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Confirm your password')}}</label>
                       <input 
                         ref="passwordConfirmationInput"
                         autocomplete="new-password"

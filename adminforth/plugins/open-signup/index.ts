@@ -228,8 +228,10 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           }
         }
 
+        const normalizedEmail = email.toLowerCase();  // normalize email
+
         // first check again if email already exists
-        const existingUser = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
+        const existingUser = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, normalizedEmail));
         if ((!this.options.confirmEmails && existingUser) || (this.options.confirmEmails && existingUser?.[this.emailConfirmedField.name])) {
           return { error: tr('Email already exists', 'opensignup'), ok: false };
         }
@@ -239,7 +241,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           const created = await this.adminforth.resource(this.authResource.resourceId).create({
             ...(this.options.defaultFieldValues || {}),
             ...(this.options.confirmEmails ? { [this.options.confirmEmails.emailConfirmedField]: false } : {}),  
-            [this.emailField.name]: email,
+            [this.emailField.name]: normalizedEmail,
             [this.options.passwordHashField]: password ? await AdminForth.Utils.generatePasswordHash(password) : '',
           });
         }
