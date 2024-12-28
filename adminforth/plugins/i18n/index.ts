@@ -244,7 +244,6 @@ export default class I18N extends AdminForthPlugin {
 
     // add hook on edit of any translation
     resourceConfig.hooks.edit.afterSave.push(async ({ updates, oldRecord }: { updates: any, oldRecord?: any }): Promise<{ ok: boolean, error?: string }> => {
-      console.log('🪲edit.afterSave', JSON.stringify(updates, null, 2),'-----', JSON.stringify(oldRecord, null, 2));
       if (oldRecord) {
         // find lang which changed
         let langsChanged: LanguageCode[] = [];
@@ -252,27 +251,34 @@ export default class I18N extends AdminForthPlugin {
           if (lang === 'en') {
             continue;
           }
+          if (updates[this.trFieldNames[lang]]) {
+            langsChanged.push(lang);
+          }
         }
-
+        
         // clear frontend cache for all langsChanged
         for (const lang of langsChanged) {
-          this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+          if (oldRecord[this.options.categoryFieldName] === 'frontend') {
+            this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+          } else {
+            this.cache.clear(`${this.resourceConfig.resourceId}:${oldRecord[this.options.categoryFieldName]}:${lang}:${oldRecord[this.enFieldName]}`);
+          }
         }
-
         this.updateUntranslatedMenuBadge();
-
       }
       // clear frontend cache for all lan
-
-
       return { ok: true };
     });
 
     // add hook on delete of any translation to reset cache
     resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }): Promise<{ ok: boolean, error?: string }> => {
       for (const lang of this.options.supportedLanguages) {
-        this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
-        this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}:${record[this.enFieldName]}`);
+        // if frontend, clear frontend cache
+        if (record[this.options.categoryFieldName] === 'frontend') {
+          this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
+        } else {
+          this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}:${record[this.enFieldName]}`);
+        }
       }
       this.updateUntranslatedMenuBadge();
       return { ok: true };
@@ -349,7 +355,7 @@ export default class I18N extends AdminForthPlugin {
           // if optional `confirm` is provided, user will be asked to confirm action
           confirm: 'Are you sure you want to translate selected items?',
           state: 'selected',
-          allowed: ({ resource, adminUser, selectedIds, allowedActions }) => {
+          allowed: async ({ resource, adminUser, selectedIds, allowedActions }) => {
             console.log('allowedActions', JSON.stringify(allowedActions));
             return allowedActions.edit;
           },
@@ -569,7 +575,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       Object.entries(updateStrings).map(
         async ([_, { updates, strId }]: [string, { updates: any, category: string, strId: string }]) => {
           // because this will translate all languages, we can set completedLangs to all languages
-          const futureCompletedFieldValue = this.computeCompletedFieldValue(updates); 
+          const futureCompletedFieldValue = await this.computeCompletedFieldValue(updates); 
 
           await this.adminforth.resource(this.resourceConfig.resourceId).update(strId, {
             ...updates,
