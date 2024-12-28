@@ -289,7 +289,7 @@ export const admin = new AdminForth({
 
 const app = express()
 app.use(express.json());
-const port = 30000;
+const port = process.env.PORT || 3000;
 
 (async () => {
     console.log('🅿️🅿️🅿️ 🅿️Bundling AdminForth...');
