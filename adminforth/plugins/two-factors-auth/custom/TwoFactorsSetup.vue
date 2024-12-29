@@ -76,6 +76,8 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import { Button, LinkButton } from '@/afcl';
 import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
 import VOtpInput from "vue3-otp-input";
+import adminforth from '@/adminforth';
+
 
 const code = ref(null);
 const handleOnComplete = (value) => {
@@ -122,7 +124,7 @@ function parseJwt(token) {
 
 function onCopyClick(){
   navigator.clipboard.writeText(totp.value.newSecret);
-  window.adminforth.alert({message: 'Copied to clipboard', variant: 'success'})
+  adminforth.alert({message: 'Copied to clipboard', variant: 'success'})
 }
 
 onMounted(async () => {

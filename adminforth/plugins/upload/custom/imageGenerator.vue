@@ -107,6 +107,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { Carousel } from 'flowbite';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
 
 const { t: $t } = useI18n();
 
@@ -185,7 +186,7 @@ async function generateImages() {
   });
 
   if (resp.error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: $t('Error: {error}', { error: JSON.stringify(resp.error) }), 
       variant: 'danger',
       timeout: 15,

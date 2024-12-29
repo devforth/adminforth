@@ -159,6 +159,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import Button from '@/afcl/Button.vue';
 import Link from '@/afcl/Link.vue';
+import adminforth from '@/adminforth';
 
 const inProgress = ref(false);
 
@@ -279,7 +280,7 @@ async function setNewPassword() {
   } else {
     error.value = null;
     router.push('/login');
-    window.adminforth.alert({
+    adminforth.alert({
       message: 'Password reset successfully. Please login with your new password',
       variant: 'success',
       timeout: 15,

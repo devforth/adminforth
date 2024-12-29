@@ -72,7 +72,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
@@ -85,6 +85,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
+import adminforth from '@/adminforth';
 
 
 const isValid = ref(false);
@@ -155,7 +156,7 @@ async function saveRecord() {
         primaryKey: response.newRecordId
       } 
     });
-    window.adminforth.alert({
+    adminforth.alert({
       message: 'Record created successfully',
       variant: 'success'
     });

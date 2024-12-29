@@ -98,6 +98,7 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
+import adminforth from '@adminforth';
 
 const data = ref({});
 
@@ -343,7 +344,7 @@ onMounted(async () => {
   try {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
       timeout: 'unlimited'

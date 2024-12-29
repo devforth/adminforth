@@ -65,12 +65,13 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils'
 import { IconMagic } from '@iconify-prerendered/vue-mdi';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+
 
 const route = useRoute();
 const { t } = useI18n();
@@ -78,6 +79,7 @@ const { t } = useI18n();
 const inputId = computed(() => `dropzone-file-${props.meta.pluginInstanceId}`);
 
 import ImageGenerator from '@@/plugins/UploadPlugin/imageGenerator.vue';
+import adminforth from '@/adminforth';
 
 
 const props = defineProps({
@@ -194,7 +196,7 @@ const onFileChange = async (e) => {
   // validate file extension
   const allowedExtensions = props.meta.allowedExtensions || []
   if (allowedExtensions.length > 0 && !allowedExtensions.includes(extension)) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: t('Sorry but the file type {extension} is not allowed. Please upload a file with one of the following extensions: {allowedExtensionsLabel}', {
         extension,
         allowedExtensionsLabel: allowedExtensionsLabel.value,
@@ -206,7 +208,7 @@ const onFileChange = async (e) => {
 
   // validate file size
   if (props.meta.maxFileSize && size > props.meta.maxFileSize) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: t('Sorry but the file size {size} is too large. Please upload a file with a maximum size of {maxFileSize}', {
         size: humanifySize(size),
         maxFileSize: humanifySize(props.meta.maxFileSize),
@@ -240,7 +242,7 @@ const onFileChange = async (e) => {
     });
 
     if (error) {
-      window.adminforth.alert({
+      adminforth.alert({
         message: t('File was not uploaded because of error: {error}', { error }),
         variant: 'danger'
       });
@@ -268,8 +270,8 @@ const onFileChange = async (e) => {
       xhr.send(file);
     });
     if (!success) {
-      window.adminforth.alert({
-        messageHtml: `<div>${$t('Sorry but the file was not uploaded because of S3 Request Error:')}</div>
+      adminforth.alert({
+        messageHtml: `<div>${t('Sorry but the file was not uploaded because of S3 Request Error:')}</div>
         <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
           xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
         }</pre>`,
@@ -285,7 +287,7 @@ const onFileChange = async (e) => {
     emit('update:value', s3Path);
   } catch (error) {
     console.error('Error uploading file:', error);
-    window.adminforth.alert({
+    adminforth.alert({
       message: t('Sorry but the file was not be uploaded. Please try again: {error}', { error: error.message }),
       variant: 'danger'
     });

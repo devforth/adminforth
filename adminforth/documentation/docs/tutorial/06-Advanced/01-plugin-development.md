@@ -210,6 +210,31 @@ Now we have to create custom Vue component which will be used in plugin. To do i
 mkdir -p af-plugin-chatgpt/custom
 ```
 
+Also create `tsconfig.ts` file so your IDE will be able to resolve adminforth spa imports: 
+
+```json title='./af-plugin-chatgpt/custom/tsconfig.json'
+{
+  "compilerOptions": {
+    "baseUrl": ".", // This should point to your project root
+    "paths": {
+      "@/*": [
+        // "node_modules/adminforth/dist/spa/src/*"
+        "../../../spa/src/*"
+      ],
+      "*": [
+        // "node_modules/adminforth/dist/spa/node_modules/*"
+        "../../../spa/node_modules/*"
+      ],
+      "@@/*": [
+        // "node_modules/adminforth/dist/spa/src/*"
+        "."
+      ]
+    }
+  }
+}
+```
+
+
 We will use `vue-suggestion-input` package in our frontend component. 
 To install package into frontend component, first of all we have to initialize npm package in custom folder:
 

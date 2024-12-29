@@ -15,6 +15,7 @@ import { onMounted, ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useFiltersStore } from '@/stores/filters';
+import adminforth from '@/adminforth';
 
 
 const filtersStore = useFiltersStore();
@@ -55,16 +56,16 @@ async function exportCsv() {
   });
   inProgress.value = false;
   if (resp.error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: resp.error,
     })
   } else {
     loadFile(resp.data, `export-${coreStore.resource.resourceId}-${new Date().toISOString()}.csv`);
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Exported ${resp.exportedCount} item${resp.exportedCount > 1 ? 's' : ''} successfully. Check your downloads folder`,
     })
   }
-  window.adminforth.list.closeThreeDotsDropdown();
+  adminforth.list.closeThreeDotsDropdown();
 }
 
 

@@ -19,15 +19,15 @@ Create a Vue component in the custom directory of your project, e.g. Alerts.vue:
     </div>
 </template>
 <script setup>
-
+import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 function callAlert(message,variant='success'){
-    window.adminforth.alert({message: message, variant: variant})
+    adminforth.alert({message: message, variant: variant})
 };
 async function callConfirmation(){
-    const isConfirmed = await window.adminforth.confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
+    const isConfirmed = await adminforth.confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
 }
 </script>
 ```
