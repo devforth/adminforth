@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { ref, Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
+import adminforth from '@/adminforth';
 
 const inProgress: Ref<boolean> = ref(false);
 
@@ -33,16 +34,16 @@ async function postData(data: Record<string, string[]>) {
   inProgress.value = false;
 
   if (resp.importedCount > 0) {
-    window.adminforth.list.refresh();
+    adminforth.list.refresh();
   }
-  window.adminforth.alert({
+  adminforth.alert({
     message: `Imported count ${resp.importedCount || 0} records. ${resp.errors?.length ? `Errors: ${resp.errors.join(', ')}` : ''}`,
     variant: resp.errors?.length ? (
       resp.importedCount ? 'warning' : 'danger'
     ) : 'success'
   });
 
-  window.adminforth.list.closeThreeDotsDropdown();
+  adminforth.list.closeThreeDotsDropdown();
 }
 
 async function importCsv() {

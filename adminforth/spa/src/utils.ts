@@ -5,7 +5,7 @@ import router from "./router";
 import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
-
+import adminforth from './adminforth';
 
 const LS_LANG_KEY = `afLanguage`;
 
@@ -31,7 +31,7 @@ export async function callApi({path, method, body=undefined}: {
     } 
     return await r.json();
   } catch(e){
-    window.adminforth.alert({variant:'danger', message:window.i18n?.global?.t('Something went wrong, please try again later'),})
+    adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Something went wrong, please try again later'),})
     console.error(`error in callApi ${path}`,e);
   }
 }

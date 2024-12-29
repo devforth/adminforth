@@ -142,6 +142,7 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import Button from '@/afcl/Button.vue';
 import Link from '@/afcl/Link.vue';
 import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
 
 const { t } = useI18n();
 
@@ -319,7 +320,7 @@ const signupAfterEmailConfirmation = async () => {
       }
     });
     if (resp.error) {
-      window.adminforth.alert({
+      adminforth.alert({
         message: t(`Error fetching data: {error}`, { error: resp.error }),
         variant: 'danger',
       });

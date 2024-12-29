@@ -21,6 +21,8 @@
 import { onMounted, ref, onUnmounted, watch, type Ref } from "vue";
 import { callAdminForthApi } from '@/utils';
 import { AdminForthColumnCommon } from '@/types/Common';
+import adminforth from '@/adminforth';
+
 import AsyncQueue from './async-queue';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
@@ -128,7 +130,7 @@ async function saveToServer(file: File) {
   });
 
   if (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `File was not uploaded because of error: ${error}`,
       variant: 'danger'
     });
@@ -153,7 +155,7 @@ async function saveToServer(file: File) {
     xhr.send(file);
   });
   if (!success) {
-    window.adminforth.alert({
+    adminforth.alert({
       messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
       <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
         xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')

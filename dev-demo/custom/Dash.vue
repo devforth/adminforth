@@ -56,26 +56,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Input, Select, VerticalTabs, LinkButton, Dropzone } from '@/afcl';
-import { useCoreStore } from '@/stores/core';
 import { useI18n } from 'vue-i18n';
-const coreStore = useCoreStore();
+import adminforth from '@/adminforth';
 
-const selected = ref(null);
-const activeTab = ref('Dashboard');
+// import "@/global.d.ts";
 
 const data = ref({});
 
 const  { t } = useI18n();
-
-function onFileChange(file) {
-  console.log(12, file);
-}
 
 const optionsC1 = {
   chart: {
@@ -317,9 +310,10 @@ onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
   try {
+    null.a
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
       timeout: 30,

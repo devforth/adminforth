@@ -4,10 +4,11 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import adminforth from "@/adminforth";
 function close() {
     console.log('🚀 ~ file: login2.vue ~ line 5 ~ close ~ close');
-    window.adminforth.closeUserMenuDropdown();
+    adminforth.closeUserMenuDropdown();
 }
 </script>
 

@@ -106,7 +106,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
@@ -119,6 +119,7 @@ import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import ShowTable from '@/components/ShowTable.vue';
+import adminforth from "@/adminforth";
 
 
 const route = useRoute();
@@ -177,7 +178,7 @@ const otherColumns = computed(() => {
 });
 
 async function deleteRecord(row) {
-  const data = await window.adminforth.confirm({
+  const data = await adminforth.confirm({
     message: 'Are you sure you want to delete this item?',
     yes: 'Delete',
     no: 'Cancel',
