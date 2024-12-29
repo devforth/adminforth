@@ -251,18 +251,15 @@ export default class I18N extends AdminForthPlugin {
           if (lang === 'en') {
             continue;
           }
-          if (updates[this.trFieldNames[lang]]) {
+          if (updates[this.trFieldNames[lang]] !== undefined) {
             langsChanged.push(lang);
           }
         }
         
         // clear frontend cache for all langsChanged
         for (const lang of langsChanged) {
-          if (oldRecord[this.options.categoryFieldName] === 'frontend') {
-            this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
-          } else {
-            this.cache.clear(`${this.resourceConfig.resourceId}:${oldRecord[this.options.categoryFieldName]}:${lang}:${oldRecord[this.enFieldName]}`);
-          }
+          this.cache.clear(`${this.resourceConfig.resourceId}:${oldRecord[this.options.categoryFieldName]}:${lang}`);
+          this.cache.clear(`${this.resourceConfig.resourceId}:${oldRecord[this.options.categoryFieldName]}:${lang}:${oldRecord[this.enFieldName]}`);
         }
         this.updateUntranslatedMenuBadge();
       }
@@ -274,11 +271,8 @@ export default class I18N extends AdminForthPlugin {
     resourceConfig.hooks.delete.afterSave.push(async ({ record }: { record: any }): Promise<{ ok: boolean, error?: string }> => {
       for (const lang of this.options.supportedLanguages) {
         // if frontend, clear frontend cache
-        if (record[this.options.categoryFieldName] === 'frontend') {
-          this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
-        } else {
-          this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}:${record[this.enFieldName]}`);
-        }
+        this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}`);
+        this.cache.clear(`${this.resourceConfig.resourceId}:${record[this.options.categoryFieldName]}:${lang}:${record[this.enFieldName]}`);
       }
       this.updateUntranslatedMenuBadge();
       return { ok: true };
@@ -609,39 +603,16 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       return;
     }
     // loop over missingKeys[i].path and add them to database if not exists
-    
-    const missingKeysDeduplicated = messages.missingKeys.reduce((acc: any[], missingKey: any) => {
-      if (!acc.find((a) => a.path === missingKey.path)) {
-        acc.push(missingKey);
-      }
-      return acc;
-    }, []);
-
-    await Promise.all(missingKeysDeduplicated.map(async (missingKey: any) => {
-      const key = missingKey.path;
-      const file = missingKey.file;
-      const category = 'frontend';
-      const exists = await adminforth.resource(this.resourceConfig.resourceId).count(Filters.EQ(this.enFieldName, key));
-      if (exists) {
-        return;
-      }
-      if (!key) {
-        throw new Error(`Faced an empty key in Fronted messages, file ${file}`);
-      }
-      const record = {
-        [this.enFieldName]: key,
-        [this.options.categoryFieldName]: category,
-        ...(this.options.sourceFieldName ? { [this.options.sourceFieldName]: file } : {}),
+    const messagesForFeed = messages.missingKeys.map((mk) => {
+      return {
+        en_string: mk.path,
+        source: mk.file,
       };
-      try {
-        await adminforth.resource(this.resourceConfig.resourceId).create(record);
-      } catch (e) {
-        console.error('🐛 Error creating record', e);
-      }
-    }));
+    });
 
-    // updateBadge
-    this.updateUntranslatedMenuBadge()
+    await this.feedCategoryTranslations(messagesForFeed, 'frontend')
+    
+    
   }
 
 
@@ -770,6 +741,60 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     return `single`;
   }
 
+  async getCategoryTranslations(category: string, lang: string): Promise<Record<string, string>> {
+    const resource = this.adminforth.resource(this.resourceConfig.resourceId);
+    const cacheKey = `${this.resourceConfig.resourceId}:${category}:${lang}`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    const translations = {};
+    const allTranslations = await resource.list([Filters.EQ(this.options.categoryFieldName, category)]);
+    for (const tr of allTranslations) {
+      translations[tr[this.enFieldName]] = tr[this.trFieldNames[lang]];
+    }
+    await this.cache.set(cacheKey, translations);
+    return translations;
+  }
+
+  async feedCategoryTranslations(messages: {
+    en_string: string;
+    source: string;
+  }[], category: string): Promise<void> {
+    const adminforth = this.adminforth;
+    const missingKeysDeduplicated = messages.reduce((acc: any[], missingKey: any) => {
+      if (!acc.find((a) => a.en_string === missingKey.en_string)) {
+        acc.push(missingKey);
+      }
+      return acc;
+    }, []);
+
+    await Promise.all(missingKeysDeduplicated.map(async (missingKey: any) => {
+      const key = missingKey.en_string;
+      const source = missingKey.source;
+      const exists = await adminforth.resource(this.resourceConfig.resourceId).count(Filters.EQ(this.enFieldName, key));
+      if (exists) {
+        return;
+      }
+      if (!key) {
+        console.error(`Faced an empty key in feeding ${category} messages, source ${source}`);
+      }
+      const record = {
+        [this.enFieldName]: key,
+        [this.options.categoryFieldName]: category,
+        ...(this.options.sourceFieldName ? { [this.options.sourceFieldName]: source } : {}),
+      };
+      try {
+        await adminforth.resource(this.resourceConfig.resourceId).create(record);
+      } catch (e) {
+        console.error('🐛 Error creating record', e);
+      }
+    }));
+
+    // updateBadge
+    this.updateUntranslatedMenuBadge();
+  }
+
 
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
@@ -780,18 +805,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
         const lang = query.lang;
         
         // form map of translations
-        const resource = this.adminforth.resource(this.resourceConfig.resourceId);
-        const cacheKey = `${this.resourceConfig.resourceId}:frontend:${lang}`;
-        const cached = await this.cache.get(cacheKey);
-        if (cached) {
-          return cached;
-        }
-        const translations = {};
-        const allTranslations = await resource.list([Filters.EQ(this.options.categoryFieldName, 'frontend')]);
-        for (const tr of allTranslations) {
-          translations[tr[this.enFieldName]] = tr[this.trFieldNames[lang]];
-        }
-        await this.cache.set(cacheKey, translations);
+        const translations = await this.getCategoryTranslations('frontend', lang);
         return translations;
 
       }
