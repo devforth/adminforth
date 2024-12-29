@@ -227,7 +227,9 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
             }
           }
         }
-
+        
+        // This is not needed when right email validator is set on email field because
+        // it will not allow to create such email, but if user forgot to set it it might save situation 
         const normalizedEmail = email.toLowerCase();  // normalize email
 
         // first check again if email already exists

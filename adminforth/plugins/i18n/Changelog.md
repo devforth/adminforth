@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.21] - next
 
+### Fixed
+- improve cache reset when editing messages manually
+
+### Added
+- Translating external app" feature by using feedCategoryTranslations
+
 ## [1.0.20]
 
 ### Fixed
