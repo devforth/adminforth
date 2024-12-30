@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.5.9] - next
 
+### Changed
+
+- now you should use import adminforth from '@/adminforth' instead of window.adminforth. It has type hints and is more reliable
+
+
 ## [v1.5.8]
 
 ### Added

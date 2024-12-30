@@ -64,8 +64,6 @@ import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
 
-// import "@/global.d.ts";
-
 const data = ref({});
 
 const  { t } = useI18n();
