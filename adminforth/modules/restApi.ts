@@ -683,6 +683,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
           const resp = await hook({ 
             resource, 
+            query: body,
             response: 
             data.data, 
             adminUser, 
@@ -775,6 +776,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const resp = await hook({ 
             response, 
             adminUser, 
+            query: body,
             resource: targetResource,
             extra: {
               body, query, headers, cookies
