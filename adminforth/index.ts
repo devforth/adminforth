@@ -305,10 +305,9 @@ class AdminForth implements IAdminForth {
   ): Promise<{ error?: string, createdRecord?: any }> {
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeCreateSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
       const resp = await hook({ 
-        recordId: undefined, 
         resource, 
         record, 
         adminUser,

@@ -431,6 +431,7 @@ export type BeforeDataSourceRequestFunction = (params: {
 export type AfterDataSourceResponseFunction = (params: {
   resource: AdminForthResource, 
   adminUser: AdminUser, 
+  query: any,
   response: any, 
   extra: {
     body: any,
@@ -476,7 +477,6 @@ export type BeforeEditSaveFunction = (params: {
 
 export type BeforeCreateSaveFunction = (params: {
   resource: AdminForthResource, 
-  recordId: any, 
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
