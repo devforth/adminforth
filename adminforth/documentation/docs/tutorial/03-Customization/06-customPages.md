@@ -9,7 +9,7 @@ To add custom package to SPA bundle you have to initialize npm in `custom` direc
 ```bash
 cd ./custom
 npm init -y
-npm install apexcharts --save-dev
+npm i apexcharts -D
 ```
 
 > 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
@@ -36,7 +36,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 
 ```html title="./custom/Dashboard.vue"
 <template>
-  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
+  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"><span
         class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">{{ $t('Apartments') }}</span>
       Statistics.</h1>
@@ -98,6 +98,7 @@ import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
+import adminforth from '@adminforth';
 
 const data = ref({});
 
@@ -343,7 +344,7 @@ onMounted(async () => {
   try {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
       timeout: 'unlimited'
@@ -431,7 +432,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
       const days = req.body.days || 7;
       const apartsByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          strftime('%Y-%m-%d', created_at) as day, 
           COUNT(*) as count 
         FROM apartments 
         GROUP BY day 
@@ -445,7 +446,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
       // add listed, unlisted, listedPrice, unlistedPrice
       const listedVsUnlistedByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          strftime('%Y-%m-%d', created_at) as day, 
           SUM(listed) as listed, 
           COUNT(*) - SUM(listed) as unlisted,
           SUM(listed * price) as listedPrice,
@@ -459,7 +460,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
       const listedVsUnlistedPriceByDays = await admin.resource('aparts').dataConnector.db.prepare(
         `SELECT 
-          strftime('%Y-%m-%d', created_at, 'unixepoch') as day, 
+          strftime('%Y-%m-%d', created_at) as day, 
           SUM(listed * price) as listedPrice,
           SUM((1 - listed) * price) as unlistedPrice
         FROM apartments

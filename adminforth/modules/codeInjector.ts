@@ -495,11 +495,12 @@ class CodeInjector implements ICodeInjector {
     let indexHtmlContent = await fs.promises.readFile(indexHtmlPath, 'utf-8');
     indexHtmlContent = indexHtmlContent.replace('/* IMPORTANT:ADMINFORTH TITLE */', `${this.adminforth.config.customization?.title || this.adminforth.config.customization?.brandName || 'AdminForth'}`);
     
+    // we dont't need to add baseUrl in front of assets here, because it is already added by Vite/Vue
     indexHtmlContent = indexHtmlContent.replace(
       '/* IMPORTANT:ADMINFORTH FAVICON */',
-      this.adminforth.config.customization.favicon?.replace('@@/', `${this.adminforth.config.baseUrlSlashed}assets/`)
+      this.adminforth.config.customization.favicon?.replace('@@/', `/assets/`)
           ||
-       `${this.adminforth.config.baseUrlSlashed}assets/favicon.png`
+       `/assets/favicon.png`
     );
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 

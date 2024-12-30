@@ -33,14 +33,16 @@ services:
       - pg-data:/var/lib/postgresql/data
 
   mongo:
-    image: mongo:4.4
+    image:  mongo:6.0.5
     restart: always
+    environment:
+      MONGO_INITDB_DATABASE: demo
     ports:
-      - "27017:27017"
+      - "27028:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongo-data1:/data/db
 
 volumes:
   clickhouse-data:
   pg-data:
-  mongo-data:
+  mongo-data1:

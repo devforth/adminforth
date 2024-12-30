@@ -48,9 +48,10 @@
 
 <script setup lang="ts">
 import { humanifySize } from '@/utils';
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
+import adminforth from '@/adminforth';
 
 const props = defineProps<{
   extensions: string[],
@@ -93,14 +94,14 @@ function doEmit(filesIn: FileList) {
     const size = file.size;
 
     if (!allowedExtensions.includes(`.${extension}`)) {
-      window.adminforth.alert({
+      adminforth.alert({
         message: `Sorry, the file type .${extension} is not allowed. Please upload a file with one of the following extensions: ${allowedExtensions.join(', ')}`,
         variant: 'danger',
       });
       return;
     }
     if (size > maxSizeBytes) {
-      window.adminforth.alert({
+      adminforth.alert({
         message: `Sorry, the file size ${humanifySize(size)} exceeds the maximum allowed size of ${humanifySize(maxSizeBytes)}.`,
         variant: 'danger',
       });

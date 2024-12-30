@@ -7,13 +7,16 @@ export default class EmailAdapterAwsSes implements EmailAdapter {
 
   constructor(options: AdapterOptions) {
     this.options = options;
-    if (!options.region) {
+  }
+
+  validate() {
+    if (!this.options.region) {
       throw new Error("AWS SES region is required");
     }
-    if (!options.accessKeyId) {
+    if (!this.options.accessKeyId) {
       throw new Error("AWS SES accessKeyId is required");
     }
-    if (!options.secretAccessKey) {
+    if (!this.options.secretAccessKey) {
       throw new Error("AWS SES secretAccessKey is required");
     }
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
+  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
   
     <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"
       v-html='$t("<span class=\"text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400\">Apartments</span> Statistics.")'></h1>
@@ -9,7 +9,7 @@
         <div class="flex justify-between">
           <div>
             <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
-            <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
+            <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days') }}</p>
           </div>
 
         </div>
@@ -56,26 +56,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ApexCharts from 'apexcharts';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
-import { Input, Select, VerticalTabs, LinkButton, Dropzone } from '@/afcl';
-import { useCoreStore } from '@/stores/core';
 import { useI18n } from 'vue-i18n';
-const coreStore = useCoreStore();
+import adminforth from '@/adminforth';
 
-const selected = ref(null);
-const activeTab = ref('Dashboard');
+// import "@/global.d.ts";
 
 const data = ref({});
 
 const  { t } = useI18n();
-
-function onFileChange(file) {
-  console.log(12, file);
-}
 
 const optionsC1 = {
   chart: {
@@ -317,9 +310,10 @@ onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
   try {
+    null.a
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
       timeout: 30,

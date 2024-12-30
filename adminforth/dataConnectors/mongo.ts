@@ -5,6 +5,10 @@ import AdminForthBaseConnector from './baseConnector.js';
 
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 
+const escapeRegex = (value) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
+};
+
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
     db: MongoClient
 
@@ -31,8 +35,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         [AdminForthFilterOperators.LT]: (value) => ({ $lt: value }),
         [AdminForthFilterOperators.GTE]: (value) => ({ $gte: value }),
         [AdminForthFilterOperators.LTE]: (value) => ({ $lte: value }),
-        [AdminForthFilterOperators.LIKE]: (value) => ({ $regex: value }),
-        [AdminForthFilterOperators.ILIKE]: (value) => ({ $regex: value, $options: 'i' }),
+        [AdminForthFilterOperators.LIKE]: (value) => ({ $regex: escapeRegex(value) }),
+        [AdminForthFilterOperators.ILIKE]: (value) => ({ $regex: escapeRegex(value), $options: 'i' }),
         [AdminForthFilterOperators.IN]: (value) => ({ $in: value }),
         [AdminForthFilterOperators.NIN]: (value) => ({ $nin: value }),
     };
@@ -103,7 +107,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value ? 1 : 0;
+          return value ? true : false;
         }
         return value;
     }

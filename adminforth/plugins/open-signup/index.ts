@@ -1,6 +1,7 @@
 import AdminForth, { AdminForthPlugin, Filters, suggestIfTypo, AdminForthDataTypes } from "adminforth";
 import type { IAdminForth, IHttpServer, AdminForthComponentDeclaration, AdminForthResourceColumn, AdminForthResource, BeforeLoginConfirmationFunction, HttpExtra } from "adminforth";
 import type { PluginOptions } from './types.js';
+import { error } from "console";
 
 
 export default class OpenSignupPlugin extends AdminForthPlugin {
@@ -81,11 +82,6 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         meta: { 
           customLayout: true, 
           pluginInstanceId: this.pluginInstanceId,
-          passwordField: {
-            minLength: passwordField.minLength,
-            maxLength: passwordField.maxLength,
-            validation: passwordField.validation
-          },
           requestEmailConfirmation: !!this.options.confirmEmails
         }
       }
@@ -100,6 +96,11 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
   }
   
   validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    if (this.options.confirmEmails) {
+      this.options.confirmEmails.adapter.validate();
+    }
+
+
     if(this.options.confirmEmails){
       const emailConfirmedColumn = this.resourceConfig.columns.find(f => f.name === this.options.confirmEmails.emailConfirmedField);
       if (emailConfirmedColumn.type !== AdminForthDataTypes.BOOLEAN) {
@@ -141,11 +142,27 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
 
 
   setupEndpoints(server: IHttpServer) {
+
+    server.endpoint({
+      method: 'GET',
+      path: `/plugin/${this.pluginInstanceId}/password-constraints`,
+      noAuth: true,
+      handler: async ({tr}) => {
+        return {
+          minLength: this.passwordField.minLength,
+          maxLength: this.passwordField.maxLength,
+          validation: await Promise.all(
+            this.passwordField.validation.map(async ({ regExp, message }) => ({ regExp, message: await tr(message, 'opensignup') }))
+          ),
+        };
+      }
+    });
+    
     server.endpoint({
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/complete-verified-signup`,
       noAuth: true,
-      handler: async ({ body, response, headers, query, cookies }) => {
+      handler: async ({ body, response, headers, query, cookies, tr }) => {
         const { token, password } = body;
         const { email } = await this.adminforth.auth.verify(token, 'tempVerifyEmailToken', false);
         if (!email) {
@@ -153,15 +170,15 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         }
 
         if(!password) {
-          return { error: 'Password is required', ok: false };
+          return { error: tr('Password is required', 'opensignup'), ok: false };
         }
         const userRecord = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
         if (!userRecord) {
-          return { error: 'User not found', ok: false };
+          return { error: tr('User not found'), ok: false };
         }
 
         if (userRecord[this.options.confirmEmails.emailConfirmedField]) {
-          return { error: 'Email already confirmed', ok: false };
+          return { error: tr('Email already confirmed'), ok: false };
         }
 
         await this.adminforth.resource(this.authResource.resourceId).update(userRecord[this.authResource.columns.find((col) => col.primaryKey).name], {
@@ -176,7 +193,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
       method: 'POST',
       path: `/plugin/${this.pluginInstanceId}/signup`,
       noAuth: true,
-      handler: async ({ body, response, headers, query, cookies }) => {
+      handler: async ({ body, response, headers, query, cookies, tr }) => {
         const { email, url, password } = body;
 
         // validate email
@@ -191,24 +208,34 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
         // validate password
         if (!this.options.confirmEmails) {
           if (password.length < this.passwordField.minLength) {
-            return { error: `Password must be at least ${this.passwordField.minLength} characters long`, ok: false };
+            return { 
+              error: tr(`Password must be at least ${this.passwordField.minLength} characters long`, 'opensignup'),
+              ok: false 
+            };
           }
           if (password.length > this.passwordField.maxLength) {
-            return { error: `Password must be at most ${this.passwordField.maxLength} characters long`, ok: false };
+            return { 
+              error: tr(`Password must be at most ${this.passwordField.maxLength} characters long`, 'opensignup'),
+              ok: false 
+            };
           }
           if (this.passwordField.validation) {
             for (const { regExp, message } of this.passwordField.validation) {
               if (!new RegExp(regExp).test(password)) {
-                return { error: message, ok: false };
+                return { error: tr(message, 'opensignup'), ok: false };
               }
             }
           }
         }
+        
+        // This is not needed when right email validator is set on email field because
+        // it will not allow to create such email, but if user forgot to set it it might save situation 
+        const normalizedEmail = email.toLowerCase();  // normalize email
 
         // first check again if email already exists
-        const existingUser = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, email));
+        const existingUser = await this.adminforth.resource(this.authResource.resourceId).get(Filters.EQ(this.emailField.name, normalizedEmail));
         if ((!this.options.confirmEmails && existingUser) || (this.options.confirmEmails && existingUser?.[this.emailConfirmedField.name])) {
-          return { error: 'Email already exists', ok: false };
+          return { error: tr('Email already exists', 'opensignup'), ok: false };
         }
 
         // create user
@@ -216,7 +243,7 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
           const created = await this.adminforth.resource(this.authResource.resourceId).create({
             ...(this.options.defaultFieldValues || {}),
             ...(this.options.confirmEmails ? { [this.options.confirmEmails.emailConfirmedField]: false } : {}),  
-            [this.emailField.name]: email,
+            [this.emailField.name]: normalizedEmail,
             [this.options.passwordHashField]: password ? await AdminForth.Utils.generatePasswordHash(password) : '',
           });
         }
@@ -232,40 +259,40 @@ export default class OpenSignupPlugin extends AdminForthPlugin {
 
         const verifyToken = this.adminforth.auth.issueJWT({email, issuer: brandName }, 'tempVerifyEmailToken', '2h');
         process.env.HEAVY_DEBUG && console.log('🐛Sending reset tok to', verifyToken);
-        const emailText = `
+        const emailText = tr(`
                   Dear user,
-                  Welcome to ${brandName}! 
+                  Welcome to {brandName}! 
                   
                   To confirm your email, click the link below:\n\n
 
-                  ${url}?verifyToken=${verifyToken}\n\n
+                  {url}?verifyToken={verifyToken}\n\n
 
                   If you didn't request this, please ignore this email.\n\n
                   Link is valid for 2 hours.\n\n
 
                   Thanks,
-                  The ${brandName} Team
+                  The {brandName} Team
                                     
-                `;
+                `, 'opensignup', { brandName, url, verifyToken }
+        );
           
-          const emailHtml = `
-                <html>
-                  <head></head>
-                  <body>
-                    <p>Dear user,</p>
-                    <p>Welcome to ${brandName}!</p>
-                    <p>To confirm your email, click the link below:</p>
-                    <a href="${url}?token=${verifyToken}">Confirm email</a>
-                    <p>If you didn't request this, please ignore this email.</p>
-                    <p>Link is valid for 2 hours.</p>
-                    <p>Thanks,</p>
-                    <p>The ${brandName} Team</p>
-                  </body>
-                </html>
+        const emailHtml = tr(`
+              <html>
+                <head></head>
+                <body>
+                  <p>Dear user,</p>
+                  <p>Welcome to {brandName}!</p>
+                  <p>To confirm your email, click the link below:</p>
+                  <a href="{url}?token={verifyToken}">Confirm email</a>
+                  <p>If you didn't request this, please ignore this email.</p>
+                  <p>Link is valid for 2 hours.</p>
+                  <p>Thanks,</p>
+                  <p>The {brandName} Team</p>
+                </body>
+              </html>
+        `, 'opensignup', { brandName, url, verifyToken });
 
-
-                `;
-          const emailSubject = `Signup request at ${brandName}`;
+        const emailSubject = tr(`Signup request at {brandName}`, 'opensignup', { brandName });
 
         // send email with AWS SES this.options.providerOptions.AWS_SES
         this.options.confirmEmails.adapter.sendEmail(this.options.confirmEmails.sendFrom, email, emailText, emailHtml, emailSubject);

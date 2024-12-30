@@ -68,7 +68,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
@@ -80,7 +80,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-
+import adminforth from '@/adminforth';
 
 const coreStore = useCoreStore();
 
@@ -158,7 +158,7 @@ async function saveRecord() {
   if (resp.error) {
     showErrorTost(resp.error);
   } else {
-    window.adminforth.alert({
+    adminforth.alert({
       message: 'Record updated successfully',
       variant: 'success',
       timeout: 400000

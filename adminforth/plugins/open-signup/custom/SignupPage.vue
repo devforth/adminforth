@@ -31,14 +31,14 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                      Sign up into {{ coreStore.config?.brandName }}
+                      {{$t('Sign up into')}} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
                 <!-- Modal body -->
                 <div class="p-4 md:p-5">
                   <form v-if="!requestSent" class="space-y-4" role="alert" @submit.prevent>
                     <div v-if="!verifyToken" class="relative">
-                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
+                      <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your email address')}}</label>
                       <input type="email" name="email" id="email" 
                         tabindex="1"
                         autocomplete="username"  
@@ -50,7 +50,7 @@
                       />
                     </div>
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New password</label>
+                      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Your password')}}</label>
                       <input 
                         tabindex="2"
                         autocomplete="new-password"
@@ -74,7 +74,7 @@
                     </div>
 
                     <div v-if="isPasswordNeeded" class="relative">
-                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm new password</label>
+                      <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{$t('Confirm your password')}}</label>
                       <input 
                         ref="passwordConfirmationInput"
                         autocomplete="new-password"
@@ -100,7 +100,7 @@
                       <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                       </svg>
-                      <span class="sr-only">Info</span>
+                      <span class="sr-only">{{$t('Info')}}</span>
                       <div>
                         {{ validationError || error }}
                       </div>
@@ -113,15 +113,15 @@
                       class="w-full"
                       :loader="inProgress"
                     >
-                      Sign up
+                      {{$t('Sign up')}}
                     </Button>
                   </form>
 <!-- END of set new paasord -->
                   <div v-else class="flex items center justify-center p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-800 dark:text-green-400" role="alert">
-                    Please check your email at {{ sentToEmail }} to confirm your email address.
+                    {{$t('Please check your email at')}} {{ sentToEmail }} {{$t('to confirm your email address.')}}
                   </div> 
                   <p class="text-gray-500 dark:text-gray-400 font-sm text-right mt-3">
-                      or <Link to="/login">{{ toLoginText }}</Link>
+                      {{$t('Already have an account?')}} <Link :to="`/login${route.query.next ? `?next=${encodeURIComponent(route.query.next)}` : ''}`">{{ $t('login here') }}</Link>
                   </p>
                 </div>
             </div>
@@ -133,7 +133,7 @@
 
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref } from 'vue';
+import { onMounted, ref, computed, Ref, onBeforeMount } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
@@ -141,6 +141,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import Button from '@/afcl/Button.vue';
 import Link from '@/afcl/Link.vue';
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+
+const { t } = useI18n();
 
 const inProgress = ref(false);
 
@@ -158,7 +162,6 @@ const sentToEmail: Ref<string> = ref('');
 
 const requestEmailConfirmation = computed(() => route.meta.requestEmailConfirmation);
 const verifyToken = computed(() => route.query.token);
-const toLoginText = computed(() => `${verifyToken.value ? 'Go' : 'Back'} to login`);
 const isPasswordNeeded = computed(() => !requestEmailConfirmation.value || (requestEmailConfirmation.value && verifyToken.value));
 
 const user = useUserStore();
@@ -169,22 +172,25 @@ const router = useRouter();
 function checkPassword() {
 
   if (!password.value || !passwordConfirmation.value) {
-    return 'Please enter both password and password confirmation';
+    return t('Please enter both password and password confirmation');
   }
   if (password.value !== passwordConfirmation.value) {
-    return 'Passwords do not match';
+    return t('Passwords do not match');
   }
 
-  if (password.value.length < passwordField.value.minLength) {
-    return `Password must be at least ${passwordField.value.minLength} characters long`;
+  if (!passwordConstraints.value) {
+    return null;
+  }
+  if (password.value.length < passwordConstraints.value.minLength) {
+    return t(`Password must be at least {minLength} characters long`, { minLength: passwordConstraints.value.minLength });
   }
 
-  if (password.value.length > passwordField.value.maxLength) {
-    return `Password must be at most ${passwordField.value.maxLength} characters long`;
+  if (password.value.length > passwordConstraints.value.maxLength) {
+    return t(`Password must be at most {maxLength} characters long`, { maxLength: passwordConstraints.value.maxLength });
   }
 
-  if (passwordField.value.validation) {
-    const valError = applyRegexValidation(password.value, passwordField.value.validation);
+  if (passwordConstraints.value.validation) {
+    const valError = applyRegexValidation(password.value, passwordConstraints.value.validation);
     if (valError) {
       return valError;
     }
@@ -213,19 +219,60 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-const passwordField = computed(
-  () => route.meta.passwordField
-)
+
+const passwordConstraints: Ref<{
+  minLength: number;
+  maxLength: number;
+  validation: string;
+}> = ref({
+  minLength: 8,
+  maxLength: 100,
+  validation: '',
+});
+
+// implement something similar to beforeEnter
+// beforeEnter: async (to, from, next) => {
+//         if(localStorage.getItem('isAuthorized') === 'true') {
+//           // check if url has next=... and redirect to it
+//           console.log('to.query', to.query)
+//           if (to.query.next) {
+//             next(to.query.next.toString())
+//           } else {
+//             next({name: 'home'});
+//           }
+//         } else {
+//           next()
+//         }
+//       } 
+
+onBeforeMount(() => {
+  if (localStorage.getItem('isAuthorized') === 'true') {
+    // if route has next param, redirect
+    coreStore.fetchMenuAndResource();
+    if (route.query.next) {
+      router.push(route.query.next.toString());
+    } else {
+      router.push({ name: 'home' });
+    }
+  }
+})
 
 onMounted(async () => {
+
+
   await coreStore.getPublicConfig();
+  // getPasswordConstraints
+  passwordConstraints.value = await callAdminForthApi({
+    path: `/plugin/${route.meta.pluginInstanceId}/password-constraints`,
+    method: 'GET',
+  });
 });
 
 async function doSignup() {
   error.value = null;
   const email = emailInput.value!.value;
   if (!email) {
-    error.value = 'Please enter your email';
+    error.value = t('Please enter your email');
     return;
   }
   if (!requestEmailConfirmation.value && checkPassword()) {
@@ -273,8 +320,8 @@ const signupAfterEmailConfirmation = async () => {
       }
     });
     if (resp.error) {
-      window.adminforth.alert({
-        message: `Error fetching data: ${resp.error}`,
+      adminforth.alert({
+        message: t(`Error fetching data: {error}`, { error: resp.error }),
         variant: 'danger',
       });
     } else if (resp.redirectTo) {

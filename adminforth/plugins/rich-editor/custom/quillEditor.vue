@@ -1,5 +1,4 @@
 <template>
-
   <div 
     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 
       focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
@@ -22,6 +21,8 @@
 import { onMounted, ref, onUnmounted, watch, type Ref } from "vue";
 import { callAdminForthApi } from '@/utils';
 import { AdminForthColumnCommon } from '@/types/Common';
+import adminforth from '@/adminforth';
+
 import AsyncQueue from './async-queue';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
@@ -129,7 +130,7 @@ async function saveToServer(file: File) {
   });
 
   if (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `File was not uploaded because of error: ${error}`,
       variant: 'danger'
     });
@@ -154,7 +155,7 @@ async function saveToServer(file: File) {
     xhr.send(file);
   });
   if (!success) {
-    window.adminforth.alert({
+    adminforth.alert({
       messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
       <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
         xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -200,6 +201,7 @@ onMounted(() => {
 
   quill = new Quill(editor.value as HTMLElement, {
     theme: "snow",
+    readOnly:props.column?.editReadonly,
     placeholder: 'Type here...',
     // formats : ['complete'],
     modules: {
@@ -431,7 +433,7 @@ function approveCompletion(type: 'all' | 'word') {
 }
 
 async function startCompletion() {
-  if (!props.meta.shouldComplete) {
+  if (!props.meta.shouldComplete || props.column?.editReadonly ) {
     return;
   }
   completion.value = null;

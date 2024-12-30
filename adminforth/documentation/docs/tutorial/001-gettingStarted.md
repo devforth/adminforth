@@ -26,13 +26,13 @@ npm install adminforth
 AdminForth does not provide own HTTP server, but can add own listeners over exisitng [Express](https://expressjs.com/) server (Fastify support is planned in future). This allows to create custom APIs for backoffice in a way you know.
 
 ```bash
-npm install express
+npm i express
 ```
 
 You can use AdminForth in pure Node, but we recommend using TypeScript for better development experience:
 
 ```bash
-npm install typescript@5.4.5 tsx@4.11.2 @types/express @types/node --save-dev
+npm i typescript@5.4.5 tsx@4.11.2 @types/express @types/node -D
 echo '{
   "compilerOptions": {
     "target": "esnext",

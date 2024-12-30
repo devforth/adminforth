@@ -57,7 +57,9 @@ const countryName = computed(() => {
 
   // border radius  for background
   border-radius: 2px;
-  box-shadow: inset -0.3px -0.3px 0.3px 0px rgba(0 0 0 / 0.2), inset 0.3px 0.3px 0.3px 0px rgba(255 255 255 / 0.2);
+  box-shadow: inset -0.3px -0.3px 0.3px 0px rgba(0 0 0 / 0.2), 
+    inset 0.3px 0.3px 0.3px 0px rgba(255 255 255 / 0.2),
+    0px 0px 3px #00000030;
 }
 
 </style>

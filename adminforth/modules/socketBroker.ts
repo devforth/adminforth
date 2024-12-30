@@ -89,7 +89,13 @@ export default class SocketBroker implements IWebSocketBroker {
           this.topics[data.topic].push(client);
           client.topics.add(data.topic);
           if (this.adminforth.config.auth.websocketSubscribed) {
-            this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
+            (async () => {
+              try {
+                await this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
+              } catch (e) {
+                console.error(`Error in websocketSubscribed for topic ${data.topic}`, e);
+              }
+            })(); // run in background
           }
         } else if (data.type === 'unsubscribe') {
           if (!data.topic) {

@@ -15,7 +15,11 @@ export default {
       name: "bb_enabled",
       type: AdminForthDataTypes.BOOLEAN,
       required: false,
-      backendOnly: true,
+    },
+    {
+      name: "email",
+      type: AdminForthDataTypes.STRING,
+      required: false,
     },
     { name: "bb_rank", type: AdminForthDataTypes.INTEGER, required: false },
     {

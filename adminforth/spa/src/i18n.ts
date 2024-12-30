@@ -21,7 +21,6 @@ function slavicPluralRule(choice, choicesLength, orgRule) {
   return choicesLength < 4 ? 2 : 3
 }
 
-
 export function initI18n(app: ReturnType<typeof createApp>) {
   const i18n = createI18n({
     legacy: false,
@@ -48,8 +47,8 @@ export function initI18n(app: ReturnType<typeof createApp>) {
       // e.g. relevant for "Showing {from} to {to} of {total} entries" on list page
       return key + ' ';
     },
-  })
+  });
 
   app.use(i18n);
-
+  return i18n
 }
