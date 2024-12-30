@@ -27,21 +27,23 @@ When user opens edit page, AdminForth makes a request to the backend to get the 
 
 ![Initial data for edit page flow](image-28.png)
 
-Practically you can use this hook to modify or add some data before it is displayed on the edit page. 
+Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
 
 For example [upload plugin](/docs/tutorial/Plugins/upload/) uses this hook to generate signed preview URL so user can see existing uploaded file preview  in form, and at the same time database stores only original file path which might be not accessible without presigned URL.
 
 ## Saving data on edit page
 
-When user clicks the save button, AdminForth makes a request to the backend to save the data.
+When user clicks the "Save" button on edit page, AdminForth makes a request to the backend to save the data.
 
 ![Saving data on edit page](image-27.png)
 
-Practically you can use this hook to modify the data or populate new fields before it is saved to the database.
+Practically you can use `edit.beforeSave` hook to modify the data or populate new fields before it is saved to the database.
+
+> 👆 Note: according to diagram you should understand that interrupting flow from `edit.afterSave` does not prevent data modification in DB
 
 ## Saving data on create page
 
-When user clicks the save button from create page, AdminForth makes a request to the backend to save the data.
+When user clicks the "Save" button from create page, AdminForth makes a request to the backend to create new record.
 
 ![Saving data on create page](image-26.png)
 
@@ -87,13 +89,13 @@ import type { AdminUser } from  'adminforth';
 }
 ```
 
-In this way user who creates the apartment will be assigned as a realtor. 
+In this way user who creates the apartment will be assigned as a realtor. Also user can't set other realtor then himself, even if he will make request using curl/devtools because hook will override the value.
 
 ## List page flow
 
 When user opens the list page, AdminForth makes a request to the backend to get the list of items.
 
-![List page flow](image-22.png)
+![List page flow](image-31.png)
 
 ### Example: limit access in list to user-related records
 
