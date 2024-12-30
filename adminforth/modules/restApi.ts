@@ -574,7 +574,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error };
         }
 
-        for (const hook of listify(resource.hooks?.[source]?.beforeDatasourceRequest)) {
+        const hookSource = {
+          'show': 'show',
+          'list': 'list',
+          'edit': 'show',
+        }[source];
+
+        for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest)) {
           const resp = await hook({ 
             resource, 
             query: body, 
@@ -596,17 +602,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         for (const filter of (filters || [])) {
           if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
-              throw new Error(`Operator '${filter.operator}' is not allowed`);
+            throw new Error(`Operator '${filter.operator}' is not allowed`);
           }
 
           if (!resource.columns.some((col) => col.name === filter.field)) {
-              throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
+            throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
           }
 
           if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
-              if (!Array.isArray(filter.value)) {
-                  throw new Error(`Value for operator '${filter.operator}' should be an array`);
-              }
+            if (!Array.isArray(filter.value)) {
+              throw new Error(`Value for operator '${filter.operator}' should be an array`);
+            }
           }
 
           
@@ -674,7 +680,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         // only after adminforth made all post processing, give user ability to edit it
-        for (const hook of listify(resource.hooks?.[source]?.afterDatasourceResponse)) {
+        for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
           const resp = await hook({ 
             resource, 
             response: 

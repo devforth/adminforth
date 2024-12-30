@@ -20,6 +20,7 @@ import {
   IWebSocketBroker,
   HttpExtra,
   BeforeCreateSaveFunction,
+  AdminForthInputConfig,
 } from './types/Back.js';
 
 import {
@@ -93,7 +94,7 @@ class AdminForth implements IAdminForth {
     dbDiscover: 'running' | 'done',
   }
 
-  constructor(config: AdminForthConfig) {
+  constructor(config: AdminForthInputConfig) {
     this.codeInjector = new CodeInjector(this);
     this.configValidator = new ConfigValidator(this, config);
     this.restApi = new AdminForthRestAPI(this);
