@@ -50,7 +50,7 @@ class AiTranslateError extends Error {
     this.name = 'AiTranslateError';
   }
 }
-export default class I18N extends AdminForthPlugin {
+export default class I18nPlugin extends AdminForthPlugin {
   options: PluginOptions;
   emailField: AdminForthResourceColumn;
   passwordField: AdminForthResourceColumn;
