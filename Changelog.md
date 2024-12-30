@@ -5,19 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.5.8] - next
+## [v1.5.9] - next
 
-# Added
+## [v1.5.8]
+
+### Added
 
 - Command to generate typescript models `npx -y adminforth generate-models --env-file=.env`
 - add i18n support: add vue-i18n to frontend and tr function to backend. This will allow to implement translation plugins
 - badgeTooltip - now you can add a tooltip to the badge to explain what it means
 - ability to authorize not only subscription on websocket but filter out whom users message will be published (updated doc)
 - added ability to refresh menu item badge from the backend using websocket publish
+- fix bugs when e.g. UR (urdu) can't be recognized by LLM (define names explicitly)
+- make user menu switch shorter
+- next param support on login route (also preserve next param between login/signup navigation)
 
-# Improved
+### Improved
 
-- Added separate BeforeCreateSave function in types without oldRecord and make oldRecord Mandatory in existing BeforeSaveFunction
+- Added separate BeforeCreateSave function in types without oldRecord and make oldRecord mandatory in existing BeforeSaveFunction
+- Added dataConnector: IAdminForthDataSourceConnectorBase; into IOperationalResource - for reusing connectors from users code
+
+### Fixed
+
+- WS on base URL
+- favicon when using BaseURL
+- Mongo: fix search by strings with "+" and other special characters
+- mongo storing boolean as true/false now. Before it was 1/0 which broke compatibility with many other ORMs
 
 ## [v1.5.7] - 2024-12-09
 

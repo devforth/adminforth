@@ -175,7 +175,7 @@ npm init -y
 And simply do `npm install` for the package you need:
 
 ```bash
-npm install <some package> --save-dev
+npm i <some package> -D
 ```
 
 

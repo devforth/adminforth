@@ -31,9 +31,9 @@
               </svg>
 
               <template v-if="!uploaded">
-                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">{{ $t('Click to upload') }}</span> {{ $t('or drag and drop') }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? `(up to ${humanifySize(meta.maxFileSize)})` : '' }}
+                  {{ allowedExtensionsLabel }} {{ meta.maxFileSize ? $t(`(up to {size})`, { size: humanifySize(meta.maxFileSize) }) : '' }}
                 </p>
               </template>
 
@@ -50,12 +50,12 @@
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 <p class="ml-2 text-sm text-green-600 dark:text-green-400 flex items-center">
-                  File uploaded
+                  {{ $t('File uploaded') }}
                   <span class="text-xs text-gray-500 dark:text-gray-400">{{ humanifySize(uploadedSize) }}</span>
                 </p>
 
                 <button @click.stop.prevent="clear" class="ml-2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-500
-                  hover:underline dark:hover:underline focus:outline-none">Clear</button>
+                  hover:underline dark:hover:underline focus:outline-none">{{ $t('Clear') }}</button>
               </div>
               
           </div>
@@ -65,14 +65,21 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue'
 import { callAdminForthApi } from '@/utils'
 import { IconMagic } from '@iconify-prerendered/vue-mdi';
+import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+
+
+const route = useRoute();
+const { t } = useI18n();
 
 const inputId = computed(() => `dropzone-file-${props.meta.pluginInstanceId}`);
 
 import ImageGenerator from '@@/plugins/UploadPlugin/imageGenerator.vue';
+import adminforth from '@/adminforth';
 
 
 const props = defineProps({
@@ -103,7 +110,6 @@ watch(() => uploaded, (value) => {
 
 function uploadGeneratedImage(imgBlob) {
   // update the value
-  console.log('⚓⚓ Generated image uploaded:', imgBlob);
 
   const file = new File([imgBlob], 'generated.png', { type: imgBlob.type });
   onFileChange({
@@ -130,7 +136,7 @@ const allowedExtensionsLabel = computed(() => {
   // make upper case and write in format EXT1, EXT2 or EXT3
   let label = allowedExtensions.map(ext => ext.toUpperCase()).join(', ');
   // last comma to 'or'
-  label = label.replace(/,([^,]*)$/, ' or$1')
+  label = label.replace(/,([^,]*)$/, ` ${t('or')}$1`)
   return label
 });
 
@@ -190,8 +196,11 @@ const onFileChange = async (e) => {
   // validate file extension
   const allowedExtensions = props.meta.allowedExtensions || []
   if (allowedExtensions.length > 0 && !allowedExtensions.includes(extension)) {
-    window.adminforth.alert({
-      message: `Sorry but the file type ${extension} is not allowed. Please upload a file with one of the following extensions: ${allowedExtensionsLabel.value}`,
+    adminforth.alert({
+      message: t('Sorry but the file type {extension} is not allowed. Please upload a file with one of the following extensions: {allowedExtensionsLabel}', {
+        extension,
+        allowedExtensionsLabel: allowedExtensionsLabel.value,
+      }),
       variant: 'danger'
     });
     return;
@@ -199,14 +208,17 @@ const onFileChange = async (e) => {
 
   // validate file size
   if (props.meta.maxFileSize && size > props.meta.maxFileSize) {
-    window.adminforth.alert({
-      message: `Sorry but the file size ${humanifySize(size)} is too large. Please upload a file with a maximum size of ${humanifySize(props.meta.maxFileSize)}`,
+    adminforth.alert({
+      message: t('Sorry but the file size {size} is too large. Please upload a file with a maximum size of {maxFileSize}', {
+        size: humanifySize(size),
+        maxFileSize: humanifySize(props.meta.maxFileSize),
+      }),
       variant: 'danger'
     });
     return;
   }
 
-  emit('update:inValidity', 'Upload in progress...');
+  emit('update:inValidity', t('Upload in progress...'));
   try {
     // supports preview
     if (type.startsWith('image/')) {
@@ -225,12 +237,13 @@ const onFileChange = async (e) => {
           contentType: type,
           size,
           originalExtension: extension,
+          recordPk: route?.params?.primaryKey,
         },
     });
 
     if (error) {
-      window.adminforth.alert({
-        message: `File was not uploaded because of error: ${error}`,
+      adminforth.alert({
+        message: t('File was not uploaded because of error: {error}', { error }),
         variant: 'danger'
       });
       imgPreview.value = null;
@@ -257,8 +270,8 @@ const onFileChange = async (e) => {
       xhr.send(file);
     });
     if (!success) {
-      window.adminforth.alert({
-        messageHtml: `<div>Sorry but the file was not uploaded because of S3 Request Error: </div>
+      adminforth.alert({
+        messageHtml: `<div>${t('Sorry but the file was not uploaded because of S3 Request Error:')}</div>
         <pre style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${
           xhr.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;')
         }</pre>`,
@@ -274,8 +287,8 @@ const onFileChange = async (e) => {
     emit('update:value', s3Path);
   } catch (error) {
     console.error('Error uploading file:', error);
-    window.adminforth.alert({
-      message: `Sorry but the file was not be uploaded. Please try again: ${error.message}`,
+    adminforth.alert({
+      message: t('Sorry but the file was not be uploaded. Please try again: {error}', { error: error.message }),
       variant: 'danger'
     });
     imgPreview.value = null;

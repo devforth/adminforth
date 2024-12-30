@@ -8,7 +8,10 @@ export default class CompletionAdapterOpenAIChatGPT
 
   constructor(options: AdapterOptions) {
     this.options = options;
-    if (!options.openAiApiKey) {
+  }
+
+  validate() {
+    if (!this.options.openAiApiKey) {
       throw new Error("openAiApiKey is required");
     }
   }

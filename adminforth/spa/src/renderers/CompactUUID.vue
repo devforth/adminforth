@@ -10,11 +10,12 @@
   
 </template>
 
-<script setup>  
+<script setup lang="ts">
+
 import { computed, ref, onMounted, nextTick } from 'vue';
 import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
 import Tooltip from '@/afcl/Tooltip.vue';
-
+import adminforth from '@/adminforth';
 
 const visualValue = computed(() => {
   // if lenght is more then 8, show only first 4 and last 4 characters, ... in the middle
@@ -31,7 +32,7 @@ const id = ref();
 
 function copyToCB() {
   navigator.clipboard.writeText(props.record[props.column.name]);
-  window.adminforth.alert({
+  adminforth.alert({
     message: 'ID copied to clipboard',
     variant: 'success',
   })

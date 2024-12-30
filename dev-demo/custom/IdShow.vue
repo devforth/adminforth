@@ -5,7 +5,7 @@
         </a>
 
         <template #tooltip>
-            Search for competitive apartments in Google
+            {{$t('Search for competitive apartments in Google')}}
         </template>
     </Tooltip>
 </template>

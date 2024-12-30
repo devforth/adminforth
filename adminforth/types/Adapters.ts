@@ -1,18 +1,23 @@
 export interface EmailAdapter {
+  validate(): Promise<void>;
+
   sendEmail(
     from: string,
     to: string,
     text: string,
     html: string,
     subject: string
-  );
+  ): Promise<void>;
 }
 
 export interface CompletionAdapter {
+
+  validate(): Promise<void>;
+
   complete(
     content: string,
     stop: string[],
-    maxTokens: number
+    maxTokens: number,
   ): Promise<{
     content?: string;
     finishReason?: string;

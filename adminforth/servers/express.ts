@@ -163,8 +163,13 @@ class ExpressServer implements IExpressHttpServer {
   }
 
   setupWsServer() {
+    let base = this.adminforth.config.baseUrl || '';
+    if (base.endsWith('/')) {
+      base = base.slice(0, -1);
+    }
+
     this.server = http.createServer(this.expressApp);
-    const wss = new WebSocketServer({ server: this.server, path: '/afws' });
+    const wss = new WebSocketServer({ server: this.server, path: `${base}/afws` });
     console.log(' 🌐WebSocket server started');
     // Handle WebSocket connections
     wss.on('connection', async (ws, req) => {

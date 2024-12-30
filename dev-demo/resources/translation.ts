@@ -67,10 +67,10 @@ export default {
 
   ],
   options: {
-    allowedActions: {
-    
-    },
     listPageSize: 30,
+    allowedActions: {
+      edit: true,
+    }
   },
   columns: [
     {
@@ -82,6 +82,7 @@ export default {
     {
       name: "en_string",
       type: AdminForthDataTypes.STRING,
+      label: "English",
     },
     {
       name: "created_at",

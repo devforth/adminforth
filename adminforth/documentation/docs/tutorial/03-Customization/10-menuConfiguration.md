@@ -222,6 +222,8 @@ Most times you need to refresh the badge from some backend API or hook. To do th
 More rare case when you need to refresh menu item from the frontend component. You can achieve this by calling the next method:
 
 ```typescript
-window.adminforth.menu.refreshMenuBadges()
+import adminforth from '@/adminforth';
+
+adminforth.menu.refreshMenuBadges()
 ```
 

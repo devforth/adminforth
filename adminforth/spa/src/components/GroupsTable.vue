@@ -20,7 +20,7 @@
           :key="column.name"
           v-if="currentValues !== null"
           class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
-          :class="{ 'border-b': i !== group.columns.length - 1, 'opacity-50 pointer-events-none': column.editReadonly && source === 'edit'}"
+          :class="{ 'border-b': i !== group.columns.length - 1}"
         >
           <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
@@ -59,6 +59,7 @@
                 :options="columnOptions[column.name] || []"
                 :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
                 :modelValue="currentValues[column.name]"
+                :isReadonly="column.editReadonly && source === 'edit'"
                 @update:modelValue="setCurrentValue(column.name, $event)"
               ></Select>
               <Select
@@ -66,6 +67,7 @@
                 v-else-if="column.enum"
                 :options="column.enum"
                 :modelValue="currentValues[column.name]"
+                :isReadonly="column.editReadonly && source === 'edit'"
                 @update:modelValue="setCurrentValue(column.name, $event)"
               ></Select>
               <Select
@@ -73,6 +75,7 @@
                 v-else-if="column.type === 'boolean'"
                 :options="getBooleanOptions(column)"
                 :modelValue="currentValues[column.name]"
+                :isReadonly="column.editReadonly && source === 'edit'"
                 @update:modelValue="setCurrentValue(column.name, $event)"
               ></Select>
               <input 
@@ -81,6 +84,7 @@
                   step="1"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="0"
+                  :isReadonly="column.editReadonly && source === 'edit'"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
               >
@@ -90,6 +94,7 @@
                   :valueStart="currentValues[column.name]"
                   auto-hide
                   @update:valueStart="setCurrentValue(column.name, $event)"
+                  :isReadonly="column.editReadonly && source === 'edit'"
               />
               <input
                   v-else-if="['decimal', 'float'].includes(column.type)"
@@ -99,6 +104,7 @@
                   placeholder="0.0"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
+                  :readonly="column.editReadonly && source === 'edit'"
               />
               <textarea
                   v-else-if="['text', 'richtext'].includes(column.type)"
@@ -106,6 +112,7 @@
                   :placeholder="$t('Text')"
                   :value="currentValues[column.name]"
                   @input="setCurrentValue(column.name, $event.target.value)"
+                  :readonly="column.editReadonly && source === 'edit'"
               >
               </textarea>
               <textarea
@@ -126,7 +133,8 @@
                   autocomplete="false"
                   data-lpignore="true"
                   readonly
-                  onfocus="this.removeAttribute('readonly');"
+                  ref="readonlyInputs"
+                  @focus="onFocusHandler($event, column, source)"
               >
 
               <button
@@ -155,6 +163,9 @@
   import { getCustomComponent } from '@/utils';
   import { Tooltip } from '@/afcl';
   import { ref, computed, watch, type Ref } from 'vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     source: 'create' | 'edit',
@@ -168,22 +179,33 @@
     columnOptions: any,
   }>();
 
+  const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
+  const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
+
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [
-      { label: 'Yes', value: true },
-      { label: 'No', value: false },
+      { label: t('Yes'), value: true },
+      { label: t('No'), value: false },
     ];
     if (!column.required[props.mode]) {
-      options.push({ label: 'Unset', value: null });
+      options.push({ label: t('Unset'), value: null });
     }
     return options;
   };
+  function onFocusHandler(event:FocusEvent, column:any, source:string, ) {
+    const focusedInput = event.target as HTMLInputElement; 
+    if(!focusedInput) return;  
+    if (column.editReadonly && source === 'edit') return;  
+    else {
+      focusedInput.removeAttribute('readonly'); 
+    }
+  }
+
 
   const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
 
 
-  const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
-  const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
+
 
   watch(customComponentsInValidity, (newVal) => {
     emit('update:customComponentsInValidity', newVal);

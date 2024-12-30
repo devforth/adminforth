@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthConfigMenuItem,
   AnnouncementBadgeResponse
 } from './Common.js';
+import { AnyCnameRecord } from 'dns';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
@@ -450,17 +451,39 @@ export interface HttpExtra {
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type BeforeSaveFunction = (params: {
+export type BeforeDeleteSaveFunction = (params: {
   resource: AdminForthResource, 
   recordId: any, 
   adminUser: AdminUser, 
   record: any, 
+  adminforth: IAdminForth,
+  extra?: HttpExtra,
+}) => Promise<{ok: boolean, error?: string}>;
+
+
+export type BeforeEditSaveFunction = (params: {
+  resource: AdminForthResource, 
+  recordId: any, 
+  adminUser: AdminUser, 
+  updates: any,
+  record: any, // legacy, 'updates' should be used instead
   oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
+
+
 export type BeforeCreateSaveFunction = (params: {
+  resource: AdminForthResource, 
+  recordId: any, 
+  adminUser: AdminUser, 
+  record: any, 
+  adminforth: IAdminForth,
+  extra?: HttpExtra,
+}) => Promise<{ok: boolean, error?: string}>;
+
+export type AfterCreateSaveFunction = (params: {
   resource: AdminForthResource, 
   recordId: any, 
   adminUser: AdminUser, 
@@ -473,12 +496,23 @@ export type BeforeCreateSaveFunction = (params: {
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
-export type AfterSaveFunction = (params: {
+export type AfterDeleteSaveFunction = (params: {
   resource: AdminForthResource, 
   recordId: any, 
   adminUser: AdminUser, 
   record: any, 
-  oldRecord?: any,
+  adminforth: IAdminForth,
+  extra?: HttpExtra,
+}) => Promise<{ok: boolean, error?: string}>;
+
+
+export type AfterEditSaveFunction = (params: {
+  resource: AdminForthResource, 
+  recordId: any, 
+  adminUser: AdminUser,
+  updates: any, 
+  record: any, // legacy, 'updates' should be used instead 
+  oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -728,32 +762,32 @@ export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCom
        * Typical use-cases:
        * - Initiate some trigger after record saved to database (e.g sync to another datasource)
        */
-      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+      afterSave?: AfterCreateSaveFunction | Array<AfterCreateSaveFunction>,
     },
     edit?: {
       /**
        * Typical use-cases:
        * - Same as hooks.create.beforeSave but for edit page
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: BeforeEditSaveFunction | Array<BeforeEditSaveFunction>,
 
       /**
        * Typical use-cases:
        * - Same as hooks.create.afterSave but for edit page
        */
-      afterSave?: AfterSaveFunction | Array<AfterSaveFunction>,
+      afterSave?: AfterEditSaveFunction | Array<AfterEditSaveFunction>,
     },
     delete?: {
       /**
        * Typical use-cases:
        * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
        */
-      beforeSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      beforeSave?: BeforeDeleteSaveFunction | Array<BeforeDeleteSaveFunction>,
       /**
        * Typical use-cases:
        * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
        */
-      afterSave?: BeforeSaveFunction | Array<BeforeSaveFunction>,
+      afterSave?: BeforeDeleteSaveFunction | Array<BeforeDeleteSaveFunction>,
     },
   },
 
@@ -1017,6 +1051,8 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
+
+  dataConnector: IAdminForthDataSourceConnectorBase;
 }
 
 
@@ -1154,32 +1190,32 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * Typical use-cases:
        * - Initiate some trigger after record saved to database (e.g sync to another datasource)
        */
-      afterSave?: Array<AfterSaveFunction>,
+      afterSave?: Array<AfterCreateSaveFunction>,
     },
     edit?: {
       /**
        * Typical use-cases:
        * - Same as hooks.create.beforeSave but for edit page
        */
-      beforeSave?: Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeEditSaveFunction>,
 
       /**
        * Typical use-cases:
        * - Same as hooks.create.afterSave but for edit page
        */
-      afterSave?: Array<AfterSaveFunction>,
+      afterSave?: Array<AfterEditSaveFunction>,
     },
     delete?: {
       /**
        * Typical use-cases:
        * - Validate that record can be deleted and interrupt execution if validation failed (`allowedActions.delete` should be preferred in most cases)
        */
-      beforeSave?: Array<BeforeSaveFunction>,
+      beforeSave?: Array<BeforeDeleteSaveFunction>,
       /**
        * Typical use-cases:
        * - Initiate some trigger after record deleted from database (e.g sync to another datasource)
        */
-      afterSave?: Array<BeforeSaveFunction>,
+      afterSave?: Array<BeforeDeleteSaveFunction>,
     },
   },
 

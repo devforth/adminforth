@@ -7,7 +7,7 @@
     "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
-    "startLive": "tsx index.ts"
+    "startLive": "prisma migrate deploy && tsx index.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,18 +16,22 @@
   "dependencies": {
     "@adminforth/audit-log": "^1.0.42",
     "@adminforth/chat-gpt": "^1.0.20",
+    "@adminforth/completion-adapter-open-ai-chat-gpt": "^1.0.2",
     "@adminforth/email-password-reset": "^1.0.5",
     "@adminforth/foreign-inline-list": "^1.0.24",
+    "@adminforth/i18n": "^1.0.19-next.0",
     "@adminforth/import-export": "^1.0.2",
     "@adminforth/rich-editor": "^1.0.16",
     "@adminforth/two-factors-auth": "^1.0.21",
     "@adminforth/upload": "^1.0.25",
-    "adminforth": "^1.5.6-next.8",
+    "@prisma/client": "^6.1.0",
+    "adminforth": "^1.5.8-next.20",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
+    "prisma": "^6.1.0",
     "tsx": "^4.11.2",
     "typescript": "^5.4.5"
   }

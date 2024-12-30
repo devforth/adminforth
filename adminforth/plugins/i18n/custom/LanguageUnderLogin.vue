@@ -1,6 +1,7 @@
 <template>
   <p class="text-gray-500 dark:text-gray-400 font-sm text-left mt-3 flex items-center justify-center">
     <Select
+      class="w-full"
       v-model="selectedLanguage"
       :options="options"
       :placeholder="$t('Select language')"

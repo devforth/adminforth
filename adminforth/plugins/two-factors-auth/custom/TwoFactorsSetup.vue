@@ -13,15 +13,15 @@
           <!-- Modal content -->
           <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black text-gray-500" >
               <div class="p-8 w-full max-w-md max-h-full" >
-                  <div class="m-3" >Scan this QR code with your authenticator app or open by <a class="text-blue-600" :href="totpUri">click</a></div>
+                  <div class="m-3" >{{$t('Scan this QR code with your authenticator app or open by')}} <a class="text-blue-600" :href="totpUri">{{$t('click')}}</a></div>
                   <div class="flex justify-center m-3" >
                       <img :src="totpQrCode" alt="QR code" />
                   </div>
                   <div class="m-3 ">
-                      <div class="m-1">Or copy this code to app manually:</div>
+                      <div class="m-1">{{$t('Or copy this code to app manually:')}}</div>
                       <div class="w-full max-w-[46rem]">
                           <div class="relative">
-                              <label for="npm-install-copy-text" class="sr-only">Label</label>
+                              <label for="npm-install-copy-text" class="sr-only">{{$t('Label')}}</label>
                               <input id="npm-install-copy-text" type="text" class="col-span-10 bg-gray-50 border border-gray-300 text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-4 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 pr-12" :value="totp.newSecret" readonly>
                               <button @click="onCopyClick" data-copy-to-clipboard-target="npm-install-copy-text" class="absolute end-2.5 top-1/2 -translate-y-1/2 text-gray-900 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 rounded-lg py-2 px-2.5 inline-flex items-center justify-center bg-white border-gray-200 border">
                                   <span id="default-message" class="inline-flex items-center">
@@ -48,10 +48,10 @@
                   <!-- <Vue2FACodeInput v-model="code" autofocus /> -->
                    <div class="flex flex-row gap-2.5">
                   <LinkButton to="/login" class="w-full">
-                    Back to login
+                    {{$t('Back to login')}}
                   </LinkButton>
                   <Button v-if="skipAllowed" @click="handleSkip" class="w-full">
-                    Skip for now
+                    {{$t('Skip for now')}}
                   </Button>
                 </div>
               </div>
@@ -76,6 +76,8 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import { Button, LinkButton } from '@/afcl';
 import Vue2FACodeInput from '@loltech/vue3-2fa-code-input';
 import VOtpInput from "vue3-otp-input";
+import adminforth from '@/adminforth';
+
 
 const code = ref(null);
 const handleOnComplete = (value) => {
@@ -122,7 +124,7 @@ function parseJwt(token) {
 
 function onCopyClick(){
   navigator.clipboard.writeText(totp.value.newSecret);
-  window.adminforth.alert({message: 'Copied to clipboard', variant: 'success'})
+  adminforth.alert({message: 'Copied to clipboard', variant: 'success'})
 }
 
 onMounted(async () => {

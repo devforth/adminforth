@@ -34,7 +34,12 @@
               multiple
               class="w-full"
               v-else-if="c.type === 'boolean'"
-              :options="[{ label: 'Yes', value: true }, { label: 'No', value: false }, { label: 'Unset', value: undefined }]"
+              :options="[
+                { label: $t('Yes'), value: true }, 
+                { label: $t('No'), value: false }, 
+                // if field is not required, undefined might be there, and user might want to filter by it
+                ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
+              ]"
               @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />

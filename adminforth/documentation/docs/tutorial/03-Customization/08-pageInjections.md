@@ -39,6 +39,7 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 import { onMounted, ref, Ref } from 'vue';
 import ApexCharts from 'apexcharts';
 import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
 
 
 const data: Ref<any[]> = ref([]);
@@ -56,10 +57,10 @@ const chatOptions = {
       dataPointSelection: function (event, chartContext, config) {
         if (config.selectedDataPoints[0].length) {
           const selectedRoomsCount = data.value[config.dataPointIndex].rooms;
-          window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+          adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
         } else {
           // clear filter
-          window.adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
+          adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
         }
       }
     },
@@ -117,7 +118,7 @@ onMounted(async () => {
   try {
     data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
   } catch (error) {
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
       timeout: 'unlimited'
@@ -138,7 +139,7 @@ onMounted(async () => {
 Then initialize npm in `custom` directory if you didn't do this and install required packages:
 ```bash
 npm init -y
-npm install apexcharts --save-dev
+npm i apexcharts -D
 ```
 
 Also we have to add an Api to get percentages:
@@ -177,7 +178,7 @@ Also we have to add an Api to get percentages:
   admin.express.serve(app)
 ```
 
-> ☝️ Please note that we are using [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+> ☝️ Please note that we are using [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)
@@ -294,17 +295,18 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 
 <script setup>
 import { getReadingTime} from "text-analyzer";
+import adminforth from '@/adminforth';
 
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
   if (text) {
     const readingTime = getReadingTime(text);
-    window.adminforth.alert({
+    adminforth.alert({
       message: `Reading time: ${readingTime.minutes} minutes`,
       variant: 'success',
     });
   }
-  window.adminforth.list.closeThreeDotsDropdown();
+  adminforth.list.closeThreeDotsDropdown();
 }
 </script>
 ```
@@ -319,7 +321,7 @@ npm install text-analyzer --save
 ```
 
 
-> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `window.adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
 
 ## List table custom action icons
@@ -392,7 +394,7 @@ You have opportunity to inject custom components to the global layout. For examp
 
 ![alt text](<Group 6.png>)
 
-use `window.adminforth.closeUserMenuDropdown();` to close the dropdown after the item is clicked.
+use `adminforth.closeUserMenuDropdown();` to close the dropdown after the item is clicked.
 
 ```ts title="/index.ts"
 {
@@ -418,12 +420,14 @@ Now create file `CustomUserMenuItem.vue` in the `custom` folder of your project:
 </template>
 
 <script setup>
+import adminforth from '@/adminforth';
+
 function openCustomPage() {
-  window.adminforth.alert({
+  adminforth.alert({
     message: 'Custom page is opened',
     variant: 'success',
   });
-  window.adminforth.closeUserMenuDropdown();
+  adminforth.closeUserMenuDropdown();
 }
 </script>
 ```
