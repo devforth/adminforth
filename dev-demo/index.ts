@@ -41,13 +41,6 @@ async function seedDatabase() {
 };
 
 
-const demoChecker = async ({ record, adminUser, resource }) => {
-  if (adminUser.dbUser.role !== 'superadmin') {
-    return { ok: false, error: "You can't do this on demo.adminforth.dev" }
-  }
-  return { ok: true };
-}
-
 export const admin = new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   auth: {
@@ -93,7 +86,7 @@ export const admin = new AdminForth({
   customization: {
     customComponentsDir: './custom',
     globalInjections: {
-      // userMenu: '@@/login2.vue',
+      userMenu: '@@/login2.vue',
       header: '@@/PropertyCost.vue',
     },
     customPages:[{
@@ -304,7 +297,7 @@ const port = process.env.PORT || 3000;
 app.get(
   '/api/testtest/', 
   admin.express.authorize(
-    async (req, res, next) => {
+    async (req: express.Request, res: express.Response, next: express.NextFunction) => { 
         res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
     }
   )
@@ -313,7 +306,7 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
-      async (req, res) => {
+      async (req: express.Request, res: express.Response) => {
         admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
           'aparts',
           null,
@@ -335,7 +328,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all(days);
 
-        const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
+        const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
         // add listed, unlisted, listedPrice, unlistedPrice
         const listedVsUnlistedByDays = await db.prepare(
@@ -364,8 +357,12 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all(days);
           
-        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { listedPrice }) => acc + listedPrice, 0));
-        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { unlistedPrice }) => acc + unlistedPrice, 0));
+        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
+          acc: number, { listedPrice }: { listedPrice:number }
+        ) => acc + listedPrice, 0));
+        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((
+          acc: number, { unlistedPrice }: { unlistedPrice:number } 
+        ) => acc + unlistedPrice, 0));
 
         res.json({ 
           apartsByDays,
