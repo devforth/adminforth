@@ -308,7 +308,6 @@ onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
   try {
-    null.a
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     adminforth.alert({
