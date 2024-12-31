@@ -772,7 +772,9 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     await Promise.all(missingKeysDeduplicated.map(async (missingKey: any) => {
       const key = missingKey.en_string;
       const source = missingKey.source;
-      const exists = await adminforth.resource(this.resourceConfig.resourceId).count(Filters.EQ(this.enFieldName, key));
+      const exists = await adminforth.resource(this.resourceConfig.resourceId).count([
+        Filters.EQ(this.enFieldName, key), Filters.EQ(this.options.categoryFieldName, category)
+      ]);
       if (exists) {
         return;
       }
