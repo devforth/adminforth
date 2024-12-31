@@ -290,6 +290,7 @@ import {
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon } from '@/types/Common';
+import adminforth from '@/adminforth';
 
 const coreStore = useCoreStore();
 
@@ -458,7 +459,7 @@ async function onClick(e,row) {
 }
 
 async function deleteRecord(row) {
-  const data = await window.adminforth.confirm({
+  const data = await adminforth.confirm({
     message: 'Are you sure you want to delete this item?',
     yes: 'Delete',
     no: 'Cancel',

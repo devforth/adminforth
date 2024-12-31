@@ -1,6 +1,13 @@
 
 # Limiting actions access
 
+As you might have noticed in diagrams from [adminforth hooks](./04-hooks.md) section of this tutorial, AdminForth checks `options.allowedActions` before executing any action. In this section we will show real-code examples of how to limit access to actions based on user role or record values.
+
+Before we start it is worth to mention that callbacks or scalars defined in `allowedActions` are called/parsed not only before actual request but also before displaying buttons in the UI. So first time, when frontend loads any page of resource, it "calls" `allowedActions` to understand whether user has access to each function, and e.g. if it says that user can't delete record, AdminForth will not show delete icon in the UI:
+
+![Resource any page request](image-21.png)
+
+As you can see allowedAction callbacks are called in parallel in async manner. However it is important to keep them fast and not to make any slow operations in them, to keep UI responsive.
 
 ## Statically disable some action
 

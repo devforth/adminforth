@@ -1,4 +1,22 @@
+import type { AdminForthFilterOperators } from "./Common.js";
+
  
+
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: AdminForthFilterOperators;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+} 
+
 export interface FrontendAPIInterface {
 
     /**
@@ -9,7 +27,9 @@ export interface FrontendAPIInterface {
      * Example: 
      * 
      * ```ts
-     * const isConfirmed = await window.adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
+     * import adminforth from '@/adminforth'
+     * 
+     * const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
      * if (isConfirmed) {
      *  your code...
      * }
@@ -28,7 +48,9 @@ export interface FrontendAPIInterface {
      * Example:
      * 
      * ```ts
-     *  window.adminforth.alert({message: 'Hello', variant: 'success'})
+     * import adminforth from '@/adminforth'
+     * 
+     * adminforth.alert({message: 'Hello', variant: 'success'})
      * ```
      * 
      * @param params - The parameters of the alert
@@ -69,12 +91,14 @@ export interface FrontendAPIInterface {
          * Example:
          * 
          * ```ts
-         * window.adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * import adminforth from '@/adminforth'
+         * 
+         * adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
          * ```
          * 
          * @param filter - The filter to set
          */
-        setFilter(filter: any): void;
+        setFilter(filter: FilterParams): void;
 
         /**
          * Update a filter in the list
@@ -82,12 +106,14 @@ export interface FrontendAPIInterface {
          * Example:
          * 
          * ```ts
-         * window.adminforth.list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * import adminforth from '@/adminforth';
+         * 
+         * adminforth.list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
          * ```
          * 
          * @param filter - The filter to update
          */
-        updateFilter(filter: any): void;
+        updateFilter(filter: FilterParams): void;
 
         /**
          * Clear all filters from the list

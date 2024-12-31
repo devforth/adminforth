@@ -147,6 +147,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
+import adminforth from '@/adminforth';
 
 const filtersShow = ref(false);
 
@@ -262,7 +263,7 @@ async function refreshExistingList(pk?: any) {
 async function startBulkAction(actionId) {
   const action = coreStore.resource.options.bulkActions.find(a => a.id === actionId);
   if (action.confirm) {
-    const confirmed = await window.adminforth.confirm({
+    const confirmed = await adminforth.confirm({
       message: action.confirm,
     });
     if (!confirmed) {
@@ -287,7 +288,7 @@ async function startBulkAction(actionId) {
     await getList();
 
     if (data.successMessage) {
-      window.adminforth.alert({
+      adminforth.alert({
         message: data.successMessage,
         variant: 'success'
       });
@@ -367,7 +368,7 @@ async function init() {
   }
   if (coreStore.resource!.options?.listRowsAutoRefreshSeconds) {
     listAutorefresher = setInterval(async () => {
-      await window.adminforth.list.silentRefresh();
+      await adminforth.list.silentRefresh();
     }, coreStore.resource!.options.listRowsAutoRefreshSeconds * 1000);
   }
 }
@@ -377,15 +378,15 @@ watch([page, sort, () => filtersStore.filters], async () => {
   await getList();
 }, { deep: true });
 
-window.adminforth.list.refresh = async () => {
+adminforth.list.refresh = async () => {
   return await getList();
 }
 
-window.adminforth.list.silentRefresh = async () => {
+adminforth.list.silentRefresh = async () => {
   return await refreshExistingList();
 }
 
-window.adminforth.list.silentRefreshRow = async (pk: any) => {
+adminforth.list.silentRefreshRow = async (pk: any) => {
   return await refreshExistingList(pk);
 }
 
