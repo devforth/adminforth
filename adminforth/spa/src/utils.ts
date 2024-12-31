@@ -118,7 +118,7 @@ export function initThreeDotsDropdown() {
       threeDotsDropdown, 
       document.querySelector('[data-dropdown-toggle="listThreeDotsDropdown"]') as HTMLElement, 
     );
-    window.adminforth.list.closeThreeDotsDropdown = () => {
+    adminforth.list.closeThreeDotsDropdown = () => {
       dd.hide();
     }
   }

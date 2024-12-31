@@ -62,7 +62,7 @@ Here is how it looks:
 In very similar way you can render how cell is rendered in `'edit'` and `'create'` view. 
 You can use it for creating custom editors for the fields. Check [component specs](/docs/api/types/Common/interfaces/AdminForthFieldComponents#create) to understand which props are passed to the component
 
-## Parametrizing the custom components
+## Parametrize the custom components
 
 Sometimes you need to render same component with different parameters.
 You can use [full component declaration](/docs/api/types/Common/interfaces/AdminForthComponentDeclarationFull)
@@ -176,6 +176,79 @@ And simply do `npm install` for the package you need:
 
 ```bash
 npm i <some package> -D
+```
+
+## Editing values component
+
+In same way as we define `show` and list component, we can create component for edit/create page. 
+Let's create custom dropdown for `country` field which will show emoji flags of the countries.
+
+```html title='./custom/CountryDropdown.vue'
+<template>
+  <Select
+      class="w-full"
+      :options="column.enum"
+      :model-value="record[column.name]"
+      @update:model-value="emit('update:value', $event)"
+  >
+    <template #item="{option}">
+      <span class="text-xl inline-flex">{{ getCountryFlag(option.value) }}</span> {{ option.label }}
+    </template>
+
+    <template #selected-item="{option}">
+      <span class="text-xl inline-flex">{{ getCountryFlag(option.value) }}</span> {{ option.label }}
+    </template>
+  </Select>
+</template>
+
+<script setup lang="ts">
+import Select from "@/afcl/Select.vue";
+import type {
+  AdminForthResourceColumnCommon,
+  AdminForthResourceCommon,
+  AdminUser,
+} from "@/types/Common";
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: any;
+  meta: any;
+  resource: AdminForthResourceCommon;
+  adminUser: AdminUser;
+}>();
+
+const emit = defineEmits(["update:value"]);
+
+function getCountryFlag(countryCode: string) {
+  return countryCode?.toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+}
+
+</script>
+```
+
+Now you can use this component in the configuration of the resource:
+
+```ts title='./resources/apartments.ts'
+{
+  ...
+  resourceId: 'aparts',
+  columns: [
+    ...
+    {
+      name: 'country',
+      components: {
+//diff-add
+        edit: '@@/CountryDropdown.vue',
+//diff-add
+        create: '@@/CountryDropdown.vue',
+      },
+      ...
+    },
+    ...
+  ],
+  ...
+}
 ```
 
 

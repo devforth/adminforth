@@ -64,8 +64,6 @@ import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
 
-// import "@/global.d.ts";
-
 const data = ref({});
 
 const  { t } = useI18n();
@@ -310,7 +308,6 @@ onMounted(async () => {
   // Fetch data from the API
   // and set it to the chartData
   try {
-    null.a
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     adminforth.alert({

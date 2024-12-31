@@ -250,17 +250,18 @@ import { createHead } from 'unhead'
 import { loadFile } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
-import { FrontendAPI } from '@/composables/useStores';
 import { getCustomComponent } from '@/utils';
 import type { AdminForthConfigMenuItem, AnnouncementBadgeResponse } from './types/Common';
 import { Tooltip } from '@/afcl';
+import { initFrontedAPI } from '@/adminforth';
+import adminforth from '@/adminforth';
 
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
-const frontendApi = new FrontendAPI();
-frontendApi.init();
+
+initFrontedAPI()
 
 createHead()
 const sideBarOpen = ref(false);
@@ -371,7 +372,7 @@ watch(dropdownUserButton, (dropdownUserButton) => {
       document.querySelector('#dropdown-user') as HTMLElement,
       document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
     );
-    window.adminforth.closeUserMenuDropdown = () => {
+    adminforth.closeUserMenuDropdown = () => {
       dd.hide();
     }
   }
@@ -396,7 +397,7 @@ onMounted(async () => {
   await initRouter();
   handleCustomLayout();
 
-  window.adminforth.menu.refreshMenuBadges = async () => {
+  adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }
 })

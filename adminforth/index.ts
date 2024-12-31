@@ -20,6 +20,7 @@ import {
   IWebSocketBroker,
   HttpExtra,
   BeforeCreateSaveFunction,
+  AdminForthInputConfig,
 } from './types/Back.js';
 
 import {
@@ -93,7 +94,7 @@ class AdminForth implements IAdminForth {
     dbDiscover: 'running' | 'done',
   }
 
-  constructor(config: AdminForthConfig) {
+  constructor(config: AdminForthInputConfig) {
     this.codeInjector = new CodeInjector(this);
     this.configValidator = new ConfigValidator(this, config);
     this.restApi = new AdminForthRestAPI(this);
@@ -304,10 +305,9 @@ class AdminForth implements IAdminForth {
   ): Promise<{ error?: string, createdRecord?: any }> {
 
     // execute hook if needed
-    for (const hook of listify(resource.hooks?.create?.beforeSave as BeforeCreateSaveFunction[])) {
+    for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
       const resp = await hook({ 
-        recordId: undefined, 
         resource, 
         record, 
         adminUser,

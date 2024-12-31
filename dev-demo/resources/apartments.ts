@@ -173,6 +173,12 @@ export default {
             showCountryName: false,
           },
         },
+        edit: {
+          file: "@@/CountryDropdown.vue",
+        },
+        create: {
+          file: "@@/CountryDropdown.vue",
+        },
       },
       enum: [
         {
