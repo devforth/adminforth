@@ -1,14 +1,15 @@
 import dayjs from 'dayjs';
-import pkg from 'pg';
 import { AdminForthResource, IAdminForthDataSourceConnector } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
+import pkg from 'pg';
 const { Client } = pkg;
 
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     db: any;
+    connected: boolean = false;
 
     constructor({ url }) {
         super();
@@ -16,12 +17,17 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             connectionString: url
         });
         (async () => {
-            await this.db.connect();
-            this.db.on('error', (err) => {
-                console.log('Postgres error: ', err.message, err.stack)
-                this.db.end();
-                this.db = new PostgresConnector({ url }).db;
-             });
+            try {
+                await this.db.connect();
+                this.connected = true;
+                this.db.on('error', (err) => {
+                    console.log('Postgres error: ', err.message, err.stack)
+                    this.db.end();
+                    this.db = new PostgresConnector({ url }).db;
+                });
+            } catch (e) {
+                console.error('ERROR: Failed to connect to Postgres', e);
+            }
         })();
     }
 
@@ -44,6 +50,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
     };
 
     async discoverFields(resource) {
+        if (!this.connected) {
+            return null;
+        }
         const tableName = resource.table;
         const stmt = await this.db.query(`
         SELECT
