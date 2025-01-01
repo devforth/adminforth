@@ -1,12 +1,12 @@
 {
   "name": "@adminforth/i18n",
-  "version": "1.0.22-next.0",
+  "version": "1.0.23-next.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
-    "rollout": "npm run build && npm version patch && npm publish --access public",
+    "rollout": "npm run build && npm version patch && npm publish --access public && npm run rollout-next",
     "rollout-next": "npm run build && npm version prerelease --preid=next && npm publish --tag next",
     "prepare": "npm link adminforth"
   },

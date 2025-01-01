@@ -393,6 +393,7 @@ export default {
       name: 'email',
       required: true,
       isUnique: true,
+      type: AdminForthDataTypes.STRING,
       validation: [
         // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object 
         {
