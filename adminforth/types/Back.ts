@@ -302,6 +302,8 @@ export interface IAdminForth {
     [key: string]: IAdminForthDataSourceConnectorBase;
   };
 
+  formatAdminForth(): string;
+  
   tr(msg: string, category: string, lang: string, params: any): Promise<string>;
 
   createResourceRecord(

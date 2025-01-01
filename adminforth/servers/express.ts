@@ -170,7 +170,7 @@ class ExpressServer implements IExpressHttpServer {
 
     this.server = http.createServer(this.expressApp);
     const wss = new WebSocketServer({ server: this.server, path: `${base}/afws` });
-    console.log(' 🌐WebSocket server started');
+    console.log(`${this.adminforth.formatAdminForth()} 🌐 WebSocket server started`);
     // Handle WebSocket connections
     wss.on('connection', async (ws, req) => {
       try {
@@ -334,7 +334,7 @@ class ExpressServer implements IExpressHttpServer {
       res.json(output);
     }
 
-    console.log(`Adding endpoint ${method} ${fullPath}`);
+    process.env.HEAVY_DEBUG && console.log(`👂 Adding endpoint ${method} ${fullPath}`);
     this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
   }
 

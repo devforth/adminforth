@@ -142,7 +142,7 @@ async function saveRecord() {
       record: record.value,
     },
   });
-  if (response.error) {
+  if (response?.error) {
     showErrorTost(response.error);
   }
   saving.value = false;

@@ -112,7 +112,18 @@ class AdminForth implements IAdminForth {
       dbDiscover: 'running',
     };
 
-    console.log(`🚀 AdminForth v${ADMINFORTH_VERSION} starting up`)
+   
+
+    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} starting up`)
+  }
+
+  formatAdminForth() {
+    const NO_FORMAT='\x1b[0m'
+    const F_BOLD="\x1b[1m"
+    const C_AQUA="\x1b[38;5;14m"
+    const C_GREY70="\x1b[38;5;249m"
+    const C_GREY15="\x1b[48;5;235m"
+    return `${F_BOLD}${C_GREY70}${C_GREY15} 🚀 Admin${C_AQUA}Forth ${NO_FORMAT}`
   }
 
   async tr(this, msg: string, category: string = 'default', lang: string = 'en', params: any): Promise<string> {
