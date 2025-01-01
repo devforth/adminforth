@@ -116,12 +116,12 @@ class CodeInjector implements ICodeInjector {
     };
 
     console.log(`⚙️ exec: npm ${command}`);
-    console.time(`npm ${command} done in`);
+    process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
-    console.timeEnd(`npm ${command} done in`);
+    process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
 
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
     if (err) {
@@ -727,7 +727,7 @@ class CodeInjector implements ICodeInjector {
   }
 
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
-    console.log(`AdminForth bundling ${hotReload ? ' and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
+    console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources();
@@ -797,12 +797,12 @@ class CodeInjector implements ICodeInjector {
             this.devServerPort = parseInt(portMatch[1]);
           }
         } else {
-          console.log(`[AdminForth SPA]:`);
-          process.stdout.write(data);
+          process.env.HEAVY_DEBUG && console.log(`[AdminForth SPA]:`);
+          process.env.HEAVY_DEBUG && process.stdout.write(data);
         }
       });
       devServer.stderr.on('data', (data) => {
-        console.error(`[AdminForth SPA ERR]:`);
+        console.error(`[AdminForth SPA ERROR]:`);
         process.stdout.write(data);
       });
 
