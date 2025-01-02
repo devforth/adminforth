@@ -11,6 +11,10 @@ const blockDemoUsers = async ({ record, adminUser, resource }) => {
   return { ok: true };
 }
 
+const isAdmin = ({ adminUser }) => {
+  return adminUser.dbUser && adminUser.dbUser.role === 'superadmin';
+}
+
 export default {
   dataSource: "maindb",
   table: "translations",
@@ -23,9 +27,6 @@ export default {
       beforeSave: blockDemoUsers,
     },
     edit: {
-      beforeSave: blockDemoUsers,
-    },
-    create: {
       beforeSave: blockDemoUsers,
     },
   },
@@ -53,20 +54,23 @@ export default {
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
 
-      // completeAdapter: new CompletionAdapterOpenAIChatGPT({
-      //   openAiApiKey: process.env.OPENAI_API_KEY as string,
-      //   model: 'gpt-4o-mini',
-      //   expert: {
-      //     // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
-      //     temperature: 0.5,
-      //   },
-      // }),
+      completeAdapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-4o-mini',
+        expert: {
+          // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
+          temperature: 0.5,
+        },
+      }),
     }),
 
   ],
   options: {
     listPageSize: 30,
-      
+    allowedActions: {
+      create: false,
+      edit: isAdmin,
+    },
   },
   columns: [
     {
