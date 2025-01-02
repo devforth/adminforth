@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart"></div>
+  <div class="-mb-2" ref="chart"></div>
 </template>
 
 <script setup lang="ts">
@@ -43,7 +43,7 @@ const optionsBase = {
       horizontal: false,
       columnWidth: "80%",
       borderRadiusApplication: "end",
-      borderRadius: 8,
+      borderRadius: 5,
       dataLabels: {
         position: "top",
       },

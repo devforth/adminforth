@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart"></div>
+  <div class="-mb-2" ref="chart"></div>
 </template>
 
 <script setup lang="ts">
@@ -10,122 +10,132 @@ const chart: Ref<HTMLDivElement | null> = ref(null);
 
 const props = defineProps<{
   data: {
-    x: string,
+    label: string,
+    amount: number,
+    color?: string,
     [key: string]: any,
   }[],
-  series: {
-    name: string,
-    fieldName: string,
-    color: string,
-  }[],
-  options: ApexOptions,
+  options?: ApexOptions,
 }>();
 
+const SUGGESTED_COLORS = [
+  "#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#B07AA1", "#FF9DA6", "#9C755F", "#BAB0AC",
+  "#2B8A86", "#CC4D58", "#F7941D", "#F9C232", "#729B33", "#497288", "#16578D", "#5F4D99", "#F9F871", "#F9F871",
+];
+
+
+//  [ "#2B8A86", "#CC4D58", "#F7941D", "#F9C232", "#729B33", "#497288", "#16578D", "#5F4D99",]
+//  ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"], // Professional Cool Tones
+//  ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD"], // Balanced Vibrant Colors
+//  ["#6A4C93", "#1982C4", "#8AC926", "#FF595E", "#FFCA3A"], // Bold and Distinct
+//  ["#0077B6", "#0096C7", "#00B4D8", "#90E0EF", "#CAF0F8"], // Ocean Blues
+//  ["#3A0CA3", "#7209B7", "#F72585", "#4361EE", "#4CC9F0"], // Vivid Purples and Blues
+//  ["#FF9F1C", "#FFBF69", "#CBF3F0", "#2EC4B6", "#011627"], // Warm and Cool Mix
+//  ["#8338EC", "#3A86FF", "#FB5607", "#FF006E", "#FFBE0B"], // Fun and Playful
+//  ["#F94144", "#F3722C", "#F8961E", "#F9844A", "#F9C74F"], // Warm Gradient
 
 
 const optionsBase = {
-  chart: {
-    sparkline: {
+    series: [],
+    colors: [],
+    labels: [],
+    chart: {
+      height: 400,
+      width: "100%",
+      type: "donut",
+    },
+    stroke: {
+      colors: ["transparent"],
+      lineCap: "",
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              fontFamily: "Inter, sans-serif",
+              offsetY: 20,
+            },
+            total: {
+              showAlways: true,
+              show: false,
+              fontFamily: "Inter, sans-serif",
+              label: "",
+              formatter: function (w) {
+                const sum = w.globals.seriesTotals.reduce((a, b) => {
+                  return a + b
+                }, 0)
+                return sum 
+              },
+            },
+            value: {
+              show: true,
+              fontFamily: "Inter, sans-serif",
+              offsetY: -20,
+              formatter: function (value) {
+                return value + "k"
+              },
+            },
+          },
+          size: "80%",
+        },
+      },
+    },
+    grid: {
+      padding: {
+        top: 3,
+        left: 3,
+        right: 3,
+        bottom: 3,
+      },
+    },
+    dataLabels: {
       enabled: false,
     },
-    type: "bar",
-    width: "100%",
-    height: 150,
-    toolbar: {
-      show: false,
-    }
-  },
-  fill: {
-    opacity: 1,
-  },
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      columnWidth: "80%",
-      borderRadiusApplication: "end",
-      borderRadius: 8,
-      dataLabels: {
-        position: "top",
+    legend: {
+      position: "bottom",
+      fontFamily: "Inter, sans-serif",
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
       },
     },
-  },
-  legend: {
-    show: false,
-    position: "bottom",
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    formatter: function (value) {
-      return value
-    },
-  },
-  xaxis: {
-    labels: {
-      show: false,
-      style: {
-        fontFamily: "Inter, sans-serif",
-        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+    xaxis: {
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
       },
-      formatter: function (value) {
-        return value
-      }
+      axisTicks: {
+        show: false,
+      },
+      axisBorder: {
+        show: false,
+      },
     },
-    categories: [],
-    axisTicks: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-  },
-  yaxis: {
-    labels: {
-      show: false,
-      style: {
-        fontFamily: "Inter, sans-serif",
-        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-      }
-    }
-  },
-  grid: {
-    show: false,
-    strokeDashArray: 4,
-    padding: {
-      left: 2,
-      right: 2,
-      // top: -20
-    },
-  },
 };
 
 const options = computed(() => {
-  if (props.data?.length > 0) {
-    props.series.forEach((s) => {
-      if (props.data[0][s.fieldName] === undefined) {
-        throw new Error(`Field ${s.fieldName} not found even in first data point ${JSON.stringify(props.data[0])}, something is wrong`);
-      }
-    });
-  }
+  
   const options = {
     ...optionsBase,
    
     // shade and gradient take from first series
-    series: props.series.map((s) => ({
-      data: props.data?.map((item) => item[s.fieldName]) ?? [],
-      ...s,
-    })),
-    xaxis: {
-      ...optionsBase.xaxis,
-      categories: props.data?.map((item) => item.x) ?? [],
-    },
+    series: props.data?.map((item) => item.amount) ?? [],
+    colors: props.data?.map((item, index) => item.color ?? SUGGESTED_COLORS[index]) ?? [],
+    labels: props.data?.map((item) => item.label) ?? [],
   };
 
   // for each of  ...props.options  merge on lowest level. so if { chart: {height : 2} }, it should not replace chart level, only height level
   function mergeOptions(options: any, newOptions: any) {
+    if (!newOptions) {
+      return;
+    }
     for (const key in newOptions) {
       if (typeof newOptions[key] === 'object') {
         if (!options[key]) {
