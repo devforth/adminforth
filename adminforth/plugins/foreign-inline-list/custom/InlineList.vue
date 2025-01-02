@@ -131,8 +131,6 @@ const filters = ref([]);
 const filtersShow = ref(false);
 const columnsMinMax = ref(null);
 
-console.log('listResource', JSON.stringify(listResource.value, null, 2));
-
 const listResourceRefColumn = computed(() => {
   if (!listResource.value) {
     return null;
