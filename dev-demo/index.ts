@@ -12,6 +12,7 @@ import gameResource from './resources/game.js';
 import gamesUsersResource from './resources/games_users.js';
 import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
+import CompletionAdapterOpenAIChatGPT from '../adminforth/adapters/completion-adapter-open-ai-chat-gpt/index.js';
 
 // const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
@@ -21,21 +22,33 @@ const dbPath = 'db.sqlite';
 const db = betterSqlite3(dbPath)
 
 async function seedDatabase() {
+
+  const adapter = new CompletionAdapterOpenAIChatGPT({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+    model: 'gpt-4o-mini',
+    expert: {
+      // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
+      temperature: 0.5,
+    },
+  });
+
   if (await admin.resource('aparts').count() > 0) {
     return
   }
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 100; i++) {
+    const country = `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`;
+    const resp = await adapter.complete(`Generate some example apartment name (like AirBNB style) in some city of ${country}. Answer in JSON format { "title": "<generated title>" }. Do not talk to me, return JSON only.`);
+    const json = JSON.parse(resp.content?.replace(/```json\n/, '').replace(/\n```/, ''));
     await admin.resource('aparts').create({
       id: `${i}`,
-      title: `Apartment ${i}`,
+      title: json.title,
       square_meter: (Math.random() * 100).toFixed(1),
       price: (Math.random() * 10000).toFixed(2),
       number_of_rooms: Math.floor(Math.random() * 4) + 1,
       description: 'Next gen apartments',
       created_at: (new Date(Date.now() - Math.random() * 60 * 60 * 24 * 14 * 1000)).toISOString(),
-      listed: i % 2 == 0,
-      country: `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`,
-      property_type: Math.random() > 0.5 ? "'house'" : "'apartment'",
+      listed: (Math.random() > 0.5),
+      country,
     });
   };
 };

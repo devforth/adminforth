@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - show hook is now called as it was when user edits the page
 - fixed showRow in ShowTable.vue
+- if not ab le to connect postgres, don't crash the app
+
+### Improved
+- reduce stdout output from AdminForths
+
+### Added
+- AFCL Chart components
 
 ## [v1.5.8]
 
