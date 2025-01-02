@@ -131,6 +131,8 @@ const filters = ref([]);
 const filtersShow = ref(false);
 const columnsMinMax = ref(null);
 
+console.log('listResource', JSON.stringify(listResource.value, null, 2));
+
 const listResourceRefColumn = computed(() => {
   if (!listResource.value) {
     return null;
@@ -182,7 +184,7 @@ watch([filters], async () => {
 
 async function startBulkAction(actionId) {
   const data = await callAdminForthApi({
-    path: '/start_bulk_action',
+    path: `/plugin/${props.meta.pluginInstanceId}/start_bulk_action`,
     method: 'POST',
     body: {
       resourceId: listResource.value.resourceId,
