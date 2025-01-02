@@ -52,7 +52,52 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
         };
       }
     });
+    server.endpoint({
+      method: 'POST',
+      path: `/plugin/${this.pluginInstanceId}/start_bulk_action`,
+      handler: async ({ body, adminUser, tr }) => {
+          const { resourceId, actionId, recordIds } = body;
+          const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+          if (!resource) {
+              return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+          }
 
+          const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
+          
+          const { allowedActions } = await interpretResource(
+            adminUser, 
+            resource, 
+            { requestBody: body },
+            ActionCheckSource.BulkActionRequest,
+            this.adminforth
+          );
+
+          if (this.options.modifyTableResourceConfig) {
+            this.options.modifyTableResourceConfig(resourceCopy);
+          }
+
+          const action = resourceCopy.options.bulkActions.find((act) => act.id == actionId);
+          console.log('action', JSON.stringify(resourceCopy.options.bulkActions, null, 2));
+          if (!action) {
+            return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+          } 
+          
+          if (action.allowed) {
+            const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
+            if (!execAllowed) {
+              return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
+            }
+          }
+          const response = await action.action({selectedIds: recordIds, adminUser, resource, tr});
+          
+          return {
+            actionId,
+            recordIds,
+            resourceId,
+            ...response
+          }
+      }
+    })
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
