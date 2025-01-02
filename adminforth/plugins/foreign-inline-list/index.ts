@@ -35,12 +35,13 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
         }
         // exclude "plugins" key
         const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
-        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
 
-        
         if (this.options.modifyTableResourceConfig) {
           this.options.modifyTableResourceConfig(resourceCopy);
         }
+
+        const { allowedActions } = await interpretResource(adminUser, resourceCopy, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+
         return { 
           resource: { 
             ...resourceCopy,
@@ -63,32 +64,32 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
           }
 
           const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
+
+
+          if (this.options.modifyTableResourceConfig) {
+            this.options.modifyTableResourceConfig(resourceCopy);
+          }
           
           const { allowedActions } = await interpretResource(
             adminUser, 
-            resource, 
+            resourceCopy, 
             { requestBody: body },
             ActionCheckSource.BulkActionRequest,
             this.adminforth
           );
 
-          if (this.options.modifyTableResourceConfig) {
-            this.options.modifyTableResourceConfig(resourceCopy);
-          }
-
           const action = resourceCopy.options.bulkActions.find((act) => act.id == actionId);
-          console.log('action', JSON.stringify(resourceCopy.options.bulkActions, null, 2));
           if (!action) {
             return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
           } 
           
           if (action.allowed) {
-            const execAllowed = await action.allowed({ adminUser, resource, selectedIds: recordIds, allowedActions });
+            const execAllowed = await action.allowed({ adminUser, resourceCopy, selectedIds: recordIds, allowedActions });
             if (!execAllowed) {
               return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
             }
           }
-          const response = await action.action({selectedIds: recordIds, adminUser, resource, tr});
+          const response = await action.action({selectedIds: recordIds, adminUser, resourceCopy, tr});
           
           return {
             actionId,
