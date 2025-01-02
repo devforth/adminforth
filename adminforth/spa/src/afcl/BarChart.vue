@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import ApexCharts, { type ApexOptions } from 'apexcharts';
-import { ref, type Ref, watch, computed } from 'vue';
+import { ref, type Ref, watch, computed, onUnmounted } from 'vue';
 
 const chart: Ref<HTMLDivElement | null> = ref(null);
 
@@ -43,7 +43,7 @@ const optionsBase = {
       horizontal: false,
       columnWidth: "80%",
       borderRadiusApplication: "end",
-      borderRadius: 5,
+      borderRadius: 8,
       dataLabels: {
         position: "top",
       },
@@ -95,8 +95,10 @@ const optionsBase = {
     show: false,
     strokeDashArray: 4,
     padding: {
-      left: 2,
-      right: 2,
+      left: 3, // 3 seams to be a safe value, otherwise labels overlap somewhy
+      right: 3,
+      top: 3,
+      bottom: 3,
       // top: -20
     },
   },
@@ -142,16 +144,23 @@ const options = computed(() => {
   return options;
 });
 
-let apexChart: ApexCharts;
+let apexChart: ApexCharts | null = null;
 
-watch(() => options.value, (value) => {
+watch(() => [options.value, chart.value], (value) => {
+  if (!value || !chart.value) {
+    return;
+  }
   if (apexChart) {
-    apexChart.updateOptions(value);
+    apexChart.updateOptions(options.value);
   } else {
-    console.log('chart.value', value);
-    apexChart = new ApexCharts(chart.value, value);
+    apexChart = new ApexCharts(chart.value, options.value);
     apexChart.render();
   }
 });
 
+onUnmounted(() => {
+  if (apexChart) {
+    apexChart.destroy();
+  }
+});
 </script>

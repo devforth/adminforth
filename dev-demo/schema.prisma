@@ -30,7 +30,6 @@ model apartments {
     country         String?
     listed          Boolean   @default(false)
     realtor_id      String?
-    property_type   String    @default("apartment")
     user_id         String?
     apartment_image String?
 }

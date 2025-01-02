@@ -25,62 +25,80 @@ const props = defineProps<{
 
 const optionsBase = {
   chart: {
-    height: 150,
-    type: "area",
-    fontFamily: "Inter, sans-serif",
-    dropShadow: {
+    sparkline: {
       enabled: false,
     },
+    type: "bar",
+    width: "100%",
+    height: 150,
     toolbar: {
       show: false,
-    },
-  },
-  tooltip: {
-    enabled: true,
-    x: {
-      show: false,
-    },
+    }
   },
   fill: {
-    type: "gradient",
-    gradient: {
-      opacityFrom: 0.55,
-      opacityTo: 0,
-      shade: "#1C64F2",
-      gradientToColors: ["#1C64F2"],
+    opacity: 1,
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: "80%",
+      borderRadiusApplication: "end",
+      borderRadius: 8,
+      dataLabels: {
+        position: "top",
+      },
     },
+  },
+  legend: {
+    show: false,
+    position: "bottom",
   },
   dataLabels: {
     enabled: false,
   },
-  stroke: {
-    width: 6,
-  },
-  grid: {
-    show: false,
-    strokeDashArray: 4,
-    padding: {
-      left: 3,
-      right: 3,
-      top: 3,
-      bottom: 3
+  tooltip: {
+    shared: true,
+    intersect: false,
+    formatter: function (value) {
+      return value
     },
   },
-  series: [],
   xaxis: {
-    categories: [],
     labels: {
+      show: false,
+      style: {
+        fontFamily: "Inter, sans-serif",
+        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+      },
+      formatter: function (value) {
+        return value
+      }
+    },
+    categories: [],
+    axisTicks: {
       show: false,
     },
     axisBorder: {
       show: false,
     },
-    axisTicks: {
-      show: false,
-    },
   },
   yaxis: {
+    labels: {
+      show: false,
+      style: {
+        fontFamily: "Inter, sans-serif",
+        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+      }
+    }
+  },
+  grid: {
     show: false,
+    strokeDashArray: 4,
+    padding: {
+      left: 2,
+      right: 2,
+      // top: -20
+    },
   },
 };
 
@@ -96,14 +114,6 @@ const options = computed(() => {
     ...optionsBase,
    
     // shade and gradient take from first series
-    fill: {
-      ...optionsBase.fill,
-      gradient: {
-        ...optionsBase.fill.gradient,
-        shade: props.series[0].color,
-        gradientToColors: [props.series[0].color],
-      },
-    },
     series: props.series.map((s) => ({
       data: props.data?.map((item) => item[s.fieldName]) ?? [],
       ...s,
@@ -151,5 +161,4 @@ onUnmounted(() => {
     apexChart.destroy();
   }
 });
-
 </script>
