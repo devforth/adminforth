@@ -13,7 +13,27 @@
           </div>
 
         </div>
-        <div id="area-chart"></div>
+
+        <BarChart
+          :data="apartsCountsByDaysChart"
+          :series="[{
+            name: $t('Added apartments'),
+            fieldName: 'count',
+            color: '#1A56DB',
+          }]"
+          :options="{
+            chart: {
+              height: 150,
+            },
+            yaxis: {
+              stepSize: 1,
+              labels: { show: false }
+            },
+            grid: {
+              show: false,
+            }
+          }"
+        />
 
       </div>
 
@@ -38,7 +58,35 @@
           </dl>
         </div>
 
-        <div id="bar-chart"></div>
+        <BarChart
+          :data="listedVsUnlistedCountByDays"
+          :series="[{
+            name: $t('Listed Count'),
+            fieldName: 'listed',
+            color: '#31C48D',
+          },
+          {
+            name: $t('Unlisted Count'),
+            fieldName: 'unlisted',
+            color: '#F05252',
+          }]"
+          :options="{
+            chart: {
+              height: 200,
+            },
+            xaxis: {
+              labels: { show: true }
+            },
+            yaxis: {
+              stepSize: 1,
+              labels: { show: true }
+            },
+            grid: {
+              show: true,
+              
+            }
+          }"
+        />
 
       </div>
 
@@ -50,259 +98,175 @@
             </p>
           </div>
         </div>
-        <div id="size-chart" class="[&>div]:mx-auto"></div>
+
+        <AreaChart 
+          :data="listedVsUnlistedPriceByDays"
+          :series="[{
+            name: $t('Listed Total Price'),
+            fieldName: 'listedPrice',
+            color: '#1A56DB',
+          },
+          {
+            name: $t('Unlisted Total Price'),
+            fieldName: 'unlistedPrice',
+            color: '#7E3BF2',
+          }]"
+          :options="{
+            chart: {
+              height: 150,
+            },
+            yaxis: {
+              labels: {
+                formatter: function (value) {
+                  return '$' + value;
+                }
+              }
+            },
+          }"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import ApexCharts from 'apexcharts';
+import { ref, onMounted, computed } from 'vue';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
+import { AreaChart } from '@/afcl';
+import BarChart from '@/afcl/BarChart.vue';
 
 const data = ref({});
 
 const  { t } = useI18n();
 
-const optionsC1 = {
-  chart: {
-    height: 145,
-    type: "area",
-    fontFamily: "Inter, sans-serif",
-    dropShadow: {
-      enabled: false,
-    },
-    toolbar: {
-      show: false,
-    },
-  },
-  tooltip: {
-    enabled: true,
-    x: {
-      show: false,
-    },
-  },
-  fill: {
-    type: "gradient",
-    gradient: {
-      opacityFrom: 0.55,
-      opacityTo: 0,
-      shade: "#1C64F2",
-      gradientToColors: ["#1C64F2"],
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  stroke: {
-    width: 6,
-  },
-  grid: {
-    show: false,
-    strokeDashArray: 4,
-    padding: {
-      left: 2,
-      right: 2,
-      top: 0
-    },
-  },
-  series: [
-    {
-      name: t("Added apartments"),
-      data: [],
-      color: "#1A56DB",
-    },
-  ],
-  xaxis: {
-    categories: [],
-    labels: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
-  },
-  yaxis: {
-    show: false,
-  },
-};
 
-const optionsC2 = {
-  series: [
-    {
-      name: "Listed",
-      color: "#31C48D",
-      data: [],
-    },
-    {
-      name: "Unlisted",
-      data: [],
-      color: "#F05252",
-    }
-  ],
-  chart: {
-    sparkline: {
-      enabled: false,
-    },
-    type: "bar",
-    width: "100%",
-    height: 380,
-    toolbar: {
-      show: false,
-    }
-  },
-  fill: {
-    opacity: 1,
-  },
-  plotOptions: {
-    bar: {
-      horizontal: true,
-      columnWidth: "100%",
-      borderRadiusApplication: "end",
-      borderRadius: 6,
-      dataLabels: {
-        position: "top",
-      },
-    },
-  },
-  legend: {
-    show: true,
-    position: "bottom",
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  tooltip: {
-    shared: true,
-    intersect: false,
-    formatter: function (value) {
-      return value
-    },
-  },
-  xaxis: {
-    labels: {
-      show: true,
-      style: {
-        fontFamily: "Inter, sans-serif",
-        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-      },
-      formatter: function (value) {
-        return value
-      }
-    },
-    categories: [],
-    axisTicks: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-  },
-  yaxis: {
-    labels: {
-      show: true,
-      style: {
-        fontFamily: "Inter, sans-serif",
-        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-      }
-    }
-  },
-  grid: {
-    show: true,
-    strokeDashArray: 4,
-    padding: {
-      left: 10,
-      right: 2,
-      // top: -20
-    },
-  },
-  fill: {
-    opacity: 1,
-  }
-}
 
-const optionsC3 = {
-  chart: {
-    height: 130,
-    type: "area",
-    fontFamily: "Inter, sans-serif",
-    dropShadow: {
-      enabled: false,
-    },
-    toolbar: {
-      show: false,
-    },
-  },
-  tooltip: {
-    enabled: true,
-    x: {
-      show: false,
-    },
-  },
-  fill: {
-    type: "gradient",
-    gradient: {
-      opacityFrom: 0.55,
-      opacityTo: 0,
-      shade: "#1C64F2",
-      gradientToColors: ["#1C64F2"],
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  stroke: {
-    width: 6,
-  },
-  grid: {
-    show: false,
-    strokeDashArray: 4,
-    padding: {
-      left: 2,
-      right: 2,
-      top: -26
-    },
-  },
-  series: [
-    {
-      name: t("Listed Price"),
-      data: [],
-      color: "#1A56DB",
-    },
-    {
-      name: t("Unlisted Price"),
-      data: [],
-      color: "#7E3BF2",
-    },
-  ],
-  xaxis: {
-    categories: [],
-    labels: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
-  },
-  yaxis: {
-    show: false,
-    labels: {
-      formatter: function (value) {
-        return '$' + value;
-      }
-    }
-  },
-}
+// const optionsC2 = {
+//   series: [
+//     {
+//       name: "Listed",
+//       color: "#31C48D",
+//       data: [],
+//     },
+//     {
+//       name: "Unlisted",
+//       data: [],
+//       color: "#F05252",
+//     }
+//   ],
+//   chart: {
+//     sparkline: {
+//       enabled: false,
+//     },
+//     type: "bar",
+//     width: "100%",
+//     height: 380,
+//     toolbar: {
+//       show: false,
+//     }
+//   },
+//   fill: {
+//     opacity: 1,
+//   },
+//   plotOptions: {
+//     bar: {
+//       horizontal: true,
+//       columnWidth: "100%",
+//       borderRadiusApplication: "end",
+//       borderRadius: 6,
+//       dataLabels: {
+//         position: "top",
+//       },
+//     },
+//   },
+//   legend: {
+//     show: true,
+//     position: "bottom",
+//   },
+//   dataLabels: {
+//     enabled: false,
+//   },
+//   tooltip: {
+//     shared: true,
+//     intersect: false,
+//     formatter: function (value) {
+//       return value
+//     },
+//   },
+//   xaxis: {
+//     labels: {
+//       show: true,
+//       style: {
+//         fontFamily: "Inter, sans-serif",
+//         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+//       },
+//       formatter: function (value) {
+//         return value
+//       }
+//     },
+//     categories: [],
+//     axisTicks: {
+//       show: false,
+//     },
+//     axisBorder: {
+//       show: false,
+//     },
+//   },
+//   yaxis: {
+//     labels: {
+//       show: true,
+//       style: {
+//         fontFamily: "Inter, sans-serif",
+//         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+//       }
+//     }
+//   },
+//   grid: {
+//     show: true,
+//     strokeDashArray: 4,
+//     padding: {
+//       left: 10,
+//       right: 2,
+//       // top: -20
+//     },
+//   },
+//   fill: {
+//     opacity: 1,
+//   }
+// }
+
+
+const apartsCountsByDaysChart = computed(() => {
+  return data.value.apartsByDays?.reverse().map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      count: item.count
+    })
+  );
+});
+
+const listedVsUnlistedPriceByDays = computed(() => {
+  return data.value.listedVsUnlistedPriceByDays?.map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      listedPrice: item.listedPrice.toFixed(2),
+      unlistedPrice: item.unlistedPrice.toFixed(2),
+    })
+  );
+});
+
+const listedVsUnlistedCountByDays = computed(() => {
+  return data.value.listedVsUnlistedByDays?.map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      listed: item.listed,
+      unlisted: item.unlisted,
+    })
+  );
+});
 
 onMounted(async () => {
   // Fetch data from the API
@@ -317,23 +281,5 @@ onMounted(async () => {
     });
   }
 
-  const apartsByDaysReverse = data.value.apartsByDays.reverse();
-
-  optionsC1.series[0].data = apartsByDaysReverse.map((item) => item.count);
-  optionsC1.xaxis.categories = apartsByDaysReverse.map((item) => dayjs(item.day).format('DD MMM'));
-  const chart = new ApexCharts(document.getElementById("area-chart"), optionsC1);
-  chart.render();
-
-  optionsC2.series[0].data = data.value.listedVsUnlistedByDays.map((item) => item.listed);
-  optionsC2.series[1].data = data.value.listedVsUnlistedByDays.map((item) => item.unlisted);
-  optionsC2.xaxis.categories = data.value.listedVsUnlistedByDays.map((item) => dayjs(item.day).format('DD MMM'));
-  const chart2 = new ApexCharts(document.getElementById("bar-chart"), optionsC2);
-  chart2.render();
-
-  optionsC3.series[0].data = data.value.listedVsUnlistedPriceByDays.map((item) => item.listedPrice.toFixed(2));
-  optionsC3.series[1].data = data.value.listedVsUnlistedPriceByDays.map((item) => item.unlistedPrice.toFixed(2));
-  optionsC3.xaxis.categories = data.value.listedVsUnlistedPriceByDays.map((item) => dayjs(item.day).format('DD MMM'));
-  const chart3 = new ApexCharts(document.getElementById("size-chart"), optionsC3);
-  chart3.render();
 })
 </script>

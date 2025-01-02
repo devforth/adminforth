@@ -83,7 +83,6 @@ export const useCoreStore = defineStore('core', () => {
   async function subscribeToMenuBadges() {
     const processItem = (mi: AdminForthConfigMenuItem) => {
       if (mi.badge) {
-        console.log('mi 🧪 subsc', mi)
         websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
           mi.badge = badge;
         });
@@ -94,8 +93,6 @@ export const useCoreStore = defineStore('core', () => {
       processItem(mi);
       if (mi.children) {
         mi.children.forEach((child) => {
-          console.log('mi 🧪', JSON.stringify(child), mi.badge)
-  
           processItem(child);
         })
       }

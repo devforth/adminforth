@@ -20,18 +20,21 @@ export default {
 
   recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
-    new ForeignInlineListPlugin({
-      foreignResourceId: "aparts",
-      modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
-        // hide column 'square_meter' from both 'list' and 'filter'
-        resourceConfig.columns.find(
-          (c: AdminForthResourceColumn) => c.name === "square_meter"
-        )!.showIn = [];
-        resourceConfig.options!.listPageSize = 3;
-      },
-    }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: "aparts",
+    //   modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+    //     // hide column 'square_meter' from both 'list' and 'filter'
+    //     resourceConfig.columns.find(
+    //       (c: AdminForthResourceColumn) => c.name === "square_meter"
+    //     )!.showIn = [];
+    //     resourceConfig.options!.listPageSize = 3;
+    //   },
+    // }),
     new ForeignInlineListPlugin({
       foreignResourceId: "audit_log",
+    }),
+    new ForeignInlineListPlugin({
+      foreignResourceId: "users",
     }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
@@ -113,6 +116,7 @@ export default {
       isUnique: true,
       required: true,
       enforceLowerCase: true,
+      type: AdminForthDataTypes.STRING,
       validation: [AdminForth.Utils.EMAIL_VALIDATOR],
     },
     {
@@ -150,6 +154,12 @@ export default {
       name: "last_login_ip",
       showIn: ["show", "list", "filter"],
     },
+    {
+      name: "parentUserId",
+      foreignResource: {
+        resourceId: "users",
+      }
+    }
     // {
     //   name: "email_confirmed",
     // },

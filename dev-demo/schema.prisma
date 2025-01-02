@@ -16,6 +16,7 @@ model users {
     secret2fa       String?
     last_login_ip   String?
     email_confirmed Boolean? @default(false)
+    parentUserId    String?
 }
 
 model apartments {

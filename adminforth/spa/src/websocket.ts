@@ -44,10 +44,10 @@ async function connect () {
   });
   state.ws.addEventListener('message', (event) => {
     const data = event.data.toString();
-    console.log('🔌 AFWS message', data);
     if (data === 'pong') {
       return;
     }
+    console.log('🔌 AFWS message', data);
     
     const message = JSON.parse(data);
     if (message.type === 'ready') {
