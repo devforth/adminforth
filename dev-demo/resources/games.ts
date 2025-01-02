@@ -32,6 +32,7 @@ export default {
     { name: "description" },
     { name: "price" },
     { name: "enabled" },
+    
   ],
   options: {
     listPageSize: 10,

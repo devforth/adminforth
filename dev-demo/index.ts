@@ -285,11 +285,10 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 
 (async () => {
-    console.log('🅿️🅿️🅿️ 🅿️Bundling AdminForth...');
+    console.log('🅿️  Bundling AdminForth...');
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
     await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
     console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-
 })();
 
 
@@ -381,7 +380,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 // serve after you added all api
 admin.express.serve(app)
 admin.discoverDatabases().then(async () => {
-  console.log('🅿️🅿️🅿️ 🅿️Database discovered');
+  console.log('🅿️  Database discovered');
 
   if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
     await admin.resource('users').create({
@@ -394,6 +393,6 @@ admin.discoverDatabases().then(async () => {
 });
 
 admin.express.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-  console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
+  // word adminforth should be colored (blue) in the console and bold
+  console.log(`\n\n ${admin.formatAdminForth()} available at http://localhost:${port}${ADMIN_BASE_URL}\n\n`)
 });

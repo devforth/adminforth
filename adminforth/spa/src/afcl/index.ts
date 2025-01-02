@@ -9,3 +9,6 @@ export { default as LinkButton } from './LinkButton.vue';
 export { default as VerticalTabs } from './VerticalTabs.vue';
 export { default as Checkbox } from './Checkbox.vue';
 export { default as Dropzone } from './Dropzone.vue';
+export { default as AreaChart } from './AreaChart.vue';
+export { default as BarChart } from './BarChart.vue';
+
