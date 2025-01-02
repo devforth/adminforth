@@ -319,15 +319,6 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
       async (req: express.Request, res: express.Response) => {
-        admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
-          'aparts',
-          null,
-          'visitedDashboard',
-          { dashboard: 'main' },
-          req.adminUser,
-          req.headers
-        )
-
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
           `SELECT 
@@ -357,6 +348,34 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all(days);
 
+        const apartsCountsByRooms = await db.prepare(
+          `SELECT 
+            number_of_rooms, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY number_of_rooms 
+          ORDER BY number_of_rooms;
+          `
+        ).all();
+
+        const topCountries = await db.prepare(
+          `SELECT 
+            country, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY country 
+          ORDER BY count DESC
+          LIMIT 4;
+          `
+        ).all();
+
+        const totalSquare = await db.prepare(
+          `SELECT 
+            SUM(square_meter) as totalSquare 
+          FROM apartments;
+          `
+        ).get();
+
         const listedVsUnlistedPriceByDays = await db.prepare(
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
@@ -380,10 +399,12 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           apartsByDays,
           totalAparts,
           listedVsUnlistedByDays,
+          apartsCountsByRooms,
+          topCountries,
+          totalSquareMeters: totalSquare.totalSquare,
           totalListedPrice,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
-          greeting: await req.tr('Welcome, {name}', 'customApis', { name: req.adminUser.username }),
         });
       }
     )

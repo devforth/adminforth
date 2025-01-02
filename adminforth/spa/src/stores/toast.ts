@@ -10,7 +10,6 @@ export const useToastStore = defineStore('toast', () => {
     const route = useRoute();
 
     watch(route, () => {
-        console.log('route changed 121');
         // on route change clear all toasts older then 5 seconds
         const now = +new Date();
         toasts.value = toasts.value.filter((t) => now - t.createdAt < 5000);

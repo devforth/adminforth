@@ -1,59 +1,70 @@
 <template>
-  <div class="px-4 py-8 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
+  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
   
-    <h1 class="mb-4 text-xl font-extrabold text-gray-900 dark:text-white md:text-2xl lg:text-3xl"
-      v-html='$t("<span class=\"text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400\">Apartments</span> Statistics.")'></h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <div class="flex justify-between">
-          <div>
-            <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
-            <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days') }}</p>
-          </div>
-
+        <div>
+          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
+          <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days') }}</p>
         </div>
-
         <BarChart
           :data="apartsCountsByDaysChart"
           :series="[{
             name: $t('Added apartments'),
             fieldName: 'count',
-            color: '#1A56DB',
+            color: COLORS[0],
           }]"
           :options="{
             chart: {
-              height: 150,
+              height: 130,
             },
             yaxis: {
               stepSize: 1,
-              labels: { show: false }
+              labels: { show: false },
             },
             grid: {
               show: false,
             }
           }"
         />
-
       </div>
 
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 md:row-span-2 md:col-span-2" v-if="data">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Top countries') }}</p>
+        <PieChart
+          :data="topCountries"
+          :options="{
+            chart: { type: 'pie'},
+            legend: {
+              show: false,
+            },
+            dataLabels: {
+              enabled: true,
+              formatter: function (value, o) {
+                const countryISO = o.w.config.labels[o.seriesIndex];
+                return countryISO;
+              }
+            },
+          }"
+        />
+      </div>
 
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2" v-if="data">
         <div class="grid grid-cols-2 py-3">
           <dl>
             <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
-            <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">{{
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-          data.totalListedPrice,
-        ) }}
+            <dd class="leading-none text-xl font-bold dark:text-green-400" :style="{color:COLORS[0]}">{{
+              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
+                data.totalListedPrice,
+              ) }}
             </dd>
           </dl>
           <dl>
             <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Unlisted price') }}</dt>
-            <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">{{
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-          data.totalUnlistedPrice,
-        ) }}
+            <dd class="leading-none text-xl font-bold dark:text-red-500" :style="{color:COLORS[1]}">{{
+              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
+                data.totalUnlistedPrice,
+              ) }}
             </dd>
           </dl>
         </div>
@@ -63,16 +74,16 @@
           :series="[{
             name: $t('Listed Count'),
             fieldName: 'listed',
-            color: '#31C48D',
+            color: COLORS[0],
           },
           {
             name: $t('Unlisted Count'),
             fieldName: 'unlisted',
-            color: '#F05252',
+            color: COLORS[1],
           }]"
           :options="{
             chart: {
-              height: 400,
+              height: 500,
             },
             xaxis: {
               labels: { show: true },
@@ -95,29 +106,45 @@
       </div>
 
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <div class="flex justify-between">
-          <div>
-            <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-              {{ $t('Unlisted vs Listed price' ) }}
-            </p>
-          </div>
-        </div>
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment by rooms') }}</p>
+        <PieChart
+          :data="apartsCountsByRooms"
+          :options="{
+            plotOptions: {
+              pie: {
+                donut: {
+                  labels: {
+                    total: {
+                      show: true,
+                      label: $t('Total square'),
+                      formatter: () => `${data.totalSquareMeters.toFixed(0)} m²`,
+                    },
+                  },
+                },
+              },
+            },
+          }"
+        />
+      </div>
+
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Unlisted vs Listed price' ) }}</p>
 
         <AreaChart 
           :data="listedVsUnlistedPriceByDays"
           :series="[{
-            name: $t('Listed Total Price'),
+            name: $t('Listed'),
             fieldName: 'listedPrice',
-            color: '#1A56DB',
+            color: COLORS[0],
           },
           {
-            name: $t('Unlisted Total Price'),
+            name: $t('Unlisted'),
             fieldName: 'unlistedPrice',
-            color: '#7E3BF2',
+            color: COLORS[1],
           }]"
           :options="{
             chart: {
-              height: 150,
+              height: 250,
             },
             yaxis: {
               labels: {
@@ -129,119 +156,25 @@
           }"
         />
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, type Ref, onMounted, computed } from 'vue';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
-import { AreaChart } from '@/afcl';
-import BarChart from '@/afcl/BarChart.vue';
+import { AreaChart, BarChart, PieChart } from '@/afcl';
 
-const data = ref({});
+const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
+  apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
 
-const  { t } = useI18n();
+const { t } = useI18n();
 
-
-
-// const optionsC2 = {
-//   series: [
-//     {
-//       name: "Listed",
-//       color: "#31C48D",
-//       data: [],
-//     },
-//     {
-//       name: "Unlisted",
-//       data: [],
-//       color: "#F05252",
-//     }
-//   ],
-//   chart: {
-//     sparkline: {
-//       enabled: false,
-//     },
-//     type: "bar",
-//     width: "100%",
-//     height: 380,
-//     toolbar: {
-//       show: false,
-//     }
-//   },
-//   fill: {
-//     opacity: 1,
-//   },
-//   plotOptions: {
-//     bar: {
-//       horizontal: true,
-//       columnWidth: "100%",
-//       borderRadiusApplication: "end",
-//       borderRadius: 6,
-//       dataLabels: {
-//         position: "top",
-//       },
-//     },
-//   },
-//   legend: {
-//     show: true,
-//     position: "bottom",
-//   },
-//   dataLabels: {
-//     enabled: false,
-//   },
-//   tooltip: {
-//     shared: true,
-//     intersect: false,
-//     formatter: function (value) {
-//       return value
-//     },
-//   },
-//   xaxis: {
-//     labels: {
-//       show: true,
-//       style: {
-//         fontFamily: "Inter, sans-serif",
-//         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-//       },
-//       formatter: function (value) {
-//         return value
-//       }
-//     },
-//     categories: [],
-//     axisTicks: {
-//       show: false,
-//     },
-//     axisBorder: {
-//       show: false,
-//     },
-//   },
-//   yaxis: {
-//     labels: {
-//       show: true,
-//       style: {
-//         fontFamily: "Inter, sans-serif",
-//         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-//       }
-//     }
-//   },
-//   grid: {
-//     show: true,
-//     strokeDashArray: 4,
-//     padding: {
-//       left: 10,
-//       right: 2,
-//       // top: -20
-//     },
-//   },
-//   fill: {
-//     opacity: 1,
-//   }
-// }
-
+const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
 
 const apartsCountsByDaysChart = computed(() => {
   return data.value.apartsByDays?.reverse().map(
@@ -272,18 +205,35 @@ const listedVsUnlistedCountByDays = computed(() => {
   );
 });
 
+const apartsCountsByRooms = computed(() => {
+  return data.value.apartsCountsByRooms?.map(
+    (item, i) => ({
+      label: t(`{number_of_rooms} rooms`, { number_of_rooms: item.number_of_rooms }),
+      amount: item.count,
+      color: COLORS[i],
+    })
+  );
+});
+
+const topCountries = computed(() => {
+  return data.value.topCountries?.map(
+    (item, i) => ({
+      label: item.country,
+      amount: item.count,
+      color: COLORS[i],
+    })
+  );
+});
+
 onMounted(async () => {
   // Fetch data from the API
-  // and set it to the chartData
   try {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     adminforth.alert({
       message: `Error fetching data: ${error.message}`,
       variant: 'danger',
-      timeout: 30,
     });
   }
-
 })
 </script>

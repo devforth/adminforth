@@ -1,5 +1,5 @@
 <template>
-  <div ref="chart"></div>
+  <div class="-mb-2" ref="chart"></div>
 </template>
 
 <script setup lang="ts">
