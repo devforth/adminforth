@@ -25,6 +25,9 @@
 //   }
 // }
 
+body {
+  scrollbar-gutter: stable;
+}
 
 *{
   -moz-user-select: none;

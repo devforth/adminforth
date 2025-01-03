@@ -95,10 +95,10 @@ const optionsBase = {
     show: false,
     strokeDashArray: 4,
     padding: {
-      left: 3, // 3 seams to be a safe value, otherwise labels overlap somewhy
+      left: 4, // 4 seams to be a safe value, otherwise labels overlap somewhy
       right: 3,
       top: 3,
-      bottom: 3,
+      bottom: 4,
       // top: -20
     },
   },
