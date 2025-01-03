@@ -451,6 +451,7 @@ export interface HttpExtra {
   query: Record<string, string>,
   headers: Record<string, string>,
   cookies: Record<string, string>,
+  requestUrl: string,
 }
 /**
  * Modify record to change how data is saved to database.

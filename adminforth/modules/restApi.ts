@@ -107,7 +107,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
-      handler: async ({ body, response, headers, query, cookies }) => {
+      handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
        
         const INVALID_MESSAGE = 'Invalid Username or Password';
         const { username, password, rememberMe } = body;
@@ -155,7 +155,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
             username,
           };
-          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies });
+          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies, requestUrl });
 
           if (toReturn.allowedLogin) {
             const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;

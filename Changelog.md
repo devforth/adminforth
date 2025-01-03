@@ -18,10 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - if not ab le to connect postgres, don't crash the app
 
 ### Improved
-- reduce stdout output from AdminForths
+- reduce stdout output from AdminForth itself
 
 ### Added
 - AFCL Chart components
+- add requestUrl param to hooks extra
 
 ## [v1.5.8]
 
