@@ -165,14 +165,14 @@ async function installDependencies(ctx, cwd) {
 }
 
 function generateFinalInstructions(skipPrismaSetup) {
-  let instruction = '⏭️  Run the following commands to get started:';
+  let instruction = '⏭️  Run the following commands to get started:\n';
   if (!skipPrismaSetup)
     instruction += `
-  ${chalk.cyan('$ npm run makemigration -- --name init')}
-  ${chalk.dim('// runs "npx prisma migrate dev --name init" to generate and apply initial migration')}`;
+  ${chalk.dim('// runs "npx prisma migrate dev --name init" to generate and apply initial migration')};
+  ${chalk.cyan('$ npm run makemigration -- --name init')}`;
   instruction += `
+  ${chalk.dim('\n// starts dev server with tsx watch for hot-reloading')}\n
   ${chalk.cyan('$ npm start')}
-  ${chalk.dim('// starts dev server with tsx watch for hot-reloading')}\n
 `;
 
   instruction += '😉 Happy coding!';

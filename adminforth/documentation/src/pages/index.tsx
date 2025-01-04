@@ -92,19 +92,36 @@ function HomepageHeader() {
             Create Admin Panels faster on Node and Vue with AdminForth Framework
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
-          <div className={styles.buttons}>
-            <Link
-              className="button button--secondary button--outline button--lg"
-              to="/docs/tutorial/gettingStarted">
-              Get started - 5min ⏱️
-            </Link>
 
-            <Link
-              className="button button--primary button--lg"
-              to="https://demo.adminforth.dev/">
-              Live Demo
-            </Link>
+          <div class="heroRow">
+            <div className={styles.buttons}>
+              <Link
+                className="button button--secondary button--outline button--lg"
+                to="/docs/tutorial/gettingStarted">
+                Get started
+              </Link>
+
+              <Link
+                className="button button--primary button--lg"
+                to="https://demo.adminforth.dev/">
+                Live Demo
+              </Link>
+            </div>
+
+            <div className='terminalWrapper'>
+              <div className="fakeMenu">
+                <div className="fakeButtons fakeClose"></div>
+                <div className="fakeButtons fakeMinimize"></div>
+                <div className="fakeButtons fakeZoom"></div>
+              </div>
+              <div className="fakeScreen">
+                <p className="line1"><span
+                  style={{userSelect: 'none'}}
+                >$&nbsp;</span><span style={{ opacity:0.6 }}>npx adminforth create-app</span></p>
+              </div>
+            </div>
           </div>
+
         </div>
       </header>
 
@@ -135,12 +152,14 @@ function HomepageHeader() {
 
 export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
+
   return (
     <Layout
       title={`${siteConfig.title}`}
       description="OpenSource Tailwind Admin Panel extendable with Vue3 and typescript!">
       <HomepageHeader />
       <main>
+
 
       <Heading as="h2" className="hero__title text--center">
         What it can do for you
@@ -154,7 +173,7 @@ export default function Home(): JSX.Element {
           padding: '1rem',
         }}>
           {images.map((item, index) => (
-            <div className="card-demo">
+            <div className="card-demo" key={`feature${index}`}>
               <div className="card shadow--md" style={{
                       maxWidth: '500px',
                     }}> 
@@ -184,10 +203,8 @@ export default function Home(): JSX.Element {
               </div>
             </div>
           ))}
-
-
         </div>
-
+        
         <HomepageFeatures />
 
       </main>
