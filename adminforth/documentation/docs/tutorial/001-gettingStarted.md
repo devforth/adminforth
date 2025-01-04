@@ -476,7 +476,7 @@ async function seedDatabase() {
 //diff-add    
   }
 //diff-add  
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 100; i++) {
 //diff-add    
     await admin.resource('aparts').create({
 //diff-add      

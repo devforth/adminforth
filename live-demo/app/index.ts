@@ -111,7 +111,7 @@ async function seedDatabase() {
   if (await admin.resource('aparts').count() > 0) {
     return
   }
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 100; i++) {
     await admin.resource('aparts').create({
       id: `${i}`,
       title: `Apartment ${i}`,
