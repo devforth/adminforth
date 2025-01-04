@@ -8,8 +8,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "apexcharts": "^3.52.0"
-  },
   "description": ""
 }
