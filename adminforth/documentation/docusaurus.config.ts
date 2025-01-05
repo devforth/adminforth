@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Vue & Node admin panel framework',
-  tagline: 'Start developing backoffice using open-source Admin Framework on Tailwind UI and extend it with Vue3',
+  tagline: 'Start developing backoffice using open-source admin framework on Tailwind UI and extend it with Vue3',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
@@ -59,10 +59,14 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-        gtag: {
-          trackingID: 'G-7K99Q2BH04',
-          anonymizeIP: true,
-        },
+        ...(
+          process.env.NODE_ENV === 'production' ? {
+            gtag: { 
+              trackingID: 'G-7K99Q2BH04',
+              anonymizeIP: true,
+            }
+          } : {}
+        )
       } satisfies Preset.Options,
     ],
   ],

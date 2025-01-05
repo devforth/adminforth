@@ -6,11 +6,11 @@
     "gendoc": "typedoc",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build",
+    "build": "NODE_ENV=production docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "DEPLOYMENT_BRANCH=main docusaurus deploy",
     "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
+    "serve": "NODE_ENV=production docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"
