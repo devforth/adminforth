@@ -228,13 +228,175 @@ const topCountries = computed(() => {
 
 onMounted(async () => {
   // Fetch data from the API
-  try {
-    data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
-  } catch (error) {
-    adminforth.alert({
-      message: `Error fetching data: ${error.message}`,
-      variant: 'danger',
-    });
-  }
+  // try {
+  //   data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
+  // } catch (error) {
+  //   adminforth.alert({
+  //     message: `Error fetching data: ${error.message}`,
+  //     variant: 'danger',
+  //   });
+  // }
+
+  data.value = {
+    "apartsByDays": [
+        {
+            "day": "2024-12-25",
+            "count": 1
+        },
+        {
+            "day": "2024-12-24",
+            "count": 6
+        },
+        {
+            "day": "2024-12-23",
+            "count": 6
+        },
+        {
+            "day": "2024-12-22",
+            "count": 2
+        },
+        {
+            "day": "2024-12-21",
+            "count": 2
+        },
+        {
+            "day": "2024-12-20",
+            "count": 6
+        },
+        {
+            "day": "2024-12-19",
+            "count": 6
+        }
+    ],
+    "totalAparts": 29,
+    "listedVsUnlistedByDays": [
+        {
+            "day": "2024-12-25",
+            "listed": 0,
+            "unlisted": 1,
+            "listedPrice": 0,
+            "unlistedPrice": 6238.88
+        },
+        {
+            "day": "2024-12-24",
+            "listed": 4,
+            "unlisted": 2,
+            "listedPrice": 19840.010000000002,
+            "unlistedPrice": 18313.239999999998
+        },
+        {
+            "day": "2024-12-23",
+            "listed": 2,
+            "unlisted": 4,
+            "listedPrice": 14833.51,
+            "unlistedPrice": 20200.58
+        },
+        {
+            "day": "2024-12-22",
+            "listed": 2,
+            "unlisted": 0,
+            "listedPrice": 7787.889999999999,
+            "unlistedPrice": 0
+        },
+        {
+            "day": "2024-12-21",
+            "listed": 0,
+            "unlisted": 2,
+            "listedPrice": 0,
+            "unlistedPrice": 5809.91
+        },
+        {
+            "day": "2024-12-20",
+            "listed": 2,
+            "unlisted": 4,
+            "listedPrice": 10943.170000000002,
+            "unlistedPrice": 31365.19
+        },
+        {
+            "day": "2024-12-19",
+            "listed": 3,
+            "unlisted": 3,
+            "listedPrice": 24221.16,
+            "unlistedPrice": 4273.2300000000005
+        }
+    ],
+    "apartsCountsByRooms": [
+        {
+            "number_of_rooms": 1,
+            "count": 12
+        },
+        {
+            "number_of_rooms": 2,
+            "count": 17
+        },
+        {
+            "number_of_rooms": 3,
+            "count": 7
+        },
+        {
+            "number_of_rooms": 4,
+            "count": 15
+        }
+    ],
+    "topCountries": [
+        {
+            "country": "PL",
+            "count": 9
+        },
+        {
+            "country": "IT",
+            "count": 6
+        },
+        {
+            "country": "FR",
+            "count": 6
+        },
+        {
+            "country": "DE",
+            "count": 6
+        }
+    ],
+    "totalSquareMeters": 2423.6,
+    "totalListedPrice": 77626,
+    "totalUnlistedPrice": 86201,
+    "listedVsUnlistedPriceByDays": [
+        {
+            "day": "2024-12-25",
+            "listedPrice": 0,
+            "unlistedPrice": 6238.88
+        },
+        {
+            "day": "2024-12-24",
+            "listedPrice": 19840.010000000002,
+            "unlistedPrice": 18313.239999999998
+        },
+        {
+            "day": "2024-12-23",
+            "listedPrice": 14833.51,
+            "unlistedPrice": 20200.58
+        },
+        {
+            "day": "2024-12-22",
+            "listedPrice": 7787.889999999999,
+            "unlistedPrice": 0
+        },
+        {
+            "day": "2024-12-21",
+            "listedPrice": 0,
+            "unlistedPrice": 5809.91
+        },
+        {
+            "day": "2024-12-20",
+            "listedPrice": 10943.170000000002,
+            "unlistedPrice": 31365.19
+        },
+        {
+            "day": "2024-12-19",
+            "listedPrice": 24221.16,
+            "unlistedPrice": 4273.2300000000005
+        }
+    ]
+}
+
 })
 </script>
