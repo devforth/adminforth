@@ -2,8 +2,6 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-console.log('⭐⭐⭐⭐⭐⭐⭐⭐', process.env.NODE_ENV)
-
 
 const config: Config = {
   title: 'Vue & Node admin panel framework',

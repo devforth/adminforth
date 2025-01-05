@@ -45,15 +45,16 @@ npx adminforth create-app
 CLI options:
 
 * **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
-* **`--db`** - database connection string. Currently PostgreSQL, MongoDB and SQLite are supported. Default value: **`sqlite://.db.sqlite`**
+* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
 
 > ☝️ Database Connection String format:
 >
-> Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`
+> Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`. Examples:
 >
-> For SQLite, you can use `sqlite://.db.sqlite`. If database not yet exists it will be created.
-> For PostgreSQL — `postgres://user:password@localhost:5432/dbname`.
-> For MongoDB — `mongodb://localhost:27017/dbname`.
+> - SQLite — `sqlite://.db.sqlite`. If database not yet exists it will be created
+> - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
+> - MongoDB — `mongodb://localhost:27017/dbname`
+> - Clickhouse — `clickhouse://localhost:8123/dbname`
 
 ### Understand the generated Project Structure
 
@@ -97,6 +98,19 @@ npm run makemigration -- --name <name_of_changes>
 
 Other developers need to pull migration and run `npm run migrate` to apply any unapplied migrations.
 
+## Run the Server
+
+Now you can run your app:
+
+```bash
+npm start
+```
+
+Open http://localhost:3500 in your browser and (default credentials are `adminforth`/`adminforth` if you haven’t changed them).
+
+![alt text](localhost_3500_login.png)
+
+
 ## AdminForth Basic Philosophy
 
 AdminForth connects to existing databases and provides a back-office for managing data including CRUD operations, filtering, sorting, and more.
@@ -112,6 +126,8 @@ Also in AdminForth you can define in "Vue" way:
 * how each field will be rendered
 * create own pages e.g. Dashboard using AdminForth Components Library (AFCL) or any other Vue componetns.
 * insert injections into standard pages (e.g. add diagram to list view)
+
+
 
 ## Adding an `apartments` Model
 
@@ -355,19 +371,7 @@ export const admin = new AdminForth({
 
 ```
 
-## Run the Server
-
-Now you can run your app:
-
-```bash
-npm start
-```
-
-Open http://localhost:3500 in your browser and (default credentials are `adminforth`/`adminforth` if you haven’t changed them).
-
-![alt text](localhost_3500_login.png)
-
-## Generating fake records
+## Generating fake appartments 
 
 ```ts title="./index.ts"
 //diff-add
@@ -430,6 +434,3 @@ This will create records during first launch. Now you should see:
 
 Feel free to play with the data, add more fields, and customize the UI to your liking.
 
-## Possible configuration options
-
-Check [AdminForthConfig](/docs/api/types/Back/interfaces/AdminForthConfig.md) for all possible options.

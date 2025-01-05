@@ -143,33 +143,12 @@ const props = defineProps<{
 </script>
 ```
 
-## Using 3rd-party npm packages in the components
+## Using 3rd-party npm packages in the Vue components
 
 To install 3rd-party npm packages you should create npm package in the `custom` directory:
 
 ```bash
 cd custom
-npm init -y
-```
-
-> 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
-> ```json
-> {
->   "compilerOptions": {
->     "baseUrl": ".",
->     "paths": {
->       "@/*": [
->         "../node_modules/adminforth/dist/spa/src/*"
->       ],
->       "*": [
->         "../node_modules/adminforth/dist/spa/node_modules/*"
->       ],
->       "@@/*": [
->         "."
->       ]
->     }
->   }
-> }
 ```
 
 And simply do `npm install` for the package you need:

@@ -4,33 +4,6 @@ Most Admin Panels should have some Dashboards or custom pages.
 
 In AdminForth creation of custom page is very simple.
 
-To add custom package to SPA bundle you have to initialize npm in `custom` directory and install required packages:
-
-```bash
-cd ./custom
-npm init -y
-npm i apexcharts -D
-```
-
-> 👆 Note: for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
-> ```json
-> {
->   "compilerOptions": {
->     "baseUrl": ".",
->     "paths": {
->       "@/*": [
->         "../node_modules/adminforth/dist/spa/src/*"
->       ],
->       "*": [
->         "../node_modules/adminforth/dist/spa/node_modules/*"
->       ],
->       "@@/*": [
->         "."
->       ]
->     }
->   }
-> }
-> ```
 
 Create a Vue component in the `custom` directory of your project, e.g. `Dashboard.vue`:
 
