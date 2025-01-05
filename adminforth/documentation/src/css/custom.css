@@ -381,5 +381,38 @@ html[data-theme="dark"] .fakeScreen {
 }
 
 .hidden-sidebar {
-  display: none;
+  display: none
+  ;
+}
+
+.split-screen {
+  display: flex;
+  gap: 20px
+}
+
+.split-screen>div:first-child {
+  max-width: 60%;
+  min-width: 60%;
+}
+
+.split-screen>div:last-child {
+  flex: 1;
+}
+
+.split-screen>div:last-child img {
+  margin-top: 0;
+}
+
+/* mobile */
+@media screen and (max-width: 600px) {
+  .split-screen {
+    flex-direction: column;
+    gap: 10px
+  }
+  .split-screen>div:first-child {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+ 
 }

@@ -30,7 +30,7 @@ const optionsBase = {
     },
     type: "bar",
     width: "100%",
-    height: 150,
+    // height: 150,
     toolbar: {
       show: false,
     }
