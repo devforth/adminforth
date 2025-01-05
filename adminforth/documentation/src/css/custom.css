@@ -310,15 +310,23 @@ html[data-theme="dark"] .fakeScreen {
 }
 
 .button--secondary[class] {
-  background-color: #4db5ed;
-  color: white !important;
-  border: 0;
+  background-color: #6a7b90;
 }
 
+.button--primary[class], .button--secondary[class] {
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.2);
+  border: 0;
+  min-width: 180px;
+  color: white !important;
+  transition: 0.2s;
+}
+
+.button--primary[class]:hover, .button--secondary[class]:hover {
+  filter: brightness(1.1)
+}
 
 .button--primary[class] {
-  color: white !important;
-  
+  background-color: #3a81e5;
 }
 
 .hero__title {
@@ -370,4 +378,8 @@ html[data-theme="dark"] .fakeScreen {
 .buttons_src-pages-index-module {
   display: flex;
   gap: 10px;
+}
+
+.hidden-sidebar {
+  display: none;
 }

@@ -1,5 +1,10 @@
+---
+id: hello-world
+title: Hello world app without CLI
+sidebar_class_name: hidden-sidebar
+---
 
-# Hello world app
+# Hello world app without CLI
 
 No water. Pure code to get started ASAP.
 

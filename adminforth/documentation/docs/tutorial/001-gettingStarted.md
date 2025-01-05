@@ -1,12 +1,13 @@
+# Getting Started 
 
-# Getting Started
+This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI. 
+You will learn how to set up a new project using the `adminforth create-app` command and explore AdminForth’s fundamentals.
 
-This Getting Started Page has some explanations and tables with various field types. 
-For faster and shorter hello world example check out [Hello World](./01-helloWorld.md)
+> 👆 For Hello world example without CLI check out [Hello World without CLI](./01-helloWorld.md)
 
 ## Prerequisites
 
-AdminForth requires Node v18 or higher:
+AdminForth requires **Node v20** or higher. If you’re on a different version, you can switch or install using:
 
 ```bash
 nvm install 20
@@ -14,245 +15,163 @@ nvm alias default 20
 nvm use 20
 ```
 
-## Installation
+## Creating an AdminForth Project
+
+The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management. 
+
+### Create a fresh directory
+
+First, create and enter a directory where you want your AdminForth project to live. For instance:
 
 ```bash
 mkdir myadmin
 cd myadmin
-npm init -y
-npm install adminforth
 ```
 
-AdminForth does not provide own HTTP server, but can add own listeners over exisitng [Express](https://expressjs.com/) server (Fastify support is planned in future). This allows to create custom APIs for backoffice in a way you know.
+### Run the CLI
+
+You can provide options directorly:
 
 ```bash
-npm i express
+npx adminforth create-app --app-name myadmin --db sqlite://.db.sqlite
 ```
 
-You can use AdminForth in pure Node, but we recommend using TypeScript for better development experience:
+Or omit them to be prompted interactively:
 
 ```bash
-npm i typescript@5.4.5 tsx@4.11.2 @types/express @types/node -D
-echo '{
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "nodenext",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true
-  },
-  "exclude": ["node_modules", "dist"]
-}' > tsconfig.json
+npx adminforth create-app
 ```
 
+CLI options:
 
-## Basic Philosophy
+* **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
+* **`--db`** - database connection string. Currently PostgreSQL, MongoDB and SQLite are supported. Default value: **`sqlite://.db.sqlite`**
+
+> ☝️ Database Connection String format:
+>
+> Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`
+>
+> For SQLite, you can use `sqlite://.db.sqlite`. If database not yet exists it will be created.
+> For PostgreSQL — `postgres://user:password@localhost:5432/dbname`.
+> For MongoDB — `mongodb://localhost:27017/dbname`.
+
+### Understand the generated Project Structure
+
+The CLI will create boilerplate files and folders in your current directory and install dependencies. A typical layout looks like this:
+
+```text
+myadmin/
+├── custom
+│   ├── assets/           # Static assets like images, fonts, etc.
+│   ├── package.json      # For any custom npm packages you will use in Vue files
+│   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
+├── resources
+│   └── users.ts          # Example resource file for users management
+├── schema.prisma         # Prisma schema file for database schema
+├── index.ts              # Main entry point: configures AdminForth & starts the server
+├── package.json          # Project dependencies
+├── tsconfig.json         # TypeScript configuration
+├── .env                  # Environment variables (e.g. database connection string)
+├── .env.sample           # Sample env file (for distribution to teammates)
+└── .gitignore            
+
+```
+
+### Initial Migration & Future Migrations
+
+> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Users resource.  
+
+CLI will suggest you a command to initialize the database with Prisma:
+
+```bash
+npm run makemigration -- --name init
+```
+
+This will create a migration file in `migrations` and apply it to the database. 
+
+In future, when you need to add new resources, you need to modify `schema.prisma` (add models, change fields, etc.). After doing any modification you need to create a new migration using next command:
+
+```bash
+npm run makemigration -- --name <name_of_changes>
+```
+
+Other developers need to pull migration and run `npm run migrate` to apply any unapplied migrations.
+
+## AdminForth Basic Philosophy
 
 AdminForth connects to existing databases and provides a back-office for managing data including CRUD operations, filtering, sorting, and more.
 
-Database should be already created by using any database management tool, ORM or migrator. AdminForth does not provide a way to create tables or columns in the database.
+Database can be already created by using any database management tool, ORM or migrator. 
 
-Once you have a database, you pass a connection string to AdminForth and define resources(tables) and columns you would like to see in back-office. For most DBs AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition are take precedence over DB schema.
+AdminForth itself never modifies database schema, does not add columns or new tables. However for those who have no own migration managment AdminForth CLI suggests using Prisma. This allows to provide simple and reliable schema management for standalone projects which have no DB yet.
+
+If you already have a database, you pass a connection string to AdminForth and define resources(tables) and describe columns you would like to see in back-office. For most DBs AdminForth can "discover" column types and constraints (e.g. max-length) by connecting to DB. However you can redefine them in AdminForth configuration. Type and constraints definition in AdminForth resource are take precedence over DB schema.
 
 Also in AdminForth you can define in "Vue" way:
+
 * how each field will be rendered
-* create own pages e.g. Dashboards
+* create own pages e.g. Dashboard using AdminForth Components Library (AFCL) or any other Vue componetns.
 * insert injections into standard pages (e.g. add diagram to list view)
 
+## Adding an `apartments` Model
 
-## Setting up a first demo
+So far, our freshly generated AdminForth project includes a default `adminuser` model and a corresponding `users` resource. 
 
-In the demo we will create a simple database with 2 tables: `apartments` and `users`. We will just use plain SQL to create tables and insert some fake data.
+Let’s expand our app to suport managment of **`apartments`** model. Adding new resource will involve next steps:
 
-Users table will be used to store a credentials for login into backoffice itself.
+1. **Add a new Prisma model** to your `schema.prisma`.
+2. **Run a Prisma migration** to update your database schema.
+3. **Create a corresponding resource** in the `resources/` folder.
+4. **Register the new resource** in `index.ts` and see it in your AdminForth back-office.
 
-Open `package.json`, set `type` to `module` and add `start` script:
+Please note that steps 1 and 2 are compleatly independent from 3 and 4, so you can make them with any other way then Prisma.
 
-```json title="./package.json"
-{
-  ...
+### Step 1. Define the `apartments` Model in `schema.prisma`
+
+Open `schema.prisma` in your project root and add a new model for `apartments`:
+
+```prisma title="./schema.prisma"
+...
 //diff-add
-  "type": "module",
-  "scripts": {
-    ...
-//diff-add
-    "start": "tsx watch --env-file=.env index.ts"
-  },
-}
-```
-
-Create `.env` file in root directory with following content:
-
-```bash title="./.env"
-DATABASE_FILE=./db.sqlite
-DATABASE_FILE_URL=file:${DATABASE_FILE}
-ADMINFORTH_SECRET=123
-NODE_ENV=development
-```
-
-> ☝️ In production:
-> 1) you should set `NODE_ENV` to `production` so it will not waste extra resources on hot reload.
-> 2) You should autogenerate `ADMINFORTH_SECRET`
-
-
-> ☝️ If you are using Git, obviously you should make sure you will never commit `.env` file to the repository, because
-it might contain your own sensitive secrets. So to follow best practices, we recommend to add `.env` into `.gitignore` and create `.env.sample` as template for other repository users.
-> During deployment you should set `ADMINFORTH_SECRET` in environment variables of Docker image or in other way without using `.env` file.
-
-## Database creation
-
-> ☝️ For demo purposes we will create a database using Prisma and SQLite. 
-> You can also create it using any other favorite tool or ORM and skip this step.
-
-
-Create `./schema.prisma` and put next content there:
-
-```text title="./schema.prisma"
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_FILE_URL")
-}
-
-model users {
-  id            String     @id
-  created_at    DateTime 
-  email         String   @unique
-  role          String     
-  password_hash String
-}
-
 model apartments {
+//diff-add
   id                String     @id
-  created_at        DateTime? 
-  title             String 
+//diff-add
+  created_at        DateTime?
+//diff-add
+  title             String
+//diff-add
   square_meter      Float?
+//diff-add
   price             Decimal
+//diff-add
   number_of_rooms   Int?
+//diff-add
   description       String?
+//diff-add
   country           String?
+//diff-add
   listed            Boolean
+//diff-add
   realtor_id        String?
+//diff-add
 }
 
 ```
 
-Create database using `prisma migrate`:
+### Step 2. Create and Apply the Migration
+
+Run the following command to create a new migration:
 
 ```bash
-npx --yes prisma migrate dev --name init
+npm run makemigration -- --name add-apartments
 ```
 
-> ☝️ In future, if you will need to change schema, you can create new migration with `npx prisma migrate dev --name <name>`
+### Step3. Create the `apartments` resource
 
+Create a new file `apartments.ts` in the `resources/` folder:
 
-Create `index.ts` file in root directory with following content:
-
-```ts title="./index.ts"
-import express from 'express';
-import AdminForth, { Filters } from 'adminforth';
-import usersResource from "./resources/users";
-import apartmentsResource from "./resources/apartments";
-
-
-const ADMIN_BASE_URL = '';
-
-export const admin = new AdminForth({
-  baseUrl : ADMIN_BASE_URL,
-  auth: {
-    usersResourceId: 'users',  // resource to get user during login
-    usernameField: 'email',  // field where username is stored, should exist in resource
-    passwordHashField: 'password_hash',
-    rememberMeDays: 30, // users who will check "remember me" will stay logged in for 30 days
-  },
-  customization: {
-    brandName: 'My Admin',
-    datesFormat: 'D MMM YY',
-    timeFormat: 'HH:mm:ss',
-    emptyFieldPlaceholder: '-',
-  },
-  dataSources: [
-    {
-      id: 'maindb',
-      url: `sqlite://${process.env.DATABASE_FILE}`
-    },
-  ],
-  resources: [
-    apartmentsResource,
-    usersResource,
-  ],
-  menu: [
-    {
-      label: 'Core',
-      icon: 'flowbite:brain-solid', // any icon from iconify supported in format <setname>:<icon>, e.g. from here https://icon-sets.iconify.design/flowbite/
-      open: true,
-      children: [
-        {
-          homepage: true,
-          label: 'Apartments',
-          icon: 'flowbite:home-solid',
-          resourceId: 'aparts',
-        },
-      ]
-    },
-    {
-      type: 'gap'
-    },
-    {
-      type: 'divider'
-    },
-    {
-      type: 'heading',
-      label: 'SYSTEM',
-    },
-    {
-      label: 'Users',
-      icon: 'flowbite:user-solid',
-      resourceId: 'users',
-    }
-  ],
-});
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  // if script is executed directly e.g. node index.ts or npm start
-
-
-  const app = express()
-  app.use(express.json());
-  const port = 3500;
-
-  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-
-
-  // serve after you added all api
-  admin.express.serve(app)
-
-  admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
-        email: 'adminforth',
-        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
-        role: 'superadmin',
-      });
-    }
-  });
-
-  admin.express.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-    console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
-  });
-}
-```
-
-Next step you need to create `resources` folder.
-
-Create `apartments.ts` in `resources`:
-```ts title="/apartments.ts"
+```ts title="./resources/apartments.ts"
 import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
 
 export default {
@@ -265,6 +184,7 @@ export default {
   columns: [
     {
       name: 'id',
+      type: AdminForthDataTypes.STRING,
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
       showIn: ['filter', 'show'], // show column in filter and in show page
       primaryKey: true,
@@ -373,94 +293,77 @@ export default {
 } as AdminForthResourceInput;
 ```
 
-Create `users.ts` in `resources`:
-```ts title="/users.ts"
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
-export default {
-  dataSource: 'maindb',
-  table: 'users',
-  resourceId: 'users',
-  label: 'Users',
-  recordLabel: (r) => `👤 ${r.email}`,
-  columns: [
-    {
-      name: 'id',
-      primaryKey: true,
-      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
-      showIn: ['list', 'filter', 'show'],
-    },
-    {
-      name: 'email',
-      required: true,
-      isUnique: true,
-      type: AdminForthDataTypes.STRING,
-      validation: [
-        // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object 
-        {
-          regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-          message: 'Email is not valid, must be in format example@test.com'
-        },
-      ]
-    },
-    {
-      name: 'created_at',
-      type: AdminForthDataTypes.DATETIME,
-      showIn: ['list', 'filter', 'show'],
-      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
-    },
-    {
-      name: 'role',
-      enum: [
-        { value: 'superadmin', label: 'Super Admin' },
-        { value: 'user', label: 'User' },
-      ]
-    },
-    {
-      name: 'password',
-      virtual: true,  // field will not be persisted into db
-      required: { create: true }, // make required only on create page
-      editingNote: { edit: 'Leave empty to keep password unchanged' },
-      type: AdminForthDataTypes.STRING,
-      showIn: ['create', 'edit'], // to show field only on create and edit pages
-      masked: true, // to show stars in input field
+### Step 4. Register the `apartments` Resource
 
-      minLength: 8,
-      validation: [
-        // request to have at least 1 digit, 1 upper case, 1 lower case
-        AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
-      ],
-    },
-    { name: 'password_hash', backendOnly: true, showIn: [] }
+Open `index.ts` in your project root and import the new resource:
+
+```ts title="./index.ts"
+...
+//diff-add
+import apartmentsResource from "./resources/apartments";
+
+...
+export const admin = new AdminForth({
+  ...
+  resources: [
+    usersResource,
+    //diff-add
+    apartmentsResource,
   ],
-  hooks: {
-    create: {
-      beforeSave: async ({ record, adminUser, resource }) => {
-        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-        return { ok: true };
-      }
+  menu: [
+//diff-add
+    {
+//diff-add
+      label: 'Core',
+//diff-add
+      icon: 'flowbite:brain-solid',
+//diff-add
+      open: true,
+//diff-add
+      children: [
+//diff-add
+        {
+//diff-add
+          homepage: true,
+//diff-add
+          label: 'Apartments',
+//diff-add
+          icon: 'flowbite:home-solid',
+//diff-add
+          resourceId: 'aparts',
+//diff-add
+        },
+//diff-add
+      ]
+//diff-add
     },
-    edit: {
-      beforeSave: async ({ record, adminUser, resource }) => {
-        if (record.password) {
-          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-        }
-        return { ok: true }
-      },
+//diff-add
+    { type: 'gap' },
+//diff-add
+    { type: 'divider' },
+    {
+      type: 'heading',
+      label: 'SYSTEM'
     },
-  }
-} as AdminForthResourceInput;
+    {
+      label: 'Users',
+      ...
+    }
+  ],
+  ...
+});
+
 ```
 
+## Run the Server
 
 Now you can run your app:
-
 
 ```bash
 npm start
 ```
 
-Open http://localhost:3500 in your browser and login with credentials `adminforth` / `adminforth`.
-
+Open http://localhost:3500 in your browser and (default credentials are `adminforth`/`adminforth` if you haven’t changed them).
 
 ![alt text](localhost_3500_login.png)
 
@@ -473,35 +376,35 @@ async function seedDatabase() {
   if (await admin.resource('aparts').count() > 0) {
 //diff-add
     return
-//diff-add    
+//diff-add
   }
-//diff-add  
-  for (let i = 0; i <= 100; i++) {
-//diff-add    
+//diff-add
+  for (let i = 0; i < 100; i++) {
+//diff-add
     await admin.resource('aparts').create({
-//diff-add      
+//diff-add
       id: `${i}`,
-//diff-add      
+//diff-add
       title: `Apartment ${i}`,
-//diff-add      
+//diff-add
       square_meter: (Math.random() * 100).toFixed(1),
-//diff-add      
+//diff-add
       price: (Math.random() * 10000).toFixed(2),
-//diff-add      
+//diff-add
       number_of_rooms: Math.floor(Math.random() * 4) + 1,
-//diff-add      
+//diff-add
       description: 'Next gen apartments',
-//diff-add      
+//diff-add
       created_at: (new Date(Date.now() - Math.random() * 60 * 60 * 24 * 14 * 1000)).toISOString(),
-//diff-add      
+//diff-add
       listed: i % 2 == 0,
-//diff-add      
+//diff-add
       country: `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`
-//diff-add      
+//diff-add
     });
-//diff-add    
+//diff-add
   };
-//diff-add  
+//diff-add
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -521,10 +424,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 
 ```
+
 This will create records during first launch. Now you should see:
 ![alt text](localhost_3500_resource_aparts.png)
 
-
+Feel free to play with the data, add more fields, and customize the UI to your liking.
 
 ## Possible configuration options
 
