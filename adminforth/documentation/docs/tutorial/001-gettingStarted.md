@@ -3,7 +3,7 @@
 This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI. 
 You will learn how to set up a new project using the `adminforth create-app` command and explore AdminForth’s fundamentals.
 
-> 👆 For Hello world example without CLI check out [Hello World without CLI](./01-helloWorld.md)
+> 👆 For setup example without CLI check out [Hello World without CLI](./01-helloWorld.md)
 
 ## Prerequisites
 
@@ -19,16 +19,12 @@ nvm use 20
 
 The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management. 
 
-### Create a fresh directory
-
 First, create and enter a directory where you want your AdminForth project to live. For instance:
 
 ```bash
 mkdir myadmin
 cd myadmin
 ```
-
-### Run the CLI
 
 You can provide options directorly:
 
