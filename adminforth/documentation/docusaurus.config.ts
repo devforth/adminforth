@@ -2,6 +2,9 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+console.log('⭐⭐⭐⭐⭐⭐⭐⭐', process.env.NODE_ENV)
+
+
 const config: Config = {
   title: 'Vue & Node admin panel framework',
   tagline: 'Start developing backoffice using open-source admin framework on Tailwind UI and extend it with Vue3',
@@ -59,14 +62,10 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-        ...(
-          process.env.NODE_ENV === 'production' ? {
-            gtag: { 
-              trackingID: 'G-7K99Q2BH04',
-              anonymizeIP: true,
-            }
-          } : {}
-        )
+        gtag: { 
+          trackingID: 'G-7K99Q2BH04',
+          anonymizeIP: true,
+        }
       } satisfies Preset.Options,
     ],
   ],
