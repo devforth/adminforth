@@ -363,6 +363,138 @@ watch(files, (files) => {
   </div>
 </div>
 
+## Table
+
+<div class="split-screen" >
+  <div >
+
+```ts
+import { Table } from '@/afcl'
+```
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'UK' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+></Table>
+```
+  </div>
+  <div>
+    ![AFCL Table](image-51.png)
+  </div>
+</div>
+
+### No even highlights
+
+<div class="split-screen" >
+  <div >
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'UK' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+//diff-add
+  :evenHighlights="false"
+></Table>
+```
+  </div>
+  <div>
+    ![AFCL Table withut even highlights](image-52.png)
+  </div>
+</div>
+
+### Custom cell
+
+```ts
+import { Table } from '@/afcl'
+const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))
+```
+
+<div class="split-screen" >
+  <div >
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+>
+//diff-add
+  <template #cell:country="{item}">
+//diff-add
+    {{ isoFlagToEmoji(item.country) }}
+//diff-add
+  </template>
+</Table>
+```
+  </div>
+  <div>
+    ![AFCL Table with custom cell](image-53.png)
+  </div>
+</div>
+
+
+## Pagination
+
+Table provides front-end side pagination. You can set `pageSize` (default is 10) to set how many rows to show per page.
+If there is less then `pageSize` rows, pagination will not be shown.
+
+<div class="split-screen" >
+  <div >
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+//diff-add
+  :pageSize="3"
+>
+</Table>
+```
+  </div>
+  <div>
+  ![AFCL Table with pagination](image-54.png)
+  </div>
+</div>
+
+
+
+
 
 ## Bar Chart
 
