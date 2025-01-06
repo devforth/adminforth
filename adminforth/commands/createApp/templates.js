@@ -266,7 +266,9 @@ export function rootPackageJson(appName) {
     "typescript": "5.4.5",
     "tsx": "4.11.2",
     "@types/express": "latest",
-    "@types/node": "latest"
+    "@types/node": "latest",
+    "@prisma/client": "latest",
+    "prisma": "latest"
   }
 }
 `;
