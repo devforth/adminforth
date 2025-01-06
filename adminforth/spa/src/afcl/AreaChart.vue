@@ -138,6 +138,7 @@ watch(() => [options.value, chart.value], (value) => {
   if (!value || !chart.value) {
     return;
   }
+  console.log('options changed', options.value);
   if (apexChart) {
     apexChart.updateOptions(options.value);
   } else {

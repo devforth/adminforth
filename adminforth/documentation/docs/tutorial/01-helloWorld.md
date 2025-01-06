@@ -1,7 +1,14 @@
+---
+id: hello-world
+title: Hello world app without CLI
+sidebar_class_name: hidden-sidebar
+---
 
-# Hello world app
+# Hello world app without CLI
 
-No water. Pure code to get started ASAP.
+While AdminForth CLI is the fastest way to create a new project, you can also create a new project manually. 
+
+This might help you better understand how AdminForth project is structured and how to customize it.
 
 Here we create database with users and posts tables and admin panel for it. 
 
@@ -299,6 +306,36 @@ Open http://localhost:3500 in your browser and login with credentials `adminfort
 
 ![alt text](localhost_3500_login.png)
 
+
+## Initializing custom directory
+
+If you are not using CLI, you can create `custom` directory and initialize it with `npm`:
+
+```bash
+cd ./custom
+npm init -y
+```
+
+Also, for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
+ 
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "../node_modules/adminforth/dist/spa/src/*"
+      ],
+      "*": [
+        "../node_modules/adminforth/dist/spa/node_modules/*"
+      ],
+      "@@/*": [
+        "."
+      ]
+    }
+  }
+}
+```
 
 
 ## Possible configuration options

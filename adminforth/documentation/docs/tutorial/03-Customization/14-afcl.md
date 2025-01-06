@@ -7,20 +7,41 @@ This allows to keep the design consistent with minimal efforts. ACL components w
 
 ## Button
 
+
+
+<div class="split-screen" >
+  <div >
 ```js
 import { Button } from '@/afcl'
 ```
 
 ```html
-<Button @click="doSmth" :loader="showLoader" class="w-full">
+<Button @click="doSmth" 
+    :loader="false" class="w-full">
+  Your button text
+</Button>
+
+<Button @click="doSmth" 
+    :loader="true" class="w-full mt-4">
   Your button text
 </Button>
 ```
+</div>
+<div>
+![AFCL Button](image-39.png)
+</div>
+</div>
+
 
 loader prop would show loader when it's true.
 
 
 ## Link
+
+
+
+<div class="split-screen" >
+  <div >
 
 ```js
 import { Link } from '@/afcl'
@@ -29,11 +50,20 @@ import { Link } from '@/afcl'
 ```html
 <Link to="/login">Go to login</Link>
 ```
+</div>
+<div>
+![AFCL Link](image-40.png)
+</div>
+</div>
 
 ## LinkButton
 
 Looks like button but works like link. Uses `router-link` under the hood.
 
+
+
+<div class="split-screen" >
+  <div >
 ```js
 import { LinkButton } from '@/afcl'
 ```
@@ -41,6 +71,11 @@ import { LinkButton } from '@/afcl'
 ```html
 <LinkButton to="/login">Go to login</LinkButton>
 ```
+</div>
+<div>
+![AFCL LinkButton](image-41.png)
+</div>
+</div>
 
 ## Select
 
@@ -53,8 +88,11 @@ const selected = ref(null)
 
 ### Single
 
+<div class="split-screen" >
+  <div >
 ```html
 <Select
+  class="w-full"
   :options="[
     {label: 'Last 7 days', value: '7'}, 
     {label: 'Last 30 days', value: '30'}, 
@@ -64,11 +102,19 @@ const selected = ref(null)
   v-model="selected"
 ></Select>
 ```
+</div>
+<div>
+![AFCL Select](image-42.png)
+</div>
+</div>
 
 ### Multiple
 
+<div class="split-screen" >
+  <div >
 ```html
 <Select
+  class="w-full"
   :options="[
     {label: 'Last 7 days', value: '7'}, 
     {label: 'Last 30 days', value: '30'}, 
@@ -76,86 +122,148 @@ const selected = ref(null)
     {label: 'None', value: null}
   ]"
   v-model="selected"
+//diff-add
   multiple
 ></Select>
 ```
+  </div>
+  <div>
+    ![AFCL Select](image-43.png)
+  </div>
+</div>
 
 
 ### Custom slots for item
 
+You can customize item and selected item using slots.
+
+<div class="split-screen" >
+  <div >
 ```html
 <Select
-    :options="[
-      {label: 'Last 7 days', value: '7', records: 110},
-      {label: 'Last 30 days', value: '30', records: 320},
-      {label: 'Last 90 days', value: '90', records: 310},
-      {label: 'None', value: null}
-    ]"
-    v-model="selected"
-  >
-    <template #item="{option}">
-      <div>
-        <span>{{ option.label }}</span>
-        <span class="ml-2 opacity-50">{{ option.records }} records</span>
-      </div>
-    </template>
-
-    <template #selected-item="{option}">
-      <span>{{ option.label }} 💫</span>
-    </template>
-  </Select>
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
+  ]"
+  v-model="selected"
+>
+//diff-add
+  <template #item="{option}">
+//diff-add
+    <div>
+//diff-add
+      <span>{{ option.label }}</span>
+//diff-add
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
+//diff-add
+    </div>
+//diff-add
+  </template>
+//diff-add
+  <template #selected-item="{option}">
+//diff-add
+    <span>{{ option.label }} 💫</span>
+//diff-add
+  </template>
+</Select>
 </div>
 ```
+  </div>
+  <div>
+    ![AFCL Select custom template](image-44.png)
+  </div>
+</div>
 
 
-![alt text](<Group 21.jpg>)
 
 ### Extra item
 
 You might need to put some extra item at bottom of list
 
+<div class="split-screen" >
+  <div >
 ```html
 <Select
-  :options="prices.map(price => ({label: price, value: price}))"
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7'}, 
+    {label: 'Last 30 days', value: '30'}, 
+    {label: 'Last 90 days', value: '90'},
+  ]"
   v-model="selected"
 >
+//diff-add
   <template #extra-item>
-    <LinkButton to="/prices">Manage prices</LinkButton>
+//diff-add
+    <LinkButton to="/ranges">Manage ranges</LinkButton>
+//diff-add
   </template>
+
 </Select>
 ```
+  </div>
+  <div>
+   ![AFCL Select extra item](image-45.png)
+  </div>
+</div>
 
 ## Input
 
-```html
 
+
+<div class="split-screen" >
+  <div >
+```js
+import { Input } from '@/afcl'
+```
+
+```html
 <Input type="number" class="w-full">
   <template #suffix>
     USD
   </template>
 </Input>
-
 ```
+  </div>
+  <div>
+    ![AFCL Input](image-46.png)
+  </div>
+</div>
+
 
 ## Tooltip
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
   
+
+
+<div class="split-screen" >
+  <div >
+
 ```js
 import { Tooltip } from '@/afcl'
 ```
 
 ```html
 <Tooltip>
-    <a :href="`https://google.com?q=${record.title}`">
+    <a :href="`https://google.com?q=adminforth`" target="_blank" >
         <IconCardSearch class="w-5 h-5 me-2"/>
     </a>
 
     <template #tooltip>
-        Search for competitive apartments in Google
+        Search for AdminForth
     </template>
 </Tooltip>
 ```
+  </div>
+  <div>
+    ![AFCL Tooltip](image-47.png)
+  </div>
+</div>
+
 
 ## VerticalTabs
 
@@ -166,7 +274,9 @@ import { VerticalTabs } from '@/afcl'
 import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
 ```
 
-```html
+<div class="split-screen" >
+  <div>
+  ```html
   <VerticalTabs>
     <template #tab:Profile>
       <IconUserCircleSolid class="w-5 h-5 me-2"/>
@@ -174,42 +284,49 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
     </template>
     <template #tab:Dashboard>
       <IconGridSolid class="w-5 h-5 me-2"/>
-      Dashboard
+      Board
     </template>
     <template #Profile>
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Tab</h3>
-      <p class="mb-2">This is some placeholder content the Profile tab's associated content, clicking another tab will toggle the visibility of this one for the next.</p>
+      <p class="mb-2">This is some placeholder content the Profile tab's associated content</p>
     </template>
     <template #Dashboard>
       Dashboard Tab Content 
     </template>
   </VerticalTabs>
-```
+  ```
+  </div>
+  <div>
+  ![AFCL VerticalTabs](image-48.png)
+  </div>
+</div>
+
+
 
 ## Checkbox
 
-```html
-<Checkbox v-model="enable">
-  Enable
-</Checkbox>
-```
+<div class="split-screen" >
+  <div >
 
 ```ts
 import { Checkbox } from '@/afcl'
 const enable = ref(false)
 ```
 
-## Dropzone
 
 ```html
-<Dropzone
-  :extensions="['.jpg', '.jpeg', '.png']"
-  :maxSizeBytes="1024 * 1024 * 2"
-  :multiple="false"
-  v-model="files"
-/>
-
+<Checkbox v-model="enable">
+  Enable
+</Checkbox>
 ```
+  </div>
+  <div>
+    ![AFCL Checkbox](image-49.png)
+  </div>
+</div>
+
+
+## Dropzone
 
 ```ts
 import { Ref } from 'vue'
@@ -225,3 +342,385 @@ watch(files, (files) => {
   }, 5000);
 })
 ```
+
+<div class="split-screen" >
+  <div >
+
+
+
+```html
+<Dropzone
+  :extensions="['.jpg', '.jpeg', '.png']"
+  :maxSizeBytes="1024 * 1024 * 2"
+  :multiple="false"
+  v-model="files"
+/>
+
+```
+  </div>
+  <div>
+    ![AFCL Dropzone](image-50.png)
+  </div>
+</div>
+
+
+## Bar Chart
+
+Under the hood AdminForth uses MIT-licensed [ApexCharts](https://apexcharts.com/). It has very rich variety of options, you can pass
+any of native settings to `options` prop. Here we will only show some basics.
+
+
+<div class="split-screen" >
+  <div >
+```html
+<BarChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+    ![alt text](image-32.png)
+  </div>
+
+</div>
+
+
+### Y-axis labels
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+//diff-add
+    yaxis: {
+//diff-add
+      stepSize: 1, // needed if your data is integer
+//diff-add
+      labels: {
+//diff-add
+        show: true,
+//diff-add
+        style: {
+//diff-add
+          fontFamily: 'Inter, sans-serif',
+//diff-add
+          cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+//diff-add
+        }
+//diff-add
+      }
+//diff-add
+    }
+  }"
+/>
+```
+  </div>
+  <div>
+    ![alt text](image-33.png)
+  </div>
+</div>
+
+
+### X-axis labels and formatting labels
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+//diff-add
+    xaxis: {
+//diff-add
+      labels: {
+//diff-add
+        show: true,
+//diff-add
+        formatter: function (value) {
+//diff-add
+          return dayjs(value).format('DD MMM');
+//diff-add
+        },
+//diff-add
+        style: {
+//diff-add
+          fontFamily: 'Inter, sans-serif',
+//diff-add
+          cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+//diff-add
+        }
+//diff-add
+      }
+    }
+  }"
+/>
+```
+  </div>
+  <div>
+  ![alt text](image-34.png)
+  </div>
+</div>
+
+### Grid
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+//diff-add
+    grid: {
+//diff-add
+      show: true,
+//diff-add
+      borderColor: 'rgba(0, 0, 0, 0.1)',
+//diff-add
+      strokeDashArray: 4, 
+//diff-add
+      position: 'back',
+//diff-add
+      xaxis: {
+//diff-add
+        lines: {
+//diff-add
+          show: true
+//diff-add
+        }
+//diff-add
+      },
+//diff-add
+      yaxis: {  
+//diff-add
+        lines: {
+//diff-add
+          show: true
+//diff-add
+        }
+//diff-add
+      }
+//diff-add
+    }
+  }"
+/>
+```
+  </div>
+  <div>
+  ![alt text](image-35.png)
+  </div>
+</div>
+
+### Data labels
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+//diff-add
+    dataLabels: {
+//diff-add
+      formatter: function (value) {
+//diff-add
+        return `⬆️ ${value}`;
+//diff-add
+      },
+//diff-add
+      enabled: true,
+//diff-add
+      style: {
+//diff-add
+        fontSize: '12px',
+//diff-add
+        fontFamily: 'Inter, sans-serif',
+//diff-add
+      }
+//diff-add
+    }
+  }"
+/>
+```
+  </div>
+  <div>
+  ![alt text](image-36.png)
+  </div>
+</div>
+
+### Stacked bars and legend
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { countCars: 2, countBikes: 3, x: '02 Jun 2025'}, 
+    { countCars: 5, countBikes: 1, x: '03 Jun 2025'}, 
+    { countCars: 3, countBikes: 4, x: '04 Jun 2025'}, 
+    { countCars: 4, countBikes: 2, x: '05 Jun 2025'}, 
+    { countCars: 2, countBikes: 3, x: '06 Jun 2025'},
+  ]"
+  :series="[
+    {
+      name: $t('Cars'),
+      fieldName: 'countCars',
+      color: '#4E79A7',
+    },
+    {
+      name: $t('Bikes'),
+      fieldName: 'countBikes',
+      color: '#F28E2B',
+    }
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+//diff-add
+      stacked: true,
+    },
+//diff-add
+    legend: {
+//diff-add
+      show: true,
+//diff-add
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![alt text](image-37.png)
+  </div>
+</div>
+
+### Horizontal bars
+
+<div class="split-screen" >
+
+  <div >
+```html
+<BarChart
+  :data="[
+    { countCars: 2, countBikes: 3, x: '02 Jun 2025'}, 
+    { countCars: 5, countBikes: 1, x: '03 Jun 2025'}, 
+    { countCars: 3, countBikes: 4, x: '04 Jun 2025'}, 
+    { countCars: 4, countBikes: 2, x: '05 Jun 2025'}, 
+    { countCars: 2, countBikes: 3, x: '06 Jun 2025'},
+  ]"
+  :series="[
+    {
+      name: $t('Cars'),
+      fieldName: 'countCars',
+      color: '#4E79A7',
+    },
+    {
+      name: $t('Bikes'),
+      fieldName: 'countBikes',
+      color: '#F28E2B',
+    }
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+      type: 'bar',
+    },
+//diff-add
+    plotOptions: {
+//diff-add
+      bar: {
+//diff-add
+        horizontal: true,
+//diff-add
+      }
+//diff-add
+    },
+    legend: {
+      show: true,
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+![alt text](image-38.png)
+  </div>
+</div>

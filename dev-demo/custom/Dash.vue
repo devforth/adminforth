@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-56px)]">
+  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-55px)] ">
   
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
@@ -34,7 +34,7 @@
         <PieChart
           :data="topCountries"
           :options="{
-            chart: { type: 'pie'},
+            chart: { type: 'pie', height: 240 },
             legend: {
               show: false,
             },
@@ -110,6 +110,7 @@
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
+            chart: { height: 350 },
             plotOptions: {
               pie: {
                 donut: {
@@ -158,16 +159,43 @@
       </div>
 
     </div>
+
+    <div class="flex justify-center items-center p-80 bg-white">
+      <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex justify-center items-center">
+<Dropzone
+  :extensions="['.jpg', '.jpeg', '.png']"
+  :maxSizeBytes="1024 * 1024 * 2"
+  :multiple="false"
+  v-model="files"
+/>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, onMounted, computed } from 'vue';
+import { ref, type Ref, onMounted, computed, watch } from 'vue';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
-import { AreaChart, BarChart, PieChart } from '@/afcl';
+import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, VerticalTabs } from '@/afcl';
+import Button from '@/afcl/Button.vue';
+import Tooltip from '@/afcl/Tooltip.vue';
+import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
+import Checkbox from '@/afcl/Checkbox.vue';
+
+import { Dropzone } from '@/afcl'
+
+const files: Ref<File[]> = ref([])
+
+watch(files, (files) => {
+  console.log('files selected', files);
+  setTimeout(() => {
+    // clear
+    files.length = 0;
+  }, 5000);
+})
 
 const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
   apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
@@ -175,6 +203,8 @@ const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any,
 const { t } = useI18n();
 
 const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
+
+const enable = ref(false);
 
 const apartsCountsByDaysChart = computed(() => {
   return data.value.apartsByDays?.reverse().map(
@@ -235,5 +265,6 @@ onMounted(async () => {
       variant: 'danger',
     });
   }
+
 })
 </script>

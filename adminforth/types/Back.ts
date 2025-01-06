@@ -422,6 +422,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     query: Record<string, string>,
     headers: Record<string, string>,
     cookies: Record<string, string>,
+    requestUrl: string,
   },
   adminforth: IAdminForth,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -440,6 +441,7 @@ export type AfterDataSourceResponseFunction = (params: {
     query: Record<string, string>,
     headers: Record<string, string>,
     cookies: { key: string, value: string }[],
+    requestUrl: string,
   },
   adminforth: IAdminForth,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -449,6 +451,7 @@ export interface HttpExtra {
   query: Record<string, string>,
   headers: Record<string, string>,
   cookies: Record<string, string>,
+  requestUrl: string,
 }
 /**
  * Modify record to change how data is saved to database.
