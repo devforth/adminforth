@@ -1,0 +1,31 @@
+{
+  "name": "{{appName}}",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "start": "tsx watch --env-file=.env index.ts",
+    "migrate": "npx prisma migrate deploy",
+    "makemigration": "npx --yes prisma migrate deploy; npx --yes prisma migrate dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "adminforth": "latest",
+    "express": "latest"
+  },
+  "devDependencies": {
+    "typescript": "5.4.5",
+    "tsx": "4.11.2",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@prisma/client": "latest",
+    "prisma": "latest"
+  }
+}

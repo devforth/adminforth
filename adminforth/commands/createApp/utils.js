@@ -8,8 +8,7 @@ import { Listr } from 'listr2'
 import { fileURLToPath } from 'url';
 import {ConnectionString} from 'connection-string';
 import {execa} from 'execa';
-
-import * as templates from './templates.js';
+import Handlebars from 'handlebars';
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -121,38 +120,104 @@ async function scaffoldProject(ctx, options, cwd) {
   const connectionString = parseConnectionString(options.db);
   const provider = detectDbProvider(connectionString.protocol);
   const prismaDbUrl = generateDbUrlForPrisma(connectionString);
+
   ctx.skipPrismaSetup = !prismaDbUrl;
   const appName = options.appName;
 
-  const dirname = path.dirname(fileURLToPath(import.meta.url));
-  const sourceAssetsDir = path.join(dirname, 'assets');
-  const targetAssetsDir = path.join(cwd, 'custom', 'assets');
+  const filename = fileURLToPath(import.meta.url);
+  const dirname = path.dirname(filename);
 
+  // Prepare directories
+  ctx.customDir = path.join(cwd, 'custom');
+  await fse.ensureDir(ctx.customDir);
+  await fse.ensureDir(path.join(cwd, 'resources'));
+
+  // Copy static assets to `custom/assets`
+  const sourceAssetsDir = path.join(dirname, 'assets');
+  const targetAssetsDir = path.join(ctx.customDir, 'assets');
   await fse.ensureDir(targetAssetsDir);
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
-  writeTemplateFiles(cwd, connectionString.toString(), prismaDbUrl, appName, provider);
+  // Write templated files
+  writeTemplateFiles(dirname, cwd, {
+    dbUrl: connectionString.toString(),
+    prismaDbUrl,
+    appName,
+    provider,
+  });
 
-  const resourcesDir = path.join(cwd, 'resources');
-  await fse.ensureDir(resourcesDir);
-  fs.writeFileSync(path.join(resourcesDir, 'users.ts'), templates.usersResource());
-
-  const customDir = path.join(cwd, 'custom');
-  await fse.ensureDir(customDir);
-  ctx.customDir = customDir;
-  fs.writeFileSync(path.join(customDir, 'package.json'), templates.customPackageJson(appName));
-  fs.writeFileSync(path.join(customDir, 'tsconfig.json'), templates.customTsconfig());
 }
 
-function writeTemplateFiles(cwd, dbUrl, prismaDbUrl, appName, provider) {
-  fs.writeFileSync(path.join(cwd, '.gitignore'), templates.gitignore());
-  fs.writeFileSync(path.join(cwd, '.env'), templates.env(dbUrl, prismaDbUrl));
-  fs.writeFileSync(path.join(cwd, '.env.sample'), templates.envSample(dbUrl, prismaDbUrl));
-  fs.writeFileSync(path.join(cwd, 'index.ts'), templates.indexTs(appName));
-  if (prismaDbUrl)
-    fs.writeFileSync(path.join(cwd, 'schema.prisma'), templates.schemaPrisma(provider, prismaDbUrl));
-  fs.writeFileSync(path.join(cwd, 'package.json'), templates.rootPackageJson(appName));
-  fs.writeFileSync(path.join(cwd, 'tsconfig.json'), templates.rootTsConfig());
+async function writeTemplateFiles(dirname, cwd, options) {
+  const { dbUrl, prismaDbUrl, appName, provider } = options;
+
+  // Build a list of files to generate
+  const templateTasks = [
+    {
+      src: 'tsconfig.json.hbs',
+      dest: 'tsconfig.json',
+      data: {},
+    },
+    {
+      src: 'schema.prisma.hbs',
+      dest: 'schema.prisma',
+      data: { provider },
+      condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
+    },
+    {
+      src: 'package.json.hbs',
+      dest: 'package.json',
+      data: { appName },
+    },
+    {
+      src: 'index.ts.hbs',
+      dest: 'index.ts',
+      data: { appName },
+    },
+    {
+      src: '.gitignore.hbs',
+      dest: '.gitignore',
+      data: {},
+    },
+    {
+      src: '.env.sample.hbs',
+      dest: '.env.sample',
+      data: { dbUrl, prismaDbUrl },
+    },
+    {
+      // We'll write .env using the same content as .env.sample
+      src: '.env.sample.hbs',
+      dest: '.env',
+      data: { dbUrl, prismaDbUrl },
+    },
+    {
+      src: 'users.ts.hbs',
+      dest: 'resources/users.ts',
+      data: {},
+    },
+    {
+      src: 'custom/package.json.hbs',
+      dest: 'custom/package.json',
+      data: {},
+    },
+    {
+      src: 'custom/tsconfig.json.hbs',
+      dest: 'custom/tsconfig.json',
+      data: {},
+    },
+  ];
+
+  for (const task of templateTasks) {
+    // If a condition is specified and false, skip this file
+    if (task.condition === false) continue;
+
+    const templatePath = path.join(dirname, 'templates', task.src);
+    const compiled = renderHBSTemplate(templatePath, task.data);
+    const destPath = path.join(cwd, task.dest);
+    // Ensure parent directory exists
+    // fse.ensureDirSync(path.dirname(destPath));
+    fs.writeFileSync(destPath, compiled);
+  }
 }
 
 async function installDependencies(ctx, cwd) {
@@ -169,16 +234,23 @@ function generateFinalInstructions(skipPrismaSetup) {
   if (!skipPrismaSetup)
     instruction += `
   ${chalk.dim('// runs "npx prisma migrate dev --name init" to generate and apply initial migration')};
-  ${chalk.cyan('$ npm run makemigration -- --name init')}`;
+  ${chalk.cyan('$ npm run makemigration -- --name init')}\n`;
 
   instruction += `
-  ${chalk.dim('\n// starts dev server with tsx watch for hot-reloading')}
+  ${chalk.dim('// Starts dev server with tsx watch for hot-reloading')}
   ${chalk.cyan('$ npm start')}\n
 `;
 
   instruction += '😉 Happy coding!';
 
   return instruction;
+}
+
+function renderHBSTemplate(templatePath, data) {
+  // Example: renderHBRTemplate('path/to/template.hbs', {name: 'John Doe'})
+  const template = fs.readFileSync(templatePath, 'utf-8');
+  const compiled = Handlebars.compile(template);
+  return compiled(data);
 }
 
 export function prepareWorkflow(options) {
