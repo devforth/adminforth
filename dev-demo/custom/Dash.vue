@@ -162,12 +162,21 @@
 
     <div class="flex justify-center items-center p-80 bg-white">
       <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex justify-center items-center">
-<Dropzone
-  :extensions="['.jpg', '.jpeg', '.png']"
-  :maxSizeBytes="1024 * 1024 * 2"
-  :multiple="false"
-  v-model="files"
-/>
+        <Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+  :pageSize="3"
+>
+</Table>
       </div>
     </div>
   </div>
@@ -179,11 +188,12 @@ import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
-import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, VerticalTabs } from '@/afcl';
+import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, Table, VerticalTabs } from '@/afcl';
 import Button from '@/afcl/Button.vue';
 import Tooltip from '@/afcl/Tooltip.vue';
 import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
 import Checkbox from '@/afcl/Checkbox.vue';
+const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))
 
 import { Dropzone } from '@/afcl'
 

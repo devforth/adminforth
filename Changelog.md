@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.5.11] - next
 
+### Added
+- AFCL Table component
 
 ## [v1.5.10] 
 
