@@ -170,9 +170,10 @@ function generateFinalInstructions(skipPrismaSetup) {
     instruction += `
   ${chalk.dim('// runs "npx prisma migrate dev --name init" to generate and apply initial migration')};
   ${chalk.cyan('$ npm run makemigration -- --name init')}`;
+
   instruction += `
-  ${chalk.dim('\n// starts dev server with tsx watch for hot-reloading')}\n
-  ${chalk.cyan('$ npm start')}
+  ${chalk.dim('\n// starts dev server with tsx watch for hot-reloading')}
+  ${chalk.cyan('$ npm start')}\n
 `;
 
   instruction += '😉 Happy coding!';
