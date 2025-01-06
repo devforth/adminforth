@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block afcl-select">
+  <div class="relative inline-block afcl-select" :data-select-id="internalID">
     <div class="relative">
       <input
         ref="inputEl"
@@ -89,6 +89,7 @@ import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
+import { useDropdownStore } from '@/stores/dropdown';
 
 const props = defineProps({
   options: Array,
@@ -107,6 +108,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  selectID: {
+    type: String,
+    required: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -118,11 +123,14 @@ const dropdownEl = ref<HTMLElement | null>(null);
 const { height: dropdownHeight } = useElementSize(dropdownEl);
 const isTop = ref<boolean>(false);
 
+const dropdownStore = useDropdownStore(); // Access the store
+
 const dropdownStyle = ref<{ top?: string; }>({
   top: "0px",
 });
 
 const selectedItems: Ref<any[]> = ref([]);
+const internalID = props.selectID || `afcb-select-${Math.random().toString(36).substring(7)}`
 
 function inputInput() {
   if (!props.multiple && selectedItems.value.length) {
@@ -147,17 +155,24 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.isReadonly) {
-    return;
-  }
-  if (!showDropdown.value) {
-    showDropdown.value = true;
-  } else {
-    if (!search.value) {
-      showDropdown.value = false;
-    }
-  }
+  if (props.isReadonly) return;
+
+  if (dropdownStore.openSelectID !== internalID)
+    dropdownStore.setOpenSelectID(internalID);
+
+  showDropdown.value = !showDropdown.value;
+  if (!showDropdown.value && !search.value)
+    search.value = '';
 }
+
+// Watch for store changes to close this dropdown if it's not the active one
+watch(
+  () => dropdownStore.openSelectID,
+  (newID) => {
+    if (newID !== internalID && showDropdown.value)
+      showDropdown.value = false;
+  }
+);
 
 watch(
   () => ({ show: showDropdown.value, dropdownHeight: dropdownHeight.value }),
@@ -198,10 +213,9 @@ const filteredItems = computed(() => {
   );
 });
 
-const handleClickOutside = (event) => {
-  if (!event.target.closest('.afcl-select')) {
+const handleClickOutside = (event: MouseEvent) => {
+  if (!event.target || !(event.target as HTMLElement).closest('.afcl-select'))
     showDropdown.value = false;
-  }
 };
 
 const addClickListener = () => {
@@ -228,7 +242,7 @@ const toogleItem = (item) => {
   if (!props.multiple && search.value) {
     search.value = '';
   }
-  
+
   const list = selectedItems.value.map(item => item.value);
   const updValue = list.length ? list : null;
   let emitValue;
@@ -238,13 +252,10 @@ const toogleItem = (item) => {
     emitValue = updValue;
   }
   emit('update:modelValue', emitValue);
-
 };
-
 
 onUnmounted(() => {
   removeClickListener();
 });
-
 
 </script>
