@@ -9,12 +9,12 @@ This allows to keep the design consistent with minimal efforts. ACL components w
 
 
 
+<div class="split-screen" >
+  <div >
 ```js
 import { Button } from '@/afcl'
 ```
 
-<div class="split-screen" >
-  <div >
 ```html
 <Button @click="doSmth" 
     :loader="false" class="w-full">
@@ -38,12 +38,15 @@ loader prop would show loader when it's true.
 
 ## Link
 
+
+
+<div class="split-screen" >
+  <div >
+
 ```js
 import { Link } from '@/afcl'
 ```
 
-<div class="split-screen" >
-  <div >
 ```html
 <Link to="/login">Go to login</Link>
 ```
@@ -57,12 +60,14 @@ import { Link } from '@/afcl'
 
 Looks like button but works like link. Uses `router-link` under the hood.
 
+
+
+<div class="split-screen" >
+  <div >
 ```js
 import { LinkButton } from '@/afcl'
 ```
 
-<div class="split-screen" >
-  <div >
 ```html
 <LinkButton to="/login">Go to login</LinkButton>
 ```
@@ -207,12 +212,14 @@ You might need to put some extra item at bottom of list
 
 ## Input
 
+
+
+<div class="split-screen" >
+  <div >
 ```js
 import { Input } from '@/afcl'
 ```
 
-<div class="split-screen" >
-  <div >
 ```html
 <Input type="number" class="w-full">
   <template #suffix>
@@ -231,12 +238,15 @@ import { Input } from '@/afcl'
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
   
+
+
+<div class="split-screen" >
+  <div >
+
 ```js
 import { Tooltip } from '@/afcl'
 ```
 
-<div class="split-screen" >
-  <div >
 ```html
 <Tooltip>
     <a :href="`https://google.com?q=adminforth`" target="_blank" >
@@ -264,7 +274,9 @@ import { VerticalTabs } from '@/afcl'
 import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
 ```
 
-```html
+<div class="split-screen" >
+  <div>
+  ```html
   <VerticalTabs>
     <template #tab:Profile>
       <IconUserCircleSolid class="w-5 h-5 me-2"/>
@@ -272,42 +284,49 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
     </template>
     <template #tab:Dashboard>
       <IconGridSolid class="w-5 h-5 me-2"/>
-      Dashboard
+      Board
     </template>
     <template #Profile>
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Tab</h3>
-      <p class="mb-2">This is some placeholder content the Profile tab's associated content, clicking another tab will toggle the visibility of this one for the next.</p>
+      <p class="mb-2">This is some placeholder content the Profile tab's associated content</p>
     </template>
     <template #Dashboard>
       Dashboard Tab Content 
     </template>
   </VerticalTabs>
-```
+  ```
+  </div>
+  <div>
+  ![AFCL VerticalTabs](image-48.png)
+  </div>
+</div>
+
+
 
 ## Checkbox
 
-```html
-<Checkbox v-model="enable">
-  Enable
-</Checkbox>
-```
+<div class="split-screen" >
+  <div >
 
 ```ts
 import { Checkbox } from '@/afcl'
 const enable = ref(false)
 ```
 
-## Dropzone
 
 ```html
-<Dropzone
-  :extensions="['.jpg', '.jpeg', '.png']"
-  :maxSizeBytes="1024 * 1024 * 2"
-  :multiple="false"
-  v-model="files"
-/>
-
+<Checkbox v-model="enable">
+  Enable
+</Checkbox>
 ```
+  </div>
+  <div>
+    ![AFCL Checkbox](image-49.png)
+  </div>
+</div>
+
+
+## Dropzone
 
 ```ts
 import { Ref } from 'vue'
@@ -323,6 +342,26 @@ watch(files, (files) => {
   }, 5000);
 })
 ```
+
+<div class="split-screen" >
+  <div >
+
+
+
+```html
+<Dropzone
+  :extensions="['.jpg', '.jpeg', '.png']"
+  :maxSizeBytes="1024 * 1024 * 2"
+  :multiple="false"
+  v-model="files"
+/>
+
+```
+  </div>
+  <div>
+    ![AFCL Dropzone](image-50.png)
+  </div>
+</div>
 
 
 ## Bar Chart
