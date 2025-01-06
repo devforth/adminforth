@@ -16,14 +16,21 @@ Then you can change the branding of the application in the configuration:
 
 const admin = new AdminForth({
   ...
-//diff-add
   customization: {
+//diff-remove
+    brandName: "myadmin",
 //diff-add
     brandName: 'My App',  // used in login page and sidebar
+//diff-remove
+    title: "myadmin",
 //diff-add
     title: 'My App Admin',  // used to set HTML title tag
+//diff-remove
+    brandLogo: '@@/assets/logo.svg',
 //diff-add
     brandLogo: '@@/logo.svg',
+//diff-remove
+    favicon: '@@/assets/favicon.png',
 //diff-add
     favicon: '@@/favicon.png',
 //diff-add
