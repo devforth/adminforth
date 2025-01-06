@@ -228,7 +228,12 @@ class AdminForth implements IAdminForth {
           ? `. Did you mean '${similar}'?` : 'Available dataSources: '+Object.keys(this.connectors).join(', ')}`
         );
       }
-      const fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
+      let fieldTypes = null;
+      try {
+        fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
+      } catch (e) {
+        console.error(`Error discovering fields for resource '${res.table}' (In resource '${res.resourceId}')`, e);
+      }
       if (fieldTypes !== null && !Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
