@@ -89,8 +89,6 @@ import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
-import { useDropdownStore } from '@/stores/dropdown';
-
 const props = defineProps({
   options: Array,
   modelValue: {
@@ -123,8 +121,6 @@ const dropdownEl = ref<HTMLElement | null>(null);
 const { height: dropdownHeight } = useElementSize(dropdownEl);
 const isTop = ref<boolean>(false);
 
-const dropdownStore = useDropdownStore(); // Access the store
-
 const dropdownStyle = ref<{ top?: string; }>({
   top: "0px",
 });
@@ -156,23 +152,13 @@ function updateFromProps() {
 
 function inputClick() {
   if (props.isReadonly) return;
-
-  if (dropdownStore.openSelectID !== internalID)
-    dropdownStore.setOpenSelectID(internalID);
-
+  // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
-  if (!showDropdown.value && !search.value)
+  // If the dropdown is about to close, reset the search
+  if (!showDropdown.value && !search.value) {
     search.value = '';
-}
-
-// Watch for store changes to close this dropdown if it's not the active one
-watch(
-  () => dropdownStore.openSelectID,
-  (newID) => {
-    if (newID !== internalID && showDropdown.value)
-      showDropdown.value = false;
   }
-);
+}
 
 watch(
   () => ({ show: showDropdown.value, dropdownHeight: dropdownHeight.value }),
@@ -213,9 +199,18 @@ const filteredItems = computed(() => {
   );
 });
 
+
 const handleClickOutside = (event: MouseEvent) => {
-  if (!event.target || !(event.target as HTMLElement).closest('.afcl-select'))
+  const targetEl = event.target as HTMLElement | null;
+  // Attempt to find a parent with data-select-id
+  const closestSelect = targetEl?.closest('[data-select-id]');
+  const closestID = closestSelect?.getAttribute('data-select-id');
+  console.log('closestID', closestID, 'closestSelect', closestSelect, 'internalID', internalID);
+
+  if (!closestSelect || closestID !== internalID) {
+    // then close this dropdown
     showDropdown.value = false;
+  }
 };
 
 const addClickListener = () => {
