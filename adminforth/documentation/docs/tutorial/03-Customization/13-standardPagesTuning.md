@@ -6,7 +6,7 @@
 ## Fields Grouping
  
 
-In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, property_type, and listed. Any values without a specified group will be categorized under "Other.
+In some cases, you may want to organize data fields into specific groups for better structure and clarity. For example, you could create a "Main Info" group to include columns like title, description, country, and apartment_image. Another group, "Characteristics," could hold attributes such as price, square_meter, number_of_rooms, and listed. Any values without a specified group will be categorized under "Other.
 
 ```typescript title="./resources/apartments.ts"
 export default {
@@ -28,7 +28,7 @@ export default {
           //diff-add
             groupName: 'Characteristics',
           //diff-add
-            columns: ['price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+            columns: ['price', 'square_meter', 'number_of_rooms', "listed"]
           //diff-add
           }
           //diff-add
@@ -60,7 +60,7 @@ export default {
           //diff-add
             groupName: 'Characteristics',
           //diff-add
-            columns: ['description', 'country', 'price', 'square_meter', 'number_of_rooms', "property_type", "listed"]
+            columns: ['description', 'country', 'price', 'square_meter', 'number_of_rooms', "listed"]
           //diff-add
           }
           //diff-add

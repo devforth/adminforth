@@ -182,7 +182,7 @@ watch([filters], async () => {
 
 async function startBulkAction(actionId) {
   const data = await callAdminForthApi({
-    path: '/start_bulk_action',
+    path: `/plugin/${props.meta.pluginInstanceId}/start_bulk_action`,
     method: 'POST',
     body: {
       resourceId: listResource.value.resourceId,

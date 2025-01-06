@@ -35,12 +35,13 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
         }
         // exclude "plugins" key
         const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
-        const { allowedActions } = await interpretResource(adminUser, resource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
 
-        
         if (this.options.modifyTableResourceConfig) {
           this.options.modifyTableResourceConfig(resourceCopy);
         }
+
+        const { allowedActions } = await interpretResource(adminUser, resourceCopy, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+
         return { 
           resource: { 
             ...resourceCopy,
@@ -52,7 +53,52 @@ export default class ForeignInlineListPlugin extends AdminForthPlugin {
         };
       }
     });
+    server.endpoint({
+      method: 'POST',
+      path: `/plugin/${this.pluginInstanceId}/start_bulk_action`,
+      handler: async ({ body, adminUser, tr }) => {
+          const { resourceId, actionId, recordIds } = body;
+          const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+          if (!resource) {
+              return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+          }
 
+          const resourceCopy = JSON.parse(JSON.stringify({ ...resource, plugins: undefined }));
+
+
+          if (this.options.modifyTableResourceConfig) {
+            this.options.modifyTableResourceConfig(resourceCopy);
+          }
+          
+          const { allowedActions } = await interpretResource(
+            adminUser, 
+            resourceCopy, 
+            { requestBody: body },
+            ActionCheckSource.BulkActionRequest,
+            this.adminforth
+          );
+
+          const action = resourceCopy.options.bulkActions.find((act) => act.id == actionId);
+          if (!action) {
+            return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+          } 
+          
+          if (action.allowed) {
+            const execAllowed = await action.allowed({ adminUser, resourceCopy, selectedIds: recordIds, allowedActions });
+            if (!execAllowed) {
+              return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
+            }
+          }
+          const response = await action.action({selectedIds: recordIds, adminUser, resourceCopy, tr});
+          
+          return {
+            actionId,
+            recordIds,
+            resourceId,
+            ...response
+          }
+      }
+    })
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {

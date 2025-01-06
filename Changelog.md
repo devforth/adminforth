@@ -5,8 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.5.11] - next
 
-## [v1.5.9] - next
+
+## [v1.5.10] 
 
 ### Changed
 
@@ -15,6 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - show hook is now called as it was when user edits the page
 - fixed showRow in ShowTable.vue
+- if not ab le to connect postgres, don't crash the app
+- fix LastPass and other passowrd managers who try make autocomplete on user creation form
+
+### Improved
+- reduce stdout output from AdminForth itself
+
+### Added
+- AFCL Chart components
+- add requestUrl param to hooks extra
+- `npx adminforth create-app --app-name myadmin --db sqlite://.db.sqlite`
 
 ## [v1.5.8]
 
