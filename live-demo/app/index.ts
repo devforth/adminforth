@@ -111,7 +111,7 @@ async function seedDatabase() {
   if (await admin.resource('aparts').count() > 0) {
     return
   }
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 100; i++) {
     await admin.resource('aparts').create({
       id: `${i}`,
       title: `Apartment ${i}`,
@@ -153,9 +153,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           LIMIT ?;
           `
         ).all(days);
-  
-        const totalAparts = apartsByDays.reduce((acc, { count }) => acc + count, 0);
-  
+
+        const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
+
         // add listed, unlisted, listedPrice, unlistedPrice
         const listedVsUnlistedByDays = await db.prepare(
           `SELECT 
@@ -170,7 +170,35 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           LIMIT ?;
           `
         ).all(days);
-  
+
+        const apartsCountsByRooms = await db.prepare(
+          `SELECT 
+            number_of_rooms, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY number_of_rooms 
+          ORDER BY number_of_rooms;
+          `
+        ).all();
+
+        const topCountries = await db.prepare(
+          `SELECT 
+            country, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY country 
+          ORDER BY count DESC
+          LIMIT 4;
+          `
+        ).all();
+
+        const totalSquare = await db.prepare(
+          `SELECT 
+            SUM(square_meter) as totalSquare 
+          FROM apartments;
+          `
+        ).get();
+
         const listedVsUnlistedPriceByDays = await db.prepare(
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
@@ -183,13 +211,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           `
         ).all(days);
           
-        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { listedPrice }) => acc + listedPrice, 0));
-        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((acc, { unlistedPrice }) => acc + unlistedPrice, 0));
-  
+        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
+          acc: number, { listedPrice }: { listedPrice:number }
+        ) => acc + listedPrice, 0));
+        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((
+          acc: number, { unlistedPrice }: { unlistedPrice:number } 
+        ) => acc + unlistedPrice, 0));
+
         res.json({ 
           apartsByDays,
           totalAparts,
           listedVsUnlistedByDays,
+          apartsCountsByRooms,
+          topCountries,
+          totalSquareMeters: totalSquare.totalSquare,
           totalListedPrice,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,

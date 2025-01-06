@@ -12,6 +12,7 @@ import gameResource from './resources/game.js';
 import gamesUsersResource from './resources/games_users.js';
 import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
+import CompletionAdapterOpenAIChatGPT from '../adminforth/adapters/completion-adapter-open-ai-chat-gpt/index.js';
 
 // const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
@@ -21,21 +22,33 @@ const dbPath = 'db.sqlite';
 const db = betterSqlite3(dbPath)
 
 async function seedDatabase() {
+
+  const adapter = new CompletionAdapterOpenAIChatGPT({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+    model: 'gpt-4o-mini',
+    expert: {
+      // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
+      temperature: 0.5,
+    },
+  });
+
   if (await admin.resource('aparts').count() > 0) {
     return
   }
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 100; i++) {
+    const country = `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`;
+    const resp = await adapter.complete(`Generate some example apartment name (like AirBNB style) in some city of ${country}. Answer in JSON format { "title": "<generated title>" }. Do not talk to me, return JSON only.`);
+    const json = JSON.parse(resp.content?.replace(/```json\n/, '').replace(/\n```/, ''));
     await admin.resource('aparts').create({
       id: `${i}`,
-      title: `Apartment ${i}`,
+      title: json.title,
       square_meter: (Math.random() * 100).toFixed(1),
       price: (Math.random() * 10000).toFixed(2),
       number_of_rooms: Math.floor(Math.random() * 4) + 1,
       description: 'Next gen apartments',
       created_at: (new Date(Date.now() - Math.random() * 60 * 60 * 24 * 14 * 1000)).toISOString(),
-      listed: i % 2 == 0,
-      country: `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`,
-      property_type: Math.random() > 0.5 ? "'house'" : "'apartment'",
+      listed: (Math.random() > 0.5),
+      country,
     });
   };
 };
@@ -306,15 +319,6 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
       async (req: express.Request, res: express.Response) => {
-        admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
-          'aparts',
-          null,
-          'visitedDashboard',
-          { dashboard: 'main' },
-          req.adminUser,
-          req.headers
-        )
-
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
           `SELECT 
@@ -344,6 +348,34 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all(days);
 
+        const apartsCountsByRooms = await db.prepare(
+          `SELECT 
+            number_of_rooms, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY number_of_rooms 
+          ORDER BY number_of_rooms;
+          `
+        ).all();
+
+        const topCountries = await db.prepare(
+          `SELECT 
+            country, 
+            COUNT(*) as count 
+          FROM apartments 
+          GROUP BY country 
+          ORDER BY count DESC
+          LIMIT 4;
+          `
+        ).all();
+
+        const totalSquare = await db.prepare(
+          `SELECT 
+            SUM(square_meter) as totalSquare 
+          FROM apartments;
+          `
+        ).get();
+
         const listedVsUnlistedPriceByDays = await db.prepare(
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
@@ -367,10 +399,12 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           apartsByDays,
           totalAparts,
           listedVsUnlistedByDays,
+          apartsCountsByRooms,
+          topCountries,
+          totalSquareMeters: totalSquare.totalSquare,
           totalListedPrice,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
-          greeting: await req.tr('Welcome, {name}', 'customApis', { name: req.adminUser.username }),
         });
       }
     )

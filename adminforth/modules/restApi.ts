@@ -107,7 +107,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
-      handler: async ({ body, response, headers, query, cookies }) => {
+      handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
        
         const INVALID_MESSAGE = 'Invalid Username or Password';
         const { username, password, rememberMe } = body;
@@ -155,7 +155,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
             username,
           };
-          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies });
+          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies, requestUrl });
 
           if (toReturn.allowedLogin) {
             const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
@@ -530,7 +530,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body, adminUser, headers, query, cookies }) => {
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
 
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
@@ -586,7 +586,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             query: body, 
             adminUser, 
             extra: {
-              body, query, headers, cookies
+              body, query, headers, cookies, requestUrl
             },
             adminforth: this.adminforth,
           });
@@ -688,7 +688,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             data.data, 
             adminUser, 
             extra: {
-              body, query, headers, cookies
+              body, query, headers, cookies, requestUrl
             },
             adminforth: this.adminforth,
           });
@@ -711,7 +711,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
-      handler: async ({ body, adminUser, headers, query, cookies }) => {
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
         const { resourceId, column } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -739,7 +739,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             adminUser, 
             resource: targetResource, 
             extra: {
-              body, query, headers, cookies
+              body, query, headers, cookies, requestUrl
             },
             adminforth: this.adminforth,
           });
@@ -779,7 +779,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             query: body,
             resource: targetResource,
             extra: {
-              body, query, headers, cookies
+              body, query, headers, cookies, requestUrl
             },
             adminforth: this.adminforth,
            });
@@ -833,7 +833,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/create_record',
-        handler: async ({ body, adminUser, query, headers, cookies }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
@@ -859,7 +859,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies } });
+            const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
               return { error: response.error, ok: false };
             }
@@ -874,7 +874,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/update_record',
-        handler: async ({ body, adminUser, query, headers, cookies }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
@@ -902,7 +902,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: allowedError };
             }
 
-            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies } });
+            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
             if (error) {
               return { error };
             }
@@ -914,7 +914,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/delete_record',
-        handler: async ({ body, adminUser, query, headers, cookies }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
@@ -940,7 +940,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'], extra: { body, query, headers, cookies } });
+            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'], extra: { body, query, headers, cookies, requestUrl } });
             if (deleteError) {
               return { error: deleteError };
             }

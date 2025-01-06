@@ -136,11 +136,6 @@ onMounted(async () => {
 </script>
 ```
 
-Then initialize npm in `custom` directory if you didn't do this and install required packages:
-```bash
-npm init -y
-npm i apexcharts -D
-```
 
 Also we have to add an Api to get percentages:
 
@@ -316,8 +311,7 @@ For this demo we will use text-analyzer package:
 
 ```bash 
 cd custom
-npm init -y
-npm install text-analyzer --save
+npm i text-analyzer
 ```
 
 

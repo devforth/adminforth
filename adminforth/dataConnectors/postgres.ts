@@ -9,7 +9,6 @@ const { Client } = pkg;
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     db: any;
-    connected: boolean = false;
 
     constructor({ url }) {
         super();
@@ -19,7 +18,6 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         (async () => {
             try {
                 await this.db.connect();
-                this.connected = true;
                 this.db.on('error', (err) => {
                     console.log('Postgres error: ', err.message, err.stack)
                     this.db.end();
@@ -50,9 +48,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
     };
 
     async discoverFields(resource) {
-        if (!this.connected) {
-            return null;
-        }
+      
         const tableName = resource.table;
         const stmt = await this.db.query(`
         SELECT
@@ -152,7 +148,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else if (field._underlineType == 'varchar') {
                 return dayjs(value).toISOString();
             } else {
-                throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps)`);
+                throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field: ${field.name} in table: ${field.table}`);
             }
         }
 

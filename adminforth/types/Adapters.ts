@@ -12,7 +12,7 @@ export interface EmailAdapter {
 
 export interface CompletionAdapter {
 
-  validate(): Promise<void>;
+  validate(): void;
 
   complete(
     content: string,
