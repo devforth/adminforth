@@ -32,6 +32,7 @@
 import Select from '@/afcl/Select.vue';
 import 'flag-icon-css/css/flag-icons.min.css';
 import { setLang, getCountryCodeFromLangCode, getLocalLang } from './langCommon';
+import { useCoreStore } from '@/stores/core';
 
 import { computed, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -42,9 +43,11 @@ const { setLocaleMessage, locale } = useI18n();
 const props = defineProps(['meta', 'resource']);
 
 const selectedLanguage = ref('');
+const coreStore = useCoreStore();
 
-watch(() => selectedLanguage.value, (newVal) => {
-  setLang({ setLocaleMessage, locale }, props.meta.pluginInstanceId, newVal);
+watch(() => selectedLanguage.value, async (newVal) => {
+  await setLang({ setLocaleMessage, locale }, props.meta.pluginInstanceId, newVal);
+  coreStore.getPublicConfig();
 });
 
 
