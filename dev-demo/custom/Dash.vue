@@ -162,31 +162,40 @@
 
     <div class="flex justify-center items-center p-80 bg-white">
       <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex justify-center items-center">
-        <Tooltip>
-    <a :href="`https://google.com?q=adminforth`" target="_blank" >
-        <IconCardSearch class="w-5 h-5 me-2"/>
-    </a>
-
-    <template #tooltip>
-        Search for AdminForth
-    </template>
-</Tooltip>
-
+<Dropzone
+  :extensions="['.jpg', '.jpeg', '.png']"
+  :maxSizeBytes="1024 * 1024 * 2"
+  :multiple="false"
+  v-model="files"
+/>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, onMounted, computed } from 'vue';
+import { ref, type Ref, onMounted, computed, watch } from 'vue';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
-import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select } from '@/afcl';
+import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, VerticalTabs } from '@/afcl';
 import Button from '@/afcl/Button.vue';
 import Tooltip from '@/afcl/Tooltip.vue';
-import { IconCardSearch } from '@iconify-prerendered/vue-mdi';
+import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
+import Checkbox from '@/afcl/Checkbox.vue';
+
+import { Dropzone } from '@/afcl'
+
+const files: Ref<File[]> = ref([])
+
+watch(files, (files) => {
+  console.log('files selected', files);
+  setTimeout(() => {
+    // clear
+    files.length = 0;
+  }, 5000);
+})
 
 const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
   apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
@@ -194,6 +203,8 @@ const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any,
 const { t } = useI18n();
 
 const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
+
+const enable = ref(false);
 
 const apartsCountsByDaysChart = computed(() => {
   return data.value.apartsByDays?.reverse().map(
