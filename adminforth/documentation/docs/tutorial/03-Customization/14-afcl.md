@@ -1,9 +1,12 @@
+```
+image: "afcl-preview.png"  # Path to the OG image
+```
+
 # AdminForth Components Library
 
-
-ACL is a new set of components which you can use as build blocks. 
-This allows to keep the design consistent with minimal efforts. ACL components will follow styling standard and respect theme colors.
-
+AFCL is a set of components which you can use as build blocks in your AdminForth application. 
+AFCL allows to keep the design consistent with minimal efforts and build new pages faster.
+AFCL components follow styling standard and respect theme colors.
 
 ## Button
 
@@ -28,7 +31,7 @@ import { Button } from '@/afcl'
 ```
 </div>
 <div>
-![AFCL Button](image-39.png)
+![AFCL Button](image-63.png)
 </div>
 </div>
 
@@ -52,7 +55,7 @@ import { Link } from '@/afcl'
 ```
 </div>
 <div>
-![AFCL Link](image-40.png)
+![AFCL Link](image-58.png)
 </div>
 </div>
 
@@ -73,7 +76,7 @@ import { LinkButton } from '@/afcl'
 ```
 </div>
 <div>
-![AFCL LinkButton](image-41.png)
+![AFCL LinkButton](image-59.png)
 </div>
 </div>
 
@@ -104,7 +107,7 @@ const selected = ref(null)
 ```
 </div>
 <div>
-![AFCL Select](image-42.png)
+![AFCL Select](image-60.png)
 </div>
 </div>
 
@@ -128,7 +131,7 @@ const selected = ref(null)
 ```
   </div>
   <div>
-    ![AFCL Select](image-43.png)
+  ![AFCL Select](image-61.png)
   </div>
 </div>
 
@@ -169,11 +172,10 @@ You can customize item and selected item using slots.
 //diff-add
   </template>
 </Select>
-</div>
 ```
   </div>
   <div>
-    ![AFCL Select custom template](image-44.png)
+    ![AFCL Select custom item](image-79.png)
   </div>
 </div>
 
@@ -297,7 +299,7 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
   ```
   </div>
   <div>
-  ![AFCL VerticalTabs](image-48.png)
+  ![AFCL VerticalTabs](image-77.png)
   </div>
 </div>
 
@@ -321,7 +323,7 @@ const enable = ref(false)
 ```
   </div>
   <div>
-    ![AFCL Checkbox](image-49.png)
+  ![AFCL Checkbox](image-62.png)
   </div>
 </div>
 
@@ -455,9 +457,42 @@ const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.f
 ```
   </div>
   <div>
-    ![AFCL Table with custom cell](image-53.png)
+    ![AFCL Table with custom cell](image-78.png)
   </div>
 </div>
+
+### Custom header
+
+<div class="split-screen" >
+  <div >
+```html
+        <Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+>
+//diff-add
+<template #header:country>
+//diff-add
+    🌍 Geo
+//diff-add
+</template>
+</Table>
+```
+  </div>
+  <div>
+    ![AFCL Table with custom header](image-55.png)
+  </div>
+</div>
+
 
 
 ## Pagination
@@ -488,7 +523,7 @@ If there is less then `pageSize` rows, pagination will not be shown.
 ```
   </div>
   <div>
-  ![AFCL Table with pagination](image-54.png)
+  ![AFCL Table with pagination](image-56.png)
   </div>
 </div>
 
@@ -506,7 +541,7 @@ If there is less then `pageSize` rows, pagination will not be shown.
   ```
   </div>
   <div>
-  ![ProgressBar](image-56.png)
+  ![ProgressBar](image-81.png)
   </div>
 </div>
 
@@ -529,13 +564,9 @@ Custom labels in the ProgressBar component allow you to customize the text displ
   ```
   </div>
   <div>
-  ![ProgressBar](image-55.png)
+  ![ProgressBar](image-80.png)
   </div>
 </div>
-
-
-
-### Custom slots
 
 
 ## Bar Chart
@@ -569,7 +600,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-    ![alt text](image-32.png)
+    ![Bar chart](image-64.png)
   </div>
 
 </div>
@@ -623,7 +654,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-    ![alt text](image-33.png)
+  ![BarChart y Axis labels](image-65.png)
   </div>
 </div>
 
@@ -679,7 +710,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-  ![alt text](image-34.png)
+  ![BarChart x Axis labels](image-66.png)
   </div>
 </div>
 
@@ -743,7 +774,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-  ![alt text](image-35.png)
+  ![BarChart grid](image-67.png)
   </div>
 </div>
 
@@ -795,7 +826,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-  ![alt text](image-36.png)
+  ![BarChart data labels](image-36.png)
   </div>
 </div>
 
@@ -842,7 +873,7 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-  ![alt text](image-37.png)
+  ![BarChart stacked bars](image-37.png)
   </div>
 </div>
 
@@ -895,6 +926,425 @@ any of native settings to `options` prop. Here we will only show some basics.
 ```
   </div>
   <div>
-![alt text](image-38.png)
+![BarChart horizontal bars](image-38.png)
   </div>
 </div>
+
+## Area Chart
+
+```ts
+import { AreaChart } from '@/afcl'
+```
+
+<div class="split-screen" >
+
+  <div >
+```html
+<AreaChart
+  :data="[
+    { count: 1, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'}, 
+  ]"
+  :series="[{
+    name: $t('Added apartments'),
+    fieldName: 'count',
+    color: '#4E79A7',
+  }]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+  }"
+/>
+</div>
+  <div>
+  ![AreaChart](image-68.png)
+  </div>
+</div>
+
+### Multiple lines
+
+<div class="split-screen" >
+
+  <div >
+```html
+<AreaChart
+  :data="[
+    { countCars: 2, countBikes: 3, x: '02 Jun 2025'}, 
+    { countCars: 5, countBikes: 1, x: '03 Jun 2025'}, 
+    { countCars: 3, countBikes: 4, x: '04 Jun 2025'}, 
+    { countCars: 4, countBikes: 2, x: '05 Jun 2025'}, 
+    { countCars: 2, countBikes: 3, x: '06 Jun 2025'},
+  ]"
+  :series="[
+    {
+      name: $t('Cars'),
+      fieldName: 'countCars',
+      color: '#4E79A7',
+    },
+    {
+      name: $t('Bikes'),
+      fieldName: 'countBikes',
+      color: '#F28E2B',
+    }
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![AreaChart multiple lines](image-70.png)
+  </div>
+</div>
+
+### Stacked area
+
+<div class="split-screen" >
+
+  <div >
+```html
+<AreaChart
+  :data="[
+    { countCars: 2, countBikes: 3, x: '02 Jun 2025'}, 
+    { countCars: 5, countBikes: 1, x: '03 Jun 2025'}, 
+    { countCars: 3, countBikes: 4, x: '04 Jun 2025'}, 
+    { countCars: 4, countBikes: 2, x: '05 Jun 2025'}, 
+    { countCars: 2, countBikes: 3, x: '06 Jun 2025'},
+  ]"
+  :series="[
+    {
+      name: $t('Cars'),
+      fieldName: 'countCars',
+      color: '#4E79A7',
+    },
+    {
+      name: $t('Bikes'),
+      fieldName: 'countBikes',
+      color: '#F28E2B',
+    }
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+//diff-add
+      stacked: true,
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![AreaChart stacked area](image-69.png)
+  </div>
+</div>
+
+### Data labels
+
+<div class="split-screen" >
+
+  <div >
+```html
+<AreaChart
+  :data="[
+    { count: 2, x: '02 Jun 2025'}, 
+    { count: 5, x: '03 Jun 2025'}, 
+    { count: 3, x: '04 Jun 2025'}, 
+    { count: 4, x: '05 Jun 2025'}, 
+    { count: 2, x: '06 Jun 2025'},
+  ]"
+  :series="[
+    {
+      name: $t('Cars'),
+      fieldName: 'count',
+      color: '#4E79A7',
+    },
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+    dataLabels: {
+      enabled: true,
+      style: {
+        fontSize: '12px',
+        fontFamily: 'Inter, sans-serif',
+      }
+    },
+    grid: {
+      padding: {
+        left: 10, // to fit the labels
+        right: 10,
+      },
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Area Chart Data Lables](image-71.png)
+  </div>
+</div>
+
+### Grid, x-axis and y-axis labels
+
+See [Bar Chart](#bar-chart) for details, the config is the same.
+
+
+## Pie Chart
+
+```ts
+import { PieChart } from '@/afcl'
+```
+
+### Basic
+
+<div class="split-screen" >
+
+  <div >
+```html
+<PieChart
+  :data="[
+    { amount: 5, label: 'Cars'},
+    { amount: 3, label: 'Bikes'},
+    { amount: 2, label: 'Trucks'},
+    { amount: 1, label: 'Boats'},
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Pie Chart](image-75.png)
+  </div>
+</div>
+
+### Pie with data labels
+
+<div class="split-screen" >
+
+  <div >
+```html
+<PieChart
+  :data="[
+    { amount: 5, label: 'Cars'},
+    { amount: 3, label: 'Bikes'},
+    { amount: 2, label: 'Trucks'},
+    { amount: 1, label: 'Boats'},
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+    },
+//diff-add
+    dataLabels: {
+//diff-add
+      enabled: true,
+//diff-add
+    },
+//diff-add
+    plotOptions: {
+//diff-add
+      pie: {
+//diff-add
+        dataLabels: {
+//diff-add
+          offset: -10, // Moves labels closer to or further from the slices
+//diff-add
+          minAngleToShowLabel: 10, // Ensures that small slices don’t show labels
+//diff-add
+        },
+//diff-add
+        expandOnClick: true,
+// diff-add
+      },
+// diff-add
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Pie Chart with data labels](image-76.png)
+  </div>
+</div>
+
+
+### Donut Chart
+
+
+
+<div class="split-screen" >
+
+  <div >
+```html
+<PieChart
+  :data="[
+    { amount: 5, label: 'Cars'},
+    { amount: 3, label: 'Bikes'},
+    { amount: 2, label: 'Trucks'},
+    { amount: 1, label: 'Boats'},
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+  //diff-add
+      type: 'donut',
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Donut Chart](image-72.png)
+  </div>
+</div>
+
+### Fill donut with total info
+
+<div class="split-screen" >
+
+  <div >
+```html
+<PieChart
+  :data="[
+    { amount: 5, label: 'Cars'},
+    { amount: 3, label: 'Bikes'},
+    { amount: 2, label: 'Trucks'},
+    { amount: 1, label: 'Boats'},
+  ]"
+  :options="{
+    chart: {
+      height: 250,
+      type: 'donut',
+    },
+//diff-add
+    plotOptions: {
+//diff-add
+      pie: {
+//diff-add
+        donut: {
+//diff-add
+          labels: {
+//diff-add
+            total: {
+//diff-add
+              show: true,
+//diff-add
+              label: $t('Total wheels'),
+//diff-add
+              formatter: () => `11`,
+//diff-add
+            },
+//diff-add
+          },
+//diff-add
+        },
+//diff-add
+      },
+    },
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Donut Chart with total](image-73.png)
+  </div>
+</div>
+
+### Radial bar chart
+
+<div class="split-screen" >
+
+  <div >
+```html
+  <PieChart
+  :data="[
+    { amount: 80, label: 'Cars'},
+    { amount: 50, label: 'Bikes'},
+    { amount: 30, label: 'Trucks'},
+    { amount: 70, label: 'Boats'},
+  ]"
+  :options="{
+    chart: {
+//diff-add
+      height: '300px',
+//diff-add
+      width: '100%',
+//diff-add
+      type: 'radialBar',
+//diff-add
+      sparkline: {
+//diff-add
+        enabled: true,
+//diff-add
+      },
+//diff-add
+    },
+//diff-add
+    plotOptions: {
+//diff-add
+      radialBar: {
+//diff-add
+        track: {
+//diff-add
+          background: '#E5E7EB',
+//diff-add
+        },
+//diff-add
+        dataLabels: {
+//diff-add
+          name: {
+//diff-add
+            offsetY: -10
+//diff-add
+          },
+//diff-add
+          value: {
+//diff-add
+            offsetY: 2,
+//diff-add
+          }
+//diff-add
+        },
+//diff-add
+        hollow: {
+//diff-add
+          margin: 0,
+//diff-add
+          size: '32%',
+//diff-add
+        }
+//diff-add
+      },
+//diff-add
+    },
+//diff-add
+    legend: {
+//diff-add
+      show: true,
+//diff-add
+      position: 'bottom',
+//diff-add
+    },
+    
+  }"
+/>
+```
+  </div>
+  <div>
+  ![Radial Chart](image-74.png)
+  </div>
+</div>
+
+
