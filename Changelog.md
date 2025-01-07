@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.5.12] - next
 
+### Fixed
+- beforeEnter navigation guard on login route to check user already logged in postponed onMounted and created undefined rest request e.g. on signupPage (with race condition). Now it is called in component
+- AFCL progress bar component
+- sorting for virtual columns is disabled by default now, and sorting icon appers only if user sets column.sortable = true, in this case user has to implement sorting in `list.beforeDatasourceRequest` hook
+
+### Improved
+- add pluralization support exposed `tr` function
+
+
 ## [v1.5.11] - 2025-01-07
 
 Major AFCL update https://adminforth.dev/docs/tutorial/Customization/afcl/

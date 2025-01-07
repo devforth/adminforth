@@ -2,10 +2,10 @@
   <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100vh-55px)] ">
   
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data" >
         <div>
-          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
-          <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days') }}</p>
+          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalApartsString }}</h5>
+          <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
         </div>
         <BarChart
           :data="apartsCountsByDaysChart"
@@ -163,6 +163,27 @@
       <div class="flex justify-center items-center p-80 bg-white">
         <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
           <Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
+  ]"
+  v-model="selected"
+>
+  <template #item="{option}">
+    <div>
+      <span>{{ option.label }}</span>
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
+    </div>
+  </template>
+  <template #selected-item="{option}">
+    <span>{{ option.label }} 💫</span>
+  </template>
+</Select>
+
+<Select
   class="w-full"
   :options="[
     {label: 'Last 7 days', value: '7', records: 110},

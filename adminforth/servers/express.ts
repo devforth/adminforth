@@ -255,7 +255,7 @@ class ExpressServer implements IExpressHttpServer {
   translatable(handler) {
     // same as authorize, but injects tr function into request
     return async (req, res, next) => {
-      const tr = (msg: string, category: string, params: any): Promise<string> => this.adminforth.tr(msg, category, req.headers['accept-language'], params);
+      const tr = (msg: string, category: string, params: any, pluralizationNumber?: number): Promise<string> => this.adminforth.tr(msg, category, req.headers['accept-language'], params, pluralizationNumber);
       req.tr = tr;
       handler(req, res, next);
     }
@@ -308,7 +308,7 @@ class ExpressServer implements IExpressHttpServer {
       const requestUrl = req.url;
 
       const acceptLang = headers['accept-language'];
-      const tr = (msg: string, category: string, params: any): Promise<string> => this.adminforth.tr(msg, category, acceptLang, params);
+      const tr = (msg: string, category: string, params: any, pluralizationNumber?: number): Promise<string> => this.adminforth.tr(msg, category, acceptLang, params, pluralizationNumber);
       const input = { body, query, headers, cookies, adminUser, response, requestUrl, _raw_express_req: req, _raw_express_res: res, tr};
       
       let output;
