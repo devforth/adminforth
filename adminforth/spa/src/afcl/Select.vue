@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block afcl-select" :data-select-id="internalID">
+  <div class="relative inline-block afcl-select" ref="internalSelect">
     <div class="relative">
       <input
         ref="inputEl"
@@ -106,10 +106,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  selectID: {
-    type: String,
-    required: false,
-  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -126,7 +122,7 @@ const dropdownStyle = ref<{ top?: string; }>({
 });
 
 const selectedItems: Ref<any[]> = ref([]);
-const internalID = props.selectID || `afcb-select-${Math.random().toString(36).substring(7)}`
+const internalSelect = ref<HTMLElement | null>(null);
 
 function inputInput() {
   if (!props.multiple && selectedItems.value.length) {
@@ -202,15 +198,9 @@ const filteredItems = computed(() => {
 
 const handleClickOutside = (event: MouseEvent) => {
   const targetEl = event.target as HTMLElement | null;
-  // Attempt to find a parent with data-select-id
-  const closestSelect = targetEl?.closest('[data-select-id]');
-  const closestID = closestSelect?.getAttribute('data-select-id');
-  console.log('closestID', closestID, 'closestSelect', closestSelect, 'internalID', internalID);
-
-  if (!closestSelect || closestID !== internalID) {
-    // then close this dropdown
+  const closestSelect = targetEl?.closest('.afcl-select');
+  if (closestSelect !== internalSelect.value)
     showDropdown.value = false;
-  }
 };
 
 const addClickListener = () => {
