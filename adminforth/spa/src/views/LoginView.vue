@@ -113,18 +113,19 @@
 <script setup>
 
 import { getCustomComponent } from '@/utils';
-import { onMounted, ref, computed } from 'vue';
+import { onBeforeMount, onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Button, Checkbox } from '@/afcl';
 
 const passwordInput = ref(null);
 const usernameInput = ref(null);
 const rememberMeValue= ref(false);
 
+const route = useRoute();
 const router = useRouter();
 const inProgress = ref(false);
 
@@ -138,6 +139,18 @@ const error = ref(null);
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
+
+onBeforeMount(() => {
+  if (localStorage.getItem('isAuthorized') === 'true') {
+    // if route has next param, redirect
+    // coreStore.fetchMenuAndResource();
+    if (route.query.next) {
+      router.push(route.query.next.toString());
+    } else {
+      router.push({ name: 'home' });
+    }
+  }
+})
 
 onMounted(async () => {
     if (coreStore.config?.demoCredentials) {

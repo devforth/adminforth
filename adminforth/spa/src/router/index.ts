@@ -15,19 +15,19 @@ const router = createRouter({
         title: 'Login', 
         customLayout: true 
       },
-      beforeEnter: async (to, from, next) => {
-        if(localStorage.getItem('isAuthorized') === 'true') {
-          // check if url has next=... and redirect to it
-          console.log('to.query', to.query)
-          if (to.query.next) {
-            next(to.query.next.toString())
-          } else {
-            next({name: 'home'});
-          }
-        } else {
-          next()
-        }
-      }
+      // beforeEnter: async (to, from, next) => {
+      //   if(localStorage.getItem('isAuthorized') === 'true') {
+      //     // check if url has next=... and redirect to it
+      //     console.log('to.query', to.query)
+      //     if (to.query.next) {
+      //       next(to.query.next.toString())
+      //     } else {
+      //       next({name: 'home'});
+      //     }
+      //   } else {
+      //     next()
+      //   }
+      // }
     },
     {
       path: '/resource/:resourceId',
