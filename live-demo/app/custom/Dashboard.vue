@@ -110,6 +110,7 @@
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
+            chart: { type: 'donut' },
             plotOptions: {
               pie: {
                 donut: {
