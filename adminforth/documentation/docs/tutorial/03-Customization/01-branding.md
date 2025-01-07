@@ -76,8 +76,7 @@ In `index.ts` file set the `styles` property in the configuration:
 
 const admin = new AdminForth({
   ...
-//diff-add
-  customization:{
+  customization: {
 //diff-add
     styles: {
 //diff-add
@@ -86,10 +85,14 @@ const admin = new AdminForth({
         light: {
 //diff-add
           // color for links, icons etc.
+//diff-remove
+          primary: '#1a56db',
 //diff-add
           primary: '#b400b8',
 //diff-add
           // color for sidebar and text
+//diff-remove
+          sidebar: { main: '#f9fafb', text: '#213045' },
 //diff-add
           sidebar: {main:'#571e58', text:'white'},
 //diff-add
@@ -98,7 +101,6 @@ const admin = new AdminForth({
       }
 //diff-add
     } 
-//diff-add
   },
   ...
 });
