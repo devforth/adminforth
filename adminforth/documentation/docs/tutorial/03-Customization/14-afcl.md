@@ -1,6 +1,10 @@
+```
+image: "afcl-preview.png"  # Path to the OG image
+```
+
 # AdminForth Components Library
 
-AFCL is a set of components which you can use as build blocks. 
+AFCL is a set of components which you can use as build blocks in your AdminForth application. 
 AFCL allows to keep the design consistent with minimal efforts and build new pages faster.
 AFCL components follow styling standard and respect theme colors.
 
@@ -168,11 +172,10 @@ You can customize item and selected item using slots.
 //diff-add
   </template>
 </Select>
-</div>
 ```
   </div>
   <div>
-    ![AFCL Select custom template](image-44.png)
+    ![AFCL Select custom item](image-79.png)
   </div>
 </div>
 
@@ -296,7 +299,7 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
   ```
   </div>
   <div>
-  ![AFCL VerticalTabs](image-48.png)
+  ![AFCL VerticalTabs](image-77.png)
   </div>
 </div>
 
@@ -454,7 +457,7 @@ const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.f
 ```
   </div>
   <div>
-    ![AFCL Table with custom cell](image-53.png)
+    ![AFCL Table with custom cell](image-78.png)
   </div>
 </div>
 
