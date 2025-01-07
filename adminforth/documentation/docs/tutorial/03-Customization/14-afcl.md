@@ -493,7 +493,49 @@ If there is less then `pageSize` rows, pagination will not be shown.
 </div>
 
 
+## ProgressBar
 
+<div class="split-screen" >
+  <div>
+  ```html
+   <ProgressBar
+    :currentValue="2600"
+    :minValue="0"
+    :maxValue="5000"
+    />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-56.png)
+  </div>
+</div>
+
+### Custom labels
+
+Custom labels in the ProgressBar component allow you to customize the text displayed on the left and right sides of the progress bar. You can also customize the format of the value and the progress text.
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <ProgressBar
+    :currentValue="1070"
+    :minValue="0"
+    :maxValue="5000"
+    :leftLabel="'Level 2'"
+    :rightLabel="'Level 3'"
+    :formatter="(value: number) => `${value} points`"
+    :progressFormatter="(value: number, percentage: number) => `${value} done`"
+  />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-55.png)
+  </div>
+</div>
+
+
+
+### Custom slots
 
 
 ## Bar Chart
