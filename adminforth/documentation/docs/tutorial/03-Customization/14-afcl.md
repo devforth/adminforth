@@ -1,12 +1,15 @@
-```
-image: "afcl-preview.png"  # Path to the OG image
-```
+---
+description: "AFCL is a set of components which you can use as build blocks in your AdminForth application. AFCL allows to keep the design consistent with minimal efforts and build new pages faster. AFCL components follow styling standard and respect theme colors."
+image: "/ogs/afcl.png"  # Path to the OG image
+---
 
 # AdminForth Components Library
 
 AFCL is a set of components which you can use as build blocks in your AdminForth application. 
 AFCL allows to keep the design consistent with minimal efforts and build new pages faster.
 AFCL components follow styling standard and respect theme colors.
+
+Components set is always growing, so you can expect new components to be added in the future.
 
 ## Button
 

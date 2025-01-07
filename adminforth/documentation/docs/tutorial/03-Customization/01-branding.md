@@ -1,3 +1,9 @@
+---
+description: "Learn how to customize the branding and theming of your AdminForth application."
+image: "/ogs/branding.png"  # Path to the OG image
+---
+
+
 # Branding and Theming
 
 The first things you would probably like to change are the logo, favicon and the name of the application. 
@@ -106,7 +112,7 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](image-10.png)
+![AdminForth Themes](image-10.png)
 
 
 
@@ -147,7 +153,7 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](demo.adminforth.dev_login.png)
+![AdminForth Login Background](demo_adminforth_login.png)
 
 You can also set background position and size:
 

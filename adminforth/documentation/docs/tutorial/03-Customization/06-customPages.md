@@ -1,3 +1,8 @@
+---
+description: "Learn how to create custom pages in AdminForth."
+image: "/ogs/customPages.png" 
+---
+
 # Custom pages
 
 Most Admin Panels should have some Dashboards or custom pages. 
