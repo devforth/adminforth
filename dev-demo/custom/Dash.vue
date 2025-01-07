@@ -162,31 +162,26 @@
 
       <div class="flex justify-center items-center p-80 bg-white">
         <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
-          <PieChart
-  :data="[
-    { amount: 5, label: 'Cars'},
-    { amount: 3, label: 'Bikes'},
-    { amount: 2, label: 'Trucks'},
-    { amount: 1, label: 'Boats'},
+          <Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
   ]"
-  :options="{
-    chart: {
-      height: 250,
-    },
-    dataLabels: {
-      enabled: true,
-    },
-    plotOptions: {
-      pie: {
-        dataLabels: {
-          offset: -10, // Moves labels closer to or further from the slices
-          minAngleToShowLabel: 10, // Ensures that small slices don’t show labels
-        },
-        expandOnClick: true,
-      },
-    },
-  }"
-/>
+  v-model="selected"
+>
+  <template #item="{option}">
+    <div>
+      <span>{{ option.label }}</span>
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
+    </div>
+  </template>
+  <template #selected-item="{option}">
+    <span>{{ option.label }} 💫</span>
+  </template>
+</Select>
         </div>
       </div>
   </div>
