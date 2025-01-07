@@ -304,7 +304,7 @@ export interface IAdminForth {
 
   formatAdminForth(): string;
   
-  tr(msg: string, category: string, lang: string, params: any): Promise<string>;
+  tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
