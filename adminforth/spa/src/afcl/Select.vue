@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block afcl-select">
+  <div class="relative inline-block afcl-select" ref="internalSelect">
     <div class="relative">
       <input
         ref="inputEl"
@@ -89,7 +89,6 @@ import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
-
 const props = defineProps({
   options: Array,
   modelValue: {
@@ -123,6 +122,7 @@ const dropdownStyle = ref<{ top?: string; }>({
 });
 
 const selectedItems: Ref<any[]> = ref([]);
+const internalSelect = ref<HTMLElement | null>(null);
 
 function inputInput() {
   if (!props.multiple && selectedItems.value.length) {
@@ -147,15 +147,12 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.isReadonly) {
-    return;
-  }
-  if (!showDropdown.value) {
-    showDropdown.value = true;
-  } else {
-    if (!search.value) {
-      showDropdown.value = false;
-    }
+  if (props.isReadonly) return;
+  // Toggle local dropdown
+  showDropdown.value = !showDropdown.value;
+  // If the dropdown is about to close, reset the search
+  if (!showDropdown.value && !search.value) {
+    search.value = '';
   }
 }
 
@@ -198,10 +195,12 @@ const filteredItems = computed(() => {
   );
 });
 
-const handleClickOutside = (event) => {
-  if (!event.target.closest('.afcl-select')) {
+
+const handleClickOutside = (event: MouseEvent) => {
+  const targetEl = event.target as HTMLElement | null;
+  const closestSelect = targetEl?.closest('.afcl-select');
+  if (closestSelect !== internalSelect.value)
     showDropdown.value = false;
-  }
 };
 
 const addClickListener = () => {
@@ -228,7 +227,7 @@ const toogleItem = (item) => {
   if (!props.multiple && search.value) {
     search.value = '';
   }
-  
+
   const list = selectedItems.value.map(item => item.value);
   const updValue = list.length ? list : null;
   let emitValue;
@@ -238,13 +237,10 @@ const toogleItem = (item) => {
     emitValue = updValue;
   }
   emit('update:modelValue', emitValue);
-
 };
-
 
 onUnmounted(() => {
   removeClickListener();
 });
-
 
 </script>

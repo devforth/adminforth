@@ -120,6 +120,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
+            chart: { type: 'donut'},
             plotOptions: {
               pie: {
                 donut: {
