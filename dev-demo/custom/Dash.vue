@@ -110,7 +110,7 @@
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
-            chart: { height: 350 },
+            chart: { height: 350, type: 'donut' },
             plotOptions: {
               pie: {
                 donut: {
@@ -160,25 +160,35 @@
 
     </div>
 
-    <div class="flex justify-center items-center p-80 bg-white">
-      <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex justify-center items-center">
-        <Table
-  :columns="[
-    { label: 'Name', fieldName: 'name' },
-    { label: 'Age', fieldName: 'age' },
-    { label: 'Country', fieldName: 'country' },
-  ]"
+      <div class="flex justify-center items-center p-80 bg-white">
+        <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
+          <PieChart
   :data="[
-    { name: 'John', age: 30, country: 'US' },
-    { name: 'Rick', age: 25, country: 'CA' },
-    { name: 'Alice', age: 35, country: 'BR' },
-    { name: 'Colin', age: 40, country: 'AU' },
+    { amount: 5, label: 'Cars'},
+    { amount: 3, label: 'Bikes'},
+    { amount: 2, label: 'Trucks'},
+    { amount: 1, label: 'Boats'},
   ]"
-  :pageSize="3"
->
-</Table>
+  :options="{
+    chart: {
+      height: 250,
+    },
+    dataLabels: {
+      enabled: true,
+    },
+    plotOptions: {
+      pie: {
+        dataLabels: {
+          offset: -10, // Moves labels closer to or further from the slices
+          minAngleToShowLabel: 10, // Ensures that small slices don’t show labels
+        },
+        expandOnClick: true,
+      },
+    },
+  }"
+/>
+        </div>
       </div>
-    </div>
   </div>
 </template>
 
