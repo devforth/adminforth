@@ -116,8 +116,12 @@ const options = computed(() => {
 
   // for each of  ...props.options  merge on lowest level. so if { chart: {height : 2} }, it should not replace chart level, only height level
   function mergeOptions(options: any, newOptions: any) {
+    if (!newOptions) {
+      return;
+    }
     for (const key in newOptions) {
-      if (typeof newOptions[key] === 'object') {
+      // and is not array
+      if (typeof newOptions[key] === 'object' && !Array.isArray(newOptions[key])) {
         if (!options[key]) {
           options[key] = {};
         }
