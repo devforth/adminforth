@@ -326,7 +326,7 @@ export default class ConfigValidator implements IConfigValidator {
 
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable
-        if (!Object.keys(col).includes('sortable')) { col.sortable = true; }
+        if (!Object.keys(col).includes('sortable')) { col.sortable = !col.virtual; }
         if (col.showIn && !Array.isArray(col.showIn)) {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
         }
