@@ -12,4 +12,7 @@ export { default as Dropzone } from './Dropzone.vue';
 export { default as AreaChart } from './AreaChart.vue';
 export { default as BarChart } from './BarChart.vue';
 export { default as PieChart } from './PieChart.vue';
+export { default as Table } from './Table.vue';
+
+
 

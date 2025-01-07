@@ -110,7 +110,7 @@
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
-            chart: { height: 350 },
+            chart: { height: 350, type: 'donut' },
             plotOptions: {
               pie: {
                 donut: {
@@ -160,16 +160,30 @@
 
     </div>
 
-    <div class="flex justify-center items-center p-80 bg-white">
-      <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex justify-center items-center">
-<Dropzone
-  :extensions="['.jpg', '.jpeg', '.png']"
-  :maxSizeBytes="1024 * 1024 * 2"
-  :multiple="false"
-  v-model="files"
-/>
-      </div>
+      <div class="flex justify-center items-center p-80 bg-white">
+        <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
+          <Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
+  ]"
+  v-model="selected"
+>
+  <template #item="{option}">
+    <div>
+      <span>{{ option.label }}</span>
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
     </div>
+  </template>
+  <template #selected-item="{option}">
+    <span>{{ option.label }} 💫</span>
+  </template>
+</Select>
+        </div>
+      </div>
   </div>
 </template>
 
@@ -179,11 +193,12 @@ import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
-import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, VerticalTabs } from '@/afcl';
+import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, Table, VerticalTabs } from '@/afcl';
 import Button from '@/afcl/Button.vue';
 import Tooltip from '@/afcl/Tooltip.vue';
 import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
 import Checkbox from '@/afcl/Checkbox.vue';
+const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))
 
 import { Dropzone } from '@/afcl'
 
