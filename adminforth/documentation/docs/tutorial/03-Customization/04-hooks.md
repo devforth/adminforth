@@ -1,3 +1,9 @@
+---
+description: "Hooks are powerful tools to modify the data before it is saved to the database, execute something after data were saved or deleted, change the query before fetching items from the database, modify the fetched data before it is displayed in the list and show, and prevent the request to db depending on some condition."
+image: "/ogs/hooks.png"  # Path to the OG image
+---
+
+
 
 # Hooks
 
@@ -25,7 +31,7 @@ Here we will consider possible flows one by one
 
 When user opens edit page, AdminForth makes a request to the backend to get the initial data for the form.
 
-![Initial data for edit page flow](image-28.png)
+![Initial data for edit page flow](initial_edit_data_flow.png)
 
 Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
 
