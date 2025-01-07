@@ -13,6 +13,10 @@ Major AFCL update
 - AFCL Table component
 - AFCL Chart components and documentation
 
+### Fixed
+
+- two dropdowns now can't be opened at the same time
+
 ## [v1.5.10] 
 
 ### Changed
