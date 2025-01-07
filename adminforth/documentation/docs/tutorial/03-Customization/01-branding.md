@@ -92,11 +92,8 @@ const admin = new AdminForth({
           sidebar: { main: '#f9fafb', text: '#213045' },
 //diff-add
           sidebar: {main:'#571e58', text:'white'},
-//diff-add
         },
-//diff-add
       }
-//diff-add
     } 
   },
   ...
