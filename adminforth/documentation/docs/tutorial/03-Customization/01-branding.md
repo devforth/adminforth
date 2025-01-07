@@ -77,11 +77,8 @@ In `index.ts` file set the `styles` property in the configuration:
 const admin = new AdminForth({
   ...
   customization: {
-//diff-add
     styles: {
-//diff-add
       colors: {
-//diff-add
         light: {
 //diff-add
           // color for links, icons etc.
