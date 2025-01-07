@@ -8,6 +8,7 @@ import {
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
   IAdminForthRestAPI,
+  IAdminForthSort,
   HttpExtra,
 } from "../types/Back.js";
 
@@ -531,7 +532,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_data',
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };
@@ -546,15 +546,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
-        
+
         const meta = { requestBody: body, pk: undefined };
         if (source === 'edit' || source === 'show') {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
         const { allowedActions } = await interpretResource(
-          adminUser, 
-          resource, 
+          adminUser,
+          resource,
           meta,
           {
             'show': ActionCheckSource.ShowRequest,
@@ -581,10 +581,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }[source];
 
         for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest)) {
-          const resp = await hook({ 
-            resource, 
-            query: body, 
-            adminUser, 
+          const resp = await hook({
+            resource,
+            query: body,
+            adminUser,
             extra: {
               body, query, headers, cookies, requestUrl
             },
@@ -600,6 +600,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
         const { limit, offset, filters, sort } = body;
 
+        // remove virtual fields from sort if still presented after
+        // beforeDatasourceRequest hook
+        const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
+          return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
+        });
+
         for (const filter of (filters || [])) {
           if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
             throw new Error(`Operator '${filter.operator}' is not allowed`);
@@ -614,8 +620,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               throw new Error(`Value for operator '${filter.operator}' should be an array`);
             }
           }
-
-          
         }
 
         const data = await this.adminforth.connectors[resource.dataSource].getData({
@@ -623,9 +627,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           limit,
           offset,
           filters,
-          sort,
+          sort: sortFiltered,
           getTotals: true,
         });
+
         // for foreign keys, add references
         await Promise.all(
           resource.columns.filter((col) => col.foreignResource).map(async (col) => {
@@ -681,12 +686,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
-          const resp = await hook({ 
-            resource, 
+          const resp = await hook({
+            resource,
             query: body,
-            response: 
-            data.data, 
-            adminUser, 
+            response: data.data,
+            adminUser,
             extra: {
               body, query, headers, cookies, requestUrl
             },
@@ -703,7 +707,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         return {
-          ...data, 
+          ...data,
           options: resource?.options,
         };
       },
