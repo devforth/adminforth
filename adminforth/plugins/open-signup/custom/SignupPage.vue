@@ -133,11 +133,11 @@
 
 
 <script setup lang="ts">
-import { onMounted, ref, computed, Ref, onBeforeMount } from 'vue';
+import { onMounted, ref, computed, Ref, onBeforeMount, nextTick } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { callAdminForthApi, loadFile, applyRegexValidation } from '@/utils';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import Button from '@/afcl/Button.vue';
 import Link from '@/afcl/Link.vue';
@@ -210,10 +210,6 @@ const validationError = computed(() => {
 
 const error: Ref<string | null> = ref(null);
 
-onMounted(async () => {
-  emailInput.value?.focus();
-});
-
 
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
@@ -246,6 +242,7 @@ const passwordConstraints: Ref<{
 //       } 
 
 onBeforeMount(() => {
+  // console.log('⛔ SignUp Page. Before Mount: ', route)
   if (localStorage.getItem('isAuthorized') === 'true') {
     // if route has next param, redirect
     coreStore.fetchMenuAndResource();
@@ -258,15 +255,22 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-
-
+  emailInput.value?.focus();
   await coreStore.getPublicConfig();
+
+  await nextTick();
+  await router.isReady();
+
   // getPasswordConstraints
+  console.log('⛔ SignUp Page. Before Mount: ', route.meta)
   passwordConstraints.value = await callAdminForthApi({
     path: `/plugin/${route.meta.pluginInstanceId}/password-constraints`,
     method: 'GET',
   });
-});
+})
+
+// onMounted(async () => {
+// });
 
 async function doSignup() {
   error.value = null;
