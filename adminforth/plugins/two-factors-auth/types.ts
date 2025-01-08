@@ -3,12 +3,18 @@ import { AdminUser } from "adminforth";
 export type PluginOptions = {
 
     /**
-     * Name of the field in the auth resource which will store 2FA secret. 
+     * Name of the field in the auth resource which will store 2FA secret.
      *
      * Resource mandatory should have one columns which defined {@link AdminForthResourceColumn} which
      * name should be equal to the value .
      */
     twoFaSecretFieldName: string;
+
+    /**
+     * Not-negative optional time step window for 2FA. This value means that the user will be able to enter the old code
+     * for the next 30 seconds after the new code was generated.
+     */
+    timeStepWindow?: number;
 
     /**
      * Optional function to filter users to apply 2FA.

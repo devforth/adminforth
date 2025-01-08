@@ -38,6 +38,7 @@ export default {
     }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
+      timeStepWindow: 1, // optional time step window for 2FA
       // optional callback to define which users should be enforced to use 2FA
       usersFilterToApply: (adminUser: AdminUser) => {
         if (process.env.NODE_ENV === "development") {
