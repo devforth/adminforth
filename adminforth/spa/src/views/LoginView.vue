@@ -143,7 +143,7 @@ const backgroundPosition = computed(() => {
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
     // if route has next param, redirect
-    // coreStore.fetchMenuAndResource();
+    coreStore.fetchMenuAndResource();
     if (route.query.next) {
       router.push(route.query.next.toString());
     } else {
