@@ -6,21 +6,25 @@
 
 * [Try live demo](https://demo.adminforth.dev/)  (Read-only mode)
 
-* [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth.
+* [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth
 
-* [Full API reference](https://adminforth.dev/docs/api/).
+* [Tutorial](https://adminforth.dev/docs/tutorial/Customization/branding/)
 
+<br/>
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/f507a46b-f282-4f81-97e0-32fceb002ded"
- alt="Image description" width="800px">
+  <img src="https://github.com/user-attachments/assets/eab356d0-b953-4488-863e-f39792971922"
+ alt="AdminForth Dashboard" width="90%">
 </div>
 
-Features:
+<br/>
+
+Why AdminForth:
 * AdminForth is always free and open-source (no paid versions, no cloud subscriptions sh*t)
 * Init AdminForth with your database URL in Node.js file, easily describe the tables you wish to see in admin, and get fully functional UI for your data (filter, create, edit, remove)
-* Define Vue components to any part (place in data cell, instead of row, add something above the table, inject something to header or sidebar, add custom page with charts)
+* Define Vue components to change look of various parts of admin (place in data cell, instead of row, add something above the table, inject something to header or sidebar, add custom page with charts or custom components)
+* Rich build-in Components library (AdminForth AFCL) with premade easy-to-use build-blocks which follow your theme
 * Define express APIs and call them from your components and pages
-* Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, Copilot-style AI writing and images generation
+* Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, I18N, Copilot-style AI writing and image generation
 
 ## Project initialisation
 
@@ -29,28 +33,33 @@ mkdir myadmin && cd myadmin
 npx adminforth create-app
 ```
 
-
 ## Previews
 
 
+<table>
+  <tr>
+    <td style="width: 40%; vertical-align: top;">
+      <a href="https://adminforth.dev/docs/tutorial/Customization/customPages">Custom Dashboard</a>
+      <br/>
+      <img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="500px" />
+    </td>
+    <td style="width: 40%; vertical-align: top;">
+      <a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Chat-GPT plugin</a>
+      <br/>
+      <img src="https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028" alt="AdminForth ChatGPT demo" width="500px" />
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 40%; vertical-align: top;">
+      <a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image DALEE Generation</a>
+       <br/>
+      <img src="https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a" alt="AdminForth DALE-E image generator demo" width="500px">
+    </td>
+  </tr>
+</table>
 
-[Custom Dashboard](https://adminforth.dev/docs/tutorial/Customization/customPages):
 
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="500px">
-</div>
 
-[Chat-GPT plugin](https://adminforth.dev/docs/tutorial/Plugins/chat-gpt):
-
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028" alt="AdminForth ChatGPT demo" width="500px">
-</div>
-
-[Image DALEE Generation](https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation)
-
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a" alt="AdminForth DALE-E image generator demo" width="500px">
-</div>
 
 
 # For developers
