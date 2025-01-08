@@ -796,6 +796,22 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     return translations;
   }
 
+  async languagesList(): Promise<{
+    code: LanguageCode;
+    nameOnNative: string;
+    nameEnglish: string;
+    emojiFlag: string;
+  }[]> {
+    return this.options.supportedLanguages.map((lang) => {
+      return {
+        code: lang as LanguageCode,
+        nameOnNative: iso6391.getNativeName(lang),
+        nameEnglish: iso6391.getName(lang),
+        emojiFlag: lang.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)),
+      };
+    });
+  }
+
   async feedCategoryTranslations(messages: {
     en_string: string;
     source: string;

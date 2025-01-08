@@ -100,7 +100,7 @@ export const admin = new AdminForth({
     customComponentsDir: './custom',
     globalInjections: {
       userMenu: '@@/login2.vue',
-      header: '@@/PropertyCost.vue',
+      // header: '@@/PropertyCost.vue',
     },
     customPages:[{
       path : '/login2',
@@ -407,6 +407,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           totalListedPrice,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
+
+          languages: await admin.getPluginByClassName<I18nPlugin>('I18nPlugin').languagesList()
         });
       }
     )
