@@ -22,6 +22,14 @@ Features:
 * Define express APIs and call them from your components and pages
 * Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, Copilot-style AI writing and images generation
 
+## Project initialisation
+
+```
+mkdir myadmin && cd myadmin
+npx adminforth create-app
+```
+
+
 ## Previews
 
 
