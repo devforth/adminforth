@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - support for pluralization in Backend `tr` function
+- add handy languagesList function to get all languages for translation of side apps
 
 ## [1.0.22]
 

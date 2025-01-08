@@ -4,7 +4,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data" >
         <div>
-          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalApartsString }}</h5>
+          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ $t('Apartments') }}</h5>
           <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
         </div>
         <BarChart
@@ -160,7 +160,7 @@
 
     </div>
 
-      <div class="flex justify-center items-center p-80 bg-white">
+      <!-- <div class="flex justify-center items-center p-80 bg-white">
         <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
           <Select
   class="w-full"
@@ -204,7 +204,7 @@
   </template>
 </Select>
         </div>
-      </div>
+      </div> -->
   </div>
 </template>
 
