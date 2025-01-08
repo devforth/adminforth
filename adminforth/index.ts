@@ -385,6 +385,12 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
 
+    // remove editReadonly columns from record
+    for (const column of resource.columns.filter((col) => col.editReadonly)) {
+      if (column.name in record)
+        delete record[column.name];
+    }
+
     // execute hook if needed
     for (const hook of listify(resource.hooks?.edit?.beforeSave)) {
       const resp = await hook({
@@ -404,6 +410,7 @@ class AdminForth implements IAdminForth {
         return { error: resp.error };
       }
     }
+
     const newValues = {};
     const connector = this.connectors[resource.dataSource];
 
