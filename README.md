@@ -43,6 +43,9 @@ npx adminforth create-app
       <br/>
       <img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="500px" />
     </td>
+    
+  </tr>
+  <tr>
     <td style="width: 40%; vertical-align: top;">
       <a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Chat-GPT plugin</a>
       <br/>
