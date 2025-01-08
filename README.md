@@ -11,8 +11,9 @@
 * [Tutorial](https://adminforth.dev/docs/tutorial/Customization/branding/)
 
 <br/>
+
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/eab356d0-b953-4488-863e-f39792971922"
+  <img src="https://github.com/user-attachments/assets/e643caad-1daa-4085-b125-cc940557a2ec"
  alt="AdminForth Dashboard" width="90%">
 </div>
 
