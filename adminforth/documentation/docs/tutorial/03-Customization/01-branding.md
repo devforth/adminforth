@@ -1,3 +1,9 @@
+---
+description: "Learn how to customize the branding and theming of your AdminForth application."
+image: "/ogs/branding.png"  # Path to the OG image
+---
+
+
 # Branding and Theming
 
 The first things you would probably like to change are the logo, favicon and the name of the application. 
@@ -77,11 +83,8 @@ In `index.ts` file set the `styles` property in the configuration:
 const admin = new AdminForth({
   ...
   customization: {
-//diff-add
     styles: {
-//diff-add
       colors: {
-//diff-add
         light: {
 //diff-add
           // color for links, icons etc.
@@ -95,18 +98,15 @@ const admin = new AdminForth({
           sidebar: { main: '#f9fafb', text: '#213045' },
 //diff-add
           sidebar: {main:'#571e58', text:'white'},
-//diff-add
         },
-//diff-add
       }
-//diff-add
     } 
   },
   ...
 });
 ```
 Here is how it looks:
-![alt text](image-10.png)
+![AdminForth Themes](image-10.png)
 
 
 
@@ -147,7 +147,7 @@ const admin = new AdminForth({
 });
 ```
 Here is how it looks:
-![alt text](demo.adminforth.dev_login.png)
+![AdminForth Login Background](demo_adminforth_login.png)
 
 You can also set background position and size:
 

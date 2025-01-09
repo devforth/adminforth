@@ -42,7 +42,7 @@ const optionsBase = {
     chart: {
       height: 400,
       width: "100%",
-      type: "donut",
+      type: "pie",
     },
     stroke: {
       colors: ["transparent"],
@@ -137,7 +137,8 @@ const options = computed(() => {
       return;
     }
     for (const key in newOptions) {
-      if (typeof newOptions[key] === 'object') {
+      // and is not array
+      if (typeof newOptions[key] === 'object' && !Array.isArray(newOptions[key])) {
         if (!options[key]) {
           options[key] = {};
         }
