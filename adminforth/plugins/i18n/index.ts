@@ -443,7 +443,7 @@ export default class I18nPlugin extends AdminForthPlugin {
 
     const prompt = `
 I need to translate strings in JSON to ${lang} (${langName}) language from English for my web app.
-${requestSlavicPlurals ? `You should provide 4 translations (in format zero | singular | 2-4 | 5+) e.g. ${SLAVIC_PLURAL_EXAMPLES[lang]}` : ''}
+${requestSlavicPlurals ? `You should provide 4 slavic forms (in format "zero count | singular count | 2-4 | 5+") e.g. "apple | apples" should become "${SLAVIC_PLURAL_EXAMPLES[lang]}"` : ''}
 Keep keys, as is, write translation into values! Here are the strings:
 
 \`\`\`json
@@ -462,6 +462,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       [],
       300,
     );
+
 
     if (resp.error) {
       throw new AiTranslateError(resp.error);
@@ -582,8 +583,11 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     await Promise.all(
       Object.entries(updateStrings).map(
         async ([_, { updates, strId }]: [string, { updates: any, category: string, strId: string }]) => {
+          // get old full record
+          const oldRecord = await this.adminforth.resource(this.resourceConfig.resourceId).get([Filters.EQ(this.primaryKeyFieldName, strId)]);
+
           // because this will translate all languages, we can set completedLangs to all languages
-          const futureCompletedFieldValue = await this.computeCompletedFieldValue(updates); 
+          const futureCompletedFieldValue = await this.computeCompletedFieldValue({ ...oldRecord, ...updates });
 
           await this.adminforth.resource(this.resourceConfig.resourceId).update(strId, {
             ...updates,
@@ -689,7 +693,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     // in this plugin we will use plugin to fill the database with missing language messages
     this.tryProcessAndWatch(adminforth);
 
-    adminforth.tr = async (msg: string | null | undefined, category: string, lang: string, params): Promise<string> => {
+    adminforth.tr = async (msg: string | null | undefined, category: string, lang: string, params, pluralizationNumber: number): Promise<string> => {
       if (!msg) {
         return msg;
       }
@@ -740,6 +744,11 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
         // cache so even if key does not exist, we will not hit database
         await this.cache.set(cacheKey, result);
       }
+      // if msg has '|' in it, then we need to aplly pluralization
+      if (msg.includes('|')) {
+        result = this.applyPluralization(result, pluralizationNumber, lang);
+      }
+
       if (params) {
         for (const [key, value] of Object.entries(params)) {
           result = result.replace(`{${key}}`, value);
@@ -749,6 +758,36 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
     }
   }
 
+  applyPluralization(str: string, number: number, lang: string): string {
+    const choices = str.split('|');
+    const choicesLength = choices.length;
+
+    if (choicesLength > 2) {
+      // this is slavic pluralization
+      return choices[this.slavicPluralRule(number, choicesLength)];
+    } else {
+      return number === 1 ? choices[0] : choices[1];
+    }
+  }
+  
+    // taken from here https://vue-i18n.intlify.dev/guide/essentials/pluralization.html#custom-pluralization
+  slavicPluralRule(choice, choicesLength) {
+    if (choice === 0) {
+      return 0
+    }
+
+    const teen = choice > 10 && choice < 20
+    const endsWithOne = choice % 10 === 1
+
+    if (!teen && endsWithOne) {
+      return 1
+    }
+    if (!teen && choice % 10 >= 2 && choice % 10 <= 4) {
+      return 2
+    }
+
+    return choicesLength < 4 ? 2 : 3
+  }
   instanceUniqueRepresentation(pluginOptions: any) : string {
     // optional method to return unique string representation of plugin instance. 
     // Needed if plugin can have multiple instances on one resource 

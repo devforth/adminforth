@@ -332,13 +332,10 @@ watch(() => sort.value, (newSort) => {
 });
 
 watch(() => checkboxesInternal.value, (newCheckboxes) => {
-  console.log('checkboxesInternal ch changed, emiting', newCheckboxes)
-
   emits('update:checkboxes', newCheckboxes);
 });
 
 watch(() => props.checkboxes, (newCheckboxes) => {
-  console.log('Props ch changed', newCheckboxes)
   checkboxesInternal.value = newCheckboxes;
 });
 
@@ -351,7 +348,6 @@ watch(() => props.page, (newPage) => {
 });
 
 function addToCheckedValues(id) {
-  console.log('checking', checkboxesInternal.value, 'id', id)
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {

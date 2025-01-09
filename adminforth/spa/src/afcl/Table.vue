@@ -7,7 +7,7 @@
           <th scope="col" class="px-6 py-3"
             v-for="column in columns"
           >
-            <slot v-if="$slots[`header:${column.fieldName}`]" :name="$slots[`header:${column.fieldName}`]" :column="column" />
+            <slot v-if="$slots[`header:${column.fieldName}`]" :name="`header:${column.fieldName}`" :column="column" />
             
             <span v-else>
               {{ column.label }}

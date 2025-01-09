@@ -100,7 +100,7 @@ export const admin = new AdminForth({
     customComponentsDir: './custom',
     globalInjections: {
       userMenu: '@@/login2.vue',
-      header: '@@/PropertyCost.vue',
+      // header: '@@/PropertyCost.vue',
     },
     customPages:[{
       path : '/login2',
@@ -318,7 +318,7 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
-      async (req: express.Request, res: express.Response) => {
+      async (req: any, res: express.Response) => {
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
           `SELECT 
@@ -395,9 +395,11 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           acc: number, { unlistedPrice }: { unlistedPrice:number } 
         ) => acc + unlistedPrice, 0));
 
+        const apartsCount = 10;
         res.json({ 
           apartsByDays,
-          totalAparts,
+          totalApartsString: await req.tr('{count} apartment | {count} apartments', 'test', {count: apartsCount}, apartsCount),
+          totalAparts: apartsCount,
           listedVsUnlistedByDays,
           apartsCountsByRooms,
           topCountries,
@@ -405,6 +407,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           totalListedPrice,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
+
+          languages: await admin.getPluginByClassName<I18nPlugin>('I18nPlugin').languagesList()
         });
       }
     )
