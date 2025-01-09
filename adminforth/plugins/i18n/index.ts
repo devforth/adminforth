@@ -6,8 +6,6 @@ import path from 'path';
 import fs from 'fs-extra';
 import chokidar from 'chokidar';
 import  { AsyncQueue } from '@sapphire/async-queue';
-
-
 console.log = (...args) => {
   process.stdout.write(args.join(" ") + "\n");
 };
@@ -27,6 +25,22 @@ const SLAVIC_PLURAL_EXAMPLES = {
   be: 'яблыкаў | яблык | яблыкі | яблыкаў', // zero | singular | 2-4 | 5+
   ru: 'яблок | яблоко | яблока | яблок', // zero | singular | 2-4 | 5+
 };
+
+const countryISO31661ByLangISO6391 = {
+  en: 'us', // English → United States
+  zh: 'cn', // Chinese → China
+  hi: 'in', // Hindi → India
+  ar: 'sa', // Arabic → Saudi Arabia
+  ko: 'kr', // Korean → South Korea
+  ja: 'jp', // Japanese → Japan
+  uk: 'ua', // Ukrainian → Ukraine
+  ur: 'pk', // Urdu → Pakistan
+};
+
+function getCountryCodeFromLangCode(langCode) {
+  return countryISO31661ByLangISO6391[langCode] || langCode;
+}
+
 
 interface ICachingAdapter {
   get(key: string): Promise<any>;
@@ -809,7 +823,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
         code: lang as LanguageCode,
         nameOnNative: iso6391.getNativeName(lang),
         nameEnglish: iso6391.getName(lang),
-        emojiFlag: lang.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)),
+        emojiFlag: getCountryCodeFromLangCode(lang).toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)),
       };
     });
   }
