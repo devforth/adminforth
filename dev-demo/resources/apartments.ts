@@ -4,13 +4,13 @@ import {
   AdminUser,
   Filters,
 } from "../../adminforth";
-import TextCompletePlugin from "../../adminforth/plugins/text-complete";
-import UploadPlugin from "../../adminforth/plugins/upload";
-import ImportExportPlugin from "../../adminforth/plugins/import-export/index.js";
+import TextCompletePlugin from "../../plugins/adminforth-text-complete";
+import UploadPlugin from "../../plugins/adminforth-upload";
+import ImportExportPlugin from "../../plugins/adminforth-import-export/index.js";
 import { v1 as uuid } from "uuid";
-import RichEditorPlugin from "../../adminforth/plugins/rich-editor";
+import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
-import CompletionAdapterOpenAIChatGPT from "../../adminforth/adapters/completion-adapter-open-ai-chat-gpt/index.js";
+import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {

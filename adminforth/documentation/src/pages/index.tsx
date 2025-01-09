@@ -116,8 +116,8 @@ function HomepageHeader() {
               </div>
               <div className="fakeScreen">
                 <p className="line1"><span
-                  style={{userSelect: 'none'}}
-                >$&nbsp;</span><span style={{ opacity:0.6 }}>npx adminforth create-app</span></p>
+                  style={{userSelect: 'none', opacity:0.6 }}
+                >$&nbsp;</span><span style={{ opacity:0.9 }}>npx adminforth create-app</span></p>
               </div>
             </div>
           </div>

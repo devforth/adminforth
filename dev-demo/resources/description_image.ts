@@ -1,5 +1,5 @@
 import { AdminForthResourceInput } from "../../adminforth";
-import UploadPlugin from "../../adminforth/plugins/upload";
+import UploadPlugin from "../../plugins/adminforth-upload";
 import { v1 as uuid } from "uuid";
 
 export default {
