@@ -1,1 +1,5 @@
 node_modules
+plugins/*
+!plugins/installplugins.sh
+adapters/*
+!adapters/install-adapters.sh

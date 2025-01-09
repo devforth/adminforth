@@ -1,6 +1,6 @@
 import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
 import { v1 as uuid } from "uuid";
-import AuditLogPlugin from "../../adminforth/plugins/audit-log";
+import AuditLogPlugin from "../../plugins/adminforth-audit-log";
 
 export default {
   dataSource: "maindb",

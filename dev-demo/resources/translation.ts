@@ -2,8 +2,8 @@ import AdminForth, {
   AdminForthDataTypes,
   AdminForthResourceInput,
 } from "../../adminforth";
-import CompletionAdapterOpenAIChatGPT from "../../adminforth/adapters/completion-adapter-open-ai-chat-gpt";
-import I18nPlugin from "../../adminforth/plugins/i18n";
+import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt";
+import I18nPlugin from "../../plugins/adminforth-i18n";
 import { v1 as uuid } from "uuid";
 
 

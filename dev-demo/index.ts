@@ -2,7 +2,7 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
 
-import AuditLogPlugin from '../adminforth/plugins/audit-log/index.js';
+import AuditLogPlugin from '../plugins/adminforth-audit-log/index.js';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import auditLogResource from './resources/audit_log.js';
@@ -12,7 +12,7 @@ import gameResource from './resources/game.js';
 import gamesUsersResource from './resources/games_users.js';
 import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
-import CompletionAdapterOpenAIChatGPT from '../adminforth/adapters/completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 // const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';

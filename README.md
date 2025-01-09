@@ -76,11 +76,11 @@ npm run build
 # create link to built "adminforth" package in local system
 npm link
 
-# this will install deps in all plugins and link adminforth package
-npm run ci-plugins
+# this will install all official plugins and link adminforth package, if plugin installed it will git pull and npm ci
+npm run install-plugins
 
-# this will install deps in all plugins and link adminforth package
-npm run ci-adapters
+# same for official adapters
+npm run install-adapters
 
 # this is dev demo for development
 cd dev-demo
