@@ -406,7 +406,7 @@ export default class I18nPlugin extends AdminForthPlugin {
       strings: { en_string: string, category: string }[], 
       plurals=false,
       translations: any[],
-      updateStrings: Record<string, { updates: any, category: string, strId: string, translatedStr: string }> = {}
+      updateStrings: Record<string, { updates: any, category: string, strId: string, enStr: string, translatedStr: string }> = {}
   ): Promise<string[]> {
     const maxKeysInOneReq = 10;
     if (strings.length === 0) {
@@ -486,6 +486,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
           updateStrings[translation[this.primaryKeyFieldName]] = {
             updates: {},
             translatedStr,
+            enStr,
             category: translation[this.options.categoryFieldName],
             strId: translation[this.primaryKeyFieldName],
           };
@@ -541,6 +542,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
       updates: any, 
       category: string,
       strId: string,
+      enStr: string,
       translatedStr: string
     }> = {};
 
@@ -585,7 +587,7 @@ JSON.stringify(strings.reduce((acc: object, s: { en_string: string }): object =>
 
     for (const lang of langsInvolved) {
       await this.cache.clear(`${this.resourceConfig.resourceId}:frontend:${lang}`);
-      for (const [enStr, { category }] of Object.entries(updateStrings)) {
+      for (const { enStr, category } of Object.values(updateStrings)) {
         await this.cache.clear(`${this.resourceConfig.resourceId}:${category}:${lang}:${enStr}`);
       }
     }

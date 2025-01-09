@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support for pluralization in Backend `tr` function
 - add handy languagesList function to get all languages for translation of side apps
 
+### Fixed
+- invalidation of indvidual tr messages when translation using LLM adapter
+
 ## [1.0.22]
 
 ### Fixed
