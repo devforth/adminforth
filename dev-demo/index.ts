@@ -408,7 +408,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
 
-          languages: await admin.getPluginByClassName<I18nPlugin>('I18nPlugin').languagesList()
+          languages: await admin.getPluginByClassName<I18nPlugin>('I18nPlugin').languagesList(),
+          trExample: await req.tr('Hello there2', 'test'),
         });
       }
     )
