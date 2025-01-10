@@ -14,5 +14,7 @@ export { default as BarChart } from './BarChart.vue';
 export { default as PieChart } from './PieChart.vue';
 export { default as Table } from './Table.vue';
 export { default as ProgressBar } from './ProgressBar.vue';
+export { default as Spinner } from './Spinner.vue';
+export { default as Skeleton } from './Skeleton.vue';
 
 
