@@ -4,13 +4,12 @@ The Two-Factor Authentication Plugin provides an additional layer of security to
 
 ## Installation
 
-
-```
+``` bash
 npm i @adminforth/two-factors-auth --save
 ```
 
 Plugin is already installed into adminforth, to import:
-    
+
 ```ts title="/users.ts"
 import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
 ```
@@ -20,9 +19,9 @@ Plugin required some additional setup, to make it work properly. It should be ad
 ```ts title='./schema.prisma'
 model users {
   id            String     @id
-  created_at    DateTime 
+  created_at    DateTime
   email         String   @unique
-  role          String     
+  role          String
   password_hash String
 //diff-add
   secret2fa     String?
@@ -36,13 +35,14 @@ npx --yes prisma migrate dev --name init
 ```
 
 And add it to `users.ts`
+
 ```ts tittle="./resources/users.ts"
 {
     table: 'users',
 //diff-add
     plugins: [
 //diff-add
-        new TwoFactorsAuthPlugin ({ twoFaSecretFieldName: 'secret2fa' }),
+        new TwoFactorsAuthPlugin ({ twoFaSecretFieldName: 'secret2fa', timeStepWindow: 1 }),
 //diff-add
     ],
     columns: [
@@ -61,18 +61,28 @@ And add it to `users.ts`
   }
 ```
 
-Thats it! Two-Factor Authentication is now enabled: 
+> 💡 **Note**: Time-Step Size
+>
+> By default, `timeStepWindow` is set to `1`, which means the Two-Factor Authentication Plugin will check the current 30-second time-step, as well as one step before and after, to validate a TOTP code. This aligns with [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238) best practices to accommodate slight clock drift between the server and the user's device.
+>
+> For example, if a code is generated between **12:00:00** and **12:00:30**, it will typically expire at **12:00:30**. However, with a `timeStepWindow` of `1`, the plugin will continue to accept it up to **12:00:59** (the “next” 30-second step), preventing users from being locked out if their device clock is a few seconds off. Once the clock hits **12:01:00**, that previous code will be treated as expired.
+>
+> If you find users frequently encountering code mismatches due to clock drift, you can increase `timeStepWindow` to `2`. **However, be cautious: larger windows can reduce overall security!**
+>
+> ❗ With a `timeStepWindow` set to `0`, the plugin will pass all the expired codes, which is not secure and should only be used for testing purposes.
+
+Thats it! Two-Factor Authentication is now enabled:
 ![alt text](image-1.png)
 
 ## Disabling Two-Factor Authentication locally
 
-If it is not convenient to enter the code every time you log in during local development, you can disable Two-Factor Authentication 
+If it is not convenient to enter the code every time you log in during local development, you can disable Two-Factor Authentication
 for the dev environment using `usersFilterToApply` option.
 
 ```ts title='./index.ts'
 
     plugins: [
-        new TwoFactorsAuthPlugin ({ 
+        new TwoFactorsAuthPlugin ({
           twoFaSecretFieldName: 'secret2fa',
 //diff-add
           usersFilterToApply: (adminUser: AdminUser) => {
@@ -92,10 +102,9 @@ for the dev environment using `usersFilterToApply` option.
     ],
 ```
 
-
 ## Select which users should use Two-Factor Authentication
 
-By default plugin enforces Two-Factor Authentication for all users. 
+By default plugin enforces Two-Factor Authentication for all users.
 
 If you wish to enforce 2FA only for specific users, you can again use `usersFilterToApply` option:
 
@@ -105,7 +114,7 @@ If you wish to enforce 2FA only for specific users, you can again use `usersFilt
     return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
   },
 ```
- 
+
 You can even add a boolean column to the user table to store whether the user should use 2FA or not:
 
 ```ts title='./users.ts'
@@ -137,7 +146,7 @@ You can even add a boolean column to the user table to store whether the user sh
       }
     },
     plugins: [
-        new TwoFactorsAuthPlugin ({ 
+        new TwoFactorsAuthPlugin ({
           twoFaSecretFieldName: 'secret2fa',
           usersFilterToApply: (adminUser: AdminUser) => {
             return adminUser.dbUser.use2fa;
@@ -156,7 +165,7 @@ If you want to allow specific users to skip the 2FA setup, you can use the `user
 ```ts title='./users.ts'
 ...
 plugins: [
-        new TwoFactorsAuthPlugin ({ 
+        new TwoFactorsAuthPlugin ({
           twoFaSecretFieldName: 'secret2fa',
           ...
         //diff-add
