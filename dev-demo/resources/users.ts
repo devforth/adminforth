@@ -5,12 +5,12 @@ import AdminForth, {
   AdminForthResourceInput,
   AdminUser,
 } from "../../adminforth";
-import ForeignInlineListPlugin from "../../adminforth/plugins/foreign-inline-list";
-import OpenSignupPlugin from "../../adminforth/plugins/open-signup";
-import TwoFactorsAuthPlugin from "../../adminforth/plugins/two-factors-auth";
-import EmailResetPasswordPlugin from "../../adminforth/plugins/email-password-reset/index.js";
+import ForeignInlineListPlugin from "../../plugins/adminforth-foreign-inline-list";
+import OpenSignupPlugin from "../../plugins/adminforth-open-signup";
+import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
+import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
 import { v1 as uuid } from "uuid";
-import EmailAdapterAwsSes from "../../adminforth/adapters/email-adapter-aws-ses/index.js";
+import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
 
 export default {
   dataSource: "maindb",
@@ -38,6 +38,7 @@ export default {
     }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
+      timeStepWindow: 1, // optional time step window for 2FA
       // optional callback to define which users should be enforced to use 2FA
       usersFilterToApply: (adminUser: AdminUser) => {
         if (process.env.NODE_ENV === "development") {
