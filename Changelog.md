@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v1.5.12] - next
 
 ### Fixed
+- AFCL Spinner and Skeleton components
 - beforeEnter navigation guard on login route to check user already logged in postponed onMounted and created undefined rest request e.g. on signupPage (with race condition). Now it is called in component
 - AFCL progress bar component
 - sorting for virtual columns is disabled by default now, and sorting icon appers only if user sets column.sortable = true, in this case user has to implement sorting in `list.beforeDatasourceRequest` hook
