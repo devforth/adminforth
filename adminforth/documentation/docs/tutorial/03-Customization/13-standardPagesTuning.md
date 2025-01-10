@@ -235,7 +235,7 @@ export default {
 ```
 
 
-Also you can assign adminUser ID by adminUser.dbUser.id in same hook:
+Also you can assign adminUser ID by `adminUser.dbUser.id`:
 
 ```typescript title="./resources/apartments.ts"
 export default {
@@ -312,3 +312,21 @@ export default {
     ...
   ],
 ``` 
+
+> `editReadonly` is check enforced both on fronted and backend. So it is safe to use it to make sure that data will be never changes.
+
+
+
+### minValue and maxValue
+
+
+[Documentation in progress]
+
+
+### Validation
+
+[Documentation in progress]
+
+### Foreign resources
+
+[Documentation in progress]
