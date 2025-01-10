@@ -571,6 +571,80 @@ Custom labels in the ProgressBar component allow you to customize the text displ
   </div>
 </div>
 
+## Skeleton
+
+Skeleton component is used to display a loading state for a component. You can use prop `type` to set the type of the skeleton.
+
+<div class="split-screen" >
+  <div>
+  ```html
+    <div class="flex flex-col gap-2">
+      <Skeleton class="w-full h-4" />
+      <Skeleton class="w-full h-2" />
+      <Skeleton class="w-full h-2" />
+      <Skeleton class="w-full h-2" />
+      <Skeleton class="w-full h-2" />
+    </div>
+  ```
+  </div>
+  <div>
+  ![Spinner](image-82.png)
+  </div>
+</div>
+
+### Skeleton image
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <Skeleton type="image" class="w-full h-full" />
+  ```
+  </div>
+  <div>
+  ![Skeleton type](image-83.png)
+  </div>
+</div>
+
+### Skeleton video
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <Skeleton type="video" class="w-full h-full" />
+  ```
+  </div>
+  <div>
+  ![Skeleton type video](image-84.png)
+  </div>
+</div>
+
+### Skeleton avatar
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <Skeleton type="avatar" class="w-20 h-20" />
+  ```
+  </div>
+  <div>
+  ![Skeleton avatar](image-85.png)
+  </div>
+</div>
+
+## Spinner
+
+Spinner component is used to display a loading state for a component.
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <Spinner class="w-10 h-10" />
+  ```
+  </div>
+  <div>
+  ![Spinner](image-86.png)
+  </div>
+</div>
 
 ## Bar Chart
 
