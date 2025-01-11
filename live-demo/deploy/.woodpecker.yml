@@ -27,8 +27,6 @@ steps:
 
   slack-on-failure:
     image: plugins/slack
-    when:
-      - event: push
     secrets:
       - DEVELOPERS_SLACK_WEBHOOK
     webhook: $DEVELOPERS_SLACK_WEBHOOK
@@ -38,8 +36,8 @@ steps:
       {{repo.name}}/{{build.branch}} - #{{build.number}} {{uppercasefirst build.status}} after {{since build.started}} (<{{build.link}}|Open>)
       ```{{ cat build.log | tail -n 50 }}```
     when:
-      status:
-        - failure
+      - status: failure
+      - event: push
 
   build-live-demo:
     when:
