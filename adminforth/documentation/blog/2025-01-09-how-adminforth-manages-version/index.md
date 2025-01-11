@@ -108,8 +108,10 @@ clone:
       depth: 5
 
 steps:
-  build:
+  release:
     image: node:22
+    when:
+      - event: push
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
