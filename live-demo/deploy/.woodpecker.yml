@@ -9,6 +9,9 @@ steps:
 
   release:
     image: node:20
+    when:
+    - event: push
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
@@ -22,6 +25,9 @@ steps:
       - NPM_TOKEN
 
   build-live-demo:
+    when:
+    - event: push
+
     image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
