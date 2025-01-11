@@ -221,4 +221,4 @@ always performed before any hooks and any database requests.
 
 ## All hooks
 
-Check all hooks in the [API reference](/docs/api/types/Back/interfaces/AdminForthResource).
+Check all hooks in the [API reference](/docs/api/Back/interfaces/AdminForthResource).
