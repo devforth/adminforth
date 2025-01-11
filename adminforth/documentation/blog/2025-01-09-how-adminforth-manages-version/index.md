@@ -145,7 +145,6 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - npm clean-install
-      - npm run build
       - npm audit signatures
       - npx semantic-release
     secrets:
@@ -268,3 +267,39 @@ git push
 ```
 
 This will trigger release `v1.2.0` because we merged `next` to `main` and it was a feature release.
+
+
+## Slack notifications
+
+So now we have automatic releases with release notes on GitHub. 
+For our internal team we use Slack and we want to get notifications about releases there.
+
+```
+npm i -D semantic-release-slack-bot
+```
+
+Into "release" section of `package.json` add:
+
+```
+      [
+        "@semantic-release/slack",
+        {
+          ...
+        }
+      ],
+```
+
+
+Also create channel in Slack, click on channel name, "Integrations" -> "Add an App" -> "Incoming Webhooks" -> "Add to Slack" -> "Add Incoming Webhook to Workspace" -> "Add to Slack" -> "Copy Webhook URL"
+
+Add it to Woodpecker as secret `SLACK_WEBHOOK` environment variable.
+
+Also add this secterd to `.woodpecker.yml`:
+
+```
+    secrets:
+      - GITHUB_TOKEN
+      - NPM_TOKEN
+//diff-add
+      - SLACK_WEBHOOK
+```
