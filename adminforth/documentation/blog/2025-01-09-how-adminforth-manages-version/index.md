@@ -81,7 +81,19 @@ In `package.json` add:
 //diff-add
   "release": {
 //diff-add
-    "branches": [main", "next"]
+    "branches": [main", "next"],
+//diff-add
+    "plugins": [
+//diff-add
+      "@semantic-release/commit-analyzer",
+//diff-add
+      "@semantic-release/release-notes-generator",
+//diff-add
+      "@semantic-release/npm",
+//diff-add
+      "@semantic-release/github"
+//diff-add
+    ],
 //diff-add
   }
 }
@@ -89,9 +101,13 @@ In `package.json` add:
 
 Make sure name in package.json has your organisation name like mine `@devforth/` and you have access to publish packages to npmjs.com.
 
+
+Also install `semantic-release`:
+
 ```
-npm install --save-dev semantic-release
+npm i -D semantic-release
 ```
+
 
 ## Connecting to CI
 
@@ -239,3 +255,69 @@ git push
 ```
 
 This will trigger release `v1.2.0` because we merged `next` to `main` and it was a feature release.
+
+
+## Slack notifications
+
+So now we have automatic releases with release notes on GitHub. 
+For our internal team we use Slack and we want to get notifications about releases there.
+
+```
+npm i -D semantic-release-slack-bot
+```
+
+Into "release" section of `package.json` add slack plugin:
+
+```
+ "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+//diff-add
+      [
+//diff-add
+        "semantic-release-slack-bot",
+//diff-add
+        {
+//diff-add
+          "notifyOnSuccess": true,
+//diff-add
+          "notifyOnFail": true,
+//diff-add
+          "slackIcon": ":package:",
+//diff-add
+          "onSuccessTemplate": {
+//diff-add
+            "text": "$npm_package_version has been released!"
+//diff-add
+          },
+//diff-add
+          "markdownReleaseNotes": true
+        }
+      ]
+    ],
+```
+
+
+Also create channel in Slack, click on channel name, "Integrations" -> "Add an App" -> "Incoming Webhooks" -> "Add to Slack" -> "Add Incoming Webhook to Workspace" -> "Add to Slack" -> "Copy Webhook URL"
+
+Add it to Woodpecker as secret `SLACK_WEBHOOK` environment variable.
+
+Also add this secterd to `.woodpecker.yml`:
+
+```
+    secrets:
+      - GITHUB_TOKEN
+      - NPM_TOKEN
+//diff-add
+      - SLACK_WEBHOOK
+```
+
+
+This will send notifications to Slack channel about succesfull releases when `npm run build` is done without errors. 
+However if you have errors in build, or have unit tests in the flow, you will not get notifications about failed releases, because `npx semantic-release` will not be executed.
+
+To fix it we will add another slack notification plugin, moreover we will use dedicated `adminforth-developers` channel for it.
+
+```
