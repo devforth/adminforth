@@ -10,7 +10,7 @@ steps:
   release:
     image: node:20
     when:
-    - event: push
+      - event: push
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
