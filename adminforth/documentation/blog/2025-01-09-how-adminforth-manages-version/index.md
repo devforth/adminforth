@@ -154,9 +154,7 @@ In Woodpecker Go to settings, Secrets, Add Secret `GITHUB_TOKEN` and paste your 
 
 ![Woodpecker Secrets](image.png)
 
-In "Available at following events" select "Push"  and "Tag", also you can select "Manual" if you want to trigger builds manually.
-
-![Woodpecker Secrets List](image-2.png)
+In "Available at following events" select "Push,  also you can select "Manual" if you want to trigger builds manually.
 
 
 ### Generating NPM token

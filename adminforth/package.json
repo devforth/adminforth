@@ -25,6 +25,25 @@
     "install-adapters": "cd ../adapters && sh install-adapters.sh"
   },
   "release": {
+    "plugins": [
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "npm run build"
+        }
+      ],
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "semantic-release-slack-bot",
+        {
+          "notifyOnSuccess": true,
+          "notifyOnFail": true
+        }
+      ]
+    ],
     "branches": [
       "main",
       {
@@ -70,6 +89,7 @@
   "devDependencies": {
     "@types/node": "^20.14.2",
     "semantic-release": "^24.2.1",
+    "semantic-release-slack-bot": "^4.0.2",
     "typescript": "^5.4.5"
   }
 }

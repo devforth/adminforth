@@ -17,7 +17,7 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
-      - npm run build
+      # - npm run build
       - npm audit signatures
       - npx semantic-release
     secrets:
