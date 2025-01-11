@@ -81,7 +81,31 @@ In `package.json` add:
 //diff-add
   "release": {
 //diff-add
-    "branches": [main", "next"]
+    "branches": [main", "next"],
+//diff-add
+    "plugins": [
+//diff-add
+      [
+//diff-add
+        "@semantic-release/exec",
+//diff-add
+        {
+//diff-add
+          "prepareCmd": "npm run build"
+//diff-add
+        }
+//diff-add
+      ],
+//diff-add
+      "@semantic-release/commit-analyzer",
+//diff-add
+      "@semantic-release/release-notes-generator",
+//diff-add
+      "@semantic-release/npm",
+//diff-add
+      "@semantic-release/github"
+//diff-add
+    ],
 //diff-add
   }
 }
@@ -89,9 +113,14 @@ In `package.json` add:
 
 Make sure name in package.json has your organisation name like mine `@devforth/` and you have access to publish packages to npmjs.com.
 
+
+Also install `semantic-release` and `@semantic-release/exec`:
+
 ```
 npm i -D semantic-release @semantic-release/exec
 ```
+
+We use `@semantic-release/exec` to run `npm run build` as prepare step for release. Of course you can run build before calling `semantic-release` in CI pipleine, but this approach will allow to nativeley integrate it with `semantic-release` and e.g. show build errors in semantic-release notification plugins.
 
 ## Connecting to CI
 

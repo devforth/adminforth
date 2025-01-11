@@ -17,12 +17,12 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
-      # - npm run build
       - npm audit signatures
       - npx semantic-release
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
+      - SLACK_WEBHOOK 
 
   build-live-demo:
     when:
