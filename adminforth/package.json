@@ -27,6 +27,15 @@
     "install-plugins": "cd ../plugins && sh install-plugins.sh",
     "install-adapters": "cd ../adapters && sh install-adapters.sh"
   },
+  "release": {
+    "branches": [
+      "main",
+      {
+        "name": "next",
+        "prerelease": true
+      }
+    ]
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
