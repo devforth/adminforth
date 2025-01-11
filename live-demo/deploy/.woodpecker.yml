@@ -11,23 +11,48 @@ steps:
     image: node:20
     when:
       - event: push
-
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - cd adminforth
       - npm clean-install
-      # - npm run build
+      - npm run build 2>&1 | tee build.log; exit $${PIPESTATUS[0]}
       - npm audit signatures
       - npx semantic-release
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
+      - SLACK_WEBHOOK 
+
+  slack-on-failure:
+    # image: plugins/slack
+    # when:
+    #   - status: failure
+    #     event: push
+    #   - event: push
+    # settings:
+    #   webhook:
+    #     from_secret: DEVELOPERS_SLACK_WEBHOOK
+    #   username: ${CI_COMMIT_AUTHOR}
+    #   icon_url: ${CI_COMMIT_AUTHOR_AVATAR}
+    #   template: >
+    #      Broke the {{repo.name}}/{{build.branch}} after {{since build.started}} (<{{build.link}}|Open>) ```{{ ${CI_COMMIT_AUTHOR_AVATAR} }}``` 3
+
+    # use curl because the plugin can't interpolate template
+    image: curlimages/curl
+    when:
+      - status: failure
+        event: push
+      - event: push
+    commands:
+      - cd live-demo/deploy && /bin/sh failToSlack.sh
+
+    secrets:
+      - DEVELOPERS_SLACK_WEBHOOK
 
   build-live-demo:
     when:
       - event: push
-
     image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

@@ -8,6 +8,8 @@ import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClientIp } from './modules/utils.js';
 
+a.b =1
+
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
