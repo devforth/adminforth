@@ -7,7 +7,7 @@ For example you might want allow setting `listed` field to `false` for multiple 
 AdminForth by default provides a checkbox in first column of the list view for this purposes.
  
 By default AdminForth provides only one bulk action `delete` which allows to delete multiple records at once 
-(if deletion for records available by [resource.options.allowedActions](/docs/api/types/Back/interfaces/ResourceOptions/#allowedactions))
+(if deletion for records available by [resource.options.allowedActions](/docs/api/Back/interfaces/ResourceOptions/#allowedactions))
 
 To add custom bulk action quickly:
 
