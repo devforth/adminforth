@@ -26,6 +26,15 @@
   },
   "release": {
     "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "npm run build"
+        }
+      ],
       [
         "semantic-release-slack-bot",
         {
@@ -35,17 +44,13 @@
           "onSuccessTemplate": {
             "text": "$npm_package_version has been released!"
           },
+          "onFailTemplate": {
+            "text": "Release failed for $npm_package_version. Please check the logs!"
+          },
           "markdownReleaseNotes": true
         }
       ],
-      [
-        "@semantic-release/exec",
-        {
-          "prepareCmd": "npm run build"
-        }
-      ],
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
+
       "@semantic-release/npm",
       "@semantic-release/github"
     ],
