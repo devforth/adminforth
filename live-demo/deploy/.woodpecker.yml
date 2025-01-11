@@ -6,7 +6,22 @@ clone:
       depth: 5
 
 steps:
-  build:
+
+  release:
+    image: node:20
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - cd adminforth
+      - npm clean-install
+      - npm run build
+      - npm audit signatures
+      - npx semantic-release
+    secrets:
+      - GITHUB_TOKEN
+      - NPM_TOKEN
+
+  build-live-demo:
     image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -22,16 +37,3 @@ steps:
       - VAULT_AWS_ACCESS_KEY_ID
       - VAULT_AWS_SECRET_ACCESS_KEY
       - VAULT_ADMIN_PASSWORD
-  release:
-    image: node:20
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-      - cd adminforth
-      - npm clean-install
-      - npm run build
-      - npm audit signatures
-      - npx semantic-release
-    secrets:
-      - GITHUB_TOKEN
-      - NPM_TOKEN
