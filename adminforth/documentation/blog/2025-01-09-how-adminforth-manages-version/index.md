@@ -90,7 +90,7 @@ In `package.json` add:
 Make sure name in package.json has your organisation name like mine `@devforth/` and you have access to publish packages to npmjs.com.
 
 ```
-npm install --save-dev semantic-release
+npm i -D semantic-release @semantic-release/exec
 ```
 
 ## Connecting to CI
