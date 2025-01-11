@@ -13,13 +13,13 @@ There might be several datasources in the system for various databases e.g. One 
 
 ## resource
 
-A [Resource](/docs/api/types/Back/interfaces/AdminForthResource.md) is a representation of a table or collection in AdminForth. One resource is one table in the database.
+A [Resource](/docs/api/Back/interfaces/AdminForthResource.md) is a representation of a table or collection in AdminForth. One resource is one table in the database.
 It has a `name` which should match name in database, a datasource id, and a list of columns.
 Also it has various customization options. 
 
 ## column
 
-A [Column](/docs/api/types/Back/interfaces/AdminForthResourceColumn.md) is a representation of a column in a table. It has a `name` which should be equal to name in database and various configuration options.
+A [Column](/docs/api/Back/interfaces/AdminForthResourceColumn.md) is a representation of a column in a table. It has a `name` which should be equal to name in database and various configuration options.
 
 ## record
 
@@ -29,7 +29,7 @@ A record is a row in a relational database table. Or Document in document databa
 
 Action is one of operations which can be performed on the resource or it's records. 
 
-There are next [actions](/docs/api/types/Common/enumerations/AllowedActionsEnum.md):
+There are next [actions](/docs/api/Common/enumerations/AllowedActionsEnum.md):
 
 * create
 * edit
@@ -40,7 +40,7 @@ There are next [actions](/docs/api/types/Common/enumerations/AllowedActionsEnum.
 
 ## adminUser
 
-[Object](/docs/api/types/Common/interfaces/AdminUser) which represents a user who logged in to the AdminForth. 
+[Object](/docs/api/Common/interfaces/AdminUser) which represents a user who logged in to the AdminForth. 
 
 
 ## hook

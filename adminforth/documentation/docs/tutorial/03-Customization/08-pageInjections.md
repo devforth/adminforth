@@ -173,7 +173,7 @@ Also we have to add an Api to get percentages:
   admin.express.serve(app)
 ```
 
-> ☝️ Please note that we are using [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+> ☝️ Please note that we are using [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)
@@ -315,7 +315,7 @@ npm i text-analyzer
 ```
 
 
-> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/types/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
 
 ## List table custom action icons

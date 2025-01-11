@@ -340,4 +340,4 @@ Also, for better development experience we recommend to create file `custom/tsco
 
 ## Possible configuration options
 
-Check [AdminForthConfig](/docs/api/types/Back/interfaces/AdminForthConfig.md) for all possible options.
+Check [AdminForthConfig](/docs/api/Back/interfaces/AdminForthConfig.md) for all possible options.
