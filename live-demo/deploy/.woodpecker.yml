@@ -17,12 +17,27 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
+      - npm run build > build.log 2>&1 || echo "Build failed. See build.log for details."
       - npm audit signatures
       - npx semantic-release
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
       - SLACK_WEBHOOK 
+
+  slack-after-build:
+    image: plugins/slack
+    secrets:
+      - DEVELOPERS_SLACK_WEBHOOK
+    webhook: $DEVELOPERS_SLACK_WEBHOOK
+    username: Woodpecker CI
+    icon_url: ${CI_COMMIT_AUTHOR_AVATAR}
+    template: >
+      {{repo.name}}/{{build.branch}} - #{{build.number}} {{uppercasefirst build.status}} after {{since build.started}} (<{{build.link}}|Open>)
+      ```{{ cat build.log | tail -n 50 }}```
+    when:
+      status:
+        - failure
 
   build-live-demo:
     when:

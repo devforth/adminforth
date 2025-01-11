@@ -85,18 +85,6 @@ In `package.json` add:
 //diff-add
     "plugins": [
 //diff-add
-      [
-//diff-add
-        "@semantic-release/exec",
-//diff-add
-        {
-//diff-add
-          "prepareCmd": "npm run build"
-//diff-add
-        }
-//diff-add
-      ],
-//diff-add
       "@semantic-release/commit-analyzer",
 //diff-add
       "@semantic-release/release-notes-generator",
@@ -114,13 +102,12 @@ In `package.json` add:
 Make sure name in package.json has your organisation name like mine `@devforth/` and you have access to publish packages to npmjs.com.
 
 
-Also install `semantic-release` and `@semantic-release/exec`:
+Also install `semantic-release`:
 
 ```
-npm i -D semantic-release @semantic-release/exec
+npm i -D semantic-release
 ```
 
-We use `@semantic-release/exec` to run `npm run build` as prepare step for release. Of course you can run build before calling `semantic-release` in CI pipleine, but this approach will allow to nativeley integrate it with `semantic-release` and e.g. show build errors in semantic-release notification plugins.
 
 ## Connecting to CI
 
@@ -145,6 +132,7 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - npm clean-install
+      - npm run build
       - npm audit signatures
       - npx semantic-release
     secrets:
@@ -278,15 +266,37 @@ For our internal team we use Slack and we want to get notifications about releas
 npm i -D semantic-release-slack-bot
 ```
 
-Into "release" section of `package.json` add:
+Into "release" section of `package.json` add slack plugin:
 
 ```
+ "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+//diff-add
       [
-        "@semantic-release/slack",
+//diff-add
+        "semantic-release-slack-bot",
+//diff-add
         {
-          ...
+//diff-add
+          "notifyOnSuccess": true,
+//diff-add
+          "notifyOnFail": true,
+//diff-add
+          "slackIcon": ":package:",
+//diff-add
+          "onSuccessTemplate": {
+//diff-add
+            "text": "$npm_package_version has been released!"
+//diff-add
+          },
+//diff-add
+          "markdownReleaseNotes": true
         }
-      ],
+      ]
+    ],
 ```
 
 
@@ -302,4 +312,12 @@ Also add this secterd to `.woodpecker.yml`:
       - NPM_TOKEN
 //diff-add
       - SLACK_WEBHOOK
+```
+
+
+This will send notifications to Slack channel about succesfull releases when `npm run build` is done without errors. 
+However if you have errors in build, or have unit tests in the flow, you will not get notifications about failed releases, because `npx semantic-release` will not be executed.
+
+To fix it we will add another slack notification plugin, moreover we will use dedicated `adminforth-developers` channel for it.
+
 ```
