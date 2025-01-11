@@ -10,7 +10,7 @@ The first things you would probably like to change are the logo, favicon and the
 
 First of all create directory named `custom` at the same level with your TypeScript/JavaScript index file. 
 
-We will use this directory for all custom components. If you want to call your dir with other name then `custom`, just set [customComponentsDir option](/docs/api/types/Back/interfaces/AdminForthConfig#customcomponentsdir)
+We will use this directory for all custom components. If you want to call your dir with other name then `custom`, just set [customComponentsDir option](/docs/api/Back/interfaces/AdminForthConfig#customcomponentsdir)
 
 Place your logo file into the `custom` directory e.g. (`logo.svg`)
 
