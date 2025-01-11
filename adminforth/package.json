@@ -87,6 +87,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
     "@types/node": "^20.14.2",
     "semantic-release": "^24.2.1",
     "semantic-release-slack-bot": "^4.0.2",
