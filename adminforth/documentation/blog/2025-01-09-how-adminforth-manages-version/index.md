@@ -113,9 +113,9 @@ npm i -D semantic-release
 
 We will use Woodpecker CI for this example. Woodpecker is a free and open-source CI/CD tool that you can install to your own server / VPS and will not need to pay only for server. No limits on pipelines, users, repositories, etc. If you want to try it, we have [Woodpecker installation guide](https://devforth.io/blog/step-by-step-guide-to-modern-secure-ci-setup/)
 
-Create a file `.woodpecker.yml` in root of your repository:
+Create a file `.woodpecker.yml` in `deploy` directory:
 
-```
+```yaml title="deploy/.woodpecker.yml"
 clone:
   git:
     image: woodpeckerci/plugin-git
@@ -257,7 +257,7 @@ git push
 This will trigger release `v1.2.0` because we merged `next` to `main` and it was a feature release.
 
 
-## Slack notifications
+## Slack notifications about releases
 
 So now we have automatic releases with release notes on GitHub. 
 For our internal team we use Slack and we want to get notifications about releases there.
@@ -294,8 +294,11 @@ Into "release" section of `package.json` add slack plugin:
           },
 //diff-add
           "markdownReleaseNotes": true
+//diff-add
         }
+//diff-add
       ]
+//diff-add
     ],
 ```
 
@@ -306,7 +309,7 @@ Add it to Woodpecker as secret `SLACK_WEBHOOK` environment variable.
 
 Also add this secterd to `.woodpecker.yml`:
 
-```
+```yaml title="deploy/.woodpecker.yml"
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
@@ -315,9 +318,64 @@ Also add this secterd to `.woodpecker.yml`:
 ```
 
 
+
 This will send notifications to Slack channel about succesfull releases when `npm run build` is done without errors. 
-However if you have errors in build, or have unit tests in the flow, you will not get notifications about failed releases, because `npx semantic-release` will not be executed.
 
-To fix it we will add another slack notification plugin, moreover we will use dedicated `adminforth-developers` channel for it.
+## Slack notifications about build errors and unhappen releases
 
+
+Create a file `failToSlack.sh` in `deploy` directory:
+
+```sh title="deploy/failToSlack.sh"
+#!/bin/sh
+
+export BUILD_LOG=$(cat ../../adminforth/build.log)
+
+COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
+
+MESSAGE="Broke \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\` with commit (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)."
+CODE_BLOCK="\`\`\`$BUILD_LOG\n\`\`\`"
+
+curl  -s -X POST -H "Content-Type: application/json" -d '{
+  "username": "'"$CI_COMMIT_AUTHOR"'",
+  "icon_url": "'"$CI_COMMIT_AUTHOR_AVATAR"'",
+  "attachments": [
+    {
+        "mrkdwn_in": ["text", "pretext"],
+        "color": "#8A1C12",
+        "text": "'"$CODE_BLOCK"'",
+        "pretext": "'"$MESSAGE"'"
+    }
+  ]
+}' "$DEVELOPERS_SLACK_WEBHOOK"
+```
+
+
+Add `step` to `.woodpecker.yml`:
+
+```yaml title="deploy/.woodpecker.yml"
+steps:
+  release:
+    ...
+//diff-add
+  slack-on-failure:
+//diff-add
+    image: curlimages/curl
+//diff-add
+    when:
+//diff-add
+      - status: failure
+//diff-add
+        event: push
+//diff-add
+      - event: push
+//diff-add
+    commands:
+//diff-add
+      - cd deploy && /bin/sh failToSlack.sh
+//diff-add
+    secrets:
+//diff-add
+      - DEVELOPERS_SLACK_WEBHOOK
+  
 ```

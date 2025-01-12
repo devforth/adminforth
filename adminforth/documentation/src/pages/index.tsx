@@ -14,7 +14,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Sign in form',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant Sign-In and JWT-SSO already there'
+    description: 'OWASP-Compliant Sign-In already there'
   },
   {
     original: require('@site/static/img/previews/users_management.png').default,
