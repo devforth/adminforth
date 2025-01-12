@@ -1,13 +1,7 @@
 #!/bin/sh
 
-# print env
-env
-
-# write the build log to a file, ../../adminforth/build.log
 export BUILD_LOG=$(cat ../../adminforth/build.log)
 
-
-# CI_COMMIT_SHA is full commit
 COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
 MESSAGE="Broke \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\` with commit (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)."

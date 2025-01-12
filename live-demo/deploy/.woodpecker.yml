@@ -16,7 +16,7 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
-      - npm run build 2>&1 | tee build.log; exit $${PIPESTATUS[0]}
+      - npm run build 2>&1 | tee build.log; [ $${PIPESTATUS[0]} -ne 0 ] && exit $${PIPESTATUS[0]}
       - npm audit signatures
       - npx semantic-release
     secrets:
@@ -25,19 +25,6 @@ steps:
       - SLACK_WEBHOOK 
 
   slack-on-failure:
-    # image: plugins/slack
-    # when:
-    #   - status: failure
-    #     event: push
-    #   - event: push
-    # settings:
-    #   webhook:
-    #     from_secret: DEVELOPERS_SLACK_WEBHOOK
-    #   username: ${CI_COMMIT_AUTHOR}
-    #   icon_url: ${CI_COMMIT_AUTHOR_AVATAR}
-    #   template: >
-    #      Broke the {{repo.name}}/{{build.branch}} after {{since build.started}} (<{{build.link}}|Open>) ```{{ ${CI_COMMIT_AUTHOR_AVATAR} }}``` 3
-
     # use curl because the plugin can't interpolate template
     image: curlimages/curl
     when:
