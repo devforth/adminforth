@@ -16,7 +16,8 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
-      - npm run build 2>&1 | tee build.log; [ $${PIPESTATUS[0]} -ne 0 ] && exit $${PIPESTATUS[0]}
+      # - npm run build 2>&1 | tee build.log; [ $${PIPESTATUS[0]} -ne 0 ] && exit $${PIPESTATUS[0]}
+      - npm run build
       - npm audit signatures
       - npx semantic-release
     secrets:
