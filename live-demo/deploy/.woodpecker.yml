@@ -17,8 +17,7 @@ steps:
       - cd adminforth
       - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
-      - npm audit signatures
-      - npx semantic-release
+      - 
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
