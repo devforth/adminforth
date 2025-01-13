@@ -29,8 +29,6 @@ steps:
     when:
       - event: push
     image: curlimages/curl
-    when:
-      - event: push
     commands:
       - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
 
