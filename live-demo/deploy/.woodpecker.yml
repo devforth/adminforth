@@ -28,6 +28,8 @@ steps:
     # use curl because the plugin can't interpolate template
     when:
       - event: push
+        status: [failure, success]
+      - event: push
     image: curlimages/curl
     commands:
       - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
