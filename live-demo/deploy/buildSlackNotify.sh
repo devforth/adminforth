@@ -1,10 +1,11 @@
 #!/bin/sh
 
-env
-# if CI_STEP_STATUS is success, then output to slack, that `npm run build` was successful
+
+COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
+
 
 if [ "$CI_STEP_STATUS" = "success" ]; then
-  MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. (<$CI_COMMIT_URL|$CI_COMMIT_SHA>)"
+  MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
 
   curl  -s -X POST -H "Content-Type: application/json" -d '{
     "username": "'"$CI_COMMIT_AUTHOR"'",
@@ -12,9 +13,8 @@ if [ "$CI_STEP_STATUS" = "success" ]; then
     "attachments": [
       {
           "mrkdwn_in": ["text", "pretext"],
-          "color": "#8A1C12",
-          "text": "'"$MESSAGE"'",
-          "pretext": "'"$MESSAGE"'"
+          "color": "#36a64f",
+          "text": "'"$MESSAGE"'"
       }
     ]
   }' "$DEVELOPERS_SLACK_WEBHOOK"
@@ -22,7 +22,6 @@ if [ "$CI_STEP_STATUS" = "success" ]; then
 fi
 export BUILD_LOG=$(cat ../../adminforth/build.log)
 
-COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
 MESSAGE="Broke \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\` with commit (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)."
 CODE_BLOCK="\`\`\`$BUILD_LOG\n\`\`\`"
