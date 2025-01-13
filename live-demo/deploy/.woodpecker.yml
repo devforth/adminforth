@@ -16,7 +16,7 @@ steps:
     commands:
       - cd adminforth
       - npm clean-install
-      - /bin/sh ../live-demo/deploy/buildRelease.sh
+      - /bin/bash ../live-demo/deploy/buildRelease.sh
       - npm audit signatures
       - npx semantic-release
     secrets:

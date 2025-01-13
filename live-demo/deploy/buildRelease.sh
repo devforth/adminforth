@@ -1,4 +1,5 @@
 
+#!/bin/bash
 
 # write npm run output both to console and to build.log
 npm run build 2>&1 | tee build.log; 
