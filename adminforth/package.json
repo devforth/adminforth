@@ -36,9 +36,6 @@
           "notifyOnSuccess": true,
           "notifyOnFail": true,
           "slackIcon": ":package:",
-          "onSuccessTemplate": {
-            "text": "$npm_package_version has been released!"
-          },
           "markdownReleaseNotes": true
         }
       ]
