@@ -13,7 +13,7 @@
     "adminforth": "./commands/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified yet \" && exit 1",
+    "test": "echo \"Error: no test specified yet\" && exit 1",
     "build": "rm -rf dist && tsc && npm run prepareDist && npm link",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
