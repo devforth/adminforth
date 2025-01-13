@@ -319,8 +319,26 @@ export default {
 
 ### minValue and maxValue
 
+You can add `minValue` and `maxValue` limits to columns, so it will show an error below an input when entered value is out of bounds.
 
-[Documentation in progress]
+```typescript title="./resources/apartments.ts"
+export default {
+      name: 'apartments',
+      columns: [
+        ...
+        {
+          name: 'square_meter',
+          label: 'Square',
+          minValue: 3,
+          maxValue: 1000,
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+> `minValue` and `maxValue` checks are enforced both on frontend and backend.
 
 
 ### Validation
