@@ -320,6 +320,18 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
+    // check if record with minValue or maxValue is within limits
+    for (const column of resource.columns.filter((col) => col.name in record
+      && ['integer', 'decimal', 'float'].includes(col.type)
+      && (col.minValue !== undefined || col.maxValue !== undefined))) {
+      if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
+      }
+      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
+      }
+    }
+
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
@@ -384,6 +396,18 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
+
+    // check if record with minValue or maxValue is within limits
+    for (const column of resource.columns.filter((col) => col.name in record
+      && ['integer', 'decimal', 'float'].includes(col.type)
+      && (col.minValue !== undefined || col.maxValue !== undefined))) {
+      if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
+      }
+      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
+      }
+    }
 
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
