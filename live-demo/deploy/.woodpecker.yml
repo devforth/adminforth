@@ -26,13 +26,13 @@ steps:
 
   slack-on-failure:
     # use curl because the plugin can't interpolate template
+    when:
+      - event: push
     image: curlimages/curl
     when:
-      - status: failure
-        event: push
       - event: push
     commands:
-      - cd live-demo/deploy && /bin/sh failToSlack.sh
+      - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
 
     secrets:
       - DEVELOPERS_SLACK_WEBHOOK
