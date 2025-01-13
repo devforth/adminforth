@@ -1,5 +1,7 @@
 #!/bin/sh
 
+env
+
 export BUILD_LOG=$(cat ../../adminforth/build.log)
 
 COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
