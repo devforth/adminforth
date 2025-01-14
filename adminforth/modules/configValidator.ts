@@ -321,8 +321,13 @@ export default class ConfigValidator implements IConfigValidator {
       if (!res.columns) {
         res.columns = [];
       }
-      res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon) => {
+      res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon, inColIndex) => {
         const col: Partial<AdminForthResourceColumn> = { ...inCol, required: undefined, editingNote: undefined };
+
+        // check for duplicate column names
+        if (res.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
+          errors.push(`Resource "${res.resourceId}" has duplicate column name "${col.name}"`);
+        }
 
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable
