@@ -16,7 +16,7 @@
       aria-describedby="helper-text-explanation"
       class="inline-flex bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
       blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white translate-y-0"
-      :class="{'rounded-l-md': !$slots.prefix, 'rounded-r-md': !$slots.suffix}"
+      :class="{'rounded-l-md': !$slots.prefix, 'rounded-r-md': !$slots.suffix, 'w-full': fullWidth}"
     >
 
 
@@ -33,6 +33,7 @@
 
 const props = defineProps({
   type: String,
+  fullWidth: Boolean,
   modelValue: String,
 })
 
