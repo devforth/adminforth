@@ -15,7 +15,8 @@ Hooks are used to:
 - modify the fetched data before it is displayed in the list and show
 - prevent the request to db depending on some condition (Better use [allowedActions](./05-limitingAccess.md) for this)
 
-Every hook is executed when AdminForth frontend makes some internal API HTTP request to the backend.
+Every hook is executed when AdminForth frontend (Vue SPA) makes some internal API HTTP request to the backend. Every hook function is always executed only on backend side (Node.js) from the HTTP request handler and allows you to perform some actions before or after the actual request to datasource (database) is made. This is most flexible way to control flow and extend it with custom logic.
+
 
 Every hook must return one of two objects:
 1) If everything is fine and request flow should be continued hook should return `{ ok: true }`
@@ -26,6 +27,14 @@ Every hook is array of async functions, so you can have multiple hooks for one e
 For simplicity of course you can specify hook as scalar async function and not as array, but internally it will be anyway converted to array with single element just after app start. Plugins can push new own hooks in front of yours (using `unshift`) or after yours (using `push`). For example audit log plugin adds hooks for registration of all changes in the database.
 
 Here we will consider possible flows one by one
+
+
+### Performance notice
+
+Every hook function is async, so you can use `await` inside it to perform some async operations like fetching data from another service or database, but please remember that while hook will not finish its execution, the request flow will be waiting for it. So every delay awaited in hook will delay the whole request. That is why we encourage you to use parallel async operations in hooks (like Promise.all) to make them faster. 
+
+If multiple hooks are defined (e.g. plugin might add own hook to `list.beforeDatasourceRequest` after you will already add one in your config), then hooks will be executed one by one, and can't be parallelized. This ensures that different hooks will not interfere with each other, but also means that if you have bootleneck in one hook, all other hooks will wait for it and whole request will be slower. 
+
 
 ## Initial data for edit page flow
 

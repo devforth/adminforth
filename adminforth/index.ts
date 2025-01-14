@@ -53,6 +53,36 @@ class AdminForth implements IAdminForth {
       return await AdminForthAuth.generatePasswordHash(password);
     },
 
+    applyRegexValidation(value, validation) {
+      if (validation?.length) {
+        const validationArray = validation;
+        for (let i = 0; i < validationArray.length; i++) {
+          if (validationArray[i].regExp) {
+            let flags = '';
+            if (validationArray[i].caseSensitive) {
+              flags += 'i';
+            }
+            if (validationArray[i].multiline) {
+              flags += 'm';
+            }
+            if (validationArray[i].global) {
+              flags += 'g';
+            }
+
+            const regExp = new RegExp(validationArray[i].regExp, flags);
+            if (value === undefined || value === null) {
+              value = '';
+            }
+            let valueS = `${value}`;
+
+            if (!regExp.test(valueS)) {
+              return validationArray[i].message;
+            }
+          }
+        }
+      }
+    },
+
     PASSWORD_VALIDATORS: {
       UP_LOW_NUM_SPECIAL: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*\\(\\)\\-_=\\+\\[\\]\\{\\}\\|;:\',\\.<>\\/\\?]).+$',
@@ -320,6 +350,26 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
+    // check if record with validation is valid
+    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      const error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
+      if (error) {
+        return { error };
+      }
+    }
+
+    // check if record with minValue or maxValue is within limits
+    for (const column of resource.columns.filter((col) => col.name in record
+      && ['integer', 'decimal', 'float'].includes(col.type)
+      && (col.minValue !== undefined || col.maxValue !== undefined))) {
+      if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
+      }
+      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
+      }
+    }
+
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
@@ -384,6 +434,26 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
+
+    // check if record with validation is valid
+    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      const error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
+      if (error) {
+        return { error };
+      }
+    }
+
+    // check if record with minValue or maxValue is within limits
+    for (const column of resource.columns.filter((col) => col.name in record
+      && ['integer', 'decimal', 'float'].includes(col.type)
+      && (col.minValue !== undefined || col.maxValue !== undefined))) {
+      if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
+      }
+      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
+      }
+    }
 
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {

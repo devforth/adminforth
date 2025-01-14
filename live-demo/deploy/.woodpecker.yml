@@ -6,7 +6,40 @@ clone:
       depth: 5
 
 steps:
-  build:
+
+  release:
+    image: node:20
+    when:
+      - event: push
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - cd adminforth
+      - npm clean-install
+      - /bin/bash ../live-demo/deploy/buildRelease.sh
+      - npm audit signatures
+      - npx semantic-release
+    secrets:
+      - GITHUB_TOKEN
+      - NPM_TOKEN
+      - SLACK_WEBHOOK 
+
+  slack-on-failure:
+    # use curl because the plugin can't interpolate template
+    when:
+      - event: push
+        status: [failure, success]
+      - event: push
+    image: curlimages/curl
+    commands:
+      - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
+
+    secrets:
+      - DEVELOPERS_SLACK_WEBHOOK
+
+  build-live-demo:
+    when:
+      - event: push
     image: docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
