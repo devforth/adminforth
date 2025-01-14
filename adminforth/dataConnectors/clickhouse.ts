@@ -18,7 +18,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     constructor({ url }: { url: string }) {
       super();
       this.dbName = new URL(url).pathname.replace('/', '');
-      this.url = url;;
+      this.url = url;
       // create connection here
       this.client = createClient({ 
         url: url.replace('clickhouse://', 'http://'),
