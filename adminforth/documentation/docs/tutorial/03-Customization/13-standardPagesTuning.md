@@ -343,7 +343,32 @@ export default {
 
 ### Validation
 
-[Documentation in progress]
+In cases when column values must follow certain format, you can add `validation` to it.
+`validation` is an array of rules, each containing `regExp` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: 'email',
+          required: true,
+          isUnique: true,
+          validation: [
+            {
+              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+              message: 'Email is not valid, must be in format example@test.com',
+            },
+          ],
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+> `validation` checks are enforced both on frontend and backend.
 
 ### Foreign resources
 
