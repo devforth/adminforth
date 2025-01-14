@@ -1,6 +1,6 @@
 {
   "name": "adminforth",
-  "version": "1.6.0",
+  "version": "1.6.2",
   "description": "OpenSource Vue3 powered forth-generation admin panel",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -13,7 +13,7 @@
     "adminforth": "./commands/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified yet\" && exit 1",
     "build": "rm -rf dist && tsc && npm run prepareDist && npm link",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
@@ -23,6 +23,30 @@
     "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi",
     "install-plugins": "cd ../plugins && sh install-plugins.sh",
     "install-adapters": "cd ../adapters && sh install-adapters.sh"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "semantic-release-slack-bot",
+        { 
+          "notifyOnSuccess": true,
+          "notifyOnFail": true,
+          "slackIcon": ":package:",
+          "markdownReleaseNotes": true
+        }
+      ]
+    ],
+    "branches": [
+      "main",
+      {
+        "name": "next",
+        "prerelease": true
+      }
+    ]
   },
   "exports": {
     ".": {
@@ -59,7 +83,10 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
     "@types/node": "^20.14.2",
+    "semantic-release": "^24.2.1",
+    "semantic-release-slack-bot": "^4.0.2",
     "typescript": "^5.4.5"
   }
 }

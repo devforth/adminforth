@@ -53,13 +53,14 @@
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
-           <input
-             v-else-if="[ 'string', 'text' ].includes(c.type)"
-             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-             :placeholder="$t('Search')"
-             @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
-             :value="getFilterItem({ column: c, operator: 'ilike' })"
-           >
+            <Input
+              v-else-if="[ 'string', 'text' ].includes(c.type)"
+              type="text"
+              full-width
+              :placeholder="$t('Search')"
+              @update:modelValue="setFilterItem({ column: c, operator: 'ilike', value: $event || undefined })"
+              :modelValue="getFilterItem({ column: c, operator: 'ilike' })"
+            />
 
            <CustomDateRangePicker
              v-else-if="['datetime'].includes(c.type)"
@@ -70,13 +71,14 @@
              @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
            />
 
-           <input
-             v-else-if="[ 'date', 'time' ].includes(c.type)"
-             type="text" class="w-full py-1 px-2 border border-gray-300 rounded-md"
-             :placeholder="$t('Search datetime')"
-             @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
-             :value="getFilterItem({ column: c, operator: 'ilike' })"
-           >
+            <Input
+              v-else-if="[ 'date', 'time' ].includes(c.type)"
+              type="text"
+              full-width
+              :placeholder="$t('Search datetime')"
+              @update:modelValue="setFilterItem({ column: c, operator: 'ilike', value: $event || undefined })"
+              :modelValue="getFilterItem({ column: c, operator: 'ilike' })"
+            />
 
            <CustomRangePicker
              v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
@@ -89,20 +91,20 @@
            />
 
            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
-             <input
-               type="number" aria-describedby="helper-text-explanation"
-               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-               :placeholder="$t('From')"
-               @input="setFilterItem({ column: c, operator: 'gte', value: $event.target.value || undefined })"
-               :value="getFilterItem({ column: c, operator: 'gte' })"
-             >
-             <input
-               type="number" aria-describedby="helper-text-explanation"
-               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-               :placeholder="$t('To')"
-               @input="setFilterItem({ column: c, operator: 'lte', value: $event.target.value || undefined})"
-               :value="getFilterItem({ column: c, operator: 'lte' })"
-             >
+            <Input
+              type="number"
+              aria-describedby="helper-text-explanation"
+              :placeholder="$t('From')"
+              @update:modelValue="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+              :modelValue="getFilterItem({ column: c, operator: 'gte' })"
+            />
+            <Input
+              type="number"
+              aria-describedby="helper-text-explanation"
+              :placeholder="$t('To')"
+              @update:modelValue="setFilterItem({ column: c, operator: 'lte', value: $event|| undefined })"
+              :modelValue="getFilterItem({ column: c, operator: 'lte' })"
+            />
            </div>
             
          </li>
@@ -132,6 +134,7 @@ import { useRouter } from 'vue-router';
 import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
+import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
 
 const filtersStore = useFiltersStore();
