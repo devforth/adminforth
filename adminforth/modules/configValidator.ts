@@ -331,18 +331,21 @@ export default class ConfigValidator implements IConfigValidator {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
         }
 
-        // check col.required is string or object
-        if (col.required && !((typeof col.required === 'boolean') || (typeof col.required === 'object'))) {
-          errors.push(`Resource "${res.resourceId}" column "${col.name}" required must be a string or object`);
+        // check col.required is boolean or object
+        if (inCol.required && !((typeof inCol.required === 'boolean') || (typeof inCol.required === 'object'))) {
+          errors.push(`Resource "${res.resourceId}" column "${col.name}" required must be a boolean or object`);
         }
 
         // if it is object check the keys are one of ['create', 'edit']
-        if (typeof col.required === 'object') {
-          const wrongRequiredOn = Object.keys(col.required).find((c) => !['create', 'edit'].includes(c));
+        if (typeof inCol.required === 'object') {
+          const wrongRequiredOn = Object.keys(inCol.required).find((c) => !['create', 'edit'].includes(c));
           if (wrongRequiredOn) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
+            errors.push(`Resource "${res.resourceId}" column "${inCol.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
           }
         }
+
+        // force required to be object
+        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
         // same for editingNote
         if (col.editingNote && !((typeof col.editingNote === 'string') || (typeof col.editingNote === 'object'))) {
