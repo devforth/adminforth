@@ -33,7 +33,7 @@
       {{ checkEmptyValues(record[column.name] && parseFloat(record[column.name]), route.meta.type) }}
     </span>
     <span v-else-if="column.type === 'json'">
-      <JsonViewer :value="record[column.name]" :expandDepth="column.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme" />
+      <JsonViewer class="min-w-[6rem]" :value="record[column.name]" :expandDepth="column.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme"/>
     </span>
     <span v-else>
       {{ checkEmptyValues(record[column.name],route.meta.type) }}
