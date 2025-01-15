@@ -4,7 +4,7 @@
       <input
         ref="inputEl"
         type="text"
-        :readonly="isReadonly"
+        :readonly="readonly"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
@@ -102,7 +102,7 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  isReadonly: {
+  readonly: {
     type: Boolean,
     default: false,
   },
@@ -147,7 +147,7 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.isReadonly) return;
+  if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search
