@@ -11,7 +11,7 @@
 
           <input ref="datepickerStartEl"  type="text"
                  class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                :placeholder="$t('Select date')" :disabled="isReadonly" />
+                :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
       </div>
@@ -27,7 +27,7 @@
 
             <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
                    class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   value="00:00" :disabled="isReadonly" required/>
+                   value="00:00" :disabled="readonly" required/>
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@ const props = defineProps({
   autoHide: {
     type: Boolean,
   },
-  isReadonly: {
+  readonly: {
     type: Boolean,
   },
 });
