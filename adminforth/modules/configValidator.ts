@@ -10,6 +10,7 @@ import {
   AdminForthResourceColumn,
   AllowedActions,
   ShowIn,
+  ShowInInput,
 } from "../types/Back.js";
 
 import fs from 'fs';
@@ -299,13 +300,12 @@ export default class ConfigValidator implements IConfigValidator {
     let showIn = column.showIn || { all: true };
 
     if (column.showIn && Array.isArray(column.showIn)) {
-      showIn = Object.keys(AdminForthResourcePages).reduce((acc, key) => {
+      showIn = Object.values(AdminForthResourcePages).reduce((acc, key) => {
         return {
           ...acc,
           [key]: column.showIn.includes(key),
         }
-      }, {});
-      delete showIn.all;
+      }, {} as ShowInInput);
       if (warnings.filter((w) => w.includes('showIn should be an object, array is deprecated')).length === 0) {
         warnings.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn should be an object, array is deprecated`);
       }
