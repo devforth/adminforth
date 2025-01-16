@@ -58,7 +58,13 @@ Add this code in `auditLogs.ts`:
     dataSource: 'maindb', 
     table: 'audit_logs',
     columns: [
-      { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(), showIn: ['show'] },
+      { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
+        showIn: {
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        } },
       { name: 'created_at', required: false },
       { name: 'resource_id', required: false },
       { name: 'user_id', required: false, 
@@ -66,7 +72,12 @@ Add this code in `auditLogs.ts`:
           resourceId: 'users',
         } },
       { name: 'action', required: false },
-      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
+      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        } },
       { name: 'record_id', required: false },
     ],
     options: {
@@ -197,7 +208,12 @@ Also, update the resource configuration in `./resources/auditLogs.ts`:
     columns: [
       ...
       { name: 'action', required: false },
-      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
+      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        } },
       { name: 'record_id', required: false },
       //diff-add
       { name: 'ip_address', required: false },

@@ -152,7 +152,10 @@ export const admin = new AdminForth({
           name: 'id',
           primaryKey: true,
           fillOnCreate: () => Math.random().toString(36).substring(7),
-          showIn: ['list', 'filter', 'show'],
+          showIn: {
+            edit: false,
+            create: false,
+          },
         },
         {
           name: 'email',
@@ -166,7 +169,10 @@ export const admin = new AdminForth({
         {
           name: 'createdAt',
           type: AdminForthDataTypes.DATETIME,
-          showIn: ['list', 'filter', 'show'],
+          showIn: {
+            edit: false,
+            create: false,
+          },
           fillOnCreate: () => (new Date()).toISOString(),
         },
         {
@@ -183,10 +189,14 @@ export const admin = new AdminForth({
           editingNote: { edit: 'Leave empty to keep password unchanged' },
           minLength: 8,
           type: AdminForthDataTypes.STRING,
-          showIn: ['create', 'edit'],
+          showIn: {
+            show: false,
+            list: false,
+            filter: false,
+          },
           masked: true,
         },
-        { name: 'passwordHash', backendOnly: true, showIn: [] }
+        { name: 'passwordHash', backendOnly: true, showIn: { all: false } }
       ],
     },
     {
@@ -200,23 +210,29 @@ export const admin = new AdminForth({
           name: 'id',
           primaryKey: true,
           fillOnCreate: () => Math.random().toString(36).substring(7),
-          showIn: ['list', 'filter', 'show'],
+          showIn: {
+            edit: false,
+            create: false,
+          },
         },
         {
           name: 'title',
           type: AdminForthDataTypes.STRING,
           required: true,
-          showIn: ['list', 'create', 'edit', 'filter', 'show'],
+          showIn: { all: true },
           maxLength: 255,
           minLength: 3,
         },
         {
           name: 'content',
-          showIn: ['list', 'create', 'edit', 'filter', 'show'],
+          showIn: { all: true },
         },
         {
           name: 'createdAt',
-          showIn: ['list', 'filter', 'show',],
+          showIn: {
+            edit: false,
+            create: false,
+          },
           fillOnCreate: () => (new Date()).toISOString(),
         },
         {
@@ -228,7 +244,10 @@ export const admin = new AdminForth({
           foreignResource: {
             resourceId: 'users',
           },
-          showIn: ['list', 'filter', 'show'],
+          showIn: {
+            edit: false,
+            create: false,
+          },
           fillOnCreate: ({ adminUser }: { adminUser: AdminUser }) => {
             return adminUser.dbUser.id;
           }
