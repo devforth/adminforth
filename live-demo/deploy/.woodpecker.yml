@@ -33,7 +33,6 @@ steps:
       - npx semantic-release
 
   slack-on-failure:
-    # use curl because the plugin can't interpolate template
     when:
       - event: push
         status: [failure, success]
