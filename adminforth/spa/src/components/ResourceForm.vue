@@ -215,7 +215,7 @@ const columnOptions = computedAsync(async () => {
 
 
 const editableColumns = computed(() => {
-  return props.resource?.columns?.filter(column => column.showIn.includes(mode.value));
+  return props.resource?.columns?.filter(column => column.showIn[mode.value]);
 });
 
 const isValid = computed(() => {

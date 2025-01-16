@@ -23,7 +23,10 @@ export default {
       primaryKey: true,
       type: AdminForthDataTypes.STRING,
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'email',
@@ -41,7 +44,10 @@ export default {
     {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
-      showIn: ['list', 'filter', 'show'],
+      showIn: [{
+        edit: false,
+        create: false,
+      },
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
@@ -58,7 +64,11 @@ export default {
       required: { create: true }, // make required only on create page
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       type: AdminForthDataTypes.STRING,
-      showIn: ['create', 'edit'], // to show field only on create and edit pages
+      showIn: { // to show field only on create and edit pages
+        show: false,
+        list: false,
+        filter: false,
+      },
       masked: true, // to show stars in input field
 
       minLength: 8,
@@ -71,7 +81,7 @@ export default {
       name: 'password_hash',
       type: AdminForthDataTypes.STRING,
       backendOnly: true,
-      showIn: []
+      showIn: { all: false }
     }
   ],
   hooks: {

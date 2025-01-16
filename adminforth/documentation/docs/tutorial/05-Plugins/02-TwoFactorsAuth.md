@@ -52,7 +52,7 @@ And add it to `users.ts`
 //diff-add
             name: 'secret2fa',
 //diff-add
-            showIn: [],
+            showIn: { all: false },
 //diff-add
             backendOnly: true,
 //diff-add

@@ -6,8 +6,10 @@ import {
   AdminForthInputConfig,
   AdminForthConfigCustomization,
   AdminForthResourceInput,
+  AdminForthResourceColumnInput,
   AdminForthResourceColumn,
   AllowedActions,
+  ShowIn,
 } from "../types/Back.js";
 
 import fs from 'fs';
@@ -19,7 +21,6 @@ import {
   AllowedActionsEnum,
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
-  AdminForthResourceColumnInputCommon,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -289,13 +290,55 @@ export default class ConfigValidator implements IConfigValidator {
     return bulkActions;
   }
 
-  validateAndNormalizeResources(errors: string[]): AdminForthResource[] {
+  validateAndNormalizeShowIn(resInput: AdminForthResourceInput, column: AdminForthResourceColumnInput, errors: string[], warnings: string[]): ShowIn {
+    if (column.showIn && !Array.isArray(column.showIn) && typeof column.showIn !== 'object') {
+      errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn must be an object`);
+      return;
+    }
+
+    let showIn = column.showIn || { all: true };
+
+    if (column.showIn && Array.isArray(column.showIn)) {
+      showIn = Object.keys(AdminForthResourcePages).reduce((acc, key) => {
+        return {
+          ...acc,
+          [key]: column.showIn.includes(key),
+        }
+      }, {});
+      delete showIn.all;
+      if (warnings.filter((w) => w.includes('showIn should be an object, array is deprecated')).length === 0) {
+        warnings.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn should be an object, array is deprecated`);
+      }
+    }
+
+    if (Object.keys(showIn).includes('all')) {
+      if (Object.keys(showIn).length > 1) {
+        errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn cannot have "all" and other keys at same time: ${Object.keys(showIn).join(', ')}`);
+      }
+      for (const key of Object.keys(AdminForthResourcePages)) {
+        if (key !== 'all') {
+          showIn[key] = showIn.all;
+        }
+      }
+      delete showIn.all;
+    } else {
+      // by default allow all actions
+      for (const key of Object.keys(AdminForthResourcePages)) {
+        if (!Object.keys(showIn).includes(key)) {
+          showIn[key] = true;
+        }
+      }
+    }
+    return showIn as ShowIn;
+  }
+
+  validateAndNormalizeResources(errors: string[], warnings: string[]): AdminForthResource[] {
     if (!this.inputConfig.resources) {
       errors.push('No resources defined, at least one resource must be defined');
       return [];
     }
     return this.inputConfig.resources.map((resInput: AdminForthResourceInput) => {
-      const res: Partial<AdminForthResource> = { ...resInput, options: undefined, hooks: undefined,  };
+      const res: Partial<AdminForthResource> = { ...resInput, columns: undefined, options: undefined, hooks: undefined,  };
       if (!res.table) {
         errors.push(`Resource in "${res.dataSource}" is missing table`);
       }
@@ -321,20 +364,19 @@ export default class ConfigValidator implements IConfigValidator {
       if (!res.columns) {
         res.columns = [];
       }
-      res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon, inColIndex) => {
-        const col: Partial<AdminForthResourceColumn> = { ...inCol, required: undefined, editingNote: undefined };
+      res.columns = resInput.columns.map((inCol: AdminForthResourceColumnInput, inColIndex) => {
+        const col: Partial<AdminForthResourceColumn> = { ...inCol, showIn: undefined, required: undefined, editingNote: undefined };
 
         // check for duplicate column names
-        if (res.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
+        if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
           errors.push(`Resource "${res.resourceId}" has duplicate column name "${col.name}"`);
         }
 
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable
         if (!Object.keys(col).includes('sortable')) { col.sortable = !col.virtual; }
-        if (col.showIn && !Array.isArray(col.showIn)) {
-          errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
-        }
+
+        col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors, warnings);
 
         // check col.required is boolean or object
         if (inCol.required && !((typeof inCol.required === 'boolean') || (typeof inCol.required === 'object'))) {
@@ -362,12 +404,6 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
           }
         }
-
-        const wrongShowIn = col.showIn && col.showIn.find((c) => AdminForthResourcePages[c] === undefined);
-        if (wrongShowIn) {
-          errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid showIn value "${wrongShowIn}", allowed values are ${Object.keys(AdminForthResourcePages).join(', ')}`);
-        }
-        col.showIn = col.showIn || Object.values(AdminForthResourcePages);
 
         if (col.foreignResource) {
 
@@ -520,11 +556,12 @@ export default class ConfigValidator implements IConfigValidator {
 
   validateConfig() {
     const errors = [];
+    const warnings = [];
 
     const newConfig: Partial<AdminForthConfig> = { 
       ...this.inputConfig,
       customization: this.validateAndNormalizeCustomization(errors),
-      resources: this.validateAndNormalizeResources(errors),
+      resources: this.validateAndNormalizeResources(errors, warnings),
     };
 
     if (!newConfig.baseUrl) {
@@ -631,6 +668,10 @@ export default class ConfigValidator implements IConfigValidator {
     if (uniqueResourceIds.size != resourceIds.length) {
       const duplicates = resourceIds.filter((item, index) => resourceIds.indexOf(item) != index);
       errors.push(`Duplicate fields "resourceId" or "table": ${duplicates.join(', ')}`);
+    }
+
+    if (warnings.length > 0) {
+      console.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
     }
 
     //add ids for onSelectedAllActions for each resource

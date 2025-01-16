@@ -11,7 +11,8 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthResourceInputCommon,
   AdminForthComponentDeclarationFull,
   AdminForthConfigMenuItem,
-  AnnouncementBadgeResponse
+  AnnouncementBadgeResponse,
+  AdminForthResourcePages,
 } from './Common.js';
 import { AnyCnameRecord } from 'dns';
 
@@ -798,7 +799,7 @@ export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCom
 
   options?: ResourceOptionsInput,
 
-  columns: Array<AdminForthResourceColumn>,
+  columns: Array<AdminForthResourceColumnInput>,
 
   dataSourceColumns?: Array<AdminForthResourceColumn>,
 }
@@ -1321,7 +1322,26 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
   },
 }
 
-export interface AdminForthResourceColumn extends AdminForthResourceColumnCommon {
+/**
+ * Object which describes on what pages should column be displayed on.
+ */
+export type ShowInInput = {
+  [key in AdminForthResourcePages]?: AllowedActionValue
+} & {
+  all?: AllowedActionValue;
+} & Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
+
+export type ShowIn = {
+  [key in AdminForthResourcePages]: AllowedActionValue
+}
+
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+  showIn?: ShowInInput,
+  foreignResource?: AdminForthForeignResource,
+}
+
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnInput, 'showIn'> {
+  showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
 }
 

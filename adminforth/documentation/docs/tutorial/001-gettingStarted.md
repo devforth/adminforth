@@ -198,14 +198,18 @@ export default {
       name: 'id',
       type: AdminForthDataTypes.STRING,
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
-      showIn: ['filter', 'show'], // show column in filter and in show page
+      showIn: { // show column in filter and in show page
+        list: false,
+        edit: false,
+        create: false,
+      },
       primaryKey: true,
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
     },
     {
       name: 'title',
       required: true,
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
+      showIn: { all: false },  // all available options
       type: AdminForthDataTypes.STRING,
       maxLength: 255,  // you can set max length for string fields
       minLength: 3,  // you can set min length for string fields
@@ -214,7 +218,7 @@ export default {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
       allowMinMaxQuery: true,
-      showIn: ['list', 'filter', 'show', 'edit'],
+      showIn: { create: false },
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
@@ -243,7 +247,7 @@ export default {
     {
       name: 'description',
       sortable: false,
-      showIn: ['show', 'edit', 'create', 'filter'],
+      showIn: { list: false },
     },
     {
       name: 'country',

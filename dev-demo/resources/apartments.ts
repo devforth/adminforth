@@ -1,6 +1,7 @@
 import {
   ActionCheckSource,
   AdminForthDataTypes,
+  AdminForthResourcePages,
   AdminUser,
   Filters,
 } from "../../adminforth";
@@ -165,7 +166,9 @@ export default {
       name: "created_at",
       type: AdminForthDataTypes.DATETIME,
       allowMinMaxQuery: true,
-      showIn: ["list", "filter", "show", "edit"],
+      showIn: {
+        [AdminForthResourcePages.create]: false,
+      },
       components: {
         list: "@/renderers/RelativeTime.vue",
       },
@@ -174,7 +177,12 @@ export default {
     },
     {
       name: "apartment_image",
-      showIn: ["show"],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+        filter: false,
+      },
       required: false,
       editingNote: "Upload image of apartment",
     },
