@@ -28,7 +28,7 @@ CODE_BLOCK="\`\`\`$BUILD_LOG\n\`\`\`"
 
 echo "Sending slack message to developers $MESSAGE"
 # Send the message
-curl  -s -X POST -H "Content-Type: application/json" -d '{
+curl  -X POST -H "Content-Type: application/json" -d '{
   "username": "'"$CI_COMMIT_AUTHOR"'",
   "icon_url": "'"$CI_COMMIT_AUTHOR_AVATAR"'",
   "attachments": [
