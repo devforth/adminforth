@@ -1141,7 +1141,7 @@ export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActi
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
  */
-export interface AdminForthResource extends Omit<AdminForthResourceInput, 'options'> {
+export interface AdminForthResource extends Omit<AdminForthResourceInput, 'options' | 'columns'> {
   /**
    * Array of plugins which will be used to modify resource configuration.
    * 
