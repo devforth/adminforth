@@ -126,7 +126,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           userResource.dataSourceColumns.push({
             name: this.adminforth.config.auth.passwordHashField,
             backendOnly: true,
-            showIn: Object.values(AdminForthResourcePages).reduce((acc, page) => { return { ...acc, [page]: false } }, {}),
+            showIn: Object.values(AdminForthResourcePages).reduce((acc, page) => { return { ...acc, [page]: false } }, {} as ShowInResolved),
             type: AdminForthDataTypes.STRING,
           });
           console.log('Adding passwordHashField to userResource', userResource)
