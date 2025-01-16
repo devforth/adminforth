@@ -370,6 +370,25 @@ export default {
 
 > `validation` checks are enforced both on frontend and backend.
 
+### Editing note
+
+You can add `editingNote` to a column to show a note below the input field.
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: "password",
+          editingNote: { edit: "Leave empty to keep password unchanged" },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
 ### Foreign resources
 
 [Documentation in progress]

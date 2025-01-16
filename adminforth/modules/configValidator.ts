@@ -386,16 +386,21 @@ export default class ConfigValidator implements IConfigValidator {
         // force required to be object
         col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
+ 
         // same for editingNote
-        if (col.editingNote && !((typeof col.editingNote === 'string') || (typeof col.editingNote === 'object'))) {
+        if (inCol.editingNote && !((typeof inCol.editingNote === 'string') || (typeof inCol.editingNote === 'object'))) {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" editingNote must be a string or object`);
         }
-        if (typeof col.editingNote === 'object') {
-          const wrongEditingNoteOn = Object.keys(col.editingNote).find((c) => !['create', 'edit'].includes(c));
+        if (typeof inCol.editingNote === 'object') {
+          const wrongEditingNoteOn = Object.keys(inCol.editingNote).find((c) => !['create', 'edit'].includes(c));
           if (wrongEditingNoteOn) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
+            errors.push(`Resource "${res.resourceId}" column "${inCol.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
           }
         }
+        
+        col.editingNote = typeof inCol.editingNote === 'string' ? { create: inCol.editingNote, edit: inCol.editingNote } : inCol.editingNote;
+        
+        col.showIn = col.showIn || Object.values(AdminForthResourcePages);
 
         if (col.foreignResource) {
 
