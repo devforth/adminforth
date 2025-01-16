@@ -12,7 +12,7 @@ steps:
       INFISICAL_TOKEN:
         from_secret: VAULT_TOKEN
     commands:
-      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > "${SCRIPT_DIR}/deploy.vault.env"
+      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > "/deploy.vault.env"
     secrets:
       - VAULT_TOKEN
 
@@ -23,7 +23,7 @@ steps:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - export $(cat deploy.vault.env | xargs)
+      - export $(cat /deploy.vault.env | xargs)
       - cd adminforth
       - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
