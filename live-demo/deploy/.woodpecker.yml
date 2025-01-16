@@ -7,6 +7,8 @@ clone:
 
 steps:
   init-secrets:
+    when:
+      - event: push
     image: infisical/cli
     environment:
       INFISICAL_TOKEN:
