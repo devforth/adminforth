@@ -311,24 +311,16 @@ export default class ConfigValidator implements IConfigValidator {
       }
     }
 
-    if (Object.keys(showIn).includes('all')) {
-      if (Object.keys(showIn).length > 1) {
-        errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn cannot have "all" and other keys at same time: ${Object.keys(showIn).join(', ')}`);
-      }
-      for (const key of Object.keys(AdminForthResourcePages)) {
-        if (key !== 'all') {
-          showIn[key] = showIn.all;
-        }
-      }
-      delete showIn.all;
-    } else {
-      // by default allow all actions
-      for (const key of Object.keys(AdminForthResourcePages)) {
-        if (!Object.keys(showIn).includes(key)) {
-          showIn[key] = true;
-        }
+    // by default copy from 'all' key if present or show on all pages
+    for (const key of Object.keys(AdminForthResourcePages)) {
+      if (!Object.keys(showIn).includes(key)) {
+        showIn[key] = showIn.all !== undefined ? showIn.all : true;
       }
     }
+    if (showIn.all !== undefined) {
+      delete showIn.all;
+    }
+    
     return showIn as ShowIn;
   }
 
