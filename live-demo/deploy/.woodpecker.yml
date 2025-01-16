@@ -6,6 +6,12 @@ clone:
       depth: 5
 
 steps:
+  init-secrets:
+    image: infisical/cli
+    commands:
+      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > "${SCRIPT_DIR}/deploy.vault.env"
+    secrets:
+      - VAULT_TOKEN
 
   release:
     image: node:20
@@ -14,15 +20,12 @@ steps:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
+      - export $(cat deploy.vault.env | xargs)
       - cd adminforth
       - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
       - npm audit signatures
       - npx semantic-release
-    secrets:
-      - GITHUB_TOKEN
-      - NPM_TOKEN
-      - SLACK_WEBHOOK 
 
   slack-on-failure:
     # use curl because the plugin can't interpolate template
@@ -32,10 +35,9 @@ steps:
       - event: push
     image: curlimages/curl
     commands:
+      - export $(cat deploy.vault.env | xargs)
       - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
 
-    secrets:
-      - DEVELOPERS_SLACK_WEBHOOK
 
   build-live-demo:
     when:
