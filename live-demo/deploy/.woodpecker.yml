@@ -26,6 +26,7 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - export $(cat ./deploy.vault.env | xargs)
+      - env
       - cd adminforth
       - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
