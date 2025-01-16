@@ -23,7 +23,6 @@ steps:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - ls -la
       - export $(cat ./deploy.vault.env | xargs)
       - cd adminforth
       - npm clean-install
@@ -39,7 +38,7 @@ steps:
       - event: push
     image: curlimages/curl
     commands:
-      - export $(cat deploy.vault.env | xargs)
+      - export $(cat ./deploy.vault.env | xargs)
       - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
 
 
