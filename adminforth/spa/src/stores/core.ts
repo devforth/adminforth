@@ -34,6 +34,10 @@ export const useCoreStore = defineStore('core', () => {
     adminUser.value = null;
   }
 
+  async function resetResource() {
+    resource.value = null;
+  }
+
   async function toggleTheme() {
     theme.value = theme.value === 'light' ? 'dark' : 'light';
     if (theme.value === 'light') {
@@ -224,5 +228,6 @@ export const useCoreStore = defineStore('core', () => {
     theme,
     fetchMenuBadges,
     resetAdminUser,
+    resetResource,
   }
 })
