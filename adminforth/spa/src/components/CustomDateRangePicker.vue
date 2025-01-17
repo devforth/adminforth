@@ -135,11 +135,31 @@ const end = computed(() => {
 })
 
 function updateFromProps() {
-  if (!props.valueStart) {
+  if (props.valueStart) {
+    const date = dayjs(props.valueStart);
+    datepickerStartEl.value.value = date.format('DD MMM YYYY');
+    if (date.format('HH:mm') !== '00:00') {
+      startTime.value = date.format('HH:mm');
+      showTimeInputs.value = true;
+    } else {
+      startTime.value = '';
+    }
+    startDate.value = date.toString();
+  } else {
     datepickerStartEl.value.value = '';
     startTime.value = '';
   }
-  if (!props.valueEnd) {
+  if (props.valueEnd) {
+    const date = dayjs(props.valueEnd);
+    datepickerEndEl.value.value = date.format('DD MMM YYYY');
+    if (date.format('HH:mm') !== '00:00') {
+      endTime.value = date.format('HH:mm');
+      showTimeInputs.value = true;
+    } else {
+      endTime.value = '';
+    }
+    endDate.value = date.toString();
+  } else {
     datepickerEndEl.value.value = '';
     endTime.value = '';
   }
