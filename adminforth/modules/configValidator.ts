@@ -399,8 +399,6 @@ export default class ConfigValidator implements IConfigValidator {
         }
         
         col.editingNote = typeof inCol.editingNote === 'string' ? { create: inCol.editingNote, edit: inCol.editingNote } : inCol.editingNote;
-        
-        col.showIn = col.showIn || Object.values(AdminForthResourcePages);
 
         if (col.foreignResource) {
 
