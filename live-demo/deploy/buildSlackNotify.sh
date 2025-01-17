@@ -23,6 +23,7 @@ if [ "$CI_STEP_STATUS" = "success" ]; then
 fi
 export BUILD_LOG=$(cat ../../adminforth/build.log)
 
+BUILD_LOG=$(echo $BUILD_LOG | sed 's/"/\\"/g')
 
 MESSAGE="Broke \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\` with commit _${CI_COMMIT_MESSAGE}_ (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
 CODE_BLOCK="\`\`\`$BUILD_LOG\n\`\`\`"
