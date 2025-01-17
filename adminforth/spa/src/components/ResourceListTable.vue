@@ -398,9 +398,9 @@ function onSortButtonClick(event, field) {
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
-      sort.value[sortIndex].direction = 'desc';
+      sort.value = sort.value.map((s) => s.field === field ? {field, direction: 'desc'} : s);
     } else {
-      sort.value.splice(sortIndex, 1);
+      sort.value = sort.value.filter((s) => s.field !== field);
     }
   }
 }
