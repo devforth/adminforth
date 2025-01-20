@@ -43,6 +43,7 @@ export const useUserStore = defineStore('user', () => {
         });
         reconnect();
         coreStore.resetAdminUser();
+        coreStore.resetResource();
         unauthorize();
         
       }

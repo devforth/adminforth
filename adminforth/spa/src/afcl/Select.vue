@@ -4,7 +4,7 @@
       <input
         ref="inputEl"
         type="text"
-        :readonly="isReadonly"
+        :readonly="readonly"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
@@ -46,7 +46,7 @@
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
-        {{ $t('No results found') }}
+        {{ options.length ? $t('No results found') : $t('No items here') }}
       </div>
 
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
@@ -102,7 +102,7 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  isReadonly: {
+  readonly: {
     type: Boolean,
     default: false,
   },
@@ -147,7 +147,7 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.isReadonly) return;
+  if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search

@@ -321,8 +321,13 @@ export default class ConfigValidator implements IConfigValidator {
       if (!res.columns) {
         res.columns = [];
       }
-      res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon) => {
+      res.columns = res.columns.map((inCol: AdminForthResourceColumnInputCommon, inColIndex) => {
         const col: Partial<AdminForthResourceColumn> = { ...inCol, required: undefined, editingNote: undefined };
+
+        // check for duplicate column names
+        if (res.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
+          errors.push(`Resource "${res.resourceId}" has duplicate column name "${col.name}"`);
+        }
 
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable
@@ -331,29 +336,35 @@ export default class ConfigValidator implements IConfigValidator {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" showIn must be an array`);
         }
 
-        // check col.required is string or object
-        if (col.required && !((typeof col.required === 'boolean') || (typeof col.required === 'object'))) {
-          errors.push(`Resource "${res.resourceId}" column "${col.name}" required must be a string or object`);
+        // check col.required is boolean or object
+        if (inCol.required && !((typeof inCol.required === 'boolean') || (typeof inCol.required === 'object'))) {
+          errors.push(`Resource "${res.resourceId}" column "${col.name}" required must be a boolean or object`);
         }
 
         // if it is object check the keys are one of ['create', 'edit']
-        if (typeof col.required === 'object') {
-          const wrongRequiredOn = Object.keys(col.required).find((c) => !['create', 'edit'].includes(c));
+        if (typeof inCol.required === 'object') {
+          const wrongRequiredOn = Object.keys(inCol.required).find((c) => !['create', 'edit'].includes(c));
           if (wrongRequiredOn) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
+            errors.push(`Resource "${res.resourceId}" column "${inCol.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
           }
         }
 
+        // force required to be object
+        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
+
+ 
         // same for editingNote
-        if (col.editingNote && !((typeof col.editingNote === 'string') || (typeof col.editingNote === 'object'))) {
+        if (inCol.editingNote && !((typeof inCol.editingNote === 'string') || (typeof inCol.editingNote === 'object'))) {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" editingNote must be a string or object`);
         }
-        if (typeof col.editingNote === 'object') {
-          const wrongEditingNoteOn = Object.keys(col.editingNote).find((c) => !['create', 'edit'].includes(c));
+        if (typeof inCol.editingNote === 'object') {
+          const wrongEditingNoteOn = Object.keys(inCol.editingNote).find((c) => !['create', 'edit'].includes(c));
           if (wrongEditingNoteOn) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
+            errors.push(`Resource "${res.resourceId}" column "${inCol.name}" has invalid editingNote value "${wrongEditingNoteOn}", allowed keys are 'create', 'edit']`);
           }
         }
+
+        col.editingNote = typeof inCol.editingNote === 'string' ? { create: inCol.editingNote, edit: inCol.editingNote } : inCol.editingNote;
 
         const wrongShowIn = col.showIn && col.showIn.find((c) => AdminForthResourcePages[c] === undefined);
         if (wrongShowIn) {

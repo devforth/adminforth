@@ -42,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 const percentage = computed((): number => {
   const min = props.minValue
   const max = props.maxValue
-  return Math.round(((props.currentValue - min) / (max - min)) * 100)
+  return Math.floor(((props.currentValue - min) / (max - min)) * 1000) / 10
 })
 
 const progressText = computed((): string => {
