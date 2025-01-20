@@ -141,7 +141,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           || field._underlineType.startsWith('String') 
           || field._underlineType.startsWith('FixedString')) {
           // value is iso string now, convert to unix timestamp
-          const iso = dayjs(value).toISOString();
+          const iso = dayjs(value).format('YYYY-MM-DDTHH:mm:ss');
           return iso;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {

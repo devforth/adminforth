@@ -43,6 +43,7 @@ const optionsBase = {
       horizontal: false,
       columnWidth: "80%",
       borderRadiusApplication: "end",
+      borderRadiusWhenStacked: 'last',
       borderRadius: 5,
       dataLabels: {
         position: "top",
