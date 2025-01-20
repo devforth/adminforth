@@ -130,7 +130,11 @@ export interface AdminForthFieldComponents {
    * {
    *  label: 'Full Name',
    *  virtual: true,
-   *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+   *  showIn: {
+   *    [AdminForthResourcePages.edit]: false,
+   *    [AdminForthResourcePages.create]: false,
+   *    [AdminForthResourcePages.filter]: false,
+   *  },
    *  components: {
    *   show: '@@/FullName.vue',
    *   list: '@@/FullName.vue',
@@ -189,7 +193,12 @@ export interface AdminForthComponentDeclarationFull {
    * {
    *    name: 'Country Flag',
    *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
+   *    showIn: {
+   *      [AdminForthResourcePages.list]: false,
+   *      [AdminForthResourcePages.edit]: false,
+   *      [AdminForthResourcePages.create]: false,
+   *      [AdminForthResourcePages.filter]: false,
+   *    },
    *    components: {
    *      show: {
    *        file: '@@/Flag.vue',
@@ -202,7 +211,12 @@ export interface AdminForthComponentDeclarationFull {
    * {
    *    name: 'Team Flag',
    *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
+   *    showIn: {
+   *      [AdminForthResourcePages.list]: false,
+   *      [AdminForthResourcePages.edit]: false,
+   *      [AdminForthResourcePages.create]: false,
+   *      [AdminForthResourcePages.filter]: false,
+   *    },
    *    components: {
    *      show: {
    *        file: '@@/Flag.vue',
@@ -520,7 +534,10 @@ export enum AdminForthResourcePages {
   edit = 'edit',
   create = 'create',
   filter = 'filter',
-  
+}
+
+export type ShowInResolved = {
+  [key in AdminForthResourcePages]: boolean
 }
 
 
@@ -595,11 +612,11 @@ export interface AdminForthResourceColumnInputCommon {
    * Example: if you want to show field only in create and edit pages, set it to
    * 
    * ```ts
-   * showIn: [AdminForthResourcePages.CREATE, AdminForthResourcePages.EDIT]
+   * showIn: { create: true, edit: true}
    * ```
    * 
    */
-  showIn?: Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>,
+  showIn?: ShowInResolved,
 
   /**
    * Whether AdminForth will show this field in show view.
@@ -632,7 +649,11 @@ export interface AdminForthResourceColumnInputCommon {
    *  label: 'Country Flag',
    *  type: AdminForthDataTypes.STRING,
    *  virtual: true,
-   *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+   *  showIn: {
+   *    [AdminForthResourcePages.edit]: false,
+   *    [AdminForthResourcePages.create]: false,
+   *    [AdminForthResourcePages.filter]: false,
+   *  },
    *  components: {
    *    show: '@@/CountryFlag.vue',
    *    list: '@@/CountryFlag.vue',

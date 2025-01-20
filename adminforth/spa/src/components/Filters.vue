@@ -149,7 +149,7 @@ const router = useRouter();
 
 
 const columnsWithFilter = computed(
-  () => props.columns?.filter(column => column.showIn.includes('filter')) || []
+  () => props.columns?.filter(column => column.showIn.filter) || []
 );
 
 const columnOptions = computedAsync(async () => {

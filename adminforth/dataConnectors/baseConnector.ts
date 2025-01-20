@@ -133,7 +133,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     for (const field of Object.keys(newValues)) {
       const col = resource.dataSourceColumns.find((col) => col.name == field);
       // todo instead of throwing error, we can just not use setFieldValue here, and pass original value to updateRecordOriginalValues
-      // we might consider this because some users might not want to define all columns in resource with showIn:[], but still want to use them in hooks
+      // we might consider this because some users might not want to define all columns in resource with showIn:{}, but still want to use them in hooks
       if (!col) {
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), field);
         throw new Error(`

@@ -17,8 +17,9 @@ import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
-   AnnouncementBadgeResponse, 
-   GetBaseConfigResponse} from "../types/Common.js";
+   AnnouncementBadgeResponse,
+   GetBaseConfigResponse,
+   ShowInResolved} from "../types/Common.js";
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -125,7 +126,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           userResource.dataSourceColumns.push({
             name: this.adminforth.config.auth.passwordHashField,
             backendOnly: true,
-            showIn: [],
+            showIn: Object.values(AdminForthResourcePages).reduce((acc, page) => { return { ...acc, [page]: false } }, {} as ShowInResolved),
             type: AdminForthDataTypes.STRING,
           });
           console.log('Adding passwordHashField to userResource', userResource)
@@ -491,6 +492,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                         })
                       );
                     }
+                    const showIn = {} as ShowInResolved;
+                    await Promise.all(
+                      Object.entries(col.showIn).map(
+                        async ([key, value]: [string, AllowedActionValue]) => {
+                          // if callable then call
+                          if (typeof value === 'function') {
+                            showIn[key] = await value({ adminUser, resource, meta: {}, source: ActionCheckSource.DisplayButtons, adminforth: this.adminforth });
+                          } else {
+                            showIn[key] = value;
+                          }
+                        })
+                    );
                     // TODO: better to move all coroutines to translationRoutines
                     if (col.editingNote?.create) {
                       col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote.create`);
@@ -501,6 +514,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
                     return {
                       ...col,
+                      showIn,
                       validation,
                       label: translated[`resCol${i}`],
                       enum: enumItems,
@@ -857,7 +871,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (
                   (column.required as {create?: boolean, edit?: boolean})?.create &&
                   record[column.name] === undefined &&
-                  column.showIn.includes(AdminForthResourcePages.create)
+                  column.showIn.create
               ) {
                   return { error: `Column '${column.name}' is required`, ok: false };
               }

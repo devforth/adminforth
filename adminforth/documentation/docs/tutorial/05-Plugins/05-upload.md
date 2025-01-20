@@ -103,7 +103,7 @@ export const admin = new AdminForth({
 //diff-add
       name: 'apartment_image',
 //diff-add
-      showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+      showIn: { all: false }, // You can set to { edit: false, create: false, filter: false } if you wish to show path column in list and show views
 //diff-add
     }
     ...
