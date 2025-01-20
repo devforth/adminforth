@@ -8,9 +8,9 @@ import apartmentsResource from './resources/apartments.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
-import gameResource from './resources/game.js';
-import gamesUsersResource from './resources/games_users.js';
-import gamesResource from './resources/games.js';
+// import gameResource from './resources/game.js';
+// import gamesUsersResource from './resources/games_users.js';
+// import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
@@ -178,17 +178,17 @@ export const admin = new AdminForth({
       id: 'maindb',
       url: `sqlite://${dbPath}`
     },
-    {
-      id: 'db2',
-      url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
-    },
+    // {
+    //   id: 'db2',
+    //   url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
+    // },
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8124/demo',
+      url: 'clickhouse://demo:demo@localhost:8125/demo',
 
     }
   ],
@@ -198,9 +198,9 @@ export const admin = new AdminForth({
     apartmentsResource,
     usersResource,
     descriptionImageResource,
-    gamesResource,
-    gamesUsersResource,
-    gameResource,
+    // gamesResource,
+    // gamesUsersResource,
+    // gameResource,
     translationsResource,
   ],
   menu: [
@@ -235,11 +235,11 @@ export const admin = new AdminForth({
 
         },
 
-        {
-          label: 'Games',
-          icon: 'flowbite:caret-right-solid',
-          resourceId: 'game',
-        },
+        // {
+        //   label: 'Games',
+        //   icon: 'flowbite:caret-right-solid',
+        //   resourceId: 'game',
+        // },
         // {
         //   label: 'Games Users',
         //   icon: 'flowbite:user-solid',
