@@ -22,6 +22,7 @@ import {
   AllowedActionsEnum,
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
+  AdminForthDataTypes,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -400,6 +401,35 @@ export default class ConfigValidator implements IConfigValidator {
         
         col.editingNote = typeof inCol.editingNote === 'string' ? { create: inCol.editingNote, edit: inCol.editingNote } : inCol.editingNote;
 
+        if (col.isArray !== undefined) {
+          if (typeof col.isArray !== 'object') {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray must be an object`);
+          } else if (col.isArray.enabled) {
+            if (col.primaryKey) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a primary key columns`);
+            }
+            if (col.masked) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a masked column`);
+            }
+            if (col.foreignResource) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a foreignResource column`);
+            }
+
+            if (!col.type || col.type !== AdminForthDataTypes.JSON) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray can be used only with column type JSON`);
+            }
+
+            if (col.isArray.itemType === undefined) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray must have itemType`);
+            }
+            if (col.isArray.itemType === AdminForthDataTypes.JSON) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray itemType cannot be JSON`);
+            }
+            if (col.isArray.itemType === AdminForthDataTypes.RICHTEXT) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray itemType cannot be RICHTEXT`);
+            }
+          }
+        }
         if (col.foreignResource) {
 
           if (!col.foreignResource.resourceId) {

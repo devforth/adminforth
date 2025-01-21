@@ -14,6 +14,32 @@
       <span v-if="record[column.name]" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">{{ $t('Yes') }}</span>
       <span v-else class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">{{ $t('No') }}</span>
     </span>
+    <span
+      v-else-if="column.type === 'json' && column.isArray?.enabled"
+      class="flex flex-wrap"
+    >
+      <template v-for="(arrayItem, arrayItemIndex) in record[column.name]">
+        <span
+          v-if="column.isArray.itemType === 'boolean' && arrayItem"
+          :key="`${column.name}-${arrayItemIndex}`"
+          class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+          {{ $t('Yes') }}
+        </span>
+        <span
+          v-else-if="column.isArray.itemType === 'boolean'"
+          :key="`${column.name}-${arrayItemIndex}`"
+          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+          {{ $t('No') }}
+        </span>
+        <span
+          v-else
+          :key="`${column.name}-${arrayItemIndex}`"
+          class="rounded-md m-0.5 bg-lightAnnouncementBG dark:bg-darkAnnouncementBG text-lightAnnouncementText dark:text-darkAnnouncementText py-0.5 px-2.5 text-sm"
+        >
+          {{ checkEmptyValues(getArrayItemDisplayValue(arrayItem, column), route.meta.type) }}
+        </span>
+      </template>
+    </span>
     <span v-else-if="column.enum">
       {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label || record[column.name], route.meta.type) }}
     </span>
@@ -101,6 +127,20 @@ function formatDate(date: string) {
 function formatTime(time: string) {
   if (!time) return '';
   return dayjs(`0000-00-00 ${time}`).format(coreStore.config?.timeFormat || 'HH:mm:ss');
+}
+
+function getArrayItemDisplayValue(value, column) {
+  if (column.isArray?.itemType === 'datetime') {
+    return formatDateTime(value);
+  } else if (column.isArray?.itemType === 'date') {
+    return formatDate(value);
+  } else if (column.isArray?.itemType === 'time') {
+    return formatTime(value);
+  } else if (column.enum) {
+    return column.enum.find(e => e.value === value)?.label || value;
+  }
+
+  return value;
 }
 </script>
 
