@@ -581,9 +581,9 @@ export interface AdminForthResourceColumnInputCommon {
      */
     itemType: AdminForthDataTypes,
     /**
-     * If enabled, AdminForth will allow to add only unique items to the array.
+     * If enabled, AdminForth will allow to add items with the same value.
      */
-    uniqueItems?: boolean,
+    allowDuplicateItems?: boolean,
   },
 
   /**
