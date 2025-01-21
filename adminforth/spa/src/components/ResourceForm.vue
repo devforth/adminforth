@@ -101,7 +101,7 @@ const columnError = (column) => {
 
     if ( 
       column.required[mode.value] && 
-      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '') && 
+      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '' || (column.isArray?.enabled && !currentValues.value[column.name].length)) && 
       // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
       // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
       (customComponentsEmptiness.value[column.name] !== false)
@@ -109,68 +109,103 @@ const columnError = (column) => {
     ) {
       return t('This field is required');
     }
-    if (column.type === 'json' && currentValues.value[column.name]) {
+    if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
       try {
         JSON.parse(currentValues.value[column.name]);
       } catch (e) {
         return t('Invalid JSON');
       }
-    }
-    if ( column.type === 'string' || column.type === 'text' ) {
-      if ( column.maxLength && currentValues.value[column.name]?.length > column.maxLength ) {
-        return t('This field must be shorter than {maxLength} characters', { maxLength: column.maxLength });
-      }
-      
-      if ( column.minLength && currentValues.value[column.name]?.length < column.minLength ) {
-        // if column.required[mode.value] is false, then we check if the field is empty
-        let needToCheckEmpty = column.required[mode.value] || currentValues.value[column.name]?.length > 0;
-        if (!needToCheckEmpty) {
-          return null;
+    } else if (column.isArray?.enabled) {
+      if (column.isArray.uniqueItems) {
+        if (currentValues.value[column.name].filter((value, index, self) => self.indexOf(value) !== index).length > 0) {
+          return t('Array cannot contain duplicate items');
         }
-        return t('This field must be longer than {minLength} characters', { minLength: column.minLength });
       }
-    }
-    if ( ['integer', 'decimal', 'float'].includes(column.type) ) {
-      if ( column.minValue !== undefined 
-        && currentValues.value[column.name] !== null 
-        && currentValues.value[column.name] < column.minValue 
-      ) {
-        return t('This field must be greater than {minValue}', { minValue: column.minValue });
-      }
-      if ( column.maxValue !== undefined && currentValues.value[column.name] > column.maxValue ) {
-        return t('This field must be less than {maxValue}', { maxValue: column.maxValue });
-      }
-    }
-    if (currentValues.value[column.name] && column.validation) {
-      const error = applyRegexValidation(currentValues.value[column.name], column.validation);
-      if (error) {
-        return error;
-      }
-    }
 
-    return null;
+      return currentValues.value[column.name] && currentValues.value[column.name].reduce((error, item) => {
+        return error || validateValue(column.isArray.itemType, item, column) ||
+          (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
+      }, null);
+    } else {
+      return validateValue(column.type, currentValues.value[column.name], column);
+    }
+    
   });
   return val.value;
 };
 
-
-const setCurrentValue = (key, value) => {
-  const col = props.resource.columns.find((column) => column.name === key);
-  if (['integer', 'float'].includes(col.type) && (value || value === 0)) {
-    currentValues.value[key] = +value;
-  } else {
-    currentValues.value[key] = value;
+const validateValue = (type, value, column) => {
+  if (type === 'string' || type === 'text') {
+    if (column.maxLength && value?.length > column.maxLength) {
+      return t('This field must be shorter than {maxLength} characters', { maxLength: column.maxLength });
+    }
+    
+    if (column.minLength && value?.length < column.minLength) {
+      // if column.required[mode.value] is false, then we check if the field is empty
+      let needToCheckEmpty = column.required[mode.value] || value?.length > 0;
+      if (!needToCheckEmpty) {
+        return null;
+      }
+      return t('This field must be longer than {minLength} characters', { minLength: column.minLength });
+    }
   }
-  if (['text', 'richtext', 'string'].includes(col.type) && col.enforceLowerCase) {
-    currentValues.value[key] = currentValues.value[key].toLowerCase();
+  // if (['integer', 'decimal', 'float'].includes(type)) {
+  //   if (column.minValue !== undefined 
+  //     && value !== null 
+  //     && value < column.minValue
+  //   ) {
+  //     return t('This field must be greater than {minValue}', { minValue: column.minValue });
+  //   }
+  //   if (column.maxValue !== undefined && value > column.maxValue) {
+  //     return t('This field must be less than {maxValue}', { maxValue: column.maxValue });
+  //   }
+  // }
+  // if (value && column.validation) {
+  //   const error = applyRegexValidation(value, column.validation);
+  //   if (error) {
+  //     return error;
+  //   }
+  // }
+
+  return null;
+};
+
+
+const setCurrentValue = (key, value, index=null) => {
+  const col = props.resource.columns.find((column) => column.name === key);
+  // if field is an array, we need to update the array or individual element
+  if (col.type === 'json' && col.isArray?.enabled) {
+    if (index === null) {
+      currentValues.value[key] = value;
+    } else if (index === currentValues.value[key].length) {
+      currentValues.value[key].push(null);
+    } else {
+      if (['integer', 'float'].includes(col.isArray.itemType) && (value || value === 0)) {
+        currentValues.value[key][index] = +value;
+      } else {
+        currentValues.value[key][index] = value;
+      }
+      if (['text', 'richtext', 'string'].includes(col.isArray.itemType) && col.enforceLowerCase) {
+        currentValues.value[key][index] = currentValues.value[key][index].toLowerCase();
+      }
+    }
+  } else {
+    if (['integer', 'float'].includes(col.type) && (value || value === 0)) {
+      currentValues.value[key] = +value;
+    } else {
+      currentValues.value[key] = value;
+    }
+    if (['text', 'richtext', 'string'].includes(col.type) && col.enforceLowerCase) {
+      currentValues.value[key] = currentValues.value[key].toLowerCase();
+    }
   }
 
   currentValues.value = { ...currentValues.value };
 
-  //json fields should transform to object
+  // json fields should transform to object
   const up = {...currentValues.value};
   props.resource.columns.forEach((column) => {
-    if (column.type === 'json' && up[column.name]) {
+    if (column.type === 'json' && !column.isArray?.enabled && up[column.name]) {
       try {
         up[column.name] = JSON.parse(up[column.name]);
       } catch (e) {
@@ -185,8 +220,19 @@ onMounted(() => {
   currentValues.value = Object.assign({}, props.record);
   // json values should transform to string
   props.resource.columns.forEach((column) => {
-    if (column.type === 'json' && currentValues.value[column.name]) {
-      currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
+    if (column.type === 'json') {
+      if (column.isArray?.enabled) {
+        // if value is null or undefined, we should set it to empty array
+        if (!currentValues.value[column.name]) {
+          currentValues.value[column.name] = [];
+        } else {
+          // else copy array to prevent mutation
+          currentValues.value[column.name] = [...currentValues.value[column.name]];
+        }
+      } else if (currentValues.value[column.name]) {
+        currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
+      }
+
     }
   });
   emit('update:isValid', isValid.value);
