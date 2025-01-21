@@ -116,7 +116,7 @@ const columnError = (column) => {
         return t('Invalid JSON');
       }
     } else if (column.isArray?.enabled) {
-      if (column.isArray.uniqueItems) {
+      if (!column.isArray.allowDuplicateItems) {
         if (currentValues.value[column.name].filter((value, index, self) => self.indexOf(value) !== index).length > 0) {
           return t('Array cannot contain duplicate items');
         }
@@ -149,23 +149,23 @@ const validateValue = (type, value, column) => {
       return t('This field must be longer than {minLength} characters', { minLength: column.minLength });
     }
   }
-  // if (['integer', 'decimal', 'float'].includes(type)) {
-  //   if (column.minValue !== undefined 
-  //     && value !== null 
-  //     && value < column.minValue
-  //   ) {
-  //     return t('This field must be greater than {minValue}', { minValue: column.minValue });
-  //   }
-  //   if (column.maxValue !== undefined && value > column.maxValue) {
-  //     return t('This field must be less than {maxValue}', { maxValue: column.maxValue });
-  //   }
-  // }
-  // if (value && column.validation) {
-  //   const error = applyRegexValidation(value, column.validation);
-  //   if (error) {
-  //     return error;
-  //   }
-  // }
+  if (['integer', 'decimal', 'float'].includes(type)) {
+    if (column.minValue !== undefined 
+      && value !== null 
+      && value < column.minValue
+    ) {
+      return t('This field must be greater than {minValue}', { minValue: column.minValue });
+    }
+    if (column.maxValue !== undefined && value > column.maxValue) {
+      return t('This field must be less than {maxValue}', { maxValue: column.maxValue });
+    }
+  }
+  if (value && column.validation) {
+    const error = applyRegexValidation(value, column.validation);
+    if (error) {
+      return error;
+    }
+  }
 
   return null;
 };
