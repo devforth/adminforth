@@ -569,6 +569,24 @@ export interface AdminForthResourceColumnInputCommon {
   type?: AdminForthDataTypes,
 
   /**
+   * Defines whether column is array and what type of items it contains.
+   * AdminForth will use this information to render proper input fields in the admin panel with control buttons to add and remove items.
+   * If enabled, requires column type to be JSON.
+   * Cannot be used with masked columns, columns with foreignResource or primary key columns.
+   */
+  isArray?: {
+    enabled: boolean,
+    /**
+     * Type of items in array. Cannot be JSON or RICHTEXT.
+     */
+    itemType: AdminForthDataTypes,
+    /**
+     * If enabled, AdminForth will allow to add items with the same value.
+     */
+    allowDuplicateItems?: boolean,
+  },
+
+  /**
    * An optional configuration object for extra settings.
    */
   extra?: {

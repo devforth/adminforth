@@ -26,6 +26,7 @@ model apartments {
     square_meter    Float?
     price           Decimal
     number_of_rooms Int?
+    room_sizes      String?
     description     String?
     country         String?
     listed          Boolean   @default(false)
