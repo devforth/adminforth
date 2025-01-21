@@ -25,7 +25,15 @@ columns: [
 //diff-add
     virtual: true,
 //diff-add
-    showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
+    showIn: {
+//diff-add
+      [AdminForthResourcePages.edit]: false,
+//diff-add
+      [AdminForthResourcePages.create]: false,
+//diff-add
+      [AdminForthResourcePages.filter]: false,
+//diff-add
+    },
 //diff-add
     components: {
 //diff-add
@@ -89,7 +97,11 @@ columns: [
     editingNote: { edit: 'Leave empty to keep password unchanged' },
     minLength: 8,
     type: AdminForthDataTypes.STRING,
-    showIn: ['create', 'edit'], // to show field only on create and edit pages
+    showIn: { // to show field only on create and edit pages
+      show: false,
+      list: false,
+      filter: false,
+    },
     masked: true, // to show stars in input field
   }
   ...
@@ -135,7 +147,7 @@ it will never pass this field to frontend.
 {     
   name: 'password_hash',
   type: AdminForthDataTypes.STRING,
-  showIn: [],
+  showIn: { all: false },
   backendOnly: true,  // will never go to frontend
 }
 ```

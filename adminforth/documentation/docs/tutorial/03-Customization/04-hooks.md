@@ -79,7 +79,13 @@ import type { AdminUser } from  'adminforth';
       name: 'realtor_id',
       ...
 //diff-add
-      showIn: ['list', 'show', 'edit'], // don't even show this field in create
+      showIn: { // don't even show this field in create
+//diff-add
+        create: false,
+//diff-add
+        filter: false,
+//diff-add
+      },
       ...
     },
     ...

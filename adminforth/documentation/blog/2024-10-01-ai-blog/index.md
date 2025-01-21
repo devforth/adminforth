@@ -342,7 +342,10 @@ export default {
       name: 'id',
       primaryKey: true,
       fillOnCreate: () => randomUUID(),
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'email',
@@ -357,7 +360,10 @@ export default {
     {
       name: 'createdAt',
       type: AdminForthDataTypes.DATETIME,
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -367,14 +373,18 @@ export default {
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       minLength: 8,
       type: AdminForthDataTypes.STRING,
-      showIn: ['create', 'edit'],
+      showIn: {
+        show: false,
+        list: false,
+        filter: false,
+      },
       masked: true,
       validation: [
         // request to have at least 1 digit, 1 upper case, 1 lower case
         AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
       ],
     },
-    { name: 'passwordHash', backendOnly: true, showIn: [] },
+    { name: 'passwordHash', backendOnly: true, showIn: { all: false } },
     { 
       name: 'publicName',
       type: AdminForthDataTypes.STRING,
@@ -445,32 +455,43 @@ export default {
       name: 'id',
       primaryKey: true,
       fillOnCreate: () => randomUUID(),
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'title',
       required: true,
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],
+      showIn: { all: true },
       maxLength: 255,
       minLength: 3,
       type: AdminForthDataTypes.STRING,
     },
     {
       name: 'picture',
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],
+      showIn: { all: true },
     },
     {
       name: 'slug',
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'content',
-      showIn: ['create', 'edit', 'filter', 'show'],
+      showIn: { list: false },
       type: AdminForthDataTypes.RICHTEXT,
     },
     {
       name: 'createdAt',
-      showIn: ['list', 'filter', 'show',],
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -482,7 +503,11 @@ export default {
       foreignResource: {
         resourceId: 'user',
       },
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
       fillOnCreate: ({ adminUser }: { adminUser: AdminUser }) => {
         return adminUser.dbUser.id;
       }
@@ -593,7 +618,10 @@ export default {
       foreignResource: {
         resourceId: 'post',
       },
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'resourceId',

@@ -38,7 +38,7 @@ Add to your `'users'` resource configuration the plugin instance:
 //diff-add
           // hide column 'square_meter' from both 'list' and 'filter'
 //diff-add
-          const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
+          const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = { all: false };
 //diff-add
           resourceConfig.options!.listPageSize = 1;
 //diff-add

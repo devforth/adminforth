@@ -62,7 +62,7 @@
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
-          :columns="resource?.columns.filter(c => c.showIn.includes('list')).length + 2"
+          :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
           :rows="3"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
@@ -356,7 +356,7 @@ function addToCheckedValues(id) {
   checkboxesInternal.value = [ ...checkboxesInternal.value ]
 }
 
-const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.includes('list')));
+const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.list));
 
 async function selectAll(value) {
   if (!allFromThisPageChecked.value) {

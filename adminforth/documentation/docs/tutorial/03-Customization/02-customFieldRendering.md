@@ -248,10 +248,12 @@ import { randomUUID } from 'crypto';
     { 
       name: 'id', 
       primaryKey: true,
+      showIn: {
 //diff-remove
-      showIn: ['filter', 'show'],
-//diff-add
-      showIn: ['list', 'filter', 'show'],
+        list: false,
+        edit: false,
+        create: false,
+      },
 //diff-remove
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
 //diff-add

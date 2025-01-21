@@ -158,13 +158,13 @@ const groups = computed(() => {
   return activeGroups.map(group => ({
     ...group,
     columns: coreStore.resource.columns.filter(
-      col => group.columns.includes(col.name) && col.showIn.includes('show')
+      col => group.columns.includes(col.name) && col.showIn.show
     ),
   }));
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource.columns.filter(col => col.showIn.includes('show'));
+  return coreStore.resource.columns.filter(col => col.showIn.show);
 });
 
 const otherColumns = computed(() => {
@@ -173,7 +173,7 @@ const otherColumns = computed(() => {
   );
 
   return coreStore.resource.columns.filter(
-    col => !groupedColumnNames.has(col.name) && col.showIn.includes('show')
+    col => !groupedColumnNames.has(col.name) && col.showIn.show
   );
 });
 
