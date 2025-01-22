@@ -6,28 +6,76 @@ For example if fetch to the API fails you might want to show an error message to
 
 AdminForth has very simple [frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface) for this.
 
-To see an example of alerts, you can call them yourself.
+
+## Alerts
+
+To show an alert use `adminforth.alert` method:
+
+```ts
+import adminforth from '@/adminforth';
+
+adminforth.alert({message: 'Hello world', variant: 'success'})
+```
+
+Next variants are supported:
+
+* `success`
+* `danger`
+* `warning`
+* `info`
+
+## Confirmations
+
+To show a confirmation dialog use `adminforth.confirm` method:
+
+```ts
+import adminforth from '@/adminforth';
+
+const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
+```
+
+## Ussage example
 
 Create a Vue component in the custom directory of your project, e.g. Alerts.vue:
 
 ```html title="./custom/Alerts.vue"
 <template>
     <div class="ml-3 mt-16">
-        <button @click="callAlert($t('Example success alert'))" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">{{$t('Call alert')}}</button>
-        <button @click="callConfirmation" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">{{$t('Confirmation')}}</button>
-        <button @click="callAlert($t('Example danger alert'),'warning')" class="focus:outline-none text-white bg-orange-500 hover:bg-orange-400 focus:ring-4 focus:ring-orange-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-900">{{$t('Danger alert')}}</button>
+        <Button @click="successAlert($t('Example success alert'))" >
+            {{$t('Call success alert')}}
+        </Button>
+
+        <Button @click="warningAlert($t('Example danger alert'))" >
+            {{$t('Call warning alert')}}
+        </Button>
+
+        <Button @click="doConfirm" >
+            {{$t('Call confirm dialog')}}
+        </Button>
     </div>
 </template>
 <script setup>
 import adminforth from '@/adminforth';
+import { Button } from '@/afcl'
 import { useI18n } from 'vue-i18n';
+
 const { t } = useI18n();
 
-function callAlert(message,variant='success'){
-    adminforth.alert({message: message, variant: variant})
+function successAlert(message) {
+    adminforth.alert({message, variant: 'success'})
 };
-async function callConfirmation(){
+
+function warningAlert(message) {
+    adminforth.alert({message, variant: 'warning'})
+};
+
+async function doConfirm() {
     const isConfirmed = await adminforth.confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
+    if (isConfirmed){
+        adminforth.alert({message: t('Confirmed'), variant: 'success'})
+    } else {
+        adminforth.alert({message: t('Not confirmed'), variant: 'warning'})
+    }
 }
 </script>
 ```
