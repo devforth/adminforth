@@ -450,4 +450,23 @@ Note: array columns can not be marked as `masked`, be a `primaryKey` and at the 
 
 ### Foreign resources
 
-[Documentation in progress]
+When you want to create a connection between two resources, you need to add `foreignResource` to a column, like so:
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'users',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+This way, when creating or editing a record you will be able to choose value for this field from a dropdown selector and on list and show pages this field will be displayed as a link to a foreign resource.
