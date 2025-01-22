@@ -389,6 +389,65 @@ export default {
   ],
 ```
 
+### Filling an array of values
+
+Whenever you want to have a column to store not a single value but an array of values you have to set column as `AdminForthDataTypes.JSON`. This way when you are creating or editing a record you can type in a JSON array into a textfield. To simplify this process and allow you to create and edit separate items you can add `isArray` to a column.
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: "room_sizes",
+          type: AdminForthDataTypes.JSON,
+//diff-add
+          isArray: {
+//diff-add
+            enabled: true,
+//diff-add
+            itemType: AdminForthDataTypes.FLOAT,
+//diff-add
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+Doing so, will result in UI displaying each item of the array as a separate input corresponding to `isArray.itemType` on create and edit pages.
+
+`itemType` value can be any of `AdminForthDataTypes` except `JSON` and `RICHTEXT`.
+
+By default it is forbidden to store duplicate values in an array column. To change that you can add `allowDuplicateItems: true` to `isArray`, like so:
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: "room_sizes",
+          type: AdminForthDataTypes.JSON,
+          isArray: {
+            enabled: true,
+            itemType: AdminForthDataTypes.FLOAT,
+//diff-add
+            allowDuplicateItems: true,
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+All validation rules, such as `minValue`, `maxValue`, `minLength`, `maxLength` and `validation` will be applied not to array itself but instead to each item.
+
+Note: array columns can not be marked as `masked`, be a `primaryKey` and at the time can not be linked to a foreign resource.
+
+
 ### Foreign resources
 
 [Documentation in progress]
