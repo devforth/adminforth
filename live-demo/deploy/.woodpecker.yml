@@ -22,11 +22,8 @@ steps:
     image: node:20
     when:
       - event: push
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
-      - ls -la
       - cd adminforth
       - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh

@@ -155,6 +155,34 @@ For example we can prevent the user to see Apartments created by other users. Su
 This hook will prevent the user to see Apartments created by other users in list, however if user will be able to discover
 the apartment id, he will be able to use show page to see the apartment details, that is why separate limiting for show page is required as well. Below we will discover how to limit access to show page.
 
+### Modify record after it is returned from database
+
+You can also change resource data after it was loaded.
+
+For example, you can change the way columns value is displayed by changing the value itself:
+
+```ts title='./resources/apartments.ts'
+{
+  ...
+  hooks: {
+    list: {
+//diff-add
+      afterDatasourceResponse: async ({ response }: { response: any }) => {
+//diff-add
+        response.forEach((r: any) => {
+//diff-add
+          r.price = `$${r.price}`;
+//diff-add
+        });
+//diff-add
+        return { ok: true, error: "" };
+//diff-add
+      },
+    },
+  },
+}
+```
+
 ### Dropdown list of foreignResource
 
 By default if there is `foreignResource` like we use for demo on `realtor_id` column, the filter will suggest a
