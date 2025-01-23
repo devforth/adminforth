@@ -1331,7 +1331,7 @@ export type ShowInInput = {
   [key in AdminForthResourcePages]?: AllowedActionValue
 } & {
   all?: AllowedActionValue;
-} & Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
+} | Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
 
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
