@@ -220,6 +220,14 @@ export default {
       showIn: ["filter", "show", "create", "edit"],
     },
     {
+      name: "room_sizes",
+      type: AdminForthDataTypes.JSON,
+      isArray: {
+        enabled: true,
+        itemType: AdminForthDataTypes.FLOAT,
+      },
+    },
+    {
       name: "description",
       sortable: false,
       type: AdminForthDataTypes.RICHTEXT,
@@ -366,6 +374,7 @@ export default {
           "price",
           "square_meter",
           "number_of_rooms",
+          "room_sizes",
           "listed",
         ],
       },

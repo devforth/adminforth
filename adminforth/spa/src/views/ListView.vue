@@ -197,7 +197,11 @@ async function getList() {
     return {error: data.error};
   }
   rows.value = data.data?.map(row => {
-    row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
+    if (coreStore.resource.columns.find(c => c.primaryKey).foreignResource) {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name].pk;
+    } else {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
+    }
     return row;
   });
   totalRows.value = data.total;

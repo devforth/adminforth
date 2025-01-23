@@ -431,3 +431,47 @@ Also there are:
 
 * `config.customization.globalInjections.header`
 * `config.customization.globalInjections.sidebar`
+* `config.customization.globalInjections.everyPageBottom`
+
+Unlike `userMenu`, `header` and `sidebar` injections, `everyPageBottom` will be added to the bottom of every page even when user is not logged in.
+You can use it to execute some piece of code when any page is loaded. For example, you can add welcoming pop up when user visits a page.
+
+```ts title="/index.ts"
+{
+  ...
+  customization: {
+    globalInjections: {
+      userMenu: [
+        '@@/CustomUserMenuItem.vue',
+//diff-remove
+      ]
+//diff-add
+      ],
+//diff-add
+      everyPageBottom: [
+//diff-add
+        '@@/AnyPageWelcome.vue',
+//diff-add
+      ]
+    }
+  }
+  ...
+}
+```
+
+Now create file `AnyPageWelcome.vue` in the `custom` folder of your project:
+
+```html title="./custom/AnyPageWelcome.vue"
+<template></template>
+
+<script setup>
+import { onMounted } from 'vue';
+import adminforth from '@/adminforth';
+onMounted(() => {
+  adminforth.alert({
+    message: 'Welcome!',
+    variant: 'success',
+  });
+});
+</script>
+```

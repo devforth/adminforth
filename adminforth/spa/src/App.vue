@@ -209,9 +209,12 @@
          drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-20">
     </div>
 
-
+    <component
+      v-for="c in coreStore?.config?.globalInjections?.everyPageBottom || []"
+      :is="getCustomComponent(c)"
+      :meta="c.meta"
+    />
   </div>
-
 </template>
 
 <style lang="scss" scoped>
