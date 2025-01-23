@@ -131,10 +131,11 @@ export default class ConfigValidator implements IConfigValidator {
       userMenu: [],
       header: [],
       sidebar: [],
+      everyPageBottom: [],
     };
 
     if (this.inputConfig.customization?.globalInjections) {
-      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar']
+      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar', 'everyPageBottom'];
       Object.keys(this.inputConfig.customization.globalInjections).forEach((injection) => {
         if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
           globalInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.globalInjections, injection, errors);
