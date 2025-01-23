@@ -966,6 +966,7 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   }
 }
 
