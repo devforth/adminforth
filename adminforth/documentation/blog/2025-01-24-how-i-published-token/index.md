@@ -5,9 +5,9 @@ authors: ivanb
 tags: [chatgpt, plugin]
 ---
 
-Our framework has a CI pipeline which doews `npm run build`, makes npm release (`npm publish`), and creates a new release on Github. Also it sends notification about release to Slack webhook for our team. 
+Our framework has a CI pipeline which does `npm run build`, publishes package to npm (`npm publish`), and creates a new release on GitHub. Also it sends notification about release to Slack webhook for our team. 
 
-Secrets for these services were stored in our CI built-in Vault. (We are running self-hosted Woodpecker CI).
+Secrets for these services were stored in our CI built-in Vault (We are running self-hosted Woodpecker CI).
 
 Recently when I was moving plugins to separate repositories, I decided to try [infiscal](https://infisical.com/) for centralized secrets management instead of internal CI Vault. Infiscal provides self-hosted open-source soluition as well, and has well-orginized UI and better access control then our CI Vault. For me it was important that I can reuse secrets for different repositories without copying them every time when I create a new plugin.
 
