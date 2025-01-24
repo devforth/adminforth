@@ -58,8 +58,6 @@ cd adminforth
 npm ci
 npm run build
 
-# create link to built "adminforth" package in local system
-npm link
 
 # this will install all official plugins and link adminforth package, if plugin installed it will git pull and npm ci
 npm run install-plugins
