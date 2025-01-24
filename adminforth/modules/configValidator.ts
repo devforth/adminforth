@@ -11,6 +11,8 @@ import {
   AllowedActions,
   ShowIn,
   ShowInInput,
+  ShowInLegacyInput,
+  ShowInModernInput,
 } from "../types/Back.js";
 
 import fs from 'fs';
@@ -299,13 +301,13 @@ export default class ConfigValidator implements IConfigValidator {
       return;
     }
 
-    let showIn = column.showIn || { all: true };
+    let showIn: ShowInInput = column.showIn || { all: true };
 
     if (column.showIn && Array.isArray(column.showIn)) {
       showIn = Object.values(AdminForthResourcePages).reduce((acc, key) => {
         return {
           ...acc,
-          [key]: column.showIn.includes(key),
+          [key]: (column.showIn as ShowInLegacyInput).includes(key),
         }
       }, {} as ShowInInput);
       if (warnings.filter((w) => w.includes('showIn should be an object, array is deprecated')).length === 0) {
@@ -313,17 +315,19 @@ export default class ConfigValidator implements IConfigValidator {
       }
     }
 
+    const showInTransformedToObject: ShowInModernInput = showIn as ShowInModernInput; 
+
     // by default copy from 'all' key if present or show on all pages
     for (const key of Object.keys(AdminForthResourcePages)) {
-      if (!Object.keys(showIn).includes(key)) {
-        showIn[key] = showIn.all !== undefined ? showIn.all : true;
+      if (!Object.keys(showInTransformedToObject).includes(key)) {
+        showInTransformedToObject[key] = showInTransformedToObject.all !== undefined ? showInTransformedToObject.all : true;
       }
     }
-    if (showIn.all !== undefined) {
-      delete showIn.all;
+    if (showInTransformedToObject.all !== undefined) {
+      delete showInTransformedToObject.all;
     }
     
-    return showIn as ShowIn;
+    return showInTransformedToObject as ShowIn;
   }
 
   validateAndNormalizeResources(errors: string[], warnings: string[]): AdminForthResource[] {
