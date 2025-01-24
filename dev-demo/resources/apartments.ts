@@ -178,9 +178,8 @@ export default {
     {
       name: "apartment_image",
       showIn: {
-        list: false,
-        edit: false,
-        create: false,
+        all: true,
+        show: () => true,
         filter: false,
       },
       required: false,
