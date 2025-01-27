@@ -10,20 +10,18 @@ const escapeRegex = (value) => {
 };
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
-    db: MongoClient
 
-    constructor({ url }: { url: string }) {
-        super();
-        this.db = new MongoClient(url);
+    async setupClient(url): Promise<void> {
+        this.client = new MongoClient(url);
         (async () => {
             try {
-                await this.db.connect();
-                this.db.on('error', (err) => {
+                await this.client.connect();
+                this.client.on('error', (err) => {
                     console.log('Mongo error: ', err.message)
-                 });
+                });
                 console.log('Connected to Mongo');
             } catch (e) {
-                console.error('ERROR: Failed to connect to Mongo', e);
+                throw new Error(`Failed to connect to Mongo: ${e}`);
             }
         })();
     }
@@ -133,7 +131,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
 
-        const collection = this.db.db().collection(tableName);
+        const collection = this.client.db().collection(tableName);
         const query = await this.genQuery({ filters });
 
         const sortArray: any[] = sort.map((s) => {
@@ -154,7 +152,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
     }): Promise<number> {
 
-        const collection = this.db.db().collection(resource.table);
+        const collection = this.client.db().collection(resource.table);
         const query = {};
         for (const filter of filters) {
             query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
@@ -164,7 +162,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
-        const collection = this.db.db().collection(tableName);
+        const collection = this.client.db().collection(tableName);
         const result = {};
         for (const column of columns) {
             result[column] = await collection
@@ -178,7 +176,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async createRecordOriginalValues({ resource, record }) {
         const tableName = resource.table;
-        const collection = this.db.db().collection(tableName);
+        const collection = this.client.db().collection(tableName);
         const columns = Object.keys(record);
         const newRecord = {};
         for (const colName of columns) {
@@ -188,19 +186,19 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
-        const collection = this.db.db().collection(resource.table);
+        const collection = this.client.db().collection(resource.table);
         await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
         const primaryKey = this.getPrimaryKey(resource);
-        const collection = this.db.db().collection(resource.table);
+        const collection = this.client.db().collection(resource.table);
         const res = await collection.deleteOne({ [primaryKey]: recordId });
         return res.deletedCount > 0;
     }
 
     async close() {
-        await this.db.close()
+        await this.client.close()
     }
 }
 
