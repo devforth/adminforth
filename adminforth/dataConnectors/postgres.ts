@@ -8,16 +8,17 @@ const { Client } = pkg;
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
-    async setupClient(url): Promise<void> {
+    async setupClient(url: string): Promise<void> {
         this.client = new Client({
             connectionString: url
         });
         try {
             await this.client.connect();
-            this.client.on('error', (err) => {
+            this.client.on('error', async (err) => {
                 console.log('Postgres error: ', err.message, err.stack)
                 this.client.end();
-                this.client = new PostgresConnector({ url }).db;
+                await new Promise((resolve) => { setTimeout(resolve, 1000) });
+                this.setupClient(url);
             });
         } catch (e) {
             throw new Error(`Failed to connect to Postgres ${e}`);
