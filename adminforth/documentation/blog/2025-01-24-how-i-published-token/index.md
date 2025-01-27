@@ -1,17 +1,16 @@
 ---
 slug: how-i-opensourced-my-secret-tokens
-title: How I open-sourced my secret access tokens from Github, Slack and NPM and who of them cares about it
+title: How I Open-Sourced My Secret Access Tokens from GitHub, Slack, and NPM — and Who Actually Cares
 authors: ivanb
-tags: [chatgpt, plugin]
 ---
 
-Our framework has a CI pipeline which does `npm run build`, publishes package to npm (`npm publish`), and creates a new release on GitHub. Also it sends notification about release to Slack webhook for our team. 
+Our framework has a CI pipeline that runs `npm run build`, publishes the package to NPM (`npm publish`), and creates a new release on GitHub. It also sends a notification about the release to a Slack webhook for our team.
 
-Secrets for these services were stored in our CI built-in Vault (We are running self-hosted Woodpecker CI).
+Secrets for these services were stored in our CI’s built-in Vault (we are running a self-hosted Woodpecker CI).
 
-Recently when I was moving plugins to separate repositories, I decided to try [infiscal](https://infisical.com/) for centralized secrets management instead of internal CI Vault. Infiscal provides self-hosted open-source soluition as well, and has well-orginized UI and better access control then our CI Vault. For me it was important that I can reuse secrets for different repositories without copying them every time when I create a new plugin.
+Recently, while moving plugins to separate repositories, I decided to try [Infisical](https://infisical.com/) for centralized secrets management instead of the internal CI Vault. Infisical provides a self-hosted open-source solution, has a well-organized UI, and offers better access control than our CI Vault. It was important to me that I could reuse secrets across different repositories without copying them every time I created a new plugin.
 
-So what I did:
+Here’s what I did:
 
 
 ```yaml title=".woodpecker.yml"
@@ -63,59 +62,58 @@ steps:
       - VAULT_SLACK_TOKEN
 ```
 
-Pretty dump method to export secrets to `.vault.env` file, but it was late evening and I did not want to spend much time on it for start.
+Pretty dumb method to export secrets to the `.vault.env` file, but it was late evening, and I didn’t want to spend much time on it at the start.
 
-I made a first push, and everything worked fine from first attmpt. I was happy.
+I made the first push, and everything worked fine on the first attempt. I was happy.
 
-Then I started to add same code to first plugin. And plugin build failed with very unexpected error. 
+Then I started adding the same code to the first plugin, and the plugin build failed with a very unexpected error.
 
-It said that my npm token is invalid. I was surprised, started to print env to see what is wrong (pritnting env to build log is pretty bad practice and is last thing you want to do, but I knew it is internal CI and project is private).
+It said that my NPM token was invalid. I was surprised and started printing the environment variables to see what was wrong (printing environment variables to the build log is a pretty bad practice and is the last thing you want to do, but I knew it was an internal CI, and the project was private).
 
-And I saw that my npm token is not in env and was the same.
+I saw that my NPM token was still in the environment variables and was the same.
 
-I went to first repository and retried build. And it failed with the same error.
+I went back to the first repository and retried the build. It failed with the same error.
 
-I went to npm and found out that token disappeared at all. I was shocked and recreated it.
+I went to NPM and found out that the token had disappeared entirely from the list. I was shocked and recreated it.
 
-On next build I figured out that Slack webhook is also not working. GitHub releases were created fine without issues on both repositories.
+On the next build, I discovered that the Slack webhook was also not working. However, GitHub releases were created without issues in both repositories.
 
-Then I noticed email push notification from Slack called "Notification about invalidated webhook URLs"
-
+Then I noticed an email push notification from Slack titled "Notification about invalidated webhook URLs."
 
 ![Slack Notification about invalidated webhook URLs](image.png)
 
+This was the moment I realized that `npm publish` had simply taken my `.vault.env` file and published it to NPM.
 
-This was the moment when I realized that npm publish simply took my `.vault.env` file and published it to npm.
-
-Now I detected recent email from npm called "Granular access token deleted"
+Shortly after, I noticed a recent email from NPM titled "Granular access token deleted."
 
 ![npm Granular access token deleted](image-1.png)
 
-Next thing I did was revoking all tokens including Github which still worked and unpublished all packages from npm (though they still might be cloned by some caches / aggregators / archivers).
+The next thing I did was revoke all tokens, including the GitHub token, which still worked, and unpublish all packages from NPM (though they might still be cloned by some caches/aggregators/archivers).
 
-# How services care about leaked secret tokens
+# How Services Handle Leaked Secret Tokens
 
 ## GitHub
 
-GitHub was not able to recognize that token was leaked to npm package and revoke it. Though they do pretty-good work when you push some other vendor secrets to GitHub repository, but seams they don't check npm sources.
+GitHub was not able to recognize that the token had been leaked to an NPM package and revoke it. Although they do a pretty good job when you push other vendors’ secrets to a GitHub repository, it seems they don’t check NPM sources.
 
 ## NPM 
 
-NPM understood that npm token was published to npm registry and revoked it. Though it was hard to understand why: they simple deleted it. They sent email, but email did not say why it was deleted and did not specefie leak source. Probably showing some error in tokens list on npm website would be best option.
+NPM detected that the NPM token was published to their registry and revoked it. However, it was hard to understand why—it was simply deleted. They sent an email, but it did not explain why the token was deleted or specify the source of the leak. Showing an error in the tokens list on the NPM website would have been the best option.
 
 ## Slack
 
-I surprised, but Slack did a great job. They monitor npm (don't think they monitor whole npm, probably there is some interesting technology behind it). They detected that npm token was published to npm registry and invalidated it. They sent email with clear explanation why it was invalidated and what to do next.
+I was surprised, but Slack did a great job. They monitor NPM (I don’t think they monitor the whole NPM registry; there’s probably some interesting technology behind it). They detected that the NPM token was published to the registry and invalidated it. They sent an email with a clear explanation of why it was invalidated and what steps to take next.
 
 # Conclusion
 
-We can say a lot on bad programmers practices, but the main thing is that we are humans. And humans still make mistakes. 
-So it makes a lot of sense to monitor for such human errors.
-In my case NPM and Slack saved me from potential security breach. If not them I would learn about the issue only when someone would use my tokens for bad purposes.
-GitHub did nothing to detect and revoke token, many other services would not do it as well.
+We can talk a lot about bad programming practices, but the main takeaway is that we are human. And humans still make mistakes.  
+It makes a lot of sense to monitor for such human errors.  
 
-I can also give some common recommendations I learned from this story:
+In my case, NPM and Slack saved me from a potential security breach. Without their intervention, I would have learned about the issue only when someone used my tokens for malicious purposes.  
+GitHub didn’t detect or revoke the token, and many other services wouldn’t have done so either.
 
-- try to limit tokens access to only needed granulas as much as possible. Even if something will be leaked, it will not be able to do much harm. Don't add access to all resources/packages/repos if you don't need it.
-- check what you publish at least when you change something in your build pipeline. I did miss the fact .env file was published.
-- appreciate services which monitor for such leaks and react on them. They can save you from potential security breach.
+Here are some common recommendations I learned from this experience:
+
+- Try to limit token access as much as possible to only the required granularity. Even if something is leaked, it won’t cause much harm. Don’t grant access to all resources/packages/repos unless it’s necessary.
+- Check what you publish, especially when making changes to your build pipeline. I missed the fact that the `.env` file was being published.
+- Appreciate services that monitor for leaks and respond to them. They can save you from potential security breaches.
