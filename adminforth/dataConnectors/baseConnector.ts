@@ -11,6 +11,18 @@ import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Co
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
+
+  client: any;
+
+  get db() {
+    console.warn('db is deprecated, use client instead');
+    return this.client;
+  }
+
+  setupClient(url: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   getPrimaryKey(resource: AdminForthResource): string {
     for (const col of resource.dataSourceColumns) {
         if (col.primaryKey) {

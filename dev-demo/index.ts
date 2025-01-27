@@ -5,6 +5,7 @@ import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
 import AuditLogPlugin from '../plugins/adminforth-audit-log/index.js';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
+import apartmentBuyersResource from './resources/apartment_buyers.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
@@ -189,13 +190,17 @@ export const admin = new AdminForth({
     {
       id: 'ch',
       url: 'clickhouse://demo:demo@localhost:8125/demo',
-
-    }
+    },
+    {
+      id: 'mysql',
+      url: 'mysql://demo:demo@localhost:3307/demo',
+    },
   ],
   resources: [
     clicksResource,
     auditLogResource,
     apartmentsResource,
+    apartmentBuyersResource,
     usersResource,
     descriptionImageResource,
     // gamesResource,
@@ -227,6 +232,11 @@ export const admin = new AdminForth({
           badge: async (adminUser) => {
             return '10'
           }
+        },
+        {
+          label: 'Potential Buyers',
+          icon: 'flowbite:user-solid',
+          resourceId: 'apartment_buyers',
         },
         {
           label: 'Description Images',

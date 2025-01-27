@@ -42,7 +42,21 @@ services:
     volumes:
       - mongo-data1:/data/db
 
+  mysql:
+    image: mysql
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: demo
+      MYSQL_DATABASE: demo
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo
+    volumes:
+      - mysql-data:/var/lib/mysql
+
 volumes:
   clickhouse-data:
   pg-data:
   mongo-data1:
+  mysql-data:
