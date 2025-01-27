@@ -8,25 +8,21 @@ const { Client } = pkg;
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
-    db: any;
-
-    constructor({ url }) {
-        super();
-        this.db = new Client({
+    async setupClient(url: string): Promise<void> {
+        this.client = new Client({
             connectionString: url
         });
-        (async () => {
-            try {
-                await this.db.connect();
-                this.db.on('error', (err) => {
-                    console.log('Postgres error: ', err.message, err.stack)
-                    this.db.end();
-                    this.db = new PostgresConnector({ url }).db;
-                });
-            } catch (e) {
-                console.error('ERROR: Failed to connect to Postgres', e);
-            }
-        })();
+        try {
+            await this.client.connect();
+            this.client.on('error', async (err) => {
+                console.log('Postgres error: ', err.message, err.stack)
+                this.client.end();
+                await new Promise((resolve) => { setTimeout(resolve, 1000) });
+                this.setupClient(url);
+            });
+        } catch (e) {
+            throw new Error(`Failed to connect to Postgres ${e}`);
+        }
     }
 
     OperatorsMap = {
@@ -50,7 +46,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
     async discoverFields(resource) {
       
         const tableName = resource.table;
-        const stmt = await this.db.query(`
+        const stmt = await this.client.query(`
         SELECT
             a.attname AS name,
             pg_catalog.format_type(a.atttypid, a.atttypmod) AS type,
@@ -266,7 +262,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
       if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 PG Q:', selectQuery, 'params:', d);
       }
-      const stmt = await this.db.query(selectQuery, d);
+      const stmt = await this.client.query(selectQuery, d);
       const rows = stmt.rows;
       return rows.map((row) => {
         const newRow = {};
@@ -284,7 +280,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', filterValues);
         }
-        const stmt = await this.db.query(q, filterValues);
+        const stmt = await this.client.query(q, filterValues);
         return +stmt.rows[0].count;
     }
   
@@ -296,7 +292,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             if (process.env.HEAVY_DEBUG_QUERY) {
                 console.log('🪲📜 PG Q:', q);
             }
-            const stmt = await this.db.query(q);
+            const stmt = await this.client.query(q);
             const { min, max } = stmt.rows[0];
             result[col.name] = {
                 min, max,
@@ -317,7 +313,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', values);
         }
-        await this.db.query(q, values);
+        await this.client.query(q, values);
     }
 
     async updateRecordOriginalValues({ resource, recordId,  newValues }) {
@@ -327,7 +323,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', values);
         }
-        await this.db.query(q, values);
+        await this.client.query(q, values);
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
@@ -335,12 +331,12 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', [recordId]);
         }
-        const res = await this.db.query(q, [recordId]);
+        const res = await this.client.query(q, [recordId]);
         return res.rowCount > 0;
     }
 
     async close() {
-        await this.db.end();
+        await this.client.end();
     }
 }
 

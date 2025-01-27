@@ -86,3 +86,21 @@ model translations {
     @@index([en_string, category])
     @@index([category])
 }
+
+model apartment_buyers {
+    id                      String  @id
+    created_at              DateTime
+    name                    String
+    age                     Int?
+    gender                  String?
+    info                    String?
+    contact_info            String?
+    language                String?
+    ideal_price             Decimal?
+    ideal_space             Float?
+    ideal_subway_distance   Float?
+    contacted               Boolean @default(false)
+    contact_date            Date?
+    contact_time            Time?
+    realtor_id              String?
+}
