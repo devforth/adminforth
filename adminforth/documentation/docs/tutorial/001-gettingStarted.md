@@ -41,7 +41,7 @@ npx adminforth create-app
 CLI options:
 
 * **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
-* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
+* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
 
 > ☝️ Database Connection String format:
 >
@@ -51,6 +51,7 @@ CLI options:
 > - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
 > - MongoDB — `mongodb://localhost:27017/dbname`
 > - Clickhouse — `clickhouse://localhost:8123/dbname`
+> - MySQL — `mysql://user:password@localhost:3306/dbname`
 
 ### Understand the generated Project Structure
 
