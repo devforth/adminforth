@@ -2,6 +2,7 @@
 import AdminForthAuth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
+import MysqlConnector from './dataConnectors/mysql.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
@@ -288,6 +289,7 @@ class AdminForth implements IAdminForth {
       'postgresql': PostgresConnector,
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
+      'mysql': MysqlConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
@@ -297,8 +299,16 @@ class AdminForth implements IAdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type '${dbType}' is not supported, consider using one of ${Object.keys(this.connectorClasses).join(', ')} or create your own data-source connector`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]();  
     });
+
+    await Promise.all(Object.keys(this.connectors).map(async (dataSourceId) => {
+      try {
+        await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
+      } catch (e) {
+        console.error(`Error while connecting to datasource '${dataSourceId}':`, e);
+      }
+    }));
 
     await Promise.all(this.config.resources.map(async (res) => {
       if (!this.connectors[res.dataSource]) {
