@@ -461,6 +461,26 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
 
+        if (inCol.inputPrefix || inCol.inputSuffix) {
+          if (![AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT, AdminForthDataTypes.INTEGER, AdminForthDataTypes.STRING, undefined].includes(col.type)) {
+            if (inCol.type === AdminForthDataTypes.JSON) {
+              if (inCol.isArray && inCol.isArray.enabled && ![AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT, AdminForthDataTypes.INTEGER, AdminForthDataTypes.STRING].includes(inCol.isArray.itemType)) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" has input${inCol.inputPrefix ? 'Prefix': 'Suffix'} but it is not supported for array columns item type: ${inCol.isArray.itemType}`);
+              } else if (!inCol.isArray || !inCol.isArray.enabled) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" has input${inCol.inputPrefix ? 'Prefix' : 'Suffix'} but it is not supported for this column type: ${col.type}`);
+              }
+            } else {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has input${inCol.inputPrefix ? 'Prefix' : 'Suffix'} but it is not supported for this column type: ${col.type}`);
+            }
+          }
+          if (inCol.enum) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has input${inCol.inputPrefix ? 'Prefix' : 'Suffix'} but it is not supported for enum columns`);
+          }
+          if (inCol.foreignResource) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has input${inCol.inputPrefix ? 'Prefix' : 'Suffix'} but it is not supported for foreignResource columns`);
+          }
+        }
+
         // check is all custom components files exists
         if (col.components) {
           for (const [key, comp] of Object.entries(col.components as Record<string, AdminForthComponentDeclarationFull>)) {

@@ -39,17 +39,19 @@
       :readonly="column.editReadonly && source === 'edit'"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
-    <input 
+    <Input
       v-else-if="['integer'].includes(type || column.type)"
       ref="input"
-      type="number" 
+      type="number"
       step="1"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="w-40"
       placeholder="0"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
       :readonly="column.editReadonly && source === 'edit'"
-      :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
-    >
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
+    />
     <CustomDatePicker
       v-else-if="['datetime'].includes(type || column.type)"
       ref="input"
@@ -59,15 +61,17 @@
       @update:valueStart="$emit('update:modelValue', $event)"
       :readonly="column.editReadonly && source === 'edit'"
     />
-    <input
+    <Input
       v-else-if="['decimal', 'float'].includes(type || column.type)"
       ref="input"
       type="number"
       step="0.1"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-40 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="w-40"
       placeholder="0.0"
-      :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="column.editReadonly && source === 'edit'"
     />
     <textarea
@@ -87,19 +91,21 @@
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
     />
-    <input
+    <Input
       v-else
       ref="input"
       :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="w-full"
       :placeholder="$t('Text')"
-      :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
       autocomplete="false"
       data-lpignore="true"
       readonly
       @focus="onFocusHandler($event, column, source)"
-    >
+    />
 
     <button
       v-if="deletable"
@@ -125,6 +131,7 @@
   import { IconEyeSlashSolid, IconEyeSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Select from '@/afcl/Select.vue';
+  import Input from '@/afcl/Input.vue';
   import { ref } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';

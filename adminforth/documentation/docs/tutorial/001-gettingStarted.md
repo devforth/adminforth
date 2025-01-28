@@ -224,6 +224,7 @@ export default {
     },
     {
       name: 'price',
+      inputSuffix: 'USD', // you can add a suffix to an input field that will be displayed when creating or editing records
       allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
       editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
     },
