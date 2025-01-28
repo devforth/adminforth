@@ -54,12 +54,20 @@
             />
 
             <Input
-              v-else-if="[ 'string', 'text' ].includes(c.type)"
+              v-else-if="['string', 'text', 'unknown'].includes(c.type)"
               type="text"
               full-width
               :placeholder="$t('Search')"
               @update:modelValue="setFilterItem({ column: c, operator: 'ilike', value: $event || undefined })"
               :modelValue="getFilterItem({ column: c, operator: 'ilike' })"
+            />
+
+            <textarea
+              v-else-if="['json', 'richtext'].includes(c.type)"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+              :placeholder="$t('Search')"
+              :value="getFilterItem({ column: c, operator: 'ilike' })"
+              @input="setFilterItem({ column: c, operator: 'ilike', value: $event.target.value || undefined })"
             />
 
            <CustomDateRangePicker
@@ -72,7 +80,7 @@
            />
 
             <Input
-              v-else-if="[ 'date', 'time' ].includes(c.type)"
+              v-else-if="['date', 'time'].includes(c.type)"
               type="text"
               full-width
               :placeholder="$t('Search datetime')"
