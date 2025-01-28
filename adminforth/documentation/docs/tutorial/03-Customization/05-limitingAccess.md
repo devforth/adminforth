@@ -18,7 +18,7 @@ If you want to disable deletion of the resource records for all users:
 ```ts title="./resources/users.ts"
 {
   ...
-  resourceId: 'users',
+  resourceId: 'adminuser',
   ...
 //diff-add
   options: {
@@ -82,7 +82,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
 
 {
   ...
-  resourceId: 'users',
+  resourceId: 'adminuser',
   ...
   options: {
     allowedActions: {

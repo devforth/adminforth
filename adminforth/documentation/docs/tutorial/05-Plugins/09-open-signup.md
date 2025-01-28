@@ -37,7 +37,7 @@ Please note that in this mode users will be able to sign up without email verifi
 
 ## Email verification
 
-First, you need to migrate the `users` table in `./schema.prisma`:
+First, you need to migrate the `adminuser` table in `./schema.prisma`:
 
 ```ts title='./schema.prisma'
 model users {
@@ -68,8 +68,8 @@ import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
 
 export default {
   dataSource: 'maindb',
-  table: 'users',
-  resourceId: 'users',
+  table: 'adminuser',
+  resourceId: 'adminuser',
   label: 'Users',
   recordLabel: (r) => `👤 ${r.email}`,
   columns: [

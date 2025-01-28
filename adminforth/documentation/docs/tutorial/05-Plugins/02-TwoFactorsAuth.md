@@ -38,7 +38,7 @@ And add it to `users.ts`
 
 ```ts tittle="./resources/users.ts"
 {
-    table: 'users',
+    table: 'adminuser',
 //diff-add
     plugins: [
 //diff-add
@@ -119,7 +119,7 @@ You can even add a boolean column to the user table to store whether the user sh
 
 ```ts title='./users.ts'
 {
-    resourceId: 'users',
+    resourceId: 'adminuser',
     ...
     columns: [
         ...

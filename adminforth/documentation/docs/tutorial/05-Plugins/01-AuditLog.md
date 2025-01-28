@@ -47,7 +47,7 @@ npx --yes prisma migrate dev --name add-audit-logs
 Also to make this code start 
 
 ## Setting up the resource and dataSource for plugin
-Logger sets up for all the resources by default. But you can exclude unwanted resources with option "excludeResourceIds". In this example, we'll exclude resource "users" from logging.
+Logger sets up for all the resources by default. But you can exclude unwanted resources with option "excludeResourceIds". In this example, we'll exclude resource "adminuser" from logging.
 
 Also, it excludes itself to avoid infinte logging loop.
 
@@ -69,7 +69,7 @@ Add this code in `auditLogs.ts`:
       { name: 'resource_id', required: false },
       { name: 'user_id', required: false, 
           foreignResource: {
-          resourceId: 'users',
+          resourceId: 'adminuser',
         } },
       { name: 'action', required: false },
       { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
@@ -90,7 +90,7 @@ Add this code in `auditLogs.ts`:
     plugins: [
       new AuditLogPlugin({
         // if you want to exclude some resources from logging
-        //excludeResourceIds: ['users'],
+        //excludeResourceIds: ['adminuser'],
         resourceColumns: {
           resourceIdColumnName: 'resource_id',
           resourceActionColumnName: 'action',

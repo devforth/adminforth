@@ -207,7 +207,7 @@ declare var process : {
 export const admin = new AdminForth({
   baseUrl: '/admin',
   auth: {
-    usersResourceId: 'user',  // resource to get user during login
+    usersResourceId: 'adminuser',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'passwordHash',
   },
@@ -249,7 +249,7 @@ export const admin = new AdminForth({
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
-      resourceId: 'user',
+      resourceId: 'adminuser',
     }
   ],
 });
@@ -278,7 +278,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       Sorts.DESC('createdAt'),
     );
     const authorIds = [...new Set(posts.map((p: any) => p.authorId))];
-    const authors = (await admin.resource('user').list(Filters.IN('id', authorIds)))
+    const authors = (await admin.resource('adminuser').list(Filters.IN('id', authorIds)))
       .reduce((acc: any, a: any) => {acc[a.id] = a; return acc;}, {});
     posts.forEach((p: any) => {
       const author = authors[p.authorId];
@@ -309,8 +309,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
-      await admin.resource('user').create({
+    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
+      await admin.resource('adminuser').create({
         email: 'adminforth@adminforth.dev',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
@@ -334,7 +334,7 @@ import UploadPlugin from '@adminforth/upload';
 
 export default {
   dataSource: 'maindb',
-  table: 'user',
+  table: 'adminuser',
   label: 'Users',
   recordLabel: (r: any) => `👤 ${r.email}`,
   columns: [
@@ -501,7 +501,7 @@ export default {
     {
       name: 'authorId',
       foreignResource: {
-        resourceId: 'user',
+        resourceId: 'adminuser',
       },
       showIn: {
         list: false,
