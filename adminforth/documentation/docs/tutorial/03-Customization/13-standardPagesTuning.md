@@ -370,6 +370,28 @@ export default {
 
 > `validation` checks are enforced both on frontend and backend.
 
+### Input prefix and suffix
+
+You can add prefix or suffix to inputs by adding `inputPrefix` or `inputSuffix` fields to a column.
+
+```typescript title="./resources/users.ts"
+export default {
+      name: 'users',
+      columns: [
+        ...
+        {
+          name: "price",
+          inputSuffix: "USD",
+          allowMinMaxQuery: true,
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+These fields can only be used with following `AdminForthDataTypes`: `DECIMAL`, `FLOAT`, `INTEGER`, `STRING` and `JSON` (only if `JSON` column is an array with appropriate `itemType`).
+
 ### Editing note
 
 You can add `editingNote` to a column to show a note below the input field.
