@@ -44,7 +44,7 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
       {
         label: 'Users',
         icon: 'flowbite:folder-duplicate-outline',
-        resourceId: 'users',
+        resourceId: 'adminuser',
       },
     },
     ...
