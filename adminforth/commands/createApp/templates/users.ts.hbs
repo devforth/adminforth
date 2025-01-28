@@ -8,7 +8,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
 export default {
   dataSource: 'maindb',
   table: 'adminuser',
-  resourceId: 'users',
+  resourceId: 'adminuser',
   label: 'Users',
   recordLabel: (r) => `👤 ${r.email}`,
   options: {
@@ -44,7 +44,7 @@ export default {
     {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
-      showIn: [{
+      showIn: {
         edit: false,
         create: false,
       },

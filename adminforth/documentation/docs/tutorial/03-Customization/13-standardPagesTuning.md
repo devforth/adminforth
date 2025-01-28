@@ -348,7 +348,7 @@ In cases when column values must follow certain format, you can add `validation`
 
 ```typescript title="./resources/users.ts"
 export default {
-      name: 'users',
+      name: 'adminuser',
       columns: [
         ...
         {
@@ -376,7 +376,7 @@ You can add `editingNote` to a column to show a note below the input field.
 
 ```typescript title="./resources/users.ts"
 export default {
-      name: 'users',
+      name: 'adminuser',
       columns: [
         ...
         {
@@ -395,7 +395,7 @@ Whenever you want to have a column to store not a single value but an array of v
 
 ```typescript title="./resources/users.ts"
 export default {
-      name: 'users',
+      name: 'adminuser',
       columns: [
         ...
         {
@@ -424,7 +424,7 @@ By default it is forbidden to store duplicate values in an array column. To chan
 
 ```typescript title="./resources/users.ts"
 export default {
-      name: 'users',
+      name: 'adminuser',
       columns: [
         ...
         {
@@ -454,13 +454,13 @@ When you want to create a connection between two resources, you need to add `for
 
 ```typescript title="./resources/users.ts"
 export default {
-      name: 'users',
+      name: 'adminuser',
       columns: [
         ...
         {
           name: "realtor_id",
           foreignResource: {
-            resourceId: 'users',
+            resourceId: 'adminuser',
           },
         },
       ],
