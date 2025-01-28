@@ -1,13 +1,13 @@
 import express from 'express';
 import AdminForth, { Filters } from 'adminforth';
-import usersResource from "./resources/users";
+import usersResource from "./resources/adminuser";
 
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
   auth: {
-    usersResourceId: 'users',
+    usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
     rememberMeDays: 30,
@@ -51,7 +51,7 @@ export const admin = new AdminForth({
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
-      resourceId: 'users'
+      resourceId: 'adminuser'
     }
   ],
 });
@@ -68,8 +68,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
+    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('adminuser').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
         role: 'superadmin',

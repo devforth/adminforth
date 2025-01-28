@@ -191,8 +191,8 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: { dbUrl, prismaDbUrl },
     },
     {
-      src: 'users.ts.hbs',
-      dest: 'resources/users.ts',
+      src: 'adminuser.ts.hbs',
+      dest: 'resources/adminuser.ts',
       data: {},
     },
     {
