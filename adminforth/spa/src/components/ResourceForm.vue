@@ -252,7 +252,8 @@ const columnOptions = computedAsync(async () => {
             offset: 0,
           },
         });
-        return { [column.name]: list.items };
+        console.log(`columnOptions for ${column.name}: ${JSON.stringify(list.items, null, 2)}`);
+        return { [column.name]: [...list.items, { value: null, label: t('Unset')}] };
       }
     })
   )).reduce((acc, val) => Object.assign(acc, val), {})
