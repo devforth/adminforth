@@ -346,7 +346,7 @@ export default {
 In cases when column values must follow certain format, you can add `validation` to it.
 `validation` is an array of rules, each containing `regExp` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
 
-```typescript title="./resources/users.ts"
+```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',
       columns: [
@@ -374,7 +374,7 @@ export default {
 
 You can add `editingNote` to a column to show a note below the input field.
 
-```typescript title="./resources/users.ts"
+```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',
       columns: [
@@ -393,7 +393,7 @@ export default {
 
 Whenever you want to have a column to store not a single value but an array of values you have to set column as `AdminForthDataTypes.JSON`. This way when you are creating or editing a record you can type in a JSON array into a textfield. To simplify this process and allow you to create and edit separate items you can add `isArray` to a column.
 
-```typescript title="./resources/users.ts"
+```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',
       columns: [
@@ -422,7 +422,7 @@ Doing so, will result in UI displaying each item of the array as a separate inpu
 
 By default it is forbidden to store duplicate values in an array column. To change that you can add `allowDuplicateItems: true` to `isArray`, like so:
 
-```typescript title="./resources/users.ts"
+```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',
       columns: [
@@ -452,7 +452,7 @@ Note: array columns can not be marked as `masked`, be a `primaryKey` and at the 
 
 When you want to create a connection between two resources, you need to add `foreignResource` to a column, like so:
 
-```typescript title="./resources/users.ts"
+```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',
       columns: [

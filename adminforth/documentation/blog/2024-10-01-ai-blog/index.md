@@ -325,9 +325,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 ## Step 5: Create resources
 
-Create `res` folder. Create `./res/user.ts` file with following content:
+Create `res` folder. Create `./res/adminuser.ts` file with following content:
 
-```ts title="./res/users.ts"
+```ts title="./res/adminuser.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';

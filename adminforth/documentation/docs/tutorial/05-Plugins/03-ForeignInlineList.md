@@ -10,7 +10,7 @@ Import plugin:
 npm i @adminforth/foreign-inline-list --save
 ```
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 ```
@@ -42,7 +42,7 @@ This means that we can display a list of apartments in the user's show view.
 Add to your `'adminuser'` resource configuration the plugin instance:
 
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 { 
     ...
     resourceId: 'adminuser',
