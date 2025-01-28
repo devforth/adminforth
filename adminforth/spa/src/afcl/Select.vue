@@ -213,7 +213,7 @@ const removeClickListener = () => {
 
 const toogleItem = (item) => {
   if (selectedItems.value.includes(item)) {
-    selectedItems.value = selectedItems.value.filter(i => i !== item);
+    selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {
       selectedItems.value = [item];
