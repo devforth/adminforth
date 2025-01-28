@@ -16,13 +16,13 @@ npm install @adminforth/open-signup --save
 
 To use the plugin, instantiate to to user resource:
 
-```typescript title="./resources/user.ts"
+```typescript title="./resources/adminuser.ts"
 import OpenSignupPlugin from '@adminforth/open-signup';
 ```
 
 Like this:
 
-```typescript title="./resources/user.ts"
+```typescript title="./resources/adminuser.ts"
 new OpenSignupPlugin({
     emailField: 'email',
     passwordField: 'password',
@@ -40,7 +40,7 @@ Please note that in this mode users will be able to sign up without email verifi
 First, you need to migrate the `adminuser` table in `./schema.prisma`:
 
 ```ts title='./schema.prisma'
-model users {
+model adminuser {
   ...
   //diff-add
   email_confirmed Boolean? @default(false)
@@ -50,7 +50,7 @@ model users {
 And prisma migrate:
 
 ```bash
-npx --yes prisma migrate dev --name add-email-confirmed-to-users
+npx --yes prisma migrate dev --name add-email-confirmed-to-adminuser
 ```
 
 Next, install the `@adminforth/email-adapter-aws-ses` package:
@@ -59,9 +59,9 @@ Next, install the `@adminforth/email-adapter-aws-ses` package:
 npm i @adminforth/email-adapter-aws-ses --save
 ```
 
-Also, update the resource configuration in `./resources/users.ts`:
+Also, update the resource configuration in `./resources/adminuser.ts`:
 
-```ts title='./resources/users.ts'
+```ts title='./resources/adminuser.ts'
 ...
 //diff-add
 import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';

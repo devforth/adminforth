@@ -64,7 +64,7 @@ myadmin/
 │   ├── package.json      # For any custom npm packages you will use in Vue files
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
-│   └── users.ts          # Example resource file for users management
+│   └── adminuser.ts      # Example resource file for users management
 ├── schema.prisma         # Prisma schema file for database schema
 ├── index.ts              # Main entry point: configures AdminForth & starts the server
 ├── package.json          # Project dependencies
