@@ -21,7 +21,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 this.setupClient(url);
             });
         } catch (e) {
-            throw new Error(`Failed to connect to Postgres ${e}`);
+            console.error(`Failed to connect to Postgres ${e}`);
         }
     }
 
