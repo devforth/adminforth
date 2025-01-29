@@ -95,16 +95,16 @@ const columnError = (column) => {
     if (!currentValues.value) {
       return null;
     }
-    if (customComponentsInValidity.value[column.name]) {
-      return customComponentsInValidity.value[column.name];
+    if (customComponentsInValidity.value?.value?.[column.name]) {
+      return customComponentsInValidity.value?.value?.[column.name];
     }
-
+    
     if ( 
       column.required[mode.value] && 
       (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '' || (column.isArray?.enabled && !currentValues.value[column.name].length)) && 
       // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
       // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
-      (customComponentsEmptiness.value[column.name] !== false)
+      (customComponentsEmptiness.value?.value?.[column.name] !== false)
     
     ) {
       return t('This field is required');
@@ -130,6 +130,7 @@ const columnError = (column) => {
       return validateValue(column.type, currentValues.value[column.name], column);
     }
     
+    return null;
   });
   return val.value;
 };
