@@ -220,6 +220,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
+          globalInjections: {
+            everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
+          },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
         };
       },

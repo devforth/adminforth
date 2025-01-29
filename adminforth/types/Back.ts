@@ -708,6 +708,7 @@ interface AdminForthInputConfigCustomization {
     userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 }
 
@@ -984,6 +985,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
 }
 

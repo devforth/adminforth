@@ -2,7 +2,7 @@
   <div>
     <div class="grid w-40 gap-4 mb-2">
       <div>
-        <label for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
+        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
         <div class="relative">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
@@ -10,7 +10,7 @@
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -26,7 +26,7 @@
             </div>
 
             <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
-                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
@@ -176,5 +176,13 @@ onMounted(() => {
 onBeforeUnmount(() => {
   removeChangeDateListener();
   destroyDatepickerElement();
+});
+
+function focus() {
+  datepickerStartEl.value?.focus();
+}
+
+defineExpose({
+  focus,
 });
 </script>
