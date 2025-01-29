@@ -21,7 +21,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 });
                 console.log('Connected to Mongo');
             } catch (e) {
-                throw new Error(`Failed to connect to Mongo: ${e}`);
+                console.error(`Failed to connect to Mongo: ${e}`);
             }
         })();
     }
