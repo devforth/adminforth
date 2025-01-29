@@ -10,7 +10,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     try {
       this.client = await mysql.createConnection(url);
     } catch (e) {
-      throw new Error(`Failed to connect to MySQL: ${e}`);
+      console.error(`Failed to connect to MySQL: ${e}`);
     }
   }
 
