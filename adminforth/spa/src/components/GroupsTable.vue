@@ -129,11 +129,11 @@
     arrayItemRefs.value[arrayItemRefs.value.length - 1].focus();
   }
 
-  watch(customComponentsInValidity, (newVal) => {
+  watch(customComponentsInValidity.value, (newVal) => {
     emit('update:customComponentsInValidity', newVal);
   });
 
-  watch(customComponentsEmptiness, (newVal) => {
+  watch(customComponentsEmptiness.value, (newVal) => {
     emit('update:customComponentsEmptiness', newVal);
   });
 
