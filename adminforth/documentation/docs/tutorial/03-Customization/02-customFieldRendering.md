@@ -230,6 +230,67 @@ Now you can use this component in the configuration of the resource:
 }
 ```
 
+### Custom inValidity inside of the custom create/edit components
+
+Custom componets can emit `update:inValidity` event to parent to say that the field is invalid.
+
+You can define this emit as:
+
+```ts 
+const emit = defineEmits([
+  "update:value", 
+//diff-add  
+  "update:inValidity"
+]);
+```
+
+Every time when state in your component becomes invalid, you can emit this event with error message which will be shown in the UI to the user.
+
+```ts
+emit('update:inValidity', "The field has wrong value");
+```
+
+Every time when state in your component becomes valid, you can emit this event with `false`
+
+```ts
+emit('update:inValidity', false);
+```
+
+If component never emits `update:inValidity` event (includign case when you don't use it at all), the field is considered valid.
+
+### Custom emptiness inside of the custom create/edit components
+
+Custom componets can emit `update:emptiness` event to parent to say that the field is empty.
+
+Emptiness is used to prevent user from saving form when `column.required` is true and field is empty.
+
+When `column.required` is false emptiness is not checked.
+
+You can define this emit as:
+
+```ts
+const emit = defineEmits([
+  "update:value", 
+//diff-add
+  "update:emptiness"
+]);
+```
+
+Every time when state in your component becomes empty, you can emit this event with `true`
+
+```ts
+emit('update:emptiness', true);
+```
+
+Every time when state in your component becomes not empty, you can emit this event with `false`
+
+```ts
+emit('update:emptiness', false);
+```
+
+Emptiness emit has a higher priority than natural emptiness of the field. For example when actual value under column in record is empty but component emitted `false` for `update:emptiness` (in other words child component said it non-empty), the field is considered as Non-empty. 
+For another example, if companent is naturally updated some value in record but emited `true` (said that it is empty) the field is considered as empty and error in form will be shown to user.
+
 
 ## Pre-made renderers
 
