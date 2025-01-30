@@ -15,8 +15,8 @@
         :validating="validating"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
-        @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-        @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+        @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+        @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
         />
       </div>
       <div v-else class="flex flex-col gap-4">
@@ -32,8 +32,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
-          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
           />
         </template>
         <div v-if="otherColumns.length > 0">
@@ -48,8 +48,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
-          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
           />
         </div>
       </div>
@@ -95,19 +95,28 @@ const columnError = (column) => {
     if (!currentValues.value) {
       return null;
     }
-    if (customComponentsInValidity.value[column.name]) {
-      return customComponentsInValidity.value[column.name];
+    if (customComponentsInValidity.value?.[column.name]) {
+      return customComponentsInValidity.value?.[column.name];
     }
+    
+    if ( column.required[mode.value] ) {
+      const naturalEmptiness = currentValues.value[column.name] === undefined ||
+        currentValues.value[column.name] === null ||
+        currentValues.value[column.name] === '' || 
+        (column.isArray?.enabled && !currentValues.value[column.name].length);
 
-    if ( 
-      column.required[mode.value] && 
-      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '' || (column.isArray?.enabled && !currentValues.value[column.name].length)) && 
+      const emitedEmptiness = customComponentsEmptiness.value?.[column.name];
       // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
       // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
-      (customComponentsEmptiness.value[column.name] !== false)
-    
-    ) {
-      return t('This field is required');
+      let actualEmptiness;
+      if (emitedEmptiness !== undefined) {
+        actualEmptiness = emitedEmptiness;
+      } else {
+        actualEmptiness = naturalEmptiness;
+      }
+      if (actualEmptiness) {
+        return t('This field is required');
+      }
     }
     if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
       try {
@@ -130,6 +139,7 @@ const columnError = (column) => {
       return validateValue(column.type, currentValues.value[column.name], column);
     }
     
+    return null;
   });
   return val.value;
 };
@@ -252,6 +262,9 @@ const columnOptions = computedAsync(async () => {
             offset: 0,
           },
         });
+
+        if (!column.required[props.source]) list.items.push({ value: null, label: t('Unset') });
+
         return { [column.name]: list.items };
       }
     })

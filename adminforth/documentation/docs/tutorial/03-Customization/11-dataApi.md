@@ -14,7 +14,7 @@ This allows you to make basic operations on the data with AdminForth without usi
 
 ## Usage
 
-Basically you just import `Filters`, `Sorts` from the `adminforth` package and call the awaitable methods on the `admin.resource('users')`.
+Basically you just import `Filters`, `Sorts` from the `adminforth` package and call the awaitable methods on the `admin.resource('adminuser')`.
 
 ```ts
 import { Filters, Sorts } from 'adminforth';
@@ -25,7 +25,7 @@ const admin = new AdminForth({
 });
 
 // get the resource object
-await admin.resource('users').get([Filters.EQ('id', '1234')]);
+await admin.resource('adminuser').get([Filters.EQ('id', '1234')]);
 ```
 
 Here we will show you how to use the Data API with simple examples.
@@ -44,7 +44,7 @@ Signature:
 Get item by ID:
 
 ```ts
-const user = await admin.resource('users').get(
+const user = await admin.resource('adminuser').get(
   [Filters.EQ('id', '1234')]
 );
 ```
@@ -61,7 +61,7 @@ const schoolExists = !!(await admin.resource('schools').get(
 Get user with name 'John' and role not 'SuperAdmin'
 
 ```ts
-const user = await admin.resource('users').get(
+const user = await admin.resource('adminuser').get(
   [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
 );
 ```
@@ -83,7 +83,7 @@ Signature:
 Get 15 latest users which role is not Admin:
 
 ```ts
-const users = await admin.resource('users').list(
+const users = await admin.resource('adminuser').list(
   [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
 );
 ```
@@ -91,13 +91,13 @@ const users = await admin.resource('users').list(
 Get 10 oldest users (with highest age):
 
 ```ts
-const users = await admin.resource('users').list([], 10, 0, Sorts.ASC('age'));
+const users = await admin.resource('adminuser').list([], 10, 0, Sorts.ASC('age'));
 ```
 
 Get next page of oldest users:
 
 ```ts
-const users = await admin.resource('users').list([], 10, 10, Sorts.ASC('age'));
+const users = await admin.resource('adminuser').list([], 10, 10, Sorts.ASC('age'));
 ```
 
 Get 10 schools, sort by rating first, then oldest by founded year:
@@ -162,7 +162,7 @@ const dailyReports = await Promise.all(
     const dateEnd = new Date(dateStart);
     dateEnd.setDate(dateEnd.getDate() + 1);
 
-    return admin.resource('users').count(
+    return admin.resource('adminuser').count(
       [Filters.GTE('createdAt', dateStart.toISOString()), Filters.LT('createdAt', dateEnd.toISOString())]
     );
   })
@@ -217,10 +217,10 @@ Golden rule: create one index per query you are going to use often or where you 
 For example if you have two queries:
 
 ```ts
-const users = await admin.resource('users').list(
+const users = await admin.resource('adminuser').list(
   [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
 );
-const users = await admin.resource('users').list(
+const users = await admin.resource('adminuser').list(
   [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
 );
 ```

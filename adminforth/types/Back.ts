@@ -118,6 +118,14 @@ export interface IAdminForthSort {
 }
 
 export interface IAdminForthDataSourceConnector {
+
+  client: any;
+
+  /**
+   * Function to setup client connection to database.
+   * @param url URL to database. Examples: clickhouse://demo:demo@localhost:8125/demo
+   */
+  setupClient(url: string): Promise<void>;
   
   /**
    * Optional.
@@ -250,7 +258,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
 
 
 export interface IAdminForthDataSourceConnectorConstructor {
-  new ({ url }: { url: string }): IAdminForthDataSourceConnectorBase;
+  new (): IAdminForthDataSourceConnectorBase;
 }
 
 export interface IAdminForthAuth {
@@ -1324,14 +1332,18 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
   },
 }
 
-/**
- * Object which describes on what pages should column be displayed on.
- */
-export type ShowInInput = {
+export type ShowInModernInput = {
   [key in AdminForthResourcePages]?: AllowedActionValue
 } & {
   all?: AllowedActionValue;
-} & Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
+}
+
+export type ShowInLegacyInput = Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
+
+/**
+ * Object which describes on what pages should column be displayed on.
+ */
+export type ShowInInput = ShowInModernInput | ShowInLegacyInput;
 
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
