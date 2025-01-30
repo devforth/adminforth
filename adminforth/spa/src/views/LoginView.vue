@@ -45,6 +45,7 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
+                              oninput="setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
                         </div>
@@ -120,6 +121,9 @@ import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbi
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import { Button, Checkbox } from '@/afcl';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const passwordInput = ref(null);
 const usernameInput = ref(null);
@@ -167,9 +171,15 @@ async function login() {
   const username = usernameInput.value.value;
   const password = passwordInput.value.value;
 
-  if (!username || !password) {
+  if (!username) {
+    usernameInput.value.setCustomValidity(t('Please fill out this field.'));
     return;
   }
+  if (!password) {
+    passwordInput.value.setCustomValidity(t('Please fill out this field.'));
+    return;
+  }
+
   if (inProgress.value) {
     return;
   }
@@ -184,7 +194,11 @@ async function login() {
     }
   });
   if (resp.error) {
-    error.value = resp.error;
+    if (resp.error === 'invalid_username_or_password') {
+      error.value = t('Invalid username or password');
+    } else {
+      error.value = resp.error;
+    }
   } else if (resp.redirectTo) {
     router.push(resp.redirectTo);
   } else {

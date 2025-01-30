@@ -111,7 +111,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       path: '/login',
       handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
        
-        const INVALID_MESSAGE = 'Invalid Username or Password';
+        const INVALID_MESSAGE = 'invalid_username_or_password';
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
