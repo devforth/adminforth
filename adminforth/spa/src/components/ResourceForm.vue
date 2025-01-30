@@ -15,8 +15,8 @@
         :validating="validating"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
-        @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-        @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+        @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+        @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
         />
       </div>
       <div v-else class="flex flex-col gap-4">
@@ -32,8 +32,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
-          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
           />
         </template>
         <div v-if="otherColumns.length > 0">
@@ -48,8 +48,8 @@
           :validating="validating"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
-          @update:customComponentsInValidity="(data) => customComponentsInValidity.value = { ...customComponentsInValidity.value, ...data }"
-          @update:customComponentsEmptiness="(data) => customComponentsEmptiness.value = { ...customComponentsEmptiness.value, ...data }"
+          @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
+          @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
           />
         </div>
       </div>
@@ -95,8 +95,8 @@ const columnError = (column) => {
     if (!currentValues.value) {
       return null;
     }
-    if (customComponentsInValidity.value?.value?.[column.name]) {
-      return customComponentsInValidity.value?.value?.[column.name];
+    if (customComponentsInValidity.value?.[column.name]) {
+      return customComponentsInValidity.value?.[column.name];
     }
     
     if ( column.required[mode.value] ) {
@@ -105,7 +105,7 @@ const columnError = (column) => {
         currentValues.value[column.name] === '' || 
         (column.isArray?.enabled && !currentValues.value[column.name].length);
 
-      const emitedEmptiness = customComponentsEmptiness.value?.value?.[column.name];
+      const emitedEmptiness = customComponentsEmptiness.value?.[column.name];
       // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
       // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
       let actualEmptiness;
