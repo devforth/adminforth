@@ -99,15 +99,24 @@ const columnError = (column) => {
       return customComponentsInValidity.value?.value?.[column.name];
     }
     
-    if ( 
-      column.required[mode.value] && 
-      (currentValues.value[column.name] === undefined || currentValues.value[column.name] === null || currentValues.value[column.name] === '' || (column.isArray?.enabled && !currentValues.value[column.name].length)) && 
+    if ( column.required[mode.value] ) {
+      const naturalEmptiness = currentValues.value[column.name] === undefined ||
+        currentValues.value[column.name] === null ||
+        currentValues.value[column.name] === '' || 
+        (column.isArray?.enabled && !currentValues.value[column.name].length);
+
+      const emitedEmptiness = customComponentsEmptiness.value?.value?.[column.name];
       // if component is custum it might tell other criteria for emptiness by emitting 'update:emptiness'
       // components which do not emit 'update:emptiness' will have undefined value in customComponentsEmptiness
-      (customComponentsEmptiness.value?.value?.[column.name] !== false)
-    
-    ) {
-      return t('This field is required');
+      let actualEmptiness;
+      if (emitedEmptiness !== undefined) {
+        actualEmptiness = emitedEmptiness;
+      } else {
+        actualEmptiness = naturalEmptiness;
+      }
+      if (actualEmptiness) {
+        return t('This field is required');
+      }
     }
     if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
       try {
