@@ -27,7 +27,7 @@
               multiple
               class="w-full"
               :options="columnOptions[c.name] || []"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             <Select
@@ -40,7 +40,7 @@
                 // if field is not required, undefined might be there, and user might want to filter by it
                 ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
               ]"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
@@ -49,12 +49,12 @@
               class="w-full"
               v-else-if="c.enum"
               :options="c.enum"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event || undefined })"
+              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
             <Input
-              v-else-if="[ 'string', 'text' ].includes(c.type)"
+              v-else-if="['string', 'text', 'json', 'richtext', 'unknown'].includes(c.type)"
               type="text"
               full-width
               :placeholder="$t('Search')"
@@ -72,7 +72,7 @@
            />
 
             <Input
-              v-else-if="[ 'date', 'time' ].includes(c.type)"
+              v-else-if="['date', 'time'].includes(c.type)"
               type="text"
               full-width
               :placeholder="$t('Search datetime')"

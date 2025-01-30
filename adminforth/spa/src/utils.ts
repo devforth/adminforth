@@ -116,7 +116,8 @@ export function initThreeDotsDropdown() {
     // this resource has three dots dropdown
     const dd = new Dropdown(
       threeDotsDropdown, 
-      document.querySelector('[data-dropdown-toggle="listThreeDotsDropdown"]') as HTMLElement, 
+      document.querySelector('[data-dropdown-toggle="listThreeDotsDropdown"]') as HTMLElement,
+      { placement: 'bottom-end' }
     );
     adminforth.list.closeThreeDotsDropdown = () => {
       dd.hide();

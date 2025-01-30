@@ -118,6 +118,14 @@ const selected = ref(null)
 
 <div class="split-screen" >
   <div >
+
+```js
+//diff-remove
+const selected = ref(null)
+//diff-add
+const selected = ref([])
+```
+
 ```html
 <Select
   class="w-full"

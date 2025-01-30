@@ -213,7 +213,7 @@ const removeClickListener = () => {
 
 const toogleItem = (item) => {
   if (selectedItems.value.includes(item)) {
-    selectedItems.value = selectedItems.value.filter(i => i !== item);
+    selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {
       selectedItems.value = [item];
@@ -228,8 +228,7 @@ const toogleItem = (item) => {
     search.value = '';
   }
 
-  const list = selectedItems.value.map(item => item.value);
-  const updValue = list.length ? list : null;
+  const updValue = selectedItems.value.map(item => item.value);
   let emitValue;
   if (!props.multiple) {
     emitValue = updValue ? updValue[0] : null;

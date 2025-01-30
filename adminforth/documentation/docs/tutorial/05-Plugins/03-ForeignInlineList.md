@@ -10,22 +10,42 @@ Import plugin:
 npm i @adminforth/foreign-inline-list --save
 ```
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 ```
 
 
 In [Getting Started](<../001-gettingStarted.md>) we created a `'aparts'` resource which has a field `'realtor_id'`.
-This field refers to record from `'users'` resource. This means that we can display a list of apartments in the user's show view.
+This field refers to record from `'adminuser'` resource. To remind you, we configured this relation using `foreignResource` setting in the column configuration:
 
-Add to your `'users'` resource configuration the plugin instance:
+```typescript title="./resources/apartments.ts"
+// 
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+    ...
+    {
+      name: 'realtor_id',
+      foreignResource: {
+        resourceId: 'adminuser',  // this means that aparts.realtor_id refers to primary key of 'adminuser' resource
+                              // this is Many-To-One relatin: many aparts can refer to one user
+      }
+    }
+  ],
+}
+```
+
+This means that we can display a list of apartments in the user's show view.
+
+Add to your `'adminuser'` resource configuration the plugin instance:
 
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 { 
     ...
-    resourceId: 'users',
+    resourceId: 'adminuser',
     ...
 //diff-add
     plugins: [
@@ -56,4 +76,5 @@ You can use `modifyTableResourceConfig` callback to modify what columns to show 
 
 ![alt text](ForeignInlineList.png)
 
-<!-- See [API Reference](/docs/api/plugins/foreign-inline-list/types/type-aliases/PluginOptions) for more all options. -->
+> 👆 To make plugin work, the specified resource (defined with `foreignResourceId`) should have one (and only one) column that refers to the current resource on which you add a plugin.
+> In our case we add plugin to `adminuser` resource, so the `aparts` resource should have one column with `foreignResource.resourceId` equal to `adminuser` resourceId.

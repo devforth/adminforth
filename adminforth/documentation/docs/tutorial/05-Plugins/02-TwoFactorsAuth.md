@@ -10,14 +10,14 @@ npm i @adminforth/two-factors-auth --save
 
 Plugin is already installed into adminforth, to import:
 
-```ts title="/users.ts"
+```ts title="/adminuser.ts"
 import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
 ```
 
 Plugin required some additional setup, to make it work properly. It should be added to the resource auth resource. In our example we will add it to the user resource .
 
 ```ts title='./schema.prisma'
-model users {
+model adminuser {
   id            String     @id
   created_at    DateTime
   email         String   @unique
@@ -34,11 +34,11 @@ Then:
 npx --yes prisma migrate dev --name init
 ```
 
-And add it to `users.ts`
+And add it to `adminuser.ts`
 
-```ts tittle="./resources/users.ts"
+```ts tittle="./resources/adminuser.ts"
 {
-    table: 'users',
+    table: 'adminuser',
 //diff-add
     plugins: [
 //diff-add
@@ -108,7 +108,7 @@ By default plugin enforces Two-Factor Authentication for all users.
 
 If you wish to enforce 2FA only for specific users, you can again use `usersFilterToApply` option:
 
-```ts title='./users.ts'
+```ts title='./adminuser.ts'
   usersFilterToApply: (adminUser: AdminUser) => {
     // disable 2FA for users which email is 'adminforth' or 'adminguest'
     return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
@@ -117,9 +117,9 @@ If you wish to enforce 2FA only for specific users, you can again use `usersFilt
 
 You can even add a boolean column to the user table to store whether the user should use 2FA or not:
 
-```ts title='./users.ts'
+```ts title='./adminuser.ts'
 {
-    resourceId: 'users',
+    resourceId: 'adminuser',
     ...
     columns: [
         ...
@@ -162,7 +162,7 @@ By default, all users are required to setup Two-Factor Authentication.
 
 If you want to allow specific users to skip the 2FA setup, you can use the `usersFilterToAllowSkipSetup` option:
 
-```ts title='./users.ts'
+```ts title='./adminuser.ts'
 ...
 plugins: [
         new TwoFactorsAuthPlugin ({

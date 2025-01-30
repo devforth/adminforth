@@ -616,6 +616,12 @@ export interface AdminForthResourceColumnInputCommon {
   required?: boolean | { create?: boolean, edit?: boolean },
 
   /**
+   * Prefix and suffix for input field on create and edit pages.
+   */
+  inputPrefix?: string,
+  inputSuffix?: string,
+
+  /**
    * Whether AdminForth will show editing note near the field in edit/create form.
    */
   editingNote?: string | { create?: string, edit?: string },

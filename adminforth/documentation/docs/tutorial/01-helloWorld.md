@@ -126,7 +126,7 @@ import AdminForth, { AdminForthDataTypes, AdminUser, Filters } from 'adminforth'
 export const admin = new AdminForth({
   baseUrl: '',
   auth: {
-    usersResourceId: 'users',  // resource to get user during login
+    usersResourceId: 'adminuser',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'passwordHash',
   },
@@ -143,8 +143,8 @@ export const admin = new AdminForth({
   resources: [
     {
       dataSource: 'maindb',
-      table: 'user',
-      resourceId: 'users',
+      table: 'adminuser',
+      resourceId: 'adminuser',
       label: 'Users',
       recordLabel: (r: any) => `👤 ${r.email}`,
       columns: [
@@ -242,7 +242,7 @@ export const admin = new AdminForth({
         {
           name: 'authorId',
           foreignResource: {
-            resourceId: 'users',
+            resourceId: 'adminuser',
           },
           showIn: {
             edit: false,
@@ -275,7 +275,7 @@ export const admin = new AdminForth({
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
-      resourceId: 'users',
+      resourceId: 'adminuser',
     }
   ],
 });
@@ -296,8 +296,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
+    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('adminuser').create({
         email: 'adminforth',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
         role: 'superadmin',
