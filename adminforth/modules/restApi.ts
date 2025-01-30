@@ -472,7 +472,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             columns:
               await Promise.all(
                 resource.columns.map(
-                  async (col, i) => {
+                  async (inCol, i) => {
+                    const col = JSON.parse(JSON.stringify(inCol));
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
