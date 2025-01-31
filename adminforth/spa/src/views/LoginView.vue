@@ -194,11 +194,7 @@ async function login() {
     }
   });
   if (resp.error) {
-    if (resp.error === 'invalid_username_or_password') {
-      error.value = t('Invalid username or password');
-    } else {
       error.value = resp.error;
-    }
   } else if (resp.redirectTo) {
     router.push(resp.redirectTo);
   } else {
