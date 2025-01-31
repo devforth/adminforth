@@ -498,7 +498,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     const showIn = {} as ShowInResolved;
                     await Promise.all(
-                      Object.entries(col.showIn).map(
+                      Object.entries(inCol.showIn).map(
                         async ([key, value]: [string, AllowedActionValue]) => {
                           // if callable then call
                           if (typeof value === 'function') {
