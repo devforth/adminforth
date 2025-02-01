@@ -109,9 +109,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
-      handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
-        const INVALID_MESSAGE = 'Invalid Username or Password';
+        const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
@@ -498,7 +498,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     const showIn = {} as ShowInResolved;
                     await Promise.all(
-                      Object.entries(col.showIn).map(
+                      Object.entries(inCol.showIn).map(
                         async ([key, value]: [string, AllowedActionValue]) => {
                           // if callable then call
                           if (typeof value === 'function') {

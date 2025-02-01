@@ -184,10 +184,9 @@ watch(end, () => {
 })
 
 function initDatepickers() {
-
-  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
-
-  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
+  const LS_LANG_KEY = `afLanguage`;
+  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   addChangeDateListener();
 }
 
