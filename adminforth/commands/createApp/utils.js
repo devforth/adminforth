@@ -64,7 +64,7 @@ function checkNodeVersion(minRequiredVersion = 20) {
   if (isNaN(major) || major < minRequiredVersion) {
     throw new Error(
       `Node.js v${minRequiredVersion}+ is required. You have ${process.versions.node}. ` +
-      `Please upgrade Node.js.`
+      `Please upgrade Node.js. We recommend using nvm for managing multiple Node.js versions.`
     );
   }
 }
@@ -80,6 +80,8 @@ function detectDbProvider(protocol) {
     return 'postgresql';
   } else if (protocol.startsWith('mongodb')) {
     return 'mongodb';
+  } else if (protocol.startsWith('mysql')) {
+    return 'mysql';
   }
 
   const message = `Unknown database provider for ${protocol}. Only SQLite, PostgreSQL, and MongoDB are supported now.`;
