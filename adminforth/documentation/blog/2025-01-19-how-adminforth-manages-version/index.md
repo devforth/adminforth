@@ -1,9 +1,10 @@
 ---
-slug: how-we-manage-versions
-title: Why manual releases and release notes is a chaos and how to fix it
+slug: why-manual-release-notes-and-versions-are-a-chaos-and-how-to-fix-it
+title: Why manual Release Notes and Versions are a chaos and how to fix it
 description: Learn what profits you can get from automatic versioning and learn how simply you can configure it!
 authors: ivanb
-tags: [git, versioning]
+tags: [git, versioning, npm]
+image: "/ogs/autover.jpg" 
 ---
 
 I have a feeling that after first ~600 versions of Adminforth we faced all possible issues with manual versioning and release notes. 
@@ -29,7 +30,7 @@ If you are not familiar with pre-release versions, I can explain it on simple ex
 If you have version `1.2.3` in your `package.json` and you run `npm version patch` it will bump version to `1.2.4`. If you run it again it will bump version to `1.2.5`.
 If you have version `1.2.3` and run `npm version prerelease --preid=next` it will bump version to `1.2.4-next.0`. If you run it again it will bump version to `1.2.4-next.1`. If you run `npm version patch` now it will release version `1.2.4`, hoever if at last step you run `npm version minor` it would release version `1.3.0`.
 
-Please pay attention that `npm` is pretty smart and aligned with normal software release cycle -- once you run `npm version pre-release` on stable version, it understands that you start working on new version and will bump patch version. Once you run `npm version patch` at pre-release version, it will release it as stable version without bumping patch number.
+Please pay attention that `npm` is pretty smart and aligned with normal software release cycle – once you run `npm version pre-release` on stable version, it understands that you start working on new version and will bump patch version. Once you run `npm version patch` at pre-release version, it will release it as stable version without bumping patch number.
 
 This is very useful because we can collect features and fixes in `next` version without releasing them to `latest` version, so users who do `npm install adminforth` will not get new experimental features and fixes, but thouse who want to test them early can do `npm install adminforth@next`. Our team also using `next` for commercial projects to test new features so in the end of the day we have more stable `latest` version.
 
@@ -37,7 +38,7 @@ In new automatic release process we preserved this approach, but made it in sepa
 
 Once we collected enough features and fixes in `next`, we were doing a release to `latest` version, and at this time we did release documentation. 
 
-### Issue one -- easy to forget add something to CHANGELOG.md
+### Issue one: easy to forget add something to CHANGELOG.md
 
 So when I merged PRs to `main` branch, I had to check commits and write them to CHANGELOG.md. 
 
@@ -45,7 +46,7 @@ At this point I wasted time to understand how to call the change in CHANGELOG.md
 
 Also there was a chance that I will skip some commit, or will understand wrong what it was about.
 
-### Issue two -- CHANGELOG.md might be forgot to be changed before release as all
+### Issue two: CHANGELOG.md might be forgot to be changed before release as all
 
 There was a chance that I will forget to update `CHANGELOG.md` at all. I merged PRs, I am hurry and doing release. 
 
@@ -53,7 +54,7 @@ Sometimes I will soon understand that I forgot to update it and will push it to 
 
 Also I am not sure that users are looking into `main` branch to see CHANGELOG, probably they see it in npmjs.com.
 
-### Issue three -- lack of GitHub releases or need to maintain both
+### Issue three: lack of GitHub releases or need to maintain both
 
 We did not have GitHub releases at all at that time. We had only tags. And tags were applied only after release.
 
@@ -61,7 +62,7 @@ But honestly, when I am by myself working with some pacakge, first try to find G
 
 So if I would add GitHub releases, I would have to do a lot of clicks or would need some script / CLI to create release notes. This process would have similar issues as with CHANGELOG.md.
 
-### Issue four -- manual tags
+### Issue four: manual tags
 
 Since release was manual from my PC there was a chance that I will do some minor fix, will forget to commit it, then will do release and release script will add tag to previous, irrelevant commit. 
 
@@ -69,7 +70,7 @@ In such projects with manual tags, there is only one reliabile way for package u
 
 Since git tags were applied only after release and there again was a chance that I will forget to push them to GitHub with a release.
 
-### Issue five -- dump commits
+### Issue five: dump commits
 
 Since with every manual release we updated CHANGELOG.md and updated version in `pacakge.json` every time, we had to do a commit. 
 
@@ -77,7 +78,7 @@ So it borned a lot of dump commits like "Update CHANGELOG.md", "Update version t
 
 Sometime it wass forgot to be commited separately and was commited with other changes in some fix which is even worsen.
 
-### Issue six -- releae delay and bus-factor
+### Issue six: releae delay and bus-factor
 
 So if I was busy new features were waiting for release, becuase only I had access to do releases.
 
@@ -85,14 +86,14 @@ Sonner I passed access to some of my colleagues to do releases but from time to 
 
 Even couple of release contrubuters are onboard, it still takes a time to do all the stuff with Changelog, version, tags, etc, so it delays release.
 
-### Issue seven -- lack of pre-release versions changes
+### Issue seven: lack of pre-release versions changes
 
 While we releasing to `next` we added items under one version in CHANGELOG for simplicity. It would be another extra time to add every `next` version in CHANGELOG and describe whole markdown for it. 
 
 So user was not able to distinguish `1.5.0-next.0` from `1.5.0-next.1` in CHANGELOG, which was not an issue for `latest` users but issue for `next` users.
 
 
-## Semantic-release -- what is it and how it works
+## Semantic-release: what is it and how it works
 
 `semantic-release` is a tool that solved all issues above. Basically it is a CLI tool that you run on your CI/CD server on every push to your repository. 
 
@@ -215,7 +216,7 @@ We will use Woodpecker CI for this example. Woodpecker is a free and open-source
 
 Create a file `.woodpecker.yml` in `deploy` directory:
 
-```yaml title="deploy/.woodpecker.yml"
+```yml title="deploy/.woodpecker.yml"
 clone:
   git:
     image: woodpeckerci/plugin-git
@@ -368,7 +369,7 @@ npm i -D semantic-release-slack-bot
 
 Into "release" section of `package.json` add slack plugin:
 
-```
+```json
  "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -403,7 +404,7 @@ Add it to Woodpecker as secret `SLACK_WEBHOOK` environment variable.
 
 Also add this secterd to `.woodpecker.yml`:
 
-```yaml title="deploy/.woodpecker.yml"
+```yml title="deploy/.woodpecker.yml"
     secrets:
       - GITHUB_TOKEN
       - NPM_TOKEN
@@ -425,3 +426,17 @@ Since previusly we used CHANGELOG.md I thought it would be good to have it in pr
 
 So we ended with a simple [link to GitHub releases](https://github.com/devforth/adminforth/blob/main/CHANGELOG.md)
  
+## Is it all that good?
+
+Well, there are no perfect approaches in the world. 
+
+Of course `semantic-release` has some cons.
+
+First of all, while you can write a commit messages without any prefix and they will not be included in release, you still have to follow strict commit message format when you are releasing feature or fix. And you don't have to forget to use this format. Instead of making manual forming of release notes which is done by one person, now every developer in team has to follow the same format and has to write clear commit messages.
+
+And there are couple of bad things with last points:
+- It is not so easy to modify commit message once it is pushed to GitHub, so commit writing becomes one of the most critical parts of development process where you have to be very careful.
+- Commit message should be understood not only by developers of framework, but also by users of framework. And some developers might think that these are two absolutely different dementions of understanding: first one is for developers, second one is for users. But in fact, at AdminForth, we think that set of user-friendly commit messages is a very small subset of set of developer-friendly commit messages. So if you write user-friendly commit messages, there is no chance that developers will not understand them. 
+
+
+You are still fine with merging incoming PRs and ignore their commit messages becuse GitHub allows to edit commit message before merging ( using `Squash and merge` option )
