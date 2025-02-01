@@ -129,7 +129,8 @@ watch(start, () => {
 })
 
 function initDatepickers() {
-  const options = {format: 'dd M yyyy'};
+  const LS_LANG_KEY = `afLanguage`;
+  const options = {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)};
 
   if (props.autoHide) {
     options.autohide = true;
