@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Vue & Node admin panel framework',
-  tagline: 'Start developing backoffice using open-source admin framework on Tailwind UI and extend it with Vue3',
+  tagline: 'Launch robust back-office apps faster with AdminForth’s easy setup and customization',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
