@@ -646,7 +646,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           offset,
           filters,
           sort: sortFiltered,
-          getTotals: true,
+          getTotals: source === 'list',
         });
 
         // for foreign keys, add references
