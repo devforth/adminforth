@@ -63,22 +63,13 @@
             />
 
            <CustomDateRangePicker
-             v-else-if="['datetime'].includes(c.type)"
+             v-else-if="['datetime', 'date', 'time'].includes(c.type)"
              :column="c"
              :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
              @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
              :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
              @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
            />
-
-            <Input
-              v-else-if="['date', 'time'].includes(c.type)"
-              type="text"
-              full-width
-              :placeholder="$t('Search datetime')"
-              @update:modelValue="setFilterItem({ column: c, operator: 'ilike', value: $event || undefined })"
-              :modelValue="getFilterItem({ column: c, operator: 'ilike' })"
-            />
 
            <CustomRangePicker
              v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
