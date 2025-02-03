@@ -55,7 +55,7 @@
       @update:modelValue="$emit('update:modelValue', $event)"
     />
     <CustomDatePicker
-      v-else-if="['datetime'].includes(type || column.type)"
+      v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
       :column="column"
       :valueStart="value"
