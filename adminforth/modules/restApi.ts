@@ -694,7 +694,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
           item._label = resource.recordLabel(item);
         });
-        if (resource.options.listTableClickUrl) {
+        if (source === 'list' && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser);
