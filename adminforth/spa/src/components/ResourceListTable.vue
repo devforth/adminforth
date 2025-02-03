@@ -430,7 +430,7 @@ async function onClick(e,row) {
               resourceId: props.resource.resourceId,
               primaryKey: row._primaryKeyValue,
             },
-          }).fullPath,
+          }).href,
           '_blank'
         );
       }
