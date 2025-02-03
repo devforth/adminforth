@@ -119,15 +119,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       return dayjs(value).toISOString();
     } else if (field.type == AdminForthDataTypes.DATE) {
-      if (!value) {
-        return null;
-      }
-      return dayjs(value).toISOString().split('T')[0];
+      return value || null;
     } else if (field.type == AdminForthDataTypes.TIME) {
-      if (!value) {
-        return null;
-      }
-      return dayjs(value).toISOString().split('T')[1];
+      return value || null;
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
       return !!value;
     } else if (field.type == AdminForthDataTypes.JSON) {
