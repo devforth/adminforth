@@ -76,7 +76,7 @@
       aria-label="Sidebar"
     >
       <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder">
-        <div class="flex ms-2 md:me-24  m-4  ">
+        <div class="flex ms-2 m-4">
           <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
           <span 
             v-if="coreStore.config?.showBrandNameInSidebar"
