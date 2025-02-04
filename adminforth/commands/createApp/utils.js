@@ -180,15 +180,16 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: {},
     },
     {
-      src: '.env.sample.hbs',
-      dest: '.env.sample',
+      src: '.env.local.hbs',
+      dest: '.env.local',
       data: { dbUrl, prismaDbUrl },
     },
     {
       // We'll write .env using the same content as .env.sample
-      src: '.env.sample.hbs',
+      src: '.env.local.hbs',
       dest: '.env',
-      data: { dbUrl, prismaDbUrl },
+      data: {},
+      empty: true,
     },
     {
       src: 'adminuser.ts.hbs',
@@ -211,12 +212,16 @@ async function writeTemplateFiles(dirname, cwd, options) {
     // If a condition is specified and false, skip this file
     if (task.condition === false) continue;
 
-    const templatePath = path.join(dirname, 'templates', task.src);
-    const compiled = renderHBSTemplate(templatePath, task.data);
     const destPath = path.join(cwd, task.dest);
-    // Ensure parent directory exists
     // fse.ensureDirSync(path.dirname(destPath));
-    fs.writeFileSync(destPath, compiled);
+
+    if (task.empty) {
+      fs.writeFileSync(destPath, '');
+    } else {
+      const templatePath = path.join(dirname, 'templates', task.src);
+      const compiled = renderHBSTemplate(templatePath, task.data);
+      fs.writeFileSync(destPath, compiled);
+    }
   }
 }
 
@@ -233,11 +238,11 @@ function generateFinalInstructions(skipPrismaSetup) {
   let instruction = '⏭️  Run the following commands to get started:\n';
   if (!skipPrismaSetup)
     instruction += `
-  ${chalk.dim('// runs "npx prisma migrate dev --name init" to generate and apply initial migration')};
+  ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.cyan('$ npm run makemigration -- --name init')}\n`;
 
   instruction += `
-  ${chalk.dim('// Starts dev server with tsx watch for hot-reloading')}
+  ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
   ${chalk.cyan('$ npm start')}\n
 `;
 
