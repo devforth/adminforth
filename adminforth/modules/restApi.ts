@@ -515,6 +515,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     if (col.editingNote?.edit) {
                       col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote.edit`);
                     }
+                    if (col.foreignResource?.unsetLabel) {
+                      col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
+                    }
 
                     return {
                       ...col,

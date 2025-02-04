@@ -543,6 +543,7 @@ export type ShowInResolved = {
 
 export interface AdminForthForeignResourceCommon {
   resourceId: string,
+  unsetLabel?: string,
 }
 
 /**
