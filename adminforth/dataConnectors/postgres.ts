@@ -216,7 +216,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             totalCounter += 1;
         }
 
-        field = `"${field}"`
+        if (fieldData._underlineType == 'uuid' && 
+            (f.operator == AdminForthFilterOperators.ILIKE || f.operator == AdminForthFilterOperators.LIKE)
+        ) {
+            field = `cast("${field}" as text)`
+        } else { 
+            field = `"${field}"`
+        }
         return `${field} ${operator} ${placeholder}`;
       }).join(' AND ')}` : '';
 
