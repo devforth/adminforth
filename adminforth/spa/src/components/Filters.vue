@@ -27,7 +27,7 @@
               multiple
               class="w-full"
               :options="columnOptions[c.name] || []"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             <Select
@@ -40,7 +40,7 @@
                 // if field is not required, undefined might be there, and user might want to filter by it
                 ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
               ]"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
             
@@ -49,7 +49,7 @@
               class="w-full"
               v-else-if="c.enum"
               :options="c.enum"
-              @update:modelValue="setFilterItem({ column: c, operator: 'in', value: $event.length ? $event : undefined })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
             />
 
@@ -58,17 +58,17 @@
               type="text"
               full-width
               :placeholder="$t('Search')"
-              @update:modelValue="setFilterItem({ column: c, operator: 'ilike', value: $event || undefined })"
-              :modelValue="getFilterItem({ column: c, operator: 'ilike' })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq', value: $event || undefined })"
+              :modelValue="getFilterItem({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq' })"
             />
 
            <CustomDateRangePicker
              v-else-if="['datetime', 'date', 'time'].includes(c.type)"
              :column="c"
              :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
-             @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
              :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
-             @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
+             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
            />
 
            <CustomRangePicker
@@ -76,9 +76,9 @@
              :min="getFilterMinValue(c.name)"
              :max="getFilterMaxValue(c.name)"
              :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-             @update:valueStart="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
              :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-             @update:valueEnd="setFilterItem({ column: c, operator: 'lte', value: $event || undefined })"
+             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
            />
 
            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
@@ -86,14 +86,14 @@
               type="number"
               aria-describedby="helper-text-explanation"
               :placeholder="$t('From')"
-              @update:modelValue="setFilterItem({ column: c, operator: 'gte', value: $event || undefined })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
               :modelValue="getFilterItem({ column: c, operator: 'gte' })"
             />
             <Input
               type="number"
               aria-describedby="helper-text-explanation"
               :placeholder="$t('To')"
-              @update:modelValue="setFilterItem({ column: c, operator: 'lte', value: $event|| undefined })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event|| undefined })"
               :modelValue="getFilterItem({ column: c, operator: 'lte' })"
             />
            </div>
@@ -127,6 +127,7 @@ import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
+import debounce from 'debounce';
 
 const filtersStore = useFiltersStore();
 
@@ -185,6 +186,19 @@ watch(() => props.show, (show) => {
 //   value: 'John',
 //   operator: 'like'
 // }
+
+const onFilterInput = computed(() => {
+  if (!props.columns) return {};
+
+  return props.columns.reduce((acc, c) => {
+    return {
+      ...acc,
+      [c.name]: debounce(({ column, operator, value }) => {
+        setFilterItem({ column, operator, value });
+      }, c.filterOptions?.debounceTimeMs || 10),
+    };
+  }, {});
+});
 
 function setFilterItem({ column, operator, value }) {
 

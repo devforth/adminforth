@@ -784,6 +784,18 @@ export interface AdminForthResourceColumnInputCommon {
 
   sortable?: boolean,
 
+  
+  filterOptions?: {
+    /**
+     * Decrease number of requests by adding debounce time to filter requests.
+     */
+    debounceTimeMs?: number,
+    /**
+     * If true - will force EQ operator for filter instead of ILIKE.
+     */
+    substringSearch?: boolean,
+  },
+
   /**
    * if true field will !not be passed to UI under no circumstances, but will be presented in hooks
    */
