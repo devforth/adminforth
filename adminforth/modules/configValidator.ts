@@ -374,6 +374,30 @@ export default class ConfigValidator implements IConfigValidator {
         //define default sortable
         if (!Object.keys(col).includes('sortable')) { col.sortable = !col.virtual; }
 
+        // define default filter options
+        if (!Object.keys(col).includes('filterOptions')) {
+          col.filterOptions = {
+            debounceTimeMs: 10,
+            substringSearch: true,
+          };
+        } else {
+          if (col.filterOptions.debounceTimeMs !== undefined) {
+            if (typeof col.filterOptions.debounceTimeMs !== 'number') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" filterOptions.debounceTimeMs must be a number`);
+            }
+          } else {
+            col.filterOptions.debounceTimeMs = 10;
+          }
+
+          if (col.filterOptions.substringSearch !== undefined) {
+            if (typeof col.filterOptions.substringSearch !== 'boolean') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" filterOptions.substringSearch must be a boolean`);
+            }
+          } else {
+            col.filterOptions.substringSearch = true;
+          }
+        }
+
         col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors, warnings);
 
         // check col.required is boolean or object

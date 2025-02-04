@@ -492,3 +492,36 @@ export default {
 ```
 
 This way, when creating or editing a record you will be able to choose value for this field from a dropdown selector and on list and show pages this field will be displayed as a link to a foreign resource.
+
+## Filtering
+
+### Filter Options
+
+You can specify the delay between filtering requests and filtering operator for a column using `filterOptions` field.
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: "title",
+          required: true,
+          maxLength: 255,
+          minLength: 3,
+//diff-add
+          filterOptions: {
+//diff-add
+            debounceTimeMs: 500,
+//diff-add
+            substringSearch: false,
+//diff-add
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+`debounceTimeMs` field dictates how long (in milliseconds) to wait between inputs to send updated data request. By increasing this value, you can reduce the amount of requests set to backend. Default value for this field is set to 10ms.
+`substringSearch` sets what comparison operator to use for text field. By default this field is set to `true`, which results in using case-insensitive `ILIKE` operator, that will look for records that have filter string anywhere inside field value. Setting this `substringSearch` to `false` will result in using more strict `EQ` operator, that will look for exact full-string matches.
