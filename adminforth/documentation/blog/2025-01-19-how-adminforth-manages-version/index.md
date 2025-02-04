@@ -15,6 +15,9 @@ That is why we decided to move the idea of generating versions, and GitHub relea
 
 In this post I will explain why we did a transition from manual releases to automatic, what profits we got from it, and also will show you simple example how to do it in your project!
 
+<!-- truncate -->
+
+
 ## Prehistory and issues
 
 Before 1.6.0 AdminForth was using manual CHANGELOG.md. 
