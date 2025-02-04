@@ -471,6 +471,15 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource resourceId which is not in resources: "${col.foreignResource.resourceId}". 
             ${similar ? `Did you mean "${similar}" instead of "${col.foreignResource.resourceId}"?` : ''}`);
           }
+
+          if (col.foreignResource.unsetLabel) {
+            if (typeof col.foreignResource.unsetLabel !== 'string') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource unsetLabel which is not a string`);
+            }
+          } else {
+            // set default unset label
+            col.foreignResource.unsetLabel = 'Unset';
+          }
           const befHook = col.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest;
           if (befHook) {
             if (!Array.isArray(befHook)) {
