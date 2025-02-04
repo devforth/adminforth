@@ -254,7 +254,7 @@ export default {
   ],
 ```
 
-> Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#modify-the-data-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
+> Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#example-modify-the-created-object-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
 
 
 ### Link to create form with preset values

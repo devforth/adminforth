@@ -7,6 +7,9 @@ tags: [aws, terraform]
 
 Here is a row snippet to deploy AdminForth to Terraform.
 
+<!-- truncate -->
+
+
 Assume you have your AdminForth project in `myadmin`.
 
 Create file `Dockerfile` in `myadmin`:

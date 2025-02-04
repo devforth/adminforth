@@ -12,6 +12,7 @@ Recently, while moving plugins to separate repositories, I decided to try [Infis
 
 Here’s what I did:
 
+<!-- truncate -->
 
 ```yaml title=".woodpecker.yml"
   

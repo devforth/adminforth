@@ -11,6 +11,8 @@ Here Terraform state will be stored in the cloud, so you can run this deployment
 
 We will use GitHub Actions as CI/CD, but you can use any other CI/CD, for example self-hosted free WoodpeckerCI.
 
+<!-- truncate -->
+
 Assume you have your AdminForth project in `myadmin`.
 
 
