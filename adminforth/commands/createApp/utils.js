@@ -187,6 +187,11 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: { dbUrl, prismaDbUrl },
     },
     {
+      src: 'readme.md.hbs',
+      dest: 'README.md',
+      data: { dbUrl, prismaDbUrl },
+    },
+    {
       // We'll write .env using the same content as .env.sample
       src: '.env.local.hbs',
       dest: '.env',
