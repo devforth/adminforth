@@ -493,6 +493,29 @@ export default {
 
 This way, when creating or editing a record you will be able to choose value for this field from a dropdown selector and on list and show pages this field will be displayed as a link to a foreign resource.
 
+### Unset label
+
+When foreign resource column is not required, selector will have an 'Unset' option that will set field to `null`. You can change label for this option using `unsetLabel`, like so:
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'adminuser',
+//diff-add
+            unsetLabel: 'No realtor',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
 ## Filtering
 
 ### Filter Options
