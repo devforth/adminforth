@@ -510,10 +510,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     );
                     // TODO: better to move all coroutines to translationRoutines
                     if (col.editingNote?.create) {
-                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote.create`);
+                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote`);
                     }
                     if (col.editingNote?.edit) {
-                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote.edit`);
+                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote`);
                     }
                     if (col.foreignResource?.unsetLabel) {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
