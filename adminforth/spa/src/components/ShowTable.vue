@@ -55,7 +55,6 @@
   </template>
   
   <script setup lang="ts">
-  import { defineProps } from 'vue';
   import ValueRenderer from '@/components/ValueRenderer.vue';
   import { getCustomComponent } from '@/utils';
   import { useCoreStore } from '@/stores/core';

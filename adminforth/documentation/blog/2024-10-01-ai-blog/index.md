@@ -11,6 +11,8 @@ But what about writing plain text? For example blogs and micro-blogs: sometimes 
 
 ![alt text](nuxtBlog.gif)
 
+<!-- truncate -->
+
 
 For AI plugins are backed by OpenAI API, but their architecture allows to be easily extended for other AI providers once OpenAI competitors will reach the same or better level of quality.
 

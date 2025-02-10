@@ -57,7 +57,7 @@ export default {
 
       completeAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         expert: {
           // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
           temperature: 0.5,
@@ -87,6 +87,9 @@ export default {
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
+      showIn: {
+        create: false,
+      },
     },
     { name: "uk_string", type: AdminForthDataTypes.STRING, label: "Ukrainian" },
     { name: "ar_string", type: AdminForthDataTypes.STRING, label: "Arabic" },

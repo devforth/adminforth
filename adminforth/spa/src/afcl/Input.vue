@@ -9,6 +9,7 @@
 
     <!-- translate needed for bumping ring above prefix without z-index -->
     <input
+      ref="input"
       v-bind="$attrs"
       :type="type"
       @input="$emit('update:modelValue', $event.target?.value)"
@@ -31,6 +32,8 @@
 
 <script setup lang="ts">
 
+import { ref } from 'vue';
+
 const props = defineProps({
   type: String,
   fullWidth: Boolean,
@@ -39,6 +42,11 @@ const props = defineProps({
   prefix: String,
 })
 
+const input = ref<HTMLInputElement | null>(null)
+
+defineExpose({
+  focus: () => input.value?.focus(),
+});
 
 </script>
   

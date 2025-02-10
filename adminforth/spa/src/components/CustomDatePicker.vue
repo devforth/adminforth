@@ -4,7 +4,7 @@
       <div>
         <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
 
-        <div class="relative">
+        <div class="relative" :class="{hidden: column.type === 'time'}">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
             <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
           </div>
@@ -34,6 +34,7 @@
 
       <button type="button"
               class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
         <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -81,7 +82,7 @@ const emit = defineEmits(['update:valueStart']);
 
 const datepickerStartEl = ref();
 
-const showTimeInputs = ref(false);
+const showTimeInputs = ref(props.column?.type === 'time');
 
 const startDate = ref('');
 
@@ -90,11 +91,19 @@ const startTime = ref('');
 const datepickerObject = ref('')
 
 const start = computed(() => {
+  if (props.column?.type === 'time') {
+    return formatTime(startTime.value);
+  }
+  
   if (!startDate.value) {
     return;
   }
 
   let date = dayjs(startDate.value);
+
+  if (props.column?.type === 'date') {
+    return date.format('YYYY-MM-DD');
+  }
 
   if (startTime.value) {
     date = addTimeToDate(formatTime(startTime.value), date)
@@ -107,6 +116,8 @@ async function updateFromProps() {
   if (!props.valueStart) {
     datepickerStartEl.value.value = '';
     startTime.value = '';
+  } else if (props.column.type === 'time') {
+    startTime.value = props.valueStart;
   } else {
     // wait ref to initialize
     await nextTick();
@@ -129,7 +140,8 @@ watch(start, () => {
 })
 
 function initDatepickers() {
-  const options = {format: 'dd M yyyy'};
+  const LS_LANG_KEY = `afLanguage`;
+  const options = {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)};
 
   if (props.autoHide) {
     options.autohide = true;

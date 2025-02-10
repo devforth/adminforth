@@ -27,3 +27,18 @@ github-actions:
   label: GitHub Actions
   permalink: /github-actions
   description: GitHub Actions is a continuous integration and continuous deployment (CI/CD) service provided by GitHub that allows you to automate your software development workflows.
+
+git:
+  label: Git
+  permalink: /git
+  description: Git is a distributed version control system that allows multiple developers to collaborate on a project.
+
+versioning:
+  label: Versioning
+  permalink: /versioning
+  description: Versioning is the process of assigning unique identifiers to different versions of a software application or project.
+
+npm:
+  label: NPM
+  permalink: /npm
+  description: NPM is a package manager for the JavaScript programming language that allows developers to share and reuse code.

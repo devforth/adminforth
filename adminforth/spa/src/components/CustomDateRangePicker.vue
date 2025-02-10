@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="mx-auto grid grid-cols-2 gap-4 mb-2">
+    <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: column.type === 'time'}">
       <div class="relative">
         <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
           <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
@@ -51,6 +51,7 @@
 
       <button type="button"
               class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
         <svg class="w-8 h-8 ms-0.5 relative top-px" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -93,7 +94,7 @@ const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 const datepickerStartEl = ref();
 const datepickerEndEl = ref();
 
-const showTimeInputs = ref(false);
+const showTimeInputs = ref(props.column?.type === 'time');
 
 const startDate = ref('');
 const endDate = ref('');
@@ -105,11 +106,19 @@ const datepickerStartObject = ref('')
 const datepickerEndObject = ref('')
 
 const start = computed(() => {
+  if (props.column?.type === 'time') {
+    return formatTime(startTime.value);
+  }
+
   if (!startDate.value) {
     return;
   }
 
   let date = dayjs(startDate.value);
+
+  if (props.column?.type === 'date') {
+    return date.format('YYYY-MM-DD');
+  }
 
   if (startTime.value) {
     date = addTimeToDate(formatTime(startTime.value), date)
@@ -119,11 +128,19 @@ const start = computed(() => {
 })
 
 const end = computed(() => {
+  if (props.column?.type === 'time') {
+    return formatTime(endTime.value);
+  }
+
   if (!endDate.value) {
     return;
   }
 
   let date = dayjs(endDate.value);
+
+  if (props.column?.type === 'date') {
+    return date.format('YYYY-MM-DD');
+  }
 
   if (endTime.value) {
     date = addTimeToDate(formatTime(endTime.value), date)
@@ -135,7 +152,12 @@ const end = computed(() => {
 })
 
 function updateFromProps() {
-  if (props.valueStart) {
+  if (!props.valueStart) {
+    datepickerStartEl.value.value = '';
+    startTime.value = '';
+  } else if (props.column.type === 'time') {
+    startTime.value = props.valueStart;
+  } else {
     const date = dayjs(props.valueStart);
     datepickerStartEl.value.value = date.format('DD MMM YYYY');
     if (date.format('HH:mm') !== '00:00') {
@@ -145,11 +167,14 @@ function updateFromProps() {
       startTime.value = '';
     }
     startDate.value = date.toString();
-  } else {
-    datepickerStartEl.value.value = '';
-    startTime.value = '';
   }
-  if (props.valueEnd) {
+
+  if (!props.valueEnd) {
+    datepickerEndEl.value.value = '';
+    endTime.value = '';
+  } else if (props.column.type === 'time') {
+    endTime.value = props.valueEnd;
+  } else {
     const date = dayjs(props.valueEnd);
     datepickerEndEl.value.value = date.format('DD MMM YYYY');
     if (date.format('HH:mm') !== '00:00') {
@@ -159,9 +184,6 @@ function updateFromProps() {
       endTime.value = '';
     }
     endDate.value = date.toString();
-  } else {
-    datepickerEndEl.value.value = '';
-    endTime.value = '';
   }
 }
 
@@ -184,10 +206,9 @@ watch(end, () => {
 })
 
 function initDatepickers() {
-
-  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy'});
-
-  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy'});
+  const LS_LANG_KEY = `afLanguage`;
+  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   addChangeDateListener();
 }
 
