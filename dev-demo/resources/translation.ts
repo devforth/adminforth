@@ -87,6 +87,9 @@ export default {
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
+      showIn: {
+        create: false,
+      },
     },
     { name: "uk_string", type: AdminForthDataTypes.STRING, label: "Ukrainian" },
     { name: "ar_string", type: AdminForthDataTypes.STRING, label: "Arabic" },

@@ -10,6 +10,9 @@ export default {
       name: "id",
       primaryKey: true,
       required: false,
+      showIn: {
+        create: false,
+      },
       fillOnCreate: ({ initialRecord }: any) => uuid(),
     },
     { name: "created_at", required: false },
