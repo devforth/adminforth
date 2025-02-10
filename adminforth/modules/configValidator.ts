@@ -374,7 +374,35 @@ export default class ConfigValidator implements IConfigValidator {
         //define default sortable
         if (!Object.keys(col).includes('sortable')) { col.sortable = !col.virtual; }
 
+        // define default filter options
+        if (!Object.keys(col).includes('filterOptions')) {
+          col.filterOptions = {
+            debounceTimeMs: 10,
+            substringSearch: true,
+          };
+        } else {
+          if (col.filterOptions.debounceTimeMs !== undefined) {
+            if (typeof col.filterOptions.debounceTimeMs !== 'number') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" filterOptions.debounceTimeMs must be a number`);
+            }
+          } else {
+            col.filterOptions.debounceTimeMs = 10;
+          }
+
+          if (col.filterOptions.substringSearch !== undefined) {
+            if (typeof col.filterOptions.substringSearch !== 'boolean') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" filterOptions.substringSearch must be a boolean`);
+            }
+          } else {
+            col.filterOptions.substringSearch = true;
+          }
+        }
+
         col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors, warnings);
+
+        if (col.showIn.create && inCol.fillOnCreate !== undefined) {
+          errors.push(`Resource "${res.resourceId}" column "${col.name}" is present on crate page and has fillOnCreate`);
+        }
 
         // check col.required is boolean or object
         if (inCol.required && !((typeof inCol.required === 'boolean') || (typeof inCol.required === 'object'))) {
@@ -435,6 +463,47 @@ export default class ConfigValidator implements IConfigValidator {
             }
           }
         }
+
+        // check suggestOnCreate types
+        if (inCol.suggestOnCreate !== undefined) {
+          if (!col.showIn.create) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate is present, while column is hidden on create page`);
+          }
+
+          if (inCol.suggestOnCreate === '' || inCol.suggestOnCreate === null) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate must not be empty`);
+          }
+
+          if (!['string', 'number', 'boolean', 'object'].includes(typeof inCol.suggestOnCreate)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate must be a string, number, boolean or object`);
+          }
+
+          // if suggestOnCreate is string, column should be one of the types with text inputs
+          if (typeof inCol.suggestOnCreate === 'string' && ![AdminForthDataTypes.STRING, AdminForthDataTypes.DATE, AdminForthDataTypes.DATETIME, AdminForthDataTypes.TIME, AdminForthDataTypes.TEXT, AdminForthDataTypes.RICHTEXT, undefined].includes(inCol.type)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value does not match type of a column`);
+          }
+
+          if (typeof inCol.suggestOnCreate === 'number' && ![AdminForthDataTypes.INTEGER, AdminForthDataTypes.FLOAT, AdminForthDataTypes.DECIMAL].includes(inCol.type)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value does not match type of a column`);
+          }
+
+          if (typeof inCol.suggestOnCreate === 'boolean' && inCol.type !== AdminForthDataTypes.BOOLEAN) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value does not match type of a column`);
+          }
+
+          if (inCol.enum && !inCol.enum.map((ei) => ei.value).includes(inCol.suggestOnCreate)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value is not in enum`);
+          }
+
+          if (typeof inCol.suggestOnCreate === 'object' && inCol.type !== AdminForthDataTypes.JSON) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value does not match type of a column`);
+          }
+
+          if (inCol.isArray?.enabled && !Array.isArray(inCol.suggestOnCreate)) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray is enabled but suggestOnCreate is not an array`);
+          }
+        }
+
         if (col.foreignResource) {
 
           if (!col.foreignResource.resourceId) {
@@ -446,6 +515,15 @@ export default class ConfigValidator implements IConfigValidator {
             const similar = suggestIfTypo(this.inputConfig.resources.map((r) => r.resourceId || r.table), col.foreignResource.resourceId);
             errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource resourceId which is not in resources: "${col.foreignResource.resourceId}". 
             ${similar ? `Did you mean "${similar}" instead of "${col.foreignResource.resourceId}"?` : ''}`);
+          }
+
+          if (col.foreignResource.unsetLabel) {
+            if (typeof col.foreignResource.unsetLabel !== 'string') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource unsetLabel which is not a string`);
+            }
+          } else {
+            // set default unset label
+            col.foreignResource.unsetLabel = 'Unset';
           }
           const befHook = col.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest;
           if (befHook) {

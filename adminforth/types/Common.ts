@@ -543,6 +543,7 @@ export type ShowInResolved = {
 
 export interface AdminForthForeignResourceCommon {
   resourceId: string,
+  unsetLabel?: string,
 }
 
 /**
@@ -632,20 +633,55 @@ export interface AdminForthResourceColumnInputCommon {
   editReadonly?: boolean,
 
   /**
-   * On which AdminForth pages this field will be shown. By default all.
+   * Defines on which AdminForth pages this field will be shown. By default all.
    * Example: if you want to show field only in create and edit pages, set it to
    * 
    * ```ts
-   * showIn: { create: true, edit: true}
+   * showIn: { create: true, edit: true }
+   * ```
+   * 
+   * If you wish show only in list view, set it to:
+   * 
+   * ```ts
+   * showIn: { all: false, list: true }
+   * ```
+   * 
+   * If you wish to hide only in list you can use:
+   * 
+   * 
+   * ```ts
+   * showIn: { all: true, list: false }
+   * ```
+   * 
+   * or
+   * 
+   * ```ts
+   * showIn: { list: false } // all: true is by default already
+   * ```
+   * 
+   * Also might have callback which will be called with same syntax as allowedActions.
+   * 
+   * ```ts
+   * showIn: {
+   *  list: ({ resource, adminUser }) => {
+   *    return adminUser.dbUser.role === 'superadmin';
+   *  },
+   *  show: true,
+   * }
    * ```
    * 
    */
   showIn?: ShowInResolved,
 
   /**
-   * Whether AdminForth will show this field in show view.
+   * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
   fillOnCreate?: Function,
+
+  /**
+   * Single value that will be substituted in create form. User can change it before saving the record.
+   */
+  suggestOnCreate?: string | number | boolean | object,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
@@ -705,7 +741,12 @@ export interface AdminForthResourceColumnInputCommon {
   virtual?: boolean,
 
   /**
-   * Whether AdminForth will show this field in list view.
+   * Allow AdminForth to execute SELECT min(column) and SELECT max(column) queries to get min and max values for this column.
+   * This would improve UX of filters by adding sliders for numeric columns.
+   * 
+   * NOTE: By default is option is `false` to prevent performance issues on large tables.
+   * If you are going to set it to `true`, make sure you have a one-item index on this column (one index for each column which has it) or ensure your table will not have a large number of records.
+   * 
    */
   allowMinMaxQuery?: boolean,
 
@@ -748,6 +789,18 @@ export interface AdminForthResourceColumnInputCommon {
   foreignResource?: AdminForthForeignResourceCommon,
 
   sortable?: boolean,
+
+  
+  filterOptions?: {
+    /**
+     * Decrease number of requests by adding debounce time to filter requests.
+     */
+    debounceTimeMs?: number,
+    /**
+     * If true - will force EQ operator for filter instead of ILIKE.
+     */
+    substringSearch?: boolean,
+  },
 
   /**
    * if true field will !not be passed to UI under no circumstances, but will be presented in hooks

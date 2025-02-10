@@ -8,6 +8,8 @@
       @update:value="$emit('update:modelValue', $event)"
       :meta="column.components[props.source].meta"
       :record="currentValues"
+      :resource="coreStore.resource"
+      :adminUser="coreStore.adminUser"
       @update:inValidity="$emit('update:inValidity', $event)"
       @update:emptiness="$emit('update:emptiness', $event)"
     />
@@ -53,7 +55,7 @@
       @update:modelValue="$emit('update:modelValue', $event)"
     />
     <CustomDatePicker
-      v-else-if="['datetime'].includes(type || column.type)"
+      v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
       :column="column"
       :valueStart="value"
@@ -135,20 +137,29 @@
   import { ref } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';
+  import { useCoreStore } from '@/stores/core';
+
+  const coreStore = useCoreStore();
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    source: 'create' | 'edit',
-    column: any,
-    type: string,
-    value: any,
-    currentValues: any,
-    mode: string,
-    columnOptions: any,
-    unmasked: any,
-    deletable: boolean,
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      source: 'create' | 'edit',
+      column: any,
+      type?: string,
+      value: any,
+      currentValues: any,
+      mode: string,
+      columnOptions: any,
+      unmasked: any,
+      deletable?: boolean,
+    }>(),
+    {
+      type: undefined,
+      deletable: false,
+    }
+  );
 
   const input = ref(null);
 

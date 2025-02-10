@@ -338,6 +338,186 @@ const enable = ref(false)
   </div>
 </div>
 
+## Dialog (Pop-up)
+
+<div class="split-screen" >
+  <div>
+
+```ts
+import { Dialog } from '@/afcl';
+import { Button } from '@/afcl';
+```
+
+```html
+<Dialog class="w-96">
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-87.png)
+  </div>
+</div>
+
+### Header
+You can add header to the dialog by using header prop.
+
+<div class="split-screen" >
+  <div>
+
+```html
+//diff-remove
+<Dialog class="w-96">
+//diff-add
+<Dialog
+//diff-add
+  class="w-96"
+//diff-add
+  header="Dialog Header"
+//diff-add
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-88.png)
+  </div>
+</div>
+
+If you want to remove close button in header, you can add `:header-close-button="false"` prop to `<Dialog>`.
+
+### Buttons
+By default dialog will have just one "Close" button. If you want to change that, you can set `buttons` to a desirable array.
+
+<div class="split-screen" >
+  <div>
+  
+```html
+<Dialog
+  class="w-96"
+  header="Dialog Header"
+//diff-add
+  :buttons="[
+//diff-add
+    { label: 'Save', onclick: (dialog) => { doSave(); dialog.hide(); } },
+//diff-add
+    { label: 'Close', onclick: (dialog) => dialog.hide() },
+//diff-add
+  ]"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-89.png)
+  </div>
+</div>
+
+Dialog component will render each button using afcl `Button` component. You can pass any props to those buttons by adding `options` field to a button item.
+
+<div class="split-screen" >
+  <div>
+  
+```html
+<Dialog
+  class="w-96"
+  header="Dialog Header"
+  :buttons="[
+//diff-remove
+    { label: 'Save', onclick: (dialog) => { doSave(); dialog.hide(); } },
+//diff-add
+    {
+//diff-add
+      label: 'Save',
+//diff-add
+      options: {
+//diff-add
+        disabled: savingIsAllowed,
+//diff-add
+      },
+//diff-add
+      onclick: (dialog) => { doSave(); dialog.hide(); },
+//diff-add
+    },
+    { label: 'Close', onclick: (dialog) => dialog.hide() },
+  ]"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-90.png)
+  </div>
+</div>
+
+### Dialog persistence
+Default behavior of the Dialog component will allow user to close it by just clicking outside. You can prevent that by setting `clickToCloseOutside` to `false`.
+
+<div class="split-screen" >
+  <div>
+  
+```html
+<Dialog
+  class="w-96"
+  header="Dialog Header"
+  :buttons="[
+    {
+      label: 'Save',
+      options: {
+        disabled: savingIsAllowed,
+      },
+      onclick: (dialog) => { doSave(); dialog.hide(); },
+    },
+    { label: 'Close', onclick: (dialog) => dialog.hide() },
+  ]"
+//diff-add
+  :click-to-close-outside="false"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+  </div>
+  <div>
+  </div>
+</div>
 
 ## Dropzone
 

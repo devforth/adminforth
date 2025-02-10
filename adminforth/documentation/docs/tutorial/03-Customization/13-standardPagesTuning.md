@@ -226,6 +226,14 @@ export default {
           name: 'created_at',
           type: AdminForthDataTypes.DATETIME,
 //diff-add
+          showIn: {
+//diff-add
+            all: true,
+//diff-add
+            create: false,  // don't show field in create form
+//diff-add
+          }
+//diff-add
           fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
         },
       ],
@@ -246,6 +254,14 @@ export default {
           name: 'created_by',
           type: AdminForthDataTypes.STRING,
 //diff-add
+          showIn: {
+//diff-add
+            all: true,
+//diff-add
+            create: false,  // don't show field in create form
+//diff-add
+          }
+//diff-add
           fillOnCreate: ({ initialRecord, adminUser }) => adminUser.dbUser.id,
         },
       ],
@@ -254,8 +270,34 @@ export default {
   ],
 ```
 
-> Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#modify-the-data-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
+> Same effect can be achieved by using [hooks](/docs/tutorial/Customization/hooks/#example-modify-the-created-object-before-it-is-saved-to-the-database). But `fillOnCreate` might be shorter and more readable.
 
+### Suggest default value in create form
+
+You can suggest a default value for a field in the create form which user can instantly change even before creating record.
+This might be used to give user some example value or to suggest some default value.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      name: 'apartments',
+      fields: [
+        ...
+        {
+          name: 'description',
+//diff-add
+          suggestOnCreate: 'Great apartment in the heart of the city',
+        },
+      ],
+    },
+    ...
+```
+
+A difference between `fillOnCreate` and `suggestOnCreate`:
+
+* `fillOnCreate` is called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
+* `suggestOnCreate` is just a single value that will be substituted in create form. User can change it before saving the record.
+* `fillOnCreate` should be used when `showIn.create` is a `false` value because if it is `true`, the input will be shown in the create form but then(during actual save to db) it will be overwritten by the value returned by `fillOnCreate`.
+* `suggestOnCreate` should be used with `showIn.create` set to true because if it is not set, the input will not be shown in the create form and default suggestion will not make sense.
 
 ### Link to create form with preset values
 
@@ -492,3 +534,59 @@ export default {
 ```
 
 This way, when creating or editing a record you will be able to choose value for this field from a dropdown selector and on list and show pages this field will be displayed as a link to a foreign resource.
+
+### Unset label
+
+When foreign resource column is not required, selector will have an 'Unset' option that will set field to `null`. You can change label for this option using `unsetLabel`, like so:
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'adminuser',
+//diff-add
+            unsetLabel: 'No realtor',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+## Filtering
+
+### Filter Options
+
+You can specify the delay between filtering requests and filtering operator for a column using `filterOptions` field.
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: "title",
+          required: true,
+          maxLength: 255,
+          minLength: 3,
+//diff-add
+          filterOptions: {
+//diff-add
+            debounceTimeMs: 500,
+//diff-add
+            substringSearch: false,
+//diff-add
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+`debounceTimeMs` field dictates how long (in milliseconds) to wait between inputs to send updated data request. By increasing this value, you can reduce the amount of requests set to backend. Default value for this field is set to 10ms.
+`substringSearch` sets what comparison operator to use for text field. By default this field is set to `true`, which results in using case-insensitive `ILIKE` operator, that will look for records that have filter string anywhere inside field value. Setting this `substringSearch` to `false` will result in using more strict `EQ` operator, that will look for exact full-string matches.

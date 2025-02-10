@@ -109,9 +109,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
-      handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
-        const INVALID_MESSAGE = 'Invalid Username or Password';
+        const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
@@ -498,7 +498,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     const showIn = {} as ShowInResolved;
                     await Promise.all(
-                      Object.entries(col.showIn).map(
+                      Object.entries(inCol.showIn).map(
                         async ([key, value]: [string, AllowedActionValue]) => {
                           // if callable then call
                           if (typeof value === 'function') {
@@ -510,10 +510,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     );
                     // TODO: better to move all coroutines to translationRoutines
                     if (col.editingNote?.create) {
-                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote.create`);
+                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote`);
                     }
                     if (col.editingNote?.edit) {
-                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote.edit`);
+                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote`);
+                    }
+                    if (col.foreignResource?.unsetLabel) {
+                      col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
 
                     return {
@@ -646,7 +649,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           offset,
           filters,
           sort: sortFiltered,
-          getTotals: true,
+          getTotals: source === 'list',
         });
 
         // for foreign keys, add references
@@ -694,7 +697,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
           item._label = resource.recordLabel(item);
         });
-        if (resource.options.listTableClickUrl) {
+        if (source === 'list' && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser);
