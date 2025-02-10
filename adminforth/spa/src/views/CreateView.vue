@@ -86,7 +86,7 @@ import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
-
+import { useI18n } from 'vue-i18n';
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -101,6 +101,7 @@ const record = ref({});
 
 const coreStore = useCoreStore();
 
+const { t } = useI18n();
 const initalValues = computed(() => {
   if (!route.query.values) {
     return {};
@@ -157,7 +158,7 @@ async function saveRecord() {
       } 
     });
     adminforth.alert({
-      message: 'Record created successfully',
+      message: t('Record created successfully!'),
       variant: 'success'
     });
   }
