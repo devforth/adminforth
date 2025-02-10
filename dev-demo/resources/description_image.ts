@@ -13,11 +13,17 @@ export default {
       primaryKey: true,
       required: false,
       fillOnCreate: ({ initialRecord }: any) => uuid(),
+      showIn: {
+        create: false,
+      },
     },
     {
       name: "created_at",
       required: false,
       fillOnCreate: ({ initialRecord }: any) => new Date().toISOString(),
+      showIn: {
+        create: false,
+      },
     },
     { name: "resource_id", required: false },
     { name: "record_id", required: false },

@@ -101,12 +101,7 @@ const record = ref({});
 
 const coreStore = useCoreStore();
 
-const initalValues = computed(() => {
-  if (!route.query.values) {
-    return {};
-  }
-  return JSON.parse(decodeURIComponent(route.query.values));
-});
+const initialValues = ref({});
 
 
 async function onUpdateRecord(newRecord) {
@@ -116,10 +111,20 @@ async function onUpdateRecord(newRecord) {
 
 onMounted(async () => {
   loading.value = true;
-  record.value = initalValues.value;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
+  if (route.query.values) {
+    initialValues.value = JSON.parse(decodeURIComponent(route.query.values));
+  } else {
+    initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
+      if (column.suggestOnCreate !== undefined) {
+        acc[column.name] = column.suggestOnCreate;
+      }
+      return acc;
+    }, {});
+  }
+  record.value = initialValues.value;
   loading.value = false;
   checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'create');
   initThreeDotsDropdown();
