@@ -114,15 +114,14 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
+  initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
+    if (column.suggestOnCreate !== undefined) {
+      acc[column.name] = column.suggestOnCreate;
+    }
+    return acc;
+  }, {});
   if (route.query.values) {
-    initialValues.value = JSON.parse(decodeURIComponent(route.query.values));
-  } else {
-    initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
-      if (column.suggestOnCreate !== undefined) {
-        acc[column.name] = column.suggestOnCreate;
-      }
-      return acc;
-    }, {});
+    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values)) };
   }
   record.value = initialValues.value;
   loading.value = false;
