@@ -674,9 +674,14 @@ export interface AdminForthResourceColumnInputCommon {
   showIn?: ShowInResolved,
 
   /**
-   * Whether AdminForth will show this field in show view.
+   * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
   fillOnCreate?: Function,
+
+  /**
+   * Single value that will be substituted in create form. User can change it before saving the record.
+   */
+  suggestOnCreate?: string | number | boolean | object,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
@@ -792,7 +797,7 @@ export interface AdminForthResourceColumnInputCommon {
      */
     debounceTimeMs?: number,
     /**
-     * If true - will force EQ operator for filter instead of ILIKE.
+     * If false - will force EQ operator for filter instead of ILIKE.
      */
     substringSearch?: boolean,
   },
