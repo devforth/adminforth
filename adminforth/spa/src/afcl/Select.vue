@@ -132,7 +132,7 @@ const props = defineProps({
   },
   teleportToBody: {
     type: Boolean,
-    default: true,
+    default: false,
   },
 });
 
