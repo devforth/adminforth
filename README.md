@@ -27,7 +27,6 @@ Why AdminForth:
 * Define express APIs and call them from your components and pages
 * Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, I18N, Copilot-style AI writing and image generation
 
-Your ⭐ is very important to us!
 
 ## Project initialisation
 
