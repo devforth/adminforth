@@ -1,4 +1,3 @@
-
 import AdminForthAuth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
@@ -414,6 +413,15 @@ class AdminForth implements IAdminForth {
       return { error: err };
     }
 
+    for (const column of resource.columns) {
+      const fieldName = column.name;
+      if (fieldName in record) {
+        if (!column.showIn?.create || column.backendOnly) {
+          return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation` };
+        }
+      }
+    }
+
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
@@ -488,6 +496,15 @@ class AdminForth implements IAdminForth {
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
       if (column.name in record)
         delete record[column.name];
+    }
+
+    for (const column of resource.columns) {
+      const fieldName = column.name;
+      if (fieldName in record) {
+        if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
+          return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+        }
+      }
     }
 
     // execute hook if needed
