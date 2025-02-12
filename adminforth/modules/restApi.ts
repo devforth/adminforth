@@ -458,6 +458,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         });
 
+        if (resource.options.fieldGroups) {
+          resource.options.fieldGroups.forEach((group, i) => {
+            if (group.groupName) {
+              translateRoutines[`fieldGroup${i}`] = tr(group.groupName, `resource.${resource.resourceId}.fieldGroup`);
+            }
+          });
+        }
+
         const translated: Record<string, string> = {};
         await Promise.all(
           Object.entries(translateRoutines).map(async ([key, value]) => {
@@ -531,6 +539,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             ),
             options: {
               ...resource.options,
+              fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
+                ...group,
+                groupName: translated[`fieldGroup${i}`] || group.groupName,
+              })),
               bulkActions: allowedBulkActions.map(
                 (action, i) => ({
                   ...action,
