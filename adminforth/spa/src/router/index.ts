@@ -30,6 +30,15 @@ const router = createRouter({
       // }
     },
     {
+      path: '/oauth/callback',
+      name: 'oauth-callback',
+      component: () => import('@/views/OAuthCallback.vue'),
+      meta: { 
+        title: 'OAuth Callback',
+        customLayout: true
+      }
+    },
+    {
       path: '/resource/:resourceId',
       component: ResourceParent,
       name: 'resource',

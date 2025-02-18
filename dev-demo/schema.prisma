@@ -17,6 +17,7 @@ model users {
     last_login_ip   String?
     email_confirmed Boolean? @default(false)
     parentUserId    String?
+    email_verified  Boolean? @default(false)
 }
 
 model apartments {
