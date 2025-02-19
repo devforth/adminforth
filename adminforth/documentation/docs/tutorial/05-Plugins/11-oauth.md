@@ -37,13 +37,13 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 Configure the plugin in your user resource file:
 
 ```typescript title="./resources/adminuser.ts"
-import OAuth2Plugin from '@adminforth/oauth';
+import OAuthPlugin from '@adminforth/oauth';
 import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
 
 // ... existing resource configuration ...
 
 plugins: [
-  new OAuth2Plugin({
+  new OAuthPlugin({
     adapters: [
       new AdminForthAdapterGoogleOauth2({
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -52,7 +52,6 @@ plugins: [
       }),
     ],
     emailField: 'email',  // Required: field that stores the user's email
-    emailConfirmedField: 'email_confirmed'  // Optional: field to track email verification
   }),
 ]
 ```
