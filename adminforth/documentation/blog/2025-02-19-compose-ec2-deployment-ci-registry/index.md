@@ -1,11 +1,30 @@
 ---
 slug: compose-ec2-deployment-github-actions-registry
-title: Deploy AdminForth to EC2 with terraform on GitHub actions with self-hosted Docker Registry
+title: IaaC Deploy setup to Amazon EC2 with GitHub actions, Deocker, terraform and self-hosted Docker Registry
 authors: ivanb
 tags: [aws, terraform, github-actions]
 ---
 
-This guid shows how to deploy AdminFforth to Amazon EC2 with Docker and Terraform involving Registry.
+This guide shows how to deploy own Docker apps (with AdminForth as example) to Amazon EC2 instance with Docker and Terraform involving Docker self-hosted registry.
+
+Needed resources:
+- GitHub actions Free plan which includes 2000 minutes per month (1000 of 2-minute builds per month - more then enough for many projects, if you are not running tests etc). Extra builds would cost `0.008$` per minute.
+- AWS account where we will auto-spawn EC2 instance. We will use t3a.small instance (2 vCPUs, 2GB RAM) which costs `~14$` per month in `us-east-1` region (cheapest region).
+- $2 per month for EBS gp2 storage (20GB) for EC2 instance
+
+This is it, registry will be auto-spawned on EC2 instance, so no extra costs for it. Also GitHub storage is not used, so no extra costs for it.
+
+The setup has next features:
+- Build process is done using IaaC approach with HashiCorp Terraform, so almoast no manual actions are needed from you. Every resource including EC2 server instance is described in code which is commited to repo and should not be manually clicked.
+- Docker build process is done on GitHub actions, so EC2 server is not overloaded
+- Changes in infrastructure including changing server type, adding S3 Bucket, changing size of sever Disk is also done in code and can be done by commiting code to repo.
+- Docker images and cache are stored on EC2 server, so no extra costs for Docker registry are needed.
+- Total build time for average commit to AdminForth app (with vite rebuilds) is around 2 minutes.
+
+<!-- truncate -->
+
+
+# Building on CI versus building on EC2?
 
 Previously we had a blog post about [deploying AdminForth to EC2 with Terraform without registry](/blog/compose-ec2-deployment-github-actions/). That method might work well but has a significant disadvantage - build process happens on EC2 itself and uses EC2 RAM and CPU. This can be a problem if your EC2 instance is well-loaded without extra free resources. Moreover, low-end EC2 instances have a small amount of RAM and CPU, so build process which involves vite/tsc/etc can be slow or even fail.
 
@@ -22,9 +41,6 @@ Quick difference between approaches from previous post and current post:
 | Disadvantages | Build on EC2 requires additional server RAM / overloads CPU | More terraform code is needed. registry cache might require small extra space on EC2 |
 
 
-
-<!-- truncate -->
-
 ## Chellenges when you build on CI
 
 A little bit of theory.
@@ -35,11 +51,11 @@ When you move build process to CI you have to solve next chellenges:
 
 ### Delivering images
 
-### Exporing images to tar files
+#### Exporing images to tar files
 
 Simplest option which you can find is save docker images to tar files and deliver them to EC2. We can easily do it in terraform (using `docker save -o ...` command on CI and `docker load ...` command on EC2). However this option has a significant disadvantage - it is slow. Docker images are big (always include all layers, without any options), so it takes infinity to do save/load and another infinity to transfer them to EC2 (via relatively slow rsync/SSH and relatively GitHub actions outbound connection).
 
-### Docker registry
+#### Docker registry
 
 Second and right option which we will use here - involve Docker registry. Docker registry is a repository which stores docker images. It does storing in a smart way - it stores layers, so if you will update last layer and push it from CI to registry, only last layer will be pushed to registry and then pulled to EC2. 
 To give you row compare - whole-layers image might took `1GB`, but last layer created by `npm run build` command might take `50MB`. And most builds you will do only last layer changes, so it will be 20 times faster to push/pull last layer than whole image.
@@ -65,8 +81,7 @@ So when build-in Docker cache can't be used, there is one alternative - Docker B
 So BuildKit allows you to connect external storage. There are several options, but most sweet for us is using Docker registry as cache storage (not only as images storage). However drowback appears here. 
 Previously we used docker compose to run our app, it can be used to both build and deploy images, but has [issues with external cache connection](https://github.com/docker/compose/issues/11072#issuecomment-1848974315). While they are not solved we have to use `docker buildx bake` command to build images. It is not so bad, but is another point of configuration which we will cover in this post.
 
-# Practice - deploy AdminForth to EC2 with terraform on GitHub actions with self-hosted Docker Registry
-
+# Practice - deploy setup
 
 Assume you have your AdminForth project in `myadmin`.
 
@@ -85,7 +100,6 @@ ADD . /code/
 RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
 CMD ["npm", "run", "startLive"]
 ```
-
 
 ## Step 2 - compose.yml
 
@@ -144,6 +158,7 @@ Create `deploy/.gitignore` file with next content:
 *.tfstate.*
 *.tfvars
 tfplan
+.env.live
 ```
 
 ## Step 5 - Main terraform file main.tf
@@ -158,7 +173,7 @@ Create file `main.tf` in `deploy` folder:
 
 locals {
   app_name = "<your_app_name>"
-  aws_region = "eu-central-1"
+  aws_region = "us-east-1"
 }
 
 
@@ -252,7 +267,7 @@ resource "aws_key_pair" "app_deployer" {
 
 resource "aws_instance" "app_instance" {
   ami                    = data.aws_ami.ubuntu_linux.id
-  instance_type          = "t3a.small"
+  instance_type          = "t3a.small"  # just change it to another type if you need, check https://instances.vantage.sh/
   subnet_id              = data.aws_subnet.default_subnet.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   key_name               = aws_key_pair.app_deployer.key_name
@@ -266,7 +281,7 @@ resource "aws_instance" "app_instance" {
   }
 
   root_block_device {
-    volume_size = 40 // Size in GB for root partition
+    volume_size = 20 // Size in GB for root partition
     volume_type = "gp2"
     
     # Even if the instance is terminated, the volume will not be deleted, delete it manually if needed
@@ -508,7 +523,7 @@ terraform {
  backend "s3" {
    bucket         = "<your_app_name>-terraform-state"
    key            = "state.tfstate"  # Define a specific path for the state file
-   region         = "eu-central-1"
+   region         = "us-east-1"
    profile        = "myaws"
    use_lockfile   = true
  }
@@ -580,6 +595,7 @@ jobs:
           VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
           VAULT_SSH_PRIVATE_KEY: ${{ secrets.VAULT_SSH_PRIVATE_KEY }}
           VAULT_SSH_PUBLIC_KEY: ${{ secrets.VAULT_SSH_PUBLIC_KEY }}
+
         run: |
           /bin/sh -x deploy/deploy.sh
           
@@ -613,6 +629,9 @@ EOF
 
 chmod 600 ./.keys/id_rsa*
 
+# init .env.live
+echo "" > .env.live
+
 # force Terraform to reinitialize the backend without migrating the state.
 terraform init -reconfigure
 terraform plan -out=tfplan
@@ -630,3 +649,101 @@ Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository se
 
 
 Now you can push your changes to GitHub and see how it will be deployed automatically.
+
+
+### Adding secrets
+
+Once you will have sensitive tokens/passwords in your apps you have to store them in a secure way. 
+
+Simplest way is to use GitHub secrets. 
+
+Let's imagine you have `OPENAI_API_KEY` which will be used one of AI-powered plugins of adminforth. We can't put this key to the code, so we have to store it in GitHub secrets.
+
+Open your GitHub repository, then `Settings` -> `Secrets` -> `New repository secret` and add `VAULT_OPENAI_API_KEY` with your key.
+
+Now open GitHub actions file and add it to the `env` section:
+
+```yml title=".github/workflows/deploy.yml"
+      - name: Start building
+        env:
+          VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
+          VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
+          VAULT_SSH_PRIVATE_KEY: ${{ secrets.VAULT_SSH_PRIVATE_KEY }}
+          VAULT_SSH_PUBLIC_KEY: ${{ secrets.VAULT_SSH_PUBLIC_KEY }}
+//diff-add
+          VAULT_OPENAI_API_KEY: ${{ secrets.VAULT_OPENAI_API_KEY }}
+```
+
+Next add it to the `deploy.sh` script:
+
+```bash title="deploy/deploy.sh"
+
+//diff-remove
+echo "" > .env.live
+//diff-add
+cat <<EOF > .env.live
+//diff-add
+OPENAI_API_KEY=$VAULT_OPENAI_API_KEY
+//diff-add
+EOF
+```
+
+
+In the same way you can add any other secrets to your GitHub actions.
+
+
+### Out of space on EC2 instance? Extend EBS volume
+
+
+To upgrade EBS volume size you have to do next steps:
+
+In `main.tf` file:
+
+```hcl title="main.tf"
+  root_block_device {
+//diff-remove
+    volume_size = 20 // Size in GB for root partition
+//diff-add
+    volume_size = 40 // Size in GB for root partition
+    volume_type = "gp2"
+  }
+```
+
+And run build. 
+
+This will increase physical size of EBS volume, but you have to increase filesystem size too.
+
+Login to EC2 instance:
+
+```bash
+ssh -i ./.keys/id_rsa ubuntu@<your_ec2_ip>
+```
+
+> You can find your EC2 IP in AWS console by visiting EC2 -> Instances -> Your instance -> IPv4 Public IP 
+
+
+Now run next commands:
+
+```bash
+lsblk
+```
+
+This would show something like this:
+
+```bash
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0     7:0    0 99.4M  1 loop /snap/core/10908
+nvme0n1 259:0    0   40G  0 disk
+└─nvme0n1p1 259:1    0   20G  0 part /
+```
+
+Here we see that `nvme0n1` is our disk and `nvme0n1p1` is our partition.
+
+Now to extend partition run:
+
+```bash
+sudo growpart /dev/nvme0n1 1
+sudo resize2fs /dev/nvme0n1p1
+```
+
+This will extend partition to the full disk size. No reboot is needed.
