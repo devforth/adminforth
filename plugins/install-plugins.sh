@@ -1,6 +1,6 @@
 PLUGINS="adminforth-audit-log adminforth-email-password-reset adminforth-foreign-inline-list \
 adminforth-i18n adminforth-import-export adminforth-text-complete adminforth-open-signup \
-adminforth-rich-editor adminforth-two-factors-auth adminforth-upload"
+adminforth-rich-editor adminforth-two-factors-auth adminforth-upload adminforth-sso-auth"
 
 # for each plugin
 for plugin in $PLUGINS; do

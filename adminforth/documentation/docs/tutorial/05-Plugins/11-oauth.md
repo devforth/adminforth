@@ -1,13 +1,13 @@
-# SSO Auth
+# OAuth Authentication
 
-The SSO Auth plugin enables OAuth2-based Single Sign-On authentication in AdminForth, allowing users to sign in using their Google, GitHub, or other OAuth2 provider accounts.
+The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, or other OAuth2 provider accounts.
 
 ## Installation
 
 To install the plugin:
 
 ```bash
-npm install @adminforth/sso-auth --save
+npm install @adminforth/oauth --save
 npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 ```
 
@@ -37,13 +37,13 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 Configure the plugin in your user resource file:
 
 ```typescript title="./resources/adminuser.ts"
-import OAuth2SSOPlugin from '@adminforth/sso-auth';
+import OAuth2Plugin from '@adminforth/oauth';
 import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
 
 // ... existing resource configuration ...
 
 plugins: [
-  new OAuth2SSOPlugin({
+  new OAuth2Plugin({
     adapters: [
       new AdminForthAdapterGoogleOauth2({
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -59,7 +59,7 @@ plugins: [
 
 ### 3. Email Confirmation
 
-The plugin supports automatic email confirmation for SSO users. To enable this:
+The plugin supports automatic email confirmation for OAuth users. To enable this:
 
 1. Add the `email_confirmed` field to your database schema:
 
@@ -79,14 +79,14 @@ npx prisma migrate dev --name add-email-confirmed-to-adminuser
 3. Configure the plugin with `emailConfirmedField`:
 
 ```typescript title="./resources/adminuser.ts"
-new OAuth2SSOPlugin({
+new OAuth2Plugin({
   // ... adapters configuration ...
   emailField: 'email',
   emailConfirmedField: 'email_confirmed'  // Enable email confirmation tracking
 }),
 ```
 
-When using SSO:
+When using OAuth:
 - New users will have their email automatically confirmed (`email_confirmed = true`)
-- Existing users will have their email marked as confirmed upon successful SSO login
+- Existing users will have their email marked as confirmed upon successful OAuth login
 - The `email_confirmed` field must be a boolean type
