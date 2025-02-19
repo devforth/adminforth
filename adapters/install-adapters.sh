@@ -1,4 +1,4 @@
-ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses"
+ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses adminforth-google-oauth-adapter adminforth-github-oauth-adapter"
 
 # for each plugin
 for adapter in $ADAPTERS; do
