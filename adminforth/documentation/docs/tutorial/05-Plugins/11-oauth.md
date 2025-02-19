@@ -20,16 +20,16 @@ You need to get the client ID and client secret from your OAuth2 provider.
 For Google:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com)
 2. Create a new project or select an existing one
-3. Go to "APIs & Services" → "Credentials"
+3. Go to `APIs & Services` → `Credentials`
 4. Create credentials for OAuth 2.0 client IDs
 5. Select application type: "Web application"
 6. Add your application's name and redirect URI
-7. Set the redirect URI to `http://your-domain/oauth/callback`
+7. In "Authorized redirect URIs", add next URI: `https://your-domain/oauth/callback`, `http://localhost:3500/oauth/callback`. Please remember to include BASE_URL in the URI if you are using it in project e.g. `https://your-domain/base/oauth/callback` 
 8. Add the credentials to your `.env` file:
 
 ```bash
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
 ```
 
 ### 2. Plugin Configuration
@@ -46,8 +46,8 @@ plugins: [
   new OAuthPlugin({
     adapters: [
       new AdminForthAdapterGoogleOauth2({
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
         redirectUri: 'http://localhost:3000/oauth/callback',
       }),
     ],
