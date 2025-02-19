@@ -11,7 +11,7 @@ import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
 import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
 import { v1 as uuid } from "uuid";
 import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
-import { OAuth2SSOPlugin } from "../../plugins/adminforth-sso-auth";
+import { OAuth2Plugin } from "../../plugins/adminforth-sso-auth";
 import { AdminForthAdapterGoogleOauth2 } from "../../adapters/adminforth-google-oauth-adapter";
 import { AdminForthAdapterGithubOauth2 } from "../../adapters/adminforth-github-oauth-adapter";
 export default {
@@ -85,7 +85,7 @@ export default {
       //   }),
       // },
     }),
-    new OAuth2SSOPlugin({
+    new OAuth2Plugin({
       adapters: [
         new AdminForthAdapterGithubOauth2({
           clientID: process.env.GITHUB_CLIENT_ID,
