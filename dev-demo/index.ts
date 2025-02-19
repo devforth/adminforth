@@ -426,6 +426,35 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   )
 );
 
+app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
+  admin.express.authorize(
+    async (req, res) => {
+      const roomPercentages = await admin.resource('aparts').dataConnector.db.prepare(
+        `SELECT 
+          number_of_rooms, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY number_of_rooms
+        ORDER BY number_of_rooms;
+        `
+      ).all()
+      
+
+      const totalAparts = roomPercentages.reduce((acc, { count }) => acc + count, 0);
+
+      res.json(
+        roomPercentages.map(
+          ({ number_of_rooms, count }) => ({
+            amount: Math.round(count / totalAparts * 100),
+            label: `${number_of_rooms} rooms`,
+          })
+        )
+      );
+    }
+  )
+);
+
+
 // serve after you added all api
 admin.express.serve(app)
 admin.discoverDatabases().then(async () => {

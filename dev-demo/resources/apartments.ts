@@ -319,29 +319,29 @@ export default {
     //     debounceTime: 250,
     //   }
     // }),
-    new RichEditorPlugin({
-      htmlFieldName: "description",
-      completion: {
-        adapter: new CompletionAdapterOpenAIChatGPT({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-        }),
-        expert: {
-          debounceTime: 250,
-        },
-      },
-      // requires to have table 'description_images' with upload plugin installed on attachment field
+    // new RichEditorPlugin({
+    //   htmlFieldName: "description",
+    //   completion: {
+    //     adapter: new CompletionAdapterOpenAIChatGPT({
+    //       openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //     }),
+    //     expert: {
+    //       debounceTime: 250,
+    //     },
+    //   },
+    //   // requires to have table 'description_images' with upload plugin installed on attachment field
 
-      ...(process.env.AWS_ACCESS_KEY_ID
-        ? {
-            attachments: {
-              attachmentResource: "description_images",
-              attachmentFieldName: "image_path",
-              attachmentRecordIdFieldName: "record_id",
-              attachmentResourceIdFieldName: "resource_id",
-            },
-          }
-        : {}),
-    }),
+    //   ...(process.env.AWS_ACCESS_KEY_ID
+    //     ? {
+    //         attachments: {
+    //           attachmentResource: "description_images",
+    //           attachmentFieldName: "image_path",
+    //           attachmentRecordIdFieldName: "record_id",
+    //           attachmentResourceIdFieldName: "resource_id",
+    //         },
+    //       }
+    //     : {}),
+    // }),
   ],
 
   options: {
