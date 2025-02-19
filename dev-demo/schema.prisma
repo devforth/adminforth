@@ -101,7 +101,7 @@ model apartment_buyers {
     ideal_space             Float?
     ideal_subway_distance   Float?
     contacted               Boolean @default(false)
-    contact_date            Date?
-    contact_time            Time?
+    contact_date            DateTime?
+    contact_time            DateTime?
     realtor_id              String?
 }
