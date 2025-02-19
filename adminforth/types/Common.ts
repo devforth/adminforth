@@ -797,7 +797,7 @@ export interface AdminForthResourceColumnInputCommon {
      */
     debounceTimeMs?: number,
     /**
-     * If true - will force EQ operator for filter instead of ILIKE.
+     * If false - will force EQ operator for filter instead of ILIKE.
      */
     substringSearch?: boolean,
   },

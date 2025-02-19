@@ -86,7 +86,7 @@ import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
-
+import { useI18n } from 'vue-i18n';
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -101,6 +101,8 @@ const record = ref({});
 
 const coreStore = useCoreStore();
 
+const { t } = useI18n();
+
 const initialValues = ref({});
 
 
@@ -114,15 +116,14 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
+  initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
+    if (column.suggestOnCreate !== undefined) {
+      acc[column.name] = column.suggestOnCreate;
+    }
+    return acc;
+  }, {});
   if (route.query.values) {
-    initialValues.value = JSON.parse(decodeURIComponent(route.query.values));
-  } else {
-    initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
-      if (column.suggestOnCreate !== undefined) {
-        acc[column.name] = column.suggestOnCreate;
-      }
-      return acc;
-    }, {});
+    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values)) };
   }
   record.value = initialValues.value;
   loading.value = false;
@@ -162,7 +163,7 @@ async function saveRecord() {
       } 
     });
     adminforth.alert({
-      message: 'Record created successfully',
+      message: t('Record created successfully!'),
       variant: 'success'
     });
   }

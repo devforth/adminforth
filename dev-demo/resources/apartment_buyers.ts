@@ -7,7 +7,7 @@ import AdminForth, {
   AdminUser,
 } from "../../adminforth";
 import { v1 as uuid } from "uuid";
-import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
+// import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 
 export default {
   dataSource: 'mysql',
@@ -148,9 +148,9 @@ export default {
     },
   ],
   plugins: [
-    new RichEditorPlugin({
-      htmlFieldName: 'info',
-    }),
+    // new RichEditorPlugin({
+    //   htmlFieldName: 'info',
+    // }),
   ],
   options: {
     fieldGroups: [
