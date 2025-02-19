@@ -17,6 +17,7 @@ model users {
     last_login_ip   String?
     email_confirmed Boolean? @default(false)
     parentUserId    String?
+    email_verified  Boolean? @default(false)
 }
 
 model apartments {
@@ -100,7 +101,7 @@ model apartment_buyers {
     ideal_space             Float?
     ideal_subway_distance   Float?
     contacted               Boolean @default(false)
-    contact_date            Date?
-    contact_time            Time?
+    contact_date            DateTime?
+    contact_time            DateTime?
     realtor_id              String?
 }

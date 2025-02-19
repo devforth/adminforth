@@ -11,7 +11,9 @@ import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
 import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
 import { v1 as uuid } from "uuid";
 import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
-
+import { OAuthPlugin } from "../../plugins/adminforth-oauth";
+import { AdminForthAdapterGoogleOauth2 } from "../../adapters/adminforth-google-oauth-adapter";
+import { AdminForthAdapterGithubOauth2 } from "../../adapters/adminforth-github-oauth-adapter";
 export default {
   dataSource: "maindb",
   table: "users",
@@ -83,6 +85,22 @@ export default {
       //   }),
       // },
     }),
+    new OAuthPlugin({
+      adapters: [
+        new AdminForthAdapterGithubOauth2({
+          clientID: process.env.GITHUB_CLIENT_ID,
+          clientSecret: process.env.GITHUB_CLIENT_SECRET,
+          redirectUri: 'http://localhost:3000/oauth/callback',
+        }),
+        new AdminForthAdapterGoogleOauth2({
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          redirectUri: 'http://localhost:3000/oauth/callback',
+        })
+      ],
+      emailField: 'email',
+      emailConfirmedField: 'email_confirmed'
+    }),
   ],
   options: {
     allowedActions: {
@@ -131,6 +149,16 @@ export default {
       name: "password_hash",
       showIn: [],
       backendOnly: true, // will never go to frontend
+    },
+    {
+      name: 'email_confirmed',
+      type: AdminForthDataTypes.BOOLEAN,
+      showIn: {
+        list: true,
+        show: true,
+        edit: false,
+        create: false
+      }
     },
     {
       name: "role",
