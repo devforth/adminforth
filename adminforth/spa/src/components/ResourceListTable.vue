@@ -271,7 +271,7 @@
 
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
-
+import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
@@ -293,7 +293,7 @@ import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
 
 const coreStore = useCoreStore();
-
+const { t } = useI18n();
 const props = defineProps<{
   page: number,
   resource: AdminForthResourceCommon,
@@ -456,9 +456,9 @@ async function onClick(e,row) {
 
 async function deleteRecord(row) {
   const data = await adminforth.confirm({
-    message: 'Are you sure you want to delete this item?',
-    yes: 'Delete',
-    no: 'Cancel',
+    message: t('Are you sure you want to delete this item?'),
+    yes: t('Delete'),
+    no: t('Cancel'),
   });
   if (data) {
     try {
@@ -472,13 +472,13 @@ async function deleteRecord(row) {
       });
       if (!res.error){
         emits('update:records', true)
-        showSuccesTost('Record deleted successfully')
+        showSuccesTost(t('Record deleted successfully'))
       } else {
         showErrorTost(res.error)
       }
 
     } catch (e) {
-      showErrorTost(`Something went wrong, please try again later`);
+      showErrorTost(t('Something went wrong, please try again later'));
       console.error(e);
     };
   }

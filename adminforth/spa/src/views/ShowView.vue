@@ -120,12 +120,12 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
-
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
-
+const { t } = useI18n();
 const coreStore = useCoreStore();
 
 onMounted(async () => {
@@ -179,9 +179,9 @@ const otherColumns = computed(() => {
 
 async function deleteRecord(row) {
   const data = await adminforth.confirm({
-    message: 'Are you sure you want to delete this item?',
-    yes: 'Delete',
-    no: 'Cancel',
+    message: t('Are you sure you want to delete this item?'),
+    yes: t('Delete'),
+    no: t('Cancel'),
   });
   if (data) {
     try {
@@ -194,7 +194,7 @@ async function deleteRecord(row) {
       }});
       if (!res.error){
         router.push({ name: 'resource-list', params: { resourceId: route.params.resourceId } });
-        showSuccesTost('Record deleted successfully')
+        showSuccesTost(t('Record deleted successfully'))
       } else {
         showErrorTost(res.error)
       }

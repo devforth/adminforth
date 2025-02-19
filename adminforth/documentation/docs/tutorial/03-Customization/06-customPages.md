@@ -420,3 +420,43 @@ mongoose, or just use raw SQL queries against your tables.
 Demo:
 
 ![alt text](dashDemo.gif)
+
+## Custom pages without menu item
+
+Sometimes you might need to add custom page but don't want to add it to the menu.
+
+In this case you can add custom page using `customization.customPages` option:
+
+```ts title="/index.ts"
+new AdminForth({
+  // ...
+  customization: {
+    customPages: [
+      {
+        path: '/setup2fa', // route path
+        component: { 
+          file: '@@/pages/TwoFactorsSetup.vue',
+          meta: { 
+            title: 'Setup 2FA',  // meta title for this page
+            customLayout: true  // don't include default layout like menu/header
+          }
+        }
+      }
+    ]
+  }
+})
+```
+
+This will register custom page with path `/setup2fa` and will not include it in the menu. 
+
+You can navigate user to this page using any router link, e.g.:
+
+```html
+<template>
+  <Link to="/setup2fa">Setup 2FA</Link>
+</template>
+```
+
+```ts
+import { Link } from '@/afcl';
+```
