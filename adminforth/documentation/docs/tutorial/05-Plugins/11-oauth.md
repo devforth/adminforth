@@ -77,7 +77,7 @@ npx prisma migrate dev --name add-email-confirmed-to-adminuser
 3. Configure the plugin with `emailConfirmedField`:
 
 ```typescript title="./resources/adminuser.ts"
-new OAuth2Plugin({
+new OAuthPlugin({
   // ... adapters configuration ...
   emailField: 'email',
   emailConfirmedField: 'email_confirmed'  // Enable email confirmation tracking
@@ -94,7 +94,7 @@ When using OAuth:
 By default, users must exist in the system before they can log in with OAuth. You can enable automatic user creation for new OAuth users with the `openSignup` option:
 
 ```typescript title="./resources/adminuser.ts"
-new OAuth2Plugin({
+new OAuthPlugin({
   // ... adapters configuration ...
   openSignup: {
     enabled: true,
@@ -110,7 +110,7 @@ new OAuth2Plugin({
 You can customize the UI of the OAuth login buttons by using the `iconOnly` and `pill` options.
 
 ```typescript title="./resources/adminuser.ts"
-new OAuth2Plugin({
+new OAuthPlugin({
   // ... adapters configuration ...
   iconOnly: true, // Show only provider icons without text
   pill: true, // Use pill-shaped buttons instead of rectangular

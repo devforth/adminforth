@@ -11,6 +11,8 @@ But what about writing plain text? For example blogs and micro-blogs: sometimes 
 
 ![alt text](nuxtBlog.gif)
 
+<!-- truncate -->
+
 
 For AI plugins are backed by OpenAI API, but their architecture allows to be easily extended for other AI providers once OpenAI competitors will reach the same or better level of quality.
 
@@ -207,7 +209,7 @@ declare var process : {
 export const admin = new AdminForth({
   baseUrl: '/admin',
   auth: {
-    usersResourceId: 'user',  // resource to get user during login
+    usersResourceId: 'adminuser',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'passwordHash',
   },
@@ -249,7 +251,7 @@ export const admin = new AdminForth({
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
-      resourceId: 'user',
+      resourceId: 'adminuser',
     }
   ],
 });
@@ -278,7 +280,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       Sorts.DESC('createdAt'),
     );
     const authorIds = [...new Set(posts.map((p: any) => p.authorId))];
-    const authors = (await admin.resource('user').list(Filters.IN('id', authorIds)))
+    const authors = (await admin.resource('adminuser').list(Filters.IN('id', authorIds)))
       .reduce((acc: any, a: any) => {acc[a.id] = a; return acc;}, {});
     posts.forEach((p: any) => {
       const author = authors[p.authorId];
@@ -309,8 +311,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('user').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
-      await admin.resource('user').create({
+    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
+      await admin.resource('adminuser').create({
         email: 'adminforth@adminforth.dev',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
@@ -325,16 +327,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 ## Step 5: Create resources
 
-Create `res` folder. Create `./res/user.ts` file with following content:
+Create `res` folder. Create `./res/adminuser.ts` file with following content:
 
-```ts title="./res/users.ts"
+```ts title="./res/adminuser.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';
 
 export default {
   dataSource: 'maindb',
-  table: 'user',
+  table: 'adminuser',
   label: 'Users',
   recordLabel: (r: any) => `👤 ${r.email}`,
   columns: [
@@ -342,7 +344,10 @@ export default {
       name: 'id',
       primaryKey: true,
       fillOnCreate: () => randomUUID(),
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'email',
@@ -357,7 +362,10 @@ export default {
     {
       name: 'createdAt',
       type: AdminForthDataTypes.DATETIME,
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -367,14 +375,18 @@ export default {
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       minLength: 8,
       type: AdminForthDataTypes.STRING,
-      showIn: ['create', 'edit'],
+      showIn: {
+        show: false,
+        list: false,
+        filter: false,
+      },
       masked: true,
       validation: [
         // request to have at least 1 digit, 1 upper case, 1 lower case
         AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
       ],
     },
-    { name: 'passwordHash', backendOnly: true, showIn: [] },
+    { name: 'passwordHash', backendOnly: true, showIn: { all: false } },
     { 
       name: 'publicName',
       type: AdminForthDataTypes.STRING,
@@ -445,32 +457,43 @@ export default {
       name: 'id',
       primaryKey: true,
       fillOnCreate: () => randomUUID(),
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'title',
       required: true,
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],
+      showIn: { all: true },
       maxLength: 255,
       minLength: 3,
       type: AdminForthDataTypes.STRING,
     },
     {
       name: 'picture',
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],
+      showIn: { all: true },
     },
     {
       name: 'slug',
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'content',
-      showIn: ['create', 'edit', 'filter', 'show'],
+      showIn: { list: false },
       type: AdminForthDataTypes.RICHTEXT,
     },
     {
       name: 'createdAt',
-      showIn: ['list', 'filter', 'show',],
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -480,9 +503,13 @@ export default {
     {
       name: 'authorId',
       foreignResource: {
-        resourceId: 'user',
+        resourceId: 'adminuser',
       },
-      showIn: ['filter', 'show'],
+      showIn: {
+        list: false,
+        edit: false,
+        create: false,
+      },
       fillOnCreate: ({ adminUser }: { adminUser: AdminUser }) => {
         return adminUser.dbUser.id;
       }
@@ -593,7 +620,10 @@ export default {
       foreignResource: {
         resourceId: 'post',
       },
-      showIn: ['list', 'filter', 'show'],
+      showIn: {
+        edit: false,
+        create: false,
+      },
     },
     {
       name: 'resourceId',

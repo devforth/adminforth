@@ -5,12 +5,13 @@ import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
 import AuditLogPlugin from '../plugins/adminforth-audit-log/index.js';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
+import apartmentBuyersResource from './resources/apartment_buyers.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
-import gameResource from './resources/game.js';
-import gamesUsersResource from './resources/games_users.js';
-import gamesResource from './resources/games.js';
+// import gameResource from './resources/game.js';
+// import gamesUsersResource from './resources/games_users.js';
+// import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
@@ -178,29 +179,33 @@ export const admin = new AdminForth({
       id: 'maindb',
       url: `sqlite://${dbPath}`
     },
-    {
-      id: 'db2',
-      url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
-    },
+    // {
+    //   id: 'db2',
+    //   url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
+    // },
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8124/demo',
-
-    }
+      url: 'clickhouse://demo:demo@localhost:8125/demo',
+    },
+    {
+      id: 'mysql',
+      url: 'mysql://demo:demo@localhost:3307/demo',
+    },
   ],
   resources: [
     clicksResource,
     auditLogResource,
     apartmentsResource,
+    apartmentBuyersResource,
     usersResource,
     descriptionImageResource,
-    gamesResource,
-    gamesUsersResource,
-    gameResource,
+    // gamesResource,
+    // gamesUsersResource,
+    // gameResource,
     translationsResource,
   ],
   menu: [
@@ -229,17 +234,22 @@ export const admin = new AdminForth({
           }
         },
         {
+          label: 'Potential Buyers',
+          icon: 'flowbite:user-solid',
+          resourceId: 'apartment_buyers',
+        },
+        {
           label: 'Description Images',
           resourceId: 'description_images',
           icon: 'flowbite:image-solid',
 
         },
 
-        {
-          label: 'Games',
-          icon: 'flowbite:caret-right-solid',
-          resourceId: 'game',
-        },
+        // {
+        //   label: 'Games',
+        //   icon: 'flowbite:caret-right-solid',
+        //   resourceId: 'game',
+        // },
         // {
         //   label: 'Games Users',
         //   icon: 'flowbite:user-solid',
@@ -415,6 +425,35 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
     )
   )
 );
+
+app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
+  admin.express.authorize(
+    async (req, res) => {
+      const roomPercentages = await admin.resource('aparts').dataConnector.db.prepare(
+        `SELECT 
+          number_of_rooms, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY number_of_rooms
+        ORDER BY number_of_rooms;
+        `
+      ).all()
+      
+
+      const totalAparts = roomPercentages.reduce((acc, { count }) => acc + count, 0);
+
+      res.json(
+        roomPercentages.map(
+          ({ number_of_rooms, count }) => ({
+            amount: Math.round(count / totalAparts * 100),
+            label: `${number_of_rooms} rooms`,
+          })
+        )
+      );
+    }
+  )
+);
+
 
 // serve after you added all api
 admin.express.serve(app)

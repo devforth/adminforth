@@ -205,6 +205,12 @@
 </Select>
         </div>
       </div> -->
+
+      <div class="bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 mt-4">
+
+        {{ $t(`Get into tarot with our free readings — no sign up required! Whether you’re looking for love, career guidance or just curious what the cards have to say, TarotCards.io has you covered. Try our love readings, quick “Yes or No” spreads or the classic 5-card life path layout to gain new insight into your journey.`) }}
+
+      </div>
   </div>
 </template>
 

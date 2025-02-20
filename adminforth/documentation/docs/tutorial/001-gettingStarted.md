@@ -1,6 +1,6 @@
-# Getting Started 
+# Getting Started
 
-This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI. 
+This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI.
 You will learn how to set up a new project using the `adminforth create-app` command and explore AdminForth’s fundamentals.
 
 > 👆 For setup example without CLI check out [Hello World without CLI](./01-helloWorld.md)
@@ -17,7 +17,7 @@ nvm use 20
 
 ## Creating an AdminForth Project
 
-The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management. 
+The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management.
 
 First, create and enter a directory where you want your AdminForth project to live. For instance:
 
@@ -41,7 +41,7 @@ npx adminforth create-app
 CLI options:
 
 * **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
-* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
+* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
 
 > ☝️ Database Connection String format:
 >
@@ -51,6 +51,7 @@ CLI options:
 > - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
 > - MongoDB — `mongodb://localhost:27017/dbname`
 > - Clickhouse — `clickhouse://localhost:8123/dbname`
+> - MySQL — `mysql://user:password@localhost:3306/dbname`
 
 ### Understand the generated Project Structure
 
@@ -63,20 +64,20 @@ myadmin/
 │   ├── package.json      # For any custom npm packages you will use in Vue files
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
-│   └── users.ts          # Example resource file for users management
+│   └── adminuser.ts      # Example resource file for users management
 ├── schema.prisma         # Prisma schema file for database schema
 ├── index.ts              # Main entry point: configures AdminForth & starts the server
 ├── package.json          # Project dependencies
 ├── tsconfig.json         # TypeScript configuration
-├── .env                  # Environment variables (e.g. database connection string)
-├── .env.sample           # Sample env file (for distribution to teammates)
-└── .gitignore            
+├── .env                  # Env vars like tokens, secrets that should not be in version control
+├── .env.local            # General local environment variables
+└── .gitignore
 
 ```
 
 ### Initial Migration & Future Migrations
 
-> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Users resource.  
+> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Users resource.
 
 CLI will suggest you a command to initialize the database with Prisma:
 
@@ -84,7 +85,7 @@ CLI will suggest you a command to initialize the database with Prisma:
 npm run makemigration -- --name init
 ```
 
-This will create a migration file in `migrations` and apply it to the database. 
+This will create a migration file in `migrations` and apply it to the database.
 
 In future, when you need to add new resources, you need to modify `schema.prisma` (add models, change fields, etc.). After doing any modification you need to create a new migration using next command:
 
@@ -92,7 +93,7 @@ In future, when you need to add new resources, you need to modify `schema.prisma
 npm run makemigration -- --name <name_of_changes>
 ```
 
-Other developers need to pull migration and run `npm run migrate` to apply any unapplied migrations.
+Other developers need to pull migration and run `npm run migrateLocal` to apply any unapplied migrations.
 
 ## Run the Server
 
@@ -106,12 +107,11 @@ Open http://localhost:3500 in your browser and (default credentials are `adminfo
 
 ![alt text](localhost_3500_login.png)
 
-
 ## AdminForth Basic Philosophy
 
 AdminForth connects to existing databases and provides a back-office for managing data including CRUD operations, filtering, sorting, and more.
 
-Database can be already created by using any database management tool, ORM or migrator. 
+Database can be already created by using any database management tool, ORM or migrator.
 
 AdminForth itself never modifies database schema, does not add columns or new tables. However for those who have no own migration managment AdminForth CLI suggests using Prisma. This allows to provide simple and reliable schema management for standalone projects which have no DB yet.
 
@@ -123,11 +123,9 @@ Also in AdminForth you can define in "Vue" way:
 * create own pages e.g. Dashboard using AdminForth Components Library (AFCL) or any other Vue componetns.
 * insert injections into standard pages (e.g. add diagram to list view)
 
-
-
 ## Adding an `apartments` Model
 
-So far, our freshly generated AdminForth project includes a default `adminuser` model and a corresponding `users` resource. 
+So far, our freshly generated AdminForth project includes a default `adminuser` model and a corresponding `adminuser` resource.
 
 Let’s expand our app to suport managment of **`apartments`** model. Adding new resource will involve next steps:
 
@@ -198,14 +196,18 @@ export default {
       name: 'id',
       type: AdminForthDataTypes.STRING,
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
-      showIn: ['filter', 'show'], // show column in filter and in show page
+      showIn: { // show column in filter and in show page
+        list: false,
+        edit: false,
+        create: false,
+      },
       primaryKey: true,
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
     },
     {
       name: 'title',
       required: true,
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
+      showIn: { all: false },  // all available options
       type: AdminForthDataTypes.STRING,
       maxLength: 255,  // you can set max length for string fields
       minLength: 3,  // you can set min length for string fields
@@ -214,11 +216,12 @@ export default {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
       allowMinMaxQuery: true,
-      showIn: ['list', 'filter', 'show', 'edit'],
+      showIn: { create: false },
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
       name: 'price',
+      inputSuffix: 'USD', // you can add a suffix to an input field that will be displayed when creating or editing records
       allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
       editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
     },
@@ -243,7 +246,7 @@ export default {
     {
       name: 'description',
       sortable: false,
-      showIn: ['show', 'edit', 'create', 'filter'],
+      showIn: { list: false },
     },
     {
       name: 'country',
@@ -289,7 +292,7 @@ export default {
     {
       name: 'realtor_id',
       foreignResource: {
-        resourceId: 'users',
+        resourceId: 'adminuser',
       }
     }
   ],
@@ -367,7 +370,7 @@ export const admin = new AdminForth({
 
 ```
 
-## Generating fake appartments 
+## Generating fake appartments
 
 ```ts title="./index.ts"
 //diff-add
@@ -412,8 +415,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   ...
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-      await admin.resource('users').create({
+    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+      await admin.resource('adminuser').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
         role: 'superadmin',
@@ -429,4 +432,3 @@ This will create records during first launch. Now you should see:
 ![alt text](localhost_3500_resource_aparts.png)
 
 Feel free to play with the data, add more fields, and customize the UI to your liking.
-

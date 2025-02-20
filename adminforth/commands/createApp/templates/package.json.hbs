@@ -8,15 +8,17 @@
   "license": "ISC",
   "description": "",
   "scripts": {
-    "start": "tsx watch --env-file=.env index.ts",
-    "migrate": "npx prisma migrate deploy",
-    "makemigration": "npx --yes prisma migrate deploy; npx --yes prisma migrate dev",
+    "env": "dotenvx run -f .env.local -f .env --overload --",
+    "start": "npm run env -- tsx watch index.ts",
+    "migrateLocal": "npm run env -- npx prisma migrate deploy",
+    "makemigration": "npm run migrateLocal; npm run env -- npx --yes prisma migrate dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.34.0",
     "adminforth": "latest",
     "express": "latest"
   },

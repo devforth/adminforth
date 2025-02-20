@@ -17,6 +17,7 @@ model users {
     last_login_ip   String?
     email_confirmed Boolean? @default(false)
     parentUserId    String?
+    email_verified  Boolean? @default(false)
 }
 
 model apartments {
@@ -26,6 +27,7 @@ model apartments {
     square_meter    Float?
     price           Decimal
     number_of_rooms Int?
+    room_sizes      String?
     description     String?
     country         String?
     listed          Boolean   @default(false)
@@ -84,4 +86,22 @@ model translations {
     // we need both indexes on en_string+category and separately on category
     @@index([en_string, category])
     @@index([category])
+}
+
+model apartment_buyers {
+    id                      String  @id
+    created_at              DateTime
+    name                    String
+    age                     Int?
+    gender                  String?
+    info                    String?
+    contact_info            String?
+    language                String?
+    ideal_price             Decimal?
+    ideal_space             Float?
+    ideal_subway_distance   Float?
+    contacted               Boolean @default(false)
+    contact_date            DateTime?
+    contact_time            DateTime?
+    realtor_id              String?
 }

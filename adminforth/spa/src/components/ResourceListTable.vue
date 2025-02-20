@@ -62,7 +62,7 @@
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
-          :columns="resource?.columns.filter(c => c.showIn.includes('list')).length + 2"
+          :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
           :rows="3"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
@@ -271,7 +271,7 @@
 
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
-
+import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
@@ -293,7 +293,7 @@ import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
 
 const coreStore = useCoreStore();
-
+const { t } = useI18n();
 const props = defineProps<{
   page: number,
   resource: AdminForthResourceCommon,
@@ -356,7 +356,7 @@ function addToCheckedValues(id) {
   checkboxesInternal.value = [ ...checkboxesInternal.value ]
 }
 
-const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.includes('list')));
+const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.list));
 
 async function selectAll(value) {
   if (!allFromThisPageChecked.value) {
@@ -398,9 +398,9 @@ function onSortButtonClick(event, field) {
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
-      sort.value[sortIndex].direction = 'desc';
+      sort.value = sort.value.map((s) => s.field === field ? {field, direction: 'desc'} : s);
     } else {
-      sort.value.splice(sortIndex, 1);
+      sort.value = sort.value.filter((s) => s.field !== field);
     }
   }
 }
@@ -430,7 +430,7 @@ async function onClick(e,row) {
               resourceId: props.resource.resourceId,
               primaryKey: row._primaryKeyValue,
             },
-          }).fullPath,
+          }).href,
           '_blank'
         );
       }
@@ -456,9 +456,9 @@ async function onClick(e,row) {
 
 async function deleteRecord(row) {
   const data = await adminforth.confirm({
-    message: 'Are you sure you want to delete this item?',
-    yes: 'Delete',
-    no: 'Cancel',
+    message: t('Are you sure you want to delete this item?'),
+    yes: t('Delete'),
+    no: t('Cancel'),
   });
   if (data) {
     try {
@@ -472,13 +472,13 @@ async function deleteRecord(row) {
       });
       if (!res.error){
         emits('update:records', true)
-        showSuccesTost('Record deleted successfully')
+        showSuccesTost(t('Record deleted successfully'))
       } else {
         showErrorTost(res.error)
       }
 
     } catch (e) {
-      showErrorTost(`Something went wrong, please try again later`);
+      showErrorTost(t('Something went wrong, please try again later'));
       console.error(e);
     };
   }

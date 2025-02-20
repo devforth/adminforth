@@ -15,10 +15,10 @@ You can use `options.allowedActions` on resource to limit access to the resource
 
 If you want to disable deletion of the resource records for all users:
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 {
   ...
-  resourceId: 'users',
+  resourceId: 'adminuser',
   ...
 //diff-add
   options: {
@@ -69,7 +69,7 @@ import type { AdminUser } from  'adminforth';
 
 Let's disable creating and editing of new users for all users apart from users with role `superadmin`, and at the same time disable deletion for all users:
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 //diff-add
 import type { AdminUser } from  'adminforth';
 
@@ -82,7 +82,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
 
 {
   ...
-  resourceId: 'users',
+  resourceId: 'adminuser',
   ...
   options: {
     allowedActions: {

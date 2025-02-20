@@ -1,6 +1,7 @@
 import {
   ActionCheckSource,
   AdminForthDataTypes,
+  AdminForthResourcePages,
   AdminUser,
   Filters,
 } from "../../adminforth";
@@ -62,7 +63,7 @@ export default {
     {
       name: "id",
       label: "Identifier", // if you wish you can redefine label
-      showIn: ["filter", "show", "list"], // show in filter and in show page
+      showIn: {filter: true, show: true, list: true, create: false, edit: false}, // show in filter and in show page
       primaryKey: true,
       // @ts-ignore
       fillOnCreate: ({ initialRecord, adminUser }) =>
@@ -76,7 +77,7 @@ export default {
       name: "title",
       // type: AdminForthDataTypes.JSON,
       required: true,
-      showIn: ["list", "create", "edit", "filter", "show"], // the default is full set
+      showIn: {list: true, create: true, edit: true, filter: true, show: true}, // the default is full set
       maxLength: 255, // you can set max length for string fields
       minLength: 3, // you can set min length for string fields
       components: {
@@ -165,7 +166,9 @@ export default {
       name: "created_at",
       type: AdminForthDataTypes.DATETIME,
       allowMinMaxQuery: true,
-      showIn: ["list", "filter", "show", "edit"],
+      showIn: {
+        [AdminForthResourcePages.create]: false,
+      },
       components: {
         list: "@/renderers/RelativeTime.vue",
       },
@@ -174,13 +177,17 @@ export default {
     },
     {
       name: "apartment_image",
-      showIn: ["show"],
+      showIn: {
+        all: true,
+        show: () => true,
+        filter: false,
+      },
       required: false,
       editingNote: "Upload image of apartment",
     },
     {
       name: "price",
-      showIn: ["create", "edit", "filter", "show"],
+      showIn: {create: true, edit: true, filter: true, show: true},
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
     },
@@ -209,13 +216,21 @@ export default {
         { value: 4, label: "4 rooms" },
         { value: 5, label: "5 rooms" },
       ],
-      showIn: ["filter", "show", "create", "edit"],
+      showIn: {filter: true, show: true, create: true, edit: true},
+    },
+    {
+      name: "room_sizes",
+      type: AdminForthDataTypes.JSON,
+      isArray: {
+        enabled: true,
+        itemType: AdminForthDataTypes.FLOAT,
+      },
     },
     {
       name: "description",
       sortable: false,
       type: AdminForthDataTypes.RICHTEXT,
-      showIn: ["filter", "show", "edit", "create"],
+      showIn: {filter: true, show: true, edit: true, create: true},
     },
     {
       name: "listed",
@@ -223,7 +238,7 @@ export default {
     },
     {
       name: "user_id",
-      showIn: ["filter", "show", "edit", "list", "create"],
+      showIn: {filter: true, show: true, edit: true, list: true, create: true},
       foreignResource: {
         resourceId: "users",
         hooks: {
@@ -304,29 +319,29 @@ export default {
     //     debounceTime: 250,
     //   }
     // }),
-    new RichEditorPlugin({
-      htmlFieldName: "description",
-      completion: {
-        adapter: new CompletionAdapterOpenAIChatGPT({
-          openAiApiKey: process.env.OPENAI_API_KEY as string,
-        }),
-        expert: {
-          debounceTime: 250,
-        },
-      },
-      // requires to have table 'description_images' with upload plugin installed on attachment field
+    // new RichEditorPlugin({
+    //   htmlFieldName: "description",
+    //   completion: {
+    //     adapter: new CompletionAdapterOpenAIChatGPT({
+    //       openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //     }),
+    //     expert: {
+    //       debounceTime: 250,
+    //     },
+    //   },
+    //   // requires to have table 'description_images' with upload plugin installed on attachment field
 
-      ...(process.env.AWS_ACCESS_KEY_ID
-        ? {
-            attachments: {
-              attachmentResource: "description_images",
-              attachmentFieldName: "image_path",
-              attachmentRecordIdFieldName: "record_id",
-              attachmentResourceIdFieldName: "resource_id",
-            },
-          }
-        : {}),
-    }),
+    //   ...(process.env.AWS_ACCESS_KEY_ID
+    //     ? {
+    //         attachments: {
+    //           attachmentResource: "description_images",
+    //           attachmentFieldName: "image_path",
+    //           attachmentRecordIdFieldName: "record_id",
+    //           attachmentResourceIdFieldName: "resource_id",
+    //         },
+    //       }
+    //     : {}),
+    // }),
   ],
 
   options: {
@@ -358,6 +373,7 @@ export default {
           "price",
           "square_meter",
           "number_of_rooms",
+          "room_sizes",
           "listed",
         ],
       },

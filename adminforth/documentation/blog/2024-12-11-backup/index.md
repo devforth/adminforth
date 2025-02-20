@@ -9,6 +9,8 @@ Every reliable system requires a backup strategy.
 
 If you have no own backup infrastructure, here can suggest a small docker container that will help you to backup your database to AWS Glacier.
 
+<!-- truncate -->
+
 As a base guide we will use a previous blog post about [deploying adminforth infrastructure](/blog/compose-ec2-deployment-github-actions).
 
 

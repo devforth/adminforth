@@ -25,7 +25,15 @@ columns: [
 //diff-add
     virtual: true,
 //diff-add
-    showIn: [AdminForthResourcePages.show, AdminForthResourcePages.list],
+    showIn: {
+//diff-add
+      [AdminForthResourcePages.edit]: false,
+//diff-add
+      [AdminForthResourcePages.create]: false,
+//diff-add
+      [AdminForthResourcePages.filter]: false,
+//diff-add
+    },
 //diff-add
     components: {
 //diff-add
@@ -72,13 +80,13 @@ columns: [
 
 ## Virtual columns for editing.
 
-Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/001-gettingStarted.md) we used this feature to add `password` field to the `users` resource. 
+Another usecase of `virtual` columns is to add new fields in edit and create view. In the [Getting started](/docs/tutorial/001-gettingStarted.md) we used this feature to add `password` field to the `adminuser` resource. 
 Thing is that password itself can't be stored in the database, but instead their hash is stored. 
-So we need to add `password` field to the `users` resource and make it `virtual` so it will not be stored in the database.
+So we need to add `password` field to the `adminuser` resource and make it `virtual` so it will not be stored in the database.
 
-```ts title="./resources/users.ts"
+```ts title="./resources/adminuser.ts"
 ...
-resourceId: 'users',
+resourceId: 'adminuser',
 ...
 columns: [
   ...
@@ -89,7 +97,11 @@ columns: [
     editingNote: { edit: 'Leave empty to keep password unchanged' },
     minLength: 8,
     type: AdminForthDataTypes.STRING,
-    showIn: ['create', 'edit'], // to show field only on create and edit pages
+    showIn: { // to show field only on create and edit pages
+      show: false,
+      list: false,
+      filter: false,
+    },
     masked: true, // to show stars in input field
   }
   ...
@@ -135,7 +147,7 @@ it will never pass this field to frontend.
 {     
   name: 'password_hash',
   type: AdminForthDataTypes.STRING,
-  showIn: [],
+  showIn: { all: false },
   backendOnly: true,  // will never go to frontend
 }
 ```

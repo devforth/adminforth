@@ -11,6 +11,18 @@ import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Co
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
+
+  client: any;
+
+  get db() {
+    console.warn('db is deprecated, use client instead');
+    return this.client;
+  }
+
+  setupClient(url: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   getPrimaryKey(resource: AdminForthResource): string {
     for (const col of resource.dataSourceColumns) {
         if (col.primaryKey) {
@@ -133,7 +145,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     for (const field of Object.keys(newValues)) {
       const col = resource.dataSourceColumns.find((col) => col.name == field);
       // todo instead of throwing error, we can just not use setFieldValue here, and pass original value to updateRecordOriginalValues
-      // we might consider this because some users might not want to define all columns in resource with showIn:[], but still want to use them in hooks
+      // we might consider this because some users might not want to define all columns in resource with showIn:{}, but still want to use them in hooks
       if (!col) {
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), field);
         throw new Error(`

@@ -6,37 +6,30 @@ import { createClient } from '@clickhouse/client'
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
-
-    client: any;
+  
     dbName: string;
     url: string;
+  
+  async setupClient(url): Promise<void> {
+    this.dbName = new URL(url).pathname.replace('/', '');
+    this.url = url;
+    // create connection here
+    this.client = createClient({
+      url: url.replace('clickhouse://', 'http://'),
+      clickhouse_settings: {
+        // Allows to insert serialized JS Dates (such as '2023-12-06T10:54:48.000Z')
+        date_time_input_format: 'best_effort',
 
-    /**
-     * url: http[s]://[username:password@]hostname:port[/database][?param1=value1&param2=value2]
-     * @param param0 
-     */
-    constructor({ url }: { url: string }) {
-      super();
-      this.dbName = new URL(url).pathname.replace('/', '');
-      this.url = url;
-      // create connection here
-      this.client = createClient({ 
-        url: url.replace('clickhouse://', 'http://'),
-        clickhouse_settings: {
-          // Allows to insert serialized JS Dates (such as '2023-12-06T10:54:48.000Z')
-          date_time_input_format: 'best_effort',
-
-          // Recommended for cluster usage to avoid situations where a query processing error occurred after the response code, 
-          // and HTTP headers were already sent to the client.
-          // See https://clickhouse.com/docs/en/interfaces/http/#response-buffering
-          wait_end_of_query: 1,
-        },
-        // log:{
-        //   level: ClickHouseLogLevel.TRACE,
-        // }
-      });
-      
-    }
+        // Recommended for cluster usage to avoid situations where a query processing error occurred after the response code, 
+        // and HTTP headers were already sent to the client.
+        // See https://clickhouse.com/docs/en/interfaces/http/#response-buffering
+        wait_end_of_query: 1,
+      },
+      // log:{
+      //   level: ClickHouseLogLevel.TRACE,
+      // }
+    });
+  }
 
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
@@ -141,7 +134,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           || field._underlineType.startsWith('String') 
           || field._underlineType.startsWith('FixedString')) {
           // value is iso string now, convert to unix timestamp
-          const iso = dayjs(value).toISOString();
+          const iso = dayjs(value).format('YYYY-MM-DDTHH:mm:ss');
           return iso;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
