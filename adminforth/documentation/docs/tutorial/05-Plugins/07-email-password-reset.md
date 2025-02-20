@@ -34,7 +34,7 @@ To Setup SES, you need to have an AWS account and SES service enabled. You can f
 
 Add plugin to user resource:
 
-```typescript ./resources/users.ts
+```typescript ./resources/adminuser.ts
 import EmailResetPasswordPlugin from '@adminforth/email-password-reset';
 import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
 ...

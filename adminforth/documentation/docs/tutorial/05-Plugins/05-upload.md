@@ -103,7 +103,7 @@ export const admin = new AdminForth({
 //diff-add
       name: 'apartment_image',
 //diff-add
-      showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+      showIn: { all: true, filter: false }, // for create and edit pages plugin put's it's own file dropzone widget, for show and list pages it put's preview
 //diff-add
     }
     ...
@@ -241,7 +241,6 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
 ```ts title="./index.ts"
 
   preview: {
-      showInList: true,
 //diff-remove
       previewUrl: ({s3Path}) => `https://my-bucket.s3.us-east-1.amazonaws.com/${s3Path}`,
 
@@ -323,10 +322,9 @@ You can set the maximum width for the preview image in the `./resources/apartmen
     s3Path: ({originalFilename, originalExtension, contentType}) => 
       `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
     preview: {
-    showInList: true,
-    //diff-add
-    maxWidth: '200px', // Set the maximum width for the preview image
-    ...
+      //diff-add
+      maxWidth: '200px', // Set the maximum width for the preview image
+      ...
     }
 
   })

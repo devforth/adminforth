@@ -32,7 +32,7 @@
       "@semantic-release/github",
       [
         "semantic-release-slack-bot",
-        { 
+        {
           "notifyOnSuccess": true,
           "notifyOnFail": true,
           "slackIcon": ":package:",
@@ -78,12 +78,12 @@
     "jsonwebtoken": "^9.0.2",
     "listr2": "^8.2.5",
     "mongodb": "6.6",
+    "mysql2": "^3.12.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@semantic-release/exec": "^6.0.3",
     "@types/node": "^20.14.2",
     "semantic-release": "^24.2.1",
     "semantic-release-slack-bot": "^4.0.2",

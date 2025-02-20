@@ -130,7 +130,11 @@ export interface AdminForthFieldComponents {
    * {
    *  label: 'Full Name',
    *  virtual: true,
-   *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+   *  showIn: {
+   *    [AdminForthResourcePages.edit]: false,
+   *    [AdminForthResourcePages.create]: false,
+   *    [AdminForthResourcePages.filter]: false,
+   *  },
    *  components: {
    *   show: '@@/FullName.vue',
    *   list: '@@/FullName.vue',
@@ -189,7 +193,12 @@ export interface AdminForthComponentDeclarationFull {
    * {
    *    name: 'Country Flag',
    *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
+   *    showIn: {
+   *      [AdminForthResourcePages.list]: false,
+   *      [AdminForthResourcePages.edit]: false,
+   *      [AdminForthResourcePages.create]: false,
+   *      [AdminForthResourcePages.filter]: false,
+   *    },
    *    components: {
    *      show: {
    *        file: '@@/Flag.vue',
@@ -202,7 +211,12 @@ export interface AdminForthComponentDeclarationFull {
    * {
    *    name: 'Team Flag',
    *    virtual: true,
-   *    showIn: [AdminForthResourcePages.SHOW],
+   *    showIn: {
+   *      [AdminForthResourcePages.list]: false,
+   *      [AdminForthResourcePages.edit]: false,
+   *      [AdminForthResourcePages.create]: false,
+   *      [AdminForthResourcePages.filter]: false,
+   *    },
    *    components: {
    *      show: {
    *        file: '@@/Flag.vue',
@@ -520,12 +534,16 @@ export enum AdminForthResourcePages {
   edit = 'edit',
   create = 'create',
   filter = 'filter',
-  
+}
+
+export type ShowInResolved = {
+  [key in AdminForthResourcePages]: boolean
 }
 
 
 export interface AdminForthForeignResourceCommon {
   resourceId: string,
+  unsetLabel?: string,
 }
 
 /**
@@ -550,6 +568,24 @@ export interface AdminForthResourceColumnInputCommon {
    * However you can explicitly set it to any value. E.g. set AdminForthDataTypes.DATETIME for your string column in SQLite, which stores ISO date strings.
    */
   type?: AdminForthDataTypes,
+
+  /**
+   * Defines whether column is array and what type of items it contains.
+   * AdminForth will use this information to render proper input fields in the admin panel with control buttons to add and remove items.
+   * If enabled, requires column type to be JSON.
+   * Cannot be used with masked columns, columns with foreignResource or primary key columns.
+   */
+  isArray?: {
+    enabled: boolean,
+    /**
+     * Type of items in array. Cannot be JSON or RICHTEXT.
+     */
+    itemType: AdminForthDataTypes,
+    /**
+     * If enabled, AdminForth will allow to add items with the same value.
+     */
+    allowDuplicateItems?: boolean,
+  },
 
   /**
    * An optional configuration object for extra settings.
@@ -581,6 +617,12 @@ export interface AdminForthResourceColumnInputCommon {
   required?: boolean | { create?: boolean, edit?: boolean },
 
   /**
+   * Prefix and suffix for input field on create and edit pages.
+   */
+  inputPrefix?: string,
+  inputSuffix?: string,
+
+  /**
    * Whether AdminForth will show editing note near the field in edit/create form.
    */
   editingNote?: string | { create?: string, edit?: string },
@@ -591,20 +633,55 @@ export interface AdminForthResourceColumnInputCommon {
   editReadonly?: boolean,
 
   /**
-   * On which AdminForth pages this field will be shown. By default all.
+   * Defines on which AdminForth pages this field will be shown. By default all.
    * Example: if you want to show field only in create and edit pages, set it to
    * 
    * ```ts
-   * showIn: [AdminForthResourcePages.CREATE, AdminForthResourcePages.EDIT]
+   * showIn: { create: true, edit: true }
+   * ```
+   * 
+   * If you wish show only in list view, set it to:
+   * 
+   * ```ts
+   * showIn: { all: false, list: true }
+   * ```
+   * 
+   * If you wish to hide only in list you can use:
+   * 
+   * 
+   * ```ts
+   * showIn: { all: true, list: false }
+   * ```
+   * 
+   * or
+   * 
+   * ```ts
+   * showIn: { list: false } // all: true is by default already
+   * ```
+   * 
+   * Also might have callback which will be called with same syntax as allowedActions.
+   * 
+   * ```ts
+   * showIn: {
+   *  list: ({ resource, adminUser }) => {
+   *    return adminUser.dbUser.role === 'superadmin';
+   *  },
+   *  show: true,
+   * }
    * ```
    * 
    */
-  showIn?: Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>,
+  showIn?: ShowInResolved,
 
   /**
-   * Whether AdminForth will show this field in show view.
+   * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
   fillOnCreate?: Function,
+
+  /**
+   * Single value that will be substituted in create form. User can change it before saving the record.
+   */
+  suggestOnCreate?: string | number | boolean | object,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
@@ -632,7 +709,11 @@ export interface AdminForthResourceColumnInputCommon {
    *  label: 'Country Flag',
    *  type: AdminForthDataTypes.STRING,
    *  virtual: true,
-   *  showIn: [AdminForthResourcePages.SHOW, AdminForthResourcePages.LIST],
+   *  showIn: {
+   *    [AdminForthResourcePages.edit]: false,
+   *    [AdminForthResourcePages.create]: false,
+   *    [AdminForthResourcePages.filter]: false,
+   *  },
    *  components: {
    *    show: '@@/CountryFlag.vue',
    *    list: '@@/CountryFlag.vue',
@@ -660,7 +741,12 @@ export interface AdminForthResourceColumnInputCommon {
   virtual?: boolean,
 
   /**
-   * Whether AdminForth will show this field in list view.
+   * Allow AdminForth to execute SELECT min(column) and SELECT max(column) queries to get min and max values for this column.
+   * This would improve UX of filters by adding sliders for numeric columns.
+   * 
+   * NOTE: By default is option is `false` to prevent performance issues on large tables.
+   * If you are going to set it to `true`, make sure you have a one-item index on this column (one index for each column which has it) or ensure your table will not have a large number of records.
+   * 
    */
   allowMinMaxQuery?: boolean,
 
@@ -703,6 +789,18 @@ export interface AdminForthResourceColumnInputCommon {
   foreignResource?: AdminForthForeignResourceCommon,
 
   sortable?: boolean,
+
+  
+  filterOptions?: {
+    /**
+     * Decrease number of requests by adding debounce time to filter requests.
+     */
+    debounceTimeMs?: number,
+    /**
+     * If false - will force EQ operator for filter instead of ILIKE.
+     */
+    substringSearch?: boolean,
+  },
 
   /**
    * if true field will !not be passed to UI under no circumstances, but will be presented in hooks
@@ -927,6 +1025,7 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   }
 }
 

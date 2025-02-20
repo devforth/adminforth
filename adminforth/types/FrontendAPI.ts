@@ -38,7 +38,7 @@ export interface FrontendAPIInterface {
      * @param params - The parameters of the dialog
      * @returns A promise that resolves when the user confirms the dialog
      */   
-    confirm(params:ConfirmParams ): Promise<void>;
+    confirm(params: ConfirmParams): Promise<boolean>;
     
     /**
      * Show an alert

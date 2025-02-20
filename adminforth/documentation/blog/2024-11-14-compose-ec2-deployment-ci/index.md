@@ -11,6 +11,8 @@ Here Terraform state will be stored in the cloud, so you can run this deployment
 
 We will use GitHub Actions as CI/CD, but you can use any other CI/CD, for example self-hosted free WoodpeckerCI.
 
+<!-- truncate -->
+
 Assume you have your AdminForth project in `myadmin`.
 
 
@@ -363,20 +365,19 @@ terraform apply -auto-approve
 
 ## Step 6 - Migrate state to the cloud
 
-First deployment had to create S3 bucket and DynamoDB table for storing Terraform state. Now we need to migrate the state to the cloud.
+First deployment had to create S3 bucket for storing Terraform state. Now we need to migrate the state to the cloud.
 
 Add to the end of `main.tf`:
 
 ```hcl title="main.tf"
 
-# Configure the backend to use the S3 bucket and DynamoDB table
+# Configure the backend to use the S3 bucket
 terraform {
  backend "s3" {
    bucket         = "<your_app_name>-terraform-state"
    key            = "state.tfstate"  # Define a specific path for the state file
    region         = "eu-central-1"
    profile        = "myaws"
-   dynamodb_table = "<your_app_name>-terraform-lock-table"
    use_lockfile   = true
  }
 }
@@ -421,7 +422,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.6  
+          terraform_version: 1.10.1 
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - name: Start building
         env:

@@ -21,7 +21,7 @@ export const useCoreStore = defineStore('core', () => {
     if (!resource.value) {
       return [];
     }
-    return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.includes('filter'));
+    return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.filter);
   })
 
   const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
@@ -32,6 +32,10 @@ export const useCoreStore = defineStore('core', () => {
   
   async function resetAdminUser() {
     adminUser.value = null;
+  }
+
+  async function resetResource() {
+    resource.value = null;
   }
 
   async function toggleTheme() {
@@ -224,5 +228,6 @@ export const useCoreStore = defineStore('core', () => {
     theme,
     fetchMenuBadges,
     resetAdminUser,
+    resetResource,
   }
 })

@@ -1,7 +1,7 @@
-
 import AdminForthAuth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
+import MysqlConnector from './dataConnectors/mysql.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
@@ -230,6 +230,55 @@ class AdminForth implements IAdminForth {
     });
   }
 
+  validateRecordValues(resource: AdminForthResource, record: any): any {
+    // check if record with validation is valid
+    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      let error = null;
+      if (column.isArray?.enabled) {
+        error = record[column.name].reduce((err, item) => {
+          return err || AdminForth.Utils.applyRegexValidation(item, column.validation);
+        }, null);
+      } else {
+        error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
+      }
+      if (error) {
+        return error;
+      }
+    }
+
+    // check if record with minValue or maxValue is within limits
+    for (const column of resource.columns.filter((col) => col.name in record
+      && ['integer', 'decimal', 'float'].includes(col.isArray?.enabled ? col.isArray.itemType : col.type)
+      && (col.minValue !== undefined || col.maxValue !== undefined))) {
+      if (column.isArray?.enabled) {
+        const error = record[column.name].reduce((err, item) => {
+          if (err) return err;
+
+          if (column.minValue !== undefined && item < column.minValue) {
+            return `Value in "${column.name}" must be greater than ${column.minValue}`;
+          }
+          if (column.maxValue !== undefined && item > column.maxValue) {
+            return `Value in "${column.name}" must be less than ${column.maxValue}`;
+          }
+
+          return null;
+        }, null);
+        if (error) {
+          return error;
+        }
+      } else {
+        if (column.minValue !== undefined && record[column.name] < column.minValue) {
+          return `Value in "${column.name}" must be greater than ${column.minValue}`;
+        }
+        if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+          return `Value in "${column.name}" must be less than ${column.maxValue}`;
+        }
+      }
+    }
+
+    return null;
+  }
+
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
@@ -239,6 +288,7 @@ class AdminForth implements IAdminForth {
       'postgresql': PostgresConnector,
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
+      'mysql': MysqlConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
@@ -248,8 +298,16 @@ class AdminForth implements IAdminForth {
       if (!this.config.databaseConnectors[dbType]) {
         throw new Error(`Database type '${dbType}' is not supported, consider using one of ${Object.keys(this.connectorClasses).join(', ')} or create your own data-source connector`);
       }
-      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]({url: ds.url});  
+      this.connectors[ds.id] = new this.config.databaseConnectors[dbType]();  
     });
+
+    await Promise.all(Object.keys(this.connectors).map(async (dataSourceId) => {
+      try {
+        await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
+      } catch (e) {
+        console.error(`Error while connecting to datasource '${dataSourceId}':`, e);
+      }
+    }));
 
     await Promise.all(this.config.resources.map(async (res) => {
       if (!this.connectors[res.dataSource]) {
@@ -350,23 +408,17 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
-    // check if record with validation is valid
-    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
-      const error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
-      if (error) {
-        return { error };
-      }
+    const err = this.validateRecordValues(resource, record);
+    if (err) {
+      return { error: err };
     }
 
-    // check if record with minValue or maxValue is within limits
-    for (const column of resource.columns.filter((col) => col.name in record
-      && ['integer', 'decimal', 'float'].includes(col.type)
-      && (col.minValue !== undefined || col.maxValue !== undefined))) {
-      if (column.minValue !== undefined && record[column.name] < column.minValue) {
-        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
-      }
-      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
-        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
+    for (const column of resource.columns) {
+      const fieldName = column.name;
+      if (fieldName in record) {
+        if (!column.showIn?.create || column.backendOnly) {
+          return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation` };
+        }
       }
     }
 
@@ -435,30 +487,24 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
 
-    // check if record with validation is valid
-    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
-      const error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
-      if (error) {
-        return { error };
-      }
-    }
-
-    // check if record with minValue or maxValue is within limits
-    for (const column of resource.columns.filter((col) => col.name in record
-      && ['integer', 'decimal', 'float'].includes(col.type)
-      && (col.minValue !== undefined || col.maxValue !== undefined))) {
-      if (column.minValue !== undefined && record[column.name] < column.minValue) {
-        return { error: `Value in "${column.name}" must be greater than ${column.minValue}` };
-      }
-      if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
-        return { error: `Value in "${column.name}" must be less than ${column.maxValue}` };
-      }
+    const err = this.validateRecordValues(resource, record);
+    if (err) {
+      return { error: err };
     }
 
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
       if (column.name in record)
         delete record[column.name];
+    }
+
+    for (const column of resource.columns) {
+      const fieldName = column.name;
+      if (fieldName in record) {
+        if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
+          return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+        }
+      }
     }
 
     // execute hook if needed

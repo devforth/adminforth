@@ -76,7 +76,7 @@
       aria-label="Sidebar"
     >
       <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder">
-        <div class="flex ms-2 md:me-24  m-4  ">
+        <div class="flex ms-2 m-4">
           <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
           <span 
             v-if="coreStore.config?.showBrandNameInSidebar"
@@ -100,7 +100,7 @@
 
                 <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
-                <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
+                <span class="text-ellipsis overflow-hidden flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
 
                   <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
                     fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
@@ -209,9 +209,12 @@
          drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-20">
     </div>
 
-
+    <component
+      v-for="c in coreStore?.config?.globalInjections?.everyPageBottom || []"
+      :is="getCustomComponent(c)"
+      :meta="c.meta"
+    />
   </div>
-
 </template>
 
 <style lang="scss" scoped>

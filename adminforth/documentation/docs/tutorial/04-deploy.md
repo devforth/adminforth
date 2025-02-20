@@ -7,7 +7,7 @@ It will start the server on configured HTTP port and you can use any proxy like 
 
 ## Building SPA in Docker build time
 
-In current index.ts file you might use call to `bundleNow` method which starts building internal SPA bundle when `index.ts` started 
+In current index.ts file you might use call to `bundleNow` method which starts building internal SPA bundle when `index.ts` started
 executing. SPA building generally takes from 10 seconds to minute depending on the external modules you will add into AdminForth and extended functionality you will create.
 
 To fully exclude this bundle time we recommend doing bundling in build time.
@@ -49,7 +49,6 @@ node_modules
 *.sqlite
 ```
 
-
 In root directory create file `Dockerfile`:
 
 ```Dockerfile
@@ -57,7 +56,7 @@ In root directory create file `Dockerfile`:
 FROM node:20-alpine
 WORKDIR /code/
 ADD package.json package-lock.json /code/
-RUN npm ci  
+RUN npm ci
 ADD . /code/
 RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
 CMD ["npm", "run", "migrateLiveAndStart"]
@@ -69,21 +68,16 @@ Add `bundleNow` and `startLive` to `package.json`:
 {
     "type": "module",
     "scripts": {
-        "start": "tsx watch --env-file=.env index.ts",
+        "env": "dotenvx run -f .env.local -f .env --overload --",
+        "start": "npm run env -- tsx watch index.ts",
+        ...
 //diff-add
-        "startLive": "NODE_ENV=production tsx index.ts"
-//diff-add
-        "migrate": "npx --yes prisma migrate deploy",
-//diff-add
-        "migrateLiveAndStart": "npm run migrate && npm run startLive"
+        "migrateLiveAndStart": "npx --yes prisma migrate deploy && tsx index.ts"
     },
 }
 ```
 
-
-
 ## Building the image
-
 
 Now you can build your image:
 
@@ -103,9 +97,7 @@ docker run -p 3500:3500 \
   myadminapp
 ```
 
-
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
-
 
 ## Adding SSL (https) to AdminForth
 
@@ -184,12 +176,12 @@ Now pull this compose file and all directories to your server and run:
 docker compose -p stack-my-app -f compose.yml up -d --build --remove-orphans --wait
 ```
 
-> ☝️ You can also test this compose stack locally on your machine but SSL will not work, 
+> ☝️ You can also test this compose stack locally on your machine but SSL will not work,
 > so locally you can ignore Chrome warning about SSL and test your AdminForth application.
 
 ## Subpath deployment
 
-If you want to deploy your AdminForth application to a sub-folder like `https://mydomain.com/admin` you 
+If you want to deploy your AdminForth application to a sub-folder like `https://mydomain.com/admin` you
 should do the following:
 
 1) Open `index.ts` file and change `ADMIN_BASE_URL` constant to your subpath:
@@ -218,11 +210,9 @@ Now you can access your AdminForth application by going to `https://mydomain.com
 
 If you want to automate the deployment process with CI follow [our docker - traefik guide](https://devforth.io/blog/onlogs-open-source-simplified-web-logs-viewer-for-dockers/)
 
-
 # Nginx version
 
 If you are using Nginx instead of traefik, here is siple proxy pass config:
-
 
 ```
 server {

@@ -120,12 +120,12 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
-
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
-
+const { t } = useI18n();
 const coreStore = useCoreStore();
 
 onMounted(async () => {
@@ -158,13 +158,13 @@ const groups = computed(() => {
   return activeGroups.map(group => ({
     ...group,
     columns: coreStore.resource.columns.filter(
-      col => group.columns.includes(col.name) && col.showIn.includes('show')
+      col => group.columns.includes(col.name) && col.showIn.show
     ),
   }));
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource.columns.filter(col => col.showIn.includes('show'));
+  return coreStore.resource.columns.filter(col => col.showIn.show);
 });
 
 const otherColumns = computed(() => {
@@ -173,15 +173,15 @@ const otherColumns = computed(() => {
   );
 
   return coreStore.resource.columns.filter(
-    col => !groupedColumnNames.has(col.name) && col.showIn.includes('show')
+    col => !groupedColumnNames.has(col.name) && col.showIn.show
   );
 });
 
 async function deleteRecord(row) {
   const data = await adminforth.confirm({
-    message: 'Are you sure you want to delete this item?',
-    yes: 'Delete',
-    no: 'Cancel',
+    message: t('Are you sure you want to delete this item?'),
+    yes: t('Delete'),
+    no: t('Cancel'),
   });
   if (data) {
     try {
@@ -194,7 +194,7 @@ async function deleteRecord(row) {
       }});
       if (!res.error){
         router.push({ name: 'resource-list', params: { resourceId: route.params.resourceId } });
-        showSuccesTost('Record deleted successfully')
+        showSuccesTost(t('Record deleted successfully'))
       } else {
         showErrorTost(res.error)
       }

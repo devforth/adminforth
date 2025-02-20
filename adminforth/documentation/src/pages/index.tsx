@@ -89,7 +89,7 @@ function HomepageHeader() {
       <header className={clsx('hero', styles.heroBanner)}>
         <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            Create admin panels faster on Node and Vue with AdminForth framework
+            The Free, Open-Source Admin Framework for Node, Vue & Tailwind
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
 

@@ -17,8 +17,9 @@ import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
-   AnnouncementBadgeResponse, 
-   GetBaseConfigResponse} from "../types/Common.js";
+   AnnouncementBadgeResponse,
+   GetBaseConfigResponse,
+   ShowInResolved} from "../types/Common.js";
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -108,9 +109,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
-      handler: async ({ body, response, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
-        const INVALID_MESSAGE = 'Invalid Username or Password';
+        const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
@@ -125,7 +126,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           userResource.dataSourceColumns.push({
             name: this.adminforth.config.auth.passwordHashField,
             backendOnly: true,
-            showIn: [],
+            showIn: Object.values(AdminForthResourcePages).reduce((acc, page) => { return { ...acc, [page]: false } }, {} as ShowInResolved),
             type: AdminForthDataTypes.STRING,
           });
           console.log('Adding passwordHashField to userResource', userResource)
@@ -219,6 +220,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
+          globalInjections: {
+            everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
+          },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
         };
       },
@@ -454,6 +458,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         });
 
+        if (resource.options.fieldGroups) {
+          resource.options.fieldGroups.forEach((group, i) => {
+            if (group.groupName) {
+              translateRoutines[`fieldGroup${i}`] = tr(group.groupName, `resource.${resource.resourceId}.fieldGroup`);
+            }
+          });
+        }
+
         const translated: Record<string, string> = {};
         await Promise.all(
           Object.entries(translateRoutines).map(async ([key, value]) => {
@@ -468,7 +480,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             columns:
               await Promise.all(
                 resource.columns.map(
-                  async (col, i) => {
+                  async (inCol, i) => {
+                    const col = JSON.parse(JSON.stringify(inCol));
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
@@ -491,16 +504,32 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                         })
                       );
                     }
+                    const showIn = {} as ShowInResolved;
+                    await Promise.all(
+                      Object.entries(inCol.showIn).map(
+                        async ([key, value]: [string, AllowedActionValue]) => {
+                          // if callable then call
+                          if (typeof value === 'function') {
+                            showIn[key] = await value({ adminUser, resource, meta: {}, source: ActionCheckSource.DisplayButtons, adminforth: this.adminforth });
+                          } else {
+                            showIn[key] = value;
+                          }
+                        })
+                    );
                     // TODO: better to move all coroutines to translationRoutines
                     if (col.editingNote?.create) {
-                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote.create`);
+                      col.editingNote.create = await tr(col.editingNote.create, `resource.${resource.resourceId}.editingNote`);
                     }
                     if (col.editingNote?.edit) {
-                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote.edit`);
+                      col.editingNote.edit = await tr(col.editingNote.edit, `resource.${resource.resourceId}.editingNote`);
+                    }
+                    if (col.foreignResource?.unsetLabel) {
+                      col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
 
                     return {
                       ...col,
+                      showIn,
                       validation,
                       label: translated[`resCol${i}`],
                       enum: enumItems,
@@ -510,6 +539,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             ),
             options: {
               ...resource.options,
+              fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
+                ...group,
+                groupName: translated[`fieldGroup${i}`] || group.groupName,
+              })),
               bulkActions: allowedBulkActions.map(
                 (action, i) => ({
                   ...action,
@@ -628,7 +661,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           offset,
           filters,
           sort: sortFiltered,
-          getTotals: true,
+          getTotals: source === 'list',
         });
 
         // for foreign keys, add references
@@ -676,7 +709,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
           item._label = resource.recordLabel(item);
         });
-        if (resource.options.listTableClickUrl) {
+        if (source === 'list' && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser);
@@ -857,7 +890,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (
                   (column.required as {create?: boolean, edit?: boolean})?.create &&
                   record[column.name] === undefined &&
-                  column.showIn.includes(AdminForthResourcePages.create)
+                  column.showIn.create
               ) {
                   return { error: `Column '${column.name}' is required`, ok: false };
               }

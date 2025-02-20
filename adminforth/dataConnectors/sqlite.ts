@@ -6,17 +6,13 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 
 class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
-    db: any;
-
-    constructor({ url }: { url: string }) {
-      super();
-      // create connection here
-      this.db = betterSqlite3(url.replace('sqlite://', ''));
-    }
+  async setupClient(url: string): Promise<void> {
+    this.client = betterSqlite3(url.replace('sqlite://', ''));
+  }
 
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
-        const stmt = this.db.prepare(`PRAGMA table_info(${tableName})`);
+        const stmt = this.client.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
         const fieldTypes = {};
         rows.forEach((row) => {
@@ -197,7 +193,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
       const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
-      const stmt = this.db.prepare(q);
+      const stmt = this.client.prepare(q);
       const d = [...filterValues, limit, offset];
 
       if (process.env.HEAVY_DEBUG_QUERY) {
@@ -222,7 +218,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
       }
-      const totalStmt = this.db.prepare(q);
+      const totalStmt = this.client.prepare(q);
       return totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
@@ -230,7 +226,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const tableName = resource.table;
       const result = {};
       await Promise.all(columns.map(async (col) => {
-        const stmt = await this.db.prepare(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
+        const stmt = await this.client.prepare(`SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`);
         const { min, max } = stmt.get();
         result[col.name] = {
           min, max,
@@ -244,7 +240,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      const q = this.db.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`)
+      const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
       await q.run(values);
     }
 
@@ -255,18 +251,18 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 SQLITE Q', q, 'params:', values);
       }
-      const query = this.db.prepare(q);        
+      const query = this.client.prepare(q);
       await query.run(values);
     }
 
     async deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean> {
-      const q = this.db.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`);
+      const q = this.client.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`);
       const res = await q.run(recordId);
       return res.changes > 0;
     }
 
     close() {
-      this.db.close();
+      this.client.close();
     }
 }
 

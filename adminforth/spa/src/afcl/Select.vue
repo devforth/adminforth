@@ -4,7 +4,7 @@
       <input
         ref="inputEl"
         type="text"
-        :readonly="isReadonly"
+        :readonly="readonly"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
@@ -32,8 +32,32 @@
         />
       </div>
     </div>
-    <div v-if="showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
-       class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+    <teleport to="body" v-if="teleportToBody && showDropdown">
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
+        class="fixed z-50 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
+        <div
+          v-for="item in filteredItems"
+          :key="item.value"
+          class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400"
+          :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
+          @click="toogleItem(item)"
+        >
+          <slot name="item" :option="item"></slot>
+          <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
+        </div>
+        <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
+          {{ options.length ? $t('No results found') : $t('No items here') }}
+        </div>
+
+        <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
+          <slot name="extra-item"></slot>
+        </div>
+      </div>
+    </teleport>
+
+    <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
+      class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
       <div
         v-for="item in filteredItems"
@@ -46,7 +70,7 @@
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
-        {{ $t('No results found') }}
+        {{ options.length ? $t('No results found') : $t('No items here') }}
       </div>
 
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
@@ -102,7 +126,11 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  isReadonly: {
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
+  teleportToBody: {
     type: Boolean,
     default: false,
   },
@@ -147,7 +175,7 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.isReadonly) return;
+  if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search
@@ -213,7 +241,7 @@ const removeClickListener = () => {
 
 const toogleItem = (item) => {
   if (selectedItems.value.includes(item)) {
-    selectedItems.value = selectedItems.value.filter(i => i !== item);
+    selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {
       selectedItems.value = [item];
@@ -228,8 +256,7 @@ const toogleItem = (item) => {
     search.value = '';
   }
 
-  const list = selectedItems.value.map(item => item.value);
-  const updValue = list.length ? list : null;
+  const updValue = selectedItems.value.map(item => item.value);
   let emitValue;
   if (!props.multiple) {
     emitValue = updValue ? updValue[0] : null;
@@ -241,6 +268,22 @@ const toogleItem = (item) => {
 
 onUnmounted(() => {
   removeClickListener();
+});
+
+const getDropdownPosition = computed(() => {
+  if (!inputEl.value) return {};
+  const rect = inputEl.value.getBoundingClientRect();
+  const style: { left: string; top: string; width: string } = {
+    left: `${rect.left}px`,
+    top: `${rect.bottom + 8}px`,
+    width: `${rect.width}px`
+  };
+  
+  if (isTop.value && dropdownHeight.value) {
+    style.top = `${rect.top - dropdownHeight.value - 8}px`;
+  }
+  
+  return style;
 });
 
 </script>
