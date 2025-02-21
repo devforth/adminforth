@@ -70,11 +70,12 @@ Of course you have to care about a way of registry authentication (so only you a
 
 What docker registry can you use? Pretty known options:
 1) Docker Hub - most famous. It is free for public images, so literally every opensource project uses it. However it is not free for private images, and you have to pay for it. In this post we are considering you might do development for commercial project with tight budget, so we will not use it.
-2) GHCR - Registry from Google. Has free plan but allows to store only 500MB and allows to transfer 1GB of traffic per month. Then you pay for every extra GB in storage and traffic. Probably small images will fit in this plan, but generally even alpine-based docker images are bigger than 500MB, so it is not a good option.
-3) Self-hosted registry web system. In our software development company, we use Harbor. It is a powerful free open-source registry that can be installed to own server. It allows pushing and pulling without limit. Also, it has internal life-cycle rules that cleanup unnecessary images and layers. The main drawbacks of it are that it is not so fast to install and configure, plus you have to get a domain and another powerfull server to run it. So unless you are a software development company, it is not worth using it.
-4) Self-hosted minimal CNCF Distribution [registry](https://distribution.github.io/distribution/) on EC2 itself. So since we already have EC2, we can run registry on it directly. The `registry` container is pretty light-weight and easy to setup and it will not consume a lot of extra CPU/RAM on server. Plus images will be stored close to application so pull will be fast. 
+2) GHCR - Registry from GitHub. Has free plan but allows to store only 500MB and allows to transfer 1GB of traffic per month. Then you pay for every extra GB in storage (`$0.0008` per GB/day or `$0.24` per GB/month) and for every extra GB in traffic ($0.09 per GB). Probably small images will fit in free plan, but generally even alpine-based docker images are bigger than 500MB, so it is non-free option.
+3) Amazon ECR - Same as GHCR but from Amazon. Price is `$0.10` per GB of storage per month and `$0.09` per GB of data transfer. So it is cheaper than GHCR but still not free. But is good option.
+4) Self-hosted registry web system. In our software development company, we use Harbor. It is a powerful free open-source registry that can be installed to own server. It allows pushing and pulling without limit. Also, it has internal life-cycle rules that cleanup unnecessary images and layers. The main drawbacks of it are that it is not so fast to install and configure, plus you have to get a domain and another powerfull server to run it. So unless you are a software development company, it is not worth using it.
+5) Self-hosted minimal CNCF Distribution [registry](https://distribution.github.io/distribution/) on EC2 itself. So since we already have EC2, we can run registry on it directly. The `registry` container is pretty light-weight and easy to setup and it will not consume a lot of extra CPU/RAM on server. Plus images will be stored close to application so pull will be fast. 
 
-In the post we will use last (4th way). Our terraform will deploy registry automatically, so you don't have to do anything special. 
+In the post we will use last (5th way). Our terraform will deploy registry automatically, so you don't have to do anything special. 
 
 ### Persisting cache
 
@@ -687,6 +688,10 @@ jobs:
           VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
           VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
 
+      - name: Prepare env
+        run: |
+          echo "" > deploy/.env.live
+
       - name: Terraform build
         run: |
           cd deploy
@@ -729,27 +734,15 @@ Open your GitHub repository, then `Settings` -> `Secrets` -> `New repository sec
 Now open GitHub actions file and add it to the `env` section:
 
 ```yml title=".github/workflows/deploy.yml"
-      - name: Start building
+      - name: Prepare env
+        run: |
+          echo "" > deploy/.env.live
+//diff-add
+          echo "OPENAI_API_KEY=$VAULT_OPENAI_API_KEY" >> deploy/.env.live
+//diff-add
         env:
-          VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
-          VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
-          VAULT_SSH_PRIVATE_KEY: ${{ secrets.VAULT_SSH_PRIVATE_KEY }}
-          VAULT_SSH_PUBLIC_KEY: ${{ secrets.VAULT_SSH_PUBLIC_KEY }}
 //diff-add
           VAULT_OPENAI_API_KEY: ${{ secrets.VAULT_OPENAI_API_KEY }}
-```
-
-Next add it to the `deploy.sh` script:
-
-```sh title="deploy/deploy.sh"
-//diff-remove
-echo "" > .env.live
-//diff-add
-cat <<EOF > .env.live
-//diff-add
-OPENAI_API_KEY=$VAULT_OPENAI_API_KEY
-//diff-add
-EOF
 ```
 
 
