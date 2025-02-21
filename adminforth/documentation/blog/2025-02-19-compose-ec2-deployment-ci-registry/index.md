@@ -120,7 +120,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   myadmin:
-    image: localhost:5000/comyadminre:latest
+    image: localhost:5000/myadmin:latest
     pull_policy: always
     restart: always
     env_file:
@@ -139,7 +139,7 @@ volumes:
 
 ## Step 3 - create a SSH keypair
 
-Make sure you are in `deploy` folder, run next command here:
+Make sure you are still in `deploy` folder, run next command:
 
 ```bash title="deploy"
 mkdir .keys && ssh-keygen -f .keys/id_rsa -N ""
@@ -147,7 +147,19 @@ mkdir .keys && ssh-keygen -f .keys/id_rsa -N ""
 
 Now it should create `deploy/.keys/id_rsa` and `deploy/.keys/id_rsa.pub` files with your SSH keypair. Terraform script will put the public key to the EC2 instance and will use private key to connect to the instance. Also you will be able to use it to connect to the instance manually.
 
-## Step 4 - .gitignore file
+## Step 4 - create TLS certificates to encrypt traffic between CI and registry
+
+Make sure you are still in `deploy` folder, run next command:
+
+Run next command to create TLS certificates:
+
+```bash 
+openssl req -new -x509 -days 3650 -newkey rsa:4096 -nodes -keyout .keys/ca.key -subj "/CN=My Custom CA" -out .keys/ca.pem
+```
+
+This will create `deploy/.keys/ca.key` and `deploy/.keys/ca.pem` files.
+
+## Step 5 - .gitignore file
 
 Create `deploy/.gitignore` file with next content:
 
@@ -161,8 +173,30 @@ tfplan
 .env.live
 ```
 
-## Step 5 - Main terraform file main.tf
+## Step 6 - buildx bake file
 
+Create file `deploy/docker-bake.hcl`:
+
+```hcl title="deploy/docker-bake.hcl"
+variable "REGISTRY_BASE" {
+  default = "appserver.local:5000"
+}
+
+group "default" {
+  target = "myadmin"
+}
+
+target "myadmin" {
+  context = "../myadmin"
+  tags = ["${REGISTRY_BASE}/myadmin:latest"]
+  cache-from = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache"]
+  cache-to   = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache,mode=max,compression=zstd"]
+  push = true
+}
+```
+
+
+## Step 7 - main terraform file main.tf
 
 First of all install Terraform as described here [terraform installation](https://developer.hashicorp.com/terraform/install#linux).
 
@@ -324,6 +358,13 @@ resource "null_resource" "setup_registry" {
       echo "Creating htpasswd file for local registry"
       docker run --rm --entrypoint htpasswd httpd:2 -Bbn ci-user $(cat ./.keys/registry.pure) > ./.keys/registry.htpasswd
 
+      echo "Generating server certificate for registry"
+      openssl genrsa -out ./.keys/registry.key 4096
+      echo "subjectAltName=DNS:appserver.local,DNS:localhost,IP:127.0.0.1" > san.ext
+      openssl req -new -key ./.keys/registry.key -subj "/CN=appserver.local" -addext "$(cat san.ext)" -out ./.keys/registry.csr
+
+      openssl x509 -req -days 365 -CA ./.keys/ca.pem -CAkey ./.keys/ca.key -set_serial 01 -in ./.keys/registry.csr -extfile san.ext -out ./.keys/registry.crt 
+
       echo "Copying registry secret files to the instance"
       rsync -t -avz -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
         ./.keys/registry.* ubuntu@${aws_eip_association.eip_assoc.public_ip}:/home/ubuntu/registry-auth
@@ -338,7 +379,6 @@ resource "null_resource" "setup_registry" {
 
       # remove old registry if exists
       docker rm -f registry
-
       # run new registry
       docker run -d --network host \
         --name registry \
@@ -348,6 +388,8 @@ resource "null_resource" "setup_registry" {
         -e "REGISTRY_AUTH=htpasswd" \
         -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
         -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/registry.htpasswd" \
+        -e "REGISTRY_HTTP_TLS_CERTIFICATE=/auth/registry.crt" \
+        -e "REGISTRY_HTTP_TLS_KEY=/auth/registry.key" \
         registry:2
 
       EOF
@@ -372,7 +414,7 @@ resource "null_resource" "sync_files_and_run" {
   provisioner "local-exec" {
     command = <<-EOF
 
-      # map appserver.local to the instance (in GA we don't know the IP, so have to use DNS mapping)
+      # map appserver.local to the instance (in GA we don't know the IP, so have to use this mapping)
       grep -q "appserver.local" /etc/hosts || echo "${aws_eip_association.eip_assoc.public_ip} appserver.local" | sudo tee -a /etc/hosts
 
       # hosts modification may take some time to apply
@@ -382,7 +424,7 @@ resource "null_resource" "sync_files_and_run" {
       sha256sum ./.keys/id_rsa | cut -d ' ' -f1 | tr -d '\n' > ./.keys/registry.pure
       echo '{"auths":{"appserver.local:5000":{"auth":"'$(echo -n "ci-user:$(cat ./.keys/registry.pure)" | base64 -w 0)'"}}}' > ~/.docker/config.json
 
-      echo "Running build and push with buildx bake"
+      echo "Running build"
       docker buildx bake --progress=plain --push --allow=fs.read=..
 
       # compose temporarily it is not working https://github.com/docker/compose/issues/11072#issuecomment-1848974315
@@ -396,6 +438,7 @@ resource "null_resource" "sync_files_and_run" {
         --exclude '.keys' \
         --exclude 'tfplan' \
         . ubuntu@${aws_eip_association.eip_assoc.public_ip}:/home/ubuntu/app/deploy/
+
       EOF
   }
 
@@ -486,7 +529,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
 
 > 👆 Replace `<your_app_name>` with your app name (no spaces, only underscores or letters)
 
-### Step 5.1 - Configure AWS Profile
+
+
+### Step 7.1 - Configure AWS Profile
 
 Open or create file `~/.aws/credentials` and add (if not already there):
 
@@ -496,7 +541,7 @@ aws_access_key_id = <your_access_key>
 aws_secret_access_key = <your_secret_key>
 ```
 
-### Step 5.2 - Run deployment
+### Step 7.2 - Run deployment
 
 To run the deployment first time, you need to run:
 
@@ -510,7 +555,7 @@ Now run deployement:
 terraform apply -auto-approve
 ```
 
-## Step 6 - Migrate state to the cloud
+## Step 8 - Migrate state to the cloud
 
 First deployment had to create S3 bucket for storing Terraform state. Now we need to migrate the state to the cloud.
 
@@ -549,13 +594,13 @@ terraform apply -auto-approve
 Now you can delete local `terraform.tfstate` file and `terraform.tfstate.backup` file as they are in the cloud now.
 
 
-## Step 7 - CI/CD - Github Actions
+## Step 9 - CI/CD - Github Actions
 
 Create file `.github/workflows/deploy.yml`:
 
 ```yml title=".github/workflows/deploy.yml"
-name: Deploy upworker
-run-name: ${{ github.actor }} builds upworker 🚀
+name: Deploy myadmin
+run-name: ${{ github.actor }} builds myadmin 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
@@ -571,81 +616,78 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }}"
       - name: Check out repository code
         uses: actions/checkout@v4
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.10.1 
       
+      - name: Import Registry CA
+        run: |
+          mkdir -p deploy/.keys
+          echo "$VAULT_REGISTRY_CA_PEM" > deploy/.keys/ca.pem
+          echo "$VAULT_REGISTRY_CA_KEY" > deploy/.keys/ca.key
+        env:
+          VAULT_REGISTRY_CA_PEM: ${{ secrets.VAULT_REGISTRY_CA_PEM }}
+          VAULT_REGISTRY_CA_KEY: ${{ secrets.VAULT_REGISTRY_CA_KEY }}
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-        # use 127.0.0.1 for dns
           buildkitd-config-inline: |
             [registry."appserver.local:5000"]
-              http = true
+              ca=["deploy/.keys/ca.pem"]
               
-          # use host network
+          # use host network for resolving appserver.local
           driver-opts: network=host
 
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - name: Start building
+      - name: Import registry SSH keys
+        run: |
+          mkdir -p deploy/.keys
+          echo "$VAULT_SSH_PRIVATE_KEY" > deploy/.keys/id_rsa
+          echo "$VAULT_SSH_PUBLIC_KEY" > deploy/.keys/id_rsa.pub
+          chmod 600 deploy/.keys/id_rsa*
         env:
-          VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
-          VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
           VAULT_SSH_PRIVATE_KEY: ${{ secrets.VAULT_SSH_PRIVATE_KEY }}
           VAULT_SSH_PUBLIC_KEY: ${{ secrets.VAULT_SSH_PUBLIC_KEY }}
 
+      - name: Setup AWS credentials
         run: |
-          /bin/sh -x deploy/deploy.sh
+          mkdir -p ~/.aws
+          cat <<EOL > ~/.aws/credentials
+          [myaws]
+          aws_access_key_id=${VAULT_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key=${VAULT_AWS_SECRET_ACCESS_KEY}
+          EOL
+        env:
+          VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
+          VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform build
+        run: |
+          cd deploy
+          terraform init -reconfigure
+          # example of unlocking tf state if needed
+          # terraform force-unlock fb397548-8697-ea93-ab80-128a4f508fdf --force
+          terraform plan -out=tfplan 
+          terraform apply tfplan 
+                
           
       - run: echo "🍏 This job's status is ${{ job.status }}."
 ```
 
-### Step 7.1 - Create deploy script
 
-Now create file `deploy/deploy.sh`:
-
-```bash title="deploy/deploy.sh"
-
-# cd to dir of script
-cd "$(dirname "$0")"
-
-mkdir -p ~/.aws ./.keys
-
-cat <<EOF > ~/.aws/credentials
-[myaws]
-aws_access_key_id=$VAULT_AWS_ACCESS_KEY_ID
-aws_secret_access_key=$VAULT_AWS_SECRET_ACCESS_KEY
-EOF
-
-cat <<EOF > ./.keys/id_rsa
-$VAULT_SSH_PRIVATE_KEY
-EOF
-
-cat <<EOF > ./.keys/id_rsa.pub
-$VAULT_SSH_PUBLIC_KEY
-EOF
-
-chmod 600 ./.keys/id_rsa*
-
-# init .env.live
-echo "" > .env.live
-
-# force Terraform to reinitialize the backend without migrating the state.
-terraform init -reconfigure
-terraform plan -out=tfplan
-terraform apply tfplan
-```
-
-### Step 7.2 - Add secrets to GitHub
+### Step 8.1 - Add secrets to GitHub
 
 Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository secret` and add:
 
 - `VAULT_AWS_ACCESS_KEY_ID` - your AWS access key
 - `VAULT_AWS_SECRET_ACCESS_KEY` - your AWS secret key
-- `VAULT_SSH_PRIVATE_KEY` - make `cat ~/.ssh/id_rsa` and paste to GitHub secrets
-- `VAULT_SSH_PUBLIC_KEY` - make `cat ~/.ssh/id_rsa.pub` and paste to GitHub secrets
+- `VAULT_SSH_PRIVATE_KEY` - execute `cat ~/.ssh/id_rsa` and paste to GitHub secrets
+- `VAULT_SSH_PUBLIC_KEY` - execute `cat ~/.ssh/id_rsa.pub` and paste to GitHub secrets
+- `VAULT_REGISTRY_CA_PEM` - execute `cat deploy/.keys/ca.pem` and paste to GitHub secrets
+- `VAULT_REGISTRY_CA_KEY` - execute `cat deploy/.keys/ca.key` and paste to GitHub secrets
 
 
 Now you can push your changes to GitHub and see how it will be deployed automatically.
