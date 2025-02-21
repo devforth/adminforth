@@ -453,7 +453,7 @@ resource "null_resource" "sync_files_and_run" {
 
       # if you will change host, pleasee add -o StrictHostKeyChecking=no
       echo "Copy files to the instance" 
-      rsync -t -avz -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
+      rsync -t -avz --mkpath -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
         --delete \
         --exclude '.terraform' \
         --exclude '.keys' \
@@ -575,6 +575,8 @@ Now run deployement:
 ```bash
 terraform apply -auto-approve
 ```
+
+> First time you might need to run deployment twice if you still see "Waiting for Docker to start..." message. This is because terraform runs `docker` command before docker is started.
 
 ## Step 8 - Migrate state to the cloud
 
