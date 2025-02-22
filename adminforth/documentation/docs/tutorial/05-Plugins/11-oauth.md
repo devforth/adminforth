@@ -40,6 +40,15 @@ Configure the plugin in your user resource file:
 import OAuthPlugin from '@adminforth/oauth';
 import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      GOOGLE_OAUTH_CLIENT_ID: string;
+      GOOGLE_OAUTH_CLIENT_SECRET: string;
+    }
+  }
+}
+
 // ... existing resource configuration ...
 
 plugins: [
@@ -51,6 +60,7 @@ plugins: [
         redirectUri: 'http://localhost:3000/oauth/callback',
       }),
     ],
+    
     emailField: 'email',  // Required: field that stores the user's email
   }),
 ]
