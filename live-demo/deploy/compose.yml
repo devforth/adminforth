@@ -15,8 +15,6 @@ services:
     volumes:
       - af-db:/code/db/
       
-   
-
 networks:
   default:
     driver: bridge
