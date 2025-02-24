@@ -63,7 +63,8 @@
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
-          :rows="3"
+          :rows="rowHeights.length || 3"
+          :row-heights="rowHeights"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
@@ -80,6 +81,7 @@
 
         <tr @click="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+          ref="rowRefs"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
@@ -269,7 +271,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -345,6 +347,13 @@ watch(() => props.sort, (newSort) => {
 
 watch(() => props.page, (newPage) => {
   page.value = newPage;
+});
+
+const rowRefs = useTemplateRef('rowRefs');
+const rowHeights = ref([]);
+watch(() => props.rows, (newRows) => {
+  // rows are set to null when new records are loading
+  rowHeights.value = newRows ? [] : rowRefs.value.map((el) => el.offsetHeight);
 });
 
 function addToCheckedValues(id) {
