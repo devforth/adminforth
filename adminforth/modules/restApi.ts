@@ -896,6 +896,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
+            for (const column of resource.columns) {
+              const fieldName = column.name;
+              if (fieldName in record) {
+                if (!column.showIn?.create || column.backendOnly) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation`, ok: false };
+                }
+              }
+            }
+
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
               return { error: response.error, ok: false };
@@ -937,6 +946,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
               return { error: allowedError };
+            }
+
+            for (const column of resource.columns) {
+              const fieldName = column.name;
+              if (fieldName in record) {
+                if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+                }
+              }
             }
 
             const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
