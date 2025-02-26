@@ -208,6 +208,7 @@
         <div
           contenteditable="true" 
           class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
+          @keydown="onPageKeydown($event)"
           @input="page = parseInt($event.target.innerText) || ''"
         >
           {{ pageInput }}
@@ -271,7 +272,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, useTemplateRef, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -329,6 +330,14 @@ const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.tot
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
 });
+async function onPageKeydown(event) {
+  // page input should accept only numbers, arrow keys and backspace
+  if (['Enter', 'Space'].includes(event.code) ||
+    (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
+    && isNaN(String.fromCharCode(event.keyCode)))) {
+    event.preventDefault();
+  }
+}
 
 watch(() => sort.value, (newSort) => {
   emits('update:sort', newSort);
