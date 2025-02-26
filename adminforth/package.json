@@ -20,7 +20,7 @@
     "rollout-doc": "cd documentation && npm run build && npm run deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do npm ci in the package",
-    "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm --version && npm ci && echo 'installed spa dependencies'; fi",
+    "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi",
     "install-plugins": "cd ../plugins && sh install-plugins.sh",
     "install-adapters": "cd ../adapters && sh install-adapters.sh"
   },
