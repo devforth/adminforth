@@ -86,15 +86,15 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       } else if (baseType.startsWith('json')) {
         field.type = AdminForthDataTypes.JSON;
         field._underlineType = 'json';
-      } else if (baseType.startsWith('date')) {
-        field.type = AdminForthDataTypes.DATE;
-        field._underlineType = 'date';
       } else if (baseType.startsWith('time')) {
         field.type = AdminForthDataTypes.TIME;
         field._underlineType = 'time';
       } else if (baseType.startsWith('datetime') || baseType.startsWith('timestamp')) {
         field.type = AdminForthDataTypes.DATETIME;
         field._underlineType = 'timestamp';
+      } else if (baseType.startsWith('date')) {
+        field.type = AdminForthDataTypes.DATE;
+        field._underlineType = 'date';
       } else if (baseType.startsWith('year')) {
         field.type = AdminForthDataTypes.INTEGER;
         field._underlineType = 'year';
@@ -232,7 +232,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       console.log('🪲📜 MySQL Q:', q, 'values:', filterValues);
     }
     const [results] = await this.client.query(q, filterValues);
-    return +results[0].count;
+    return +results[0]["COUNT(*)"];
   }
   
   async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {

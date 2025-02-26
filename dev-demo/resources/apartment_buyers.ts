@@ -22,7 +22,7 @@ export default {
       gender ENUM('m', 'f'),
       info LONGTEXT,
       contact_info JSON,
-      language: CHAR(2),
+      language CHAR(2),
       ideal_price DECIMAL(65, 2),
       ideal_space FLOAT(24),
       ideal_subway_distance FLOAT(53),

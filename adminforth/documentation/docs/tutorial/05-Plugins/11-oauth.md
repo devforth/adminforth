@@ -40,6 +40,15 @@ Configure the plugin in your user resource file:
 import OAuthPlugin from '@adminforth/oauth';
 import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      GOOGLE_OAUTH_CLIENT_ID: string;
+      GOOGLE_OAUTH_CLIENT_SECRET: string;
+    }
+  }
+}
+
 // ... existing resource configuration ...
 
 plugins: [
@@ -48,9 +57,9 @@ plugins: [
       new AdminForthAdapterGoogleOauth2({
         clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
         clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-        redirectUri: 'http://localhost:3000/oauth/callback',
       }),
     ],
+    
     emailField: 'email',  // Required: field that stores the user's email
   }),
 ]
@@ -78,7 +87,7 @@ npx prisma migrate dev --name add-email-confirmed-to-adminuser
 3. Configure the plugin with `emailConfirmedField`:
 
 ```typescript title="./resources/adminuser.ts"
-new OAuth2Plugin({
+new OAuthPlugin({
   // ... adapters configuration ...
   emailField: 'email',
   emailConfirmedField: 'email_confirmed'  // Enable email confirmation tracking
@@ -89,3 +98,35 @@ When using OAuth:
 - New users will have their email automatically confirmed (`email_confirmed = true`)
 - Existing users will have their email marked as confirmed upon successful OAuth login
 - The `email_confirmed` field must be a boolean type
+
+### 4. Open Signup
+
+By default, users must exist in the system before they can log in with OAuth. You can enable automatic user creation for new OAuth users with the `openSignup` option:
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  openSignup: {
+    enabled: true,
+    defaultFieldValues: { // Set default values for new users
+      role: 'user',
+    },
+  },
+}),
+```
+
+### 5. UI Customization
+
+You can customize the UI of the OAuth login buttons by using the `iconOnly` and `pill` options.
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  iconOnly: true, // Show only provider icons without text
+  pill: true, // Use pill-shaped buttons instead of rectangular
+}),
+```
+
+
+
+
