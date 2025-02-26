@@ -82,11 +82,15 @@ function processJsFilesInDir(directory) {
           }
         );
 
-        // Remove /index.js from imports
+        // Remove /index.js from imports only if it's not a relative path
         fileContent = fileContent.replace(
           /import (.+?) from ["'](.+?)\/index\.js["'];/g,
           (match, imports, modulePath) => {
-            return `import ${imports} from "${modulePath}";`;
+            // Check if the path is not relative (doesn't start with ./ or ../)
+            if (!modulePath.startsWith("./") && !modulePath.startsWith("../")) {
+              return `import ${imports} from "${modulePath}";`;
+            }
+            return match;
           }
         );
 
