@@ -1,25 +1,30 @@
 ---
 slug: compose-ec2-deployment-github-actions-registry
-title: IaaC Deploy setup to Amazon EC2 with GitHub actions, Deocker, terraform and self-hosted Docker Registry
+title: "IaaC Simplified: Automating EC2 Deployments with GitHub Actions, Terraform, Docker & Distribution Registry"
 authors: ivanb
 tags: [aws, terraform, github-actions]
+description: "The ultimate step-by-step guide to cost-effective, build-time-efficient, and easy managable EC2 deployments using GitHub Actions, Terraform, Docker, and a self-hosted registry."
+image: "/ogs/ga-tf-aws.jpg"
 ---
+
+
+![alt text](ga-tf-aws.jpg)
+
 
 This guide shows how to deploy own Docker apps (with AdminForth as example) to Amazon EC2 instance with Docker and Terraform involving Docker self-hosted registry.
 
 Needed resources:
 - GitHub actions Free plan which includes 2000 minutes per month (1000 of 2-minute builds per month - more then enough for many projects, if you are not running tests etc). Extra builds would cost `0.008$` per minute.
-- AWS account where we will auto-spawn EC2 instance. We will use t3a.small instance (2 vCPUs, 2GB RAM) which costs `~14$` per month in `us-east-1` region (cheapest region).
-- $2 per month for EBS gp2 storage (20GB) for EC2 instance
+- AWS account where we will auto-spawn EC2 instance. We will use `t3a.small` instance (2 vCPUs, 2GB RAM) which costs `~14$` per month in `us-east-1` region (cheapest region). Also it will take `$2` per month for EBS gp2 storage (20GB) for EC2 instance
 
 This is it, registry will be auto-spawned on EC2 instance, so no extra costs for it. Also GitHub storage is not used, so no extra costs for it.
 
 The setup has next features:
-- Build process is done using IaaC approach with HashiCorp Terraform, so almoast no manual actions are needed from you. Every resource including EC2 server instance is described in code which is commited to repo and should not be manually clicked.
+- Build process is done using IaaC approach with HashiCorp Terraform, so almoast no manual actions are needed from you. Every resource including EC2 server instance is described in code which is commited to repo so no manual clicks are needed.
 - Docker build process is done on GitHub actions, so EC2 server is not overloaded
-- Changes in infrastructure including changing server type, adding S3 Bucket, changing size of sever Disk is also done in code and can be done by commiting code to repo.
+- Changes in infrastructure including changing server type, adding S3 Bucket, changing size of sever disk is also can be done by commiting code to repo.
 - Docker images and cache are stored on EC2 server, so no extra costs for Docker registry are needed.
-- Total build time for average commit to AdminForth app (with vite rebuilds) is around 2 minutes.
+- Total build time for average commit to AdminForth app (with Vite rebuilds) is around 2 minutes.
 
 <!-- truncate -->
 
@@ -35,9 +40,9 @@ Quick difference between approaches from previous post and current post:
 
 | Feature | Without Registry | With Registry |
 | --- | --- | --- |
-| How and where docker build happens | Source code is copied to EC2 and docker build is done there | Docker build is done on CI and docker image is pushed to registry (in this post we run registry automatically on EC2) |
-| Docker build layers cache | Cache is stored on EC2 | GitHub actions has no own Docker cache out of the box, so it should be stored in dedicated place (we use self-hosted registry on the CI as it is free) |
-| Advantages | Much simpler setup with less code ( we don't need code to run registry and make it trusted, secured, and don't need extra cache setup as is naturally stored on EC2). | Build is done on CI, so EC2 server is not overloaded. For cheap/middle EC2s CI builds are faster than on EC2. Plus time is saved because we don't need to copy source code to EC2 |
+| How and where docker build happens | Source code is rsync-ed from CI to EC2 and docker build is done there | Docker build is done on CI and docker image is pushed to registry (in this post we run registry automatically on EC2) |
+| How Docker build layers are cached | Cache is stored on EC2 | GitHub actions has no own Docker cache out of the box, so it should be stored in dedicated place (we use self-hosted registry on the EC2 as it is free) |
+| Advantages | Simpler setup with less code (we don't need code to run and secure registry, and don't need extra cache setup as is naturally persisted on EC2). | Build is done on CI, so EC2 server is not overloaded. For most cases CI builds are faster than on EC2. Plus time is saved because we don't need to rsync source code to EC2 |
 | Disadvantages | Build on EC2 requires additional server RAM / overloads CPU | More terraform code is needed. registry cache might require small extra space on EC2 |
 
 
@@ -46,40 +51,57 @@ Quick difference between approaches from previous post and current post:
 A little bit of theory.
 
 When you move build process to CI you have to solve next chellenges:
-1) We need to deliver built docker images to EC2 somehow
+1) We need to deliver built docker images to EC2 somehow (and only we)
 2) We need to persist cache between builds
 
 ### Delivering images
 
 #### Exporing images to tar files
 
-Simplest option which you can find is save docker images to tar files and deliver them to EC2. We can easily do it in terraform (using `docker save -o ...` command on CI and `docker load ...` command on EC2). However this option has a significant disadvantage - it is slow. Docker images are big (always include all layers, without any options), so it takes infinity to do save/load and another infinity to transfer them to EC2 (via relatively slow rsync/SSH and relatively GitHub actions outbound connection).
+Simplest option which you can find is save docker images to tar files and deliver them to EC2. We can easily do it in terraform (using `docker save -o ...` command on CI and `docker load ...` command on EC2). However this option has a significant disadvantage - it is slow. Docker images are big (always include all layers, without any options), so it takes infinity to do save/load and another infinity to transfer them to EC2 (via relatively slow rsync/SSH and relatively slow GitHub actions outbound connection).
 
 #### Docker registry
 
-Second and right option which we will use here - involve Docker registry. Docker registry is a repository which stores docker images. It does storing in a smart way - it stores layers, so if you will update last layer and push it from CI to registry, only last layer will be pushed to registry and then pulled to EC2. 
-To give you row compare - whole-layers image might took `1GB`, but last layer created by `npm run build` command might take `50MB`. And most builds you will do only last layer changes, so it will be 20 times faster to push/pull last layer than whole image.
-And this is not all, registry uses unencrypted HTTP/2 protocol so it is faster then SSH/rsync encrypted connection. However you have to be careful with this point and provide another way of authentication (so only you and your CI/EC2 can push/pull images).
+Faster, right option which we will use here - involve Docker registry. Registry is a repository which stores docker images. It does it in a smart way - it saves each image as several layers, so if you will update last layer, then only last layer will be pushed to registry and then only last will be pulled to EC2. 
+To give you row compare - whole-layers image might take `1GB`, but last layer created by `npm run build` command might take `50MB`. And most builds you will do only last layer changes, so it will be 20 times faster to push/pull last layer than whole image.
+And this is not all, registry uses TLS HTTP protocol so it is faster then SSH/rsync encrypted connection. 
 
-What docker registry can you use? So you have next options:
-1) Docker Hub - most famous. It is free for public images, so literally every opensource project uses it. However it is not free for private images, and you have to pay for it. In this post we are considering you might do development for commercial project, so we will not use it.
-2) GHCR - Registry from Google. Has free plan but on it allows to store only 500MB and allows to do 1GB of traffic per month. Then you pay for every extra GB. Probably small images without cache will fit in this plan, but it is not enough for us.
-3) Self-hosted registry repository. In our software development company we use Harbor. It is powerfull free open-source registry which can be easily installed. It allows to push and pull without limit. Also it has internal life-cycle rules which remove unnecessary images and layers. Main drawbacks of it - it is not so fast to install and configure, plus you have to get domain and another server to run it. So unless you are not software dev company, it is not worth to use it.
-4) Self-hosted registry on EC2 itself using official `registry` image. So since we already have EC2, we can run registry on it directly. The `registry` container is pretty low-weight and easy to setup and it will not consume a lot of extra CPU/RAM on server. Plus images will be stored close to application so pull will be fast. 
+Of course you have to care about a way of registry authentication (so only you and your CI/EC2 can push/pull images).
 
-In the post we will use last (4th way). Our terraform will DevOps registry it automatically, so you don't have to do anything special. There are some tricks of course, but our terraform will handle them.
+What docker registry can you use? Pretty known options:
+1) Docker Hub - most famous. It is free for public images, so literally every opensource project uses it. However it is not free for private images, and you have to pay for it. In this post we are considering you might do development for commercial project with tight budget, so we will not use it.
+2) GHCR - Registry from GitHub. Has free plan but allows to store only 500MB and allows to transfer 1GB of traffic per month. Then you pay for every extra GB in storage (`$0.0008` per GB/day or `$0.24` per GB/month) and for every extra GB in traffic ($0.09 per GB). Probably small images will fit in free plan, but generally even alpine-based docker images are bigger than 500MB, so it is non-free option.
+3) Amazon ECR - Same as GHCR but from Amazon. Price is `$0.10` per GB of storage per month and `$0.09` per GB of data transfer. So it is cheaper than GHCR but still not free. But is good option.
+4) Self-hosted registry web system. In our software development company, we use Harbor. It is a powerful free open-source registry that can be installed to own server. It allows pushing and pulling without limit. Also, it has internal life-cycle rules that cleanup unnecessary images and layers. The main drawbacks of it are that it is not so fast to install and configure, plus you have to get a domain and another powerfull server to run it. So unless you are a software development company, it is not worth using it.
+5) Self-hosted minimal CNCF Distribution [registry](https://distribution.github.io/distribution/) on EC2 itself. So since we already have EC2, we can run registry on it directly. The `registry` container is pretty light-weight and easy to setup and it will not consume a lot of extra CPU/RAM on server. Plus images will be stored close to application so pull will be fast. 
+
+In the post we will use last (5th way). Our terraform will deploy registry automatically, so you don't have to do anything special. 
 
 ### Persisting cache
 
-Docker builds without layers cache persisting are possible but are very slow. Most build only couple of layers changed, and having no ability to cache them will cause docker builder to regenerate all layers from scratch. It depends, but might for example cause time docker build time increase from a minute to a 10 minutes or even more.
+Docker builds without layer cache persistence are possible but very slow. Most builds only change a couple of layers, and having no ability to cache them will cause the Docker builder to regenerate all layers from scratch. This can, for example, increase the Docker build time from a minute to ten minutes or even more.
 
-When you build on GitHub actions you have to persist cache between builds. Out of the box GitHub actions can't save anything between builds, so you have to use external storage.
+Out of the box, GitHub Actions can't save Docker layers between builds, so you have to use external storage.
 
-> Though some CI systems can persist docker build cache, e.g. open-source self-hosted Woodpecker CI des it out of the box. However GitHub actions reasonably can't allow such free storage to anyone
+> Though some CI systems can persist docker build cache, e.g. open-source self-hosted Woodpecker CI allows it out of the box. However GitHub actions which is pretty popular, reasonably can't allow such free storage to anyone
 
 So when build-in Docker cache can't be used, there is one alternative - Docker BuildKit external cache. 
-So BuildKit allows you to connect external storage. There are several options, but most sweet for us is using Docker registry as cache storage (not only as images storage). However drowback appears here. 
-Previously we used docker compose to run our app, it can be used to both build and deploy images, but has [issues with external cache connection](https://github.com/docker/compose/issues/11072#issuecomment-1848974315). While they are not solved we have to use `docker buildx bake` command to build images. It is not so bad, but is another point of configuration which we will cover in this post.
+So BuildKit allows you to connect external storage. There are several options, but most sweet for us is using Docker registry as cache storage (not only as images storage to deliver them to application server). 
+
+> *BuildKit cache in Compose issue*
+> Previously we used docker compose to build & run our app, it can be used to both build, push and pull images, but has [issues with external cache connection](https://github.com/docker/compose/issues/11072#issuecomment-1848974315). While they are not solved we have to use `docker buildx bake` command to build images. It is not so bad, but is another point of configuration which we will cover in this post.
+
+### Registry authorization and traffic encryption
+
+Hosting custom CNCF registry, from other hand is a security responsibility. 
+
+If you don't protect it right, someone will be able to push any image to your registry and then pull it to your EC2 instance. This is a big security issue, so we have to protect our registry. 
+
+First of all we need to set some authorization to our registry so everyone who will push/pull images will be authorized. Here we have 2 options: HTTP basic auth and Client certificate auth. We will use first one as it is easier to setup. We will generate basic login and password automatically in terraform so no extra actions are needed from you.
+
+But this is not enough. Basic auth is not encrypted, so someone can perform MITM attack and get your credentials. So we need to encrypt traffic between CI and registry. We can do it by using TLS certificates. So we will generate self-signed TLS certificates, and attach them to our registry.
+
+
 
 # Practice - deploy setup
 
@@ -432,7 +454,7 @@ resource "null_resource" "sync_files_and_run" {
 
       # if you will change host, pleasee add -o StrictHostKeyChecking=no
       echo "Copy files to the instance" 
-      rsync -t -avz -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
+      rsync -t -avz --mkpath -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
         --delete \
         --exclude '.terraform' \
         --exclude '.keys' \
@@ -555,6 +577,8 @@ Now run deployement:
 terraform apply -auto-approve
 ```
 
+> First time you might need to run deployment twice if you still see "Waiting for Docker to start..." message. This is because terraform runs `docker` command before docker is started.
+
 ## Step 8 - Migrate state to the cloud
 
 First deployment had to create S3 bucket for storing Terraform state. Now we need to migrate the state to the cloud.
@@ -664,6 +688,10 @@ jobs:
           VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
           VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
 
+      - name: Prepare env
+        run: |
+          echo "" > deploy/.env.live
+
       - name: Terraform build
         run: |
           cd deploy
@@ -706,28 +734,15 @@ Open your GitHub repository, then `Settings` -> `Secrets` -> `New repository sec
 Now open GitHub actions file and add it to the `env` section:
 
 ```yml title=".github/workflows/deploy.yml"
-      - name: Start building
+      - name: Prepare env
+        run: |
+          echo "" > deploy/.env.live
+//diff-add
+          echo "OPENAI_API_KEY=$VAULT_OPENAI_API_KEY" >> deploy/.env.live
+//diff-add
         env:
-          VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
-          VAULT_AWS_SECRET_ACCESS_KEY: ${{ secrets.VAULT_AWS_SECRET_ACCESS_KEY }}
-          VAULT_SSH_PRIVATE_KEY: ${{ secrets.VAULT_SSH_PRIVATE_KEY }}
-          VAULT_SSH_PUBLIC_KEY: ${{ secrets.VAULT_SSH_PUBLIC_KEY }}
 //diff-add
           VAULT_OPENAI_API_KEY: ${{ secrets.VAULT_OPENAI_API_KEY }}
-```
-
-Next add it to the `deploy.sh` script:
-
-```bash title="deploy/deploy.sh"
-
-//diff-remove
-echo "" > .env.live
-//diff-add
-cat <<EOF > .env.live
-//diff-add
-OPENAI_API_KEY=$VAULT_OPENAI_API_KEY
-//diff-add
-EOF
 ```
 
 

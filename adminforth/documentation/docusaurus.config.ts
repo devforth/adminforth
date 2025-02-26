@@ -204,7 +204,7 @@ const config: Config = {
               href: 'https://devforth.io',
             },
             {
-              label: 'We can develop dashboard and admin panel for your project',
+              label: 'We can develop admin panel for your project',
               href: 'https://devforth.io/contact',
             },
             {

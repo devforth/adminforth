@@ -401,7 +401,7 @@ export default class ConfigValidator implements IConfigValidator {
         col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors, warnings);
 
         if (col.showIn.create && inCol.fillOnCreate !== undefined) {
-          errors.push(`Resource "${res.resourceId}" column "${col.name}" is present on crate page and has fillOnCreate`);
+          errors.push(`Resource "${res.resourceId}" column "${col.name}" is shown on create page but has fillOnCreate. FillOnCreate is not allowed for columns shown on create page. Please either set showIn.create to false or remove fillOnCreate`);
         }
 
         // check col.required is boolean or object
