@@ -1612,4 +1612,53 @@ import { PieChart } from '@/afcl'
   </div>
 </div>
 
+## Mixed Chart
+
+```ts
+import { MixedChart } from '@/afcl'
+```
+
+### Basic
+
+<div class="split-screen" >
+
+  <div>
+  ```html
+  <MixedChart
+    :data="[
+      { x: '02 Jun 2025', avgPrice: 100, listedPrice: 100, unlistedPrice: 100},
+      { x: '03 Jun 2025', avgPrice: 280, listedPrice: 130, unlistedPrice: 200},
+      { x: '04 Jun 2025', avgPrice: 150, listedPrice: 90, unlistedPrice: 60},
+      { x: '05 Jun 2025', avgPrice: 100, listedPrice: 100, unlistedPrice: 100},
+      { x: '06 Jun 2025', avgPrice: 200, listedPrice: 290, unlistedPrice: 180},
+      { x: '07 Jun 2025', avgPrice: 100, listedPrice: 100, unlistedPrice: 100},
+    ]"
+    :series="[
+      { name: $t('Avg Price'), fieldName: 'avgPrice', type: 'line', color: COLORS[0] },
+      { name: $t('Listed Price'), fieldName: 'listedPrice', type: 'column', color: COLORS[1] },
+      { name: $t('Unlisted Price'), fieldName: 'unlistedPrice', type: 'area', color: COLORS[2] },
+      
+    ]"
+    :options="{
+      chart: {
+        height: 350,
+      },
+      stroke: {
+        width: [6, 0, 6],  // Line: 6px, Column: 0px (no border), Area: 6px
+      },
+      fill: {
+        opacity: [1, 0.85, 0.25], // Line: 1, Column: 0.85, Area: 0.25
+      },
+    }"
+  />
+  ```
+</div>
+  <div>
+    ![Mixed Chart](image-91.png)
+  </div>
+</div>
+
+
+
+
 
