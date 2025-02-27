@@ -63,7 +63,8 @@
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
-          :rows="3"
+          :rows="rowHeights.length || 3"
+          :row-heights="rowHeights"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
@@ -80,6 +81,7 @@
 
         <tr @click="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+          ref="rowRefs"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
@@ -187,7 +189,7 @@
         <!-- Buttons -->
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page--" :disabled="page <= 1">
+          @click="page--; pageInput = page.toString();" :disabled="page <= 1">
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -199,28 +201,29 @@
         </button>
         <button
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page = 1" :disabled="page <= 1">
+          @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
-        <div 
+        <div
           contenteditable="true" 
           class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
+          @keydown="onPageKeydown($event)"
           @input="page = parseInt($event.target.innerText) || ''"
         >
-          {{ page }}
+          {{ pageInput }}
         </div>
 
         <button
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page = totalPages" :disabled="page >= totalPages">
+          @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
           {{ totalPages }}
 
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page++" :disabled="page >= totalPages">
+          @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
           <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
@@ -269,7 +272,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -316,6 +319,7 @@ const emits = defineEmits([
 ]);
 
 const checkboxesInternal: Ref<any[]> = ref([]);
+const pageInput = ref('1');
 const page = ref(1);
 const sort = ref([]);
 
@@ -326,6 +330,14 @@ const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.tot
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
 });
+async function onPageKeydown(event) {
+  // page input should accept only numbers, arrow keys and backspace
+  if (['Enter', 'Space'].includes(event.code) ||
+    (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
+    && isNaN(String.fromCharCode(event.keyCode)))) {
+    event.preventDefault();
+  }
+}
 
 watch(() => sort.value, (newSort) => {
   emits('update:sort', newSort);
@@ -344,7 +356,17 @@ watch(() => props.sort, (newSort) => {
 });
 
 watch(() => props.page, (newPage) => {
+  // page.value and newPage will not be equal only on page load
+  // this check prevents cursor jumping on manual input
+  if (page.value !== newPage) pageInput.value = newPage.toString();
   page.value = newPage;
+});
+
+const rowRefs = useTemplateRef('rowRefs');
+const rowHeights = ref([]);
+watch(() => props.rows, (newRows) => {
+  // rows are set to null when new records are loading
+  rowHeights.value = newRows ? [] : rowRefs.value.map((el) => el.offsetHeight);
 });
 
 function addToCheckedValues(id) {
