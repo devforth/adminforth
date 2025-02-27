@@ -58,6 +58,7 @@ async function generateModels() {
 
   fs.writeFileSync(modelFilePath, modelContent, "utf-8");
   console.log(`Generated TypeScript model file: ${modelFilePath}`);
+  return true;
 }
 
 export default generateModels;
