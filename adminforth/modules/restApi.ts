@@ -258,7 +258,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
-            const toReturn = menuItem.visible( adminUser );
+            const toReturn = menuItem.visible( adminUser );  // todo better to use  { adminUser } for consistency with allowed actions
             if (typeof toReturn !== 'boolean') {
               throw new Error(`'visible' function of ${menuItem.label || menuItem.type }  must return boolean value`);
             }
