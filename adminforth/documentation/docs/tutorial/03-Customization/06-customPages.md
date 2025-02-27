@@ -460,3 +460,37 @@ You can navigate user to this page using any router link, e.g.:
 ```ts
 import { Link } from '@/afcl';
 ```
+
+### Passing meta attributes to the page
+
+
+You can add custom meta attributes to the page by passing `meta` object to the page:
+
+
+```ts title="/index.ts"
+
+    customPages: [
+      {
+        path: '/setup2fa', // route path
+        component: { 
+          file: '@@/pages/TwoFactorsSetup.vue',
+          meta: { 
+            title: 'Setup 2FA',  // meta title for this page
+            customLayout: true,  // don't include default layout like menu/header
+    //diff-add
+            myAttribute: 'a1'
+          }
+        }
+      }
+    ]
+```
+
+To access passed meta attributes in your page, you can use `useRoute` hook:
+
+```ts
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+console.log(route.meta.myAttribute);  // a1
+```

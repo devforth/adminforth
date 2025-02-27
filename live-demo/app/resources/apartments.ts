@@ -90,7 +90,12 @@ export default {
     }, 
     {
       name: 'apartment_image',
-      showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+      showIn: {
+        all: false,
+        create: true,
+        edit: true,
+        show: true,
+      }, // You can set to ['list', 'show'] if you wish to show path column in list and show views
     },
     {
       name: 'created_at',

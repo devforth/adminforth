@@ -77,7 +77,7 @@ export default {
       name: "id",
       fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       primaryKey: true,
-      showIn: [],
+      showIn: { all: false }
     },
     {
       name: "en_string",
@@ -87,6 +87,7 @@ export default {
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
+      showIn: { create: false }
     },
     {
       name: "uk_string",
