@@ -53,6 +53,32 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
 
 If it is rare Group you can make it `open: false` so it would not take extra space in menu, but admin users will be able to open it by clicking on the group name.
 
+## Visibility of menu items
+
+You might want to hide some menu items from the menu for some users. 
+
+To do it use `visible` field in the menu item configuration:
+
+```ts title='./index.ts'
+{
+  ...
+  menu: [
+    {
+      label: 'Categories',
+      icon: 'flowbite:folder-duplicate-outline',
+      resourceId: 'categories',
+//diff-add
+      visible: adminUser => adminUser.dbUser.role === 'admin'
+    },
+  ],
+  ...
+}
+```
+
+> 👆 Please note that this will just hide menu item for non `admin` users, but resource pages will still be available by direct
+> URLs. To limit access, you should also use [allowedActions](/docs/tutorial/Customization/limitingAccess/#disable-full-access-to-resource-based-on-logged-in-user-record-or-role) field in the resource configuration in addition to this.
+
+
 ## Gap
 
 You can put one or several gaps between menu items:
