@@ -11,9 +11,11 @@ import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
 import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
 import { v1 as uuid } from "uuid";
 import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
-import { OAuthPlugin } from "../../plugins/adminforth-oauth";
-import { AdminForthAdapterGoogleOauth2 } from "../../adapters/adminforth-google-oauth-adapter";
-import { AdminForthAdapterGithubOauth2 } from "../../adapters/adminforth-github-oauth-adapter";
+
+import OAuthPlugin  from "../../plugins/adminforth-oauth";
+import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oauth-adapter";
+import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
+
 export default {
   dataSource: "maindb",
   table: "users",
