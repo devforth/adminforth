@@ -804,3 +804,29 @@ sudo resize2fs /dev/nvme0n1p1
 ```
 
 This will extend partition to the full disk size. No reboot is needed.
+
+
+### Want slack notifications about build?
+
+Create Slack channel and add [Slack app](https://slack.com/apps/A0F7YS25R-incoming-webhooks) to it. 
+
+Then create webhook URL and add it to GitHub secrets as `SLACK_WEBHOOK_URL`.
+
+Add this steps to the end of your GitHub actions file:
+
+```yml title=".github/workflows/deploy.yml"
+      - name: Notify Slack on success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data \
+          "{\"text\": \"✅ *${{ github.actor }}* successfully built *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data \
+          "{\"text\": \"❌ *${{ github.actor }}* failed to build *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+```
