@@ -23,7 +23,7 @@
     "@adminforth/import-export": "^1.0.2",
     "@adminforth/rich-editor": "^1.0.16",
     "@adminforth/two-factors-auth": "^1.0.21",
-    "@adminforth/upload": "^1.2.0-next.1",
+    "@adminforth/upload": "^1.2.0",
     "@prisma/client": "^6.1.0",
     "adminforth": "^1.11.5-next.14",
     "better-sqlite3": "^10.0.0",
