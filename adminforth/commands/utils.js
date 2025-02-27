@@ -86,8 +86,7 @@ function processJsFilesInDir(directory) {
         fileContent = fileContent.replace(
           /import (.+?) from ["'](.+?)\/index\.js["'];/g,
           (match, imports, modulePath) => {
-            // Check if the path is not relative (doesn't start with ./ or ../)
-            if (!modulePath.startsWith("./") && !modulePath.startsWith("../")) {
+            if (!modulePath.startsWith(".") && !modulePath.startsWith("..")) {
               return `import ${imports} from "${modulePath}";`;
             }
             return match;
