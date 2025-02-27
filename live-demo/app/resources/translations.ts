@@ -32,9 +32,7 @@ export default {
   },
   plugins: [
     new I18nPlugin({
-      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],
-
-      // names of the fields in the resource which will store translations
+      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],      // names of the fields in the resource which will store translations
       translationFieldNames: {
         en: 'en_string',
         uk: 'uk_string',
