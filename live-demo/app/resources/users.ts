@@ -1,6 +1,7 @@
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput } from 'adminforth';
 import importExport from '@adminforth/import-export';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
+import { randomUUID } from 'crypto';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
@@ -32,8 +33,9 @@ export default {
   columns: [
     { 
       name: 'id', 
+      label: 'Identifier',
       primaryKey: true,
-      fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       showIn: ['list', 'filter', 'show'],
     },
     { 
