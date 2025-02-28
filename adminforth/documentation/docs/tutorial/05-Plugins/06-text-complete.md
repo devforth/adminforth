@@ -38,8 +38,6 @@ export const admin = new AdminForth({
 //diff-add
     new TextCompletePlugin({
 //diff-add
-      openAiApiKey: process.env.OPENAI_API_KEY as string,
-//diff-add
       fieldName: 'title',
 //diff-add
       adapter: new CompletionAdapterOpenAIChatGPT({
