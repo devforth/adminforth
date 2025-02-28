@@ -6,7 +6,7 @@ import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
 import auditLogsResource from "./resources/auditLogs"
 import translations from "./resources/translations";
-
+import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
 
 
@@ -113,7 +113,7 @@ async function seedDatabase() {
   }
   for (let i = 0; i <= 100; i++) {
     await admin.resource('aparts').create({
-      id: `${i}`,
+      id: randomUUID(),
       title: `Apartment ${i}`,
       square_meter: (Math.random() * 100).toFixed(1),
       price: (Math.random() * 10000).toFixed(2),
