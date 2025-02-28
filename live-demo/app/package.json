@@ -7,7 +7,9 @@
     "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
-    "startLive": "prisma migrate deploy && tsx index.ts"
+    "startLive": "prisma migrate deploy && tsx index.ts",
+    "migrate": "prisma migrate deploy",
+    "makemigration": "prisma migrate dev"
   },
   "keywords": [],
   "license": "ISC",

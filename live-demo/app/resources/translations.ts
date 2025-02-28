@@ -85,6 +85,7 @@ export default {
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
+      showIn: {show: true, filter: true, list: true, edit: false, create: false},
     },
     {
       name: "uk_string",
