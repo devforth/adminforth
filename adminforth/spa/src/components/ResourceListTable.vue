@@ -299,7 +299,7 @@ const coreStore = useCoreStore();
 const { t } = useI18n();
 const props = defineProps<{
   page: number,
-  resource: AdminForthResourceCommon,
+  resource: AdminForthResourceCommon | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,

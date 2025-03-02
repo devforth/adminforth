@@ -65,10 +65,12 @@
         label: string;
         components?: {
           show?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
           showRow?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
         };
     }>;
