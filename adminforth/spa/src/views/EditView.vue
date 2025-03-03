@@ -141,7 +141,14 @@ async function saveRecord() {
   saving.value = true;
   const updates = {};
   for (const key in record.value) {
-    if (record.value[key] !== coreStore.record[key]) {
+    let columnIsUpdated = record.value[key] !== coreStore.record[key];
+
+    const column = coreStore.resource.columns.find((c) => c.name === key);
+    if (column?.foreignResource) {
+      columnIsUpdated = record.value[key] !== coreStore.record[key].pk;
+    }
+
+    if (columnIsUpdated) {
       updates[key] = record.value[key];
     }
   }
