@@ -366,7 +366,7 @@ const rowRefs = useTemplateRef('rowRefs');
 const rowHeights = ref([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
-  rowHeights.value = newRows ? [] : rowRefs.value.map((el) => el.offsetHeight);
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
 });
 
 function addToCheckedValues(id) {
