@@ -30,110 +30,54 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
 ```html title="./custom/ApartsPie.vue"
 <template>
-  <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-4 mb-5">
-    <div id="pie-chart"></div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { onMounted, ref, Ref } from 'vue';
-import ApexCharts from 'apexcharts';
-import { callApi } from '@/utils';
-import adminforth from '@/adminforth';
-
-
-const data: Ref<any[]> = ref([]);
-
-const POSSIBLE_COLORS = ["#1C64F2", "#16BDCA", "#9061F9", "#F0A936", "#F55252", "#3B82F6", "#10B981", "#F472B6", "#6B7280"];
-
-const chatOptions = {
-  series: [],
-  colors: POSSIBLE_COLORS,
-  chart: {
-    height: 200,
-    width: "100%",
-    type: "pie",
-    events: {
-      dataPointSelection: function (event, chartContext, config) {
-        if (config.selectedDataPoints[0].length) {
-          const selectedRoomsCount = data.value[config.dataPointIndex].rooms;
-          adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
-        } else {
-          // clear filter
-          adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
-        }
-      }
-    },
-  },
-
-  stroke: {
-    colors: ["white"],
-    lineCap: "",
-  },
-  plotOptions: {
-    pie: {
-      labels: {
-        show: true,
-      },
-      size: "100%",
-      dataLabels: {
-        offset: -25
-      }
-    },
-  },
-  labels: ["Direct", "Organic search", "Referrals"],
-  dataLabels: {
-    enabled: true,
-    style: {
-      fontFamily: "Inter, sans-serif",
-    },
-  },
-  legend: {
-    position: "right",
-    fontFamily: "Inter, sans-serif",
-  },
-  yaxis: {
-    labels: {
-      formatter: function (value) {
-        return value + "%"
-      },
-    },
-  },
-  xaxis: {
-    labels: {
-      formatter: function (value) {
-        return value  + "%"
-      },
-    },
-    axisTicks: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
-  }, 
-}
-
-onMounted(async () => {
-  try {
-    data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
-  } catch (error) {
-    adminforth.alert({
-      message: `Error fetching data: ${error.message}`,
-      variant: 'danger',
-      timeout: 'unlimited'
-    });
-    return;
-  }
-
-  chatOptions.series = data.value.map((item) => item.percentage);
-  chatOptions.labels = data.value.map((item) => `${item.rooms} rooms`);
-  const chart = new ApexCharts(document.getElementById("pie-chart"), chatOptions);
-  chart.render();
-
-})
-
-</script>
+    <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-4 mb-5">
+        <PieChart
+            :data="data"
+            :options="{
+                chart: {
+                height: 250,
+                },
+                dataLabels: {
+                enabled: true,
+                },
+                plotOptions: {
+                pie: {
+                    dataLabels: {
+                    offset: -10, 
+                    minAngleToShowLabel: 10, 
+                    },
+                    expandOnClick: true,
+                },
+                },
+            }"
+        />
+    </div>
+  </template>
+  
+  <script setup lang="ts">
+  import { onMounted, ref, Ref } from 'vue';
+  import { PieChart } from '@/afcl';
+  import { callApi } from '@/utils';
+  import adminforth from '@/adminforth';
+  
+  
+  const data: Ref<any[]> = ref([]);
+  
+  
+  onMounted(async () => {
+    try {
+      data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
+    } catch (error) {
+      adminforth.alert({
+        message: `Error fetching data: ${error.message}`,
+        variant: 'danger',
+        timeout: 'unlimited'
+      });
+      return;
+    }
+  })
+  
+  </script>
 ```
 
 
