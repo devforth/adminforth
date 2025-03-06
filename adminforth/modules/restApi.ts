@@ -1201,7 +1201,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
         }
         
-        const response = await action.action({ recordId, adminUser, resource, tr });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
         
         return {
           actionId,
