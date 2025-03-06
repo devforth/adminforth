@@ -10,6 +10,22 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+      <template v-if="coreStore.resource?.options?.actions">
+        <button 
+          v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" 
+          :key="action.id"
+          @click="startCustomAction(action.id)"
+          :disabled="actionLoadingStates[action.id]"
+          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        >
+          <component 
+            v-if="action.icon" 
+            :is="getIcon(action.icon)" 
+            class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary"
+          />
+          {{ action.name }}
+        </button>
+      </template>
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
         class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
@@ -34,6 +50,7 @@
 
       <ThreeDotsMenu 
         :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems"
+        :customActions="customActions"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
@@ -121,12 +138,19 @@ import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
+import { getIcon } from '@/utils';
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const { t } = useI18n();
 const coreStore = useCoreStore();
+
+const actionLoadingStates = ref({});
+
+const customActions = computed(() => {
+  return coreStore.resource?.options?.actions?.filter(a => a.showIn?.showThreeDotsMenu) || [];
+});
 
 onMounted(async () => {
   loading.value = true;
@@ -204,6 +228,41 @@ async function deleteRecord(row) {
     };
   }
     
+}
+
+async function startCustomAction(actionId) {  
+  actionLoadingStates.value[actionId] = true;
+
+  const data = await callAdminForthApi({
+    path: '/start_custom_action',
+    method: 'POST',
+    body: {
+      resourceId: route.params.resourceId,
+      actionId: actionId,
+      recordId: route.params.primaryKey
+    }
+  });
+  
+  actionLoadingStates.value[actionId] = false;
+  
+  if (data?.ok) {
+    await coreStore.fetchRecord({
+      resourceId: route.params.resourceId, 
+      primaryKey: route.params.primaryKey,
+      source: 'show',
+    });
+
+    if (data.successMessage) {
+      adminforth.alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+  }
+  
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
 }
 
 </script>
