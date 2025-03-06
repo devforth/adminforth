@@ -723,6 +723,7 @@ interface AdminForthInputConfigCustomization {
 export interface AdminForthActionInput {
   name: string,
   action: (params: {
+    adminforth: IAdminForth,
     resource: AdminForthResource,
     recordId: string,
     adminUser: AdminUser,
