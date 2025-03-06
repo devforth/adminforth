@@ -172,6 +172,19 @@
                   :record="row"
                 />
               </template>
+
+              <template v-if="resource.options?.actions">
+                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
+                  <button
+                    @click="startCustomAction(action.id, row)"
+                  >
+                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary"></component>
+                  </button>
+                  <template v-slot:tooltip>
+                    {{ action.name }}
+                  </template>
+                </Tooltip>
+              </template>
             </div>
           </td>
         </tr>
@@ -280,7 +293,7 @@ import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
-
+import { getIcon } from '@/utils';
 import {
   IconInboxOutline,
 } from '@iconify-prerendered/vue-flowbite';
@@ -505,4 +518,39 @@ async function deleteRecord(row) {
     };
   }
 }
+
+const actionLoadingStates = ref({});
+
+async function startCustomAction(actionId, row) {
+  actionLoadingStates.value[actionId] = true;
+
+  const data = await callAdminForthApi({
+    path: '/start_custom_action',
+    method: 'POST',
+    body: {
+      resourceId: props.resource.resourceId,
+      actionId: actionId,
+      recordId: row._primaryKeyValue
+    }
+  });
+  
+  actionLoadingStates.value[actionId] = false;
+  
+  if (data?.ok) {
+    emits('update:records', true);
+
+    if (data.successMessage) {
+      adminforth.alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+  }
+  
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
+}
+
+
 </script>
