@@ -1213,5 +1213,31 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);
     });
+
+    server.endpoint({
+      method: 'POST',
+      path: '/start_custom_action',
+      handler: async ({ body, adminUser, tr }) => {
+        const { resourceId, actionId, recordId } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        console.log("resource", actionId);
+        const action = resource.options.actions.find((act) => act.id == actionId);
+        if (!action) {
+          return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+        }
+        
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
+        
+        return {
+          actionId,
+          recordId,
+          resourceId,
+          ...response
+        }
+      }
+    });
   }
 }

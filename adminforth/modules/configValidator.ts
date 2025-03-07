@@ -330,6 +330,31 @@ export default class ConfigValidator implements IConfigValidator {
     return showInTransformedToObject as ShowIn;
   }
 
+  validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
+    if (!resInput.options?.actions) {
+      return [];
+    }
+
+    const actions = [...resInput.options.actions];
+
+    actions.forEach((action) => {
+      if (!action.name) {
+        errors.push(`Resource "${res.resourceId}" has action without name`);
+      }
+  
+      if (!action.action) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action function`);
+      }
+  
+      // Generate ID if not present
+      if (!action.id) {
+        action.id = md5hash(action.name);
+      }
+    });
+
+    return actions;
+  }
+
   validateAndNormalizeResources(errors: string[], warnings: string[]): AdminForthResource[] {
     if (!this.inputConfig.resources) {
       errors.push('No resources defined, at least one resource must be defined');
@@ -644,6 +669,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
 
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
+      options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
