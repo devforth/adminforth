@@ -721,19 +721,27 @@ interface AdminForthInputConfigCustomization {
 }
 
 export interface AdminForthActionInput {
-  name: string,
+  name: string;
+  showIn?: {
+      list?: boolean,
+      showButton?: boolean,
+      showThreeDotsMenu?: boolean,
+  };
   action: (params: {
-    adminforth: IAdminForth,
-    resource: AdminForthResource,
-    recordId: string,
-    adminUser: AdminUser,
-    extra?: HttpExtra,
-    tr: Function,
-  }) => Promise<{ok: boolean, error?: string}>,
-  icon?: string,
-  id?: string,
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordId: string;
+      adminUser: AdminUser;
+      extra?: HttpExtra;
+      tr: Function;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      message?: string;
+  }>;
+  icon?: string;
+  id?: string;
 }
-
 
 export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
 
