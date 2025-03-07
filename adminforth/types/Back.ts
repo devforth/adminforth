@@ -720,6 +720,28 @@ interface AdminForthInputConfigCustomization {
   }
 }
 
+export interface AdminForthActionInput {
+  name: string;
+  showIn?: {
+      list?: boolean,
+      showButton?: boolean,
+      showThreeDotsMenu?: boolean,
+  };
+  action: (params: {
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordId: string;
+      adminUser: AdminUser;
+      extra?: HttpExtra;
+      tr: Function;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      message?: string;
+  }>;
+  icon?: string;
+  id?: string;
+}
 
 export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
 
@@ -1123,6 +1145,8 @@ export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['opt
    * using checkboxes.
    */
   bulkActions?: Array<AdminForthBulkAction>,
+
+  actions?: Array<AdminForthActionInput>,
 
   /**
    * Allowed actions for resource.
