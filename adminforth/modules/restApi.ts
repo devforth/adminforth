@@ -706,7 +706,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 if (pr.resourceId === null) {
                   return;
                 }
-                targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                if (!targetResource) {
+                  return;
+                }
+                targetResources[pr.whenValue] = targetResource;
                 targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                 targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                 const pksUnique = [...new Set(data.data.filter((item) => item[col.foreignResource.polymorphicOn] === pr.whenValue).map((item) => item[col.name]))];
@@ -984,7 +988,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const targetConnectors = {};
                 const targetResourcePkFields = {};
                 column.foreignResource.polymorphicResources.forEach((pr) => {
-                  targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                  if (pr.resourceId === null) {
+                    return;
+                  }
+                  const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                  if (!targetResource) {
+                    return;
+                  }
+                  targetResources[pr.whenValue] = targetResource;
                   targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                   targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                 });
@@ -1072,7 +1083,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   const targetConnectors = {};
                   const targetResourcePkFields = {};
                   column.foreignResource.polymorphicResources.forEach((pr) => {
-                    targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                    if (pr.resourceId === null) {
+                      return;
+                    }
+                    const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                    if (!targetResource) {
+                      return;
+                    }
+                    targetResources[pr.whenValue] = targetResource;
                     targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                     targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                   });
