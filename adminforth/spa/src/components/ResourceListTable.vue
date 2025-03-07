@@ -18,15 +18,16 @@
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
-            <div v-if="rows && rows.length" class="flex items-center">
+            <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
+                    :disabled="!rows || !rows.length"
                     class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
           </td>
 
-          <td v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -65,6 +66,7 @@
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
           :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
+          :column-widths="columnWidths"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
@@ -376,10 +378,13 @@ watch(() => props.page, (newPage) => {
 });
 
 const rowRefs = useTemplateRef('rowRefs');
+const headerRefs = useTemplateRef('headerRefs');
 const rowHeights = ref([]);
+const columnWidths = ref([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
   rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
 });
 
 function addToCheckedValues(id) {
