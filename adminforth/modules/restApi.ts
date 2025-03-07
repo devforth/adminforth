@@ -703,6 +703,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const targetResourcePkFields = {};
               const pksUniques = {};
               col.foreignResource.polymorphicResources.forEach((pr) => {
+                if (pr.resourceId === null) {
+                  return;
+                }
                 targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
                 targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                 targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
@@ -747,6 +750,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             
             data.data.forEach((item) => {
               item[col.name] = targetDataMap[item[col.name]];
+              
+              if (!item[col.name]) {
+                const systemResource = col.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                if (systemResource) {
+                  item[col.foreignResource.polymorphicOn] = systemResource.whenValue;
+                }
+              }
             });
           })
         );
@@ -819,7 +829,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
 
-        const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.map((pr) => pr.resourceId);
+        const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
 
         const responses = (await Promise.all(
