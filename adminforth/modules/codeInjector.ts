@@ -363,9 +363,7 @@ class CodeInjector implements ICodeInjector {
           }
         });
       }
-    });
 
-    this.adminforth.config.resources.forEach((resource) => {
       if (resource.options?.actions) {
         resource.options.actions.forEach((action) => {
           if (action.icon) {
