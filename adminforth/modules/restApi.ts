@@ -1076,7 +1076,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] !== undefined) {
                 let newPolymorphicOnValue = null;
                 if (record[column.name]) {
                   const targetResources = {};
