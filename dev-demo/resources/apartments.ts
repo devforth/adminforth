@@ -348,7 +348,7 @@ export default {
     listRowsAutoRefreshSeconds: 100,
     pageInjections: {
       list: {
-        customActionIcons: "@@/IdShow.vue",
+        // customActionIcons: "@@/IdShow.vue",
         // bottom: {
         //   file: '@@/TopLine.vue',
         //   meta: {

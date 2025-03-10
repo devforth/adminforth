@@ -207,29 +207,6 @@ class AdminForth implements IAdminForth {
     return plugins[0] as T;
   }
 
-  validateFieldGroups(fieldGroups: {
-    groupName: string;
-    columns: string[];
-  }[], fieldTypes: {
-    [key: string]: AdminForthResourceColumn;
-}): void {
-    if (!fieldGroups) return;
-    const allColumns = Object.keys(fieldTypes);
-  
-    fieldGroups.forEach((group) => {
-      group.columns.forEach((col) => {
-        if (!allColumns.includes(col)) {
-          const similar = suggestIfTypo(allColumns, col);
-          throw new Error(
-            `Group '${group.groupName}' has an unknown column '${col}'. ${
-              similar ? `Did you mean '${similar}'?` : ''
-            }`
-          );
-        }
-      });
-    });
-  }
-
   validateRecordValues(resource: AdminForthResource, record: any): any {
     // check if record with validation is valid
     for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
@@ -341,12 +318,6 @@ class AdminForth implements IAdminForth {
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
-      
-      this.validateFieldGroups(res.options.fieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.showFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
-
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {

@@ -539,9 +539,9 @@ This way, when creating or editing a record you will be able to choose value for
 
 When foreign resource column is not required, selector will have an 'Unset' option that will set field to `null`. You can change label for this option using `unsetLabel`, like so:
 
-```typescript title="./resources/adminuser.ts"
+```typescript title="./resources/apartments.ts"
 export default {
-      name: 'adminuser',
+      name: 'apartments',
       columns: [
         ...
         {
@@ -557,6 +557,96 @@ export default {
     ...
   ],
 ```
+
+### Polymorphic foreign resources
+
+Sometimes it is needed for one column to be a foreign key for multiple tables. For example, given the following schema:
+
+```prisma title="./schema.prisma"
+...
+model apartments {
+  id                String     @id
+  created_at        DateTime?
+  title             String
+  square_meter      Float?
+  price             Decimal
+  number_of_rooms   Int?
+  realtor_id        String?
+}
+
+model houses {
+  id                  String     @id
+  created_at          DateTime?
+  title               String
+  house_square_meter  Float?
+  land_square_meter   Float?
+  price               Decimal
+  realtor_id          String?
+}
+
+model sold_property {
+  id                  String     @id
+  created_at          DateTime?
+  title               String
+  property_id         String
+  realtor_id          String?
+}
+
+```
+
+Here, in `sold_property` table, column `property_id` can be a foreign key for both `apartments` and `houses` tables. If schema is set like this, the is no way to tell to what table exactly `property_id` links to. Also, if defined like usual, adminforth will link to only one of them. To make sure that `property_id` works as intended we need add one more column to `sold_property` and change the way foreign resource is defined in adminforth resource config.
+
+```prisma title="./schema.prisma"
+...
+
+model sold_property {
+  id                  String     @id
+  created_at          DateTime?
+  title               String
+//diff-add
+  property_type       String
+  property_id         String
+  realtor_id          String?
+}
+
+```
+
+`property_type` column will be used to store what table id in `property_id` refers to. And in adminforth config for `sold_property` table, when describing `property_id` column, foreign resource field should be defined as follows:
+
+```typescript title="./resources/sold_property.ts"
+export default {
+      name: 'sold_property',
+      columns: [
+        ...
+        {
+          name: "property_type",
+          showIn: { create: false, edit: false },
+        },
+        {
+          name: "property_id",
+          foreignResource: {
+            polymorphicResources: [
+              {
+                resourceId: 'apartments',
+                whenValue: 'apartment',
+              },
+              {
+                resourceId: 'houses',
+                whenValue: 'house',
+              },
+            ],
+            polymorphicOn: 'property_type',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+When defined like this, adminforth will use value in `property_type` to figure out to what table does id in `property_id` refers to and properly link them. When creating or editing a record, adminforth will figure out to what table new `property_id` links to and fill `property_type` on its own using corresponding `whenValue`. Note, that `whenValue` does not have to be the same as `resourceId`, it can be any string as long as they do not repeat withing `polymorphicResources` array. Also, since `whenValue` is a string, column designated as `polymorphicOn` must also be string. Another thing to note is that, `polymorphicOn` column (`property_type` in our case) must not be editable by user, so it must include both `create` and `edit` as `false` in `showIn` value. Even though, `polymorphicOn` column is no editable, it can be beneficial to set is as an enumerator. This will have two benefits: first, columns value displayed in table and show page can be changed to a desired one and second, when filtering on this column, user will only able to choose values provided for him.
+
+If `beforeDatasourceRequest` or `afterDatasourceResponse` hooks are set for polymorphic foreign resource, they will be called for each resource in `polymorphicResources` array.
 
 ## Filtering
 

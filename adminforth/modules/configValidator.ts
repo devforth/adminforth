@@ -330,6 +330,25 @@ export default class ConfigValidator implements IConfigValidator {
     return showInTransformedToObject as ShowIn;
   }
 
+  validateFieldGroups(fieldGroups: {
+    groupName: string;
+    columns: string[];
+  }[], resourceColumns: string[]): void {
+    if (!fieldGroups) return;
+
+    fieldGroups.forEach((group) => {
+      group.columns.forEach((col) => {
+        if (!resourceColumns.includes(col)) {
+          const similar = suggestIfTypo(resourceColumns, col);
+          throw new Error(
+            `Group '${group.groupName}' has an unknown column '${col}'. ${similar ? `Did you mean '${similar}'?` : ''
+            }`
+          );
+        }
+      });
+    });
+  }
+
   validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
     if (!resInput.options?.actions) {
       return [];
@@ -534,16 +553,70 @@ export default class ConfigValidator implements IConfigValidator {
         }
 
         if (col.foreignResource) {
-
           if (!col.foreignResource.resourceId) {
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource without resourceId`);
-          }
-          // we do || here because 'resourceId' might yet not be assigned from 'table'
-          const resource = this.inputConfig.resources.find((r) => r.resourceId === col.foreignResource.resourceId || r.table === col.foreignResource.resourceId);
-          if (!resource) {
-            const similar = suggestIfTypo(this.inputConfig.resources.map((r) => r.resourceId || r.table), col.foreignResource.resourceId);
-            errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource resourceId which is not in resources: "${col.foreignResource.resourceId}". 
+            // resourceId is absent or empty
+            if (!col.foreignResource.polymorphicResources && !col.foreignResource.polymorphicOn) {
+              // foreignResource is present but no specifying fields
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource without resourceId`);
+            } else if (!col.foreignResource.polymorphicResources || !col.foreignResource.polymorphicOn) {
+              // some polymorphic fields are present but not all
+              if (!col.foreignResource.polymorphicResources) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphic foreign resource requires polymorphicResources field`);
+              } else {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphic foreign resource requires polymorphicOn field`);
+              }
+            } else {
+              // correct polymorphic structure
+              if (!col.foreignResource.polymorphicResources.length) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicResources `);
+              }
+              // we do || here because 'resourceId' might yet not be assigned from 'table'
+              col.foreignResource.polymorphicResources.forEach((polymorphicResource, polymorphicResourceIndex) => {
+                if (polymorphicResource.resourceId === undefined) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" has polymorphic foreign resource without resourceId`);
+                } else if (!polymorphicResource.whenValue) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" has polymorphic foreign resource without whenValue`);
+                } else if (polymorphicResource.resourceId !== null) {
+                  const resource = this.inputConfig.resources.find((r) => r.resourceId === polymorphicResource.resourceId || r.table === polymorphicResource.resourceId);
+                  if (!resource) {
+                    const similar = suggestIfTypo(this.inputConfig.resources.map((r) => r.resourceId || r.table), polymorphicResource.resourceId);
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource polymorphicResource resourceId which is not in resources: "${polymorphicResource.resourceId}". 
+                  ${similar ? `Did you mean "${similar}" instead of "${polymorphicResource.resourceId}"?` : ''}`);
+                  }
+                  if (col.foreignResource.polymorphicResources.findIndex((pr) => pr.resourceId === polymorphicResource.resourceId) !== polymorphicResourceIndex) {
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicResource resourceId should be unique`);
+                  }
+                }
+
+                if (col.foreignResource.polymorphicResources.findIndex((pr) => pr.whenValue === polymorphicResource.whenValue) !== polymorphicResourceIndex) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicResource whenValue should be unique`);
+                }
+              });
+
+              const polymorphicOnInCol = resInput.columns.find((c) => c.name === col.foreignResource.polymorphicOn);
+              if (!polymorphicOnInCol) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an unknown column`);
+              } else if (polymorphicOnInCol.type && polymorphicOnInCol.type !== AdminForthDataTypes.STRING) {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an column that is not of type string`);
+              } else {
+                const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors, warnings);
+                if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                }
+              }
+            }
+          } else if (col.foreignResource.polymorphicResources || col.foreignResource.polymorphicOn) {
+            // both resourceId and polymorphic fields
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource cannot have resourceId and be polymorphic at the same time`);
+          } else {
+            // non empty resourceId and no polymorphic fields
+            // we do || here because 'resourceId' might yet not be assigned from 'table'
+            const resource = this.inputConfig.resources.find((r) => r.resourceId === col.foreignResource.resourceId || r.table === col.foreignResource.resourceId);
+            if (!resource) {
+              const similar = suggestIfTypo(this.inputConfig.resources.map((r) => r.resourceId || r.table), col.foreignResource.resourceId);
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource resourceId which is not in resources: "${col.foreignResource.resourceId}". 
             ${similar ? `Did you mean "${similar}" instead of "${col.foreignResource.resourceId}"?` : ''}`);
+            }
           }
 
           if (col.foreignResource.unsetLabel) {
@@ -620,6 +693,12 @@ export default class ConfigValidator implements IConfigValidator {
 
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
+
+      const allColumnsList = res.columns.map((col) => col.name);
+      this.validateFieldGroups(options.fieldGroups, allColumnsList);
+      this.validateFieldGroups(options.showFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.createFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.editFieldGroups, allColumnsList);
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];

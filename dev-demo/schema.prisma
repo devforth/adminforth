@@ -105,3 +105,20 @@ model apartment_buyers {
     contact_time            DateTime?
     realtor_id              String?
 }
+
+model clinics {
+    id      String @id
+    name    String
+}
+
+model providers {
+    id      String @id
+    name    String
+}
+
+model api_keys {
+    id          String @id
+    name        String
+    owner       String?
+    owner_id    String?
+}
