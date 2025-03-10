@@ -49,6 +49,7 @@ export async function interpretResource(
     [ActionCheckSource.CreateRequest]: ['create'],
     [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create', 'filter'],
     [ActionCheckSource.BulkActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
+    [ActionCheckSource.CustomActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
   }[source];
 
   await Promise.all(
@@ -1058,13 +1059,33 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
         }
-        console.log("resource", actionId);
+        const { allowedActions } = await interpretResource(
+          adminUser, 
+          resource, 
+          { requestBody: body },
+          ActionCheckSource.CustomActionRequest,
+          this.adminforth
+        );
         const action = resource.options.actions.find((act) => act.id == actionId);
         if (!action) {
           return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
         }
-        
-        const response = await action.action({ recordId, adminUser, resource, tr });
+        if (action.allowed) {
+          const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+          if (!execAllowed) {
+            return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
+          }
+        }
+
+        if (action.url) {
+          return {
+            actionId,
+            recordId,
+            resourceId,
+            redirectUrl: action.url
+          }
+        }
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
         
         return {
           actionId,
