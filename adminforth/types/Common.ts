@@ -541,9 +541,14 @@ export type ShowInResolved = {
   [key in AdminForthResourcePages]: boolean
 }
 
-
-export interface AdminForthForeignResourceCommon {
+export interface AdminForthPolymorphicForeignResource {
   resourceId: string,
+  whenValue: string,
+}
+export interface AdminForthForeignResourceCommon {
+  resourceId?: string,
+  polymorphicResources?: Array<AdminForthPolymorphicForeignResource>,
+  polymorphicOn?: string,
   unsetLabel?: string,
 }
 

@@ -3,7 +3,7 @@
         <div v-if="groupName" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
         {{ groupName }}
         </div>
-      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed mb-4">
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
         <thead class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group">
           <tr>
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell">
@@ -18,7 +18,8 @@
           <tr
             v-for="column in columns"
             :key="column.name"
-            class="bg-lightForm bg-darkForm odd:dark:bg-gray-900 even:dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+            class="bg-lightForm border-t border-gray-100 
+              dark:bg-gray-800 dark:border-gray-700 block md:table-row"
           >
             <component
                 v-if="column.components?.showRow"
@@ -64,10 +65,12 @@
         label: string;
         components?: {
           show?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
           showRow?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
         };
     }>;

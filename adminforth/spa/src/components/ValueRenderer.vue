@@ -2,7 +2,7 @@
   <div>
     <span @click="(e)=>{e.stopPropagation()}" v-if="column.foreignResource">
       <RouterLink v-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
-        :to="{ name: 'resource-show', params: { resourceId: column.foreignResource.resourceId, primaryKey: record[column.name].pk } }">
+        :to="{ name: 'resource-show', params: { primaryKey: record[column.name].pk, resourceId: column.foreignResource.resourceId || column.foreignResource.polymorphicResources.find((pr) => pr.whenValue === record[column.foreignResource.polymorphicOn]).resourceId } }">
         {{ record[column.name].label }}
       </RouterLink>
       <div v-else>
