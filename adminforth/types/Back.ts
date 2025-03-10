@@ -729,7 +729,7 @@ export interface AdminForthActionInput {
   };
   allowed?: (params: {
     adminUser: AdminUser;
-    standardAllowedActions: AllowedActionsEnum[];
+    standardAllowedActions: AllowedActions;
   }) => boolean;
   url?: string;
   action?: (params: {
@@ -1168,10 +1168,38 @@ export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['opt
    * 
    */
   allowedActions?: AllowedActionsInput,
+
+  /**
+   * Array of actions which will be displayed in the resource.
+   * 
+   * Example:
+   * 
+   * ```ts
+   * actions: [
+   *  {
+   *    name: 'Auto submit',
+   *    allowed: ({ adminUser, standardAllowedActions }) => {
+   *      return adminUser.dbUser.role === 'superadmin';
+   *    },
+   *    action: ({ adminUser, resource, recordId, adminforth, extra, tr }) => {
+   *      console.log("auto submit", recordId, adminUser);
+   *      return { ok: true, successMessage: "Auto submitted" };
+   *    },
+   *    showIn: {
+   *      list: true,
+   *      showButton: true,
+   *      showThreeDotsMenu: true,
+   *    },
+   *  },
+   * ]
+   * ```
+   */
+  actions?: Array<AdminForthActionInput>,
 };
 
 export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActions'> {
   allowedActions: AllowedActions,
+  actions?: Array<AdminForthActionInput>,
 }
 
 /**
