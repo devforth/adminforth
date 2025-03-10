@@ -747,6 +747,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             
             data.data.forEach((item) => {
               item[col.name] = targetDataMap[item[col.name]];
+              
+              if (!item[col.name]) {
+                if (col.foreignResource && col.foreignResource.polymorphicResources) {
+                  const systemResource = col.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                  if (systemResource) {
+                    item[col.foreignResource.polymorphicOn] = systemResource.whenValue;
+                  }
+                }
+              }
             });
           })
         );
