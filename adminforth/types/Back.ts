@@ -1151,8 +1151,6 @@ export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['opt
    */
   bulkActions?: Array<AdminForthBulkAction>,
 
-  actions?: Array<AdminForthActionInput>,
-
   /**
    * Allowed actions for resource.
    * 
