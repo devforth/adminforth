@@ -54,6 +54,10 @@ export default {
             resourceId: 'providers',
             whenValue: 'provider',
           },
+          {
+            resourceId: null,
+            whenValue: 'Syst1em',
+          },
         ],
         polymorphicOn: 'owner',
       },
