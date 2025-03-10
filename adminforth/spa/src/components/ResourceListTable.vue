@@ -180,7 +180,7 @@
                   <button
                     @click="startCustomAction(action.id, row)"
                   >
-                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary"></component>
+                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
                   </button>
                   <template v-slot:tooltip>
                     {{ action.name }}
