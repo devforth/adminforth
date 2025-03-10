@@ -46,10 +46,11 @@ import { getCustomComponent, getIcon } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const coreStore = useCoreStore();
+const router = useRouter();
 
 const props = defineProps({
   threeDotsDropdownItems: Array,
@@ -69,6 +70,21 @@ async function handleActionClick(action) {
       recordId: route.params.primaryKey
     }
   });
+
+  if (data?.redirectUrl) {
+    // Check if the URL should open in a new tab
+    if (data.redirectUrl.includes('target=_blank')) {
+      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+    } else {
+      // Navigate within the app
+      if (data.redirectUrl.startsWith('http')) {
+        window.location.href = data.redirectUrl;
+      } else {
+        router.push(data.redirectUrl);
+      }
+    }
+    return;
+  }
   
   if (data?.ok) {
     await coreStore.fetchRecord({
