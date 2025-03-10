@@ -9,7 +9,7 @@ Before we start it is worth to mention that callbacks or scalars defined in `all
 
 As you can see allowedAction callbacks are called in parallel in async manner. However it is important to keep them fast and not to make any slow operations in them, to keep UI responsive.
 
-## Statically disable some action
+## Statically disable some action on resource
 
 You can use `options.allowedActions` on resource to limit access to the resource actions (list, show, create, edit, delete).
 
@@ -33,7 +33,43 @@ If you want to disable deletion of the resource records for all users:
 }
 ```
 
-## Disable some action based on logged in user record or role
+## Disable full access to resource based on logged in user record or role
+
+If you want to disable all actions to the resource for all users except users with role `superadmin`:
+
+```ts title="./resources/adminuser.ts"
+{
+  ...
+  resourceId: 'adminuser',
+  ...
+//diff-add
+  options: {
+//diff-add
+    allowedActions: {
+//diff-add
+      all: async ({ adminUser }: { adminUser: AdminUser }): Promise<boolean> => {
+//diff-add
+        return adminUser.dbUser.role === 'superadmin';
+//diff-add
+      }
+//diff-add
+    }
+//diff-add
+  }
+}
+```
+
+> ☝️ This will not hide link to the resource in the menu, you should separately use [menuItem.visible](/docs/tutorial/Customization/menuConfiguration/#visibility-of-menu-items) to hide it.
+
+
+
+> ☝️ instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
+> However we recommend you to keep in mind that allowedActions callback is called on every request related to resource, so it should be fast.
+> So try to minimize requests to database as much as possible.
+
+
+
+## Disable only some action based on logged in user record or role
 
 If you want to disable deletion of apartments for all users apart from users with role `superadmin`:
 
@@ -61,11 +97,7 @@ import type { AdminUser } from  'adminforth';
 }
 ```
 
-> ☝️ instead of reading role from user you can check permission using complex ACL/RBAC models with permissions stored in the database.
-> However we recommend you to keep in mind that allowedActions callback is called on every request related to resource, so it should be fast.
-> So try to minimize requests to database as much as possible.
-
-## Reuse the same callback for multiple actions
+### Reuse the same callback for multiple actions
 
 Let's disable creating and editing of new users for all users apart from users with role `superadmin`, and at the same time disable deletion for all users:
 
@@ -79,6 +111,8 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
   return adminUser.dbUser.role === 'superadmin';
 //diff-add
 }
+
+...
 
 {
   ...
@@ -96,6 +130,7 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
   }
 }
 ```
+
 
 ## Customizing the access control based on resource values
 

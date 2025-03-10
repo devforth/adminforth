@@ -8,7 +8,12 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
   async setupClient(url): Promise<void> {
     try {
-      this.client = await mysql.createConnection(url);
+      this.client = mysql.createPool({
+        uri: url,
+        waitForConnections: true,
+        connectionLimit: 10,  // Adjust based on your needs
+        queueLimit: 0
+      });
     } catch (e) {
       console.error(`Failed to connect to MySQL: ${e}`);
     }
@@ -33,7 +38,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   };
 
   async discoverFields(resource) {
-    const [results] = await this.client.query("SHOW COLUMNS FROM " + resource.table);
+    const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};
@@ -231,7 +236,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (process.env.HEAVY_DEBUG_QUERY) {
       console.log('🪲📜 MySQL Q:', q, 'values:', filterValues);
     }
-    const [results] = await this.client.query(q, filterValues);
+    const [results] = await this.client.execute(q, filterValues);
     return +results[0]["COUNT(*)"];
   }
   
@@ -243,7 +248,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 MySQL Q:', q);
       }
-      const [results] = await this.client.query(q);
+      const [results] = await this.client.execute(q);
       const { min, max } = results[0];
       result[col.name] = {
         min, max,
