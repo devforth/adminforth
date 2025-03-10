@@ -330,6 +330,25 @@ export default class ConfigValidator implements IConfigValidator {
     return showInTransformedToObject as ShowIn;
   }
 
+  validateFieldGroups(fieldGroups: {
+    groupName: string;
+    columns: string[];
+  }[], resourceColumns: string[]): void {
+    if (!fieldGroups) return;
+
+    fieldGroups.forEach((group) => {
+      group.columns.forEach((col) => {
+        if (!resourceColumns.includes(col)) {
+          const similar = suggestIfTypo(resourceColumns, col);
+          throw new Error(
+            `Group '${group.groupName}' has an unknown column '${col}'. ${similar ? `Did you mean '${similar}'?` : ''
+            }`
+          );
+        }
+      });
+    });
+  }
+
   validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
     if (!resInput.options?.actions) {
       return [];
@@ -670,6 +689,12 @@ export default class ConfigValidator implements IConfigValidator {
 
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
+
+      const allColumnsList = res.columns.map((col) => col.name);
+      this.validateFieldGroups(options.fieldGroups, allColumnsList);
+      this.validateFieldGroups(options.showFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.createFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.editFieldGroups, allColumnsList);
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
