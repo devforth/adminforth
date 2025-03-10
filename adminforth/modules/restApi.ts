@@ -703,7 +703,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const targetResourcePkFields = {};
               const pksUniques = {};
               col.foreignResource.polymorphicResources.forEach((pr) => {
-                targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                if (pr.resourceId === null) {
+                  return;
+                }
+                const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                if (!targetResource) {
+                  return;
+                }
+                targetResources[pr.whenValue] = targetResource;
                 targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                 targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                 const pksUnique = [...new Set(data.data.filter((item) => item[col.foreignResource.polymorphicOn] === pr.whenValue).map((item) => item[col.name]))];
@@ -828,7 +835,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
 
-        const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.map((pr) => pr.resourceId);
+        const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
 
         const responses = (await Promise.all(
@@ -983,7 +990,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const targetConnectors = {};
                 const targetResourcePkFields = {};
                 column.foreignResource.polymorphicResources.forEach((pr) => {
-                  targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                  if (pr.resourceId === null) {
+                    return;
+                  }
+                  const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                  if (!targetResource) {
+                    return;
+                  }
+                  targetResources[pr.whenValue] = targetResource;
                   targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                   targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                 });
@@ -1064,14 +1078,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] !== undefined) {
                 let newPolymorphicOnValue = null;
                 if (record[column.name]) {
                   const targetResources = {};
                   const targetConnectors = {};
                   const targetResourcePkFields = {};
                   column.foreignResource.polymorphicResources.forEach((pr) => {
-                    targetResources[pr.whenValue] = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                    if (pr.resourceId === null) {
+                      return;
+                    }
+                    const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                    if (!targetResource) {
+                      return;
+                    }
+                    targetResources[pr.whenValue] = targetResource;
                     targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
                     targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
                   });

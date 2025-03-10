@@ -530,7 +530,6 @@ export default class ConfigValidator implements IConfigValidator {
         }
 
         if (col.foreignResource) {
-
           if (!col.foreignResource.resourceId) {
             // resourceId is absent or empty
             if (!col.foreignResource.polymorphicResources && !col.foreignResource.polymorphicOn) {
@@ -550,11 +549,11 @@ export default class ConfigValidator implements IConfigValidator {
               }
               // we do || here because 'resourceId' might yet not be assigned from 'table'
               col.foreignResource.polymorphicResources.forEach((polymorphicResource, polymorphicResourceIndex) => {
-                if (!polymorphicResource.resourceId) {
+                if (polymorphicResource.resourceId === undefined) {
                   errors.push(`Resource "${res.resourceId}" column "${col.name}" has polymorphic foreign resource without resourceId`);
                 } else if (!polymorphicResource.whenValue) {
                   errors.push(`Resource "${res.resourceId}" column "${col.name}" has polymorphic foreign resource without whenValue`);
-                } else {
+                } else if (polymorphicResource.resourceId !== null) {
                   const resource = this.inputConfig.resources.find((r) => r.resourceId === polymorphicResource.resourceId || r.table === polymorphicResource.resourceId);
                   if (!resource) {
                     const similar = suggestIfTypo(this.inputConfig.resources.map((r) => r.resourceId || r.table), polymorphicResource.resourceId);
