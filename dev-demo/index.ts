@@ -13,6 +13,9 @@ import usersResource from './resources/users.js';
 // import gamesUsersResource from './resources/games_users.js';
 // import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
+import clinicsResource from './resources/clinics.js';
+import providersResource from './resources/providers.js';
+import apiKeysResource from './resources/api_keys.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 // const ADMIN_BASE_URL = '/portal';
@@ -203,6 +206,9 @@ export const admin = new AdminForth({
     apartmentBuyersResource,
     usersResource,
     descriptionImageResource,
+    clinicsResource,
+    providersResource,
+    apiKeysResource,
     // gamesResource,
     // gamesUsersResource,
     // gameResource,
@@ -264,6 +270,21 @@ export const admin = new AdminForth({
         //   resourceId: 'game',
         // },
 
+        {
+          label: 'Clinics',
+          icon: 'flowbite:building-solid',
+          resourceId: 'clinics',
+        },
+        {
+          label: 'Providers',
+          icon: 'flowbite:user-solid',
+          resourceId: 'providers',
+        },
+        {
+          label: 'API Keys',
+          icon: 'flowbite:search-outline',
+          resourceId: 'api_keys',
+        },
         {
           label: 'Clicks',
           icon: 'flowbite:search-outline',

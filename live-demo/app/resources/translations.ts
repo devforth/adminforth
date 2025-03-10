@@ -75,7 +75,7 @@ export default {
       name: "id",
       fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       primaryKey: true,
-      showIn: [],
+      showIn: { all: false }
     },
     {
       name: "en_string",
