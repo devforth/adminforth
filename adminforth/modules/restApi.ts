@@ -20,6 +20,7 @@ import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, Admin
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
+import { fa } from "@faker-js/faker";
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -542,6 +543,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               ...resource.options,
               fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
                 ...group,
+                noTitle: group.noTitle ?? false,
                 groupName: translated[`fieldGroup${i}`] || group.groupName,
               })),
               bulkActions: allowedBulkActions.map(
