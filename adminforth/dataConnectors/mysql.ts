@@ -110,8 +110,12 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       field._baseTypeDebug = baseType;
       field.primaryKey = row.Key === 'PRI';
-      field.default = row.Default;
-      field.required = row.Null === 'NO' && !row.Default;
+      if (field.type === AdminForthDataTypes.BOOLEAN) {
+        field.default = row.Default === '1';
+      } else {
+        field.default = row.Default;
+      }
+      field.required = row.Null === 'NO';
       fieldTypes[row.Field] = field
     });
     return fieldTypes;

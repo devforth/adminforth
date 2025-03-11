@@ -476,8 +476,12 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
 
-        // force required to be object
-        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
+        // if "required" is set - force it to be object, else delete it (it will be set during database discovery with database value)
+        if (inCol.required !== undefined) {
+          col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
+        } else {
+          delete col.required;
+        }
 
  
         // same for editingNote
