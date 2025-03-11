@@ -361,13 +361,28 @@ export default class ConfigValidator implements IConfigValidator {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
   
-      if (!action.action) {
-        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action function`);
+      if (!action.action && !action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
+      }
+      
+      if (action.action && action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
       }
   
       // Generate ID if not present
       if (!action.id) {
         action.id = md5hash(action.name);
+      }
+      if (!action.showIn) {
+        action.showIn = {
+          list: true,
+          showButton: false,
+          showThreeDotsMenu: false,
+        }
+      } else {
+        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.showButton = action.showIn.showButton ?? false;
+        action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
     });
 

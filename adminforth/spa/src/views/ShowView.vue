@@ -245,6 +245,21 @@ async function startCustomAction(actionId) {
   
   actionLoadingStates.value[actionId] = false;
   
+  if (data?.redirectUrl) {
+    // Check if the URL should open in a new tab
+    if (data.redirectUrl.includes('target=_blank')) {
+      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+    } else {
+      // Navigate within the app
+      if (data.redirectUrl.startsWith('http')) {
+        window.location.href = data.redirectUrl;
+      } else {
+        router.push(data.redirectUrl);
+      }
+    }
+    return;
+  }
+  
   if (data?.ok) {
     await coreStore.fetchRecord({
       resourceId: route.params.resourceId, 
