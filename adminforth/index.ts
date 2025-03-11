@@ -343,12 +343,6 @@ class AdminForth implements IAdminForth {
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
-      
-      this.validateFieldGroups(res.options.fieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.showFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
-
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
