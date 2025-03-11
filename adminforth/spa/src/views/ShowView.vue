@@ -83,11 +83,12 @@
         :record="coreStore.record"
       />
     </div>
-    <template v-else>
+    <template v-else> 
       <template v-for="group in groups" :key="group.groupName">
         <ShowTable
           :columns="group.columns"
           :groupName="group.groupName"
+          :noTitle="group.noTitle"
           :resource="coreStore.resource"
           :record="coreStore.record"
         />
