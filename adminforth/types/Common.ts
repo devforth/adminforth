@@ -357,18 +357,22 @@ export interface AdminForthResourceInputCommon {
       fieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       createFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       editFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       showFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
 
       /** 
