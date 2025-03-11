@@ -422,7 +422,7 @@ export default class ConfigValidator implements IConfigValidator {
         res.columns = [];
       }
       res.columns = resInput.columns.map((inCol: AdminForthResourceColumnInput, inColIndex) => {
-        const col: Partial<AdminForthResourceColumn> = { ...inCol, showIn: undefined, required: undefined, editingNote: undefined };
+        const col: Partial<AdminForthResourceColumn> = { ...inCol, showIn: undefined, editingNote: undefined };
 
         // check for duplicate column names
         if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
@@ -475,9 +475,6 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Resource "${res.resourceId}" column "${inCol.name}" has invalid required value "${wrongRequiredOn}", allowed keys are 'create', 'edit']`);
           }
         }
-
-        // force required to be object
-        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
  
         // same for editingNote
