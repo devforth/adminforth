@@ -50,6 +50,7 @@ export enum ActionCheckSource {
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
   BulkActionRequest = 'bulkActionRequest',
+  CustomActionRequest = 'customActionRequest',
 }
 
 export enum AllowedActionsEnum {
