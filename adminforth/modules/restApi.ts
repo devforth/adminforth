@@ -20,7 +20,6 @@ import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, Admin
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
-import { fa } from "@faker-js/faker";
 
 export async function interpretResource(
   adminUser: AdminUser, 
