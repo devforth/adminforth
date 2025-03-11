@@ -210,6 +210,7 @@ class AdminForth implements IAdminForth {
   validateFieldGroups(fieldGroups: {
     groupName: string;
     columns: string[];
+    noTitle?: boolean;
   }[], fieldTypes: {
     [key: string]: AdminForthResourceColumn;
 }): void {
@@ -217,6 +218,7 @@ class AdminForth implements IAdminForth {
     const allColumns = Object.keys(fieldTypes);
   
     fieldGroups.forEach((group) => {
+      group.noTitle = group.noTitle ?? false;
       group.columns.forEach((col) => {
         if (!allColumns.includes(col)) {
           const similar = suggestIfTypo(allColumns, col);
