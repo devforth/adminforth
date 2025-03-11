@@ -330,6 +330,25 @@ export default class ConfigValidator implements IConfigValidator {
     return showInTransformedToObject as ShowIn;
   }
 
+  validateFieldGroups(fieldGroups: {
+    groupName: string;
+    columns: string[];
+  }[], resourceColumns: string[]): void {
+    if (!fieldGroups) return;
+
+    fieldGroups.forEach((group) => {
+      group.columns.forEach((col) => {
+        if (!resourceColumns.includes(col)) {
+          const similar = suggestIfTypo(resourceColumns, col);
+          throw new Error(
+            `Group '${group.groupName}' has an unknown column '${col}'. ${similar ? `Did you mean '${similar}'?` : ''
+            }`
+          );
+        }
+      });
+    });
+  }
+
   validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
     if (!resInput.options?.actions) {
       return [];
@@ -342,13 +361,28 @@ export default class ConfigValidator implements IConfigValidator {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
   
-      if (!action.action) {
-        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action function`);
+      if (!action.action && !action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
+      }
+      
+      if (action.action && action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
       }
   
       // Generate ID if not present
       if (!action.id) {
         action.id = md5hash(action.name);
+      }
+      if (!action.showIn) {
+        action.showIn = {
+          list: true,
+          showButton: false,
+          showThreeDotsMenu: false,
+        }
+      } else {
+        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.showButton = action.showIn.showButton ?? false;
+        action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
     });
 
@@ -670,6 +704,12 @@ export default class ConfigValidator implements IConfigValidator {
 
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
+
+      const allColumnsList = res.columns.map((col) => col.name);
+      this.validateFieldGroups(options.fieldGroups, allColumnsList);
+      this.validateFieldGroups(options.showFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.createFieldGroups, allColumnsList);
+      this.validateFieldGroups(options.editFieldGroups, allColumnsList);
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
