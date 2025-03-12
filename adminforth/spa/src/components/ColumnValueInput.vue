@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex" :class="{ 'opacity-50' : column.editReadonly && source === 'edit' }">
     <component
       v-if="column?.components?.[props.source]?.file"
       :is="getCustomComponent(column.components[props.source])"
