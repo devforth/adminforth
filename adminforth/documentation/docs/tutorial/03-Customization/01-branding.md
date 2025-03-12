@@ -31,15 +31,8 @@ const admin = new AdminForth({
     title: "myadmin",
 //diff-add
     title: 'My App Admin',  // used to set HTML title tag
-//diff-remove
-    brandLogo: '@@/assets/logo.svg',
-//diff-add
-    brandLogo: '@@/logo.svg',
-//diff-remove
+    brandLogo: '@@/assets/logo.svg', // replace with your images in custom/assets  directory
     favicon: '@@/assets/favicon.png',
-//diff-add
-    favicon: '@@/favicon.png',
-//diff-add
   },
   ...
 });
@@ -97,7 +90,7 @@ const admin = new AdminForth({
 //diff-remove
           sidebar: { main: '#f9fafb', text: '#213045' },
 //diff-add
-          sidebar: {main:'#571e58', text:'white'},
+          sidebar: { main:'#571e58', text: 'white'},
         },
       }
     } 
