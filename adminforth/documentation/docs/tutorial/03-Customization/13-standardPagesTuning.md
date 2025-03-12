@@ -36,8 +36,32 @@ export default {
       }
     }
 ```
+
 Here is how it looks:
 ![alt text](<createEditGroups.png>)
+
+You can hide the group title by setting `noTitle` to `true`.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      ...
+      options: {
+        ...
+        fieldGroups: [
+          {
+            groupName: 'Main info',
+            columns: ['id','title', 'description', 'country', 'apartment_image']
+          //diff-add
+            noTitle: true,
+          },
+          {
+            groupName: 'Characteristics',
+            columns: ['price', 'square_meter', 'number_of_rooms', "listed"]
+          }
+        ],
+      }
+    }
+```
 
 You can also specify on which page you want to create or delete groups. If you assign null, the groups will disappear from this page.
 
