@@ -4,7 +4,7 @@
       {{ group.groupName }}
     </div>
     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-      <thead class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
+      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group ">
         <tr>
           <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-6 py-3 hidden md:w-52 md:table-cell">
               {{ $t('Field') }}
@@ -118,9 +118,15 @@
   }>();
 
   const arrayItemRefs = ref([]);
-
+  
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
   const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
+  const allColumnsHaveCustomComponent = computed(() => {
+    return props.group.columns.every(column => {
+      const componentKey = `${props.source}Row` as keyof typeof column.components;
+      return column.components?.[componentKey];
+    });
+  });
 
   const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
 
