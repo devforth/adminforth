@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex" :class="{ 'opacity-50' : column.editReadonly && source === 'edit' }">
     <component
       v-if="column?.components?.[props.source]?.file"
       :is="getCustomComponent(column.components[props.source])"
@@ -48,6 +48,8 @@
       step="1"
       class="w-40"
       placeholder="0"
+      :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
+      :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
       :readonly="column.editReadonly && source === 'edit'"
@@ -70,6 +72,8 @@
       step="0.1"
       class="w-40"
       placeholder="0.0"
+      :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
+      :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
       :modelValue="value"
