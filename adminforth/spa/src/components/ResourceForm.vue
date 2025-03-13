@@ -245,7 +245,12 @@ onMounted(() => {
           currentValues.value[column.name] = [];
         } else {
           // else copy array to prevent mutation
-          currentValues.value[column.name] = [...currentValues.value[column.name]];
+          if (Array.isArray(currentValues.value[column.name])) {
+            currentValues.value[column.name] = [...currentValues.value[column.name]];
+          } else {
+            // fallback for old data
+            currentValues.value[column.name] = [`${currentValues.value[column.name]}`];
+          }
         }
       } else if (currentValues.value[column.name]) {
         currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
