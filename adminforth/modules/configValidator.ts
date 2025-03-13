@@ -330,22 +330,37 @@ export default class ConfigValidator implements IConfigValidator {
     return showInTransformedToObject as ShowIn;
   }
 
-  validateFieldGroups(fieldGroups: {
-    groupName: string;
-    columns: string[];
-  }[], resourceColumns: string[]): void {
-    if (!fieldGroups) return;
+  validateFieldGroups(fieldGroups: { groupName: string; columns: string[] }[], allColumnsList: string[]): string[] {
+    if (!fieldGroups) return allColumnsList;
+
+    const columnPositions = new Map<string, number>();
+    let position = 0;
 
     fieldGroups.forEach((group) => {
       group.columns.forEach((col) => {
-        if (!resourceColumns.includes(col)) {
-          const similar = suggestIfTypo(resourceColumns, col);
+        if (!allColumnsList.includes(col)) {
+          const similar = suggestIfTypo(allColumnsList, col);
           throw new Error(
-            `Group '${group.groupName}' has an unknown column '${col}'. ${similar ? `Did you mean '${similar}'?` : ''
+            `Group '${group.groupName}' has an unknown column '${col}'. ${
+              similar ? `Did you mean '${similar}'?` : ''
             }`
           );
         }
+        if (!columnPositions.has(col)) {
+          columnPositions.set(col, position++);
+        }
       });
+    });
+
+    allColumnsList.forEach((col) => {
+      if (!columnPositions.has(col)) {
+        columnPositions.set(col, position++);
+      }
+    });
+    return allColumnsList.sort((a, b) => {
+      const posA = columnPositions.get(a);
+      const posB = columnPositions.get(b);
+      return posA - posB;
     });
   }
 
@@ -703,10 +718,11 @@ export default class ConfigValidator implements IConfigValidator {
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
 
       const allColumnsList = res.columns.map((col) => col.name);
-      this.validateFieldGroups(options.fieldGroups, allColumnsList);
-      this.validateFieldGroups(options.showFieldGroups, allColumnsList);
-      this.validateFieldGroups(options.createFieldGroups, allColumnsList);
-      this.validateFieldGroups(options.editFieldGroups, allColumnsList);
+      const sortedColumns = this.validateFieldGroups(options.fieldGroups, allColumnsList);
+
+      res.columns = res.columns.sort((a, b) => {
+        return sortedColumns.indexOf(a.name) - sortedColumns.indexOf(b.name);
+      });
 
       // if pageInjection is a string, make array with one element. Also check file exists
       const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
