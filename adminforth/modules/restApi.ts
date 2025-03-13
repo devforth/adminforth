@@ -1131,6 +1131,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
             return {
+              recordId: record.id,
               ok: true
             }
         }

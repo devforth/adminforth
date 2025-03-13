@@ -172,7 +172,7 @@ async function saveRecord() {
     });
   }
   saving.value = false;
-  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
+  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
 }
 
 </script>
