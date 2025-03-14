@@ -515,8 +515,8 @@ export default class ConfigValidator implements IConfigValidator {
             if (col.masked) {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a masked column`);
             }
-            if (col.foreignResource && col.foreignResource.polymorphicResources) {
-              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a polymorphic foreignResource column`);
+            if (col.foreignResource) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray cannot be used for a foreignResource column`);
             }
 
             if (!col.type || col.type !== AdminForthDataTypes.JSON) {
