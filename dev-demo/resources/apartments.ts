@@ -223,9 +223,16 @@ export default {
     {
       name: "room_sizes",
       type: AdminForthDataTypes.JSON,
+      // isArray: {
+      //   enabled: true,
+      //   itemType: AdminForthDataTypes.FLOAT,
+      // },
       isArray: {
         enabled: true,
-        itemType: AdminForthDataTypes.FLOAT,
+        itemType: AdminForthDataTypes.STRING,
+      },
+      foreignResource: {
+        resourceId: "users",
       },
     },
     {
