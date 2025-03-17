@@ -5,7 +5,19 @@ function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[] | undef
   if (!filter) {
     return [];
   }
-  return (Array.isArray(filter) ? filter : [filter]) as IAdminForthFilter[];
+  const ret = (Array.isArray(filter) ? filter : [filter]) as IAdminForthFilter[];
+
+  ret.forEach((f) => {
+    if (typeof f !== 'object') {
+      throw new Error('Filter must be an object');
+    }
+    if (!f._adminforth) {
+      throw new Error('Filter must be Filters.X() or Filters.NOT() or Filters.OR() or Filters.AND()');
+    }
+    
+  });
+
+  return ret;
 }
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {

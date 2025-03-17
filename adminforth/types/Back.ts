@@ -110,6 +110,7 @@ export interface IAdminForthFilter {
   field: string;
   operator: AdminForthFilterOperators;
   value: any;
+  _adminforth?: boolean;
 }
 
 export interface IAdminForthSort {
@@ -1043,13 +1044,13 @@ export type FDataFilter = (field: string, value: any) => IAdminForthFilter;
 
 export class Filters {
   static EQ(field: string, value: any): IAdminForthFilter {
-    return { field, operator: AdminForthFilterOperators.EQ, value };
+    return { field, operator: AdminForthFilterOperators.EQ, value, _adminforth: true };
   }
   static NEQ(field: string, value: any): IAdminForthFilter {
-    return { field, operator: AdminForthFilterOperators.NE, value };
+    return { field, operator: AdminForthFilterOperators.NE, value, _adminforth: true };
   }
   static GT(field: string, value: any): IAdminForthFilter {
-    return { field, operator: AdminForthFilterOperators.GT, value };
+    return { field, operator: AdminForthFilterOperators.GT, value, _adminforth: true };
   }
   static GTE(field: string, value: any): IAdminForthFilter {
     return { field, operator: AdminForthFilterOperators.GTE, value };
