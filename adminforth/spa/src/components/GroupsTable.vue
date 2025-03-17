@@ -43,35 +43,19 @@
             :class="{'rounded-br-lg': i === group.columns.length - 1}"
           >
             <template v-if="column.isArray?.enabled">
-              <ColumnValueInput
-                v-for="(arrayItemValue, arrayItemIndex) in currentValues[column.name]"
-                :key="`${column.name}-${arrayItemIndex}`"
-                ref="arrayItemRefs"
-                :class="{'mt-2': arrayItemIndex}"
+              <ArrayColumnValueInput
                 :source="source"
                 :column="column"
-                :type="column.isArray.itemType"
-                :value="arrayItemValue"
+                :value="currentValues[column.name]"
                 :currentValues="currentValues"
                 :mode="mode"
                 :columnOptions="columnOptions"
-                :deletable="!column.editReadonly"
-                @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
+                :unmasked="unmasked[column.name]"
+                @update:modelValue="setCurrentValue(column.name, $event)"
                 @update:unmasked="unmasked[column.name] = !unmasked[column.name]"
                 @update:inValidity="customComponentsInValidity[column.name] = $event"
                 @update:emptiness="customComponentsEmptiness[column.name] = $event"
-                @delete="setCurrentValue(column.name, currentValues[column.name].filter((_, index) => index !== arrayItemIndex))"
               />
-              <button
-                v-if="!column.editReadonly"
-                type="button"
-                @click="setCurrentValue(column.name, currentValues[column.name], currentValues[column.name].length); focusOnLastInput(column.name)"
-                class="flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                :class="{'mt-2': currentValues[column.name].length}"
-              >
-                <IconPlusOutline class="w-4 h-4 me-2"/>
-                {{ $t('Add') }}
-              </button>
             </template>
             <ColumnValueInput
               v-else
@@ -102,6 +86,7 @@
   import { Tooltip } from '@/afcl';
   import { ref, computed, watch, nextTick, type Ref } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import ArrayColumnValueInput from "@/components/ArrayColumnValueInput.vue";
 
   const { t } = useI18n();
 

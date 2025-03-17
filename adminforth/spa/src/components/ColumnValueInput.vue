@@ -17,6 +17,7 @@
       v-else-if="column.foreignResource"
       ref="input"
       class="w-full"
+      teleportToBody
       :options="columnOptions[column.name] || []"
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
@@ -27,6 +28,7 @@
       v-else-if="column.enum"
       ref="input"
       class="w-full"
+      teleportToBody
       :options="column.enum"
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
@@ -36,6 +38,7 @@
       v-else-if="(type || column.type) === 'boolean'"
       ref="input"
       class="w-full"
+      teleportToBody
       :options="getBooleanOptions(column)"
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
