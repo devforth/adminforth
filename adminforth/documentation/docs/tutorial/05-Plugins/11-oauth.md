@@ -18,7 +18,7 @@ npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 You need to get the client ID and client secret from your OAuth2 provider.
 
 #### For Google:
-1. Go to the [Google Cloud Console](https://console.cloud.google.com)
+1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
 2. Create a new project or select an existing one
 3. Go to `APIs & Services` → `Credentials`
 4. Create credentials for OAuth 2.0 client IDs
