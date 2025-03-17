@@ -107,7 +107,11 @@ const editableRecord = computed(() => {
   }
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
-      newRecord[column.name] = newRecord[column.name]?.pk
+      if (column.isArray?.enabled) {
+        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+      } else {
+        newRecord[column.name] = newRecord[column.name]?.pk;
+      }
     }
   });
   return newRecord;
