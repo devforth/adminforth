@@ -17,7 +17,7 @@ npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 
 You need to get the client ID and client secret from your OAuth2 provider.
 
-For Google:
+#### For Google:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com)
 2. Create a new project or select an existing one
 3. Go to `APIs & Services` → `Credentials`
@@ -30,6 +30,20 @@ For Google:
 ```bash
 GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+```
+
+#### For Facebook:
+1. Go to the [Facebook Developers](https://developers.facebook.com/)
+2. Go to `My apps`
+3. Create a new project or select an existing one (choose Authenticate and request data from users with Facebook Login)
+4. Go to `Use Cases` - `Authenticate and request data from users with Facebook Login` -> `Customize` and add email permissions 
+5. Go to `App Settings` -> `Basic`
+6. Get App ID and App secret
+7. Add the credentials to your `.env` file:
+
+```bash
+FACEBOOK_OAUTH_CLIENT_ID=your_facebook_client_id
+FACEBOOK_OAUTH_CLIENT_SECRET=your_facebook_client_secret
 ```
 
 ### 2. Plugin Configuration
