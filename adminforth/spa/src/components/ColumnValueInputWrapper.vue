@@ -49,7 +49,7 @@
 <script setup lang="ts">
   import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
   import ColumnValueInput from "./ColumnValueInput.vue";
-  import { ref } from 'vue';
+  import { ref, nextTick } from 'vue';
   
   const props = defineProps<{
     source: 'create' | 'edit',
@@ -65,8 +65,9 @@
   
   const arrayItemRefs = ref([]);
   
-  function addArrayItem() {
+  async function addArrayItem() {
     props.setCurrentValue(props.column.name, props.currentValues[props.column.name], props.currentValues[props.column.name].length);
-    emit('focus-last-input', props.column.name);
+    await nextTick();
+    arrayItemRefs.value[arrayItemRefs.value.length - 1].focus();
   }
 </script> 
