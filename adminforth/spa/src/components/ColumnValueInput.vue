@@ -18,6 +18,7 @@
       ref="input"
       class="w-full"
       :options="columnOptions[column.name] || []"
+      teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
@@ -28,6 +29,7 @@
       ref="input"
       class="w-full"
       :options="column.enum"
+      teleportToBody
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -37,6 +39,7 @@
       ref="input"
       class="w-full"
       :options="getBooleanOptions(column)"
+      teleportToBody
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
       @update:modelValue="$emit('update:modelValue', $event)"
