@@ -17,6 +17,8 @@ import clinicsResource from './resources/clinics.js';
 import providersResource from './resources/providers.js';
 import apiKeysResource from './resources/api_keys.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import pkg from 'pg';
+const { Client } = pkg;
 
 // const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
@@ -182,10 +184,10 @@ export const admin = new AdminForth({
       id: 'maindb',
       url: `sqlite://${dbPath}`
     },
-    // {
-    //   id: 'db2',
-    //   url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
-    // },
+    {
+      id: 'pg',
+      url: 'postgres://demo:demo@localhost:53321/demo',
+    },
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
@@ -477,7 +479,22 @@ app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
 
 
 // serve after you added all api
-admin.express.serve(app)
+admin.express.serve(app);
+
+
+(async function () {
+  const c = new Client({
+      connectionString: 'postgres://demo:demo@localhost:53321/demo',
+  });
+  await c.connect();
+  await c.query(
+    `CREATE TABLE IF NOT EXISTS clinics (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL
+    );`
+  );
+})();
+
 admin.discoverDatabases().then(async () => {
   console.log('🅿️  Database discovered');
 
@@ -489,6 +506,11 @@ admin.discoverDatabases().then(async () => {
     });
   }
   await seedDatabase();
+
+  // create table clinics in postgress,
+ // id               Int               @id @db.SmallInt @default(autoincrement()) 
+ // name            String            @db.VarChar(255)
+
 });
 
 admin.express.listen(port, () => {

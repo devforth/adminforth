@@ -174,7 +174,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return result;
     }
 
-    async createRecordOriginalValues({ resource, record }) {
+    async createRecordOriginalValues({ resource, record }): Promise<string> {
         const tableName = resource.table;
         const collection = this.client.db().collection(tableName);
         const columns = Object.keys(record);
@@ -183,6 +183,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             newRecord[colName] = record[colName];
         }
         await collection.insertOne(newRecord);
+        return ''; // todo
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
