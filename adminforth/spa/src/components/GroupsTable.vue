@@ -42,34 +42,18 @@
             class="px-6 py-4  whitespace-pre-wrap relative block md:table-cell"
             :class="{'rounded-br-lg': i === group.columns.length - 1}"
           >
-            <template v-if="column.isArray?.enabled">
-              <ArrayColumnValueInput
-                :source="source"
-                :column="column"
-                :value="currentValues[column.name]"
-                :currentValues="currentValues"
-                :mode="mode"
-                :columnOptions="columnOptions"
-                :unmasked="unmasked[column.name]"
-                @update:modelValue="setCurrentValue(column.name, $event)"
-                @update:unmasked="unmasked[column.name] = !unmasked[column.name]"
-                @update:inValidity="customComponentsInValidity[column.name] = $event"
-                @update:emptiness="customComponentsEmptiness[column.name] = $event"
-              />
-            </template>
-            <ColumnValueInput
-              v-else
+            <ColumnValueInputWrapper
               :source="source"
               :column="column"
-              :value="currentValues[column.name]"
               :currentValues="currentValues"
               :mode="mode"
               :columnOptions="columnOptions"
               :unmasked="unmasked"
-              @update:modelValue="setCurrentValue(column.name, $event)"
-              @update:unmasked="unmasked[column.name] = !unmasked[column.name]"
-              @update:inValidity="customComponentsInValidity[column.name] = $event"
-              @update:emptiness="customComponentsEmptiness[column.name] = $event"
+              :setCurrentValue="setCurrentValue"
+              @update:unmasked="unmasked[$event] = !unmasked[$event]"
+              @update:inValidity="customComponentsInValidity[$event.name] = $event.value"
+              @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
+              @focus-last-input="focusOnLastInput"
             />
             <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
@@ -82,11 +66,10 @@
 
 <script setup lang="ts">
   import { IconExclamationCircleSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-  import ColumnValueInput from "@/components/ColumnValueInput.vue";
   import { Tooltip } from '@/afcl';
   import { ref, computed, watch, nextTick, type Ref } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import ArrayColumnValueInput from "@/components/ArrayColumnValueInput.vue";
+  import ColumnValueInputWrapper from "@/components/ColumnValueInputWrapper.vue";
 
   const { t } = useI18n();
 
@@ -103,7 +86,7 @@
   }>();
 
   const arrayItemRefs = ref([]);
-  
+
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
   const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
   const allColumnsHaveCustomComponent = computed(() => {
