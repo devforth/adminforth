@@ -556,6 +556,11 @@ export interface AdminForthForeignResourceCommon {
   unsetLabel?: string,
 }
 
+export type FillOnCreateFunction = (params: {
+  initialRecord: any,
+  adminUser: AdminUser,
+}) => any;
+
 /**
  * Column describes one field in the table or collection in database.
  */
@@ -686,7 +691,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
-  fillOnCreate?: Function,
+  fillOnCreate?: FillOnCreateFunction,
 
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.
