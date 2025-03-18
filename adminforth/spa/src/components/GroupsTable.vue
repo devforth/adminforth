@@ -53,7 +53,6 @@
               @update:unmasked="unmasked[$event] = !unmasked[$event]"
               @update:inValidity="customComponentsInValidity[$event.name] = $event.value"
               @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
-              @focus-last-input="focusOnLastInput"
             />
             <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
@@ -85,8 +84,6 @@
     columnOptions: any,
   }>();
 
-  const arrayItemRefs = ref([]);
-
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
   const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
   const allColumnsHaveCustomComponent = computed(() => {
@@ -97,12 +94,6 @@
   });
 
   const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
-
-  async function focusOnLastInput(column) {
-    // wait for element to register
-    await nextTick();
-    arrayItemRefs.value[arrayItemRefs.value.length - 1].focus();
-  }
 
   watch(customComponentsInValidity.value, (newVal) => {
     emit('update:customComponentsInValidity', newVal);
