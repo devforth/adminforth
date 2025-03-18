@@ -6,15 +6,9 @@ image: "/ogs/branding.png"  # Path to the OG image
 
 # Branding and Theming
 
-The first things you would probably like to change are the logo, favicon and the name of the application. 
+The first things you would probably like to change are the logo, favicon and the name of the admin application. 
 
-First of all create directory named `custom` at the same level with your TypeScript/JavaScript index file. 
-
-We will use this directory for all custom components. If you want to call your dir with other name then `custom`, just set [customComponentsDir option](/docs/api/Back/interfaces/AdminForthConfigCustomization/#customcomponentsdir)
-
-Place your logo file into the `custom` directory e.g. (`logo.svg`)
-
-Also place your favicon into the `custom` directory e.g. (`favicon.png`)
+You can place your logo and favicon files into the `custom` directory e.g. replacing existing default `logo.svg` and `favicon.png` files.
 
 Then you can change the branding of the application in the configuration:
 
@@ -48,7 +42,6 @@ You can use `@@/` prefix for all paths in the configuration and also import imag
 ```
 
 ## Removing brand name from sidebar
-
 
 If you are using logo image which has branded title inside, you might
 want completely remove default text brand name from sidebar:
@@ -100,7 +93,6 @@ const admin = new AdminForth({
 ```
 Here is how it looks:
 ![AdminForth Themes](image-10.png)
-
 
 
 ## Square vs rounded buttons?
