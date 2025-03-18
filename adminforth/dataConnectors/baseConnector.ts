@@ -72,7 +72,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<string> {
     throw new Error('Method not implemented.');
   }
 
@@ -94,8 +94,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
+
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
+
+    console.log('🪲🆕1', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
 
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
@@ -106,8 +109,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           });
         }
       }
-      recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+      if (filledRecord[col.name] !== undefined) {
+        // no sense to set value if it is not defined
+        recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+      }
     }
+
+    console.log('🪲🆕2', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
+
     
     let error: string | null = null;
     await Promise.all(
@@ -125,12 +134,19 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       return { error, ok: false };
     }
 
-    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record', recordWithOriginalValues);
-    await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+    console.log('🪲🆕2', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
+
+    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
+    const pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+
+    let createdRecord = recordWithOriginalValues;
+    if (pkValue) {
+      createdRecord = await this.getRecordByPrimaryKey(resource, pkValue);
+    }
 
     return {
       ok: true,
-      createdRecord: recordWithOriginalValues,
+      createdRecord,
     }
   }
 

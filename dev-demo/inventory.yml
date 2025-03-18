@@ -24,7 +24,7 @@ services:
     image: postgres:13
     restart: always
     ports:
-      - "54321:5432"
+      - "53321:5432"
     environment:
       POSTGRES_USER: demo
       POSTGRES_PASSWORD: demo
