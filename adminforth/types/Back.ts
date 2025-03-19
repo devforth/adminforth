@@ -206,9 +206,9 @@ export interface IAdminForthDataSourceConnector {
 
 
   /**
-   * Used to create record in database.
+   * Used to create record in database. Should return value of primary key column of created record.
    */
-  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string>;
 
   /**
    * Update record in database. newValues might have not all fields in record, but only changed ones.

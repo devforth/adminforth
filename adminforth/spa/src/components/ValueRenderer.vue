@@ -1,7 +1,23 @@
 <template>
   <div>
-    <span @click="(e)=>{e.stopPropagation()}" v-if="column.foreignResource">
-      <RouterLink v-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
+    <span
+      v-if="column.foreignResource"
+      :class="{'flex flex-wrap': column.isArray?.enabled}"
+      @click="(e)=>{e.stopPropagation()}"
+    >
+      <span
+        v-if="record[column.name] && column.isArray?.enabled"
+        v-for="foreignResource in record[column.name]"
+        class="rounded-md m-0.5 bg-lightAnnouncementBG dark:bg-darkAnnouncementBG text-lightAnnouncementText dark:text-darkAnnouncementText py-0.5 px-2.5 text-sm"
+      >
+        <RouterLink
+          class="font-medium text-lightSidebarText dark:text-darkSidebarText hover:brightness-110 whitespace-nowrap"
+          :to="{ name: 'resource-show', params: { primaryKey: foreignResource.pk, resourceId: column.foreignResource.resourceId || column.foreignResource.polymorphicResources.find((pr) => pr.whenValue === record[column.foreignResource.polymorphicOn]).resourceId } }"
+        >
+          {{ foreignResource.label }}
+        </RouterLink>
+      </span>
+      <RouterLink v-else-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
         :to="{ name: 'resource-show', params: { primaryKey: record[column.name].pk, resourceId: column.foreignResource.resourceId || column.foreignResource.polymorphicResources.find((pr) => pr.whenValue === record[column.foreignResource.polymorphicOn]).resourceId } }">
         {{ record[column.name].label }}
       </RouterLink>

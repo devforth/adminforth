@@ -675,13 +675,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
               const targetConnector = this.adminforth.connectors[targetResource.dataSource];
               const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
-              const pksUnique = [...new Set(data.data.map((item) => item[col.name]))];
+              const pksUnique = [...new Set(data.data.reduce((pks, item) => {
+                if (col.isArray?.enabled) {
+                  if (item[col.name]?.length) {
+                    pks = pks.concat(item[col.name]);
+                  }
+                } else {
+                  pks.push(item[col.name]);
+                }
+                return pks;
+              }, []))];
               if (pksUnique.length === 0) {
                 return;
               }
               const targetData = await targetConnector.getData({
                 resource: targetResource,
-                limit: limit,
+                limit: pksUnique.length,
                 offset: 0,
                 filters: [
                   {
@@ -756,6 +765,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             
             data.data.forEach((item) => {
               item[col.name] = targetDataMap[item[col.name]];
+              if (col.isArray?.enabled) {
+                if (item[col.name]?.length) {
+                  item[col.name] = item[col.name].map((i) => targetDataMap[i]);
+                }
+              } else {
+                item[col.name] = targetDataMap[item[col.name]];
+              }
             });
           })
         );
