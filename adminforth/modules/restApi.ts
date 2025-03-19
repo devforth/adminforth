@@ -764,21 +764,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             
             data.data.forEach((item) => {
+              item[col.name] = targetDataMap[item[col.name]];
               if (col.isArray?.enabled) {
                 if (item[col.name]?.length) {
                   item[col.name] = item[col.name].map((i) => targetDataMap[i]);
                 }
               } else {
                 item[col.name] = targetDataMap[item[col.name]];
-              }
-              
-              if (!item[col.name]) {
-                if (col.foreignResource && col.foreignResource.polymorphicResources) {
-                  const systemResource = col.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                  if (systemResource) {
-                    item[col.foreignResource.polymorphicOn] = systemResource.whenValue;
-                  }
-                }
               }
             });
           })
@@ -1002,7 +994,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name]) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
                 const targetResources = {};
                 const targetConnectors = {};
                 const targetResourcePkFields = {};
@@ -1095,7 +1090,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] !== undefined) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
                 let newPolymorphicOnValue = null;
                 if (record[column.name]) {
                   const targetResources = {};
