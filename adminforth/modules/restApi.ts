@@ -764,7 +764,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             
             data.data.forEach((item) => {
-              item[col.name] = targetDataMap[item[col.name]];
+              // item[col.name] = targetDataMap[item[col.name]];, commented by @Vitalii
               if (col.isArray?.enabled) {
                 if (item[col.name]?.length) {
                   item[col.name] = item[col.name].map((i) => targetDataMap[i]);
