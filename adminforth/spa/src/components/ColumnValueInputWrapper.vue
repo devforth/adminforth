@@ -1,24 +1,26 @@
 <template>
   <template v-if="column.isArray?.enabled">
-    <ColumnValueInput
-      v-for="(arrayItemValue, arrayItemIndex) in currentValues[column.name]"
-      :key="`${column.name}-${arrayItemIndex}`"
-      ref="arrayItemRefs"
-      :class="{'mt-2': arrayItemIndex}"
-      :source="source"
-      :column="column"
-      :type="column.isArray.itemType"
-      :value="arrayItemValue"
-      :currentValues="currentValues"
-      :mode="mode"
-      :columnOptions="columnOptions"
-      :deletable="!column.editReadonly"
-      @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
-      @update:unmasked="$emit('update:unmasked', column.name)"
-      @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
-      @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
-      @delete="setCurrentValue(column.name, currentValues[column.name].filter((_, index) => index !== arrayItemIndex))"
-    />
+    <div class="flex flex-col">
+      <ColumnValueInput
+        v-for="(arrayItemValue, arrayItemIndex) in currentValues[column.name]"
+        :key="`${column.name}-${arrayItemIndex}`"
+        ref="arrayItemRefs"
+        :class="{'mt-2': arrayItemIndex}"
+        :source="source"
+        :column="column"
+        :type="column.isArray.itemType"
+        :value="arrayItemValue"
+        :currentValues="currentValues"
+        :mode="mode"
+        :columnOptions="columnOptions"
+        :deletable="!column.editReadonly"
+        @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
+        @update:unmasked="$emit('update:unmasked', column.name)"
+        @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
+        @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
+        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_, index) => index !== arrayItemIndex))"
+      />
+    </div>
     <button
       v-if="!column.editReadonly"
       type="button"
