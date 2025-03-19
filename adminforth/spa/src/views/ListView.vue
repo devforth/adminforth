@@ -114,6 +114,7 @@
       :totalRows="totalRows"
       :checkboxes="checkboxes"
       :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
+      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
     />
 
     <component 
