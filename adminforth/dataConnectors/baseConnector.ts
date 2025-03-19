@@ -98,8 +98,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
 
-    console.log('🪲🆕1', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
-
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
         if (filledRecord[col.name] === undefined) {
@@ -115,9 +113,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
     }
 
-    console.log('🪲🆕2', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
-
-    
     let error: string | null = null;
     await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
@@ -133,8 +128,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
       return { error, ok: false };
     }
-
-    console.log('🪲🆕2', JSON.stringify(recordWithOriginalValues), JSON.stringify(Object.entries(recordWithOriginalValues)));
 
     process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
     const pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
