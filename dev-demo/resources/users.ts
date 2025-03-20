@@ -15,6 +15,7 @@ import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/
 import OAuthPlugin  from "../../plugins/adminforth-oauth";
 import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oauth-adapter";
 import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
+import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit";
 
 export default {
   dataSource: "maindb",
@@ -38,7 +39,7 @@ export default {
       foreignResourceId: "audit_log",
     }),
     new ForeignInlineListPlugin({
-      foreignResourceId: "users",
+      foreignResourceId: "user_sub",
     }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
@@ -103,6 +104,9 @@ export default {
       emailField: 'email',
       emailConfirmedField: 'email_confirmed'
     }),
+    // new ListInPlaceEditPlugin({
+    //   columns: ["role"]
+    // })
   ],
   options: {
     allowedActions: {
@@ -165,7 +169,7 @@ export default {
     {
       name: "role",
       enum: [
-        // { value: 'superadmin', label: 'Super Admin' },
+        { value: 'superadmin', label: 'Super Admin' },
         { value: "user", label: "User" },
       ],
     },
@@ -190,7 +194,7 @@ export default {
       foreignResource: {
         resourceId: "users",
       }
-    }
+    },
     // {
     //   name: "email_confirmed",
     // },
