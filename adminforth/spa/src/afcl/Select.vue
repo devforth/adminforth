@@ -34,7 +34,7 @@
     </div>
     <teleport to="body" v-if="teleportToBody && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
-        class="fixed z-50 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+        class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
         <div
           v-for="item in filteredItems"
@@ -202,6 +202,23 @@ watch(
   }
 );
 
+const handleScroll = () => {
+  if (showDropdown.value && inputEl.value) {
+    const rect = inputEl.value.getBoundingClientRect();
+    const style = {
+      left: `${rect.left}px`,
+      top: isTop.value && dropdownHeight.value 
+        ? `${rect.top - dropdownHeight.value - 8}px`
+        : `${rect.bottom + 8}px`,
+      width: `${rect.width}px`
+    };
+    
+    if (dropdownEl.value) {
+      Object.assign(dropdownEl.value.style, style);
+    }
+  }
+};
+
 onMounted(() => {
   updateFromProps();
 
@@ -214,7 +231,11 @@ onMounted(() => {
   });
 
   addClickListener();
-
+  
+  // Add scroll listeners if teleportToBody is true
+  if (props.teleportToBody) {
+    window.addEventListener('scroll', handleScroll, true);
+  }
 });
 
 const filteredItems = computed(() => {
@@ -268,6 +289,10 @@ const toogleItem = (item) => {
 
 onUnmounted(() => {
   removeClickListener();
+  // Remove scroll listeners if teleportToBody is true
+  if (props.teleportToBody) {
+    window.removeEventListener('scroll', handleScroll, true);
+  }
 });
 
 const getDropdownPosition = computed(() => {
