@@ -4,7 +4,7 @@ import AdminForth, {
   AdminForthResourceColumn,
   AdminForthResourceInput,
   AdminUser,
-} from "../../adminforth";
+} from "../../adminforth/dist";
 import ForeignInlineListPlugin from "../../plugins/adminforth-foreign-inline-list";
 import OpenSignupPlugin from "../../plugins/adminforth-open-signup";
 import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
@@ -20,93 +20,14 @@ import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit";
 export default {
   dataSource: "maindb",
   table: "users",
-  resourceId: "users",
-  label: "Users",
+  resourceId: "user_sub",
+  label: "User Sub",
 
   recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
-    // new ForeignInlineListPlugin({
-    //   foreignResourceId: "aparts",
-    //   modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
-    //     // hide column 'square_meter' from both 'list' and 'filter'
-    //     resourceConfig.columns.find(
-    //       (c: AdminForthResourceColumn) => c.name === "square_meter"
-    //     )!.showIn = [];
-    //     resourceConfig.options!.listPageSize = 3;
-    //   },
-    // }),
-    new ForeignInlineListPlugin({
-      foreignResourceId: "audit_log",
-    }),
-    new ForeignInlineListPlugin({
-      foreignResourceId: "user_sub",
-    }),
-    new TwoFactorsAuthPlugin({
-      twoFaSecretFieldName: "secret2fa",
-      timeStepWindow: 1, // optional time step window for 2FA
-      // optional callback to define which users should be enforced to use 2FA
-      usersFilterToApply: (adminUser: AdminUser) => {
-        if (process.env.NODE_ENV === "development") {
-          return false;
-        }
-        // return true if user should be enforced to use 2FA,
-        // return true;
-        return adminUser.dbUser.email !== "adminforth";
-      },
-      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-        return adminUser.dbUser.email === "adminforth";
-      },
-    }),
-    ...(process.env.AWS_ACCESS_KEY_ID
-      ? [
-        new EmailResetPasswordPlugin({
-          emailField: "email",
-          sendFrom: "no-reply@devforth.io",
-          adapter: new EmailAdapterAwsSes({
-            region: "eu-central-1",
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          }),
-          passwordField: "password",
-        })]
-      : []
-    ),
-    new OpenSignupPlugin({
-      emailField: "email",
-      passwordField: "password",
-      passwordHashField: "password_hash",
-      defaultFieldValues: {
-        role: "user",
-      },
-      // confirmEmails: {
-      //   emailConfirmedField: "email_confirmed",
-      //   sendFrom: "no-reply@devforth.io",
-      //   adapter: new EmailAdapterAwsSes({
-      //     region: "eu-central-1",
-      //     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-      //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-      //   }),
-      // },
-    }),
-    new OAuthPlugin({
-      adapters: [
-        new AdminForthAdapterGithubOauth2({
-          clientID: process.env.GITHUB_CLIENT_ID,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
-        }),
-        new AdminForthAdapterGoogleOauth2({
-          clientID: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
-        })
-      ],
-      emailField: 'email',
-      emailConfirmedField: 'email_confirmed'
-    }),
-    // new ListInPlaceEditPlugin({
-    //   columns: ["role"]
-    // })
+    new ListInPlaceEditPlugin({
+      columns: ["role"]
+    })
   ],
   options: {
     allowedActions: {

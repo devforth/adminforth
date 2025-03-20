@@ -9,6 +9,7 @@ import apartmentBuyersResource from './resources/apartment_buyers.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
+import userSubResource from './resources/user_sub.js';
 // import gameResource from './resources/game.js';
 // import gamesUsersResource from './resources/games_users.js';
 // import gamesResource from './resources/games.js';
@@ -209,6 +210,7 @@ export const admin = new AdminForth({
     clinicsResource,
     providersResource,
     apiKeysResource,
+    userSubResource,
     // gamesResource,
     // gamesUsersResource,
     // gameResource,
@@ -294,7 +296,7 @@ export const admin = new AdminForth({
           label: 'Translations',
           icon: 'material-symbols:translate',
           resourceId: 'translations',
-        }
+        },
       ]
     },
     {
