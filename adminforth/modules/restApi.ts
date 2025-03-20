@@ -49,6 +49,7 @@ export async function interpretResource(
     [ActionCheckSource.CreateRequest]: ['create'],
     [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create', 'filter'],
     [ActionCheckSource.BulkActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
+    [ActionCheckSource.CustomActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
   }[source];
 
   await Promise.all(
@@ -258,7 +259,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
-            const toReturn = menuItem.visible( adminUser );
+            const toReturn = menuItem.visible( adminUser );  // todo better to use  { adminUser } for consistency with allowed actions
             if (typeof toReturn !== 'boolean') {
               throw new Error(`'visible' function of ${menuItem.label || menuItem.type }  must return boolean value`);
             }
@@ -541,6 +542,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               ...resource.options,
               fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
                 ...group,
+                noTitle: group.noTitle ?? false,
                 groupName: translated[`fieldGroup${i}`] || group.groupName,
               })),
               bulkActions: allowedBulkActions.map(
@@ -667,35 +669,109 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // for foreign keys, add references
         await Promise.all(
           resource.columns.filter((col) => col.foreignResource).map(async (col) => {
-            const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
-            const targetConnector = this.adminforth.connectors[targetResource.dataSource];
-            const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
-            const pksUnique = [...new Set(data.data.map((item) => item[col.name]))];
-            if (pksUnique.length === 0) {
-              return;
-            }
-            const targetData = await targetConnector.getData({
-              resource: targetResource,
-              limit: limit,
-              offset: 0,
-              filters: [
-                {
-                  field: targetResourcePkField,
-                  operator: AdminForthFilterOperators.IN,
-                  value: pksUnique,
+            let targetDataMap = {};
+
+            if (col.foreignResource.resourceId) {
+              const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
+              const targetConnector = this.adminforth.connectors[targetResource.dataSource];
+              const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
+              const pksUnique = [...new Set(data.data.reduce((pks, item) => {
+                if (col.isArray?.enabled) {
+                  if (item[col.name]?.length) {
+                    pks = pks.concat(item[col.name]);
+                  }
+                } else {
+                  pks.push(item[col.name]);
                 }
-              ],
-              sort: [],
-            });
-            const targetDataMap = targetData.data.reduce((acc, item) => {
-              acc[item[targetResourcePkField]] = {
-                label: targetResource.recordLabel(item),
-                pk: item[targetResourcePkField],
+                return pks;
+              }, []))];
+              if (pksUnique.length === 0) {
+                return;
               }
-              return acc;
-            }, {});
+              const targetData = await targetConnector.getData({
+                resource: targetResource,
+                limit: pksUnique.length,
+                offset: 0,
+                filters: [
+                  {
+                    field: targetResourcePkField,
+                    operator: AdminForthFilterOperators.IN,
+                    value: pksUnique,
+                  }
+                ],
+                sort: [],
+              });
+              targetDataMap = targetData.data.reduce((acc, item) => {
+                acc[item[targetResourcePkField]] = {
+                  label: targetResource.recordLabel(item),
+                  pk: item[targetResourcePkField],
+                }
+                return acc;
+              }, {});
+            } else {
+              const targetResources = {};
+              const targetConnectors = {};
+              const targetResourcePkFields = {};
+              const pksUniques = {};
+              col.foreignResource.polymorphicResources.forEach((pr) => {
+                if (pr.resourceId === null) {
+                  return;
+                }
+                const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                if (!targetResource) {
+                  return;
+                }
+                targetResources[pr.whenValue] = targetResource;
+                targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
+                targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
+                const pksUnique = [...new Set(data.data.filter((item) => item[col.foreignResource.polymorphicOn] === pr.whenValue).map((item) => item[col.name]))];
+                if (pksUnique.length !== 0) {
+                  pksUniques[pr.whenValue] = pksUnique;
+                }
+                if (Object.keys(pksUniques).length === 0) {
+                  return;
+                }
+              });
+
+              const targetData = (await Promise.all(Object.keys(pksUniques).map((polymorphicOnValue) =>
+                targetConnectors[polymorphicOnValue].getData({
+                  resource: targetResources[polymorphicOnValue],
+                  limit: limit,
+                  offset: 0,
+                  filters: [
+                    {
+                      field: targetResourcePkFields[polymorphicOnValue],
+                      operator: AdminForthFilterOperators.IN,
+                      value: pksUniques[polymorphicOnValue],
+                    }
+                  ],
+                  sort: [],
+                })
+              ))).reduce((acc: any, td: any, tdi) => ({
+                ...acc,
+                [Object.keys(pksUniques)[tdi]]: td,
+              }), {});
+              targetDataMap = Object.keys(targetData).reduce((tdAcc, polymorphicOnValue) => ({
+                ...tdAcc,
+                ...targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
+                  dAcc[item[targetResourcePkFields[polymorphicOnValue]]] = {
+                    label: targetResources[polymorphicOnValue].recordLabel(item),
+                    pk: item[targetResourcePkFields[polymorphicOnValue]],
+                  }
+                  return dAcc;
+                }, {}),
+              }), {});
+            }
+            
             data.data.forEach((item) => {
-              item[col.name] = targetDataMap[item[col.name]];
+              // item[col.name] = targetDataMap[item[col.name]];, commented by @Vitalii
+              if (col.isArray?.enabled) {
+                if (item[col.name]?.length) {
+                  item[col.name] = item[col.name].map((i) => targetDataMap[i]);
+                }
+              } else {
+                item[col.name] = targetDataMap[item[col.name]];
+              }
             });
           })
         );
@@ -767,74 +843,85 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!columnConfig.foreignResource) {
           return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
-        const targetResourceId = columnConfig.foreignResource.resourceId;
-        const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == targetResourceId);
 
-        for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
-          const resp = await hook({ 
-            query: body, 
-            adminUser, 
-            resource: targetResource, 
-            extra: {
-              body, query, headers, cookies, requestUrl
-            },
-            adminforth: this.adminforth,
-          });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
+        const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
+        const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
 
-          if (resp.error) {
-            return { error: resp.error };
-          }
-        }
-        const { limit, offset, filters, sort } = body;
-        const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
-          resource: targetResource,
-          limit,
-          offset,
-          filters: filters || [],
-          sort: sort || [],
-        });
-        const items = dbDataItems.data.map((item) => {
-          const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
-          const labler = targetResource.recordLabel;
-          return { 
-            value: pk,
-            label: labler(item),
-            _item: item, // user might need it in hook to form new label
-          }
-        });
-        const response = {
-          items
-        };
+        const responses = (await Promise.all(
+          targetResources.map(async (targetResource) => {
+            return new Promise(async (resolve) => {
+              for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
+                const resp = await hook({
+                  query: body,
+                  adminUser,
+                  resource: targetResource,
+                  extra: {
+                    body, query, headers, cookies, requestUrl
+                  },
+                  adminforth: this.adminforth,
+                });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+                }
 
-        for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse as AfterDataSourceResponseFunction[])) {
-          const resp = await hook({ 
-            response, 
-            adminUser, 
-            query: body,
-            resource: targetResource,
-            extra: {
-              body, query, headers, cookies, requestUrl
-            },
-            adminforth: this.adminforth,
-           });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+              }
+              const { limit, offset, filters, sort } = body;
+              const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
+                resource: targetResource,
+                limit,
+                offset,
+                filters: filters || [],
+                sort: sort || [],
+              });
+              const items = dbDataItems.data.map((item) => {
+                const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
+                const labler = targetResource.recordLabel;
+                return {
+                  value: pk,
+                  label: labler(item),
+                  _item: item, // user might need it in hook to form new label
+                }
+              });
+              const response = {
+                items
+              };
 
-          if (resp.error) {
-            return { error: resp.error };
-          }
-        }
+              for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse as AfterDataSourceResponseFunction[])) {
+                const resp = await hook({
+                  response,
+                  adminUser,
+                  query: body,
+                  resource: targetResource,
+                  extra: {
+                    body, query, headers, cookies, requestUrl
+                  },
+                  adminforth: this.adminforth,
+                });
+                if (!resp || (!resp.ok && !resp.error)) {
+                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+                }
 
-        // remove _item from response (might expose sensitive data like backendOnly fields)
-        response.items.forEach((item) => {
-          delete item._item;
-        });
-       
-        return response;
+                if (resp.error) {
+                  return { error: resp.error };
+                }
+              }
+
+              // remove _item from response (might expose sensitive data like backendOnly fields)
+              response.items.forEach((item) => {
+                delete item._item;
+              });
+
+              resolve(response);
+            });
+          })
+        )).reduce((acc: any, response: any) => {
+          return [...acc, ...response.items];
+        }, []);
+
+        return { items: responses };
       },
     });
 
@@ -896,6 +983,59 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
+            for (const column of resource.columns) {
+              const fieldName = column.name;
+              if (fieldName in record) {
+                if (!column.showIn?.create || column.backendOnly) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation`, ok: false };
+                }
+              }
+            }
+          
+            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
+            for (const column of resource.columns) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
+                const targetResources = {};
+                const targetConnectors = {};
+                const targetResourcePkFields = {};
+                column.foreignResource.polymorphicResources.forEach((pr) => {
+                  if (pr.resourceId === null) {
+                    return;
+                  }
+                  const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                  if (!targetResource) {
+                    return;
+                  }
+                  targetResources[pr.whenValue] = targetResource;
+                  targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
+                  targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
+                });
+
+                const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
+                  targetConnectors[polymorphicOnValue].getData({
+                    resource: targetResources[polymorphicOnValue],
+                    limit: 1,
+                    offset: 0,
+                    filters: [
+                      {
+                        field: targetResourcePkFields[polymorphicOnValue],
+                        operator: AdminForthFilterOperators.EQ,
+                        value: record[column.name],
+                      }
+                    ],
+                    sort: [],
+                  })
+                ))).reduce((acc: any, td: any, tdi) => ({
+                  ...acc,
+                  [Object.keys(targetResources)[tdi]]: td.data,
+                }), {});
+                record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
+              }
+            }
+
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
               return { error: response.error, ok: false };
@@ -939,11 +1079,72 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: allowedError };
             }
 
+            for (const column of resource.columns) {
+              const fieldName = column.name;
+              if (fieldName in record) {
+                if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+                }
+              }
+            }
+
+            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
+            for (const column of resource.columns) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
+                let newPolymorphicOnValue = null;
+                if (record[column.name]) {
+                  const targetResources = {};
+                  const targetConnectors = {};
+                  const targetResourcePkFields = {};
+                  column.foreignResource.polymorphicResources.forEach((pr) => {
+                    if (pr.resourceId === null) {
+                      return;
+                    }
+                    const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
+                    if (!targetResource) {
+                      return;
+                    }
+                    targetResources[pr.whenValue] = targetResource;
+                    targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
+                    targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
+                  });
+
+                  const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
+                    targetConnectors[polymorphicOnValue].getData({
+                      resource: targetResources[polymorphicOnValue],
+                      limit: 1,
+                      offset: 0,
+                      filters: [
+                        {
+                          field: targetResourcePkFields[polymorphicOnValue],
+                          operator: AdminForthFilterOperators.EQ,
+                          value: record[column.name],
+                        }
+                      ],
+                      sort: [],
+                    })
+                  ))).reduce((acc: any, td: any, tdi) => ({
+                    ...acc,
+                    [Object.keys(targetResources)[tdi]]: td.data,
+                  }), {});
+                  newPolymorphicOnValue = Object.keys(targetData).find((tdk) => targetData[tdk].length);
+                }
+                
+                if (oldRecord[column.foreignResource.polymorphicOn] !== newPolymorphicOnValue) {
+                  record[column.foreignResource.polymorphicOn] = newPolymorphicOnValue;
+                }
+              }
+            }
+
             const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
             if (error) {
               return { error };
             }
             return {
+              recordId: record.id,
               ok: true
             }
         }
@@ -1029,6 +1230,52 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     // setup endpoints for all plugins
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);
+    });
+
+    server.endpoint({
+      method: 'POST',
+      path: '/start_custom_action',
+      handler: async ({ body, adminUser, tr }) => {
+        const { resourceId, actionId, recordId } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        const { allowedActions } = await interpretResource(
+          adminUser, 
+          resource, 
+          { requestBody: body },
+          ActionCheckSource.CustomActionRequest,
+          this.adminforth
+        );
+        const action = resource.options.actions.find((act) => act.id == actionId);
+        if (!action) {
+          return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+        }
+        if (action.allowed) {
+          const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+          if (!execAllowed) {
+            return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
+          }
+        }
+
+        if (action.url) {
+          return {
+            actionId,
+            recordId,
+            resourceId,
+            redirectUrl: action.url
+          }
+        }
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
+        
+        return {
+          actionId,
+          recordId,
+          resourceId,
+          ...response
+        }
+      }
     });
   }
 }

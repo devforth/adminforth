@@ -18,15 +18,16 @@
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
-            <div v-if="rows && rows.length" class="flex items-center">
+            <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                    class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
+                    :disabled="!rows || !rows.length"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
           </td>
 
-          <td v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -63,7 +64,9 @@
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
-          :rows="3"
+          :rows="rowHeights.length || 3"
+          :row-heights="rowHeights"
+          :column-widths="columnWidths"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
@@ -80,6 +83,7 @@
 
         <tr @click="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+          ref="rowRefs"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
@@ -170,6 +174,19 @@
                   :record="row"
                 />
               </template>
+
+              <template v-if="resource.options?.actions">
+                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
+                  <button
+                    @click="startCustomAction(action.id, row)"
+                  >
+                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
+                  </button>
+                  <template v-slot:tooltip>
+                    {{ action.name }}
+                  </template>
+                </Tooltip>
+              </template>
             </div>
           </td>
         </tr>
@@ -187,7 +204,7 @@
         <!-- Buttons -->
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page--" :disabled="page <= 1">
+          @click="page--; pageInput = page.toString();" :disabled="page <= 1">
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -199,28 +216,29 @@
         </button>
         <button
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page = 1" :disabled="page <= 1">
+          @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
-        <div 
+        <div
           contenteditable="true" 
           class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
+          @keydown="onPageKeydown($event)"
           @input="page = parseInt($event.target.innerText) || ''"
         >
-          {{ page }}
+          {{ pageInput }}
         </div>
 
         <button
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page = totalPages" :disabled="page >= totalPages">
+          @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
           {{ totalPages }}
 
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
-          @click="page++" :disabled="page >= totalPages">
+          @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
           <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
@@ -269,7 +287,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -277,7 +295,7 @@ import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
-
+import { getIcon } from '@/utils';
 import {
   IconInboxOutline,
 } from '@iconify-prerendered/vue-flowbite';
@@ -296,7 +314,7 @@ const coreStore = useCoreStore();
 const { t } = useI18n();
 const props = defineProps<{
   page: number,
-  resource: AdminForthResourceCommon,
+  resource: AdminForthResourceCommon | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
@@ -316,6 +334,7 @@ const emits = defineEmits([
 ]);
 
 const checkboxesInternal: Ref<any[]> = ref([]);
+const pageInput = ref('1');
 const page = ref(1);
 const sort = ref([]);
 
@@ -326,6 +345,14 @@ const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.tot
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
 });
+async function onPageKeydown(event) {
+  // page input should accept only numbers, arrow keys and backspace
+  if (['Enter', 'Space'].includes(event.code) ||
+    (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
+    && isNaN(String.fromCharCode(event.keyCode)))) {
+    event.preventDefault();
+  }
+}
 
 watch(() => sort.value, (newSort) => {
   emits('update:sort', newSort);
@@ -344,7 +371,20 @@ watch(() => props.sort, (newSort) => {
 });
 
 watch(() => props.page, (newPage) => {
+  // page.value and newPage will not be equal only on page load
+  // this check prevents cursor jumping on manual input
+  if (page.value !== newPage) pageInput.value = newPage.toString();
   page.value = newPage;
+});
+
+const rowRefs = useTemplateRef('rowRefs');
+const headerRefs = useTemplateRef('headerRefs');
+const rowHeights = ref([]);
+const columnWidths = ref([]);
+watch(() => props.rows, (newRows) => {
+  // rows are set to null when new records are loading
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
 });
 
 function addToCheckedValues(id) {
@@ -376,7 +416,7 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows) return false;
+  if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
@@ -483,4 +523,62 @@ async function deleteRecord(row) {
     };
   }
 }
+
+const actionLoadingStates = ref({});
+
+async function startCustomAction(actionId, row) {
+  actionLoadingStates.value[actionId] = true;
+
+  const data = await callAdminForthApi({
+    path: '/start_custom_action',
+    method: 'POST',
+    body: {
+      resourceId: props.resource.resourceId,
+      actionId: actionId,
+      recordId: row._primaryKeyValue
+    }
+  });
+  
+  actionLoadingStates.value[actionId] = false;
+  
+  if (data?.redirectUrl) {
+    // Check if the URL should open in a new tab
+    if (data.redirectUrl.includes('target=_blank')) {
+      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+    } else {
+      // Navigate within the app
+      if (data.redirectUrl.startsWith('http')) {
+        window.location.href = data.redirectUrl;
+      } else {
+        router.push(data.redirectUrl);
+      }
+    }
+    return;
+  }
+  if (data?.ok) {
+    emits('update:records', true);
+
+    if (data.successMessage) {
+      adminforth.alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+  }
+  
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
+}
+
+
 </script>
+
+<style lang="scss" scoped>
+input[type="checkbox"][disabled] {
+  @apply opacity-50;
+}
+input[type="checkbox"]:not([disabled]) {
+  @apply cursor-pointer;
+}
+</style>

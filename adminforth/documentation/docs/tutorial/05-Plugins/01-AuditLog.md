@@ -54,54 +54,59 @@ Also, it excludes itself to avoid infinte logging loop.
 Add this code in `auditLogs.ts`:
 
 ```ts title='./resources/auditLogs.ts'
-  export default {
-    dataSource: 'maindb', 
-    table: 'audit_logs',
-    columns: [
-      { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(),
-        showIn: {
-          list: false,
-          edit: false,
-          create: false,
-          filter: false,
-        } },
-      { name: 'created_at', required: false },
-      { name: 'resource_id', required: false },
-      { name: 'user_id', required: false, 
-          foreignResource: {
-          resourceId: 'adminuser',
-        } },
-      { name: 'action', required: false },
-      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
-          list: false,
-          edit: false,
-          create: false,
-          filter: false,
-        } },
-      { name: 'record_id', required: false },
-    ],
-    options: {
-      allowedActions: {
+
+import AuditLogPlugin from "@adminforth/audit-log/index.js";
+import { AdminForthDataTypes } from "adminforth";
+import { randomUUID } from "crypto";
+
+export default {
+  dataSource: 'maindb', 
+  table: 'audit_logs',
+  columns: [
+    { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => randomUUID(),
+      showIn: {
+        list: false,
         edit: false,
-        delete: false,
-        create: false
+        create: false,
+        filter: false,
+      } },
+    { name: 'created_at', required: false },
+    { name: 'resource_id', required: false },
+    { name: 'user_id', required: false, 
+        foreignResource: {
+        resourceId: 'adminuser',
+      } },
+    { name: 'action', required: false },
+    { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
+        list: false,
+        edit: false,
+        create: false,
+        filter: false,
+      } },
+    { name: 'record_id', required: false },
+  ],
+  options: {
+    allowedActions: {
+      edit: false,
+      delete: false,
+      create: false
+    }
+  },
+  plugins: [
+    new AuditLogPlugin({
+      // if you want to exclude some resources from logging
+      //excludeResourceIds: ['adminuser'],
+      resourceColumns: {
+        resourceIdColumnName: 'resource_id',
+        resourceActionColumnName: 'action',
+        resourceDataColumnName: 'diff',
+        resourceUserIdColumnName: 'user_id',
+        resourceRecordIdColumnName: 'record_id',
+        resourceCreatedColumnName: 'created_at'
       }
-    },
-    plugins: [
-      new AuditLogPlugin({
-        // if you want to exclude some resources from logging
-        //excludeResourceIds: ['adminuser'],
-        resourceColumns: {
-          resourceIdColumnName: 'resource_id',
-          resourceActionColumnName: 'action',
-          resourceDataColumnName: 'diff',
-          resourceUserIdColumnName: 'user_id',
-          resourceRecordIdColumnName: 'record_id',
-          resourceCreatedColumnName: 'created_at'
-        }
-      }),
-    ],
-  }
+    }),
+  ],
+}
 ```
 
 Then you need to import `./resources/auditLogs`:

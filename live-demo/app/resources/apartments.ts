@@ -1,11 +1,9 @@
-import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import { AdminForthDataTypes } from 'adminforth';
 import importExport from '@adminforth/import-export';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import UploadPlugin from '@adminforth/upload';
-
-
-
+import { randomUUID } from 'crypto';
 
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
@@ -37,9 +35,9 @@ export default {
     { 
       name: 'id', 
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
-      showIn: ['filter', 'show'], // show column in filter and in show page
+      showIn: {all: false, show: true, filter: true}, // show column in filter and in show page
       primaryKey: true,
-      fillOnCreate: ({initialRecord, adminUser}) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
+      fillOnCreate: ({initialRecord, adminUser}) => randomUUID(),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
     },
     { 
       name: 'title',
@@ -90,7 +88,12 @@ export default {
     }, 
     {
       name: 'apartment_image',
-      showIn: [], // You can set to ['list', 'show'] if you wish to show path column in list and show views
+      showIn: {
+        list: false, 
+        show: true, 
+        edit: true, 
+        create: true
+      }, // You can set to ['list', 'show'] if you wish to show path column in list and show views
     },
     {
       name: 'created_at',
@@ -170,8 +173,23 @@ export default {
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 5MB
       s3Path: ({originalFilename, originalExtension, contentType}) => 
-            `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+            `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
       // You can use next to change preview URLs (if it is image) in list and show views
+      generation: {
+        provider: "openai-dall-e",
+        countToGenerate: 2,
+        openAiOptions: {
+          model: "dall-e-3",
+          size: "1792x1024",
+          apiKey: process.env.OPENAI_API_KEY as string,
+        },
+        fieldsForContext: ["title"],
+        rateLimit: {
+          limit: "2/1m",
+          errorMessage:
+            "For demo purposes, you can generate only 2 images per minute",
+        },
+      },
       preview: {
         showInList: true,
         previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,

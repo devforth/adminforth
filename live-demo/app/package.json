@@ -7,7 +7,9 @@
     "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
-    "startLive": "prisma migrate deploy && tsx index.ts"
+    "startLive": "prisma migrate deploy && tsx index.ts",
+    "migrate": "prisma migrate deploy",
+    "makemigration": "prisma migrate dev"
   },
   "keywords": [],
   "license": "ISC",
@@ -23,9 +25,9 @@
     "@adminforth/import-export": "^1.0.2",
     "@adminforth/rich-editor": "^1.0.16",
     "@adminforth/two-factors-auth": "^1.0.21",
-    "@adminforth/upload": "^1.0.25",
+    "@adminforth/upload": "^1.2.0",
     "@prisma/client": "^6.1.0",
-    "adminforth": "^1.6.4",
+    "adminforth": "^1.11.5-next.14",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },

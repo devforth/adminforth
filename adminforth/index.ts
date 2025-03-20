@@ -210,6 +210,7 @@ class AdminForth implements IAdminForth {
   validateFieldGroups(fieldGroups: {
     groupName: string;
     columns: string[];
+    noTitle?: boolean;
   }[], fieldTypes: {
     [key: string]: AdminForthResourceColumn;
 }): void {
@@ -217,6 +218,7 @@ class AdminForth implements IAdminForth {
     const allColumns = Object.keys(fieldTypes);
   
     fieldGroups.forEach((group) => {
+      group.noTitle = group.noTitle ?? false;
       group.columns.forEach((col) => {
         if (!allColumns.includes(col)) {
           const similar = suggestIfTypo(allColumns, col);
@@ -341,12 +343,6 @@ class AdminForth implements IAdminForth {
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
-      
-      this.validateFieldGroups(res.options.fieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.showFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
-
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
@@ -411,15 +407,6 @@ class AdminForth implements IAdminForth {
     const err = this.validateRecordValues(resource, record);
     if (err) {
       return { error: err };
-    }
-
-    for (const column of resource.columns) {
-      const fieldName = column.name;
-      if (fieldName in record) {
-        if (!column.showIn?.create || column.backendOnly) {
-          return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation` };
-        }
-      }
     }
 
     // execute hook if needed
@@ -496,15 +483,6 @@ class AdminForth implements IAdminForth {
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
       if (column.name in record)
         delete record[column.name];
-    }
-
-    for (const column of resource.columns) {
-      const fieldName = column.name;
-      if (fieldName in record) {
-        if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
-          return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
-        }
-      }
     }
 
     // execute hook if needed

@@ -8,7 +8,12 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
   async setupClient(url): Promise<void> {
     try {
-      this.client = await mysql.createConnection(url);
+      this.client = mysql.createPool({
+        uri: url,
+        waitForConnections: true,
+        connectionLimit: 10,  // Adjust based on your needs
+        queueLimit: 0
+      });
     } catch (e) {
       console.error(`Failed to connect to MySQL: ${e}`);
     }
@@ -33,7 +38,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   };
 
   async discoverFields(resource) {
-    const [results] = await this.client.query("SHOW COLUMNS FROM " + resource.table);
+    const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};
@@ -86,15 +91,15 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       } else if (baseType.startsWith('json')) {
         field.type = AdminForthDataTypes.JSON;
         field._underlineType = 'json';
-      } else if (baseType.startsWith('date')) {
-        field.type = AdminForthDataTypes.DATE;
-        field._underlineType = 'date';
       } else if (baseType.startsWith('time')) {
         field.type = AdminForthDataTypes.TIME;
         field._underlineType = 'time';
       } else if (baseType.startsWith('datetime') || baseType.startsWith('timestamp')) {
         field.type = AdminForthDataTypes.DATETIME;
         field._underlineType = 'timestamp';
+      } else if (baseType.startsWith('date')) {
+        field.type = AdminForthDataTypes.DATE;
+        field._underlineType = 'date';
       } else if (baseType.startsWith('year')) {
         field.type = AdminForthDataTypes.INTEGER;
         field._underlineType = 'year';
@@ -231,8 +236,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (process.env.HEAVY_DEBUG_QUERY) {
       console.log('🪲📜 MySQL Q:', q, 'values:', filterValues);
     }
-    const [results] = await this.client.query(q, filterValues);
-    return +results[0].count;
+    const [results] = await this.client.execute(q, filterValues);
+    return +results[0]["COUNT(*)"];
   }
   
   async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
@@ -243,7 +248,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       if (process.env.HEAVY_DEBUG_QUERY) {
         console.log('🪲📜 MySQL Q:', q);
       }
-      const [results] = await this.client.query(q);
+      const [results] = await this.client.execute(q);
       const { min, max } = results[0];
       result[col.name] = {
         min, max,
@@ -252,7 +257,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return result;
   }
 
-  async createRecordOriginalValues({ resource, record }) {
+  async createRecordOriginalValues({ resource, record }): Promise<string> {
     const tableName = resource.table;
     const columns = Object.keys(record);
     const placeholders = columns.map(() => '?').join(', ');
@@ -262,6 +267,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       console.log('🪲📜 MySQL Q:', q, 'values:', values);
     }
     await this.client.execute(q, values);
+
+    return ''; // todo
   }
 
   async updateRecordOriginalValues({ resource, recordId,  newValues }) {

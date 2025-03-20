@@ -56,18 +56,20 @@ export const findInstance = (fileContent) => {
   return matches[0][2];
 };
 
-function processAllJsFilesInDir(directory) {
+function processJsFilesInDir(directory) {
   const files = fs.readdirSync(directory);
 
   files.forEach((file) => {
     const filePath = path.join(directory, file);
 
     if (fs.statSync(filePath).isDirectory()) {
-      processAllJsFilesInDir(filePath);
+      processJsFilesInDir(filePath);
     } else if (file.endsWith(".js")) {
       try {
-        const fileContent = fs.readFileSync(filePath, "utf-8");
-        const updatedContent = fileContent.replace(
+        let fileContent = fs.readFileSync(filePath, "utf-8");
+
+        // Add .js to relative imports if missing
+        fileContent = fileContent.replace(
           /import (.+?) from ["'](.+?)["'];/g,
           (match, imports, modulePath) => {
             if (
@@ -79,7 +81,19 @@ function processAllJsFilesInDir(directory) {
             return match;
           }
         );
-        fs.writeFileSync(filePath, updatedContent, "utf-8");
+
+        // Remove /index.js from imports only if it's not a relative path
+        fileContent = fileContent.replace(
+          /import (.+?) from ["'](.+?)\/index\.js["'];/g,
+          (match, imports, modulePath) => {
+            if (!modulePath.startsWith(".") && !modulePath.startsWith("..")) {
+              return `import ${imports} from "${modulePath}";`;
+            }
+            return match;
+          }
+        );
+
+        fs.writeFileSync(filePath, fileContent, "utf-8");
       } catch (error) {
         console.error(`Error processing file '${filePath}':`, error);
       }
@@ -101,11 +115,10 @@ export async function getInstance(file, currentDirectory) {
         }
       );
     } catch (error) {
-      console.log(`Error: Could not compile TypeScript file '${file}'`);
+      //console.log(`Error: Could not compile TypeScript file '${file}'`);
     }
-
     const distDir = path.join(currentDirectory, "dist");
-    processAllJsFilesInDir(distDir);
+    processJsFilesInDir(distDir);
 
     filePath = filePath
       .replace(".ts", ".js")

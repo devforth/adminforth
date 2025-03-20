@@ -32,9 +32,7 @@ export default {
   },
   plugins: [
     new I18nPlugin({
-      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],
-
-      // names of the fields in the resource which will store translations
+      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],      // names of the fields in the resource which will store translations
       translationFieldNames: {
         en: 'en_string',
         uk: 'uk_string',
@@ -77,7 +75,7 @@ export default {
       name: "id",
       fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       primaryKey: true,
-      showIn: [],
+      showIn: { all: false }
     },
     {
       name: "en_string",
@@ -87,6 +85,7 @@ export default {
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
+      showIn: {show: true, filter: true, list: true, edit: false, create: false},
     },
     {
       name: "uk_string",
