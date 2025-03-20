@@ -9,6 +9,7 @@ To install the plugin:
 ```bash
 npm install @adminforth/oauth --save
 npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
+npm install @adminforth/facebook-oauth-adapter --save  # for Facebook OAuth
 ```
 
 ## Configuration
