@@ -190,8 +190,12 @@ const setCurrentValue = (key, value, index=null) => {
     } else if (index === currentValues.value[key].length) {
       currentValues.value[key].push(null);
     } else {
-      if (['integer', 'float'].includes(col.isArray.itemType) && (value || value === 0)) {
-        currentValues.value[key][index] = +value;
+      if (['integer', 'float', 'decimal'].includes(col.isArray.itemType)) {
+        if (value || value === 0) {
+          currentValues.value[key][index] = +value;
+        } else {
+          currentValues.value[key][index] = null;
+        }
       } else {
         currentValues.value[key][index] = value;
       }
@@ -200,8 +204,12 @@ const setCurrentValue = (key, value, index=null) => {
       }
     }
   } else {
-    if (['integer', 'float'].includes(col.type) && (value || value === 0)) {
-      currentValues.value[key] = +value;
+    if (['integer', 'float', 'decimal'].includes(col.type)) {
+      if (value || value === 0) {
+        currentValues.value[key] = +value;
+      } else {
+        currentValues.value[key] = null;
+      }
     } else {
       currentValues.value[key] = value;
     }
@@ -237,7 +245,12 @@ onMounted(() => {
           currentValues.value[column.name] = [];
         } else {
           // else copy array to prevent mutation
-          currentValues.value[column.name] = [...currentValues.value[column.name]];
+          if (Array.isArray(currentValues.value[column.name])) {
+            currentValues.value[column.name] = [...currentValues.value[column.name]];
+          } else {
+            // fallback for old data
+            currentValues.value[column.name] = [`${currentValues.value[column.name]}`];
+          }
         }
       } else if (currentValues.value[column.name]) {
         currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);

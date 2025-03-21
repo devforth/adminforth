@@ -107,7 +107,11 @@ const editableRecord = computed(() => {
   }
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
-      newRecord[column.name] = newRecord[column.name]?.pk
+      if (column.isArray?.enabled) {
+        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+      } else {
+        newRecord[column.name] = newRecord[column.name]?.pk;
+      }
     }
   });
   return newRecord;
@@ -141,7 +145,14 @@ async function saveRecord() {
   saving.value = true;
   const updates = {};
   for (const key in record.value) {
-    if (record.value[key] !== coreStore.record[key]) {
+    let columnIsUpdated = record.value[key] !== coreStore.record[key];
+
+    const column = coreStore.resource.columns.find((c) => c.name === key);
+    if (column?.foreignResource) {
+      columnIsUpdated = record.value[key] !== coreStore.record[key]?.pk;
+    }
+
+    if (columnIsUpdated) {
       updates[key] = record.value[key];
     }
   }
@@ -165,7 +176,7 @@ async function saveRecord() {
     });
   }
   saving.value = false;
-  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: coreStore.record[coreStore.primaryKey] } });
+  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
 }
 
 </script>

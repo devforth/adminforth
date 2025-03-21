@@ -18,15 +18,16 @@
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
-            <div v-if="rows && rows.length" class="flex items-center">
+            <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                    class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
+                    :disabled="!rows || !rows.length"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
           </td>
 
-          <td v-for="c in columnsListed" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -65,6 +66,7 @@
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
           :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
+          :column-widths="columnWidths"
         />
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
@@ -171,6 +173,19 @@
                   :adminUser="coreStore.adminUser"
                   :record="row"
                 />
+              </template>
+
+              <template v-if="resource.options?.actions">
+                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
+                  <button
+                    @click="startCustomAction(action.id, row)"
+                  >
+                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
+                  </button>
+                  <template v-slot:tooltip>
+                    {{ action.name }}
+                  </template>
+                </Tooltip>
               </template>
             </div>
           </td>
@@ -280,7 +295,7 @@ import { getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
-
+import { getIcon } from '@/utils';
 import {
   IconInboxOutline,
 } from '@iconify-prerendered/vue-flowbite';
@@ -299,7 +314,7 @@ const coreStore = useCoreStore();
 const { t } = useI18n();
 const props = defineProps<{
   page: number,
-  resource: AdminForthResourceCommon,
+  resource: AdminForthResourceCommon | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
@@ -363,10 +378,13 @@ watch(() => props.page, (newPage) => {
 });
 
 const rowRefs = useTemplateRef('rowRefs');
+const headerRefs = useTemplateRef('headerRefs');
 const rowHeights = ref([]);
+const columnWidths = ref([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
-  rowHeights.value = newRows ? [] : rowRefs.value.map((el) => el.offsetHeight);
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
 });
 
 function addToCheckedValues(id) {
@@ -398,7 +416,7 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows) return false;
+  if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
@@ -505,4 +523,62 @@ async function deleteRecord(row) {
     };
   }
 }
+
+const actionLoadingStates = ref({});
+
+async function startCustomAction(actionId, row) {
+  actionLoadingStates.value[actionId] = true;
+
+  const data = await callAdminForthApi({
+    path: '/start_custom_action',
+    method: 'POST',
+    body: {
+      resourceId: props.resource.resourceId,
+      actionId: actionId,
+      recordId: row._primaryKeyValue
+    }
+  });
+  
+  actionLoadingStates.value[actionId] = false;
+  
+  if (data?.redirectUrl) {
+    // Check if the URL should open in a new tab
+    if (data.redirectUrl.includes('target=_blank')) {
+      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+    } else {
+      // Navigate within the app
+      if (data.redirectUrl.startsWith('http')) {
+        window.location.href = data.redirectUrl;
+      } else {
+        router.push(data.redirectUrl);
+      }
+    }
+    return;
+  }
+  if (data?.ok) {
+    emits('update:records', true);
+
+    if (data.successMessage) {
+      adminforth.alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+  }
+  
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
+}
+
+
 </script>
+
+<style lang="scss" scoped>
+input[type="checkbox"][disabled] {
+  @apply opacity-50;
+}
+input[type="checkbox"]:not([disabled]) {
+  @apply cursor-pointer;
+}
+</style>

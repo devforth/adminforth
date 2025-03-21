@@ -16,6 +16,8 @@ import OAuthPlugin  from "../../plugins/adminforth-oauth";
 import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oauth-adapter";
 import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
 
+import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
+
 export default {
   dataSource: "maindb",
   table: "users",
@@ -98,7 +100,11 @@ export default {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           redirectUri: 'http://localhost:3000/oauth/callback',
-        })
+        }),
+        new AdminForthAdapterFacebookOauth2({
+          clientID: process.env.FACEBOOK_CLIENT_ID,
+          clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        }),
       ],
       emailField: 'email',
       emailConfirmedField: 'email_confirmed'

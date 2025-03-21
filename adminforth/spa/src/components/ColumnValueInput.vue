@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex" :class="{ 'opacity-50' : column.editReadonly && source === 'edit' }">
     <component
       v-if="column?.components?.[props.source]?.file"
       :is="getCustomComponent(column.components[props.source])"
@@ -18,6 +18,7 @@
       ref="input"
       class="w-full"
       :options="columnOptions[column.name] || []"
+      teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
@@ -28,6 +29,7 @@
       ref="input"
       class="w-full"
       :options="column.enum"
+      teleportToBody
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -37,6 +39,7 @@
       ref="input"
       class="w-full"
       :options="getBooleanOptions(column)"
+      teleportToBody
       :modelValue="value"
       :readonly="column.editReadonly && source === 'edit'"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -48,6 +51,8 @@
       step="1"
       class="w-40"
       placeholder="0"
+      :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
+      :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
       :readonly="column.editReadonly && source === 'edit'"
@@ -70,6 +75,8 @@
       step="0.1"
       class="w-40"
       placeholder="0.0"
+      :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
+      :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
       :modelValue="value"

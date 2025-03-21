@@ -1,0 +1,21 @@
+{
+  "name": "{{pluginName}}",
+  "version": "1.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "latest",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "adminforth": "latest"
+  }
+}

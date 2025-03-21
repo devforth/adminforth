@@ -210,6 +210,7 @@ class AdminForth implements IAdminForth {
   validateFieldGroups(fieldGroups: {
     groupName: string;
     columns: string[];
+    noTitle?: boolean;
   }[], fieldTypes: {
     [key: string]: AdminForthResourceColumn;
 }): void {
@@ -217,6 +218,7 @@ class AdminForth implements IAdminForth {
     const allColumns = Object.keys(fieldTypes);
   
     fieldGroups.forEach((group) => {
+      group.noTitle = group.noTitle ?? false;
       group.columns.forEach((col) => {
         if (!allColumns.includes(col)) {
           const similar = suggestIfTypo(allColumns, col);
@@ -341,12 +343,6 @@ class AdminForth implements IAdminForth {
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
       });
-      
-      this.validateFieldGroups(res.options.fieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.showFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.createFieldGroups, fieldTypes);
-      this.validateFieldGroups(res.options.editFieldGroups, fieldTypes);
-
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {

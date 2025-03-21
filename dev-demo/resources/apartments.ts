@@ -190,6 +190,8 @@ export default {
       showIn: {create: true, edit: true, filter: true, show: true},
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
+      editReadonly: true, // you can set field to be readonly on edit page
+      
     },
     {
       name: "square_meter",
@@ -319,36 +321,36 @@ export default {
     //     debounceTime: 250,
     //   }
     // }),
-    // new RichEditorPlugin({
-    //   htmlFieldName: "description",
-    //   completion: {
-    //     adapter: new CompletionAdapterOpenAIChatGPT({
-    //       openAiApiKey: process.env.OPENAI_API_KEY as string,
-    //     }),
-    //     expert: {
-    //       debounceTime: 250,
-    //     },
-    //   },
-    //   // requires to have table 'description_images' with upload plugin installed on attachment field
+    new RichEditorPlugin({
+      htmlFieldName: "description",
+      completion: {
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+        }),
+        expert: {
+          debounceTime: 250,
+        },
+      },
+      // requires to have table 'description_images' with upload plugin installed on attachment field
 
-    //   ...(process.env.AWS_ACCESS_KEY_ID
-    //     ? {
-    //         attachments: {
-    //           attachmentResource: "description_images",
-    //           attachmentFieldName: "image_path",
-    //           attachmentRecordIdFieldName: "record_id",
-    //           attachmentResourceIdFieldName: "resource_id",
-    //         },
-    //       }
-    //     : {}),
-    // }),
+      ...(process.env.AWS_ACCESS_KEY_ID
+        ? {
+            attachments: {
+              attachmentResource: "description_images",
+              attachmentFieldName: "image_path",
+              attachmentRecordIdFieldName: "record_id",
+              attachmentResourceIdFieldName: "resource_id",
+            },
+          }
+        : {}),
+    }),
   ],
 
   options: {
     listRowsAutoRefreshSeconds: 100,
     pageInjections: {
       list: {
-        customActionIcons: "@@/IdShow.vue",
+        // customActionIcons: "@@/IdShow.vue",
         // bottom: {
         //   file: '@@/TopLine.vue',
         //   meta: {

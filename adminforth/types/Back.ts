@@ -206,9 +206,9 @@ export interface IAdminForthDataSourceConnector {
 
 
   /**
-   * Used to create record in database.
+   * Used to create record in database. Should return value of primary key column of created record.
    */
-  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string>;
 
   /**
    * Update record in database. newValues might have not all fields in record, but only changed ones.
@@ -720,6 +720,33 @@ interface AdminForthInputConfigCustomization {
   }
 }
 
+export interface AdminForthActionInput {
+  name: string;
+  showIn?: {
+      list?: boolean,
+      showButton?: boolean,
+      showThreeDotsMenu?: boolean,
+  };
+  allowed?: (params: {
+    adminUser: AdminUser;
+    standardAllowedActions: AllowedActions;
+  }) => boolean;
+  url?: string;
+  action?: (params: {
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordId: string;
+      adminUser: AdminUser;
+      extra?: HttpExtra;
+      tr: Function;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      message?: string;
+  }>;
+  icon?: string;
+  id?: string;
+}
 
 export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
 
@@ -1141,10 +1168,38 @@ export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['opt
    * 
    */
   allowedActions?: AllowedActionsInput,
+
+  /**
+   * Array of actions which will be displayed in the resource.
+   * 
+   * Example:
+   * 
+   * ```ts
+   * actions: [
+   *  {
+   *    name: 'Auto submit',
+   *    allowed: ({ adminUser, standardAllowedActions }) => {
+   *      return adminUser.dbUser.role === 'superadmin';
+   *    },
+   *    action: ({ adminUser, resource, recordId, adminforth, extra, tr }) => {
+   *      console.log("auto submit", recordId, adminUser);
+   *      return { ok: true, successMessage: "Auto submitted" };
+   *    },
+   *    showIn: {
+   *      list: true,
+   *      showButton: true,
+   *      showThreeDotsMenu: true,
+   *    },
+   *  },
+   * ]
+   * ```
+   */
+  actions?: Array<AdminForthActionInput>,
 };
 
 export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActions'> {
   allowedActions: AllowedActions,
+  actions?: Array<AdminForthActionInput>,
 }
 
 /**
