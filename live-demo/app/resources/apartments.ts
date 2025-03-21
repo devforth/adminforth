@@ -1,4 +1,4 @@
-import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import { AdminForthDataTypes } from 'adminforth';
 import importExport from '@adminforth/import-export';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';

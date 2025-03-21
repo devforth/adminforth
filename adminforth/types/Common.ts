@@ -50,6 +50,7 @@ export enum ActionCheckSource {
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
   BulkActionRequest = 'bulkActionRequest',
+  CustomActionRequest = 'customActionRequest',
 }
 
 export enum AllowedActionsEnum {
@@ -357,18 +358,22 @@ export interface AdminForthResourceInputCommon {
       fieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       createFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       editFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
       showFieldGroups?: {
         groupName: string;
         columns: string[];
+        noTitle?: boolean;
       }[];
 
       /** 
@@ -540,11 +545,21 @@ export type ShowInResolved = {
   [key in AdminForthResourcePages]: boolean
 }
 
-
-export interface AdminForthForeignResourceCommon {
+export interface AdminForthPolymorphicForeignResource {
   resourceId: string,
+  whenValue: string,
+}
+export interface AdminForthForeignResourceCommon {
+  resourceId?: string,
+  polymorphicResources?: Array<AdminForthPolymorphicForeignResource>,
+  polymorphicOn?: string,
   unsetLabel?: string,
 }
+
+export type FillOnCreateFunction = (params: {
+  initialRecord: any,
+  adminUser: AdminUser,
+}) => any;
 
 /**
  * Column describes one field in the table or collection in database.
@@ -676,7 +691,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
-  fillOnCreate?: Function,
+  fillOnCreate?: FillOnCreateFunction,
 
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.

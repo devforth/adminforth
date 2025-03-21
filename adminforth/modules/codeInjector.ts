@@ -363,6 +363,14 @@ class CodeInjector implements ICodeInjector {
           }
         });
       }
+
+      if (resource.options?.actions) {
+        resource.options.actions.forEach((action) => {
+          if (action.icon) {
+            icons.push(action.icon);
+          }
+        });
+      }
     });
 
     const uniqueIcons = Array.from(new Set(icons));

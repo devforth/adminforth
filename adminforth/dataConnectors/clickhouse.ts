@@ -7,8 +7,8 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
   
-    dbName: string;
-    url: string;
+  dbName: string;
+  url: string;
   
   async setupClient(url): Promise<void> {
     this.dbName = new URL(url).pathname.replace('/', '');
@@ -217,7 +217,13 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         sort: { field: string, direction: AdminForthSortDirections }[], 
         filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
     }): Promise<any[]> {
-      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+      const columns = resource.dataSourceColumns.map((col) => {
+        // for decimal cast to string
+        if (col.type == AdminForthDataTypes.DECIMAL) {
+          return `toString(${col.name}) as ${col.name}`
+        }
+        return col.name;
+      }).join(', ');
       const tableName = resource.table;
 
       const where = this.whereClause(resource, filters);
@@ -288,7 +294,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }))
       return result;
     }
-    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }) {
+    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string> {
       const tableName = resource.table;
       const columns = Object.keys(record);
       await this.client.insert({
@@ -297,6 +303,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         columns: columns,
         values: [Object.values(record)],
       });
+      return ''; // todo
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {

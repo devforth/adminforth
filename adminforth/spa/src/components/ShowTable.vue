@@ -1,10 +1,10 @@
 <template>
     <div class="overflow-x-auto rounded-default shadow-resourseFormShadow dark:shadow-darkResourseFormShadow">
-        <div v-if="groupName" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
+        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
-        <thead class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group">
+        <thead v-if="!allColumnsHaveCustomComponent"  class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group">
           <tr>
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell">
               {{ $t('Field') }}
@@ -59,23 +59,33 @@
   import ValueRenderer from '@/components/ValueRenderer.vue';
   import { getCustomComponent } from '@/utils';
   import { useCoreStore } from '@/stores/core';
-  defineProps<{ 
+  import { computed } from 'vue';
+  const props = defineProps<{ 
     columns: Array<{
         name: string;
         label: string;
         components?: {
           show?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
           showRow?: {
-              meta: Record<string, any>;
+            file: string;
+            meta: Record<string, any>;
           };
         };
     }>;
+    source: string;
     groupName?: string | null;
+    noTitle?: boolean;
     resource: Record<string, any>;
     record: Record<string, any>;
   }>();
 
   const coreStore = useCoreStore();
+  const allColumnsHaveCustomComponent = computed(() => {
+    return props.columns.every(column => {
+      return column.components?.showRow;
+    });
+  });
   </script>
