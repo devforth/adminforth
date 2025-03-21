@@ -6,7 +6,7 @@ services:
       ports:
         - '8124:8123'
         - '9001:9000'
-      image: clickhouse/clickhouse-server
+      image: clickhouse/clickhouse-server:24.12
       restart: always
       environment:
         CLICKHOUSE_USER: demo

@@ -1,6 +1,6 @@
 # OAuth Authentication
 
-The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, or other OAuth2 provider accounts.
+The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, Facebook or other OAuth2 provider accounts.
 
 ## Installation
 
@@ -9,16 +9,16 @@ To install the plugin:
 ```bash
 npm install @adminforth/oauth --save
 npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
-npm install @adminforth/facebook-oauth-adapter --save  # for Facebook OAuth
 ```
 
 ## Configuration
 
-### 1. OAuth Provider Setup
+This section provides a step-by-step guide to configure the OAuth plugin for Google authentication. See [OAuth2 Providers](#oauth2-providers) for other providers.
+
+### 1. OAuth Provider Setup (Google Example)
 
 You need to get the client ID and client secret from your OAuth2 provider.
 
-#### For Google:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
 2. Create a new project or select an existing one
 3. Go to `APIs & Services` → `Credentials`
@@ -33,19 +33,6 @@ GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
 ```
 
-#### For Facebook:
-1. Go to the [Facebook Developers](https://developers.facebook.com/)
-2. Go to `My apps`
-3. Create a new project or select an existing one (choose Authenticate and request data from users with Facebook Login)
-4. Go to `Use Cases` - `Authenticate and request data from users with Facebook Login` -> `Customize` and add email permissions 
-5. Go to `App Settings` -> `Basic`
-6. Get App ID and App secret
-7. Add the credentials to your `.env` file:
-
-```bash
-FACEBOOK_OAUTH_CLIENT_ID=your_facebook_client_id
-FACEBOOK_OAUTH_CLIENT_SECRET=your_facebook_client_secret
-```
 
 ### 2. Plugin Configuration
 
@@ -143,5 +130,55 @@ new OAuthPlugin({
 ```
 
 
+## OAuth2 Providers
 
 
+### Facebook Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/facebook-oauth-adapter --save
+```
+
+
+1. Go to the [Facebook Developers](https://developers.facebook.com/)
+2. Go to `My apps`
+3. Create a new project or select an existing one (choose Authenticate and request data from users with Facebook Login)
+4. Go to `Use Cases` - `Authenticate and request data from users with Facebook Login` -> `Customize` and add email permissions 
+5. Go to `App Settings` -> `Basic`
+6. Get App ID and App secret
+7. Add the credentials to your `.env` file:
+
+```bash
+FACEBOOK_OAUTH_CLIENT_ID=your_facebook_client_id
+FACEBOOK_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterFacebookOauth2 from '@adminforth/facebook-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterFacebookOauth2({
+        clientID: process.env.FACEBOOK_OAUTH_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+
+### Need custom provider?
+
+Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 
+
+This is really easy, you have to change several then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
+
+Then just publish it to npm and install it in your project.
