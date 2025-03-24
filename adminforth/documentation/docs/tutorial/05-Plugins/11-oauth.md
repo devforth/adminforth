@@ -175,6 +175,49 @@ plugins: [
 ```
 
 
+### Microsoft Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/microsoft-oauth-adapter --save
+```
+
+
+1. In the Microsoft [Azure Portal](https://portal.azure.com/), search for and click [App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade), then `New registration`.
+2. Give your application a name. This name will be visible to your users.
+3. Set the audience for the app to `Accounts in my organizational directory and personal Microsoft accounts`. This allows your user to log in using any Microsoft account.
+5. Set the Redirect URI platform to Web and enter your project's redirect URI.
+6. Go to your app and search `API permissions`, click `Add a permission`, select `Microsoft Graph`, select `Delegated permissions`, enable permissions: `offline_access`, `openid`, `profile`, `User.Read`, click `Add permissions`.
+7. Serch `Certificates & secrets`, click `New client secret` and create client secret.
+6. Get Application ID and Client Secret.
+7. Add the credentials to your `.env` file:
+
+```bash
+MICROSOFT_OAUTH_CLIENT_ID=your_application_id
+MICROSOFT_OAUTH_CLIENT_SECRET=your_microsoft_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterMicrosoftOauth2 from '@adminforth/microsoft-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterMicrosoftOauth2({
+        clientID: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        useOpenID: true,
+      }),
+    ],
+  }),
+]
+```
+
 ### Need custom provider?
 
 Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 
