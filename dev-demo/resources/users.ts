@@ -17,7 +17,9 @@ import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oaut
 import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
 
 import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
+import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
+
 export default {
   dataSource: "maindb",
   table: "users",
@@ -102,6 +104,12 @@ export default {
         new AdminForthAdapterFacebookOauth2({
           clientID: process.env.FACEBOOK_CLIENT_ID,
           clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        }),
+        new AdminForthAdapterKeycloakOauth2({
+          clientID: process.env.KEYCLOAK_CLIENT_ID,
+          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+          keycloakUrl: process.env.KEYCLOAK_URL,
+          realm: process.env.KEYCLOAK_REALM,
         }),
         new AdminForthAdapterMicrosoftOauth2({
           clientID: process.env.MICROSOFT_CLIENT_ID,

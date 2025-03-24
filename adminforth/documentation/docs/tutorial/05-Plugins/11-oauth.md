@@ -174,6 +174,116 @@ plugins: [
 ]
 ```
 
+### GitHub Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/github-oauth-adapter --save
+```
+
+
+1. Go to the [GitHub Apps](https://github.com/settings/apps)
+2. Create a new app or select an existing one
+3. Go to the `Permisiions & events` -> `Account permissions` -> `Email addresses` and change to `Read-only`
+3. Go to the `General` and click to `Generate a new client secret` button and copy secret
+4. Add the credentials to your `.env` file:
+
+```bash
+GITHUB_OAUTH_CLIENT_ID=your_facebook_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterGithubOauth2 from '@adminforth/github-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterGithubOauth2({
+        clientID: process.env.GITHUB_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### Kaycloack Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/keycloak-oauth-adapter --save
+```
+
+1. Update your .env file with the following Keycloak configuration:
+
+```bash
+KEYCLOAK_CLIENT_ID=adminforth-client
+KEYCLOAK_CLIENT_SECRET=1234567890
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=AdminforthRealm
+```
+
+2. Start Keycloak with Docker:
+
+```bash
+docker compose -p af-dev-demo -f inventory.yml up -d --build --remove-orphans --wait
+```
+
+3. Create a new user from the back office with the same email as the test user (by default:   ```testuser@example.com```)
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterKeycloakOauth2 from '@adminforth/keycloak-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterKeycloakOauth2({
+          clientID: process.env.KEYCLOAK_CLIENT_ID,
+          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+          keycloakUrl: process.env.KEYCLOAK_URL,
+          realm: process.env.KEYCLOAK_REALM,
+          useOpenID: true,
+      }),
+    ],
+  }),
+]
+```
+
+If you want to create a new user:
+
+1. Access Keycloak Admin Panel
+Open a browser and go to: http://localhost:8080
+Log in with the default Keycloak admin credentials:
+Username: admin
+Password: admin
+
+2. Navigate to the "Users" Section
+Click on "Users" in the left-hand menu.
+Click "Add user" in the top-right corner.
+
+3. Enter User Information
+Username: username
+Email: username@example.com
+Email Verified: ✅ (Check this box)
+Enabled: ✅ (Check this box)
+Click "Save"
+
+4. Set a Password for the User
+Go to the "Credentials" tab.
+Enter a password (e.g., testpassword).
+Uncheck "Temporary" (so the user doesn't have to reset the password).
+Click "Set Password".
 
 ### Microsoft Adapter
 
@@ -225,3 +335,10 @@ Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminfo
 This is really easy, you have to change several then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
 
 Then just publish it to npm and install it in your project.
+
+
+Links to adapters:
+[Google](https://github.com/devforth/adminforth-google-oauth-adapter)
+[GitHub](https://github.com/devforth/adminforth-github-oauth-adapter)
+[Facebook](https://github.com/devforth/adminforth-facebook-oauth-adapter)
+[Keycloak](https://github.com/devforth/adminforth-keycloak-oauth-adapter)
