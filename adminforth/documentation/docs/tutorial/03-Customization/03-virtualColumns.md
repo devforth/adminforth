@@ -7,8 +7,6 @@ Sometimes you need to visualize custom columns which do not exist in database.
 For doing this you can use `virtual` columns.
 
 ```ts title='./resources/apartments.ts'
-//diff-add
-import { AdminForthDataTypes, AdminForthResourcePages } from 'adminforth';
 
 ...
 resourceId: 'aparts',
@@ -71,11 +69,11 @@ columns: [
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
    }
 </script>
- ```
+```
 
- To test component open some apartment for edit and change `description` field to `US New York`.
- Here is how it looks:
- ![alt text](<Virtual columns.png>)
+Here is how it looks:
+
+![alt text](<Virtual columns.png>)
 
 
 ## Virtual columns for editing.
@@ -108,32 +106,35 @@ columns: [
 ]
  ```
 
- Now to handle virtual `password` field we use hooks:
+Now to handle virtual `password` field we use hooks:
  
 
- ```ts title="./index.ts"
- hooks: {
+```ts title="./index.ts"
+  hooks: {
     create: {
-      beforeSave: async ({ record, adminUser, resource }) => {
-        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-        return { ok:true, error: false };
+      beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        record.passwordHash = await AdminForth.Utils.generatePasswordHash(record.password);
+        return { ok: true };
       }
     },
     edit: {
-      beforeSave: async ({ record, adminUser, resource}) => {
-        if (record.password) {
-          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+      beforeSave: async ({ updates, adminUser, resource }: { updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        if (updates.password) {
+          updates.passwordHash = await AdminForth.Utils.generatePasswordHash(updates.password);
         }
-        return { ok: true, error: false }
+        return { ok: true }
       },
     },
-  }
+  },
 ```
 
-Hook still has access to the virtual field `record.password`, and we use built-in AdminForth hasher to hash password and write it into
+Hook still has access to the virtual field `updates.password`, and we use built-in AdminForth hasher to hash password and write it into
 `password_hash` field which exists in database.
 
-After hook is executed, `record.password` will be removed from the record since it is virtual, so password itself will not be saved to the database.
+After hook is executed, `updates.password` will be removed from the record since it is virtual, so password itself will not be saved to the database.
+
+
+### Backend-only fields
 
 Another important point is that `hashed_password` field should never be passed to frontend due to security reasons.
 
@@ -141,10 +142,10 @@ To do it we have 2 options:
 
 1) Do not list `password_hash` in the `columns` array of the resource. If AdminForth knows nothing about field
 it will never pass this field to frontend.
-2) Define `password_hash` but set `backendOnly`
+2) Define `password_hash` in columns way but set `backendOnly`. The scond option is more explicit and should be preferrred
 
 ```ts
-{     
+{
   name: 'password_hash',
   type: AdminForthDataTypes.STRING,
   showIn: { all: false },

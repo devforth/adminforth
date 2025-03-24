@@ -294,7 +294,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }))
       return result;
     }
-    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }) {
+    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string> {
       const tableName = resource.table;
       const columns = Object.keys(record);
       await this.client.insert({
@@ -303,6 +303,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         columns: columns,
         values: [Object.values(record)],
       });
+      return ''; // todo
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {

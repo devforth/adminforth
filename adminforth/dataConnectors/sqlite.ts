@@ -235,13 +235,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       return result;
     }
 
-    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }) {
+    async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string> {
       const tableName = resource.table;
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
       const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
       await q.run(values);
+      return ''; // todo q.lastInsertRowid;
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {

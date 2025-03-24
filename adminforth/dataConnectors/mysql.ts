@@ -257,7 +257,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return result;
   }
 
-  async createRecordOriginalValues({ resource, record }) {
+  async createRecordOriginalValues({ resource, record }): Promise<string> {
     const tableName = resource.table;
     const columns = Object.keys(record);
     const placeholders = columns.map(() => '?').join(', ');
@@ -267,6 +267,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       console.log('🪲📜 MySQL Q:', q, 'values:', values);
     }
     await this.client.execute(q, values);
+
+    return ''; // todo
   }
 
   async updateRecordOriginalValues({ resource, recordId,  newValues }) {

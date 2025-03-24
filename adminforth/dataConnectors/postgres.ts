@@ -302,7 +302,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return result;
     }
 
-    async createRecordOriginalValues({ resource, record }) {
+    async createRecordOriginalValues({ resource, record }): Promise<string> {
         const tableName = resource.table;
         const columns = Object.keys(record);
         const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
@@ -310,11 +310,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         for (let i = 0; i < columns.length; i++) {
             columns[i] = `"${columns[i]}"`;
         }
-        const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders})`;
+        const primaryKey = this.getPrimaryKey(resource);
+        const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders}) RETURNING "${primaryKey}"`;
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', values);
         }
-        await this.client.query(q, values);
+        const ret = await this.client.query(q, values);
+        return ret.rows[0][primaryKey];
     }
 
     async updateRecordOriginalValues({ resource, recordId,  newValues }) {

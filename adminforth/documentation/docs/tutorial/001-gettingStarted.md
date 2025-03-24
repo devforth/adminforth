@@ -77,7 +77,7 @@ myadmin/
 
 ### Initial Migration & Future Migrations
 
-> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Users resource.
+> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Admin Users resource to implmenet BackOffice authentication.
 
 CLI will suggest you a command to initialize the database with Prisma:
 

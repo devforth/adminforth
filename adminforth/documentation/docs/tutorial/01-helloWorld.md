@@ -343,6 +343,9 @@ cd ./custom
 npm init -y
 ```
 
+We will use this directory for all custom components. If you want to call your dir with other name then `custom`, just set [customComponentsDir option](/docs/api/Back/interfaces/AdminForthConfigCustomization/#customcomponentsdir)
+
+
 Also, for better development experience we recommend to create file `custom/tsconfig.json` with the following content:
 
 ```json

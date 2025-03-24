@@ -1,0 +1,29 @@
+{
+    "id": "AdminforthRealm",
+    "realm": "AdminforthRealm",
+    "enabled": true,
+    "users": [
+      {
+        "username": "testuser",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "testpassword"
+          }
+        ],
+        "email": "testuser@example.com",
+        "emailVerified": true
+      }
+    ],
+    "clients": [
+        {
+        "clientId": "adminforth-client",
+        "enabled": true,
+        "publicClient": true,
+        "redirectUris": ["*"],
+        "defaultClientScopes": ["openid", "email", "profile"]
+        }
+    ]
+  }
+  

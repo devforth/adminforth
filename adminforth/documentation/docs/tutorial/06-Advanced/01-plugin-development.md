@@ -21,112 +21,28 @@ Let's create plugin which auto-completes text in strings
 ```bash
 mkdir -p af-plugin-chatgpt
 cd af-plugin-chatgpt
-npm init -y
-touch index.ts
-npm i typescript @types/node -D
+npx adminforth create-plugin
 ```
 
-Edit `package.json`:
+CLI options:
 
-```json title='./af-plugin-chatgpt/package.json'
-{
-  ...
-//diff-remove
-  "main": "index.js",
-//diff-add
-  "main": "dist/index.js",
-//diff-add
-  "types": "dist/index.d.ts",
-//diff-add
-  "type": "module",
-  "scripts": {
-//diff-remove
-    "test": "echo \"Error: no test specified\" && exit 1",
-//diff-add
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch"
-  },
-}
-```
+* **`--plugin-name`** - name for your plugin.
 
+This command will:
+1. Set up the TypeScript configuration
+2. Create initial plugin files
+3. Install required dependencies
 
-Install AdminForth for types and classes imports:
+The CLI will create the following files and directories:
 
-```bash
-npm i adminforth --save
-```
-
-Now create plugin boilerplate in `index.ts`:
-
-```ts title='./af-plugin-chatgpt/index.ts'
-
-import { AdminForthPlugin } from "adminforth";
-import type { IAdminForth, IHttpServer, AdminForthResourcePages, AdminForthResourceColumn, AdminForthDataTypes, AdminForthResource } from "adminforth";
-import type { PluginOptions } from './types.js';
-
-
-export default class ChatGptPlugin extends AdminForthPlugin {
-  options: PluginOptions;
-
-  constructor(options: PluginOptions) {
-    super(options, import.meta.url);
-    this.options = options;
-  }
-
-  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    super.modifyResourceConfig(adminforth, resourceConfig);
-  
-    // simply modify resourceConfig or adminforth.config. You can get access to plugin options via this.options;
-  }
-  
-  validateConfigAfterDiscover(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    // optional method where you can safely check field types after database discovery was performed
-  }
-
-  instanceUniqueRepresentation(pluginOptions: any) : string {
-    // optional method to return unique string representation of plugin instance. 
-    // Needed if plugin can have multiple instances on one resource 
-    return `single`;
-  }
-
-  setupEndpoints(server: IHttpServer) {
-    server.endpoint({
-      method: 'POST',
-      path: `/plugin/${this.pluginInstanceId}/example`,
-      handler: async ({ body }) => {
-        const { name } = body;
-        return { hey: `Hello ${name}` };
-      }
-    });
-  }
-
-}
-```
-
-Create `types.ts` file:
-
-```ts title='./af-plugin-chatgpt/types.ts'
-
-export interface PluginOptions {
-  
-}
-```
-
-
-Create `./af-plugin-chatgpt/tsconfig.json` file:
-
-```json title='./af-plugin-chatgpt/tsconfig.json'
-{
-  "compilerOptions": {
-    "target": "es2016",                                  /* Set the JavaScript language version for emitted JavaScript and include*/ 
-    "module": "node16",                                /* Specify what module code is generated. */
-    "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
-    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules.  */
-    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
-    "strict": false,                                     /* Enable all strict type-checking options. */
-    "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
-  },
-  "exclude": ["node_modules", "dist", "custom"],           /* Exclude files from compilation. */
-}
+```text
+af-plugin-chatgpt/
+├── custom
+│   └── tsconfig.json     # TypeScript configuration for custom components
+├── index.ts              # Main plugin file with boilerplate code
+├── package.json          # Plugin package configuration
+├── tsconfig.json         # TypeScript configuration
+└── types.ts              # TypeScript types for your plugin
 
 ```
 
@@ -203,37 +119,6 @@ export interface PluginOptions {
 
 }
 ```
-
-Now we have to create custom Vue component which will be used in plugin. To do it create custom folder:
-
-```bash
-mkdir -p af-plugin-chatgpt/custom
-```
-
-Also create `tsconfig.ts` file so your IDE will be able to resolve adminforth spa imports: 
-
-```json title='./af-plugin-chatgpt/custom/tsconfig.json'
-{
-  "compilerOptions": {
-    "baseUrl": ".", // This should point to your project root
-    "paths": {
-      "@/*": [
-        // "node_modules/adminforth/dist/spa/src/*"
-        "../../../spa/src/*"
-      ],
-      "*": [
-        // "node_modules/adminforth/dist/spa/node_modules/*"
-        "../../../spa/node_modules/*"
-      ],
-      "@@/*": [
-        // "node_modules/adminforth/dist/spa/src/*"
-        "."
-      ]
-    }
-  }
-}
-```
-
 
 We will use `vue-suggestion-input` package in our frontend component. 
 To install package into frontend component, first of all we have to initialize npm package in custom folder:
@@ -535,7 +420,7 @@ Finally, since we want to support multiple installations on one resource (e.g. o
 ```
 
 
-Ro compile plugin run:
+To compile plugin run:
 
 ```bash
 npm run build

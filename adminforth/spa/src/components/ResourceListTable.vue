@@ -21,7 +21,7 @@
             <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
                     :disabled="!rows || !rows.length"
-                    class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
@@ -423,7 +423,7 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows) return false;
+  if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
@@ -580,3 +580,12 @@ async function startCustomAction(actionId, row) {
 
 
 </script>
+
+<style lang="scss" scoped>
+input[type="checkbox"][disabled] {
+  @apply opacity-50;
+}
+input[type="checkbox"]:not([disabled]) {
+  @apply cursor-pointer;
+}
+</style>
