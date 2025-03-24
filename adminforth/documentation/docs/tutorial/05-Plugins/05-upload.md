@@ -1,5 +1,3 @@
-
-
 # Upload
 
 This plugin allows you to upload files to Amazon S3 bucket.
@@ -305,7 +303,7 @@ new UploadPlugin({
 });
 ```
 
-### Max-width for preview image
+### Preview Image Size Configuration
 
 You can set the maximum width for the preview image in the `./resources/apartments.ts` file by adding the `maxWidth` property to the `preview` configuration:
 
@@ -322,8 +320,18 @@ You can set the maximum width for the preview image in the `./resources/apartmen
     s3Path: ({originalFilename, originalExtension, contentType}) => 
       `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
     preview: {
-      //diff-add
-      maxWidth: '200px', // Set the maximum width for the preview image
+      // Global width settings (applies to all views if specific view settings not provided)
+      maxWidth: '200px',  // Maximum width for preview images
+      minWidth: '200px',  // Minimum width for preview images
+
+      // List view specific settings
+      maxListWidth: '300px',  // Maximum width in list view
+      minListWidth: '100px',  // Minimum width in list view
+
+      // Show/detail view specific settings
+      maxShowWidth: '200px',  // Maximum width in show view
+      minShowWidth: '200px',  // Minimum width in show view
+    
       ...
     }
 

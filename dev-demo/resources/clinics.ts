@@ -4,7 +4,7 @@ import ImportExport from "../../plugins/adminforth-import-export";
 
 
 export default {
-  dataSource: 'maindb',
+  dataSource: 'pg',
   table: 'clinics',
   resourceId: 'clinics',
   label: 'Clinics',
@@ -14,7 +14,7 @@ export default {
       name: 'id',
       label: 'ID',
       primaryKey: true,
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      // fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       showIn: {
         create: false,
         edit: false,
@@ -30,6 +30,7 @@ export default {
       maxLength: 255,
 
     },
+  
   ],
   plugins: [
     new ImportExport({
