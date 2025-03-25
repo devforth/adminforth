@@ -33,7 +33,7 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
   keycloak:
-    image: quay.io/keycloak/keycloak:latest # TODO?
+    image: quay.io/keycloak/keycloak:latest
     command: start-dev --import-realm
     environment:
       - KEYCLOAK_ADMIN=admin

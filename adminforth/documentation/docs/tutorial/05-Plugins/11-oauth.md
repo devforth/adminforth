@@ -328,7 +328,7 @@ plugins: [
 
 Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 
 
-This is really easy, you have to change several then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
+This is really easy, you have to change less then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
 
 Then just publish it to npm and install it in your project.
 
