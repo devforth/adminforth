@@ -28,6 +28,8 @@ export enum AdminForthFilterOperators {
   ILIKE = 'ilike',
   IN = 'in',
   NIN = 'nin',
+  AND = 'and',
+  OR = 'or',
 };
 
 export enum AdminForthSortDirections {
