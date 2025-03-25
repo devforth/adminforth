@@ -1,11 +1,26 @@
-import { IAdminForthFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/Back.js';
+import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/Back.js';
+import { AdminForthFilterOperators } from '../types/Common.js';
 
 
-function filtersIfFilter(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): IAdminForthFilter[] {
+function filtersIfFilter(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
   if (!filter) {
-    return [];
+    // if no filter, return empty "and" filter
+    return { operator: AdminForthFilterOperators.AND, subFilters: [] };
   }
-  return (Array.isArray(filter) ? filter : [filter]) as IAdminForthFilter[];
+  if (typeof filter !== 'object') {
+    throw new Error(`Filter should be an array or an object`);
+  }
+  if (Array.isArray(filter)) {
+    // if filter is an array, combine them using "and" operator
+    return { operator: AdminForthFilterOperators.AND, subFilters: filter };
+  }
+  if ((filter as IAdminForthAndOrFilter).subFilters) {
+    // if filter is already AndOr filter - return as is
+    return filter as IAdminForthAndOrFilter;
+  }
+
+  // by default, assume filter is Single filter, turn it into AndOr filter
+  return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
 }
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
@@ -21,7 +36,7 @@ export default class OperationalResource implements IOperationalResource {
     this.resourceConfig = resourceConfig;
   }
 
-  async get(filter: IAdminForthFilter | IAdminForthFilter[]): Promise<any | null> {
+  async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
     return (
       await this.dataConnector.getData({
         resource: this.resourceConfig,
@@ -34,7 +49,7 @@ export default class OperationalResource implements IOperationalResource {
   }
 
   async list(
-      filter: IAdminForthFilter | IAdminForthFilter[], 
+      filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, 
       limit: number | null = null, 
       offset: number | null = null,
       sort: IAdminForthSort | IAdminForthSort[] = []
@@ -68,7 +83,7 @@ export default class OperationalResource implements IOperationalResource {
   }
 
 
-  async count(filter: IAdminForthFilter | IAdminForthFilter[] | undefined): Promise<number> {
+  async count(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): Promise<number> {
     return await this.dataConnector.getCount({
       resource: this.resourceConfig,
       filters: filtersIfFilter(filter),
