@@ -221,7 +221,9 @@ Install Adapter:
 npm install @adminforth/keycloak-oauth-adapter --save
 ```
 
-1. Update your .env file with the following Keycloak configuration:
+If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](blog/2025-03-25-keycloack/index.md).
+
+1. Update your `.env` file with the following Keycloak configuration:
 
 ```bash
 KEYCLOAK_CLIENT_ID=adminforth-client
@@ -230,13 +232,7 @@ KEYCLOAK_URL=http://localhost:8080
 KEYCLOAK_REALM=AdminforthRealm
 ```
 
-2. Start Keycloak with Docker:
-
-```bash
-docker compose -p af-dev-demo -f inventory.yml up -d --build --remove-orphans --wait
-```
-
-3. Create a new user from the back office with the same email as the test user (by default:   ```testuser@example.com```)
+2. Create a new user from the back office with the same email as the test user (by default:   ```testuser@example.com```)
 
 Add the adapter to your plugin configuration:
 
