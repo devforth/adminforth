@@ -221,7 +221,7 @@ Install Adapter:
 npm install @adminforth/keycloak-oauth-adapter --save
 ```
 
-If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](blog/2025-03-25-keycloack/index.md).
+If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](/blog/keycloak-setup-example).
 
 1. Update your `.env` file with the following Keycloak configuration:
 

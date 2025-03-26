@@ -2,7 +2,7 @@
 slug: keycloak-setup-example
 title: "Setup AdminForth Authorization via Keycloak"
 authors: mpipkun
-tags: [keycloak, auth, authorization]
+tags: [keycloak, authentication]
 description: "The ultimate guide to setting up AdminForth authorization via Keycloak"
 # image: "/ogs/ga-tf-aws.jpg"
 ---
@@ -10,6 +10,8 @@ description: "The ultimate guide to setting up AdminForth authorization via Keyc
 Keycloak is an open-source identity and access management solution that provides authentication and authorization services. It can be used to secure applications and services by managing user identities, roles, and permissions.
 
 In this guide, we will walk you through the process of setting up AdminForth authorization via Keycloak. Most important we will show you how to set up Keycloak in a Docker container and configure it to work with AdminForth.
+
+<!-- truncate -->
 
 ## Prerequisites
 
