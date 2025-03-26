@@ -803,6 +803,11 @@ export interface AdminForthResourceColumnInputCommon {
    */
   foreignResource?: AdminForthForeignResourceCommon,
 
+  /**
+   * Boolean value that determines what select input type to display on filter page.
+   */
+  multiselectFilter?: boolean,
+
   sortable?: boolean,
 
   

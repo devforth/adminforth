@@ -664,6 +664,18 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
 
+        if (col.multiselectFilter !== undefined) {
+          if (typeof col.multiselectFilter !== 'boolean') {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" has multiselectFilter that is not boolean`);
+          }
+
+          if (!col.enum && !col.foreignResource) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter should be set only for enum or foreign resource columns`);
+          }
+        } else if (col.enum || col.foreignResource) {
+          col.multiselectFilter = true;
+        }
+
         if (inCol.inputPrefix || inCol.inputSuffix) {
           if (![AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT, AdminForthDataTypes.INTEGER, AdminForthDataTypes.STRING, undefined].includes(col.type)) {
             if (inCol.type === AdminForthDataTypes.JSON) {
