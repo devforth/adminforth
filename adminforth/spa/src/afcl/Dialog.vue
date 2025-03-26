@@ -98,4 +98,17 @@ onUnmounted(() => {
   modal.value?.destroy();
 })
 
+function open() {
+  modal.value?.show();
+}
+
+function close() {
+  modal.value?.hide();
+}
+
+defineExpose({
+  open: open,
+  close: close,
+})
+
 </script>
