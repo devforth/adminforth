@@ -287,9 +287,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (process.env.HEAVY_DEBUG_QUERY) {
       console.log('🪲📜 MySQL Q:', q, 'values:', values);
     }
-    await this.client.execute(q, values);
-
-    return ''; // todo
+    const ret = await this.client.execute(q, values);
+    return ret.insertId;
   }
 
   async updateRecordOriginalValues({ resource, recordId,  newValues }) {

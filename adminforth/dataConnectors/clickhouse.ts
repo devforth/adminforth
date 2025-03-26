@@ -341,13 +341,13 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     async createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string> {
       const tableName = resource.table;
       const columns = Object.keys(record);
-      await this.client.insert({
+      const ret = await this.client.insert({
         database: this.dbName,
         table: tableName,
         columns: columns,
         values: [Object.values(record)],
       });
-      return ''; // todo
+      return ret.query_id;
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {

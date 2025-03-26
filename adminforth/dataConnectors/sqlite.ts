@@ -269,8 +269,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
       const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
-      await q.run(values);
-      return ''; // todo q.lastInsertRowid;
+      const ret = await q.run(values);
+      return ret.lastInsertRowid;
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {
