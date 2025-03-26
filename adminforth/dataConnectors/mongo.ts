@@ -186,8 +186,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         for (const colName of columns) {
             newRecord[colName] = record[colName];
         }
-        await collection.insertOne(newRecord);
-        return ''; // todo
+        const ret = await collection.insertOne(newRecord);
+        return ret.insertedId;
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {

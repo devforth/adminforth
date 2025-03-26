@@ -187,7 +187,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
 
     process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
-    const pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+    let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+    if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
+      // some data sources always return some value for pk, even if it is was not auto generated
+      // this check prevents wrong value from being used later in get request
+      pkValue = recordWithOriginalValues[this.getPrimaryKey(resource)];
+    }
 
     let createdRecord = recordWithOriginalValues;
     if (pkValue) {
