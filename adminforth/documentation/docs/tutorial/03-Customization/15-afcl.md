@@ -519,6 +519,23 @@ Default behavior of the Dialog component will allow user to close it by just cli
   </div>
 </div>
 
+### Dialog open and close
+
+You can open and close dialog by calling `open` and `close` methods.
+
+```ts
+
+const confirmDialog = ref(null);
+
+const openDialog = () => {
+  confirmDialog.value.open();
+}
+
+const closeDialog = () => {
+  confirmDialog.value.close();
+}
+```
+
 ## Dropzone
 
 ```ts
