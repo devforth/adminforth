@@ -175,7 +175,7 @@
       { label: t('Yes'), value: true },
       { label: t('No'), value: false },
     ];
-    if (!column.required[props.mode]) {
+    if (!column.required[props.mode] && !column.isArray?.enabled) {
       options.push({ label: t('Unset'), value: null });
     }
     return options;
