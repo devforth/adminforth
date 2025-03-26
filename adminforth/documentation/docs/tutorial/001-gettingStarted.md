@@ -207,7 +207,7 @@ export default {
     {
       name: 'title',
       required: true,
-      showIn: { all: false },  // all available options
+      showIn: { all: true },  // all available options
       type: AdminForthDataTypes.STRING,
       maxLength: 255,  // you can set max length for string fields
       minLength: 3,  // you can set min length for string fields

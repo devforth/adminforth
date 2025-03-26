@@ -96,11 +96,11 @@ import type { AdminUser } from  'adminforth';
 //diff-add
     create: {
 //diff-add
-      beforeSave: async ({ adminUser, record }: { adminUser: AdminUser, updates: any }) => {
+      beforeSave: async ({ adminUser, updates }: { adminUser: AdminUser, updates: any }) => {
 //diff-add
         updates.realtor_id = adminUser.dbUser.id;
 //diff-add
-        return { ok: true, record };
+        return { ok: true };
 //diff-add
       }
 //diff-add
