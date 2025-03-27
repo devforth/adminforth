@@ -106,7 +106,7 @@ bulkActions: [
     },
     confirm: 'Are you sure you want to mark all selected apartments as listed?',
     action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }, allow) {
-      const stmt = admin.resource('aparts').dataConnector.db.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')}`);
+      const stmt = admin.resource('aparts').dataConnector.client.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')}`);
       stmt.run(...selectedIds);
       return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
     },

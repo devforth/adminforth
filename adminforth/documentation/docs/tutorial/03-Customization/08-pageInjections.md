@@ -87,7 +87,7 @@ Also we have to add an Api to get percentages:
   app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
     admin.express.authorize(
       async (req, res) => {
-        const roomPercentages = await admin.resource('aparts').dataConnector.db.prepare(
+        const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             number_of_rooms, 
             COUNT(*) as count 
