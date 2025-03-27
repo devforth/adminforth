@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
@@ -36,15 +36,17 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         [AdminForthFilterOperators.ILIKE]: 'ILIKE',
         [AdminForthFilterOperators.IN]: 'IN',
         [AdminForthFilterOperators.NIN]: 'NOT IN',
+        [AdminForthFilterOperators.AND]: 'AND',
+        [AdminForthFilterOperators.OR]: 'OR',
     };
-  
+
     SortDirectionsMap = {
         [AdminForthSortDirections.asc]: 'ASC',
         [AdminForthSortDirections.desc]: 'DESC',
     };
 
     async discoverFields(resource) {
-      
+
         const tableName = resource.table;
         const stmt = await this.client.query(`
         SELECT
@@ -150,7 +152,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
         if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
-              return null;
+                return null;
             }
             return dayjs(value).toISOString().split('T')[0];
         }
@@ -160,12 +162,12 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 try {
                     return JSON.parse(value);
                 } catch (e) {
-                    return {'error': `Failed to parse JSON: ${e.message}`}
+                    return { 'error': `Failed to parse JSON: ${e.message}` }
                 }
             } else if (typeof value == 'object') {
                 return value;
             } else {
-                console.error('JSON field value is not string or object, but has type:',  typeof value);
+                console.error('JSON field value is not string or object, but has type:', typeof value);
                 console.error('Field:', field);
                 return {}
             }
@@ -176,105 +178,118 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
 
     setFieldValue(field, value) {
-      if (field.type == AdminForthDataTypes.DATETIME) {
-        if (!value) {
-          return null;
+        if (field.type == AdminForthDataTypes.DATETIME) {
+            if (!value) {
+                return null;
+            }
+            if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
+                return dayjs(value);
+            } else if (field._underlineType == 'varchar') {
+                return dayjs(value).toISOString();
+            }
+        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
+            return value ? 1 : 0;
+        } else if (field.type == AdminForthDataTypes.JSON) {
+            if (field._underlineType == 'json') {
+                return value;
+            } else {
+                return JSON.stringify(value);
+            }
         }
-        if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-          return dayjs(value);
-        } else if (field._underlineType == 'varchar') {
-          return dayjs(value).toISOString();
-        }
-      } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return value ? 1 : 0;
-      } else if (field.type == AdminForthDataTypes.JSON) {
-        if (field._underlineType == 'json') {
-            return value;
-        } else {
-            return JSON.stringify(value);
-        }
-      }
-      return value;
+        return value;
     }
 
-    whereClauseAndValues(resource: AdminForthResource, filters: { field: string, operator: AdminForthFilterOperators, value: any }[]) : {
-      sql: string,
-      paramsCount: number,
-      values: any[],
+    getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
+        if ((filter as IAdminForthSingleFilter).field) {
+            let placeholder = '$?';
+            let field = (filter as IAdminForthSingleFilter).field;
+            const fieldData = resource.dataSourceColumns.find((col) => col.name == field);
+            let operator = this.OperatorsMap[filter.operator];
+            if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+                placeholder = `(${filter.value.map(() => placeholder).join(', ')})`;
+            }
+
+            if (fieldData._underlineType == 'uuid' &&
+                (filter.operator == AdminForthFilterOperators.ILIKE || filter.operator == AdminForthFilterOperators.LIKE)
+            ) {
+                field = `cast("${field}" as text)`
+            } else {
+                field = `"${field}"`
+            }
+            return `${field} ${operator} ${placeholder}`;
+        }
+
+        // filter is a AndOr filter
+        return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
+            if ((f as IAdminForthSingleFilter).field) {
+                // subFilter is a Single filter
+                return this.getFilterString(resource, f);
+            }
+
+            // subFilter is a AndOr filter - add parentheses
+            return `(${this.getFilterString(resource, f)})`;
+        }).join(` ${this.OperatorsMap[filter.operator]} `);
+    }
+
+    getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
+        if ((filter as IAdminForthSingleFilter).field) {
+            // filter is a Single filter
+            if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+                return [`%${filter.value}%`];
+            } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+                return filter.value;
+            } else {
+                return [(filter as IAdminForthSingleFilter).value];
+            }
+        }
+
+        // filter is a AndOrFilter
+        return (filter as IAdminForthAndOrFilter).subFilters.reduce((params: any[], f: IAdminForthSingleFilter | IAdminForthAndOrFilter) => {
+            return params.concat(this.getFilterParams(f));
+        }, []);
+    }
+
+    whereClauseAndValues(resource: AdminForthResource, filters: IAdminForthAndOrFilter): {
+        sql: string,
+        paramsCount: number,
+        values: any[],
     } {
-      
-      let totalCounter = 1;
-      const where = filters.length ? `WHERE ${filters.map((f, i) => {
-        let placeholder = '$'+(totalCounter);
-        const fieldData = resource.dataSourceColumns.find((col) => col.name == f.field);
-        let field = f.field;
-        let operator = this.OperatorsMap[f.operator];
-        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-            placeholder = `(${f.value.map((_, i) => `$${totalCounter + i}`).join(', ')})`;
-            totalCounter += f.value.length;
-        } else {
-            totalCounter += 1;
-        }
-
-        if (fieldData._underlineType == 'uuid' && 
-            (f.operator == AdminForthFilterOperators.ILIKE || f.operator == AdminForthFilterOperators.LIKE)
-        ) {
-            field = `cast("${field}" as text)`
-        } else { 
-            field = `"${field}"`
-        }
-        return `${field} ${operator} ${placeholder}`;
-      }).join(' AND ')}` : '';
-
-      const filterValues = [];
-      filters.length ? filters.forEach((f) => {
-        // for arrays do set in map
-        let v = f.value;
-
-        if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
-          filterValues.push(`%${v}%`);
-        } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          filterValues.push(...v);
-
-        
-        } else {
-          filterValues.push(v);
-        }
-      }) : [];
-      return {
-        sql: where,
-        paramsCount: totalCounter,
-        values: filterValues,
-      };
-
+        let where = filters.subFilters.length ? `WHERE ${this.getFilterString(resource, filters)}` : '';
+        const filterValues = filters.subFilters.length ? this.getFilterParams(filters) : [];
+        filterValues.forEach((_, i) => where = where.replace('$?', `$${i + 1}`));
+        return {
+            sql: where,
+            paramsCount: filterValues.length + 1,
+            values: filterValues,
+        };
     }
 
-    
+
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
-      const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
-      const tableName = resource.table;
-      
-      const { sql: where, paramsCount, values: filterValues } = this.whereClauseAndValues(resource, filters);
+        const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
+        const tableName = resource.table;
 
-      const limitOffset = `LIMIT $${paramsCount} OFFSET $${paramsCount + 1}`; 
-      const d = [...filterValues, limit, offset];
-      const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-      const selectQuery = `SELECT ${columns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 PG Q:', selectQuery, 'params:', d);
-      }
-      const stmt = await this.client.query(selectQuery, d);
-      const rows = stmt.rows;
-      return rows.map((row) => {
-        const newRow = {};
-        for (const [key, value] of Object.entries(row)) {
-            newRow[key] = value;
+        const { sql: where, paramsCount, values: filterValues } = this.whereClauseAndValues(resource, filters);
+
+        const limitOffset = `LIMIT $${paramsCount} OFFSET $${paramsCount + 1}`;
+        const d = [...filterValues, limit, offset];
+        const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+        const selectQuery = `SELECT ${columns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
+        if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 PG Q:', selectQuery, 'params:', d);
         }
-        return newRow;
-      });
+        const stmt = await this.client.query(selectQuery, d);
+        const rows = stmt.rows;
+        return rows.map((row) => {
+            const newRow = {};
+            for (const [key, value] of Object.entries(row)) {
+                newRow[key] = value;
+            }
+            return newRow;
+        });
     }
 
-    async getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string, operator: AdminForthFilterOperators, value: any }[]; }): Promise<number> {
+    async getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {
         const tableName = resource.table;
         const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
         const q = `SELECT COUNT(*) FROM "${tableName}" ${where}`;
@@ -284,7 +299,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const stmt = await this.client.query(q, filterValues);
         return +stmt.rows[0].count;
     }
-  
+
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const result = {};
@@ -319,7 +334,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return ret.rows[0][primaryKey];
     }
 
-    async updateRecordOriginalValues({ resource, recordId,  newValues }) {
+    async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const values = [...Object.values(newValues), recordId];
         const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `"${col}" = $${i + 1}`).join(', ');
         const q = `UPDATE "${resource.table}" SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`;
