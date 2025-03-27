@@ -15,7 +15,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   client: any;
 
   get db() {
-    console.warn('db is deprecated, use client instead');
+    console.warn('.db is deprecated, use .client instead');
     return this.client;
   }
 

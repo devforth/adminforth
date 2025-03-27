@@ -312,7 +312,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
       const days = req.body.days || 7;
-      const apartsByDays = await admin.resource('aparts').client.prepare(
+      const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at) as day, 
           COUNT(*) as count 
@@ -326,7 +326,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
       const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
       // add listed, unlisted, listedPrice, unlistedPrice
-      const listedVsUnlistedByDays = await admin.resource('aparts').client.prepare(
+      const listedVsUnlistedByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at) as day, 
           SUM(listed) as listed, 
@@ -340,7 +340,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         `
       ).all(days);
 
-      const apartsCountsByRooms = await admin.resource('aparts').client.prepare(
+      const apartsCountsByRooms = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 
           COUNT(*) as count 
@@ -350,7 +350,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         `
       ).all();
 
-      const topCountries = await admin.resource('aparts').client.prepare(
+      const topCountries = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           country, 
           COUNT(*) as count 
@@ -361,14 +361,14 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         `
       ).all();
 
-      const totalSquare = await admin.resource('aparts').client.prepare(
+      const totalSquare = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           SUM(square_meter) as totalSquare 
         FROM apartments;
         `
       ).get();
 
-      const listedVsUnlistedPriceByDays = await admin.resource('aparts').client.prepare(
+      const listedVsUnlistedPriceByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           strftime('%Y-%m-%d', created_at) as day, 
           SUM(listed * price) as listedPrice,
