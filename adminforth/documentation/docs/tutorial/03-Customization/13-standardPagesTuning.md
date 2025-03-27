@@ -704,3 +704,29 @@ export default {
 ```
 `debounceTimeMs` field dictates how long (in milliseconds) to wait between inputs to send updated data request. By increasing this value, you can reduce the amount of requests set to backend. Default value for this field is set to 10ms.
 `substringSearch` sets what comparison operator to use for text field. By default this field is set to `true`, which results in using case-insensitive `ILIKE` operator, that will look for records that have filter string anywhere inside field value. Setting this `substringSearch` to `false` will result in using more strict `EQ` operator, that will look for exact full-string matches.
+
+You can also disabled multiselect on filter page for enumerator columns or foreign resource columns by adding `multiselect` field:
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: "parentUserId",
+          foreignResource: {
+            resourceId: "users",
+          },
+//diff-add
+          filterOptions: {
+//diff-add
+            multiselect: false,
+//diff-add
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+This way, multiselect field displayed on filter page will be replaced with a default select field allowing only only value to be selected.

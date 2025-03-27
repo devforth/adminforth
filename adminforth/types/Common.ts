@@ -815,6 +815,10 @@ export interface AdminForthResourceColumnInputCommon {
      * If false - will force EQ operator for filter instead of ILIKE.
      */
     substringSearch?: boolean,
+    /**
+     * Boolean value that determines what select input type to display on filter page.
+     */
+    multiselect?: boolean,
   },
 
   /**
