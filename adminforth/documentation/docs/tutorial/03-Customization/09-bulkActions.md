@@ -35,11 +35,11 @@ import { admin } from '../index';
 //diff-add
             confirm: 'Are you sure you want to mark all selected apartments as listed?',
 //diff-add
-            action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
+            action: async function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
 //diff-add
               const stmt = admin.resource('aparts').dataConnector.client.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
 //diff-add
-              stmt.run(...selectedIds);
+              await stmt.run(...selectedIds);
 //diff-add
               return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
 //diff-add
@@ -48,7 +48,6 @@ import { admin } from '../index';
           }
 //diff-add
         ],
-//diff-add
       }
 }
 ```
@@ -80,7 +79,6 @@ bulkActions: [
   {
     label: 'Mark as listed',
     icon: 'flowbite:eye-solid',
-    state:'active',
 //diff-add
     allowed: async ({ resource, adminUser, selectedIds }) => {
 //diff-add     
@@ -95,9 +93,9 @@ bulkActions: [
     },
       // if optional `confirm` is provided, user will be asked to confirm action
     confirm: 'Are you sure you want to mark all selected apartments as listed?',
-    action: function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }, allow) {
+    action: async function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }, allow) {
       const stmt = admin.resource('aparts').dataConnector.client.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')}`);
-      stmt.run(...selectedIds);
+      await stmt.run(...selectedIds);
       return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
     },
   }
