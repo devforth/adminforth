@@ -94,7 +94,14 @@ export interface AdminForthBulkActionCommon {
    * Label for action button which will be displayed in the list view
    */
   label: string,
-  state: string,
+
+  /**
+   * Bulk Action button state 'danger'|success|'active',
+   *  * 'danger' - red button
+   *  * 'success' - green button
+   *  * 'active' - blue button
+   **/ 
+  state?: 'danger' | 'success' | 'active';
 
   /**
    * Icon for action button which will be displayed in the list view
