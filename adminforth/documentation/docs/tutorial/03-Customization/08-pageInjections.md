@@ -31,42 +31,56 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 ```html title="./custom/ApartsPie.vue"
 <template>
     <div class="max-w-sm w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-4 mb-5">
-        <PieChart
-            :data="data"
-            :options="{
-                chart: {
-                height: 250,
-                },
-                dataLabels: {
-                enabled: true,
-                },
-                plotOptions: {
-                pie: {
-                    dataLabels: {
-                    offset: -10, 
-                    minAngleToShowLabel: 10, 
-                    },
-                    expandOnClick: true,
-                },
-                },
-            }"
-        />
+      <PieChart
+        v-if="data.length"
+        :data="rooms" 
+        :options="{
+          chart: {
+            height: 250,
+          },
+          dataLabels: {
+            enabled: true,
+          },
+          plotOptions: {
+            pie: {
+              dataLabels: {
+                offset: -10,
+                minAngleToShowLabel: 10,
+              },
+              expandOnClick: true,
+            },
+          },
+        }"
+      />
+      <div v-else>Loading...</div>
     </div>
   </template>
   
+  
   <script setup lang="ts">
-  import { onMounted, ref, Ref } from 'vue';
+  import { onMounted, ref, Ref, computed } from 'vue';
   import { PieChart } from '@/afcl';
   import { callApi } from '@/utils';
   import adminforth from '@/adminforth';
   
   
   const data: Ref<any[]> = ref([]);
-  
-  
+
+
+  const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
+  const rooms = computed(() => {
+    return data.value?.map(
+      (item, i) => ({
+        label: item.rooms + ' rooms',
+        amount: item.percentage,
+        color: COLORS[i],
+      })
+    );
+  });
+
   onMounted(async () => {
     try {
-      data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
+    data.value = await callApi({ path: '/api/aparts-by-room-percentages', method: 'GET' });
     } catch (error) {
       adminforth.alert({
         message: `Error fetching data: ${error.message}`,
@@ -182,7 +196,7 @@ However, if you intend to use injection as a small panel, you can set `meta.thin
     pageInjections: {
       list: {
         bottom: {
-          file: '@@/BottomPanel.vue',
+          file: '@@/<ComponentForBottomPanel>.vue',
           meta: {
             thinEnoughToShrinkTable: true,
           }

@@ -20,7 +20,7 @@ export default {
           //diff-add
             groupName: 'Main info',
           //diff-add
-            columns: ['id','title', 'description', 'country', 'apartment_image']
+            columns: ['id','title', 'description', 'country']
           //diff-add
           },
           //diff-add
@@ -50,7 +50,7 @@ export default {
         fieldGroups: [
           {
             groupName: 'Main info',
-            columns: ['id','title', 'description', 'country', 'apartment_image']
+            columns: ['id','title', 'description', 'country']
           //diff-add
             noTitle: true,
           },
@@ -163,7 +163,9 @@ To open a custom page, return URL to the custom page (can start with https://, o
         ...
 //diff-add
         listTableClickUrl: async (record, adminUser) => {
+//diff-add
           return `https://google.com/search?q=${record.name}`;
+//diff-add
         }
       }
 ```
@@ -175,7 +177,9 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
         ...
 //diff-add
         listTableClickUrl: async (record, adminUser) => {
+//diff-add
           return `https://google.com/search?q=${record.name}&target=_blank`;
+//diff-add
         }
       }
 ```
@@ -237,7 +241,7 @@ export default {
 
 ### Fill with default values
 
-Sometimes you want to generate some field value without asking user to fill it. For example createdAt oftenly store time of creation of the record. You can do this by using fillOnCreate:
+Sometimes you want to generate some field value without asking user to fill it. For example createdAt oftenly store time of creation of the record. You can do this by using `fillOnCreate`:
 
 
 ```typescript title="./resources/apartments.ts" 
@@ -256,7 +260,7 @@ export default {
 //diff-add
             create: false,  // don't show field in create form
 //diff-add
-          }
+          },
 //diff-add
           fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
         },
@@ -284,7 +288,7 @@ export default {
 //diff-add
             create: false,  // don't show field in create form
 //diff-add
-          }
+          },
 //diff-add
           fillOnCreate: ({ initialRecord, adminUser }) => adminUser.dbUser.id,
         },
