@@ -226,15 +226,13 @@ If you need a basic Keycloak setup which tested with AdminForth, you can follow 
 1. Update your `.env` file with the following Keycloak configuration:
 
 ```bash
-KEYCLOAK_CLIENT_ID=adminforth-client
-KEYCLOAK_CLIENT_SECRET=1234567890
+KEYCLOAK_CLIENT_ID=your_keycloak_client_id
+KEYCLOAK_CLIENT_SECRET=your_keycloak_client_secret
 KEYCLOAK_URL=http://localhost:8080
-KEYCLOAK_REALM=AdminforthRealm
+KEYCLOAK_REALM=your_keycloak_realm
 ```
 
-2. Create a new user from the back office with the same email as the test user (by default:   ```testuser@example.com```)
-
-Add the adapter to your plugin configuration:
+2. Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
 import AdminForthAdapterKeycloakOauth2 from '@adminforth/keycloak-oauth-adapter';
@@ -255,31 +253,6 @@ plugins: [
   }),
 ]
 ```
-
-If you want to create a new user:
-
-1. Access Keycloak Admin Panel
-Open a browser and go to: http://localhost:8080
-Log in with the default Keycloak admin credentials:
-Username: admin
-Password: admin
-
-2. Navigate to the "Users" Section
-Click on "Users" in the left-hand menu.
-Click "Add user" in the top-right corner.
-
-3. Enter User Information
-Username: username
-Email: username@example.com
-Email Verified: ✅ (Check this box)
-Enabled: ✅ (Check this box)
-Click "Save"
-
-4. Set a Password for the User
-Go to the "Credentials" tab.
-Enter a password (e.g., testpassword).
-Uncheck "Temporary" (so the user doesn't have to reset the password).
-Click "Set Password".
 
 ### Microsoft Adapter
 
