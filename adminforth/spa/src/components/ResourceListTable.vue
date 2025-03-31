@@ -14,7 +14,6 @@
     <table v-else class=" w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
 
       <tbody>
-        
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
@@ -60,10 +59,8 @@
             {{ $t('Actions') }}
           </td>
         </tr>
-        <tr v-for="c in tableBodyStartInjection" :key="c.id">
-          <td :colspan="resource?.columns.length + 2">
-            <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
-          </td>
+        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top">
+          <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
         </tr>
         <!-- table header end -->
         <SkeleteLoader 
