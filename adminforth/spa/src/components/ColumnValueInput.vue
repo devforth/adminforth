@@ -16,7 +16,7 @@
     <Select
       v-else-if="column.foreignResource"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="columnOptions[column.name] || []"
       teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
@@ -27,7 +27,7 @@
     <Select
       v-else-if="column.enum"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="column.enum"
       teleportToBody
       :modelValue="value"
@@ -37,7 +37,7 @@
     <Select
       v-else-if="(type || column.type) === 'boolean'"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="getBooleanOptions(column)"
       teleportToBody
       :modelValue="value"
