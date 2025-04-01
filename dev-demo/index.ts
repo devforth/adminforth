@@ -9,7 +9,6 @@ import apartmentBuyersResource from './resources/apartment_buyers.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
-import userSubResource from './resources/user_sub.js';
 // import gameResource from './resources/game.js';
 // import gamesUsersResource from './resources/games_users.js';
 // import gamesResource from './resources/games.js';
@@ -212,7 +211,6 @@ export const admin = new AdminForth({
     clinicsResource,
     providersResource,
     apiKeysResource,
-    userSubResource,
     // gamesResource,
     // gamesUsersResource,
     // gameResource,
@@ -298,7 +296,7 @@ export const admin = new AdminForth({
           label: 'Translations',
           icon: 'material-symbols:translate',
           resourceId: 'translations',
-        },
+        }
       ]
     },
     {
@@ -454,7 +452,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
   admin.express.authorize(
     async (req, res) => {
-      const roomPercentages = await admin.resource('aparts').dataConnector.db.prepare(
+      const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 
           COUNT(*) as count 

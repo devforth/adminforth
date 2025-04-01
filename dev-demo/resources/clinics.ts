@@ -1,7 +1,5 @@
 import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
 import { v1 as uuid } from "uuid";
-import ImportExport from "../../plugins/adminforth-import-export";
-
 
 export default {
   dataSource: 'pg',
@@ -25,16 +23,12 @@ export default {
     },
     {
       name: 'name',
-      type: AdminForthDataTypes.TEXT,
+      type: AdminForthDataTypes.STRING,
       required: true,
       maxLength: 255,
-
     },
   
   ],
-  plugins: [
-    new ImportExport({
-    }),
-  ],
+  plugins: [],
   options: {},
 } as AdminForthResourceInput;
