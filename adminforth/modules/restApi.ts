@@ -10,6 +10,7 @@ import {
   IAdminForthRestAPI,
   IAdminForthSort,
   HttpExtra,
+  IAdminForthAndOrFilter,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
@@ -136,9 +137,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const userRecord = (
           await this.adminforth.connectors[userResource.dataSource].getData({
             resource: userResource,
-            filters: [
+            filters: { operator: AdminForthFilterOperators.AND, subFilters: [
               { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
-            ],
+            ]},
             limit: 1,
             offset: 0,
             sort: [],
@@ -635,25 +636,32 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
         const { limit, offset, filters, sort } = body;
 
-        // remove virtual fields from sort if still presented after
-        // beforeDatasourceRequest hook
+        // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
         const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
           return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
         });
 
-        for (const filter of (filters || [])) {
-          if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
-            throw new Error(`Operator '${filter.operator}' is not allowed`);
+        // after beforeDatasourceRequest hook, filter can be anything
+        // so, we need to turn it into AndOr filter
+        // (validation and normalization of individual filters will be done inside getData)
+        const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+        if (filters) {
+          if (typeof filters !== 'object') {
+            throw new Error(`Filter should be an array or an object`);
           }
-
-          if (!resource.columns.some((col) => col.name === filter.field)) {
-            throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
-          }
-
-          if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
-            if (!Array.isArray(filter.value)) {
-              throw new Error(`Value for operator '${filter.operator}' should be an array`);
-            }
+          if (Array.isArray(filters)) {
+            // if filters are an array, they will be connected with "AND" operator by default
+            normalizedFilters.subFilters = filters;
+          } else if (filters.field) {
+            // assume filter is a SingleFilter
+            normalizedFilters.subFilters = [filters];
+          } else if (filters.subFilters) {
+            // assume filter is a AndOr filter
+            normalizedFilters.operator = filters.operator;
+            normalizedFilters.subFilters = filters.subFilters;
+          } else {
+            // wrong filter
+            throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
           }
         }
 
@@ -661,7 +669,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           resource,
           limit,
           offset,
-          filters,
+          filters: normalizedFilters as IAdminForthAndOrFilter,
           sort: sortFiltered,
           getTotals: source === 'list',
         });
@@ -692,13 +700,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 resource: targetResource,
                 limit: pksUnique.length,
                 offset: 0,
-                filters: [
+                filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                   {
                     field: targetResourcePkField,
                     operator: AdminForthFilterOperators.IN,
                     value: pksUnique,
                   }
-                ],
+                ]},
                 sort: [],
               });
               targetDataMap = targetData.data.reduce((acc, item) => {
@@ -738,13 +746,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   resource: targetResources[polymorphicOnValue],
                   limit: limit,
                   offset: 0,
-                  filters: [
+                  filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                     {
                       field: targetResourcePkFields[polymorphicOnValue],
                       operator: AdminForthFilterOperators.IN,
                       value: pksUniques[polymorphicOnValue],
                     }
-                  ],
+                  ]},
                   sort: [],
                 })
               ))).reduce((acc: any, td: any, tdi) => ({
@@ -869,11 +877,35 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 }
               }
               const { limit, offset, filters, sort } = body;
+
+              // after beforeDatasourceRequest hook, filter can be anything
+              // so, we need to turn it into AndOr filter
+              // (validation and normalization of individual filters will be done inside getData)
+              const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+              if (filters) {
+                if (typeof filters !== 'object') {
+                  throw new Error(`Filter should be an array or an object`);
+                }
+                if (Array.isArray(filters)) {
+                  // if filters are an array, they will be connected with "AND" operator by default
+                  normalizedFilters.subFilters = filters;
+                } else if (filters.field) {
+                  // assume filter is a SingleFilter
+                  normalizedFilters.subFilters = [filters];
+                } else if (filters.subFilters) {
+                  // assume filter is a AndOr filter
+                  normalizedFilters.operator = filters.operator;
+                  normalizedFilters.subFilters = filters.subFilters;
+                } else {
+                  // wrong filter
+                  throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+                }
+              }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
                 resource: targetResource,
                 limit,
                 offset,
-                filters: filters || [],
+                filters: normalizedFilters as IAdminForthAndOrFilter,
                 sort: sort || [],
               });
               const items = dbDataItems.data.map((item) => {
@@ -1019,13 +1051,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     resource: targetResources[polymorphicOnValue],
                     limit: 1,
                     offset: 0,
-                    filters: [
+                    filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                       {
                         field: targetResourcePkFields[polymorphicOnValue],
                         operator: AdminForthFilterOperators.EQ,
                         value: record[column.name],
                       }
-                    ],
+                    ]},
                     sort: [],
                   })
                 ))).reduce((acc: any, td: any, tdi) => ({
@@ -1117,13 +1149,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                       resource: targetResources[polymorphicOnValue],
                       limit: 1,
                       offset: 0,
-                      filters: [
+                      filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                         {
                           field: targetResourcePkFields[polymorphicOnValue],
                           operator: AdminForthFilterOperators.EQ,
                           value: record[column.name],
                         }
-                      ],
+                      ]},
                       sort: [],
                     })
                   ))).reduce((acc: any, td: any, tdi) => ({
