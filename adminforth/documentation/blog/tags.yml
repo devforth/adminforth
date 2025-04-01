@@ -42,3 +42,13 @@ npm:
   label: NPM
   permalink: /npm
   description: NPM is a package manager for the JavaScript programming language that allows developers to share and reuse code.
+
+keycloak:
+  label: Keycloak
+  permalink: /keycloak
+  description: Keycloak is an open-source identity and access management solution for modern applications and services.
+
+authentication:
+  label: Auth
+  permalink: /auth
+  description: Authentication is the process of verifying the identity of a user or system. Authentication is a critical component of security in software applications and systems.

@@ -8,6 +8,9 @@ For doing this you can use `virtual` columns.
 
 ```ts title='./resources/apartments.ts'
 
+//diff-add
+import { AdminForthResourcePages } from 'adminforth';
+
 ...
 resourceId: 'aparts',
 columns: [
@@ -109,18 +112,18 @@ columns: [
 Now to handle virtual `password` field we use hooks:
  
 
-```ts title="./index.ts"
+```ts title="./resources/adminuser.ts"
   hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        record.passwordHash = await AdminForth.Utils.generatePasswordHash(record.password);
+        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
         return { ok: true };
       }
     },
     edit: {
       beforeSave: async ({ updates, adminUser, resource }: { updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
         if (updates.password) {
-          updates.passwordHash = await AdminForth.Utils.generatePasswordHash(updates.password);
+          updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
         }
         return { ok: true }
       },

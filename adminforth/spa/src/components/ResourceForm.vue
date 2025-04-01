@@ -276,7 +276,7 @@ const columnOptions = computedAsync(async () => {
           },
         });
 
-        if (!column.required[props.source]) list.items.push({ value: null, label: column.foreignResource.unsetLabel });
+        if (!column.required[props.source] && !column.isArray?.enabled) list.items.push({ value: null, label: column.foreignResource.unsetLabel });
 
         return { [column.name]: list.items };
       }
