@@ -733,4 +733,4 @@ export default {
     ...
   ],
 ```
-This way, multiselect field displayed on filter page will be replaced with a default select field allowing only only value to be selected.
+This way, multiselect field displayed on filter page will be replaced with a default select field allowing only a single value to be selected.
