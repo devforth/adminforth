@@ -454,6 +454,7 @@ export interface AdminForthResourceInputCommon {
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
