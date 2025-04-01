@@ -34,7 +34,7 @@ import adminforth from '@/adminforth';
 const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
 ```
 
-## Ussage example
+## Usage example
 
 Create a Vue component in the custom directory of your project, e.g. `Alerts.vue`:
 
