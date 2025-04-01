@@ -10,10 +10,9 @@ import UploadPlugin from "../../plugins/adminforth-upload";
 import ImportExportPlugin from "../../plugins/adminforth-import-export/index.js";
 import { v1 as uuid } from "uuid";
 import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
-import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit";
 import { AdminForthResourceInput } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
-import InlineCreatePlugin from "../../plugins/adminforth-inline-create";
+
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" };
@@ -191,8 +190,7 @@ export default {
       showIn: {create: true, edit: true, filter: true, show: true},
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
-      // editReadonly: true, // you can set field to be readonly on edit page
-      type: AdminForthDataTypes.DECIMAL,
+      editReadonly: true, // you can set field to be readonly on edit page
       
     },
     {
@@ -300,32 +298,21 @@ export default {
             preview: {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-              // showInList: true,
-              // maxWidth: "200px",
-              maxWidth: "40px",
-              maxListWidth: "300px",
-              minWidth: "200px",
-              // minListWidth: "100px",
-              // minShowWidth: "200px",
-
+              showInList: true,
+              maxWidth: "200px",
             },
           }),
         ]
       : []),
     new ImportExportPlugin({}),
-    // new TextCompletePlugin({
-    //   fieldName: "title",
-    //   expert: {
-    //     debounceTime: 250,
-    //   },
-    //   adapter: new CompletionAdapterOpenAIChatGPT({
-    //     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    //   }),
-    // }),
-    new InlineCreatePlugin({
-    }),
-    new ListInPlaceEditPlugin({
-      columns: ["title", "price", "number_of_rooms", "description", "listed", "room_sizes"] 
+    new TextCompletePlugin({
+      fieldName: "title",
+      expert: {
+        debounceTime: 250,
+      },
+      adapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+      }),
     }),
     // new TextCompletePlugin({
     //   openAiApiKey: process.env.OPENAI_API_KEY as string,

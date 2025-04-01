@@ -30,16 +30,16 @@ export default {
     {
       name: 'owner',
       type: AdminForthDataTypes.STRING,
-      // enum: [
-      //   {
-      //     value: 'clinic',
-      //     label: 'Clinic',
-      //   },
-      //   {
-      //     value: 'provider',
-      //     label: 'Provider',
-      //   },
-      // ],
+      enum: [
+        {
+          value: 'clinic',
+          label: 'Clinic',
+        },
+        {
+          value: 'provider',
+          label: 'Provider',
+        },
+      ],
       showIn: { create: false, edit: false },
     },
     {
