@@ -56,28 +56,22 @@ services:
       - mysql-data:/var/lib/mysql
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    command: start-dev --import-realm
-    environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
-      - DB_VENDOR=postgres
-      - DB_ADDR=pg
-      - DB_DATABASE=demo
-      - DB_USER=demo
-      - DB_PASSWORD=demo
-      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/keycloak-realm.json
-      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
-      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
-      - KEYCLOAK_URL=${KEYCLOAK_URL}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
-    ports:
-      - "8080:8080"
-    depends_on:
-      - pg
-    volumes:
-      - keycloak-data:/opt/keycloak/data
-      - ./keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json
+      image: quay.io/keycloak/keycloak:latest
+      command: start-dev
+      environment:
+        - KEYCLOAK_ADMIN=admin
+        - KEYCLOAK_ADMIN_PASSWORD=admin
+        - DB_VENDOR=postgres
+        - DB_ADDR=pg
+        - DB_DATABASE=demo
+        - DB_USER=demo
+        - DB_PASSWORD=demo
+      ports:
+        - "8080:8080"
+      depends_on:
+        - pg
+      volumes:
+        - keycloak-data:/opt/keycloak/data
 
 
 volumes:
