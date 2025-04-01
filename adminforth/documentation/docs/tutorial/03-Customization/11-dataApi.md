@@ -108,13 +108,13 @@ const schools = await admin.resource('schools').list(
 );
 ```
 
-Get all users that have gmail address OR the ones created not in 2024
+Get all users that have gmail address AND the ones created not in 2024
 
 ```ts
 const users = await admin.resource('adminuser').list(
-  Filters.OR([
+  Filters.AND([
     Filters.LIKE('email', '@gmail.com'),
-    Filters.AND([
+    Filters.OR([
       Filters.LT('createdAt', '2024-01-01T00:00:00.000Z'),
       Filters.GTE('createdAt', '2025-01-01T00:00:00.000Z'),
     ]),
