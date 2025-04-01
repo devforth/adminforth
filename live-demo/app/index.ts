@@ -141,7 +141,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
     admin.express.authorize(
       async (req, res) => {
-        const db = admin.resource('aparts').dataConnector.db;
+        const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
           `SELECT 

@@ -6,7 +6,7 @@ services:
       ports:
         - '8124:8123'
         - '9001:9000'
-      image: clickhouse/clickhouse-server
+      image: clickhouse/clickhouse-server:24.12
       restart: always
       environment:
         CLICKHOUSE_USER: demo
@@ -55,8 +55,28 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
+  keycloak:
+      image: quay.io/keycloak/keycloak:latest
+      command: start-dev
+      environment:
+        - KEYCLOAK_ADMIN=admin
+        - KEYCLOAK_ADMIN_PASSWORD=admin
+        - DB_VENDOR=postgres
+        - DB_ADDR=pg
+        - DB_DATABASE=demo
+        - DB_USER=demo
+        - DB_PASSWORD=demo
+      ports:
+        - "8080:8080"
+      depends_on:
+        - pg
+      volumes:
+        - keycloak-data:/opt/keycloak/data
+
+
 volumes:
   clickhouse-data:
   pg-data:
   mongo-data1:
   mysql-data:
+  keycloak-data:

@@ -44,7 +44,7 @@ Create a component `PropertyCost.vue`:
 </template>
 
 <script setup lang="ts">
-import { onMounted, Ref } from 'vue';
+import { onMounted, onUnmounted, Ref } from 'vue';
 import { ref } from 'vue';
 import websocket from '@/websocket';
 import { IconDollarOutline } from '@iconify-prerendered/vue-flowbite';
@@ -65,7 +65,7 @@ onMounted(() => {
   });
 });
 
-onOnUnmounted(() => {
+onUnmounted(() => {
   // will be called on logout
   websocket.unsubscribeAll();
 });
@@ -187,6 +187,7 @@ const admin = new AdminForth({
         // don't allow anonymous users to subscribe
 //diff-add
         return false;
+//diff-add
       }
 //diff-add
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);

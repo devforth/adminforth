@@ -117,6 +117,30 @@ If you wish to enforce 2FA only for specific users, you can again use `usersFilt
 
 You can even add a boolean column to the user table to store whether the user should use 2FA or not:
 
+In `schema.prisma`:
+
+```ts title='./schema.prisma'
+model adminuser {
+  id            String     @id
+  created_at    DateTime
+  email         String   @unique
+  role          String
+  password_hash String
+  secret2fa     String?
+//diff-add
+  use2fa        Boolean?  @default(false)
+}
+```
+
+Then run:
+
+```bash
+npx --yes prisma migrate dev --name add-use2fa
+```
+
+Then in `adminuser.ts`:
+
+
 ```ts title='./adminuser.ts'
 {
     resourceId: 'adminuser',
@@ -130,15 +154,15 @@ You can even add a boolean column to the user table to store whether the user sh
     ],
     options: {
       allowedActions: {
-        delete: ({ adminUser }: { adminUser: AdminUser }) => {
+        delete: async ({ adminUser }: { adminUser: AdminUser }) => {
           // only superadmin can delete users
           return adminUser.dbUser.role === 'superadmin';
         },
-        create: ({ adminUser }: { adminUser: AdminUser }) => {
+        create: async ({ adminUser }: { adminUser: AdminUser }) => {
           // only superadmin can create users
           return adminUser.dbUser.role === 'superadmin';
         },
-        edit: ({ adminUser, meta }: { adminUser: AdminUser }) => {
+        edit: async ({ adminUser, meta }: { adminUser: AdminUser }) => {
           // user can modify only his own record
           const { oldRecord } = meta;
           return adminUser.dbUser.id === oldRecord.id;
@@ -158,9 +182,9 @@ You can even add a boolean column to the user table to store whether the user sh
 
 ## Allow Specific Users to Skip Two-Factor Authentication Setup
 
-By default, all users are required to setup Two-Factor Authentication.
+By default, all users are required to setup Two-Factor Authentication if it is enabled.
 
-If you want to allow specific users to skip the 2FA setup, you can use the `usersFilterToAllowSkipSetup` option:
+If you want to allow specific users to **skip** the 2FA setup, you can use the `usersFilterToAllowSkipSetup` option:
 
 ```ts title='./adminuser.ts'
 ...
