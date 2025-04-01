@@ -1,4 +1,4 @@
-import { IAdminForthDataSourceConnector, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
@@ -162,52 +162,99 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthFilterOperators.ILIKE]: 'ILIKE',
       [AdminForthFilterOperators.IN]: 'IN',
       [AdminForthFilterOperators.NIN]: 'NOT IN',
+      [AdminForthFilterOperators.AND]: 'AND',
+      [AdminForthFilterOperators.OR]: 'OR',
     };
 
     SortDirectionsMap = {
       [AdminForthSortDirections.asc]: 'ASC',
       [AdminForthSortDirections.desc]: 'DESC',
     };
-    
-    whereClause(
-        resource: AdminForthResource,
-        filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
-    ): string {
-      return  filters.length ? `WHERE ${filters.map((f, i) => {
-        const column = resource.dataSourceColumns.find((col) => col.name == f.field);
-        let placeholder = `{f${i}:${column._underlineType}}`;
-        let field = f.field;
-        let operator = this.OperatorsMap[f.operator];
-        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          placeholder = `(${f.value.map((_, j) => `{p${i}_${j}:${
-            column._underlineType
-          }}`).join(', ')})`;
+  
+    getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
+      if ((filter as IAdminForthSingleFilter).field) {
+        // filter is a Single filter
+        let field = (filter as IAdminForthSingleFilter).field;
+        const column = resource.dataSourceColumns.find((col) => col.name == field);
+        let placeholder = `{f$?:${column._underlineType}}`;
+        let operator = this.OperatorsMap[filter.operator];
+        if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+          placeholder = `(${filter.value.map((_, j) => `{p$?:${column._underlineType}}`).join(', ')})`;
         }
 
-        return `${field} ${operator} ${placeholder}`
-      }).join(' AND ')}` : '';
+        return `${field} ${operator} ${placeholder}`;
+      }
+
+      // filter is a AndOr filter
+      return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
+        if ((f as IAdminForthSingleFilter).field) {
+          // subFilter is a Single filter
+          return this.getFilterString(resource, f);
+        }
+
+        // subFilter is a AndOr filter - add parentheses
+        return `(${this.getFilterString(resource, f)})`;
+      }).join(` ${this.OperatorsMap[filter.operator]} `);
+    }
+    
+    getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
+      if ((filter as IAdminForthSingleFilter).field) {
+        // filter is a Single filter
+        if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+          return [{ 'f': `%${filter.value}%` }];
+        } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+          return [{ 'p': filter.value }];
+        } else {
+          return [{ 'f': (filter as IAdminForthSingleFilter).value }];
+        }
+      }
+
+      // filter is a AndOrFilter
+      return (filter as IAdminForthAndOrFilter).subFilters.reduce((params: any[], f: IAdminForthSingleFilter | IAdminForthAndOrFilter) => {
+        return params.concat(this.getFilterParams(f));
+      }, []);
     }
 
-    whereParams(
-        filters: { field: string, operator: AdminForthFilterOperators, value: any }[]
-    ): any {
-      const params = {};
-      filters.length ? filters.forEach((f, i) => {
-        // for arrays do set in map
-        const v = f.value;
-
-        if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
-          params[`f${i}`] = `%${v}%`;
-        } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          v.forEach((_, j) => {
-            params[`p${i}_${j}`] = v[j];
-          });
-        } else {
-          params[`f${i}`] = v;
+    whereParams(filters: IAdminForthAndOrFilter): any {
+      if (filters.subFilters.length === 0) {
+        return {};
+      }
+      const paramsArray = this.getFilterParams(filters);
+      const params = paramsArray.reduce((acc, param, paramIndex) => {
+        if (param.f !== undefined) {
+          acc[`f${paramIndex}`] = param.f;
         }
-      }) : [];
+        else if (param.p !== undefined) {
+          param.p.forEach((paramValue: any, paramValueIndex: number) => acc[`p${paramIndex}_${paramValueIndex}`] = paramValue);
+        }
+
+        return acc;
+      }, {});
 
       return params;
+  }
+
+    whereClause(
+      resource: AdminForthResource,
+      filters: IAdminForthAndOrFilter
+    ): {
+      where: string,
+      params: any,
+    } {
+      if (filters.subFilters.length === 0) {
+        return {
+          where: '',
+          params: {},
+        }
+      }
+      const params = this.whereParams(filters);
+      const where = Object.keys(params).reduce((w, paramKey) => {
+        // remove first char of string (will be "f" or "p") to leave only index
+        const keyIndex = paramKey.substring(1);
+        return w.replace('$?', keyIndex);
+      }, `WHERE ${this.getFilterString(resource, filters)}`);
+
+      return { where, params };
     }
 
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
@@ -215,7 +262,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         limit: number, 
         offset: number, 
         sort: { field: string, direction: AdminForthSortDirections }[], 
-        filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+        filters: IAdminForthAndOrFilter,
     }): Promise<any[]> {
       const columns = resource.dataSourceColumns.map((col) => {
         // for decimal cast to string
@@ -226,9 +273,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(', ');
       const tableName = resource.table;
 
-      const where = this.whereClause(resource, filters);
-
-      const params = this.whereParams(filters);
+      const { where, params } = this.whereClause(resource, filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
@@ -262,16 +307,15 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       filters,
     }: {
       resource: AdminForthResource;
-      filters: { field: string, operator: AdminForthFilterOperators, value: any }[];
+      filters: IAdminForthAndOrFilter;
     }): Promise<number> {
       const tableName = resource.table;
-      const where = this.whereClause(resource, filters);
-      const d = this.whereParams(filters);
+      const { where, params } = this.whereClause(resource, filters);
 
       const countQ = await this.client.query({
         query: `SELECT COUNT(*) as count FROM ${tableName} ${where}`,
         format: 'JSONEachRow',
-        query_params: d,
+        query_params: params,
       });
       const countResp = await countQ.json()
       return +countResp[0]['count'];
@@ -303,7 +347,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         columns: columns,
         values: [Object.values(record)],
       });
-      return ''; // todo
+      return '';
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource, recordId: any, newValues: any }) {

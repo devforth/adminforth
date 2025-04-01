@@ -216,11 +216,13 @@ Now you can use this component in the configuration of the resource:
     ...
     {
       name: 'country',
+//diff-add
       components: {
 //diff-add
         edit: '@@/CountryDropdown.vue',
 //diff-add
         create: '@@/CountryDropdown.vue',
+//diff-add
       },
       ...
     },
@@ -236,7 +238,7 @@ Custom componets can emit `update:inValidity` event to parent to say that the fi
 
 You can define this emit as:
 
-```ts 
+```ts title='./custom/<AnyYourComponent>.vue'
 const emit = defineEmits([
   "update:value", 
 //diff-add  

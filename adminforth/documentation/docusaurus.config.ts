@@ -76,7 +76,7 @@ const config: Config = {
           "../types/Back.ts",
           "../types/Common.ts",
           "../types/FrontendAPI.ts", 
-          "../plugins/**/types.ts",
+       //   "../plugins/**/types.ts",
         ],
         plugin: ["./typedoc-plugin.mjs"],
         readme: "none",

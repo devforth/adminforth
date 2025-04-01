@@ -159,7 +159,7 @@ Audit log is able to catch only standard actions like `create`, `update`, `delet
 
 If you have a custom, self coded actions in your API, you can log them by calling `logCustomAction` method of `AuditLogPlugin` instance:
 
-```ts title="./resources/auditLogs.ts"
+```ts title="./resources/index.ts"
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
@@ -193,8 +193,8 @@ model audit_logs {
   action            String    /// type of change (create, edit, delete)
   diff              String?   /// delta betwen before/after versions
   record_id         String?   /// identifier of record that been changed
-  //diff-add
-  ip_address        STRING?   /// client ip address
+//diff-add
+  ip_address        String?   /// client ip address
 }
 ```
 
@@ -233,7 +233,7 @@ Also, update the resource configuration in `./resources/auditLogs.ts`:
           resourceUserIdColumnName: 'user_id',
           resourceRecordIdColumnName: 'record_id',
           resourceCreatedColumnName: 'created_at'
-          //diff-add
+//diff-add
           resourceIpColumnName: "ip_address",
         }
       }),

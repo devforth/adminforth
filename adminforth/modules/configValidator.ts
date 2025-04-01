@@ -454,6 +454,9 @@ export default class ConfigValidator implements IConfigValidator {
             debounceTimeMs: 10,
             substringSearch: true,
           };
+          if (col.enum || col.foreignResource) {
+            col.filterOptions.multiselect = true;
+          }
         } else {
           if (col.filterOptions.debounceTimeMs !== undefined) {
             if (typeof col.filterOptions.debounceTimeMs !== 'number') {
@@ -469,6 +472,18 @@ export default class ConfigValidator implements IConfigValidator {
             }
           } else {
             col.filterOptions.substringSearch = true;
+          }
+
+          if (col.filterOptions.multiselect !== undefined) {
+            if (typeof col.filterOptions.multiselect !== 'boolean') {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" has multiselectFilter in filterOptions that is not boolean`);
+            }
+
+            if (!col.enum && !col.foreignResource) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter in filterOptions should be set only for enum or foreign resource columns`);
+            }
+          } else if (col.enum || col.foreignResource) {
+            col.filterOptions.multiselect = true;
           }
         }
 

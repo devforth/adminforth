@@ -17,6 +17,8 @@ import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oaut
 import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
 
 import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
+import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
+import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
 
 export default {
   dataSource: "maindb",
@@ -94,16 +96,25 @@ export default {
         new AdminForthAdapterGithubOauth2({
           clientID: process.env.GITHUB_CLIENT_ID,
           clientSecret: process.env.GITHUB_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
         }),
         new AdminForthAdapterGoogleOauth2({
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
         }),
         new AdminForthAdapterFacebookOauth2({
           clientID: process.env.FACEBOOK_CLIENT_ID,
           clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        }),
+        new AdminForthAdapterKeycloakOauth2({
+          clientID: process.env.KEYCLOAK_CLIENT_ID,
+          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+          keycloakUrl: process.env.KEYCLOAK_URL,
+          realm: process.env.KEYCLOAK_REALM,
+        }),
+        new AdminForthAdapterMicrosoftOauth2({
+          clientID: process.env.MICROSOFT_CLIENT_ID,
+          clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+          useOpenID: true,
         }),
       ],
       emailField: 'email',
