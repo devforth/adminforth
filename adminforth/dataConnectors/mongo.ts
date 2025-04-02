@@ -122,7 +122,10 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }
 
         // filter is a AndOr filter
-        return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters.map((f) => this.getFilterQuery(resource, f)));
+        return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters
+            // mongodb should ignore raw sql
+            .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
+            .map((f) => this.getFilterQuery(resource, f)));
     }
     
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
@@ -158,7 +161,13 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         resource: AdminForthResource,
         filters: IAdminForthAndOrFilter,
     }): Promise<number> {
-
+        if (filters) {
+            // validate and normalize in case this method is called from dataAPI
+            const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+            if (!filterValidation.ok) {
+                throw new Error(filterValidation.error);
+            }
+        }
         const collection = this.client.db().collection(resource.table);
         const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
         return await collection.countDocuments(query);
