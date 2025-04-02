@@ -56,12 +56,17 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }, { ok: true, error: '' });
     }
 
-    if (!filters.operator) {
-      return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
-    }
-
     if ((filters as IAdminForthSingleFilter).field) {
       // if "field" is present, filter must be Single
+      if (!filters.operator) {
+        return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).value === undefined) {
+        return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+        return { ok: false, error: `Field "insecureRawSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
+      }
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
       AdminForthFilterOperators.LIKE, AdminForthFilterOperators.ILIKE, AdminForthFilterOperators.IN,
@@ -73,6 +78,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), (filters as IAdminForthSingleFilter).field);
         throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
       }
+      // value normalization
       if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
         if (!Array.isArray(filters.value)) {
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
@@ -85,8 +91,19 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       } else {
         (filters as IAdminForthSingleFilter).value = this.setFieldValue(fieldObj, (filters as IAdminForthSingleFilter).value);
       }
+    } else if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+      // if "insecureRawSQL" filter is insecure sql string
+      if ((filters as IAdminForthSingleFilter).operator) {
+        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).value !== undefined) {
+        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      }
     } else if ((filters as IAdminForthAndOrFilter).subFilters) {
       // if "subFilters" is present, filter must be AndOr
+      if (!filters.operator) {
+        return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
       if (![AdminForthFilterOperators.AND, AdminForthFilterOperators.OR].includes(filters.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
