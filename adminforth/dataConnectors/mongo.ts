@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
+import { Decimal128 } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -109,7 +110,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return value ? true : false;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
-            return value?.toString();
+            return Decimal128.fromString(value?.toString());
         }
         return value;
     }
@@ -139,6 +140,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
+
 
         const collection = this.client.db().collection(tableName);
         const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
