@@ -40,6 +40,7 @@ export default {
     },
     { 
       name: 'email', 
+      type: AdminForthDataTypes.STRING,
       required: true,
       isUnique: true,
       validation: [
