@@ -7,7 +7,10 @@ export interface EmailAdapter {
     text: string,
     html: string,
     subject: string
-  ): Promise<void>;
+  ): Promise<{
+    error?: string;
+    ok?: boolean;
+  }>;
 }
 
 export interface CompletionAdapter {
