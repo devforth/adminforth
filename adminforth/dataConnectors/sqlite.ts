@@ -172,9 +172,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         return `${field} ${operator} ${placeholder}`;
       }
 
+      // filter is a single insecure raw sql
+      if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+        return (filter as IAdminForthSingleFilter).insecureRawSQL;
+      }
+
       // filter is a AndOr filter
       return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
-        if ((f as IAdminForthSingleFilter).field) {
+        if ((f as IAdminForthSingleFilter).field || (f as IAdminForthSingleFilter).insecureRawSQL) {
           // subFilter is a Single filter
           return this.getFilterString(f);
         }
@@ -193,6 +198,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         } else {
           return [(filter as IAdminForthSingleFilter).value];
         }
+      }
+
+      // filter is a Single insecure raw sql
+      if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+        return [];
       }
 
       // filter is a AndOrFilter
@@ -234,6 +244,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
 
     async getCount({ resource, filters }) {
       if (filters) {
+      // validate and normalize in case this method is called from dataAPI
         const filterValidation = this.validateAndNormalizeFilters(filters, resource);
         if (!filterValidation.ok) {
           throw new Error(filterValidation.error);
