@@ -88,7 +88,7 @@ export default {
   hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        record.passwordHash = await AdminForth.Utils.generatePasswordHash(record.password);
+        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
         return { ok: true };
       }
     },
@@ -96,7 +96,7 @@ export default {
       beforeSave: async ({ updates, adminUser, resource }: { updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
         console.log('Updating user', updates);
         if (updates.password) {
-          updates.passwordHash = await AdminForth.Utils.generatePasswordHash(updates.password);
+          updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
         }
         return { ok: true }
       },
