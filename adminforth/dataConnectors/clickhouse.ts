@@ -185,9 +185,14 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         return `${field} ${operator} ${placeholder}`;
       }
 
+      // filter is a single insecure raw sql
+      if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+        return (filter as IAdminForthSingleFilter).insecureRawSQL;
+      }
+
       // filter is a AndOr filter
       return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
-        if ((f as IAdminForthSingleFilter).field) {
+        if ((f as IAdminForthSingleFilter).field || (f as IAdminForthSingleFilter).insecureRawSQL) {
           // subFilter is a Single filter
           return this.getFilterString(resource, f);
         }
@@ -207,6 +212,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         } else {
           return [{ 'f': (filter as IAdminForthSingleFilter).value }];
         }
+      }
+
+      // filter is a Single insecure raw sql
+      if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+        return [];
       }
 
       // filter is a AndOrFilter
@@ -310,6 +320,13 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       filters: IAdminForthAndOrFilter;
     }): Promise<number> {
       const tableName = resource.table;
+      // validate and normalize in case this method is called from dataAPI
+      if (filters) {
+        const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+        if (!filterValidation.ok) {
+          throw new Error(filterValidation.error);
+        }
+      }
       const { where, params } = this.whereClause(resource, filters);
 
       const countQ = await this.client.query({

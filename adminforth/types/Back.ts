@@ -107,12 +107,13 @@ export interface IExpressHttpServer extends IHttpServer {
 
 
 export interface IAdminForthSingleFilter {
-  field: string;
-  operator: AdminForthFilterOperators.EQ | AdminForthFilterOperators.NE
+  field?: string;
+  operator?: AdminForthFilterOperators.EQ | AdminForthFilterOperators.NE
   | AdminForthFilterOperators.GT | AdminForthFilterOperators.LT | AdminForthFilterOperators.GTE
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
-  value: any;
+  value?: any;
+  insecureRawSQL?: string;
 }
 export interface IAdminForthAndOrFilter {
   operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;
