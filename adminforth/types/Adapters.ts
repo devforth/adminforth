@@ -32,4 +32,5 @@ export interface OAuth2Adapter {
   getAuthUrl(): string;
   getTokenFromCode(code: string, redirect_uri: string): Promise<{ email: string }>;
   getIcon(): string;
+  getButtonText?(): string;
 }
