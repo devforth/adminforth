@@ -9,7 +9,6 @@ import ForeignInlineListPlugin from "../../plugins/adminforth-foreign-inline-lis
 import OpenSignupPlugin from "../../plugins/adminforth-open-signup";
 import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
 import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
-import { v1 as uuid } from "uuid";
 import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
 
 import OAuthPlugin  from "../../plugins/adminforth-oauth";
@@ -19,6 +18,7 @@ import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oau
 import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
 import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
+import { randomUUID } from "crypto";
 
 declare global {
   namespace NodeJS {
@@ -163,7 +163,7 @@ export default {
     {
       name: "id",
       primaryKey: true,
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       showIn: ["list", "filter", "show"], // the default is full set
     },
     {
