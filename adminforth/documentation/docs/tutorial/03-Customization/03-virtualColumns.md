@@ -67,6 +67,8 @@ columns: [
       resource: AdminForthResourceCommon;
       adminUser: AdminUser
   }>();
+
+###
     
    function getFlagEmojiFromIso(iso) {
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
@@ -77,6 +79,66 @@ columns: [
 Here is how it looks:
 
 ![alt text](<Virtual columns.png>)
+
+## Virtual columns for filtering.
+
+Virtual column can also be used as a shorthand for a complex filtering.
+Lets say we want to divide apartments into two types: "base" ones and "luxury" and then allow admins to filter apartments by this category. Condition for being a "luxury" apartment is either having more then 80 sq.m area or costing more then 100k.
+One way to do it is to actually add a real column to a table and then fill it every time new apartment is added. A more simple way is to add a virtual column and then use `list.beforeDatasourceRequest` hook to replace filtering on this column with desired one.
+For this purpose following changes will be required for apartments config:
+
+```ts title='./resources/apartments.ts'
+...
+resourceId: 'aparts',
+...
+hooks: {
+...
+  list: {
+    beforeDatasourceRequest: async ({ query }: { query: any }) => {
+      query.filters = query.filters.map((filter: any) => {
+        // replace apartment_type filter with complex one
+        if (filter.field === 'apartment_type') {
+          if (filter.value === 'luxury') {
+            return Filters.OR([Filters.GTE('square_meter', 80), Filters.GTE('price', 100000)]);
+          }
+
+          // filter for "base" apartment as default
+          return Filters.AND([Filters.LT('square_meter', 80), Filters.LT('price', 100000)]);
+        }
+
+        return filter;
+      });
+      return { ok: true, error: "" };
+    },
+    ...
+  },
+...
+},
+...
+columns: [
+  ...
+  {
+    name: "apartment_type",
+    virtual: true,
+    showIn: { all: false, filter: true }, // hide it from display everywhere, except filter page
+    enum: [
+      {
+        value: 'base',
+        label: 'Base',
+      },
+      {
+        value: 'luxury',
+        label: 'Luxury'
+      },
+    ],
+    filterOptions: {
+      multiselect: false, // allow to only select one category when filtering
+    },
+  },
+  ...
+]
+```
+This way, when admin selects, for example, "Luxury" option for "Apartment Type" filter, it will be replace with a more complex "or" filter.
 
 
 ## Virtual columns for editing.
