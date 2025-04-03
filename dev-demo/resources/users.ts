@@ -20,6 +20,29 @@ import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-
 import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: string;
+      AWS_ACCESS_KEY_ID: string;
+      AWS_SECRET_ACCESS_KEY: string;
+      GITHUB_CLIENT_ID: string;
+      GITHUB_CLIENT_SECRET: string;
+      GOOGLE_CLIENT_ID: string;
+      GOOGLE_CLIENT_SECRET: string;
+      FACEBOOK_CLIENT_ID: string;
+      FACEBOOK_CLIENT_SECRET: string;
+      KEYCLOAK_CLIENT_ID: string;
+      KEYCLOAK_CLIENT_SECRET: string;
+      KEYCLOAK_URL: string;
+      KEYCLOAK_REALM: string;
+      MICROSOFT_CLIENT_ID: string;
+      MICROSOFT_CLIENT_SECRET: string;
+
+    }
+  }
+}
+
 export default {
   dataSource: "maindb",
   table: "users",
@@ -105,16 +128,16 @@ export default {
           clientID: process.env.FACEBOOK_CLIENT_ID,
           clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         }),
+        new AdminForthAdapterMicrosoftOauth2({
+          clientID: process.env.MICROSOFT_CLIENT_ID,
+          clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+          useOpenID: true,
+        }),
         new AdminForthAdapterKeycloakOauth2({
           clientID: process.env.KEYCLOAK_CLIENT_ID,
           clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
           keycloakUrl: process.env.KEYCLOAK_URL,
           realm: process.env.KEYCLOAK_REALM,
-        }),
-        new AdminForthAdapterMicrosoftOauth2({
-          clientID: process.env.MICROSOFT_CLIENT_ID,
-          clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-          useOpenID: true,
         }),
       ],
       emailField: 'email',
