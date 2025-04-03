@@ -15,7 +15,6 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "adminforth": "^1.5.8-next.29",
     "better-sqlite3": "^10.1.0",
     "express": "^4.21.0",
     "random-words": "^2.0.1",
