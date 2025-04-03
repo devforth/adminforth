@@ -186,9 +186,14 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       return `${field} ${operator} ${placeholder}`;
     }
 
+    // filter is a single insecure raw sql
+    if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+      return (filter as IAdminForthSingleFilter).insecureRawSQL;
+    }
+
     // filter is a AndOr filter
     return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
-      if ((f as IAdminForthSingleFilter).field) {
+      if ((f as IAdminForthSingleFilter).field || (f as IAdminForthSingleFilter).insecureRawSQL) {
         // subFilter is a Single filter
         return this.getFilterString(f);
       }
@@ -207,6 +212,11 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       } else {
         return [(filter as IAdminForthSingleFilter).value];
       }
+    }
+
+    // filter is a Single insecure raw sql
+    if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+      return [];
     }
 
     // filter is a AndOrFilter
@@ -252,6 +262,13 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
   async getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {
     const tableName = resource.table;
+    // validate and normalize in case this method is called from dataAPI
+    if (filters) {
+      const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+      if (!filterValidation.ok) {
+        throw new Error(filterValidation.error);
+      }
+    }
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
     const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
     if (process.env.HEAVY_DEBUG_QUERY) {
