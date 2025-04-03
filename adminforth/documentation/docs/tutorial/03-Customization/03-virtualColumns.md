@@ -138,6 +138,7 @@ columns: [
   ...
 ]
 ```
+
 This way, when admin selects, for example, "Luxury" option for "Apartment Type" filter, it will be replace with a more complex "or" filter.
 
 ### Custom SQL queries with `insecureRawSQL`
