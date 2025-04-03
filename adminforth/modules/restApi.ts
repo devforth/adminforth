@@ -1019,7 +1019,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const fieldName = column.name;
               if (fieldName in record) {
                 if (!column.showIn?.create || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation`, ok: false };
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false, please set it to true)`, ok: false };
                 }
               }
             }
@@ -1115,7 +1115,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const fieldName = column.name;
               if (fieldName in record) {
                 if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false, please set it to true)`, ok: false };
                 }
               }
             }
