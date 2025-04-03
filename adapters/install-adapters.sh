@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses adminforth-google-oauth-adapter adminforth-github-oauth-adapter adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter"
+ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses adminforth-google-oauth-adapter adminforth-github-oauth-adapter adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter adminforth-microsoft-oauth-adapter"
 
 # for each
 install_adapter() {
@@ -15,7 +15,6 @@ install_adapter() {
       cd "$adapter"
   fi
 
-  npm ci
   cd ..
 }
 
