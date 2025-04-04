@@ -243,6 +243,7 @@ plugins: [
     adapters: [
       ...
       new AdminForthAdapterKeycloakOauth2({
+          name: "Keycloak",
           clientID: process.env.KEYCLOAK_CLIENT_ID,
           clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
           keycloakUrl: process.env.KEYCLOAK_URL,
