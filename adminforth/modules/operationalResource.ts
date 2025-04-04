@@ -1,28 +1,6 @@
 import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/Back.js';
 import { AdminForthFilterOperators } from '../types/Common.js';
 
-
-function filtersIfFilter(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
-  if (!filter) {
-    // if no filter, return empty "and" filter
-    return { operator: AdminForthFilterOperators.AND, subFilters: [] };
-  }
-  if (typeof filter !== 'object') {
-    throw new Error(`Filter should be an array or an object`);
-  }
-  if (Array.isArray(filter)) {
-    // if filter is an array, combine them using "and" operator
-    return { operator: AdminForthFilterOperators.AND, subFilters: filter };
-  }
-  if ((filter as IAdminForthAndOrFilter).subFilters) {
-    // if filter is already AndOr filter - return as is
-    return filter as IAdminForthAndOrFilter;
-  }
-
-  // by default, assume filter is Single filter, turn it into AndOr filter
-  return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
-}
-
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
   return (Array.isArray(sort) ? sort : [sort]) as IAdminForthSort[];
 }
@@ -40,7 +18,7 @@ export default class OperationalResource implements IOperationalResource {
     return (
       await this.dataConnector.getData({
         resource: this.resourceConfig,
-        filters: filtersIfFilter(filter),
+        filters: this.dataConnector.validateAndNormalizeInputFilters(filter),
         limit: 1,
         offset: 0,
         sort: [],
@@ -73,7 +51,7 @@ export default class OperationalResource implements IOperationalResource {
 
     const { data } = await this.dataConnector.getData({
       resource: this.resourceConfig,
-      filters: filtersIfFilter(filter),
+      filters: this.dataConnector.validateAndNormalizeInputFilters(filter),
       limit: appliedLimit,
       offset: appliedOffset,
       sort: sortsIfSort(sort),
@@ -86,7 +64,7 @@ export default class OperationalResource implements IOperationalResource {
   async count(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): Promise<number> {
     return await this.dataConnector.getCount({
       resource: this.resourceConfig,
-      filters: filtersIfFilter(filter),
+      filters: this.dataConnector.validateAndNormalizeInputFilters(filter),
     });
   }
 

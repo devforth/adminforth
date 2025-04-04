@@ -42,6 +42,27 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     return data.length > 0 ? data[0] : null;
   }
 
+  validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
+    if (!filter) {
+      // if no filter, return empty "and" filter
+      return { operator: AdminForthFilterOperators.AND, subFilters: [] };
+    }
+    if (typeof filter !== 'object') {
+      throw new Error(`Filter should be an array or an object`);
+    }
+    if (Array.isArray(filter)) {
+      // if filter is an array, combine them using "and" operator
+      return { operator: AdminForthFilterOperators.AND, subFilters: filter };
+    }
+    if ((filter as IAdminForthAndOrFilter).subFilters) {
+      // if filter is already AndOr filter - return as is
+      return filter as IAdminForthAndOrFilter;
+    }
+
+    // by default, assume filter is Single filter, turn it into AndOr filter
+    return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
+  }
+
   validateAndNormalizeFilters(filters: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, resource: AdminForthResource): { ok: boolean, error: string } {
     if (Array.isArray(filters)) {
       // go through all filters in array and call validation+normalization for each
