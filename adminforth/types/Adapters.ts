@@ -7,7 +7,10 @@ export interface EmailAdapter {
     text: string,
     html: string,
     subject: string
-  ): Promise<void>;
+  ): Promise<{
+    error?: string;
+    ok?: boolean;
+  }>;
 }
 
 export interface CompletionAdapter {
@@ -29,4 +32,5 @@ export interface OAuth2Adapter {
   getAuthUrl(): string;
   getTokenFromCode(code: string, redirect_uri: string): Promise<{ email: string }>;
   getIcon(): string;
+  getButtonText?(): string;
 }
