@@ -27,4 +27,5 @@ plugins: [
 
 Here is how it looks:
 
-![alt text](inline-create.png)
+
+![alt text](localhost_3000_resource_providers.png)
