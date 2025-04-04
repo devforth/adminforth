@@ -12,7 +12,7 @@ import styles from './index.module.css';
 const images = [
   {
     original: require('@site/static/img/previews/login_form.png').default,
-    title: 'Sign in form',
+    title: 'Authentication and Authorization',
     link: '/docs/tutorial/gettingStarted',
     description: 'OWASP-Compliant Sign-In already there'
   },
