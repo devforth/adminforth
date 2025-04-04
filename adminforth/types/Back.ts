@@ -236,6 +236,8 @@ export interface IAdminForthDataSourceConnector {
  */
 export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourceConnector {
 
+  validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter;
+
   getPrimaryKey(resource: AdminForthResource): string;
 
   getData({ resource, limit, offset, sort, filters }: {
