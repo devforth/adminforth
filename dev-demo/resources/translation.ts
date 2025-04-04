@@ -19,7 +19,7 @@ export default {
       // supportedLanguages: ['en', 'uk', 'ja', 'fr'],
       // supportedLanguages: ['en', 'uk'],
 
-      supportedLanguages: ['en', 'uk', 'ar', 'ru', 'zh', 'es', 'hi', 'bn', 'pt', 'ja', 'de', 'tr', 'fr', 'pa', 'ko', 'ur', 'az', 'vi', 'it'],
+      supportedLanguages: ['zh', 'es', 'en', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
 
       // names of the fields in the resource which will store translations
       translationFieldNames: {
@@ -67,7 +67,7 @@ export default {
 
   ],
   options: {
-    listPageSize: 30,
+    listPageSize: 100,
     allowedActions: {
       edit: true,
     }
@@ -88,7 +88,8 @@ export default {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
       showIn: {
-        create: false,
+        all: false,
+        show: true,
       },
     },
     { name: "uk_string", type: AdminForthDataTypes.STRING, label: "Ukrainian" },
