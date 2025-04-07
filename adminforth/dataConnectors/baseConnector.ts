@@ -68,12 +68,28 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       // go through all filters in array and call validation+normalization for each
       // as soon as error is encountered, there is no point in calling validation for other filters
       // if error is not encountered all filters will be validated and normalized
-      return filters.reduce((result, f) => {
+      return filters.reduce((result, f, fIndex) => {
         if (!result.ok) {
           return result;
         }
 
-        return this.validateAndNormalizeFilters(f, resource);
+        const filterValidation = this.validateAndNormalizeFilters(f, resource);
+
+        // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
+        if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
+          const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
+          // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
+          if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
+            filters[fIndex] = {
+              operator: AdminForthFilterOperators.OR,
+              subFilters: f.value.map((v: any) => {
+                return { field: column.name, operator: AdminForthFilterOperators.LIKE, value: v };
+              }),
+            };
+          }
+        }
+
+        return filterValidation;
       }, { ok: true, error: '' });
     }
 
