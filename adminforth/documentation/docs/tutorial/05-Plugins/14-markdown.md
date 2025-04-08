@@ -1,6 +1,8 @@
 # Markdown
 
-The Markdown plugin enables Markdown support in AdminForth, allowing users to create and edit records using Markdown syntax.
+The Markdown plugin enables Markdown support in AdminForth, allowing users to create and edit fields using Markdown syntax and save rich content in Markdown syntax. 
+
+Also, it allows previewing of Markdown fields in the show page.
 
 ## Installation
 
@@ -12,7 +14,7 @@ npm install @adminforth/markdown --save
 
 ### Usage
 
-Configure the plugin in your apartments resource file:
+Instantiate the plugin in your apartments resource file for 'description' field.
 
 ```typescript title="./resources/apartments.ts"
 import MarkdownPlugin from '@adminforth/markdown';
@@ -24,7 +26,9 @@ plugins: [
 ]
 ```
 
-Here is how it looks in create view:
+> Please note that plugin can only work on TEXT and STRING fields
+
+Here is how it looks in the create view:
 
 ![alt text](markdown.png)
 
