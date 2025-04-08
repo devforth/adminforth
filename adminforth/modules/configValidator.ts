@@ -437,7 +437,11 @@ export default class ConfigValidator implements IConfigValidator {
         res.columns = [];
       }
       res.columns = resInput.columns.map((inCol: AdminForthResourceColumnInput, inColIndex) => {
-        const col: Partial<AdminForthResourceColumn> = { ...inCol, showIn: undefined, editingNote: undefined };
+        const col: Partial<AdminForthResourceColumn> = { 
+          ...inCol, showIn: undefined, editingNote: undefined, required: undefined, 
+        };
+
+        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
         // check for duplicate column names
         if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
@@ -705,6 +709,14 @@ export default class ConfigValidator implements IConfigValidator {
             col.components[key] = this.validateComponent(comp, errors);
           }
         }
+        
+        // fixes issues after discover when result of this validation applied to discovered column
+        Object.keys(col).forEach((key) => {
+          if (col[key] === undefined) {
+            delete col[key];
+          }
+        });
+
         return col as AdminForthResourceColumn;
       })
 
