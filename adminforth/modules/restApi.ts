@@ -57,7 +57,7 @@ export async function interpretResource(
     Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
         if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲🚥check allowed ${key}, ${value}`)
+          console.log(`🪲🚥${resource.resourceId}: allowed ${key}: ${value}`)
         }
         if (!neededActions.includes(key as AllowedActionsEnum)) {
           allowedActions[key] = false;
