@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthConfigMenuItem,
   AnnouncementBadgeResponse,
   AdminForthResourcePages,
+  AdminForthResourceColumnInputCommon,
 } from './Common.js';
 import { AnyCnameRecord } from 'dns';
 
@@ -1420,12 +1421,12 @@ export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnInput, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
 }
