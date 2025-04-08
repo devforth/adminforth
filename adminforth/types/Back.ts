@@ -15,7 +15,6 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthResourcePages,
   AdminForthResourceColumnInputCommon,
 } from './Common.js';
-import { AnyCnameRecord } from 'dns';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
@@ -759,7 +758,7 @@ export interface AdminForthActionInput {
   id?: string;
 }
 
-export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
+export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
 
   /**
    * Array of plugins which will be used to modify resource configuration.
@@ -1160,7 +1159,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
