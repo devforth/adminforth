@@ -182,6 +182,16 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         placeholder = `LOWER(?)`;
         field = `LOWER(${field})`;
         operator = 'LIKE';
+      } else if (filter.operator == AdminForthFilterOperators.NE) {
+        if (filter.value === null) {
+          operator = 'IS NOT';
+          placeholder = 'NULL';
+        } else {
+          // for not equal, we need to add a null check
+          // because nullish field will not match != value
+          placeholder = `${placeholder} OR ${field} IS NULL)`;
+          field = `(${field}`;
+        }
       }
       return `${field} ${operator} ${placeholder}`;
     }
