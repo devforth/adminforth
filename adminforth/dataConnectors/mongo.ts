@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { Decimal128 } from 'bson';
+import { Decimal128, ObjectId } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -64,14 +64,6 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }, {});
     }
 
-    getPrimaryKey(resource) {
-        for (const col of resource.dataSourceColumns) {
-            if (col.primaryKey) {
-                return col.name;
-            }
-        }
-    }
-
     getFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
             if (!value) {
@@ -88,6 +80,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            return value?.toString();
+        } else if (field.name === '_id' && !field.fillOnCreate) {
+            // if "_id" was created by mongo it will be ObjectId
             return value?.toString();
         }
 
@@ -111,6 +106,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
           return value ? true : false;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return Decimal128.fromString(value?.toString());
+        } else if (field.name === '_id' && !field.fillOnCreate) {
+            // if "_id" was created by mongo it supposed to be saved as ObjectId
+            return ObjectId.createFromHexString(value);
         }
         return value;
     }
