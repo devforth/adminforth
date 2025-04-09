@@ -178,9 +178,14 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
 
+let isPageLoaded = ref(false);
 
 async function getList() {
   rows.value = null;
+  if (!isPageLoaded.value) {
+    return; 
+  }
+  console.log('getListValidFilters', filtersStore.filers);
   const data = await callAdminForthApi({
     path: '/get_resource_data',
     method: 'POST',
@@ -434,9 +439,6 @@ watch([page], async () => {
   setQuery({ page: page.value });
 });
 
-
-
-
 watch([sort], async () => {
   if (!sort.value.length) {
     setQuery({ sort: undefined });
@@ -445,5 +447,8 @@ watch([sort], async () => {
   setQuery({ sort: SortQuerySerializer.serialize(sort.value) });
 });
 
+watch(() => coreStore.resource, () => {
+  isPageLoaded.value = true;
+});
 
 </script>
