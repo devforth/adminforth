@@ -130,7 +130,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } else if (field.type == AdminForthDataTypes.TIME) {
       return value || null;
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return !!value;
+      return value === null ? null : !!value;
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (typeof value === 'string') {
         try {
@@ -158,7 +158,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return value ? 1 : 0;
+      return value === null ? null : (value ? 1 : 0);
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (field._underlineType === 'json') {
         return value;
