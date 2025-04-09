@@ -185,7 +185,6 @@ async function getList() {
   if (!isPageLoaded.value) {
     return; 
   }
-  console.log('getListValidFilters', filtersStore.filers);
   const data = await callAdminForthApi({
     path: '/get_resource_data',
     method: 'POST',
