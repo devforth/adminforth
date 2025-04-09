@@ -108,7 +108,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value === null ? null : (value ? 1 : 0);
+            return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return Decimal128.fromString(value?.toString());
         }
