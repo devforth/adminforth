@@ -178,7 +178,7 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
 
-let isPageLoaded = ref(false);
+const isPageLoaded = ref(false);
 
 async function getList() {
   rows.value = null;
