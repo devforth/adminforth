@@ -217,6 +217,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 (filter.operator == AdminForthFilterOperators.ILIKE || filter.operator == AdminForthFilterOperators.LIKE)
             ) {
                 field = `cast("${field}" as text)`
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                operator = 'IS';
+                placeholder = 'NULL';
             } else {
                 field = `"${field}"`
             }
@@ -247,6 +250,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return [`%${filter.value}%`];
             } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 return filter.value;
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                return [];
             } else {
                 return [(filter as IAdminForthSingleFilter).value];
             }
