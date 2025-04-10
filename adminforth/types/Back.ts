@@ -13,8 +13,8 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthConfigMenuItem,
   AnnouncementBadgeResponse,
   AdminForthResourcePages,
+  AdminForthResourceColumnInputCommon,
 } from './Common.js';
-import { AnyCnameRecord } from 'dns';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
@@ -370,6 +370,27 @@ export interface IAdminForth {
    */
   setupEndpoints(server: IHttpServer): void;
 
+  /**
+   * This method can be used when you want to get some plugin instances by class name.
+   * Should be used for plugins which might have multiple instances with the same class name.
+   * @param className - name of class which is used to identify plugin instance
+   */
+  getPluginsByClassName<T>(className: string): T[];
+
+  /**
+   * This method can be used when you want to get some plugin instance by class name.
+   * Should be called only if you are sure there is only one plugin instance with this class name.
+   * If several instances are found, this method will drop error.
+   * @param className - name of class which is used to identify plugin instance
+   * 
+   * Example:
+   * 
+   * ```ts
+   * const i18nPlugin = adminforth.getPluginByClassName<I18nPlugin>('I18nPlugin');
+   * ```
+   * 
+   */
+  getPluginByClassName<T>(className: string): T;
 }
 
 
@@ -758,7 +779,7 @@ export interface AdminForthActionInput {
   id?: string;
 }
 
-export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
+export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
 
   /**
    * Array of plugins which will be used to modify resource configuration.
@@ -1159,7 +1180,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
@@ -1420,12 +1441,12 @@ export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnInput, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
 }

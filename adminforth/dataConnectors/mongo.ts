@@ -86,7 +86,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(Date.parse(value)).toISOString().split('T')[0];
 
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return !!value;
+          return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return value?.toString();
         }
@@ -108,7 +108,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value ? true : false;
+            return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return Decimal128.fromString(value?.toString());
         }

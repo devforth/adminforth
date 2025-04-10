@@ -59,7 +59,7 @@
             {{ $t('Actions') }}
           </td>
         </tr>
-        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListTableBorder">
+        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListBorder dark:bg-darkListTable">
           <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
         </tr>
         <!-- table header end -->
@@ -227,7 +227,8 @@
           contenteditable="true" 
           class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
           @keydown="onPageKeydown($event)"
-          @input="page = parseInt($event.target.innerText) || ''"
+          @input="onPageInput($event)"
+          @blur="validatePageInput()"
         >
           {{ pageInput }}
         </div>
@@ -355,6 +356,10 @@ async function onPageKeydown(event) {
     (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
     && isNaN(String.fromCharCode(event.keyCode)))) {
     event.preventDefault();
+    if (event.code === 'Enter') {
+      validatePageInput();
+      event.target.blur();
+    }
   }
 }
 
@@ -575,6 +580,16 @@ async function startCustomAction(actionId, row) {
   }
 }
 
+function onPageInput(event) {
+  pageInput.value = event.target.innerText;
+}
+
+function validatePageInput() {
+  const newPage = parseInt(pageInput.value) || 1;
+  const validPage = Math.max(1, Math.min(newPage, totalPages.value));
+  page.value = validPage;
+  pageInput.value = validPage.toString();
+}
 
 </script>
 

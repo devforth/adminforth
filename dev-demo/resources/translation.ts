@@ -4,7 +4,7 @@ import AdminForth, {
 } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "../../plugins/adminforth-i18n";
-import { v1 as uuid } from "uuid";
+import { randomUUID } from "crypto";
 
 
 export default {
@@ -75,7 +75,7 @@ export default {
   columns: [
     {
       name: "id",
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       primaryKey: true,
       showIn: [],
     },
@@ -83,6 +83,8 @@ export default {
       name: "en_string",
       type: AdminForthDataTypes.STRING,
       label: "English",
+      required: true,
+      editingNote: "This is the original string in English. It will be used as a reference for translation.",
     },
     {
       name: "created_at",

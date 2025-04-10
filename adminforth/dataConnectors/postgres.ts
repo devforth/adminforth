@@ -157,6 +157,10 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             return dayjs(value).toISOString().split('T')[0];
         }
 
+        if (field.type == AdminForthDataTypes.BOOLEAN) {
+            return value === null ? null : !!value;
+        } 
+
         if (field.type == AdminForthDataTypes.JSON) {
             if (typeof value == 'string') {
                 try {
@@ -188,7 +192,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return dayjs(value).toISOString();
             }
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-            return value ? 1 : 0;
+            return value === null ? null : (value ? 1 : 0);
         } else if (field.type == AdminForthDataTypes.JSON) {
             if (field._underlineType == 'json') {
                 return value;
@@ -213,6 +217,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 (filter.operator == AdminForthFilterOperators.ILIKE || filter.operator == AdminForthFilterOperators.LIKE)
             ) {
                 field = `cast("${field}" as text)`
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                operator = 'IS';
+                placeholder = 'NULL';
             } else {
                 field = `"${field}"`
             }
@@ -243,6 +250,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return [`%${filter.value}%`];
             } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 return filter.value;
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                return [];
             } else {
                 return [(filter as IAdminForthSingleFilter).value];
             }

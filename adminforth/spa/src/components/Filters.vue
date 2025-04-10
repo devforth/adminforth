@@ -28,10 +28,10 @@
               class="w-full"
               :options="columnOptions[c.name] || []"
               @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || []"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
             />
             <Select
-              multiple
+              :multiple="c.filterOptions.multiselect"
               class="w-full"
               v-else-if="c.type === 'boolean'"
               :options="[
@@ -40,8 +40,10 @@
                 // if field is not required, undefined might be there, and user might want to filter by it
                 ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
               ]"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event })"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value !== undefined
+                ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value
+                : (c.filterOptions.multiselect ? [] : '')"
             />
             
             <Select
@@ -50,7 +52,7 @@
               v-else-if="c.enum"
               :options="c.enum"
               @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || []"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
             />
 
             <Input
@@ -165,12 +167,6 @@ const columnOptions = computedAsync(async () => {
           },
         });
         ret[column.name] = list.items;
-        if (!column.filterOptions.multiselect) {
-          ret[column.name].push({
-            label: t('Unset'),
-            value: '',
-          });
-        }
       }
     })
   );

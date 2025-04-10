@@ -9,6 +9,7 @@ import TextCompletePlugin from "../../plugins/adminforth-text-complete";
 import UploadPlugin from "../../plugins/adminforth-upload";
 import ImportExportPlugin from "../../plugins/adminforth-import-export/index.js";
 import { v1 as uuid } from "uuid";
+import { admin } from '../index.js';
 import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
@@ -388,7 +389,7 @@ export default {
         confirm:
           "Are you sure you want to mark all selected apartments as listed?",
         action: async function ({ selectedIds, adminUser }: any) {
-          const stmt = db.prepare(
+          const stmt = admin.resource('aparts').dataConnector.client.prepare(
             `UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds
               .map(() => "?")
               .join(",")})`
