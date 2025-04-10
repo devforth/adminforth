@@ -370,6 +370,27 @@ export interface IAdminForth {
    */
   setupEndpoints(server: IHttpServer): void;
 
+  /**
+   * This method can be used when you want to get some plugin instances by class name.
+   * Should be used for plugins which might have multiple instances with the same class name.
+   * @param className - name of class which is used to identify plugin instance
+   */
+  getPluginsByClassName<T>(className: string): T[];
+
+  /**
+   * This method can be used when you want to get some plugin instance by class name.
+   * Should be called only if you are sure there is only one plugin instance with this class name.
+   * If several instances are found, this method will drop error.
+   * @param className - name of class which is used to identify plugin instance
+   * 
+   * Example:
+   * 
+   * ```ts
+   * const i18nPlugin = adminforth.getPluginByClassName<I18nPlugin>('I18nPlugin');
+   * ```
+   * 
+   */
+  getPluginByClassName<T>(className: string): T;
 }
 
 
