@@ -458,7 +458,7 @@ export default class ConfigValidator implements IConfigValidator {
             debounceTimeMs: 10,
             substringSearch: true,
           };
-          if (col.enum || col.foreignResource) {
+          if (col.enum || col.foreignResource || col.type === AdminForthDataTypes.BOOLEAN) {
             col.filterOptions.multiselect = true;
           }
         } else {
@@ -483,8 +483,8 @@ export default class ConfigValidator implements IConfigValidator {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" has multiselectFilter in filterOptions that is not boolean`);
             }
 
-            if (!col.enum && !col.foreignResource) {
-              errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter in filterOptions should be set only for enum or foreign resource columns`);
+            if (!col.enum && !col.foreignResource && col.type !== AdminForthDataTypes.BOOLEAN) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter in filterOptions should be set only for enum, foreign resource or boolean columns`);
             }
           } else if (col.enum || col.foreignResource) {
             col.filterOptions.multiselect = true;
