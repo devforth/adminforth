@@ -192,6 +192,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
           placeholder = `${placeholder} OR ${field} IS NULL)`;
           field = `(${field}`;
         }
+      } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+        operator = 'IS';
+        placeholder = 'NULL';
       }
       return `${field} ${operator} ${placeholder}`;
     }
@@ -219,6 +222,10 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return [`%${filter.value}%`];
       } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         return filter.value;
+      } else if (filter.operator == AdminForthFilterOperators.EQ && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.NE && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
       } else {
         return [(filter as IAdminForthSingleFilter).value];
       }
