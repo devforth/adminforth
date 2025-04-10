@@ -59,7 +59,7 @@
             {{ $t('Actions') }}
           </td>
         </tr>
-        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListTableBorder">
+        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListBorder dark:bg-darkListTable">
           <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
         </tr>
         <!-- table header end -->
