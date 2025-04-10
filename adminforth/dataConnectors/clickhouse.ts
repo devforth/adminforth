@@ -180,6 +180,19 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         let operator = this.OperatorsMap[filter.operator];
         if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           placeholder = `(${filter.value.map((_, j) => `{p$?:${column._underlineType}}`).join(', ')})`;
+        } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+          operator = 'IS';
+          placeholder = 'NULL';
+        } else if (filter.operator == AdminForthFilterOperators.NE) {
+          if (filter.value === null) {
+            operator = 'IS NOT';
+            placeholder = 'NULL';
+          } else {
+            // for not equal, we need to add a null check
+            // because nullish field will not match != value
+            placeholder = `${placeholder} OR ${field} IS NULL)`;
+            field = `(${field}`;
+          }
         }
 
         return `${field} ${operator} ${placeholder}`;
@@ -209,6 +222,12 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           return [{ 'p': filter.value }];
+        } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+          // there is no param for IS NULL filter
+          return [];
+        } else if (filter.operator == AdminForthFilterOperators.NE && filter.value === null) {
+          // there is no param for IS NOT NULL filter
+          return [];
         } else {
           return [{ 'f': (filter as IAdminForthSingleFilter).value }];
         }
