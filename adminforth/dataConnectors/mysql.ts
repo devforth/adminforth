@@ -130,7 +130,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } else if (field.type == AdminForthDataTypes.TIME) {
       return value || null;
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return !!value;
+      return value === null ? null : !!value;
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (typeof value === 'string') {
         try {
@@ -158,7 +158,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return value ? 1 : 0;
+      return value === null ? null : (value ? 1 : 0);
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (field._underlineType === 'json') {
         return value;
@@ -182,6 +182,19 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         placeholder = `LOWER(?)`;
         field = `LOWER(${field})`;
         operator = 'LIKE';
+      } else if (filter.operator == AdminForthFilterOperators.NE) {
+        if (filter.value === null) {
+          operator = 'IS NOT';
+          placeholder = 'NULL';
+        } else {
+          // for not equal, we need to add a null check
+          // because nullish field will not match != value
+          placeholder = `${placeholder} OR ${field} IS NULL)`;
+          field = `(${field}`;
+        }
+      } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+        operator = 'IS';
+        placeholder = 'NULL';
       }
       return `${field} ${operator} ${placeholder}`;
     }
@@ -209,6 +222,10 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return [`%${filter.value}%`];
       } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         return filter.value;
+      } else if (filter.operator == AdminForthFilterOperators.EQ && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.NE && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
       } else {
         return [(filter as IAdminForthSingleFilter).value];
       }

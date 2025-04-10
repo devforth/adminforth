@@ -437,7 +437,11 @@ export default class ConfigValidator implements IConfigValidator {
         res.columns = [];
       }
       res.columns = resInput.columns.map((inCol: AdminForthResourceColumnInput, inColIndex) => {
-        const col: Partial<AdminForthResourceColumn> = { ...inCol, showIn: undefined, editingNote: undefined };
+        const col: Partial<AdminForthResourceColumn> = { 
+          ...inCol, showIn: undefined, editingNote: undefined, required: undefined, 
+        };
+
+        col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
         // check for duplicate column names
         if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
@@ -454,7 +458,7 @@ export default class ConfigValidator implements IConfigValidator {
             debounceTimeMs: 10,
             substringSearch: true,
           };
-          if (col.enum || col.foreignResource) {
+          if (col.enum || col.foreignResource || col.type === AdminForthDataTypes.BOOLEAN) {
             col.filterOptions.multiselect = true;
           }
         } else {
@@ -479,8 +483,8 @@ export default class ConfigValidator implements IConfigValidator {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" has multiselectFilter in filterOptions that is not boolean`);
             }
 
-            if (!col.enum && !col.foreignResource) {
-              errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter in filterOptions should be set only for enum or foreign resource columns`);
+            if (!col.enum && !col.foreignResource && col.type !== AdminForthDataTypes.BOOLEAN) {
+              errors.push(`Resource "${res.resourceId}" column "${col.name}" multiselectFilter in filterOptions should be set only for enum, foreign resource or boolean columns`);
             }
           } else if (col.enum || col.foreignResource) {
             col.filterOptions.multiselect = true;
@@ -705,6 +709,14 @@ export default class ConfigValidator implements IConfigValidator {
             col.components[key] = this.validateComponent(comp, errors);
           }
         }
+        
+        // fixes issues after discover when result of this validation applied to discovered column
+        Object.keys(col).forEach((key) => {
+          if (col[key] === undefined) {
+            delete col[key];
+          }
+        });
+
         return col as AdminForthResourceColumn;
       })
 
