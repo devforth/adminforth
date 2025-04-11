@@ -37,7 +37,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       limit: 1,
       offset: 0,
       sort: [],
-      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }]},
+      filters: {
+        operator: AdminForthFilterOperators.AND,
+        subFilters: [{
+          field: this.getPrimaryKey(resource),
+          operator: AdminForthFilterOperators.EQ,
+          value: this.setFieldValue(resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource)), id),
+        }],
+      },
     });
     return data.length > 0 ? data[0] : null;
   }
@@ -191,7 +198,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
     const existingRecord = await this.getData({
       resource,
-      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }]},
+      filters: {
+        operator: AdminForthFilterOperators.AND,
+        subFilters: [{
+          field: column.name,
+          operator: AdminForthFilterOperators.EQ,
+          value: this.setFieldValue(column, value),
+        }],
+      },
       limit: 1,
       sort: [],
       offset: 0,
