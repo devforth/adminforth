@@ -82,8 +82,10 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return value?.toString();
         } else if (field.name === '_id' && !field.fillOnCreate) {
-            // if "_id" was created by mongo it will be ObjectId
-            return value?.toString();
+            // value is supposed to be an ObjectId or string representing it
+            if (typeof value === 'object') {
+                return value?.toString();
+            }
         }
 
         return value;
@@ -107,8 +109,20 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return Decimal128.fromString(value?.toString());
         } else if (field.name === '_id' && !field.fillOnCreate) {
-            // if "_id" was created by mongo it supposed to be saved as ObjectId
-            return ObjectId.createFromHexString(value);
+            // value is supposed to be an ObjectId
+            if (!ObjectId.isValid(value)) {
+                return null;
+            }
+            if (typeof value === 'string' || typeof value === 'number') {
+                // if string or number - turn it into ObjectId
+                return new ObjectId(value);
+            } else if (typeof value === 'object') {
+                // assume it is a correct ObjectId
+                return value;
+            }
+
+            // unsupported type for ObjectId
+            return null;
         }
         return value;
     }
@@ -203,7 +217,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const collection = this.client.db().collection(resource.table);
-        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
+        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
+        await collection.updateOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
