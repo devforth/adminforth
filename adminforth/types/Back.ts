@@ -386,7 +386,7 @@ export interface IAdminForth {
    * Example:
    * 
    * ```ts
-   * const i18nPlugin = adminforth.getPluginByClassName<I18nPlugin>('I18nPlugin');
+   * const i18nPlugin = adminforth.getPluginByClassName\<I18nPlugin\>('I18nPlugin');
    * ```
    * 
    */
