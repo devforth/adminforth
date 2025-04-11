@@ -222,9 +222,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
-        const primaryKey = this.getPrimaryKey(resource);
         const collection = this.client.db().collection(resource.table);
-        const res = await collection.deleteOne({ [primaryKey]: recordId });
+        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
+        const res = await collection.deleteOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) });
         return res.deletedCount > 0;
     }
 
