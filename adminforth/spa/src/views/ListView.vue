@@ -331,7 +331,7 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId
   });
-
+  isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
 
   // try to init filters from query params
@@ -444,10 +444,6 @@ watch([sort], async () => {
     return;
   }
   setQuery({ sort: SortQuerySerializer.serialize(sort.value) });
-});
-
-watch(() => coreStore.resource, () => {
-  isPageLoaded.value = true;
 });
 
 </script>
