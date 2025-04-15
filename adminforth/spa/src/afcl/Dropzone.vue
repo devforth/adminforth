@@ -1,4 +1,5 @@
 <template>
+    <!-- tag form used to reset the input (method .reset() in claer() function) -->
   <form class="flex items-center justify-center w-full"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
