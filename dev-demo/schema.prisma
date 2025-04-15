@@ -34,6 +34,7 @@ model apartments {
     realtor_id      String?
     user_id         String?
     apartment_image String?
+    apartment_source String?
 }
 
 model audit_log {
