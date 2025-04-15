@@ -28,6 +28,21 @@ export interface CompletionAdapter {
   }>;
 }
 
+export interface ImageGenerationAdapter {
+
+  validate(): void;
+
+  generate(
+    prompt: string,
+    inputFiles: string[],
+  ): Promise<{
+    imageURL?: string;
+    error?: string;
+  }>;
+}
+
+
+
 export interface OAuth2Adapter {
   getAuthUrl(): string;
   getTokenFromCode(code: string, redirect_uri: string): Promise<{ email: string }>;
