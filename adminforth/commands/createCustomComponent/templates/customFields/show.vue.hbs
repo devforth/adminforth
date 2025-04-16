@@ -1,0 +1,17 @@
+<template>
+    <div v-if='record[column.name]'
+        class="text-red-500"
+    >\{{ record[column.name] }}</div>
+</template> 
+
+<script setup>
+
+    defineProps({
+    record: Object,
+    resource: Object,
+    adminUser: Object,
+    meta: Object,
+    column: Object
+    });
+
+</script>
