@@ -16,7 +16,9 @@ import { computed, ref, onMounted, nextTick } from 'vue';
 import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
 import Tooltip from '@/afcl/Tooltip.vue';
 import adminforth from '@/adminforth';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const visualValue = computed(() => {
   // if lenght is more then 8, show only first 4 and last 4 characters, ... in the middle
   const val = props.record[props.column.name];
@@ -33,7 +35,7 @@ const id = ref();
 function copyToCB() {
   navigator.clipboard.writeText(props.record[props.column.name]);
   adminforth.alert({
-    message: 'ID copied to clipboard',
+    message: t('ID copied to clipboard'),
     variant: 'success',
   })
 }

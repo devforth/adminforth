@@ -303,7 +303,7 @@ onMounted(async () => {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     adminforth.alert({
-      message: `Error fetching data: ${error.message}`,
+      message: `${t('Error fetching data: ')} ${error.message}`,
       variant: 'danger',
     });
   }
