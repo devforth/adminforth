@@ -28,7 +28,9 @@
   import { PieChart } from '@/afcl';
   import { callApi } from '@/utils';
   import adminforth from '@/adminforth';
-  
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
   
   const data: Ref<any[]> = ref([]);
   
@@ -38,7 +40,7 @@
       data.value = await callApi({path: '/api/aparts-by-room-percentages', method: 'GET'});
     } catch (error) {
       adminforth.alert({
-        message: `Error fetching data: ${error.message}`,
+        message: `${t('Error fetching data:')} ${error.message}`,
         variant: 'danger',
         timeout: 'unlimited'
       });
