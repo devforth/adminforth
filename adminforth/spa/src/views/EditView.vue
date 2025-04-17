@@ -81,7 +81,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const coreStore = useCoreStore();
 
 const isValid = ref(false);
@@ -170,7 +172,7 @@ async function saveRecord() {
     showErrorTost(resp.error);
   } else {
     adminforth.alert({
-      message: 'Record updated successfully',
+      message: t('Record updated successfully'),
       variant: 'success',
       timeout: 400000
     });
