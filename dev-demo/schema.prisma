@@ -115,6 +115,7 @@ model clinics {
 model providers {
     id      String @id
     name    String
+    description String?
 }
 
 model api_keys {
