@@ -35,7 +35,6 @@ Previously we had a blog post about [deploying AdminForth to EC2 with Terraform 
 
 So obviously to solve this problem we need to move the build process to CI, however it introduces new chellenges and we will solve them in this post.
 
-
 Quick difference between approaches from previous post and current post:
 
 | Feature | Without Registry | With Registry |
@@ -44,8 +43,11 @@ Quick difference between approaches from previous post and current post:
 | How Docker build layers are cached | Cache is stored on EC2 | GitHub actions has no own Docker cache out of the box, so it should be stored in dedicated place (we use self-hosted registry on the EC2 as it is free) |
 | Advantages | Simpler setup with less code (we don't need code to run and secure registry, and don't need extra cache setup as is naturally persisted on EC2). | Build is done on CI, so EC2 server is not overloaded. For most cases CI builds are faster than on EC2. Plus time is saved because we don't need to rsync source code to EC2 |
 | Disadvantages | Build on EC2 requires additional server RAM / overloads CPU | More terraform code is needed. Registry cache might require small extra space on EC2. Complexities to make it run from both local machine and CI |
-| Initial build time *from local machine up to working state | 2m 48.412s |  |
-| Rebuild time *from local machine, no docker cache changed `index.ts`| 0m 34.520s |  |
+| Initial build time\* | 2m 48.412s | 3m 13.541s |
+| Rebuild time (changed `index.ts`)\*| 0m 34.520s | 0m 51.653s |
+
+<sub>\* All tests done from local machine (Intel(R) Core(TM) Ultra 9 185H, Docker Desktop/WSL2 64 GB RAM, 300Mbps up/down) up to working state</sub>
+
 
 ## Chellenges when you build on CI
 
@@ -117,13 +119,13 @@ Create file `Dockerfile` in `myadmin`:
 
 ```Dockerfile title="./myadmin/Dockerfile"
 # use the same node version which you used during dev
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /code/
 ADD package.json package-lock.json /code/
 RUN npm ci  
 ADD . /code/
 RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["npm", "run", "migrateLiveAndStart"]
+CMD ["sh", "-c", "npm run migrate:prod && npm run prod"]
 ```
 
 ### Step 1.1 - Create bundleNow.ts
@@ -159,9 +161,18 @@ Make sure you are not calling bundleNow in `index.ts` file for non-development m
 ```json title="./myadmin/package.json"
 ...
 "scripts": {
-  ...
-  "migrateLiveAndStart": "npx --yes prisma migrate deploy && tsx index.ts",
-  ...
+  "scripts": {
+    "dev": "npm run _env:dev -- tsx watch index.ts",
+    "prod": "npm run _env:prod -- tsx index.ts",
+    "start": "npm run dev",
+
+    "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
+    "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy",
+    "migrate:prod": "npm run _env:prod -- npx --yes prisma migrate deploy",
+
+    "_env:dev": "dotenvx run -f .env -f .env.local --",
+    "_env:prod": "dotenvx run -f .env.prod --"
+  },
 }
 ...
 ```
@@ -197,7 +208,7 @@ services:
     pull_policy: always
     restart: always
     env_file:
-      - .env.secrets.live
+      - .env.secrets.prod
     environment:
       - NODE_ENV=production
       - DATABASE_URL=sqlite://.db.sqlite
@@ -248,7 +259,7 @@ Create `deploy/.gitignore` file with next content:
 *.tfstate.*
 *.tfvars
 tfplan
-.env.secrets.live
+.env.secrets.prod
 ```
 
 ## Step 6 - buildx bake file
@@ -288,7 +299,6 @@ locals {
   aws_region = "us-east-1"
 }
 
-
 provider "aws" {
   region = local.aws_region
   profile = "myaws"
@@ -307,7 +317,6 @@ data "aws_ami" "ubuntu_linux" {
 data "aws_vpc" "default" {
   default = true
 }
-
 
 resource "aws_eip" "eip" {
  domain = "vpc"
@@ -783,7 +792,7 @@ jobs:
 
       - name: Prepare env
         run: |
-          echo "ADMINFORTH_SECRET=$VAULT_ADMINFORTH_SECRET" > deploy/.env.secrets.live
+          echo "ADMINFORTH_SECRET=$VAULT_ADMINFORTH_SECRET" > deploy/.env.secrets.prod
         env:
           VAULT_ADMINFORTH_SECRET: ${{ secrets.VAULT_ADMINFORTH_SECRET }}
 
@@ -832,9 +841,9 @@ Now open GitHub actions file and add it to the `env` section:
 ```yml title=".github/workflows/deploy.yml"
       - name: Prepare env
         run: |
-          echo "ADMINFORTH_SECRET=$VAULT_ADMINFORTH_SECRET" > deploy/.env.secrets.live
+          echo "ADMINFORTH_SECRET=$VAULT_ADMINFORTH_SECRET" > deploy/.env.secrets.prod
 //diff-add
-          echo "OPENAI_API_KEY=$VAULT_OPENAI_API_KEY" >> deploy/.env.secrets.live
+          echo "OPENAI_API_KEY=$VAULT_OPENAI_API_KEY" >> deploy/.env.secrets.prod
 //diff-add
         env:
           VAULT_ADMINFORTH_SECRET: ${{ secrets.VAULT_ADMINFORTH_SECRET }}
@@ -948,6 +957,7 @@ Create folder `deploy/.local` and create next files:
 ```sh title=deploy/.local/create-builder.sh
 #!/bin/bash
 cd "$(dirname "$0")"
+docker buildx rm mybuilder || true
 docker buildx create --name mybuilder --driver docker-container   --use --config ./buildkitd.toml
 ```
 
@@ -957,9 +967,9 @@ Now create builder:
 bash .local/create-builder.sh
 ```
 
-#### 2. You need to deliver envs locally
+#### 2. You need to deliver same secrets from local machine as from CI vault
 
-Create file `deploy/.env.secrets.live` with next content:
+Create file `deploy/.env.secrets.prod` with next content:
 
 ```sh
 ADMINFORTH_SECRET=<your secret>
@@ -969,7 +979,8 @@ Please note that if you are running builds both from GA and local, the `ADMINFOR
 
 #### 2. You need to add app.server.local to your hosts file (Windows/WSL only)
 
-> This step is not needed on Linux / Mac because 
+> This step is not needed on Linux / Mac because teraform provisioner will autiomatically add it to `/etc/hosts` file.
+> However in WSL we can't modify Windows native hosts file, so we need to do it manually.
 
 In power shell run 
 
@@ -982,3 +993,14 @@ Check your public IP in Terraform output and add
 ```
 <your public ip> appserver.local
 ```
+
+> Bad news is that instance public IP will be known only after first run, so some steps would fail because there will be no hosts mapping. However since EC2 provisioning takes some time it is even possible to copy IP from terminal and inser it to hosts file from first run 🤪
+
+
+### 3. Using local build from multiple projects
+
+The easiest way would be probably to rename `appserver.local` to unique name for each project.
+
+Then you can put all certificate mappings to a `buildkitd.toml` and move it along with `create-builder.sh` script to a common folder, e.g. home
+
+
