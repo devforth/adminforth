@@ -125,10 +125,10 @@ data "aws_vpc" "default" {
   default = true
 }
 
-
 resource "aws_eip" "eip" {
  domain = "vpc"
 }
+
 resource "aws_eip_association" "eip_assoc" {
  instance_id   = aws_instance.app_instance.id
  allocation_id = aws_eip.eip.id

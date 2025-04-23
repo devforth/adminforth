@@ -1,6 +1,6 @@
 ---
 slug: compose-ec2-deployment-github-actions-registry
-title: "IaaC Simplified: Automating EC2 Deployments with GitHub Actions, Terraform, Docker & Distribution Registry"
+title: "Amazon EC2 Deployments with GitHub Actions, Terraform, Docker & Amazon ECR"
 authors: ivanb
 tags: [aws, terraform, github-actions]
 description: "The ultimate step-by-step guide to cost-effective, build-time-efficient, and easy managable EC2 deployments using GitHub Actions, Terraform, Docker, and a self-hosted registry."
@@ -11,90 +11,42 @@ image: "/ogs/ga-tf-aws.jpg"
 ![alt text](ga-tf-aws.jpg)
 
 
-This guide shows how to deploy own Docker apps (with AdminForth as example) to Amazon EC2 instance with Docker and Terraform involving Docker self-hosted registry.
-
-Needed resources:
-- GitHub actions Free plan which includes 2000 minutes per month (1000 of 2-minute builds per month - more then enough for many projects, if you are not running tests). Extra builds would cost `0.008$` per minute.
-- AWS account where we will auto-spawn EC2 instance. We will use `t3a.small` instance (2 vCPUs, 2GB RAM) which costs `~14$` per month in `us-east-1` region (cheapest region). Also it will take `$2` per month for EBS gp2 storage (20GB) for EC2 instance
-
-Registry will be auto-spawned on EC2 instance, so no extra costs for it. GitHub storage is not used as well, so no costs for it as well.
-
-The setup shape:
-- Build is done using IaaC approach with HashiCorp Terraform, so almoast no manual actions are needed from you. Every resource including EC2 server instance is described in code which is commited to repo.
-- Docker build process is done on GitHub actions server, so EC2 server is not overloaded with builds
-- Changes in infrastructure including changing server type, adding S3 Bucket, changing size of sever disk is also can be done by commiting code to repo.
-- Docker images and cache are stored on EC2 server, so no extra costs for Docker registry are needed.
-- Total build time for average commit to AdminForth app (with Vite rebuilds) is around 2 minutes.
+This guide is a hackers extended addition of [Deploying AdminForth to EC2 with Amazon ECR](/blog/compose-aws-ec2-ecr-terraform-github-actions/). The key difference in this post that we will not use Amazon ECR but self-host registry on EC2 itself. Automatically from terraform. And will see whether we will win something in terms of build time.
 
 <!-- truncate -->
 
 
-# Building on CI versus building on EC2?
+## Costs for Amazon ECR vs consts for self-hosted registry on EC2
 
-Previously we had a blog post about [deploying AdminForth to EC2 with Terraform without registry](/blog/compose-ec2-deployment-github-actions/). That method might work well but has a significant disadvantage - build process happens on EC2 itself and uses EC2 RAM and CPU. This can be a problem if your EC2 instance is well-loaded without extra free resources. Moreover, low-end EC2 instances have a small amount of RAM and CPU, so build process which involves vite/tsc/etc can be slow or even fail.
+Most of AWS services are formed from EC2 prices plus some extra overhead for own cost. In same way, Amazon ECR pricing is pretty same.
 
-So obviously to solve this problem we need to move the build process to CI, however it introduces new chellenges and we will solve them in this post.
-
-Quick difference between approaches from previous post and current post:
-
-| Feature | Without Registry | With Registry |
+| Feature | Amazon ECR | Self-hosted registry on EC2 |
 | --- | --- | --- |
-| How and where docker build happens | Source code is rsync-ed from CI to EC2 and docker build is done there | Docker build is done on CI and docker image is pushed to registry (in this post we run registry automatically on EC2) |
-| How Docker build layers are cached | Cache is stored on EC2 | GitHub actions has no own Docker cache out of the box, so it should be stored in dedicated place (we use self-hosted registry on the EC2 as it is free) |
-| Advantages | Simpler setup with less code (we don't need code to run and secure registry, and don't need extra cache setup as is naturally persisted on EC2). | Build is done on CI, so EC2 server is not overloaded. For most cases CI builds are faster than on EC2. Plus time is saved because we don't need to rsync source code to EC2 |
-| Disadvantages | Build on EC2 requires additional server RAM / overloads CPU | More terraform code is needed. Registry cache might require small extra space on EC2. Complexities to make it run from both local machine and CI |
-| Initial build time\* | 2m 48.412s | 3m 13.541s |
-| Rebuild time (changed `index.ts`)\*| 0m 34.520s | 0m 51.653s |
+| Storage | $0.10 per GB/month | $0.10 per GB/month for gp2 EBS volume |
+| Data transfer for egress | $0.09 per GB | $0.09 per GB |
+
+So as you can see there is still no difference in terms of cost. However the approach in this system allows to replace Amazon EC2 with any other cloud provider which does not charge for egress traffic.
+
+
+# Bechnmarking build time
+
+When I implmented this solution, I was curious whether it will be faster to build images on EC2 or on CI. So I did a little bit of testing.
+First I used results form [deploying AdminForth to EC2 with Terraform without registry](/blog/compose-ec2-deployment-github-actions/) where we built images on EC2. Then I did the same test but with self-hosted registry on EC2 and compared to [deploying AdminForth to EC2 with Amazon ECR](/blog/compose-aws-ec2-ecr-terraform-github-actions/) where we built images on CI and pushed to Amazon ECR.
+
+| Feature | Without Registry (build directly on EC2) | With self-hosted registry | With Amazon ECR |
+| --- | --- | --- |
+| Initial build time\* |  3m 13.541s | 2m 48.412s | 3m 54s |
+| Rebuild time (changed `index.ts`)\*|  0m 51.653s | 0m 54.120s |
 
 <sub>\* All tests done from local machine (Intel(R) Core(TM) Ultra 9 185H, Docker Desktop/WSL2 64 GB RAM, 300Mbps up/down) up to working state</sub>
 
+So it indeed own self-hosted registry is faster then ECR and overall build time of pure AdminForth is faster then building on EC2. When ECR is slower then self-hosted registry, it is because of network speed.
 
-## Chellenges when you build on CI
 
-A little bit of theory.
+# Chellenges when you build on CI
 
-When you move build process to CI you have to solve next chellenges:
-1) We need to deliver built docker images to EC2 somehow (and only we)
-2) We need to persist cache between builds
 
-### Delivering images
-
-#### Exporing images to tar files
-
-Simplest option which you can find is save docker images to tar files and deliver them to EC2. We can easily do it in terraform (using `docker save -o ...` command on CI and `docker load ...` command on EC2). However this option has a significant disadvantage - it is slow. Docker images are big (always include all layers, without any options), so it takes infinity to do save/load and another infinity to transfer them to EC2 (via relatively slow rsync/SSH and relatively slow GitHub actions outbound connection).
-
-#### Docker registry
-
-Faster, right option which we will use here - involve Docker registry. Registry is a repository which stores docker images. It does it in a smart way - it saves each image as several layers, so if you will update last layer, then only last layer will be pushed to registry and then only last will be pulled to EC2. 
-To give you row compare - whole-layers image might take `1GB`, but last layer created by `npm run build` command might take `50MB`. And most builds you will do only last layer changes, so it will be 20 times faster to push/pull last layer than whole image.
-And this is not all, registry uses TLS HTTP protocol so it is faster then SSH/rsync encrypted connection. 
-
-Of course you have to care about a way of registry authentication (so only you and your CI/EC2 can push/pull images).
-
-What docker registry can you use? Pretty known options:
-1) Docker Hub - most famous. It is free for public images, so literally every opensource project uses it. However it is not free for private images, and you have to pay for it. In this post we are considering you might do development for commercial project with tight budget, so we will not use it.
-2) GHCR - Registry from GitHub. Has free plan but allows to store only 500MB and allows to transfer 1GB of traffic per month. Then you pay for every extra GB in storage (`$0.0008` per GB/day or `$0.24` per GB/month) and for every extra GB in traffic ($0.09 per GB). Probably small images will fit in free plan, but generally even alpine-based docker images are bigger than 500MB, so it is non-free option.
-3) Amazon ECR - Same as GHCR but from Amazon. Price is `$0.10` per GB of storage per month and `$0.09` per GB of data transfer. So it is cheaper than GHCR but still not free. But is good option.
-4) Self-hosted registry web system. In our software development company, we use Harbor. It is a powerful free open-source registry that can be installed to own server. It allows pushing and pulling without limit. Also, it has internal life-cycle rules that cleanup unnecessary images and layers. The main drawbacks of it are that it is not so fast to install and configure, plus you have to get a domain and another powerfull server to run it. So unless you are a software development company, it is not worth using it.
-5) Self-hosted minimal CNCF Distribution [registry](https://distribution.github.io/distribution/) on EC2 itself. So since we already have EC2, we can run registry on it directly. The `registry` container is pretty light-weight and easy to setup and it will not consume a lot of extra CPU/RAM on server. Plus images will be stored close to application so pull will be fast. 
-
-In the post we will use last (5th way). Our terraform will deploy registry automatically, so you don't have to do anything special. 
-
-### Persisting cache
-
-Docker builds without layer cache persistence are possible but very slow. Most builds only change a couple of layers, and having no ability to cache them will cause the Docker builder to regenerate all layers from scratch. This can, for example, increase the Docker build time from a minute to ten minutes or even more.
-
-Out of the box, GitHub Actions can't save Docker layers between builds, so you have to use external storage.
-
-> Though some CI systems can persist docker build cache, e.g. open-source self-hosted Woodpecker CI allows it out of the box. However GitHub actions which is pretty popular, reasonably can't allow such free storage to anyone
-
-So when build-in Docker cache can't be used, there is one alternative - Docker BuildKit external cache. 
-So BuildKit allows you to connect external storage. There are several options, but most sweet for us is using Docker registry as cache storage (not only as images storage to deliver them to application server). 
-
-> *BuildKit cache in Compose issue*
-> Previously we used docker compose to build & run our app, it can be used to both build, push and pull images, but has [issues with external cache connection](https://github.com/docker/compose/issues/11072#issuecomment-1848974315). While they are not solved we have to use `docker buildx bake` command to build images. It is not so bad, but is another point of configuration which we will cover in this post.
-
-### Registry authorization and traffic encryption
+# Registry authorization and traffic encryption
 
 Hosting custom CNCF registry, from other hand is a security responsibility. 
 
@@ -104,7 +56,7 @@ First of all we need to set some authorization to our registry so everyone who w
 
 But this is not enough. Basic auth is not encrypted, so someone can perform MITM attack and get your credentials. So we need to encrypt traffic between CI and registry. We can do it by using TLS certificates. So we will generate self-signed TLS certificates, and attach them to our registry.
 
-
+Though the challenge is that we need to provide CA certificate to every daemon which will work with our registry. So we need to provide CA certificate to buildx daemon on CI, also if we want to do it from local machine, we need to provide CA certificate to local docker daemon.
 
 # Practice - deploy setup
 
@@ -540,7 +492,7 @@ resource "null_resource" "sync_files_and_run" {
       echo '{"auths":{"appserver.local:5000":{"auth":"'$(echo -n "ci-user:$(cat ./.keys/registry.pure)" | base64 -w 0)'"}}}' > ~/.docker/config.json
 
       echo "Running build"
-      docker buildx bake --progress=plain --push --allow=fs.read=.. --allow network.host
+      docker buildx bake --progress=plain --push --allow=fs.read=..
 
       # compose temporarily it is not working https://github.com/docker/compose/issues/11072#issuecomment-1848974315
       # docker compose --progress=plain -p app -f ./compose.yml build --push
@@ -560,7 +512,7 @@ resource "null_resource" "sync_files_and_run" {
   # Run docker compose after files have been copied
   provisioner "remote-exec" {
     inline = [<<-EOF
-      # wait for docker to be installed and started
+      # login to docker registry
       cat /home/ubuntu/registry-auth/registry.pure | docker login localhost:5000 -u ci-user --password-stdin
         
       cd /home/ubuntu/app/deploy
@@ -855,88 +807,6 @@ Now open GitHub actions file and add it to the `env` section:
 In the same way you can add any other secrets to your GitHub actions.
 
 
-### Out of space on EC2 instance? Extend EBS volume
-
-
-To upgrade EBS volume size you have to do next steps:
-
-In `main.tf` file:
-
-```hcl title="main.tf"
-  root_block_device {
-//diff-remove
-    volume_size = 20 // Size in GB for root partition
-//diff-add
-    volume_size = 40 // Size in GB for root partition
-    volume_type = "gp2"
-  }
-```
-
-And run build. 
-
-This will increase physical size of EBS volume, but you have to increase filesystem size too.
-
-Login to EC2 instance:
-
-```bash
-ssh -i ./.keys/id_rsa ubuntu@<your_ec2_ip>
-```
-
-> You can find your EC2 IP in AWS console by visiting EC2 -> Instances -> Your instance -> IPv4 Public IP 
-
-
-Now run next commands:
-
-```bash
-lsblk
-```
-
-This would show something like this:
-
-```bash
-NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-loop0     7:0    0 99.4M  1 loop /snap/core/10908
-nvme0n1 259:0    0   40G  0 disk
-└─nvme0n1p1 259:1    0   20G  0 part /
-```
-
-Here we see that `nvme0n1` is our disk and `nvme0n1p1` is our partition.
-
-Now to extend partition run:
-
-```bash
-sudo growpart /dev/nvme0n1 1
-sudo resize2fs /dev/nvme0n1p1
-```
-
-This will extend partition to the full disk size. No reboot is needed.
-
-
-### Want slack notifications about build?
-
-Create Slack channel and add [Slack app](https://slack.com/apps/A0F7YS25R-incoming-webhooks) to it. 
-
-Then create webhook URL and add it to GitHub secrets as `SLACK_WEBHOOK_URL`.
-
-Add this steps to the end of your GitHub actions file:
-
-```yml title=".github/workflows/deploy.yml"
-      - name: Notify Slack on success
-        if: success()
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data \
-          "{\"text\": \"✅ *${{ github.actor }}* successfully built *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Notify Slack on failure
-        if: failure()
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data \
-          "{\"text\": \"❌ *${{ github.actor }}* failed to build *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
-
-```
-
 
 ### Want to run builds from your local machine?
 
@@ -997,7 +867,7 @@ Check your public IP in Terraform output and add
 > Bad news is that instance public IP will be known only after first run, so some steps would fail because there will be no hosts mapping. However since EC2 provisioning takes some time it is even possible to copy IP from terminal and inser it to hosts file from first run 🤪
 
 
-### 3. Using local build from multiple projects
+#### 3. Using local build from multiple projects
 
 The easiest way would be probably to rename `appserver.local` to unique name for each project.
 
