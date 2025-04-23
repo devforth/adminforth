@@ -241,7 +241,7 @@ async function installDependencies(ctx, cwd) {
   const customDir = ctx.customDir;
 
   await Promise.all([
-    await execa('npm', ['install', '--no-package-lock'], { cwd }),
+    await execa('npm', ['install'], { cwd }),
     await execa('npm', ['install'], { cwd: customDir }),
   ]);
 }

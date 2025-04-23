@@ -1,5 +1,6 @@
 <template>
-  <div class="flex items-center justify-center w-full"
+    <!-- tag form used to reset the input (method .reset() in claer() function) -->
+  <form class="flex items-center justify-center w-full"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
     @drop.prevent="dragging = false; doEmit($event.dataTransfer.files)"
@@ -43,12 +44,12 @@
             :multiple="props.multiple || false"
           />
       </label>
-  </div> 
+    </form> 
 </template>
 
 <script setup lang="ts">
 import { humanifySize } from '@/utils';
-import { ref, type Ref } from 'vue';
+import { ref, defineExpose, type Ref } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
 import adminforth from '@/adminforth';
@@ -125,4 +126,14 @@ function doEmit(filesIn: FileList) {
 
 const dragging = ref(false);
 
+function clear() {
+  selectedFiles.value = [];
+  emit('update:modelValue', []);
+  const form = document.getElementById(id)?.closest('form');
+  form?.reset();
+}
+
+defineExpose({
+    clear,
+});
 </script>
