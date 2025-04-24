@@ -1,6 +1,6 @@
 ---
 slug: compose-ec2-deployment-github-actions-registry
-title: "Amazon EC2 Deployments with GitHub Actions, Terraform, Docker & Amazon ECR"
+title: "Amazon EC2 Deployments with GitHub Actions, Terraform, Docker & Self-hosted Registry"
 authors: ivanb
 tags: [aws, terraform, github-actions]
 description: "The ultimate step-by-step guide to cost-effective, build-time-efficient, and easy managable EC2 deployments using GitHub Actions, Terraform, Docker, and a self-hosted registry."
@@ -108,7 +108,7 @@ Make sure you are not calling bundleNow in `index.ts` file for non-development m
   }
 ```
 
-### Step 1.3 - Make sure you have `migrateLiveAndStart` script in `package.json`
+### Step 1.3 - Make sure you have all required scripts in `package.json`
 
 ```json title="./myadmin/package.json"
 ...
