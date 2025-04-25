@@ -31,6 +31,11 @@ export default {
       required: true,
       maxLength: 255,
     },
+    {
+      name: 'description',
+      type: AdminForthDataTypes.TEXT,
+      required: true,
+    },
   ],
   plugins: [
     // new InlineCreatePlugin({}),
