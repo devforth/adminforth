@@ -1,27 +1,50 @@
 import fs from "fs";
-import { getInstance } from "./utils.js";
+import { callTsProxy } from "./callTsProxy.js";
+import chalk from "chalk";
 
 async function bundle() {
+  console.log("Bundling admin SPA...");
   const currentDirectory = process.cwd();
-  const files = fs.readdirSync(currentDirectory);
-  let instanceFound = false;
 
+  let files = fs.readdirSync(currentDirectory);
+  let instanceFound = false;
+  // try index.ts first
+  if (files.includes("index.ts")) {
+    files = files.filter((file) => file !== "index.ts");
+    files.unshift("index.ts");
+  }
+    
   for (const file of files) {
-    if (file.endsWith(".js") || file.endsWith(".ts")) {
+    if (file.endsWith(".ts")) {
+      const fileNoTs = file.replace(/\.ts$/, "");
+      process.env.HEAVY_DEBUG && console.log(`🪲 Trying bundleing ${file}...`);
       try {
-        const instance = await getInstance(file, currentDirectory);
-        if (instance) {
-          await instance.bundleNow({ hotReload: false });
-          instanceFound = true;
-          break;
-        }
-      } catch (error) {
-        console.error(`Error: Could not bundle '${file}'`, error);
+        await callTsProxy(`
+          import { admin } from './${fileNoTs}.js';
+
+          export async function exec() {
+            return await admin.bundleNow({ hotReload: false });
+          }
+        `);
+        instanceFound = true;
+        break;
+
+      } catch (e) {
+        process.env.HEAVY_DEBUG && console.log(`🪲 File ${file} failed`, e);
       }
     }
   }
   if (!instanceFound) {
-    console.error("Error: No valid instance found to bundle.");
+    console.error(
+      chalk.red(
+        `Error: No valid instance found to bundle.\n` +
+        `Make sure you have a file in the current directory with a .ts extension, and it exports an ` +
+        chalk.cyan.bold('admin') +
+        ` instance like:\n\n` +
+        chalk.yellow('export const admin = new AdminForth({...})') +
+        `\n\nFor example, adminforth CLI creates an index.ts file which exports the admin instance.`
+      )
+    );
     return;
   }
 }
