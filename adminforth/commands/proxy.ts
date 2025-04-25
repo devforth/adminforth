@@ -41,12 +41,19 @@ import path from 'path';
 
     // Restore original console.log
     console.log = origLog;
-    console.log(JSON.stringify({ result, capturedLogs }));
+    console.log(JSON.stringify({ 
+      result, 
+      capturedLogs,
+      error: null 
+    }));
   } catch (error: any) {
     // Restore original console.log
     console.log = origLog;
-    console.error(JSON.stringify({ error: error.message, capturedLogs }));
-    process.exit(1);
+    console.log(JSON.stringify({ 
+      error: error.message, 
+      stack: error.stack,
+      capturedLogs 
+    }));
   } finally {
     await unlink(tmpFile).catch(() => {});
   }
