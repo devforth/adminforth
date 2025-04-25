@@ -92,3 +92,29 @@ npm run namemigration -- --name desctiption_of_changes
 ```
 
 
+### Testing CLI commands during development
+
+
+Make sure you have not `adminforth` globally installed. If you have it, remove it:
+
+
+```sh
+npm uninstall -g adminforth
+```
+
+Then, in the root of the project, run once:
+
+```
+cd adminforth/adminforth
+npm run build
+```
+
+This will automatically make an npm link to the `adminforth` package in the root of the project.
+
+Then, go to testing app, e.g. created with CLI, and use next command:
+
+```
+npx -g adminforth <your command under development>
+```
+
+This will always run latest version of adminforth package.
