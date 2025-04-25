@@ -15,7 +15,7 @@ Here is how it looks in action:
 
 <!-- truncate -->
 
-## Simple controls
+# Simple controls
 
 To control plugin we use our open-source [vue-suggestion-input](https://github.com/devforth/vue-suggestion-input).
 It allows to:
