@@ -7,8 +7,12 @@ import path from 'path';
 import { Listr } from 'listr2'
 import { fileURLToPath } from 'url';
 import {ConnectionString} from 'connection-string';
-import {execa} from 'execa';
+import { exec } from 'child_process';
+
 import Handlebars from 'handlebars';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -145,18 +149,19 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
   // Write templated files
-  writeTemplateFiles(dirname, projectDir, {
+  await writeTemplateFiles(dirname, projectDir, {
     dbUrl: connectionString.toString(),
     prismaDbUrl,
     appName,
     provider,
+    nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
   });
 
   return projectDir;  // Return the new directory path
 }
 
 async function writeTemplateFiles(dirname, cwd, options) {
-  const { dbUrl, prismaDbUrl, appName, provider } = options;
+  const { dbUrl, prismaDbUrl, appName, provider, nodeMajor } = options;
 
   // Build a list of files to generate
   const templateTasks = [
@@ -192,9 +197,14 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: { dbUrl, prismaDbUrl },
     },
     {
+      src: '.env.prod.hbs',
+      dest: '.env.prod',
+      data: { dbUrl, prismaDbUrl },
+    },
+    {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl },
+      data: { dbUrl, prismaDbUrl, appName },
     },
     {
       // We'll write .env using the same content as .env.sample
@@ -218,6 +228,18 @@ async function writeTemplateFiles(dirname, cwd, options) {
       dest: 'custom/tsconfig.json',
       data: {},
     },
+    {
+      src: 'Dockerfile.hbs',
+      dest: 'Dockerfile',
+      data: { nodeMajor },
+    },
+    {
+      src: '.dockerignore.hbs',
+      dest: '.dockerignore',
+      data: {
+        sqliteFile: detectDbProvider(options.db).startsWith('sqlite') ? options.db.split('://')[1] : null,
+      },
+    }
   ];
 
   for (const task of templateTasks) {
@@ -228,22 +250,25 @@ async function writeTemplateFiles(dirname, cwd, options) {
     // fse.ensureDirSync(path.dirname(destPath));
 
     if (task.empty) {
-      fs.writeFileSync(destPath, '');
+      await fs.promises.writeFile(destPath, '');
     } else {
       const templatePath = path.join(dirname, 'templates', task.src);
       const compiled = renderHBSTemplate(templatePath, task.data);
-      fs.writeFileSync(destPath, compiled);
+      await fs.promises.writeFile(destPath, compiled);
     }
   }
 }
 
 async function installDependencies(ctx, cwd) {
-  const customDir = ctx.customDir;
+  const nodeBinary = process.execPath; // Path to the Node.js binary running this script
+  const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
 
-  await Promise.all([
-    await execa('npm', ['install'], { cwd }),
-    await execa('npm', ['install'], { cwd: customDir }),
+  const customDir = ctx.customDir;
+  const res = await Promise.all([
+    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
   ]);
+  // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
 
 function generateFinalInstructions(skipPrismaSetup, options) {
@@ -251,15 +276,15 @@ function generateFinalInstructions(skipPrismaSetup, options) {
   if (!skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Go to the project directory')}
-  ${chalk.cyan(`$ cd ${options.appName}`)}\n`;
+  ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
-  ${chalk.cyan('$ npm run makemigration -- --name init')}\n`;
+  ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
-  ${chalk.cyan('$ npm start')}\n
+  ${chalk.dim('$')}${chalk.cyan(' npm run dev')}\n
 `;
 
   instruction += '😉 Happy coding!';
