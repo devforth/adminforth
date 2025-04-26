@@ -22,6 +22,7 @@ export default async function createApp(args) {
     await tasks.run();
   } catch (err) {
     console.error(chalk.red(`\n❌  ${err.message}\n`));
+    console.error(err.stack);
     process.exit(1);
   }
 }
