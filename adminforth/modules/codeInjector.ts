@@ -791,7 +791,6 @@ class CodeInjector implements ICodeInjector {
     const cwd = this.spaTmpPath();
     const serveDir = this.getServeDir();
 
-
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath());
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
@@ -805,7 +804,17 @@ class CodeInjector implements ICodeInjector {
       console.log(`🪲 SPA messages hash: ${messagesHash}`);
       console.log(`🪲 SPA sources hash: ${sourcesHash}`);
     }
-    
+
+    if (!skipBuild) {
+      // remove serveDir if exists
+      try {
+        await fs.promises.rm(serveDir, { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+      await fs.promises.mkdir(serveDir, { recursive: true });
+    }
+
     if (!skipExtract) {
       await this.runNpmShell({command: 'run i18n:extract', cwd});
       
@@ -823,13 +832,6 @@ class CodeInjector implements ICodeInjector {
 
     if (!hotReload) {
       if (!skipBuild) {
-        // remove serveDir if exists
-        try {
-          await fs.promises.rm(serveDir, { recursive: true });
-        } catch (e) {
-          // ignore
-        }
-        await fs.promises.mkdir(serveDir, { recursive: true });
         
         // TODO probably add option to build with tsh check (plain 'build')
         await this.runNpmShell({command: 'run build-only', cwd});
