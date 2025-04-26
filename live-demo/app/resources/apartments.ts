@@ -4,6 +4,7 @@ import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import UploadPlugin from '@adminforth/upload';
 import { randomUUID } from 'crypto';
+import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
 
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
@@ -149,6 +150,13 @@ export default {
     new RichEditorPlugin({
       htmlFieldName: 'description',
       completion: {
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4o', // default "gpt-4o-mini"
+          expert: {
+              temperature: 0.7 //Model temperature, default 0.7
+          }
+        }),
         provider: 'openai-chat-gpt',
         params: {
           apiKey: process.env.OPENAI_API_KEY as string,
