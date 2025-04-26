@@ -116,6 +116,7 @@ class CodeInjector implements ICodeInjector {
     };
 
     console.log(`⚙️ exec: npm ${command}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
@@ -747,8 +748,9 @@ class CodeInjector implements ICodeInjector {
     }
   }
 
-  async computeSourcesHash(folderPath: string = this.spaTmpPath()) {
+  async computeSourcesHash(folderPath: string = this.spaTmpPath(), allFiles: string[] = []) {
     const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+    allFiles.push(...files.map((file) => path.join(folderPath, file.name)));
     const hashes = await Promise.all(
       files.map(async (file) => {
         const filePath = path.join(folderPath, file.name);
@@ -759,7 +761,7 @@ class CodeInjector implements ICodeInjector {
         }
         
         if (file.isDirectory()) {
-          return this.computeSourcesHash(filePath);
+          return this.computeSourcesHash(filePath, allFiles);
         } else {
           const content = await fs.promises.readFile(filePath, 'utf-8');
           return md5hash(content);
@@ -791,7 +793,9 @@ class CodeInjector implements ICodeInjector {
     const cwd = this.spaTmpPath();
     const serveDir = this.getServeDir();
 
-    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath());
+    const allFiles = [];
+    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
+    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', allFiles); 
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
