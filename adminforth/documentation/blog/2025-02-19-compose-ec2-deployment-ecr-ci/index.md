@@ -8,7 +8,7 @@ image: "/ogs/ga-tf-ecr.jpg"
 ---
 
 
-![alt text](ga-tf-aws.jpg)
+![alt text](ga-tf-ecr.jpg)
 
 
 This guide shows how to deploy own Docker apps (with AdminForth as example) to Amazon EC2 instance with Docker and Terraform involving pushing images into Amazon ECR.
@@ -40,7 +40,7 @@ Quick difference between approaches from previous post and current post:
 | How build happens | Source code is rsync-ed from CI to EC2 and docker build is done there | Docker build is done on CI and docker image is pushed to registry, then Docker on EC2 pulls from registry |
 | Where build is done | On EC2 | On CI |
 | How Docker build layers are cached | Cache is stored on EC2 | GitHub actions has no own Docker cache out of the box, so it should be stored in dedicated place (we use Amazon ECR) |
-| Advantages | Cheaper (no egrass traffik from EC2) and faster | Build is done on CI, so EC2 server is not overloaded |
+| Advantages | Cheaper (no egrass cache traffik from EC2) and faster | Build is done on CI, so EC2 server is not overloaded |
 | Disadvantages | Build on EC2 requires additional server RAM / requires swap / overloads CPU | More terraform code is needed. Extra cost for egress traffik to GitHub for cache transfer |
 | Initial build time\* | 3m 13.541s | 3m 54s |
 | Rebuild time (changed `index.ts`)\*| 0m 51.653s | 0m 54.120s |
@@ -98,7 +98,7 @@ Drawback is that buildx which is running on GitHub action server will download c
 
 # Prerequisites
 
-I will use you run Ubuntu (Native or WSL2).
+I will assume you run Ubuntu (Native or WSL2).
 
 You should have terraform, here is official repository: 
 

@@ -237,7 +237,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       src: '.dockerignore.hbs',
       dest: '.dockerignore',
       data: {
-        sqliteFile: detectDbProvider(options.db).startsWith('sqlite') ? options.db.split('://')[1] : null,
+        sqliteFile: detectDbProvider(dbUrl).startsWith('sqlite') ? dbUrl.split('://')[1] : null,
       },
     }
   ];
