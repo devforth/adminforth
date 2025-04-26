@@ -795,7 +795,7 @@ class CodeInjector implements ICodeInjector {
 
     const allFiles = [];
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
-    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', allFiles); 
+    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
@@ -827,6 +827,10 @@ class CodeInjector implements ICodeInjector {
 
       // copy i18n messages to serve dir
       await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+
+      // rm i18n-messages.json and i18n-empty.json from spa tmp, or they will affect hash
+      await fs.promises.rm(path.join(cwd, 'i18n-messages.json'), { force: true });
+      await fs.promises.rm(path.join(cwd, 'i18n-empty.json'), { force: true });
 
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
