@@ -144,7 +144,7 @@ class AdminForth implements IAdminForth {
 
    
 
-    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} starting up`)
+    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
   }
 
   formatAdminForth() {

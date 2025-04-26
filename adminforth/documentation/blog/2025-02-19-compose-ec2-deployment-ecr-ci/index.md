@@ -109,12 +109,17 @@ sudo apt update && sudo apt install terraform
 ```
 
 
-And AWS CLI:
+AWS CLI:
 
 ```bash
 sudo snap install aws-cli --classic
 ```
 
+Also you need Doker Daemon running. We recommend Docker Desktop running. ON WSL2 make sure you have Docker Desktop WSL2 integration enabled.
+
+```bash
+docker version
+```
 
 # Practice - deploy setup
 
@@ -651,7 +656,9 @@ aws_secret_access_key = <your_secret_key>
 
 We will run first deployment from local machine to create S3 bucket for storing Terraform state. In other words this deployment will create resources needed for storing Terraform state in the cloud and runnign deployment from GitHub actions.
 
-```bash
+In `deploy` folder run:
+
+```bash 
 terraform init
 ```
 
@@ -788,14 +795,14 @@ jobs:
 ```
 
 
-### Step 8.1 - Add secrets to GitHub
+### Step 10 - Add secrets to GitHub
 
 Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository secret` and add:
 
 - `VAULT_AWS_ACCESS_KEY_ID` - your AWS access key
 - `VAULT_AWS_SECRET_ACCESS_KEY` - your AWS secret key
-- `VAULT_SSH_PRIVATE_KEY` - execute `cat ~/.ssh/id_rsa` and paste to GitHub secrets
-- `VAULT_SSH_PUBLIC_KEY` - execute `cat ~/.ssh/id_rsa.pub` and paste to GitHub secrets
+- `VAULT_SSH_PRIVATE_KEY` - execute `cat deploy/.keys/id_rsa` and paste to GitHub secrets
+- `VAULT_SSH_PUBLIC_KEY` - execute `cat deploy/.keys/id_rsa.pub` and paste to GitHub secrets
 - `VAULT_REGISTRY_CA_PEM` - execute `cat deploy/.keys/ca.pem` and paste to GitHub secrets
 - `VAULT_REGISTRY_CA_KEY` - execute `cat deploy/.keys/ca.key` and paste to GitHub secrets
 - `VAULT_ADMINFORTH_SECRET` - generate some random string and paste to GitHub secrets, e.g. `openssl rand -base64 32 | tr -d '\n'`
@@ -832,6 +839,16 @@ Now open GitHub actions file and add it to the `env` section:
 
 In the same way you can add any other secrets to your GitHub actions.
 
+### How to connect to EC2 instance?
+
+To connect to EC2 instance you can use SSH.
+
+```bash
+cd deploy
+ssh -i ./.keys/id_rsa ubuntu@<your_ec2_ip>
+```
+
+IP address can be found in terminal output after terraform apply.
 
 ### Out of space on EC2 instance? Extend EBS volume
 
@@ -903,14 +920,18 @@ Add this steps to the end of your GitHub actions file:
         run: |
           curl -X POST -H 'Content-type: application/json' --data \
           "{\"text\": \"✅ *${{ github.actor }}* successfully built *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          $SLACK_WEBHOOK_URL 
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Slack on failure
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' --data \
           "{\"text\": \"❌ *${{ github.actor }}* failed to build *${{ github.ref_name }}* with commit \\\"${{ github.event.head_commit.message }}\\\".\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Build> | :link: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          $SLACK_WEBHOOK_URL 
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 ```
 

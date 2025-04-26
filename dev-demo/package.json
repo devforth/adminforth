@@ -6,10 +6,9 @@
   "type": "module",
   "scripts": {
     "env": "dotenvx run -f .env.local -f .env --overload --",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run env -- tsx watch index.ts",
-    "migrateLocal": "npm run env -- npx prisma migrate deploy",
-    "makemigration": "npm run migrateLocal; npm run env -- npx --yes prisma migrate dev"
+    "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
+    "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",
