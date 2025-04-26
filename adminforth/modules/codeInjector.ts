@@ -800,7 +800,11 @@ class CodeInjector implements ICodeInjector {
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
-
+    if (process.env.HEAVY_DEBUG) {
+      console.log(`🪲 SPA build hash: ${buildHash}`);
+      console.log(`🪲 SPA messages hash: ${messagesHash}`);
+      console.log(`🪲 SPA sources hash: ${sourcesHash}`);
+    }
     
     if (!skipExtract) {
       await this.runNpmShell({command: 'run i18n:extract', cwd});
