@@ -341,8 +341,8 @@ const port = process.env.PORT || 3000;
 (async () => {
     console.log('🅿️  Bundling AdminForth...');
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-    console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development1'});
+    console.log('Bundling AdminForth SPA done.');
 })();
 
 

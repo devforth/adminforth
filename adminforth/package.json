@@ -60,6 +60,7 @@
   "dependencies": {
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
+    "@inquirer/prompts": "^7.4.1",
     "@types/express": "^5.0.0",
     "arg": "^5.0.2",
     "better-sqlite3": "^11.5.0",
@@ -75,12 +76,14 @@
     "fuse.js": "^7.0.0",
     "handlebars": "^4.7.8",
     "inquirer": "^12.3.0",
+    "jiti": "^2.4.2",
     "jsonwebtoken": "^9.0.2",
     "listr2": "^8.2.5",
     "mongodb": "6.6",
     "mysql2": "^3.12.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
+    "recast": "^0.23.11",
     "ws": "^8.18.0"
   },
   "devDependencies": {

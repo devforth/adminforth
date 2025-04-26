@@ -60,9 +60,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.use(express.json());
 
   const port = 3500;
-
+  
   await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+  console.log('Bundling AdminForth SPA done.');
 
   admin.express.serve(app)
 

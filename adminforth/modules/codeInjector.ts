@@ -212,6 +212,8 @@ class CodeInjector implements ICodeInjector {
   }
 
   async prepareSources() {
+    // collects all files and folders into SPA_TMP_DIR
+
     // check spa tmp folder exists and create if not
     try {
       await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
@@ -734,6 +736,39 @@ class CodeInjector implements ICodeInjector {
     this.allWatchers.push(watcher);
   }
 
+  async tryReadFile(filePath: string) {
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      return content;
+    } catch (e) {
+      // file does not exist
+      process.env.HEAVY_DEBUG && console.log(`🪲File ${filePath} does not exist, returning null`);
+      return null;
+    }
+  }
+
+  async computeSourcesHash(folderPath: string = this.spaTmpPath()) {
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+    const hashes = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(folderPath, file.name);
+
+        // 🚫 Skip node_modules
+        if (file.name === 'node_modules' || file.name === 'dist') {
+          return '';
+        }
+        
+        if (file.isDirectory()) {
+          return this.computeSourcesHash(filePath);
+        } else {
+          const content = await fs.promises.readFile(filePath, 'utf-8');
+          return md5hash(content);
+        }
+      })
+    );
+    return md5hash(hashes.join(''));
+  }
+
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
@@ -754,28 +789,55 @@ class CodeInjector implements ICodeInjector {
     }
 
     const cwd = this.spaTmpPath();
-
-
-    await this.runNpmShell({command: 'run i18n:extract', cwd});
-
-    // probably add option to build with tsh check (plain 'build')
     const serveDir = this.getServeDir();
-    // remove serveDir if exists
-    try {
-      await fs.promises.rm(serveDir, { recursive: true });
-    } catch (e) {
-      // ignore
+
+
+    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath());
+    
+    const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
+    const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
+
+    const skipBuild = buildHash === sourcesHash;
+    const skipExtract = messagesHash === sourcesHash;
+
+
+    
+    if (!skipExtract) {
+      await this.runNpmShell({command: 'run i18n:extract', cwd});
+      
+      // create serveDir if not exists
+      await fs.promises.mkdir(serveDir, { recursive: true });
+
+      // copy i18n messages to serve dir
+      await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+
+      // save hash
+      await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
+    } else {
+      console.log(`Skipping AdminForth i18n messages extraction - it is already done for these sources set`);
     }
-    await fs.promises.mkdir(serveDir, { recursive: true });
-  
-    // copy i18n messages to serve dir
-    await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
 
     if (!hotReload) {
-      await this.runNpmShell({command: 'run build-only', cwd});
+      if (!skipBuild) {
+        // remove serveDir if exists
+        try {
+          await fs.promises.rm(serveDir, { recursive: true });
+        } catch (e) {
+          // ignore
+        }
+        await fs.promises.mkdir(serveDir, { recursive: true });
+        
+        // TODO probably add option to build with tsh check (plain 'build')
+        await this.runNpmShell({command: 'run build-only', cwd});
+        
+        // coy dist to serveDir
+        await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
 
-      // coy dist to serveDir
-      await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
+        // save hash
+        await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
+      } else {
+        console.log(`Skipping AdminForth SPA bundle - it is already done for these sources set`);
+      }
     } else {
 
       const command = 'run dev';
