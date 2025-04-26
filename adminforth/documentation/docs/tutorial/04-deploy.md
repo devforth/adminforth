@@ -5,77 +5,15 @@ with `ts-node` command in any node environment.
 
 It will start the server on configured HTTP port and you can use any proxy like Traefik/Nginx to expose it to the internet and add SSL Layer.
 
-## Building SPA in Docker build time
+## Dockerfile
 
-In current index.ts file you might use call to `bundleNow` method which starts building internal SPA bundle when `index.ts` started
-executing. SPA building generally takes from 10 seconds to minute depending on the external modules you will add into AdminForth and extended functionality you will create.
+If you created your AdminForth application with `adminforth create-app` command you already have a `Dockerfile` in your project.
 
-To fully exclude this bundle time we recommend doing bundling in build time.
+You can use it to build your AdminForth application in Docker container.
 
-Create file `bundleNow.ts` in the root directory of your project:
+> ⚠️ Please note that `Dockerfile` has `npx adminforth bundle` command which pre-bundles your AdminForth SPA
+> at build time. If you will remove it, your AdminForth application will still work, but will cause some downtime during app restart/redeploy because bundling will happen at runtime after you start the `index.ts` file. When `npx adminforth bundle` command is executed at build time, the call do `bundleNow()` inside of `index.ts` file will actually do nothing.
 
-and put the following code:
-
-```ts title='./bundleNow.ts'
-import { admin } from './index.js';
-
-await admin.bundleNow({ hotReload: false});
-console.log('Bundling AdminForth done.');
-```
-
-Now completely Remove bundleNow call from `index.ts` file:
-
-```ts title='./index.ts'
-//diff-remove
-  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-//diff-remove
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-//diff-remove
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-//diff-add
-  if (process.env.NODE_ENV === 'development') {
-//diff-add
-    await admin.bundleNow({ hotReload: true });
-//diff-add
-    console.log('Bundling AdminForth done');
-//diff-add
-  }
-```
-
-In root directory create file `.dockerignore`:
-
-```bash title='./.dockerignore'
-node_modules
-*.sqlite
-```
-
-In root directory create file `Dockerfile`:
-
-```Dockerfile
-# use the same node version which you used during dev
-FROM node:20-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["npm", "run", "migrateLiveAndStart"]
-```
-
-Add `bundleNow` and `startLive` to `package.json`:
-
-```ts title='./package.json'
-{
-    "type": "module",
-    "scripts": {
-        "env": "dotenvx run -f .env.local -f .env --overload --",
-        "start": "npm run env -- tsx watch index.ts",
-        ...
-//diff-add
-        "migrateLiveAndStart": "npx --yes prisma migrate deploy && tsx index.ts"
-    },
-}
-```
 
 ## Building the image
 
@@ -89,13 +27,12 @@ And run container with:
 
 ```bash
 docker run -p 3500:3500 \
-  -e NODE_ENV=production \
   -e ADMINFORTH_SECRET=CHANGEME \
-  -e DATABASE_FILE=/code/db/db.sqlite \
-  -e DATABASE_FILE_URL=file:/code/db/db.sqlite \
   -v $(pwd)/db:/code/db \
   myadminapp
 ```
+
+> `-v $(pwd)/db:/code/db` is needed only if you are using SQLite database.
 
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
 
@@ -106,14 +43,7 @@ change 3500 port to 80 and Cloudflare will automatically add SSL layer and faste
 
 However as a bonus here we will give you independent way to add free LetsEncrypt SSL layer to your AdminForth application.
 
-First move all contents of your root folder (which contains index.ts and other files) to `app` folder:
-
-```bash
-mkdir app
-mv {.,}*  app
-```
-
-In root directory create file `compose.yml`:
+In a folder which contains folder of your AdminForth application (e.g. `adminforth-app`) create a file `compose.yml`:
 
 ```yaml title='./compose.yml'
 version: '3.8'
@@ -144,12 +74,10 @@ services:
       - "traefik.http.routers.http-catchall.tls=false"
 
   adminforth:
-    build: ./app
+    build: ./adminforth-app
     environment:
       - NODE_ENV=production
       - ADMINFORTH_SECRET=!CHANGEME! # ☝️ replace with your secret
-      - DATABASE_FILE=/code/db/db.sqlite
-      - DATABASE_FILE_URL=file:/code/db/db.sqlite
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminforth.tls=true"
@@ -241,3 +169,18 @@ server {
   }
 }
 ```
+
+# Environment variables best practices
+
+Use `.env` file for sensitive variables like `OPENAI_API_KEY` locally.
+
+Use `.env.prod` and `.env.local` for non-sensitive variables which are different for production and local environemnts (like NODE_ENV, SOME_EXTERNAL_API_BASE, etc).
+
+Sensitive variables like `OPENAI_API_KEY` in production should be passed directly to docker container or use secrets from your vault.
+
+
+# If you are not using Docker
+
+You can actually ship your AdminForth application without Docker as well. 
+
+Most important thing is remember in such case is to use `npx adminforth bundle` command after you installed node modules and before you do actual restart of your application to avoid downtimes.
