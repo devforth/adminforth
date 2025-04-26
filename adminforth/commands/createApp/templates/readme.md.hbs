@@ -9,13 +9,13 @@ npm ci
 Migrate the database:
 
 ```bash
-npm run migrateLocal
+npm run migrate:local
 ```
 
 Start the server:
 
 ```bash
-npm start
+npm run dev
 ```
 
 {{#if prismaDbUrl}}
@@ -31,6 +31,18 @@ npm run makemigration -- --name <name_of_changes>
 
 Your colleagues will need to pull the changes and run `npm run migrateLocal` to apply the migration in their local database.
 {{/if}}
+
+## Deployment tips
+
+You have Dockerfile ready for production deployment. You can test the build with:
+
+```bash
+docker build -t {{appName}}-image .
+docker run -p 3500:3500 {{appName}}-image
+```
+
+To set non-sensitive environment variables in production, use `.env.prod` file.
+For sensitive variables, use direct docker environment variables or secrets from your vault.
 
 ## Documentation
 
