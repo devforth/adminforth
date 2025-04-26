@@ -38,7 +38,7 @@ You have Dockerfile ready for production deployment. You can test the build with
 
 ```bash
 docker build -t {{appName}}-image .
-docker run -p 3500:3500 {{appName}}-image
+docker run -p 3500:3500 -e ADMINFORTH_SECRET=123 {{#if sqliteFile}}-v $(pwd)/db:/code/db {{/if}}{{appName}}-image
 ```
 
 To set non-sensitive environment variables in production, use `.env.prod` file.
