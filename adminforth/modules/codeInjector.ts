@@ -750,15 +750,17 @@ class CodeInjector implements ICodeInjector {
 
   async computeSourcesHash(folderPath: string = this.spaTmpPath(), allFiles: string[] = []) {
     const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
-    allFiles.push(...files.map((file) => path.join(folderPath, file.name)));
     const hashes = await Promise.all(
       files.map(async (file) => {
         const filePath = path.join(folderPath, file.name);
 
-        // 🚫 Skip node_modules
-        if (file.name === 'node_modules' || file.name === 'dist') {
+        // 🚫 Skip big files or files which might be dynamic
+        if (file.name === 'node_modules' || file.name === 'dist' ||
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
           return '';
         }
+
+        allFiles.push(filePath);
         
         if (file.isDirectory()) {
           return this.computeSourcesHash(filePath, allFiles);
@@ -795,7 +797,8 @@ class CodeInjector implements ICodeInjector {
 
     const allFiles = [];
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
-    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
+    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(
+      allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
@@ -827,10 +830,6 @@ class CodeInjector implements ICodeInjector {
 
       // copy i18n messages to serve dir
       await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
-
-      // rm i18n-messages.json and i18n-empty.json from spa tmp, or they will affect hash
-      await fs.promises.rm(path.join(cwd, 'i18n-messages.json'), { force: true });
-      await fs.promises.rm(path.join(cwd, 'i18n-empty.json'), { force: true });
 
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
