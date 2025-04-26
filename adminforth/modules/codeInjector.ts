@@ -814,7 +814,7 @@ class CodeInjector implements ICodeInjector {
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
     } else {
-      console.log(`Skipping AdminForth i18n messages extraction - it is already done for these sources set`);
+      console.log(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
     }
 
     if (!hotReload) {
@@ -836,7 +836,7 @@ class CodeInjector implements ICodeInjector {
         // save hash
         await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
       } else {
-        console.log(`Skipping AdminForth SPA bundle - it is already done for these sources set`);
+        console.log(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
       }
     } else {
 
