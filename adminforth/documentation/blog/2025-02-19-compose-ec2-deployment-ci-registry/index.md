@@ -63,78 +63,12 @@ Though the challenge is that we need to provide CA certificate to every daemon w
 Assume you have your AdminForth project in `myadmin`.
 
 
-## Step 1 - Dockerfile
+## Step 1 - Dockerfile and .dockerignore
 
-> TODO: Step 1 and 1.* will be accomplished automatically within the part of CLI and moved to manual non-CLI Hello world example
 
-Create file `Dockerfile` in `myadmin`:
+This guide assumes you have created your AdminForth application with latest version of `adminforth create-app` command. 
+This command already creates a `Dockerfile` and `.dockerignore` for you, so you can use them as is.
 
-```Dockerfile title="./myadmin/Dockerfile"
-# use the same node version which you used during dev
-FROM node:22-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci  
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["sh", "-c", "npm run migrate:prod && npm run prod"]
-```
-
-### Step 1.1 - Create bundleNow.ts
-
-Create file `bundleNow.ts` in `myadmin`:
-
-```typescript title="./myadmin/bundleNow.ts"
-import { admin } from './index.js';
-
-await admin.bundleNow({ hotReload: false});
-console.log('Bundling AdminForth done.');
-```
-
-Make sure you are not calling bundleNow in `index.ts` file for non-development mode:
-
-```typescript
-//diff-remove
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-//diff-remove
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-//diff-remove
-  if (process.env.NODE_ENV === 'development') {
-//diff-add
-    await admin.bundleNow({ hotReload: true });
-//diff-add
-    console.log('Bundling AdminForth done');
-//diff-add
-  }
-```
-
-### Step 1.3 - Make sure you have all required scripts in `package.json`
-
-```json title="./myadmin/package.json"
-...
-"scripts": {
-  "scripts": {
-    "dev": "npm run _env:dev -- tsx watch index.ts",
-    "prod": "npm run _env:prod -- tsx index.ts",
-    "start": "npm run dev",
-
-    "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
-    "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy",
-    "migrate:prod": "npm run _env:prod -- npx --yes prisma migrate deploy",
-
-    "_env:dev": "dotenvx run -f .env -f .env.local --",
-    "_env:prod": "dotenvx run -f .env.prod --"
-  },
-}
-...
-```
-
-### Step 1.4 - Make sure you have `.dockerignore` file
-
-```./myadmin/.dockerignore
-node_modules
-*.sqlite
-```
 
 ## Step 2 - compose.yml
 
