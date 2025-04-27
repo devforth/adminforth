@@ -121,7 +121,7 @@ class CodeInjector implements ICodeInjector {
     };
 
     console.log(`⚙️ exec: npm ${command}`);
-    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd, 'env:', env);
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
@@ -620,7 +620,12 @@ class CodeInjector implements ICodeInjector {
 
     if (allPacks.length) {
       const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: this.spaTmpPath()});
+      await this.runNpmShell({
+        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+        envOverrides: { 
+          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+        }
+      });
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
