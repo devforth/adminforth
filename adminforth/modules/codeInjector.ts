@@ -106,13 +106,18 @@ class CodeInjector implements ICodeInjector {
   //   console.log(`Command ${command} output:`, out, err);
   // }
 
-  async runNpmShell({command, cwd}) {
+  async runNpmShell({command, cwd, envOverrides = {}}: {
+    command: string,
+    cwd: string,
+    envOverrides?: { [key: string]: string }
+  }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
+      ...envOverrides,
     };
 
     console.log(`⚙️ exec: npm ${command}`);
@@ -594,7 +599,9 @@ class CodeInjector implements ICodeInjector {
       process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath()});
+    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    }}); 
 
     const allPacks = [
       ...iconPackageNames,
