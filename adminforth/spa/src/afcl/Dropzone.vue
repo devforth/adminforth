@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import { humanifySize } from '@/utils';
-import { ref, defineExpose, type Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
 import adminforth from '@/adminforth';
