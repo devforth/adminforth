@@ -16,20 +16,12 @@ We will use GitHub Actions as CI/CD, but you can use any other CI/CD, for exampl
 Assume you have your AdminForth project in `myadmin`.
 
 
-## Step 1 - Dockerfile
+## Step 1 - Dockerfile and .dockerignore
 
-Create file `Dockerfile` in `myadmin`:
 
-```Dockerfile title="./myadmin/Dockerfile"
-# use the same node version which you used during dev
-FROM node:22-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci  
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["sh", "-c", "npm run migrate:prod && npm run prod"]
-```
+This guide assumes you have created your AdminForth application with latest version of `adminforth create-app` command. 
+This command already creates a `Dockerfile` and `.dockerignore` for you, so you can use them as is.
+
 
 ## Step 2 - compose.yml
 
@@ -286,7 +278,6 @@ resource "null_resource" "sync_files_and_run" {
       "docker system prune -f",
       # "docker buildx prune -f --filter 'type!=exec.cachemount'",
       "cd /home/ubuntu/app/deploy",
-      # COMPOSE_FORCE_NO_TTY is needed to run docker compose in non-interactive mode and prevent stdout mess up
       "COMPOSE_BAKE=true docker compose --progress=plain -p app -f compose.yml up --build -d"
     ]
 
