@@ -40,7 +40,7 @@ nvm use 20
 ## Step 1: Create a new AdminForth project
 
 ```bash
-npx adminforth create-app ai-blog
+npx adminforth create-app --app-name ai-blog
 ```
 
 Add modules:
