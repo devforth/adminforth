@@ -121,7 +121,7 @@ class CodeInjector implements ICodeInjector {
     };
 
     console.log(`⚙️ exec: npm ${command}`);
-    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd, 'env:', env);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
