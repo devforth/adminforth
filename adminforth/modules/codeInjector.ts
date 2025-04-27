@@ -106,16 +106,22 @@ class CodeInjector implements ICodeInjector {
   //   console.log(`Command ${command} output:`, out, err);
   // }
 
-  async runNpmShell({command, cwd}) {
+  async runNpmShell({command, cwd, envOverrides = {}}: {
+    command: string,
+    cwd: string,
+    envOverrides?: { [key: string]: string }
+  }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
     const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
+      ...envOverrides,
     };
 
     console.log(`⚙️ exec: npm ${command}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
@@ -593,7 +599,9 @@ class CodeInjector implements ICodeInjector {
       process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath()});
+    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    }}); 
 
     const allPacks = [
       ...iconPackageNames,
@@ -612,7 +620,12 @@ class CodeInjector implements ICodeInjector {
 
     if (allPacks.length) {
       const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: this.spaTmpPath()});
+      await this.runNpmShell({
+        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+        envOverrides: { 
+          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+        }
+      });
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
@@ -747,19 +760,22 @@ class CodeInjector implements ICodeInjector {
     }
   }
 
-  async computeSourcesHash(folderPath: string = this.spaTmpPath()) {
+  async computeSourcesHash(folderPath: string = this.spaTmpPath(), allFiles: string[] = []) {
     const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
     const hashes = await Promise.all(
       files.map(async (file) => {
         const filePath = path.join(folderPath, file.name);
 
-        // 🚫 Skip node_modules
-        if (file.name === 'node_modules' || file.name === 'dist') {
+        // 🚫 Skip big files or files which might be dynamic
+        if (file.name === 'node_modules' || file.name === 'dist' ||
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
           return '';
         }
+
+        allFiles.push(filePath);
         
         if (file.isDirectory()) {
-          return this.computeSourcesHash(filePath);
+          return this.computeSourcesHash(filePath, allFiles);
         } else {
           const content = await fs.promises.readFile(filePath, 'utf-8');
           return md5hash(content);
@@ -791,8 +807,10 @@ class CodeInjector implements ICodeInjector {
     const cwd = this.spaTmpPath();
     const serveDir = this.getServeDir();
 
-
-    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath());
+    const allFiles = [];
+    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
+    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(
+      allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
@@ -805,7 +823,17 @@ class CodeInjector implements ICodeInjector {
       console.log(`🪲 SPA messages hash: ${messagesHash}`);
       console.log(`🪲 SPA sources hash: ${sourcesHash}`);
     }
-    
+
+    if (!skipBuild) {
+      // remove serveDir if exists
+      try {
+        await fs.promises.rm(serveDir, { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+      await fs.promises.mkdir(serveDir, { recursive: true });
+    }
+
     if (!skipExtract) {
       await this.runNpmShell({command: 'run i18n:extract', cwd});
       
@@ -823,13 +851,6 @@ class CodeInjector implements ICodeInjector {
 
     if (!hotReload) {
       if (!skipBuild) {
-        // remove serveDir if exists
-        try {
-          await fs.promises.rm(serveDir, { recursive: true });
-        } catch (e) {
-          // ignore
-        }
-        await fs.promises.mkdir(serveDir, { recursive: true });
         
         // TODO probably add option to build with tsh check (plain 'build')
         await this.runNpmShell({command: 'run build-only', cwd});
