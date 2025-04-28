@@ -57,10 +57,10 @@ export interface ImageGenerationAdapter {
     inputFiles: string[],
 
     // default = lowest dimension supported 
-    size: string,
+    size?: string,
 
     // one by default
-    n: number
+    n?: number
   }): Promise<{
     imageURLs?: string[];
     error?: string;
