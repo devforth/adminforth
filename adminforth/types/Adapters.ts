@@ -50,8 +50,14 @@ export interface ImageGenerationAdapter {
   generate(
     prompt: string,
     inputFiles: string[],
+
+    // default = lowest dimension supported 
+    size: string,
+
+    // one by default
+    n: number
   ): Promise<{
-    imageURL?: string;
+    imageURL?: string[];
     error?: string;
   }>;
 }
