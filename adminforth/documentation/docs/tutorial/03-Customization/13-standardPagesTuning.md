@@ -360,6 +360,30 @@ const coreStore = useCoreStore();
 </script>
 ```
 
+ALso if you want to disable ability to change such fields (but keep them as readonly) you can add `readonlyColumns` to the link:
+
+```html title="./resources/Dashboard.vue
+<template>
+  ...
+  <LinkButton
+    :to="{
+      name: 'resource-create',
+      params: {
+        resourceId: 'aparts',
+      },
+      query: {
+        values: encodeURIComponent(JSON.stringify({
+          realtor_id: coreStore?.adminUser.dbUser.id 
+        })),
+        //diff-add
+        readonlyColumns: encodeURIComponent(JSON.stringify(['realtor_id'])),
+      },
+    }"
+  >
+    {{$t('Create new apartment')}}
+  </LinkButton>
+  ...
+```
 
 ## Editing
 
