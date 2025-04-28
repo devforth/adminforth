@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import Handlebars from 'handlebars';
@@ -16,22 +17,30 @@ async function renderHBSTemplate(templatePath, data) {
 }
 
 async function generateVueContent(fieldType, { resource, column }) {
-  const componentName = `${resource.label}${column.label}${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}`;
-  const columnName = column.name;
+  const hasColumn = !!column;
+  const componentName = hasColumn
+    ? `${resource.label}${column.label}${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}`
+    : `${resource.label}${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}`;
+
   const resourceId = resource.resourceId;
 
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const templatePath = path.join(__dirname, 'templates', 'customFields', `${fieldType}.vue.hbs`);
+
+  const templatePath = hasColumn
+    ? path.join(__dirname, 'templates', 'customFields', `${fieldType}.vue.hbs`)
+    : path.join(__dirname, 'templates', 'customCrud', `${fieldType}.vue.hbs`);
 
   console.log(chalk.dim(`Using template: ${templatePath}`));
 
   const context = {
     componentName,
-    columnName,
     resourceId,
     resource,
-    column
+    ...(hasColumn && {
+      column,
+      columnName: column.name,
+    }),
   };
 
   try {
@@ -43,6 +52,7 @@ async function generateVueContent(fieldType, { resource, column }) {
   }
 }
 
+
 export async function generateComponentFile(componentFileName, fieldType, context, config) {
 
   const customDirRelative = 'custom';
@@ -50,7 +60,10 @@ export async function generateComponentFile(componentFileName, fieldType, contex
   const projectRoot = process.cwd();
   const customDirPath = path.resolve(projectRoot, customDirRelative);
   const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
-
+  if (fsSync.existsSync(absoluteComponentPath)) {
+    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    return {"alreadyExists": true, "path": absoluteComponentPath}
+  }
   try {
     await fs.mkdir(customDirPath, { recursive: true });
     console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
@@ -60,13 +73,76 @@ export async function generateComponentFile(componentFileName, fieldType, contex
     await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
     console.log(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
 
-    return absoluteComponentPath;
+    return {"alreadyExists": false, "path": absoluteComponentPath}
 
   } catch (error) {
     console.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
     if (!error.message.includes('template')) {
        console.error(error);
     }
+    throw error;
+  }
+}
+
+export async function generateCrudInjectionComponent(componentFileName, crudType, context, config) {
+  const customDirRelative = 'custom';
+  const projectRoot = process.cwd();
+  const customDirPath = path.resolve(projectRoot, customDirRelative);
+  const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
+
+  if (fsSync.existsSync(absoluteComponentPath)) {
+    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    return { alreadyExists: true, path: absoluteComponentPath };
+  }
+
+  try {
+    await fs.mkdir(customDirPath, { recursive: true });
+    console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+
+    const fileContent = await generateVueContent(crudType, context);
+
+    await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
+    console.log(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
+
+    return { alreadyExists: false, path: absoluteComponentPath };
+  } catch (error) {
+    console.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
+    throw error;
+  }
+}
+
+export async function generateLoginOrGlobalComponentFile(componentFileName, injectionType, context) {
+  const customDirRelative = 'custom';
+  const projectRoot = process.cwd();
+  const customDirPath = path.resolve(projectRoot, customDirRelative);
+  const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
+
+  if (fsSync.existsSync(absoluteComponentPath)) {
+    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    return { alreadyExists: true, path: absoluteComponentPath };
+  }
+
+  try {
+    await fs.mkdir(customDirPath, { recursive: true });
+    console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    let templatePath;
+    if (injectionType === 'afterLogin') {
+      templatePath = path.join(__dirname, 'templates', 'login', `${injectionType}.vue.hbs`);
+    } else {
+      templatePath = path.join(__dirname, 'templates', 'global', `${injectionType}.vue.hbs`);
+    }
+
+    const fileContent = await renderHBSTemplate(templatePath, context);
+
+    await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
+    console.log(chalk.green(`✅ Generated login injection component: ${absoluteComponentPath}`));
+
+    return { alreadyExists: false, path: absoluteComponentPath };
+  } catch (error) {
+    console.error(chalk.red(`❌ Error creating login component at ${absoluteComponentPath}`));
     throw error;
   }
 }
