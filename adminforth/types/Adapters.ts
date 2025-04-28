@@ -47,7 +47,12 @@ export interface ImageGenerationAdapter {
    */
   inputFileExtensionSupported(): string[];
 
-  generate(
+  generate({
+    prompt, 
+    inputFiles,
+    n,
+    size,
+  }: {
     prompt: string,
     inputFiles: string[],
 
@@ -56,8 +61,8 @@ export interface ImageGenerationAdapter {
 
     // one by default
     n: number
-  ): Promise<{
-    imageURL?: string[];
+  }): Promise<{
+    imageURLs?: string[];
     error?: string;
   }>;
 }
