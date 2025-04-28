@@ -133,13 +133,13 @@ export default {
           clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
           useOpenID: true,
         }),
-        new AdminForthAdapterKeycloakOauth2({
-          name: "Keycloak",
-          clientID: process.env.KEYCLOAK_CLIENT_ID,
-          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-          keycloakUrl: process.env.KEYCLOAK_URL,
-          realm: process.env.KEYCLOAK_REALM,
-        }),
+        // new AdminForthAdapterKeycloakOauth2({
+        //   name: "Keycloak",
+        //   clientID: process.env.KEYCLOAK_CLIENT_ID,
+        //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+        //   keycloakUrl: process.env.KEYCLOAK_URL,
+        //   realm: process.env.KEYCLOAK_REALM,
+        // }),
       ],
       emailField: 'email',
       emailConfirmedField: 'email_confirmed'

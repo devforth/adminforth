@@ -261,19 +261,15 @@ new UploadPlugin({
 //diff-add
   generation: {
 //diff-add
-    provider: 'openai-dall-e',
-//diff-add
     countToGenerate: 2,  // how much images generate in one shot
 //diff-add
-    openAiOptions: {
-//diff-add
-      model: 'dall-e-3',  // one of models from OpenAI docs https://platform.openai.com/docs/api-reference/images/create
-//diff-add
-      size: '1792x1024',  // make sure that size is supported by model using OpenAI docs
-//diff-add
-      apiKey: process.env.OPENAI_API_KEY as string,
-//diff-add
-    },
+    adapter: new ImageGenerationAdapterOpenAI({
+  //diff-add
+      openAiApiKey: process.env.OPENAI_API_KEY as string,
+  //diff-add
+      model: 'gpt-image-1', 
+  //diff-add
+    }),
 //diff-add
     fieldsForContext: ['title'],
 
@@ -284,6 +280,53 @@ Here is how it works:
 
 ![alt text](demoImgGen-1.gif)
 
+You can also pass additional parameters to OpenAI API call
+
+
+```ts title="./apartments.ts"
+new ImageGenerationAdapterOpenAI({
+  //diff-add
+      openAiApiKey: process.env.OPENAI_API_KEY as string,
+  //diff-add
+      model: 'gpt-image-1', 
+  //diff-add
+      extraParams: {
+  //diff-add
+        moderation: 'low',
+  //diff-add
+        quality: 'high',  
+  //diff-add
+    }),
+```
+
+
+
+
+## Generation from existing image(s)
+
+You can not only generate images from text, but also edit, post-process or improve existing images. E.g. remove texts, add objects, change colors, etc.
+
+Create a new column `apartment_source` in `apartments` table, and put another instance of `UploadPlugin` in the same resource configuration.
+
+
+
+Now tweak the current UploadPlugin configuration in a next way:
+
+
+```ts title="./apartments.ts"
+generation: {
+  adapter: new ImageGenerationAdapterOpenAI({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+  }),
+
+  attachFiles: ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
+    // attach apartment source image to generation, image should be public
+    return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+  },
+  generationPrompt: "Remove text from the image",
+  countToGenerate: 3,
+}
+```
 
 ### Rate limits
 
@@ -294,11 +337,11 @@ new UploadPlugin({
   ...
   generation: {
     ...
-//diff-add
-  rateLimit: {
-    limit: '5/12h', // up to 5 times per 12 hour 
-    errorMessage: 'You exhausted your image generation limit 5 times per 12 hours, please try again later',
-  }
+  //diff-add
+    rateLimit: {
+      limit: '5/12h', // up to 5 times per 12 hour 
+      errorMessage: 'You exhausted your image generation limit 5 times per 12 hours, please try again later',
+    }
       ...
 });
 ```

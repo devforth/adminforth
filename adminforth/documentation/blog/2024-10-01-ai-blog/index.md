@@ -440,11 +440,10 @@ export default {
         { originalFilename, originalExtension }: {originalFilename: string, originalExtension: string }
       ) => `user-avatars/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
       generation: {
-        provider: 'openai-dall-e',
+        provider: 'openai',
         countToGenerate: 2,
         openAiOptions: {
-          model: 'dall-e-3',
-          size: '1024x1024',
+          model: 'gpt-4o',
           apiKey: process.env.OPENAI_API_KEY,
         },
       },
@@ -562,11 +561,10 @@ export default {
         { originalFilename, originalExtension }: {originalFilename: string, originalExtension: string }
       ) => `post-previews/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
       generation: {
-        provider: 'openai-dall-e',
+        provider: 'openai',
         countToGenerate: 2,
         openAiOptions: {
-          model: 'dall-e-3',
-          size: '1792x1024',
+          model: 'gpt-4o',
           apiKey: process.env.OPENAI_API_KEY,
         },
         fieldsForContext: ['title'],
