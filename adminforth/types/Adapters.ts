@@ -32,6 +32,21 @@ export interface ImageGenerationAdapter {
 
   validate(): void;
 
+  /**
+   * Return 1 or Infinity if the adapter supports multiple images
+   */
+  outputImagesCountSupported(): number;
+
+  /**
+   * Return the list of supported dimensions in format ["100x500", "200x200"]
+   */
+  outputDimensionsSupported(): string[];
+
+  /**
+   * Input file extension supported
+   */
+  inputFileExtensionSupported(prompt: string, inputFiles: string[]): string[];
+
   generate(
     prompt: string,
     inputFiles: string[],
