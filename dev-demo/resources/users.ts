@@ -61,9 +61,9 @@ export default {
     //     resourceConfig.options!.listPageSize = 3;
     //   },
     // }),
-    new ForeignInlineListPlugin({
-      foreignResourceId: "audit_log",
-    }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: "audit_log",
+    // }),
     new ForeignInlineListPlugin({
       foreignResourceId: "users",
     }),
