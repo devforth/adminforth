@@ -53,14 +53,9 @@ export async function interpretResource(
     [ActionCheckSource.CustomActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
   }[source];
 
-  console.log('🎉🎉🎉 ', JSON.stringify(resource.options.allowedActions, null, 2));
-
   await Promise.all(
     Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
-        if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲🚥${resource.resourceId}: allowed ${key}: ${value}`)
-        }
         if (!neededActions.includes(key as AllowedActionsEnum)) {
           allowedActions[key] = false;
           return;
@@ -69,7 +64,6 @@ export async function interpretResource(
         // if callable then call
         if (typeof value === 'function') {
           allowedActions[key] = await value({ adminUser, resource, meta, source, adminforth });
-          console.log(`🪲🚥🚥${resource.resourceId}: allowed ${key} (function): ${allowedActions[key]}`);
         } else {
           allowedActions[key] = value;
         }
