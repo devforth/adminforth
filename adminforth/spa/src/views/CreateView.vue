@@ -56,6 +56,7 @@
       @update:isValid="isValid = $event"
       :validating="validating"
       :source="'create'"
+      :readonlyColumns="readonlyColumns"
     >
     </ResourceForm>
 
@@ -105,6 +106,8 @@ const { t } = useI18n();
 
 const initialValues = ref({});
 
+const readonlyColumns = ref([]);
+
 
 async function onUpdateRecord(newRecord) {
   console.log('newRecord', newRecord);
@@ -124,6 +127,9 @@ onMounted(async () => {
   }, {});
   if (route.query.values) {
     initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values)) };
+  }
+  if (route.query.readonlyColumns) {
+    readonlyColumns.value = JSON.parse(decodeURIComponent(route.query.readonlyColumns));
   }
   record.value = initialValues.value;
   loading.value = false;

@@ -32,11 +32,37 @@ export interface ImageGenerationAdapter {
 
   validate(): void;
 
-  generate(
+  /**
+   * Return 1 or 10, or Infinity if the adapter supports multiple images
+   */
+  outputImagesMaxCountSupported(): number;
+
+  /**
+   * Return the list of supported dimensions in format ["100x500", "200x200"]
+   */
+  outputDimensionsSupported(): string[];
+
+  /**
+   * Input file extension supported
+   */
+  inputFileExtensionSupported(): string[];
+
+  generate({
+    prompt, 
+    inputFiles,
+    n,
+    size,
+  }: {
     prompt: string,
     inputFiles: string[],
-  ): Promise<{
-    imageURL?: string;
+
+    // default = lowest dimension supported 
+    size?: string,
+
+    // one by default
+    n?: number
+  }): Promise<{
+    imageURLs?: string[];
     error?: string;
   }>;
 }

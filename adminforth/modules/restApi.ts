@@ -29,9 +29,9 @@ export async function interpretResource(
   source: ActionCheckSource, 
   adminforth: IAdminForth
 ): Promise<{allowedActions: AllowedActionsResolved}> {
-  // if (process.env.HEAVY_DEBUG) {
-  //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
-  // }
+  if (process.env.HEAVY_DEBUG) {
+    console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
+  }
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
@@ -56,9 +56,6 @@ export async function interpretResource(
   await Promise.all(
     Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
-        if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲🚥${resource.resourceId}: allowed ${key}: ${value}`)
-        }
         if (!neededActions.includes(key as AllowedActionsEnum)) {
           allowedActions[key] = false;
           return;

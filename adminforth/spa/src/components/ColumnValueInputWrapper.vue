@@ -34,8 +34,10 @@
       </button>
     </div>
   </template>
+  
   <ColumnValueInput
     v-else
+    :readonly="props.readonly"
     :source="source"
     :column="column"
     :value="currentValues[column.name]"
@@ -62,7 +64,8 @@
     mode: string,
     columnOptions: any,
     unmasked: any,
-    setCurrentValue: Function
+    setCurrentValue: Function,
+    readonly?: boolean,
   }>();
   
   const emit = defineEmits(['update:unmasked', 'update:inValidity', 'update:emptiness', 'focus-last-input']);
