@@ -9,7 +9,7 @@ function sanitizeLabel(input){
   return input
     .replace(/[^a-zA-Z0-9\s]/g, '')
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())  // Переводим первую букву в верхний регистр
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) 
     .join('');
 }
 
@@ -113,7 +113,6 @@ async function handleFieldComponentCreation(config, resources) {
       console.log(chalk.dim(`Component generation successful: ${absoluteComponentPath}`));
 
       await updateResourceConfig(selectedResource.resourceId, columnName, fieldType, componentPathForConfig);
-      console.log(chalk.green(`\n✅ Successfully created component ${componentPathForConfig} and updated configuration.`));
       console.log(
         chalk.bold.greenBright('You can now open the component in your IDE:'),
         chalk.underline.cyanBright(absoluteComponentPath)
@@ -201,8 +200,6 @@ async function handleCrudPageInjectionCreation(config, resources) {
         componentPathForConfig,
         isThin
       );
-
-      console.log(chalk.green(`\n✅ Successfully created component ${componentPathForConfig} and updated configuration.`));
       console.log(
         chalk.bold.greenBright('You can now open the component in your IDE:'),
         chalk.underline.cyanBright(absoluteComponentPath)
@@ -253,8 +250,7 @@ async function handleLoginPageInjectionCreation(config) {
       const configFilePath = path.resolve(process.cwd(), 'index.ts');
       console.log(chalk.dim(`Injecting component: ${configFilePath}, ${componentFileName}`));
       await injectLoginComponent(configFilePath, `@@/${componentFileName}`);
-     
-      console.log(chalk.green(`\n✅ Successfully created component ${componentFileName} and updated configuration.`));
+      
       console.log(
         chalk.bold.greenBright('You can now open the component in your IDE:'),
         chalk.underline.cyanBright(absoluteComponentPath)
@@ -299,7 +295,6 @@ async function handleGlobalInjectionCreation(config) {
 
     const context = { reason };
 
-    // Генерация компонента
     const { alreadyExists, path: absoluteComponentPath } = await generateLoginOrGlobalComponentFile(
       componentFileName,
       injectionType,
@@ -308,13 +303,10 @@ async function handleGlobalInjectionCreation(config) {
     if (!alreadyExists) {
       console.log(chalk.dim(`Component generation successful: ${absoluteComponentPath}`));
 
-      // Путь к файлу конфигурации index.ts
       const configFilePath = path.resolve(process.cwd(), 'index.ts');
       
-      // Добавление компонента в соответствующую инъекцию
       await injectGlobalComponent(configFilePath, injectionType, `@@/${componentFileName}`);
 
-      console.log(chalk.green(`\n✅ Successfully created component ${componentFileName} and updated configuration.`));
       console.log(
         chalk.bold.greenBright('You can now open the component in your IDE:'),
         chalk.underline.cyanBright(absoluteComponentPath)

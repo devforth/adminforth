@@ -231,7 +231,6 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
                 );
 
                 if (!customizationProp) {
-                    // Добавляем customization: {}
                     const customizationObj = b.objectExpression([]);
                     customizationProp = b.objectProperty(b.identifier('customization'), customizationObj);
                     configObject.properties.push(customizationProp);
@@ -294,6 +293,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
     });
 
     let updated = false;
+    
     console.log(JSON.stringify(injectionType));
     recast.visit(ast, {
         visitNewExpression(path) {
@@ -343,7 +343,6 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                       currentValue.elements.push(b.stringLiteral(componentPath));
                       console.log(chalk.dim(`Added '${componentPath}' to existing array in '${injectionType}'`));
                     } else if (n.StringLiteral.check(currentValue)) {
-                      // Преобразовать строку в массив
                       injectionProp.value = b.arrayExpression([
                         b.stringLiteral(currentValue.value),
                         b.stringLiteral(componentPath)
