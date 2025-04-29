@@ -3,6 +3,7 @@ import ImportExport from "../../plugins/adminforth-import-export";
 import InlineCreatePlugin from "../../plugins/adminforth-inline-create";
 import InplaceEdit from "../../plugins/adminforth-list-in-place-edit";
 import ImportExportPlugin from "../../plugins/adminforth-import-export";
+import MarkdownPlugin from "../../plugins/adminforth-markdown";
 import { v1 as uuid } from "uuid";
 
 export default {
@@ -42,6 +43,7 @@ export default {
     // new InplaceEdit({
     //   columns: ['name'],
     // }),
+    new MarkdownPlugin({fieldName: "description"}),
     new ImportExportPlugin({
     }),
   ],
