@@ -280,6 +280,8 @@ new UploadPlugin({
     }),
 //diff-add
     fieldsForContext: ['title'],
+//diff-add
+    outputSize: '1536x1024' // size of generated image
 
 },
 ```
@@ -288,23 +290,26 @@ Here is how it works:
 
 ![alt text](demoImgGen-1.gif)
 
-You can also pass additional parameters to OpenAI API call
+You can also pass additional parameters to [OpenAI API call](https://platform.openai.com/docs/api-reference/images/createEdit) by using `extraParams` property:
 
 
 ```ts title="./apartments.ts"
 new ImageGenerationAdapterOpenAI({
   //diff-add
-      openAiApiKey: process.env.OPENAI_API_KEY as string,
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
   //diff-add
-      model: 'gpt-image-1', 
+    model: 'gpt-image-1', 
   //diff-add
-      extraParams: {
+    extraParams: {
   //diff-add
-        moderation: 'low',
+      moderation: 'low',
   //diff-add
-        quality: 'high',  
+      quality: 'high',  
   //diff-add
-    }),
+    },
+  //diff-add
+    outputSize: '1536x1024' // size of generated image
+}),
 ```
 
 
@@ -330,6 +335,7 @@ generation: {
   },
   generationPrompt: "Remove text from the image",
   countToGenerate: 3,
+  outputSize: '1024x1024',
 }
 ```
 
