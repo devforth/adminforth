@@ -252,9 +252,17 @@ Also you will have to enable static website hosting in your bucket settings and 
 
 ## Image generation
 
-Upload plugin supports AI generation for images
+Upload plugin supports AI generation for images. Yo use it you need to install image generation adapter.
+For example for OpenAI models like `gpt-image-1` (or old `DALL-E` models):
+
+```bash
+npm i @adminforth/image-generation-adapter-openai
+```
+
+
 
 ```ts title="./index.ts"
+import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 
 new UploadPlugin({
   ...
@@ -300,14 +308,11 @@ new ImageGenerationAdapterOpenAI({
 ```
 
 
-
-
-## Generation from existing image(s)
+## Images editing or post-processing
 
 You can not only generate images from text, but also edit, post-process or improve existing images. E.g. remove texts, add objects, change colors, etc.
 
 Create a new column `apartment_source` in `apartments` table, and put another instance of `UploadPlugin` in the same resource configuration.
-
 
 
 Now tweak the current UploadPlugin configuration in a next way:
