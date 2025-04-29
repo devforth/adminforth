@@ -34,9 +34,9 @@ When I implmented this solution, I was curious whether it will be faster to buil
 First I used results form [deploying AdminForth to EC2 with Terraform without registry](/blog/compose-ec2-deployment-github-actions/) where we built images on EC2. Then I did the same test but with self-hosted registry on EC2 and compared to [deploying AdminForth to EC2 with Amazon ECR](/blog/compose-aws-ec2-ecr-terraform-github-actions/) where we built images on CI and pushed to Amazon ECR.
 
 | Feature | Without Registry (build directly on EC2) | With self-hosted registry | With Amazon ECR |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Initial build time\* |  3m 13.541s | 2m 48.412s | 3m 54s |
-| Rebuild time (changed `index.ts`)\*|  0m 51.653s | 0m 54.120s |
+| Rebuild time (changed `index.ts`)\* | 0m 51.653s | 0m42.131s | 0m 54.120s | 
 
 <sub>\* All tests done from local machine (Intel(R) Core(TM) Ultra 9 185H, Docker Desktop/WSL2 64 GB RAM, 300Mbps up/down) up to working state</sub>
 

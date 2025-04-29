@@ -53,6 +53,7 @@
               @update:unmasked="unmasked[$event] = !unmasked[$event]"
               @update:inValidity="customComponentsInValidity[$event.name] = $event.value"
               @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
+              :readonly="readonlyColumns?.includes(column.name)"
             />
             <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
@@ -82,6 +83,7 @@
     columnError: (column: any) => string,
     setCurrentValue: (columnName: string, value: any) => void,
     columnOptions: any,
+    readonlyColumns?: string[],
   }>();
 
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
