@@ -5,6 +5,14 @@ import { loadAdminForthConfig } from './configLoader.js'; // Helper to load conf
 import { generateComponentFile, generateLoginOrGlobalComponentFile, generateCrudInjectionComponent } from './fileGenerator.js'; // Helper to create the .vue file
 import { updateResourceConfig, injectLoginComponent, injectGlobalComponent, updateCrudInjectionConfig } from './configUpdater.js'; // Helper to modify resource .ts file
 
+function sanitizeLabel(input){
+  return input
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())  // Переводим первую букву в верхний регистр
+    .join('');
+}
+
 export default async function createComponent(args) {
   console.log('This command will help you to generate boilerplate for component.\n');
 
@@ -88,8 +96,8 @@ async function handleFieldComponentCreation(config, resources) {
    console.log(chalk.dim(`One-line alternative: |adminforth component fields.${fieldType}.${resourceId}.${columnName}|`));
 
 
-  const safeResourceLabel = selectedResource.label.replace(/[^a-zA-Z0-9]/g, '');
-  const safeColumnLabel = selectedColumn.label.replace(/[^a-zA-Z0-9]/g, '');
+  const safeResourceLabel = sanitizeLabel(selectedResource.label)
+  const safeColumnLabel = sanitizeLabel(selectedColumn.label)
   const componentFileName = `${safeResourceLabel}${safeColumnLabel}${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}.vue`; // e.g., UserEmailShow.vue
   const componentPathForConfig = `@@/${componentFileName}`; // Path relative to custom dir for config
 
@@ -106,7 +114,10 @@ async function handleFieldComponentCreation(config, resources) {
 
       await updateResourceConfig(selectedResource.resourceId, columnName, fieldType, componentPathForConfig);
       console.log(chalk.green(`\n✅ Successfully created component ${componentPathForConfig} and updated configuration.`));
-      console.log(`\nYou can now open the component in your IDE: ${absoluteComponentPath}`);
+      console.log(
+        chalk.bold.greenBright('You can now open the component in your IDE:'),
+        chalk.underline.cyanBright(absoluteComponentPath)
+      );
     }
     process.exit(0);
 }catch (error) {
@@ -168,7 +179,7 @@ async function handleCrudPageInjectionCreation(config, resources) {
     ],
   });
 
-  const safeResourceLabel = selectedResource.label.replace(/[^a-zA-Z0-9]/g, '');
+  const safeResourceLabel = sanitizeLabel(selectedResource.label)
   const componentFileName = `${safeResourceLabel}${crudType.charAt(0).toUpperCase() + crudType.slice(1)}${injectionPosition.charAt(0).toUpperCase() + injectionPosition.slice(1)}.vue`;
   const componentPathForConfig = `@@/${componentFileName}`;
 
@@ -192,7 +203,10 @@ async function handleCrudPageInjectionCreation(config, resources) {
       );
 
       console.log(chalk.green(`\n✅ Successfully created component ${componentPathForConfig} and updated configuration.`));
-      console.log(`\nYou can now open the component in your IDE: ${absoluteComponentPath}`);
+      console.log(
+        chalk.bold.greenBright('You can now open the component in your IDE:'),
+        chalk.underline.cyanBright(absoluteComponentPath)
+      );
     }
     process.exit(0);
   } catch (error) {
@@ -224,7 +238,7 @@ async function handleLoginPageInjectionCreation(config) {
 
 
   try {
-    const safeName = reason.replace(/[^a-zA-Z0-9]/g, '');
+    const safeName = sanitizeLabel(reason)
     const componentFileName = `CustomLogin${safeName}.vue`;
   
     const context = { reason };
@@ -240,8 +254,11 @@ async function handleLoginPageInjectionCreation(config) {
       console.log(chalk.dim(`Injecting component: ${configFilePath}, ${componentFileName}`));
       await injectLoginComponent(configFilePath, `@@/${componentFileName}`);
      
-      console.log(chalk.green(`\n✅ Successfully created component ${componentPathForConfig} and updated configuration.`));
-      console.log(`\nYou can now open the component in your IDE: ${absoluteComponentPath}`);
+      console.log(chalk.green(`\n✅ Successfully created component ${componentFileName} and updated configuration.`));
+      console.log(
+        chalk.bold.greenBright('You can now open the component in your IDE:'),
+        chalk.underline.cyanBright(absoluteComponentPath)
+      );
     }
     process.exit(0);
   }catch (error) {
@@ -277,7 +294,7 @@ async function handleGlobalInjectionCreation(config) {
   console.log(chalk.grey(`Selected ❯ 🌍 Global page injections ❯ ${injectionType} ❯ ${reason}`));
 
   try {
-    const safeName = reason.replace(/[^a-zA-Z0-9]/g, '');
+    const safeName = sanitizeLabel(reason)
     const componentFileName = `CustomGlobal${safeName}.vue`;
 
     const context = { reason };
@@ -298,7 +315,10 @@ async function handleGlobalInjectionCreation(config) {
       await injectGlobalComponent(configFilePath, injectionType, `@@/${componentFileName}`);
 
       console.log(chalk.green(`\n✅ Successfully created component ${componentFileName} and updated configuration.`));
-      console.log(`\nYou can now open the component in your IDE: ${absoluteComponentPath}`);
+      console.log(
+        chalk.bold.greenBright('You can now open the component in your IDE:'),
+        chalk.underline.cyanBright(absoluteComponentPath)
+      );
     }
     process.exit(0);
   } catch (error) {
