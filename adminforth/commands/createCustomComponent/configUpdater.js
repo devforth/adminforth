@@ -294,7 +294,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
     });
 
     let updated = false;
-
+    console.log(JSON.stringify(injectionType));
     recast.visit(ast, {
         visitNewExpression(path) {
             if (
@@ -332,27 +332,41 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
                 const injectionsValue = globalInjections.value;
                 if (!n.ObjectExpression.check(injectionsValue)) return false;
-
+                console.log(JSON.stringify(injectionType));
                 let injectionProp = injectionsValue.properties.find(
                     p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === injectionType
                 );
-
                 if (injectionProp) {
-                    const injectionArray = injectionProp.value.elements;
-                    injectionArray.push(b.stringLiteral(componentPath));
-                    console.log(chalk.dim(`Added '${componentPath}' to '${injectionType}'`));
-                } else {
+                    const currentValue = injectionProp.value;
+          
+                    if (n.ArrayExpression.check(currentValue)) {
+                      currentValue.elements.push(b.stringLiteral(componentPath));
+                      console.log(chalk.dim(`Added '${componentPath}' to existing array in '${injectionType}'`));
+                    } else if (n.StringLiteral.check(currentValue)) {
+                      // Преобразовать строку в массив
+                      injectionProp.value = b.arrayExpression([
+                        b.stringLiteral(currentValue.value),
+                        b.stringLiteral(componentPath)
+                      ]);
+                      console.log(chalk.dim(`Converted '${injectionType}' from string to array and added '${componentPath}'`));
+                    } else {
+                      throw new Error(`Unsupported value type for '${injectionType}'. Must be string or array.`);
+                    }
+                  } else {
                     injectionsValue.properties.push(
-                        b.objectProperty(b.identifier(injectionType), b.arrayExpression([b.stringLiteral(componentPath)]))
+                      b.objectProperty(
+                        b.identifier(injectionType),
+                        b.arrayExpression([b.stringLiteral(componentPath)])
+                      )
                     );
-                    console.log(chalk.dim(`Added '${injectionType}': [${componentPath}]`));
+                    console.log(chalk.dim(`Added new array for '${injectionType}' with '${componentPath}'`));
+                  }
+          
+                  updated = true;
+                  this.abort();
                 }
-
-                updated = true;
-                this.abort();
-            }
-            return false;
-        }
+                return false;
+              }
     });
 
     if (!updated) {
