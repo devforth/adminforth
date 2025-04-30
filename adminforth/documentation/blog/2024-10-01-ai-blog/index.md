@@ -46,6 +46,7 @@ npx adminforth create-app --app-name ai-blog
 Add modules:
 
 ```bash
+cd ai-blog
 npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete
 ```
 
@@ -169,7 +170,7 @@ model Post {
 //diff-add
   published   Boolean  
 //diff-add
-  author      User?    @relation(fields: [authorId], references: [id])
+  author      adminuser?    @relation(fields: [authorId], references: [id])
 //diff-add
   authorId    String?
 //diff-add
@@ -211,7 +212,7 @@ Open `index.ts` file in root directory and update it with the following content:
 ```ts title="./index.ts"
 import express from 'express';
 import AdminForth, { Filters, Sorts } from 'adminforth';
-import userResource from './resources/user.js';
+import userResource from './resources/adminuser.js';
 import postResource from './resources/posts.js';
 import contentImageResource from './resources/content-image.js';
 import httpProxy from 'http-proxy';
@@ -231,7 +232,7 @@ export const admin = new AdminForth({
   auth: {
     usersResourceId: 'adminuser',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
-    passwordHashField: 'passwordHash',
+    passwordHashField: 'password_hash',
   },
   customization: {
     brandName: 'My Admin',
@@ -289,7 +290,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // api to server recent posts
   app.get('/api/posts', async (req, res) => {
-    const { offset = 0, limit = 100, slug = null } = req.query;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 100;
+    const slug = req.query.slug as string | null;
     const posts = await admin.resource('post').list(
       [Filters.EQ('published', true), ...(slug ? [Filters.LIKE('slug', slug)] : [])],
       limit,
@@ -331,13 +334,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
       await admin.resource('adminuser').create({
         email: 'adminforth@adminforth.dev',
-        passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
     }
   });
 
   admin.express.listen(port, () => {
-    console.log(`\n⚡ AdminForth is available at http://localhost:${port}\n`)
+    console.log(`\n⚡ AdminForth is available at http://localhost:${port}/admin\n`)
   });
 }
 ```
@@ -377,7 +380,14 @@ export default {
       type: AdminForthDataTypes.STRING,
     },
     {
-      name: 'createdAt',
+      name: 'role',
+      enum: [
+        { value: 'superadmin', label: 'Super Admin' },
+        { value: 'user', label: 'User' },
+      ]
+    },
+    {
+      name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
       showIn: {
         edit: false,
@@ -403,9 +413,9 @@ export default {
         AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
       ],
     },
-    { name: 'passwordHash', backendOnly: true, showIn: { all: false } },
+    { name: 'password_hash', backendOnly: true, showIn: { all: false } },
     { 
-      name: 'publicName',
+      name: 'public_name',
       type: AdminForthDataTypes.STRING,
     },
     { name: 'avatar' },
@@ -425,7 +435,7 @@ export default {
         return { ok: true }
       },
     },
-  }
+  },
   plugins: [
     new UploadPlugin({
       pathColumnName: 'avatar',
@@ -462,6 +472,8 @@ import UploadPlugin from '@adminforth/upload';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import slugify from 'slugify';
+import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 
 export default {
   table: 'post',
@@ -561,23 +573,23 @@ export default {
         { originalFilename, originalExtension }: {originalFilename: string, originalExtension: string }
       ) => `post-previews/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
       generation: {
-        provider: 'openai',
         countToGenerate: 2,
-        openAiOptions: {
-          model: 'gpt-4o',
-          apiKey: process.env.OPENAI_API_KEY,
-        },
-        fieldsForContext: ['title'],
+        adapter: new ImageGenerationAdapterOpenAI({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-image-1', 
+        }),
       },
     }),
     new RichEditorPlugin({
       htmlFieldName: 'content',
       completion: {
-        provider: 'openai-chat-gpt',
-        params: {
-          apiKey: process.env.OPENAI_API_KEY,
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-4o',
-        },
+          expert: {
+            temperature: 0.7
+          }
+        }),
         expert: {
           debounceTime: 250,
         }
@@ -618,11 +630,19 @@ export default {
     {
       name: 'id',
       primaryKey: true,
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => randomUUID(),
     },
     {
       name: 'createdAt',
       type: AdminForthDataTypes.DATETIME,
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -951,7 +971,7 @@ Open `Dockerfile` in root project directory (`ai-blog`) and put in the following
 FROM node:20-slim
 EXPOSE 3500
 WORKDIR /app
-RUN apk add --no-cache supervisor
+RUN apt-get update && apt-get install -y supervisor
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY seo/package.json seo/package-lock.json seo/
@@ -972,6 +992,8 @@ autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 [program:seo]
 command=sh -c "cd seo && node .output/server/index.mjs"
@@ -980,6 +1002,8 @@ autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 [program:prisma]
 command=npm run migrate:prod
@@ -987,6 +1011,8 @@ directory=/app
 autostart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 EOF
 
@@ -1011,8 +1037,8 @@ terraform*
 Build and run your docker container locally:
 
 ```bash
-sudo docker build -t my-ai-blog .
-sudo docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it --name my-ai-blog -d my-ai-blog
+docker build -t my-ai-blog .
+docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it --name my-ai-blog -d my-ai-blog
 ```
 
 Now you can open `http://localhost` in your browser and see your blog.
@@ -1088,7 +1114,7 @@ data "aws_subnet" "default_subnet" {
 }
 
 resource "aws_security_group" "instance_sg" {
-  name   = "my-ai-blog-instance-sg"
+  name   = "my-aiblog-instance-sg"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
@@ -1118,14 +1144,14 @@ resource "aws_security_group" "instance_sg" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "terraform-deployer-key"
+  key_name   = "terraform-deployer-my-aiblog-key"
   public_key = file("~/.ssh/id_rsa.pub") # Path to your public SSH key
 }
 
 
 resource "aws_instance" "docker_instance" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3a.micro"
+  instance_type          = "t3a.small"
   subnet_id              = data.aws_subnet.default_subnet.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   key_name               = aws_key_pair.deployer.key_name
@@ -1164,13 +1190,13 @@ resource "null_resource" "wait_for_user_data" {
 
     connection {
       type        = "ssh"
-      user        = "ubuntu"
+      user        = "ec2-user"
       private_key = file("~/.ssh/id_rsa")
       host        = aws_instance.docker_instance.public_ip
     }
   }
 
-  depends_on = [aws_instance.app_instance]
+  depends_on = [aws_instance.docker_instance]
 }
 
 
