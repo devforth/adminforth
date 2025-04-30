@@ -7,7 +7,8 @@ import {
 
 
 import { suggestIfTypo } from "../modules/utils.js";
-import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { randomUUID } from "crypto";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -121,8 +122,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
         }
         if (filters.value.length === 0) {
-          // nonsense
-          return { ok: false, error: `Filter has IN operator but empty value: ${JSON.stringify(filters)}` };
+          // nonsense, and some databases might not accept IN []
+          const colType = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field)?.type;
+          if (colType === AdminForthDataTypes.STRING || colType === AdminForthDataTypes.TEXT) {
+            filters.value = [randomUUID()];
+            return { ok: true,  error: `` };
+          } else {
+            return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
+          }
         }
         filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
       } else {
