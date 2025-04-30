@@ -1,0 +1,55 @@
+<template>
+  <div class="flex flex-col p-4 space-y-2">
+    <button
+      v-for="item in menuItems"
+      :key="item.label"
+      @click="item.action"
+      class="w-full text-left text-sm px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white"
+    >
+      {{ t(item.label) }}
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+import { onMounted } from 'vue';
+
+const { t } = useI18n();
+
+const menuItems = [
+  {
+    label: 'Show Success Alert',
+    action: () => {
+      adminforth.alert({
+        message: t('Success Alert'),
+        variant: 'success',
+      });
+    },
+  },
+  {
+    label: 'Show Warning Alert',
+    action: () => {
+      adminforth.alert({
+        message: t('Warning Alert'),
+        variant: 'warning',
+      });
+    },
+  },
+  {
+    label: 'Show Error Alert',
+    action: () => {
+      adminforth.alert({
+        message: t('Error Alert'),
+        variant: 'danger',
+      });
+    },
+  },
+];
+
+onMounted(() => {
+  // Logic on mount if needed
+});
+
+</script>
