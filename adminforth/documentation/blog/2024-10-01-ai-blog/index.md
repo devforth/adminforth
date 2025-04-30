@@ -47,7 +47,7 @@ Add modules:
 
 ```bash
 cd ai-blog
-npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete
+npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy
 ```
 
 
@@ -578,6 +578,8 @@ export default {
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-image-1', 
         }),
+        fieldsForContext: ['title'],
+        outputSize: '1536x1024'
       },
     }),
     new RichEditorPlugin({
@@ -1278,7 +1280,7 @@ terraform apply -auto-approve
 
 > ☝️ To check logs run `ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output instance_public_ip)`, then `sudo docker logs -n100 -f aiblog`
 
-Terraform config will build Docker image locally and then copy it to EC2 instance. This approach allows to save build resources (CPU/RAM) on EC2 instance, however increases network traffic (image might be around 200MB). If you want to build image on EC2 instance, you can adjust config slightly: remove `null_resource.build_image` and change `null_resource.remote_commands` to build image on EC2 instance, however micro instance most likely will not be able to build and keep app running at the same time, so you will need to increase instance type or terminate app while building image (which introduces downtime so not recommended as well).
+Terraform config will build the Docker image locally and then copy it to the EC2 instance. This approach saves build resources (CPU/RAM) on the EC2 instance, though it increases network traffic (the image might be around 200MB). If you prefer to build the image directly on the EC2 instance, you can slightly adjust the configuration: remove `null_resource.build_image` and modify `null_resource.remote_commands` to perform the build remotely. However, note that building the image on a `t3.small` instance may still consume significant resources and can interfere with running applications. To avoid potential downtime or performance issues, building the image locally remains the recommended approach.
 
 
 ### Add HTTPs and CDN
