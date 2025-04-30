@@ -88,15 +88,15 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   myadmin:
-    image: ${MYADMIN_REPO}:latest
+    image: localhost:5000/myadmin:latest
     build:
       context: ../adminforth-app
       tags:
-        - ${MYADMIN_REPO}:latest
+        - localhost:5000/myadmin:latest
       cache_from:
-        - type=registry,ref=${MYADMIN_REPO}:cache
+        - type=registry,ref=localhost:5000/myadmin:cache
       cache_to:
-        - type=registry,ref=${MYADMIN_REPO}:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=localhost:5000/myadmin:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true
       
     pull_policy: always
     restart: always
