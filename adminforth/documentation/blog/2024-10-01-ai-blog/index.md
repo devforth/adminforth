@@ -47,7 +47,7 @@ Add modules:
 
 ```bash
 cd ai-blog
-npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy
+npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy @adminforth/image-generation-adapter-openai @adminforth/completion-adapter-open-ai-chat-gpt
 ```
 
 
@@ -334,6 +334,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
       await admin.resource('adminuser').create({
         email: 'adminforth@adminforth.dev',
+        role: 'superadmin',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
     }
@@ -695,7 +696,7 @@ Set up your avatar (you can generate it with AI) and public name in user setting
 
 ![alt text](aiblogpost.png)
 
-## Step 5: Create Nuxt project
+## Step 6: Create Nuxt project
 
 Now let's initialize our seo-facing frontend.
 In the root directory of your admin app (`ai-blog`) and create a new folder `seo` and run:
@@ -956,7 +957,7 @@ Open `http://localhost:3500` in your browser and you will see your blog with pos
 
 Go to `http://localhost:3500/admin` to add new posts.
 
-## Step 6: Deploy
+## Step 7: Deploy
 
 We will use Docker to make it easy to deploy with many ways. We will wrap both Node.js adminforth app and Nuxt.js app into single container for simplicity using supervisor. However you can split them into two containers and deploy them separately e.g. using docker compose. 
 
