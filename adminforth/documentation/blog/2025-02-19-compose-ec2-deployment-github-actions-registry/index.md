@@ -416,7 +416,7 @@ resource "null_resource" "sync_files_and_run" {
       echo '{"auths":{"appserver.local:5000":{"auth":"'$(echo -n "ci-user:$(cat ./.keys/registry.pure)" | base64 -w 0)'"}}}' > ~/.docker/config.json
 
       echo "Running build"
-      docker buildx bake --progress=plain --push --allow=fs.read=..
+      docker buildx bake --progress=plain --push --allow=fs.read=.. -f compose.yml
 
       # compose temporarily it is not working https://github.com/docker/compose/issues/11072#issuecomment-1848974315
       # docker compose --progress=plain -p app -f ./compose.yml build --push
