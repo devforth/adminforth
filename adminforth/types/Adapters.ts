@@ -145,6 +145,7 @@ export interface StorageAdapter {
    * The PUT method should fail if the file already exists.
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
+   * @param contentType - The content type of the file to be uploaded
    */
   getUploadSignedUrl(key: string, contentType: string, expiresIn?: number): Promise<string>;
 
@@ -157,20 +158,23 @@ export interface StorageAdapter {
 
   /**
    * This method should mark the file for deletion.
+   * If file is marked for delation and exists more then 24h (since creation date) it should be deleted.
+   * This method should work even if the file does not exist yet (e.g. only presigned URL was generated).
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
   markKeyForDeletation(key: string): Promise<string>;
 
 
   /**
-   * This method should return the list of files in the storage.
-   * @param key 
+   * This method should mark the file to not be deleted.
+   * This method should be used to cancel the deletion of the file if it was marked for deletion.
+   * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
   markKeyForNotDeletation(key: string): Promise<string>;
 
 
   /**
-   * THis method can start needed schedullers, cron jobs, etc. to clean up the storage.
+   * This method can start needed schedullers, cron jobs, etc. to clean up the storage.
    */
   setupLifecycle(): Promise<void>;
 
