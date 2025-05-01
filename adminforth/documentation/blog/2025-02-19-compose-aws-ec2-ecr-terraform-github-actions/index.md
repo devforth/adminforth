@@ -465,7 +465,7 @@ resource "null_resource" "sync_files_and_run" {
       aws ecr get-login-password --region ${local.aws_region} --profile myaws | docker login --username AWS --password-stdin ${aws_ecr_repository.myadmin_repo.repository_url}
 
       echo "Running build"
-      env $(cat .env.ecr | grep -v "#" | xargs) docker buildx bake --progress=plain --push --allow=fs.read=.. 
+      env $(cat .env.ecr | grep -v "#" | xargs) docker buildx bake --progress=plain --push --allow=fs.read=.. -f compose.yml
 
       # if you will change host, pleasee add -o StrictHostKeyChecking=no
       echo "Copy files to the instance" 
