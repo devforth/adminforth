@@ -146,8 +146,13 @@ export interface StorageAdapter {
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
    * @param contentType - The content type of the file to be uploaded
+   * 
+   * @returns A promise that resolves to an object containing the upload URL and any extra parameters which should be sent with PUT multipart form data
    */
-  getUploadSignedUrl(key: string, contentType: string, expiresIn?: number): Promise<string>;
+  getUploadSignedUrl(key: string, contentType: string, expiresIn?: number): Promise<{
+    uploadUrl: string;
+    uploadExtraParams?: Record<string, string>;
+  }>;
 
   /**
    * This method should return the URL for the given key capable of download (200 GET request with response or 200 HEAD request without response).
