@@ -141,7 +141,7 @@ export interface OAuth2Adapter {
 
 export interface StorageAdapter {
   /**
-   * This method should return the presigned URL for the given key capable of upload.
+   * This method should return the presigned URL for the given key capable of upload (PUT multipart form data to it).
    * The PUT method should fail if the file already exists.
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
@@ -150,11 +150,14 @@ export interface StorageAdapter {
   getUploadSignedUrl(key: string, contentType: string, expiresIn?: number): Promise<string>;
 
   /**
-   * This method should return the presigned URL for the given key capable of download
+   * This method should return the URL for the given key capable of download (200 GET request with response or 200 HEAD request without response).
+   * If adapter configured to use public storage, this method should return the public URL of the file.
+   * If adapter configured to use private storage, this method should return the presigned URL for the file.
+   * 
    * @param key - The key of the file to be downloaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
    */
-  getDownloadSignedUrl(key: string, expiresIn?: number): Promise<string>;
+  getDownloadUrl(key: string, expiresIn?: number): Promise<string>;
 
   /**
    * This method should mark the file for deletion.
