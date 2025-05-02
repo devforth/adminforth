@@ -179,7 +179,7 @@ export interface StorageAdapter {
    * This method should work even if the file does not exist yet (e.g. only presigned URL was generated).
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
-  markKeyForDeletation(key: string): Promise<string>;
+  markKeyForDeletation(key: string): Promise<void>;
 
 
   /**
@@ -187,13 +187,15 @@ export interface StorageAdapter {
    * This method should be used to cancel the deletion of the file if it was marked for deletion.
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
-  markKeyForNotDeletation(key: string): Promise<string>;
+  markKeyForNotDeletation(key: string): Promise<void>;
 
 
   /**
    * This method can start needed schedullers, cron jobs, etc. to clean up the storage.
+   * @param adapterUserUniqueRepresentation - The unique representation of the plugin instance which 
+   * wil use this adapter. Might be handy if you need to distinguish between different instances of the same adapter.
    */
-  setupLifecycle(): Promise<void>;
+  setupLifecycle(adapterUserUniqueRepresentation: string): Promise<void>;
 
   /**
    * If adapter is configured to publically, this method should return true.
