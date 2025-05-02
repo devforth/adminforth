@@ -139,6 +139,12 @@ export interface OAuth2Adapter {
 }
 
 
+/**
+ * Each storage adapter should support two ways of storing files:
+ * - publically (public URL) - the file can be accessed by anyone by HTTP GET / HEAD request with plain URL
+ * - privately (presigned URL) - the file can be accessed by anyone by HTTP GET / HEAD request only with presigned URLs, limited by expiration time
+ * 
+ */
 export interface StorageAdapter {
   /**
    * This method should return the presigned URL for the given key capable of upload (adapter user will call PUT multipart form data to this URL within expiresIn seconds after link generation).
