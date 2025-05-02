@@ -24,8 +24,8 @@ interface Props {
   formatter?: (value: number) => string
   progressFormatter?: (value: number, percentage: number) => string
   showLabels?: boolean
-  showValues: boolean
-  showProgress: boolean
+  showValues?: boolean
+  showProgress?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {

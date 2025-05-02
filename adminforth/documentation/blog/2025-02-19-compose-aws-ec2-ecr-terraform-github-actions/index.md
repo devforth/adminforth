@@ -152,6 +152,15 @@ services:
 
   myadmin:
     image: ${MYADMIN_REPO}:latest
+    build:
+      context: ../adminforth-app
+      tags:
+        - ${MYADMIN_REPO}:latest
+      cache_from:
+        - type=registry,ref=${MYADMIN_REPO}:cache
+      cache_to:
+        - type=registry,ref=${MYADMIN_REPO}:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true
+      
     pull_policy: always
     restart: always
     env_file:
@@ -205,25 +214,12 @@ tfplan
 .env.secrets.prod
 ```
 
-## Step 6 - buildx bake file
+## Step 6 - file with secrets for local deploy
 
-Create file `deploy/docker-bake.hcl`:
+Create file `deploy/.env.secrets.prod`
 
-```hcl title="deploy/docker-bake.hcl"
-variable "MYADMIN_REPO" {
-  default = ""
-}
-group "default" {
-  targets = ["myadmin"]
-}
-
-target "myadmin" {
-  context = "../myadmin"
-  tags = ["${MYADMIN_REPO}:latest"]
-  cache-from = ["type=registry,ref=${MYADMIN_REPO}:cache"]
-  cache-to   = ["type=registry,ref=${MYADMIN_REPO}:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true"]
-  push = true
-}
+```bash
+ADMINFORTH_SECRET=<your_secret>
 ```
 
 
@@ -469,7 +465,7 @@ resource "null_resource" "sync_files_and_run" {
       aws ecr get-login-password --region ${local.aws_region} --profile myaws | docker login --username AWS --password-stdin ${aws_ecr_repository.myadmin_repo.repository_url}
 
       echo "Running build"
-      env $(cat .env.ecr | grep -v "#" | xargs) docker buildx bake --progress=plain --push --allow=fs.read=.. 
+      env $(cat .env.ecr | grep -v "#" | xargs) docker buildx bake --progress=plain --push --allow=fs.read=.. -f compose.yml
 
       # if you will change host, pleasee add -o StrictHostKeyChecking=no
       echo "Copy files to the instance" 

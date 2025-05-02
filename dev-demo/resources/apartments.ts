@@ -302,7 +302,8 @@ export default {
               //   return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
               // },
               generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
-              countToGenerate: 3,
+              countToGenerate: 1,
+              outputSize: '1024x1024',
               // rateLimit: {
               //   limit: "2/1m",
               //   errorMessage:

@@ -75,8 +75,6 @@ This command already creates a `Dockerfile` and `.dockerignore` for you, so you 
 create folder `deploy` and create file `compose.yml` inside:
 
 ```yml title="deploy/compose.yml"
-
-
 services:
   traefik:
     image: "traefik:v2.5"
@@ -91,14 +89,19 @@ services:
 
   myadmin:
     image: localhost:5000/myadmin:latest
+    build:
+      context: ../adminforth-app
+      tags:
+        - localhost:5000/myadmin:latest
+      cache_from:
+        - type=registry,ref=localhost:5000/myadmin:cache
+      cache_to:
+        - type=registry,ref=localhost:5000/myadmin:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true
+      
     pull_policy: always
     restart: always
     env_file:
       - .env.secrets.prod
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=sqlite://.db.sqlite
-      - PRISMA_DATABASE_URL=file:.db.sqlite
 
     volumes:
       - myadmin-db:/code/db
@@ -148,27 +151,14 @@ tfplan
 .env.secrets.prod
 ```
 
-## Step 6 - buildx bake file
+## Step 6 - file with secrets for local deploy
 
-Create file `deploy/docker-bake.hcl`:
+Create file `deploy/.env.secrets.prod`
 
-```hcl title="deploy/docker-bake.hcl"
-variable "REGISTRY_BASE" {
-  default = "appserver.local:5000"
-}
-
-group "default" {
-  targets = ["myadmin"]
-}
-
-target "myadmin" {
-  context = "../myadmin"
-  tags = ["${REGISTRY_BASE}/myadmin:latest"]
-  cache-from = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache"]
-  cache-to   = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache,mode=max,compression=zstd"]
-  push = true
-}
+```bash
+ADMINFORTH_SECRET=<your_secret>
 ```
+
 
 
 ## Step 7 - main terraform file main.tf
@@ -426,7 +416,7 @@ resource "null_resource" "sync_files_and_run" {
       echo '{"auths":{"appserver.local:5000":{"auth":"'$(echo -n "ci-user:$(cat ./.keys/registry.pure)" | base64 -w 0)'"}}}' > ~/.docker/config.json
 
       echo "Running build"
-      docker buildx bake --progress=plain --push --allow=fs.read=..
+      docker buildx bake --progress=plain --push --allow=fs.read=.. -f compose.yml
 
       # compose temporarily it is not working https://github.com/docker/compose/issues/11072#issuecomment-1848974315
       # docker compose --progress=plain -p app -f ./compose.yml build --push
