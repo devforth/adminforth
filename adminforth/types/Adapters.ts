@@ -192,7 +192,7 @@ export interface StorageAdapter {
   /**
    * If adapter is configured to publically, this method should return true.
    */
-  objectCanBeAccesedPublicly(key: string): Promise<boolean>;
+  objectCanBeAccesedPublicly(): Promise<boolean>;
 }
 
   
