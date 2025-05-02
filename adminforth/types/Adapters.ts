@@ -159,8 +159,8 @@ export interface StorageAdapter {
 
   /**
    * This method should return the URL for the given key capable of download (200 GET request with response body or 200 HEAD request without response body).
-   * If adapter configured to use public storage, this method should return the public URL of the file.
-   * If adapter configured to use private storage, this method should return the presigned URL for the file.
+   * If adapter configured to store objects publically, this method should return the public URL of the file.
+   * If adapter configured to no allow public storing of images, this method should return the presigned URL for the file.
    * 
    * @param key - The key of the file to be downloaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
@@ -189,6 +189,10 @@ export interface StorageAdapter {
    */
   setupLifecycle(): Promise<void>;
 
+  /**
+   * If adapter is configured to publically, this method should return true.
+   */
+  objectCanBeAccesedPublicly(key: string): Promise<boolean>;
 }
 
   
