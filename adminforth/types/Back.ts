@@ -13,8 +13,8 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   AdminForthConfigMenuItem,
   AnnouncementBadgeResponse,
   AdminForthResourcePages,
+  AdminForthResourceColumnInputCommon,
 } from './Common.js';
-import { AnyCnameRecord } from 'dns';
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
@@ -106,10 +106,18 @@ export interface IExpressHttpServer extends IHttpServer {
 }
 
 
-export interface IAdminForthFilter {
-  field: string;
-  operator: AdminForthFilterOperators;
-  value: any;
+export interface IAdminForthSingleFilter {
+  field?: string;
+  operator?: AdminForthFilterOperators.EQ | AdminForthFilterOperators.NE
+  | AdminForthFilterOperators.GT | AdminForthFilterOperators.LT | AdminForthFilterOperators.GTE
+  | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
+  | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
+  value?: any;
+  insecureRawSQL?: string;
+}
+export interface IAdminForthAndOrFilter {
+  operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;
+  subFilters: Array<IAdminForthAndOrFilter | IAdminForthSingleFilter>
 }
 
 export interface IAdminForthSort {
@@ -185,7 +193,7 @@ export interface IAdminForthDataSourceConnector {
     limit: number,
     offset: number,
     sort: IAdminForthSort[], 
-    filters: IAdminForthFilter[],
+    filters: IAdminForthAndOrFilter,
   }): Promise<Array<any>>;
 
   /**
@@ -193,7 +201,7 @@ export interface IAdminForthDataSourceConnector {
    */
   getCount({ resource, filters }: {
     resource: AdminForthResource,
-    filters: IAdminForthFilter[],
+    filters: IAdminForthAndOrFilter,
   }): Promise<number>;
 
   /**
@@ -206,9 +214,9 @@ export interface IAdminForthDataSourceConnector {
 
 
   /**
-   * Used to create record in database.
+   * Used to create record in database. Should return value of primary key column of created record.
    */
-  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<void>;
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string>;
 
   /**
    * Update record in database. newValues might have not all fields in record, but only changed ones.
@@ -228,6 +236,8 @@ export interface IAdminForthDataSourceConnector {
  */
 export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourceConnector {
 
+  validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter;
+
   getPrimaryKey(resource: AdminForthResource): string;
 
   getData({ resource, limit, offset, sort, filters }: {
@@ -235,7 +245,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     limit: number,
     offset: number,
     sort: IAdminForthSort[],
-    filters: IAdminForthFilter[],
+    filters: IAdminForthAndOrFilter,
     getTotals?: boolean,
   }): Promise<{ data: Array<any>, total: number }>;
 
@@ -360,6 +370,27 @@ export interface IAdminForth {
    */
   setupEndpoints(server: IHttpServer): void;
 
+  /**
+   * This method can be used when you want to get some plugin instances by class name.
+   * Should be used for plugins which might have multiple instances with the same class name.
+   * @param className - name of class which is used to identify plugin instance
+   */
+  getPluginsByClassName<T>(className: string): T[];
+
+  /**
+   * This method can be used when you want to get some plugin instance by class name.
+   * Should be called only if you are sure there is only one plugin instance with this class name.
+   * If several instances are found, this method will drop error.
+   * @param className - name of class which is used to identify plugin instance
+   * 
+   * Example:
+   * 
+   * ```ts
+   * const i18nPlugin = adminforth.getPluginByClassName\<I18nPlugin\>('I18nPlugin');
+   * ```
+   * 
+   */
+  getPluginByClassName<T>(className: string): T;
 }
 
 
@@ -748,7 +779,7 @@ export interface AdminForthActionInput {
   id?: string;
 }
 
-export interface AdminForthResourceInput extends Omit<AdminForthResourceInputCommon, 'columns' | 'hooks' | 'options'> {
+export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
 
   /**
    * Array of plugins which will be used to modify resource configuration.
@@ -1039,35 +1070,41 @@ export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customiza
 // return { field: field, operator: 'eq', value: value }. They should be exported with Filters namespace so I can import Filters from this file
 // and use Filters.EQ(field, value) in my code
 
-export type FDataFilter = (field: string, value: any) => IAdminForthFilter;
+export type FDataFilter = (field: string, value: any) => IAdminForthSingleFilter;
 
 export class Filters {
-  static EQ(field: string, value: any): IAdminForthFilter {
+  static EQ(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.EQ, value };
   }
-  static NEQ(field: string, value: any): IAdminForthFilter {
+  static NEQ(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.NE, value };
   }
-  static GT(field: string, value: any): IAdminForthFilter {
+  static GT(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.GT, value };
   }
-  static GTE(field: string, value: any): IAdminForthFilter {
+  static GTE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.GTE, value };
   }
-  static LT(field: string, value: any): IAdminForthFilter {
+  static LT(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LT, value };
   }
-  static LTE(field: string, value: any): IAdminForthFilter {
+  static LTE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LTE, value };
   }
-  static IN(field: string, value: any): IAdminForthFilter {
+  static IN(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.IN, value };
   }
-  static NOT_IN(field: string, value: any): IAdminForthFilter {
+  static NOT_IN(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.NIN, value };
   }
-  static LIKE(field: string, value: any): IAdminForthFilter {
+  static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
+  }
+  static AND(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
+    return { operator: AdminForthFilterOperators.AND, subFilters };
+  }
+  static OR(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
+    return { operator: AdminForthFilterOperators.OR, subFilters };
   }
 }
 
@@ -1083,11 +1120,11 @@ export class Sorts {
 }
 
 export interface IOperationalResource {
-  get: (filter: IAdminForthFilter | IAdminForthFilter[]) => Promise<any | null>;
+  get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
-  list: (filter: IAdminForthFilter | IAdminForthFilter[], limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+  list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
-  count: (filter: IAdminForthFilter | IAdminForthFilter[] | undefined) => Promise<number>;
+  count: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined) => Promise<number>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
@@ -1143,7 +1180,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<AdminForthResourceCommon['options'], 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
@@ -1404,12 +1441,12 @@ export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnInput, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
 }

@@ -2,7 +2,6 @@ import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
 
-import AuditLogPlugin from '../plugins/adminforth-audit-log/index.js';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import apartmentBuyersResource from './resources/apartment_buyers.js';
@@ -17,13 +16,24 @@ import clinicsResource from './resources/clinics.js';
 import providersResource from './resources/providers.js';
 import apiKeysResource from './resources/api_keys.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import pkg from 'pg';
+import I18nPlugin from '../plugins/adminforth-i18n/index.js';
+const { Client } = pkg;
+
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: string;
+      DATABASE_URL: string;
+      OPENAI_API_KEY: string;
+      PORT: string;
+    }
+  }
+}
 
 // const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
-
-// create test1.db 
-const dbPath = 'db.sqlite';
-const db = betterSqlite3(dbPath)
 
 async function seedDatabase() {
 
@@ -180,12 +190,12 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: `sqlite://${dbPath}`
+      url: process.env.DATABASE_URL,
     },
-    // {
-    //   id: 'db2',
-    //   url: 'postgres://postgres:35ozenad@test-db.c3sosskwwcnd.eu-central-1.rds.amazonaws.com:5432'
-    // },
+    {
+      id: 'pg',
+      url: 'postgres://demo:demo@localhost:53321/demo',
+    },
     {
       id: 'db3',
       url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
@@ -332,7 +342,7 @@ const port = process.env.PORT || 3000;
     console.log('🅿️  Bundling AdminForth...');
     // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
     await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-    console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+    console.log('Bundling AdminForth SPA done.');
 })();
 
 
@@ -351,7 +361,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
     admin.express.translatable(
       async (req: any, res: express.Response) => {
         const days = req.body.days || 7;
-        const apartsByDays = await db.prepare(
+        const apartsByDays = await admin.resource('aparts').dataConnector.client.prepare( 
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
             COUNT(*) as count 
@@ -365,7 +375,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
         // add listed, unlisted, listedPrice, unlistedPrice
-        const listedVsUnlistedByDays = await db.prepare(
+        const listedVsUnlistedByDays = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed) as listed, 
@@ -379,7 +389,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all(days);
 
-        const apartsCountsByRooms = await db.prepare(
+        const apartsCountsByRooms = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             number_of_rooms, 
             COUNT(*) as count 
@@ -389,7 +399,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all();
 
-        const topCountries = await db.prepare(
+        const topCountries = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             country, 
             COUNT(*) as count 
@@ -400,14 +410,14 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
           `
         ).all();
 
-        const totalSquare = await db.prepare(
+        const totalSquare = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             SUM(square_meter) as totalSquare 
           FROM apartments;
           `
         ).get();
 
-        const listedVsUnlistedPriceByDays = await db.prepare(
+        const listedVsUnlistedPriceByDays = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed * price) as listedPrice,
@@ -450,7 +460,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
   admin.express.authorize(
     async (req, res) => {
-      const roomPercentages = await admin.resource('aparts').dataConnector.db.prepare(
+      const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 
           COUNT(*) as count 
@@ -477,7 +487,22 @@ app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
 
 
 // serve after you added all api
-admin.express.serve(app)
+admin.express.serve(app);
+
+
+(async function () {
+  const c = new Client({
+      connectionString: 'postgres://demo:demo@localhost:53321/demo',
+  });
+  await c.connect();
+  await c.query(
+    `CREATE TABLE IF NOT EXISTS clinics (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL
+    );`
+  );
+})();
+
 admin.discoverDatabases().then(async () => {
   console.log('🅿️  Database discovered');
 
@@ -489,6 +514,11 @@ admin.discoverDatabases().then(async () => {
     });
   }
   await seedDatabase();
+
+  // create table clinics in postgress,
+ // id               Int               @id @db.SmallInt @default(autoincrement()) 
+ // name            String            @db.VarChar(255)
+
 });
 
 admin.express.listen(port, () => {

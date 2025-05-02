@@ -24,14 +24,14 @@
 
             <Select
               v-if="c.foreignResource"
-              multiple
+              :multiple="c.filterOptions.multiselect"
               class="w-full"
               :options="columnOptions[c.name] || []"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
             />
             <Select
-              multiple
+              :multiple="c.filterOptions.multiselect"
               class="w-full"
               v-else-if="c.type === 'boolean'"
               :options="[
@@ -40,17 +40,19 @@
                 // if field is not required, undefined might be there, and user might want to filter by it
                 ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
               ]"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined  })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event })"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value !== undefined
+                ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value
+                : (c.filterOptions.multiselect ? [] : '')"
             />
             
-            <Select 
-              multiple
+            <Select
+              :multiple="c.filterOptions.multiselect"
               class="w-full"
               v-else-if="c.enum"
               :options="c.enum"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'in', value: $event.length ? $event : undefined })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === 'in')?.value || []"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
             />
 
             <Input
@@ -118,7 +120,8 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue'
+import { watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 import { callAdminForthApi } from '@/utils';
 import { useRouter } from 'vue-router';
@@ -130,6 +133,7 @@ import Select from '@/afcl/Select.vue';
 import debounce from 'debounce';
 
 const filtersStore = useFiltersStore();
+const { t } = useI18n();
 
 
 // props: columns

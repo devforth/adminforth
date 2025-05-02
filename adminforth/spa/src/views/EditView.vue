@@ -81,7 +81,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const coreStore = useCoreStore();
 
 const isValid = ref(false);
@@ -107,7 +109,11 @@ const editableRecord = computed(() => {
   }
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
-      newRecord[column.name] = newRecord[column.name]?.pk
+      if (column.isArray?.enabled) {
+        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+      } else {
+        newRecord[column.name] = newRecord[column.name]?.pk;
+      }
     }
   });
   return newRecord;
@@ -166,7 +172,7 @@ async function saveRecord() {
     showErrorTost(resp.error);
   } else {
     adminforth.alert({
-      message: 'Record updated successfully',
+      message: t('Record updated successfully'),
       variant: 'success',
       timeout: 400000
     });

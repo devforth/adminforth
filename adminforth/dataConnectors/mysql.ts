@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthDataSourceConnector } from '../types/Back.js';
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
 
@@ -30,6 +30,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     [AdminForthFilterOperators.ILIKE]: 'ILIKE',
     [AdminForthFilterOperators.IN]: 'IN',
     [AdminForthFilterOperators.NIN]: 'NOT IN',
+    [AdminForthFilterOperators.AND]: 'AND',
+    [AdminForthFilterOperators.OR]: 'OR',
   };
 
   SortDirectionsMap = {
@@ -128,7 +130,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } else if (field.type == AdminForthDataTypes.TIME) {
       return value || null;
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return !!value;
+      return value === null ? null : !!value;
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (typeof value === 'string') {
         try {
@@ -156,7 +158,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return value ? 1 : 0;
+      return value === null ? null : (value ? 1 : 0);
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (field._underlineType === 'json') {
         return value;
@@ -167,48 +169,94 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return value;
   }
 
-  whereClauseAndValues(resource: AdminForthResource, filters: { field: string, operator: AdminForthFilterOperators, value: any }[]) : {
+
+  getFilterString(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
+    if ((filter as IAdminForthSingleFilter).field) {
+      // filter is a Single filter
+      let placeholder = '?';
+      let field = (filter as IAdminForthSingleFilter).field;
+      let operator = this.OperatorsMap[filter.operator];
+      if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+        placeholder = `(${(filter as IAdminForthSingleFilter).value.map(() => '?').join(', ')})`;
+      } else if (filter.operator == AdminForthFilterOperators.ILIKE) {
+        placeholder = `LOWER(?)`;
+        field = `LOWER(${field})`;
+        operator = 'LIKE';
+      } else if (filter.operator == AdminForthFilterOperators.NE) {
+        if (filter.value === null) {
+          operator = 'IS NOT';
+          placeholder = 'NULL';
+        } else {
+          // for not equal, we need to add a null check
+          // because nullish field will not match != value
+          placeholder = `${placeholder} OR ${field} IS NULL)`;
+          field = `(${field}`;
+        }
+      } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+        operator = 'IS';
+        placeholder = 'NULL';
+      }
+      return `${field} ${operator} ${placeholder}`;
+    }
+
+    // filter is a single insecure raw sql
+    if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+      return (filter as IAdminForthSingleFilter).insecureRawSQL;
+    }
+
+    // filter is a AndOr filter
+    return (filter as IAdminForthAndOrFilter).subFilters.map((f) => {
+      if ((f as IAdminForthSingleFilter).field || (f as IAdminForthSingleFilter).insecureRawSQL) {
+        // subFilter is a Single filter
+        return this.getFilterString(f);
+      }
+
+      // subFilter is a AndOr filter - add parentheses
+      return `(${this.getFilterString(f)})`;
+    }).join(` ${this.OperatorsMap[filter.operator]} `);
+  }
+  getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
+    if ((filter as IAdminForthSingleFilter).field) {
+      // filter is a Single filter
+      if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+        return [`%${filter.value}%`];
+      } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+        return filter.value;
+      } else if (filter.operator == AdminForthFilterOperators.EQ && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.NE && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
+      } else {
+        return [(filter as IAdminForthSingleFilter).value];
+      }
+    }
+
+    // filter is a Single insecure raw sql
+    if ((filter as IAdminForthSingleFilter).insecureRawSQL) {
+      return [];
+    }
+
+    // filter is a AndOrFilter
+    return (filter as IAdminForthAndOrFilter).subFilters.reduce((params: any[], f: IAdminForthSingleFilter | IAdminForthAndOrFilter) => {
+      return params.concat(this.getFilterParams(f));
+    }, []);
+  }
+
+  whereClauseAndValues(filters: IAdminForthAndOrFilter) : {
     sql: string,
     values: any[],
   } {
-    const where = filters.length ? `WHERE ${filters.map((f, i) => {
-      let placeholder = '?';
-      let field = f.field;
-      let operator = this.OperatorsMap[f.operator];
-      if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-        placeholder = `(${f.value.map(() => '?').join(', ')})`;
-      } else if (f.operator == AdminForthFilterOperators.ILIKE) {
-        placeholder = `LOWER(?)`;
-        field = `LOWER(${f.field})`;
-        operator = 'LIKE';
-      }
-      return `${field} ${operator} ${placeholder}`;
-    }).join(' AND ')}` : '';
-
-    const filterValues = [];
-    filters.length ? filters.forEach((f) => {
-      // for arrays do set in map
-      let v = f.value;
-
-      if (f.operator == AdminForthFilterOperators.LIKE || f.operator == AdminForthFilterOperators.ILIKE) {
-        filterValues.push(`%${v}%`);
-      } else if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-        filterValues.push(...v);
-      } else {
-        filterValues.push(v);
-      }
-    }) : [];
-    return {
-      sql: where,
-      values: filterValues,
-    };
+    return filters.subFilters.length ? {
+      sql: `WHERE ${this.getFilterString(filters)}`,
+      values: this.getFilterParams(filters)
+    } : { sql: '', values: [] };
   }
 
   async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
     const columns = resource.dataSourceColumns.map((col) => `${col.name}`).join(', ');
     const tableName = resource.table;
     
-    const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
+    const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
 
     const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
     let selectQuery = `SELECT ${columns} FROM ${tableName}`;
@@ -229,9 +277,16 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     });
   }
 
-  async getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string, operator: AdminForthFilterOperators, value: any }[]; }): Promise<number> {
+  async getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {
     const tableName = resource.table;
-    const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
+    // validate and normalize in case this method is called from dataAPI
+    if (filters) {
+      const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+      if (!filterValidation.ok) {
+        throw new Error(filterValidation.error);
+      }
+    }
+    const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
     const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
     if (process.env.HEAVY_DEBUG_QUERY) {
       console.log('🪲📜 MySQL Q:', q, 'values:', filterValues);
@@ -257,7 +312,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return result;
   }
 
-  async createRecordOriginalValues({ resource, record }) {
+  async createRecordOriginalValues({ resource, record }): Promise<string> {
     const tableName = resource.table;
     const columns = Object.keys(record);
     const placeholders = columns.map(() => '?').join(', ');
@@ -266,7 +321,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (process.env.HEAVY_DEBUG_QUERY) {
       console.log('🪲📜 MySQL Q:', q, 'values:', values);
     }
-    await this.client.execute(q, values);
+    const ret = await this.client.execute(q, values);
+    return ret.insertId;
   }
 
   async updateRecordOriginalValues({ resource, recordId,  newValues }) {

@@ -40,13 +40,16 @@ nvm use 20
 ## Step 1: Create a new AdminForth project
 
 ```bash
-mkdir ai-blog
-cd ai-blog
-npm init -y
-npm i adminforth @adminforth/upload @adminforth/rich-editor @adminforth/chat-gpt \
- express slugify http-proxy @types/express typescript tsx @types/node -D
-npx --yes tsc --init --module NodeNext --target ESNext
+npx adminforth create-app --app-name ai-blog
 ```
+
+Add modules:
+
+```bash
+cd ai-blog
+npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy @adminforth/image-generation-adapter-openai @adminforth/completion-adapter-open-ai-chat-gpt
+```
+
 
 ## Step 2: Prepare environment
 
@@ -95,24 +98,35 @@ Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" a
 6. Go to Security credentials and create a new access key. Save `Access key ID` and `Secret access key`.
 
 
-### Create .env file in project directory
+### Edit .env file in project directory
 
 Create `.env` file with the following content:
 
 ```bash title=".env"
-DATABASE_URL=file:./db/db.sqlite
-ADMINFORTH_SECRET=<some random string>
 OPENAI_API_KEY=...
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
+```
+
+Edit `.env.local` file and add:
+
+```bash title=".env.local"
+AWS_S3_BUCKET=my-ai-blog-bucket
+AWS_S3_REGION=us-east-1
+```
+
+In same way edit `.env.prod` file and add:
+
+```bash title=".env.prod"
 AWS_S3_BUCKET=my-ai-blog-bucket
 AWS_S3_REGION=us-east-1
 ```
 
 
-## Step 3: Initialize database
 
-Create `./schema.prisma` and put next content there:
+## Step 3: Add prisma models
+
+Open `./schema.prisma` and put next content there:
 
 
 ```yaml title="./schema.prisma" 
@@ -122,78 +136,85 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = env("PRISMA_DATABASE_URL")
 }
 
-model User {
-  id           String     @id
-  createdAt    DateTime 
-  email        String   @unique
+model adminuser {
+  id            String     @id
+  email         String     @unique
+  password_hash String
+  role          String
+  created_at    DateTime
+//diff-add
   avatar       String?
-  publicName   String?
-  passwordHash String
+//diff-add
+  public_name  String?
+//diff-add
   posts        Post[]
 }
 
+//diff-add
 model Post {
+//diff-add
   id          String     @id
+//diff-add
   createdAt   DateTime 
+//diff-add
   title       String
+//diff-add
   slug        String
+//diff-add
   picture     String?
+//diff-add
   content     String
+//diff-add
   published   Boolean  
-  author      User?    @relation(fields: [authorId], references: [id])
+//diff-add
+  author      adminuser?    @relation(fields: [authorId], references: [id])
+//diff-add
   authorId    String?
+//diff-add
   contentImages ContentImage[]
+//diff-add
 }
 
+//diff-add
 model ContentImage {
+//diff-add
   id         String     @id
+//diff-add
   createdAt  DateTime 
+//diff-add
   img        String
+//diff-add
   postId     String
+//diff-add
   resourceId String
+//diff-add
   post       Post      @relation(fields: [postId], references: [id])
+//diff-add
 }
 ```
 
-Create database using `prisma migrate`:
+Create a migration:
 
 ```bash
-npx -y prisma migrate dev --name init
+npm run makemigration -- --name add-posts
 ```
 
-> in future if you will need to update schema, you can run `npx prisma migrate dev --name <name>` where `<name>` is a name of migration.
 
 ## Step 4: Setting up AdminForth
 
 
-Open `package.json`, set `type` to `module` and add `start` script:
 
-```json title="./package.json"
-{
-  ...
-//diff-add
-  "type": "module",
-  "scripts": {
-    ...
-//diff-add
-    "start": "NODE_ENV=development tsx watch --env-file=.env index.ts",
-//diff-add
-    "startLive": "NODE_ENV=production APP_PORT=80 tsx index.ts"
-  },
-}
-```
-
-Create `index.ts` file in root directory with following content:
+Open `index.ts` file in root directory and update it with the following content:
 
 ```ts title="./index.ts"
 import express from 'express';
 import AdminForth, { Filters, Sorts } from 'adminforth';
-import userResource from './res/user.js';
-import postResource from './res/posts.js';
-import contentImageResource from './res/content-image.js';
+import userResource from './resources/adminuser.js';
+import postResource from './resources/posts.js';
+import contentImageResource from './resources/content-image.js';
 import httpProxy from 'http-proxy';
 
 declare var process : {
@@ -211,7 +232,7 @@ export const admin = new AdminForth({
   auth: {
     usersResourceId: 'adminuser',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
-    passwordHashField: 'passwordHash',
+    passwordHashField: 'password_hash',
   },
   customization: {
     brandName: 'My Admin',
@@ -264,15 +285,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.use(express.json());
   const port = 3500;
 
-  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  if (process.env.NODE_ENV === 'development') {
-    await admin.bundleNow({ hotReload: true });
-  }
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
+  console.log('Bundling AdminForth SPA done.');
 
   // api to server recent posts
   app.get('/api/posts', async (req, res) => {
-    const { offset = 0, limit = 100, slug = null } = req.query;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 100;
+    const slug = req.query.slug as string | null;
     const posts = await admin.resource('post').list(
       [Filters.EQ('published', true), ...(slug ? [Filters.LIKE('slug', slug)] : [])],
       limit,
@@ -314,22 +334,23 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth@adminforth.dev')])) {
       await admin.resource('adminuser').create({
         email: 'adminforth@adminforth.dev',
-        passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       });
     }
   });
 
   admin.express.listen(port, () => {
-    console.log(`\n⚡ AdminForth is available at http://localhost:${port}\n`)
+    console.log(`\n⚡ AdminForth is available at http://localhost:${port}/admin\n`)
   });
 }
 ```
 
-## Step 5: Create resources
+## Step 5: Edit resources
 
-Create `res` folder. Create `./res/adminuser.ts` file with following content:
+Open `./resources/adminuser.ts` file with following content:
 
-```ts title="./res/adminuser.ts"
+```ts title="./resources/adminuser.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';
@@ -360,7 +381,14 @@ export default {
       type: AdminForthDataTypes.STRING,
     },
     {
-      name: 'createdAt',
+      name: 'role',
+      enum: [
+        { value: 'superadmin', label: 'Super Admin' },
+        { value: 'user', label: 'User' },
+      ]
+    },
+    {
+      name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
       showIn: {
         edit: false,
@@ -386,9 +414,9 @@ export default {
         AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
       ],
     },
-    { name: 'passwordHash', backendOnly: true, showIn: { all: false } },
+    { name: 'password_hash', backendOnly: true, showIn: { all: false } },
     { 
-      name: 'publicName',
+      name: 'public_name',
       type: AdminForthDataTypes.STRING,
     },
     { name: 'avatar' },
@@ -408,7 +436,7 @@ export default {
         return { ok: true }
       },
     },
-  }
+  },
   plugins: [
     new UploadPlugin({
       pathColumnName: 'avatar',
@@ -423,11 +451,10 @@ export default {
         { originalFilename, originalExtension }: {originalFilename: string, originalExtension: string }
       ) => `user-avatars/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
       generation: {
-        provider: 'openai-dall-e',
+        provider: 'openai',
         countToGenerate: 2,
         openAiOptions: {
-          model: 'dall-e-3',
-          size: '1024x1024',
+          model: 'gpt-4o',
           apiKey: process.env.OPENAI_API_KEY,
         },
       },
@@ -439,13 +466,15 @@ export default {
 
 Create `posts.ts` file in res directory with following content:
 
-```ts title="./res/post.ts"
+```ts title="./resources/post.ts"
 import { AdminUser, AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
 import UploadPlugin from '@adminforth/upload';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import slugify from 'slugify';
+import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 
 export default {
   table: 'post',
@@ -545,24 +574,25 @@ export default {
         { originalFilename, originalExtension }: {originalFilename: string, originalExtension: string }
       ) => `post-previews/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
       generation: {
-        provider: 'openai-dall-e',
         countToGenerate: 2,
-        openAiOptions: {
-          model: 'dall-e-3',
-          size: '1792x1024',
-          apiKey: process.env.OPENAI_API_KEY,
-        },
+        adapter: new ImageGenerationAdapterOpenAI({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-image-1', 
+        }),
         fieldsForContext: ['title'],
+        outputSize: '1536x1024'
       },
     }),
     new RichEditorPlugin({
       htmlFieldName: 'content',
       completion: {
-        provider: 'openai-chat-gpt',
-        params: {
-          apiKey: process.env.OPENAI_API_KEY,
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-4o',
-        },
+          expert: {
+            temperature: 0.7
+          }
+        }),
         expert: {
           debounceTime: 250,
         }
@@ -588,7 +618,7 @@ export default {
 
 Also create `content-image.ts` file in `res` directory with following content:
 
-```ts title="./res/content-image.ts"
+```ts title="./resources/content-image.ts"
 
 import { AdminForthDataTypes } from 'adminforth';
 import { randomUUID } from 'crypto';
@@ -603,11 +633,19 @@ export default {
     {
       name: 'id',
       primaryKey: true,
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => randomUUID(),
     },
     {
       name: 'createdAt',
       type: AdminForthDataTypes.DATETIME,
+      showIn: {
+        edit: false,
+        create: false,
+      },
       fillOnCreate: () => (new Date()).toISOString(),
     },
     {
@@ -650,7 +688,7 @@ export default {
 Now you can start your admin panel:
 
 ```bash
-npm start
+npm run dev
 ```
 
 Open `http://localhost:3500/admin` in your browser and login with `adminforth@adminforth.dev` and `adminforth` credentials.
@@ -658,10 +696,10 @@ Set up your avatar (you can generate it with AI) and public name in user setting
 
 ![alt text](aiblogpost.png)
 
-## Step 5: Create Nuxt project
+## Step 6: Create Nuxt project
 
-
-Now let's initialize our seo-facing frontend:
+Now let's initialize our seo-facing frontend.
+In the root directory of your admin app (`ai-blog`) and create a new folder `seo` and run:
 
 ```bash
 npx nuxi@latest init seo
@@ -919,40 +957,31 @@ Open `http://localhost:3500` in your browser and you will see your blog with pos
 
 Go to `http://localhost:3500/admin` to add new posts.
 
-## Step 6: Deploy
+## Step 7: Deploy
 
-We will dockerize app to make it easy to deploy with many ways. We will wrap both Node.js adminforth app and Nuxt.js app into single container for simplicity using supervisor. However you can split them into two containers and deploy them separately e.g. using docker compose. 
+We will use Docker to make it easy to deploy with many ways. We will wrap both Node.js adminforth app and Nuxt.js app into single container for simplicity using supervisor. However you can split them into two containers and deploy them separately e.g. using docker compose. 
 
 Please note that in this demo example we routing requests to Nuxt.js app from AdminForth app using http-proxy. 
 While this will work fine, it might give slower serving then if you would route traffik using dedicated reverse proxies like traefik or nginx.
 
 
-### Dockerize in single container
-
-Create `bundleNow.ts` file in root project directory:
-
-```ts title="./bundleNow.ts"
-import { admin } from './index.js';
-
-await admin.bundleNow({ hotReload: false});
-console.log('Bundling AdminForth done.');
-```
+### Dockerize AdminForth and Nuxt in single container
 
 
-Create `Dockerfile` in root project directory:
+Open `Dockerfile` in root project directory (`ai-blog`) and put in the following content:
 
 ```dockerfile title="./Dockerfile"
-FROM node:20-alpine
+FROM node:20-slim
 EXPOSE 3500
 WORKDIR /app
-RUN apk add --no-cache supervisor
+RUN apt-get update && apt-get install -y supervisor
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY seo/package.json seo/package-lock.json seo/
 RUN cd seo && npm ci
 COPY . .
 
-RUN npx tsx bundleNow.ts
+RUN npx adminforth bundle
 RUN cd seo && npm run build
 
 RUN cat > /etc/supervisord.conf <<EOF
@@ -960,12 +989,14 @@ RUN cat > /etc/supervisord.conf <<EOF
 nodaemon=true
 
 [program:app]
-command=npm run startLive
+command=npm run prod
 directory=/app
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 [program:seo]
 command=sh -c "cd seo && node .output/server/index.mjs"
@@ -974,20 +1005,24 @@ autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 [program:prisma]
-command=npx --yes prisma migrate deploy
+command=npm run migrate:prod
 directory=/app
 autostart=true
 stdout_logfile=/dev/stdout
 stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes = 0
+stderr_logfile_maxbytes = 0
 
 EOF
 
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
 ```
 
-Create `.dockerignore` file in root project directory:
+Open `.dockerignore` file in root project directory (`ai-blog`) and put in the following content:
 
 ```bash title=".dockerignore"
 .env
@@ -1005,7 +1040,8 @@ terraform*
 Build and run your docker container locally:
 
 ```bash
-sudo docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it $(docker build -q .)
+docker build -t my-ai-blog .
+docker run -p80:3500 -v ./prodDb:/app/db --env-file .env -it --name my-ai-blog -d my-ai-blog
 ```
 
 Now you can open `http://localhost` in your browser and see your blog.
@@ -1081,7 +1117,7 @@ data "aws_subnet" "default_subnet" {
 }
 
 resource "aws_security_group" "instance_sg" {
-  name   = "my-ai-blog-instance-sg"
+  name   = "my-aiblog-instance-sg"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
@@ -1111,14 +1147,14 @@ resource "aws_security_group" "instance_sg" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "terraform-deployer-key"
+  key_name   = "terraform-deployer-my-aiblog-key"
   public_key = file("~/.ssh/id_rsa.pub") # Path to your public SSH key
 }
 
 
 resource "aws_instance" "docker_instance" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3a.micro"
+  instance_type          = "t3a.small"
   subnet_id              = data.aws_subnet.default_subnet.id
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   key_name               = aws_key_pair.deployer.key_name
@@ -1138,12 +1174,34 @@ resource "aws_instance" "docker_instance" {
     systemctl start docker
     systemctl enable docker
     usermod -a -G docker ec2-user
+
+    echo "done" > /home/ec2-user/user-data-done
   EOF
 
   tags = {
     Name = "my-ai-blog-instance"
   }
 }
+
+resource "null_resource" "wait_for_user_data" {
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Waiting for EC2 software install to finish...'",
+      "while [ ! -f /home/ec2-user/user-data-done ]; do sleep 2; done",
+      "echo 'EC2 software install finished.'"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/id_rsa")
+      host        = aws_instance.docker_instance.public_ip
+    }
+  }
+
+  depends_on = [aws_instance.docker_instance]
+}
+
 
 resource "null_resource" "build_image" {
   provisioner "local-exec" {
@@ -1155,7 +1213,7 @@ resource "null_resource" "build_image" {
 }
 
 resource "null_resource" "remote_commands" {
-  depends_on = [aws_instance.docker_instance, null_resource.build_image]
+  depends_on = [null_resource.wait_for_user_data, null_resource.build_image]
 
   triggers = {
     always_run = timestamp()
@@ -1188,8 +1246,6 @@ resource "null_resource" "remote_commands" {
 
   provisioner "remote-exec" {
     inline = [
-      "while ! command -v docker &> /dev/null; do echo 'Waiting for Docker to be installed...'; sleep 1; done",
-      "while ! sudo docker info &> /dev/null; do echo 'Waiting for Docker to start...'; sleep 1; done",
       "sudo docker system prune -af",
       "docker load -i /home/ec2-user/blogapp_image.tar",
       "sudo docker rm -f blogapp || true",
@@ -1225,7 +1281,7 @@ terraform apply -auto-approve
 
 > ☝️ To check logs run `ssh -i ~/.ssh/id_rsa ec2-user@$(terraform output instance_public_ip)`, then `sudo docker logs -n100 -f aiblog`
 
-Terraform config will build Docker image locally and then copy it to EC2 instance. This approach allows to save build resources (CPU/RAM) on EC2 instance, however increases network traffic (image might be around 200MB). If you want to build image on EC2 instance, you can adjust config slightly: remove `null_resource.build_image` and change `null_resource.remote_commands` to build image on EC2 instance, however micro instance most likely will not be able to build and keep app running at the same time, so you will need to increase instance type or terminate app while building image (which introduces downtime so not recommended as well).
+Terraform config will build the Docker image locally and then copy it to the EC2 instance. This approach saves build resources (CPU/RAM) on the EC2 instance, though it increases network traffic (the image might be around 200MB). If you prefer to build the image directly on the EC2 instance, you can slightly adjust the configuration: remove `null_resource.build_image` and modify `null_resource.remote_commands` to perform the build remotely. However, note that building the image on a `t3.small` instance may still consume significant resources and can interfere with running applications. To avoid potential downtime or performance issues, building the image locally remains the recommended approach.
 
 
 ### Add HTTPs and CDN

@@ -34,22 +34,22 @@ import adminforth from '@/adminforth';
 const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
 ```
 
-## Ussage example
+## Usage example
 
-Create a Vue component in the custom directory of your project, e.g. Alerts.vue:
+Create a Vue component in the custom directory of your project, e.g. `Alerts.vue`:
 
 ```html title="./custom/Alerts.vue"
 <template>
     <div class="ml-3 mt-16">
-        <Button @click="successAlert($t('Example success alert'))" >
+        <Button @click="successAlert($t('Example success alert'))" class="bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" >
             {{$t('Call success alert')}}
         </Button>
 
-        <Button @click="warningAlert($t('Example danger alert'))" >
+        <Button @click="warningAlert($t('Example danger alert'))" class="bg-orange-500 hover:bg-orange-400 focus:ring-orange-100 dark:bg-orange-600 dark:hover:bg-orange-700 dark:focus:ring-orange-900" >
             {{$t('Call warning alert')}}
         </Button>
 
-        <Button @click="doConfirm" >
+        <Button @click="doConfirm" class="bg-red-700 hover:bg-red-800 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900" >
             {{$t('Call confirm dialog')}}
         </Button>
     </div>
@@ -97,6 +97,7 @@ menu: [
 //diff-add
 }
 ```
+
 Here is how alert looks:
 ![alt text](image-12.png)
 

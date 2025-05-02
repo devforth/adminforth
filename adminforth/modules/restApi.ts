@@ -10,6 +10,7 @@ import {
   IAdminForthRestAPI,
   IAdminForthSort,
   HttpExtra,
+  IAdminForthAndOrFilter,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
@@ -28,9 +29,9 @@ export async function interpretResource(
   source: ActionCheckSource, 
   adminforth: IAdminForth
 ): Promise<{allowedActions: AllowedActionsResolved}> {
-  // if (process.env.HEAVY_DEBUG) {
-  //   console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
-  // }
+  if (process.env.HEAVY_DEBUG) {
+    console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
+  }
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
@@ -55,9 +56,6 @@ export async function interpretResource(
   await Promise.all(
     Object.entries(resource.options.allowedActions).map(
       async ([key, value]: [string, AllowedActionValue]) => {
-        if (process.env.HEAVY_DEBUG) {
-          console.log(`🪲🚥check allowed ${key}, ${value}`)
-        }
         if (!neededActions.includes(key as AllowedActionsEnum)) {
           allowedActions[key] = false;
           return;
@@ -136,9 +134,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const userRecord = (
           await this.adminforth.connectors[userResource.dataSource].getData({
             resource: userResource,
-            filters: [
+            filters: { operator: AdminForthFilterOperators.AND, subFilters: [
               { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
-            ],
+            ]},
             limit: 1,
             offset: 0,
             sort: [],
@@ -635,25 +633,32 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
         const { limit, offset, filters, sort } = body;
 
-        // remove virtual fields from sort if still presented after
-        // beforeDatasourceRequest hook
+        // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
         const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
           return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
         });
 
-        for (const filter of (filters || [])) {
-          if (!Object.values(AdminForthFilterOperators).includes(filter.operator)) {
-            throw new Error(`Operator '${filter.operator}' is not allowed`);
+        // after beforeDatasourceRequest hook, filter can be anything
+        // so, we need to turn it into AndOr filter
+        // (validation and normalization of individual filters will be done inside getData)
+        const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+        if (filters) {
+          if (typeof filters !== 'object') {
+            throw new Error(`Filter should be an array or an object`);
           }
-
-          if (!resource.columns.some((col) => col.name === filter.field)) {
-            throw new Error(`Field '${filter.field}' is not in resource '${resource.resourceId}'. Available fields: ${resource.columns.map((col) => col.name).join(', ')}`);
-          }
-
-          if (filter.operator === AdminForthFilterOperators.IN || filter.operator === AdminForthFilterOperators.NIN) {
-            if (!Array.isArray(filter.value)) {
-              throw new Error(`Value for operator '${filter.operator}' should be an array`);
-            }
+          if (Array.isArray(filters)) {
+            // if filters are an array, they will be connected with "AND" operator by default
+            normalizedFilters.subFilters = filters;
+          } else if (filters.field) {
+            // assume filter is a SingleFilter
+            normalizedFilters.subFilters = [filters];
+          } else if (filters.subFilters) {
+            // assume filter is a AndOr filter
+            normalizedFilters.operator = filters.operator;
+            normalizedFilters.subFilters = filters.subFilters;
+          } else {
+            // wrong filter
+            throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
           }
         }
 
@@ -661,7 +666,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           resource,
           limit,
           offset,
-          filters,
+          filters: normalizedFilters as IAdminForthAndOrFilter,
           sort: sortFiltered,
           getTotals: source === 'list',
         });
@@ -675,21 +680,30 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == col.foreignResource.resourceId);
               const targetConnector = this.adminforth.connectors[targetResource.dataSource];
               const targetResourcePkField = targetResource.columns.find((col) => col.primaryKey).name;
-              const pksUnique = [...new Set(data.data.map((item) => item[col.name]))];
+              const pksUnique = [...new Set(data.data.reduce((pks, item) => {
+                if (col.isArray?.enabled) {
+                  if (item[col.name]?.length) {
+                    pks = pks.concat(item[col.name]);
+                  }
+                } else {
+                  pks.push(item[col.name]);
+                }
+                return pks;
+              }, []))];
               if (pksUnique.length === 0) {
                 return;
               }
               const targetData = await targetConnector.getData({
                 resource: targetResource,
-                limit: limit,
+                limit: pksUnique.length,
                 offset: 0,
-                filters: [
+                filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                   {
                     field: targetResourcePkField,
                     operator: AdminForthFilterOperators.IN,
                     value: pksUnique,
                   }
-                ],
+                ]},
                 sort: [],
               });
               targetDataMap = targetData.data.reduce((acc, item) => {
@@ -729,13 +743,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   resource: targetResources[polymorphicOnValue],
                   limit: limit,
                   offset: 0,
-                  filters: [
+                  filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                     {
                       field: targetResourcePkFields[polymorphicOnValue],
                       operator: AdminForthFilterOperators.IN,
                       value: pksUniques[polymorphicOnValue],
                     }
-                  ],
+                  ]},
                   sort: [],
                 })
               ))).reduce((acc: any, td: any, tdi) => ({
@@ -755,15 +769,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             
             data.data.forEach((item) => {
-              item[col.name] = targetDataMap[item[col.name]];
-              
-              if (!item[col.name]) {
-                if (col.foreignResource && col.foreignResource.polymorphicResources) {
-                  const systemResource = col.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                  if (systemResource) {
-                    item[col.foreignResource.polymorphicOn] = systemResource.whenValue;
-                  }
+              // item[col.name] = targetDataMap[item[col.name]];, commented by @Vitalii
+              if (col.isArray?.enabled) {
+                if (item[col.name]?.length) {
+                  item[col.name] = item[col.name].map((i) => targetDataMap[i]);
                 }
+              } else {
+                item[col.name] = targetDataMap[item[col.name]];
               }
             });
           })
@@ -862,11 +874,35 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 }
               }
               const { limit, offset, filters, sort } = body;
+
+              // after beforeDatasourceRequest hook, filter can be anything
+              // so, we need to turn it into AndOr filter
+              // (validation and normalization of individual filters will be done inside getData)
+              const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+              if (filters) {
+                if (typeof filters !== 'object') {
+                  throw new Error(`Filter should be an array or an object`);
+                }
+                if (Array.isArray(filters)) {
+                  // if filters are an array, they will be connected with "AND" operator by default
+                  normalizedFilters.subFilters = filters;
+                } else if (filters.field) {
+                  // assume filter is a SingleFilter
+                  normalizedFilters.subFilters = [filters];
+                } else if (filters.subFilters) {
+                  // assume filter is a AndOr filter
+                  normalizedFilters.operator = filters.operator;
+                  normalizedFilters.subFilters = filters.subFilters;
+                } else {
+                  // wrong filter
+                  throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+                }
+              }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
                 resource: targetResource,
                 limit,
                 offset,
-                filters: filters || [],
+                filters: normalizedFilters as IAdminForthAndOrFilter,
                 sort: sort || [],
               });
               const items = dbDataItems.data.map((item) => {
@@ -980,14 +1016,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const fieldName = column.name;
               if (fieldName in record) {
                 if (!column.showIn?.create || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation`, ok: false };
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false, please set it to true)`, ok: false };
                 }
               }
             }
           
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name]) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
                 const targetResources = {};
                 const targetConnectors = {};
                 const targetResourcePkFields = {};
@@ -1009,13 +1048,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     resource: targetResources[polymorphicOnValue],
                     limit: 1,
                     offset: 0,
-                    filters: [
+                    filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                       {
                         field: targetResourcePkFields[polymorphicOnValue],
                         operator: AdminForthFilterOperators.EQ,
                         value: record[column.name],
                       }
-                    ],
+                    ]},
                     sort: [],
                   })
                 ))).reduce((acc: any, td: any, tdi) => ({
@@ -1073,14 +1112,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const fieldName = column.name;
               if (fieldName in record) {
                 if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing` };
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false, please set it to true)`, ok: false };
                 }
               }
             }
 
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] !== undefined) {
+              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
+                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
+                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
+              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
                 let newPolymorphicOnValue = null;
                 if (record[column.name]) {
                   const targetResources = {};
@@ -1104,13 +1146,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                       resource: targetResources[polymorphicOnValue],
                       limit: 1,
                       offset: 0,
-                      filters: [
+                      filters: { operator: AdminForthFilterOperators.AND, subFilters: [
                         {
                           field: targetResourcePkFields[polymorphicOnValue],
                           operator: AdminForthFilterOperators.EQ,
                           value: record[column.name],
                         }
-                      ],
+                      ]},
                       sort: [],
                     })
                   ))).reduce((acc: any, td: any, tdi) => ({

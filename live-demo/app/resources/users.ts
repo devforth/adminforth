@@ -1,5 +1,4 @@
-import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput } from 'adminforth';
-import importExport from '@adminforth/import-export';
+import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 
@@ -16,7 +15,6 @@ export default {
   label: 'Users',  
   recordLabel: (r) => `👤 ${r.email}`,
   plugins: [
-    new importExport({}),
     new ForeignInlineListPlugin({
       foreignResourceId: 'aparts',
       modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
@@ -40,6 +38,7 @@ export default {
     },
     { 
       name: 'email', 
+      type: AdminForthDataTypes.STRING,
       required: true,
       isUnique: true,
       validation: [

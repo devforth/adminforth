@@ -5,22 +5,22 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx watch --env-file=.env index.ts",
-    "migrate": "prisma migrate deploy",
-    "makemigration": "prisma migrate dev"
+    "env": "dotenvx run -f .env.local -f .env --overload --",
+    "start": "npm run env -- tsx watch index.ts",
+    "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
+    "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "adminforth": "^1.5.8-next.29",
     "better-sqlite3": "^10.1.0",
     "express": "^4.21.0",
     "random-words": "^2.0.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.39.0",
     "prisma": "^5.22.0",
     "tsx": "^4.19.2",
     "typescript": "^5.4.5"

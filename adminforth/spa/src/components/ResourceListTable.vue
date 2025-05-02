@@ -14,14 +14,13 @@
     <table v-else class=" w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
 
       <tbody>
-
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
             <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
                     :disabled="!rows || !rows.length"
-                    class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
@@ -60,6 +59,9 @@
             {{ $t('Actions') }}
           </td>
         </tr>
+        <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListBorder dark:bg-darkListTable">
+          <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
+        </tr>
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
@@ -68,6 +70,7 @@
           :row-heights="rowHeights"
           :column-widths="columnWidths"
         />
+        
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
 
@@ -224,7 +227,8 @@
           contenteditable="true" 
           class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
           @keydown="onPageKeydown($event)"
-          @input="page = parseInt($event.target.innerText) || ''"
+          @input="onPageInput($event)"
+          @blur="validatePageInput()"
         >
           {{ pageInput }}
         </div>
@@ -322,6 +326,7 @@ const props = defineProps<{
   sort: any[],
   noRoundings?: boolean,
   customActionsInjection?: any[],
+  tableBodyStartInjection?: any[],
 }>();
 
 // emits, update page
@@ -351,6 +356,10 @@ async function onPageKeydown(event) {
     (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
     && isNaN(String.fromCharCode(event.keyCode)))) {
     event.preventDefault();
+    if (event.code === 'Enter') {
+      validatePageInput();
+      event.target.blur();
+    }
   }
 }
 
@@ -416,7 +425,7 @@ async function selectAll(value) {
 const totalPages = computed(() => Math.ceil(props.totalRows / props.pageSize));
 
 const allFromThisPageChecked = computed(() => {
-  if (!props.rows) return false;
+  if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
 const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
@@ -571,5 +580,24 @@ async function startCustomAction(actionId, row) {
   }
 }
 
+function onPageInput(event) {
+  pageInput.value = event.target.innerText;
+}
+
+function validatePageInput() {
+  const newPage = parseInt(pageInput.value) || 1;
+  const validPage = Math.max(1, Math.min(newPage, totalPages.value));
+  page.value = validPage;
+  pageInput.value = validPage.toString();
+}
 
 </script>
+
+<style lang="scss" scoped>
+input[type="checkbox"][disabled] {
+  @apply opacity-50;
+}
+input[type="checkbox"]:not([disabled]) {
+  @apply cursor-pointer;
+}
+</style>

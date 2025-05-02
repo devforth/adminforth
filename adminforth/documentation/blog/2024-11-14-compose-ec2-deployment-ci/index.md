@@ -16,25 +16,16 @@ We will use GitHub Actions as CI/CD, but you can use any other CI/CD, for exampl
 Assume you have your AdminForth project in `myadmin`.
 
 
-## Step 1 - Dockerfile
+## Step 1 - Dockerfile and .dockerignore
 
-Create file `Dockerfile` in `myadmin`:
 
-```Dockerfile title="./myadmin/Dockerfile"
-# use the same node version which you used during dev
-FROM node:20-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci  
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["npm", "run", "startLive"]
-```
+This guide assumes you have created your AdminForth application with latest version of `adminforth create-app` command. 
+This command already creates a `Dockerfile` and `.dockerignore` for you, so you can use them as is.
 
 
 ## Step 2 - compose.yml
 
-create folder `deploy` and create file `compose.yml` inside:
+Create folder `deploy` and create file `compose.yml` inside:
 
 ```yml title="deploy/compose.yml"
 
@@ -51,10 +42,10 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   myadmin:
-    build: ./myadmin
+    build: ../myadmin
     restart: always
     env_file:
-      - ./myadmin/.env
+      - ./myadmin/.env.secrets.prod
     volumes:
       - myadmin-db:/code/db
     labels:
@@ -88,10 +79,10 @@ Create `deploy/.gitignore` file with next content:
 *.tfstate.*
 *.tfvars
 tfplan
+.env.secrets.prod
 ```
 
 ## Step 5 - Main terraform file main.tf
-
 
 
 First of all install Terraform as described here [terraform installation](https://developer.hashicorp.com/terraform/install#linux).
@@ -102,7 +93,7 @@ Create file `main.tf` in `deploy` folder:
 ```hcl title="deploy/main.tf"
 
 locals {
-  app_name = "<your_app_name>"
+  app_name = "<your_app_name>" # replace with your app name
   aws_region = "eu-central-1"
 }
 
@@ -126,10 +117,10 @@ data "aws_vpc" "default" {
   default = true
 }
 
-
 resource "aws_eip" "eip" {
  domain = "vpc"
 }
+
 resource "aws_eip_association" "eip_assoc" {
  instance_id   = aws_instance.app_instance.id
  allocation_id = aws_eip.eip.id
@@ -230,11 +221,32 @@ resource "aws_instance" "app_instance" {
     systemctl start docker
     systemctl enable docker
     usermod -a -G docker ubuntu
+
+    echo "done" > /home/ubuntu/user_data_done
   EOF
 
   tags = {
     Name = "${local.app_name}-instance"
   }
+}
+
+resource "null_resource" "wait_for_user_data" {
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Waiting for EC2 software install to finish...'",
+      "while [ ! -f /home/ubuntu/user_data_done ]; do echo '...'; sleep 2; done",
+      "echo 'EC2 software install finished.'"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("./.keys/id_rsa")
+      host        = aws_eip_association.eip_assoc.public_ip
+    }
+  }
+
+  depends_on = [aws_instance.app_instance]
 }
 
 resource "null_resource" "sync_files_and_run" {
@@ -262,16 +274,11 @@ resource "null_resource" "sync_files_and_run" {
   # Run docker compose after files have been copied
   provisioner "remote-exec" {
     inline = [
-      # fail bash specially and intentionally to stop the script on error
-      "bash -c 'while ! command -v docker &> /dev/null; do echo \"Waiting for Docker to be installed...\"; sleep 1; done'",
-      "bash -c 'while ! docker info &> /dev/null; do echo \"Waiting for Docker to start...\"; sleep 1; done'",
-      
       # please note that prune might destroy build cache and make build slower, however it releases disk space
       "docker system prune -f",
       # "docker buildx prune -f --filter 'type!=exec.cachemount'",
       "cd /home/ubuntu/app/deploy",
-      # COMPOSE_FORCE_NO_TTY is needed to run docker compose in non-interactive mode and prevent stdout mess up
-      "COMPOSE_FORCE_NO_TTY=1 docker compose -p app -f compose.yml up --build -d"
+      "COMPOSE_BAKE=true docker compose --progress=plain -p app -f compose.yml up --build -d"
     ]
 
     connection {
@@ -287,7 +294,7 @@ resource "null_resource" "sync_files_and_run" {
     always_run = timestamp()
   }
 
-  depends_on = [aws_instance.app_instance, aws_eip_association.eip_assoc]
+  depends_on = [null_resource.wait_for_user_data, aws_eip_association.eip_assoc]
 }
 
 
@@ -309,6 +316,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
   rule {
     status = "Enabled"
     id = "Keep only the latest version of the state file"
+
+    filter {
+      prefix = ""
+    }
 
     noncurrent_version_expiration {
       noncurrent_days = 30
@@ -333,8 +344,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
     }
   }
 }
-
-
 ```
 
 > 👆 Replace `<your_app_name>` with your app name (no spaces, only underscores or letters)
@@ -424,6 +433,11 @@ jobs:
         with:
           terraform_version: 1.10.1 
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - name: Prepare env
+        run: |
+          echo "ADMINFORTH_SECRET=$VAULT_ADMINFORTH_SECRET" > deploy/.env.secrets.prod
+        env:
+          VAULT_ADMINFORTH_SECRET: ${{ secrets.VAULT_ADMINFORTH_SECRET }}
       - name: Start building
         env:
           VAULT_AWS_ACCESS_KEY_ID: ${{ secrets.VAULT_AWS_ACCESS_KEY_ID }}
@@ -477,6 +491,6 @@ Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository se
 - `VAULT_AWS_SECRET_ACCESS_KEY` - your AWS secret key
 - `VAULT_SSH_PRIVATE_KEY` - make `cat ~/.ssh/id_rsa` and paste to GitHub secrets
 - `VAULT_SSH_PUBLIC_KEY` - make `cat ~/.ssh/id_rsa.pub` and paste to GitHub secrets
-
+- `VAULT_ADMINFORTH_SECRET` - your AdminForth secret - random string, for example `openssl rand -base64 32 | tr -d '\n'`
 
 Now you can push your changes to GitHub and see how it will be deployed automatically.

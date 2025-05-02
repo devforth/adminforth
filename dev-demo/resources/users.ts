@@ -9,12 +9,39 @@ import ForeignInlineListPlugin from "../../plugins/adminforth-foreign-inline-lis
 import OpenSignupPlugin from "../../plugins/adminforth-open-signup";
 import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
 import EmailResetPasswordPlugin from "../../plugins/adminforth-email-password-reset/index.js";
-import { v1 as uuid } from "uuid";
 import EmailAdapterAwsSes from "../../adapters/adminforth-email-adapter-aws-ses/index.js";
 
 import OAuthPlugin  from "../../plugins/adminforth-oauth";
 import AdminForthAdapterGoogleOauth2 from "../../adapters/adminforth-google-oauth-adapter";
 import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oauth-adapter";
+
+import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
+import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
+import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
+import { randomUUID } from "crypto";
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: string;
+      AWS_ACCESS_KEY_ID: string;
+      AWS_SECRET_ACCESS_KEY: string;
+      GITHUB_CLIENT_ID: string;
+      GITHUB_CLIENT_SECRET: string;
+      GOOGLE_CLIENT_ID: string;
+      GOOGLE_CLIENT_SECRET: string;
+      FACEBOOK_CLIENT_ID: string;
+      FACEBOOK_CLIENT_SECRET: string;
+      KEYCLOAK_CLIENT_ID: string;
+      KEYCLOAK_CLIENT_SECRET: string;
+      KEYCLOAK_URL: string;
+      KEYCLOAK_REALM: string;
+      MICROSOFT_CLIENT_ID: string;
+      MICROSOFT_CLIENT_SECRET: string;
+
+    }
+  }
+}
 
 export default {
   dataSource: "maindb",
@@ -34,9 +61,9 @@ export default {
     //     resourceConfig.options!.listPageSize = 3;
     //   },
     // }),
-    new ForeignInlineListPlugin({
-      foreignResourceId: "audit_log",
-    }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: "audit_log",
+    // }),
     new ForeignInlineListPlugin({
       foreignResourceId: "users",
     }),
@@ -92,13 +119,27 @@ export default {
         new AdminForthAdapterGithubOauth2({
           clientID: process.env.GITHUB_CLIENT_ID,
           clientSecret: process.env.GITHUB_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
         }),
         new AdminForthAdapterGoogleOauth2({
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          redirectUri: 'http://localhost:3000/oauth/callback',
-        })
+        }),
+        new AdminForthAdapterFacebookOauth2({
+          clientID: process.env.FACEBOOK_CLIENT_ID,
+          clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        }),
+        new AdminForthAdapterMicrosoftOauth2({
+          clientID: process.env.MICROSOFT_CLIENT_ID,
+          clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+          useOpenID: true,
+        }),
+        // new AdminForthAdapterKeycloakOauth2({
+        //   name: "Keycloak",
+        //   clientID: process.env.KEYCLOAK_CLIENT_ID,
+        //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+        //   keycloakUrl: process.env.KEYCLOAK_URL,
+        //   realm: process.env.KEYCLOAK_REALM,
+        // }),
       ],
       emailField: 'email',
       emailConfirmedField: 'email_confirmed'
@@ -123,7 +164,7 @@ export default {
     {
       name: "id",
       primaryKey: true,
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       showIn: ["list", "filter", "show"], // the default is full set
     },
     {

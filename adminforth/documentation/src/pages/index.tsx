@@ -12,7 +12,7 @@ import styles from './index.module.css';
 const images = [
   {
     original: require('@site/static/img/previews/login_form.png').default,
-    title: 'Sign in form',
+    title: 'Authentication and Authorization',
     link: '/docs/tutorial/gettingStarted',
     description: 'OWASP-Compliant Sign-In already there'
   },
@@ -21,6 +21,12 @@ const images = [
     title: 'Users management',
     link: '/docs/tutorial/gettingStarted',
     description: 'Manage users and roles with ease, extend as you like'
+  },
+  {
+    original: require('@site/static/img/previews/sso.png').default,
+    title: 'OAuth2/OpenID SSO Plugin - one click login',
+    link: '/docs/tutorial/Plugins/oauth/',
+    description: 'RFC 6749 SSO plugin with premade Google, Github, Facebook, Keycloak, Microsoft or any custom OAuth2 adapter'
   },
   {
     original: require('@site/static/img/previews/ai_complete.png').default,
@@ -65,10 +71,40 @@ const images = [
     description: 'Upload your logo, change colors, update titles, make the look to match your brand'
   },
   {
+    original: require('@site/static/img/previews/filters.png').default,
+    title: 'Filters to query your data',
+    link: '/docs/tutorial/Customization/virtualColumns/#virtual-columns-for-filtering',
+    description: 'AdminForth provides basic filters out of the box and allows you to create your own'
+  },
+  {
     original: require('@site/static/img/previews/richeditor.png').default,
     title: 'Rich Editor Plugin - WYSIWYG',
     link: '/docs/tutorial/Plugins/RichEditor/',
     description: 'Attach Rich Editor plugin to your text fields and get WYSIWYG editor for your content'
+  },
+  {
+    original: require('@site/static/img/previews/inplace-edit.png').default,
+    title: 'List in-place edit Plugin for quick edit', 
+    link: '/docs/tutorial/Plugins/list-in-place-edit/',
+    description: 'Edit some oftenly used fields in list directly without opening edit page. Decide which fields to be editable in list view'
+  },
+  {
+    original: require('@site/static/img/previews/inplace-create.png').default,
+    title: 'Inline create Plugin for quick create',
+    link: '/docs/tutorial/Plugins/inline-create/',
+    description: 'For tables with small fields number which should be created massively, use inline create plugin to create records directly in list view'
+  },
+  {
+    original: require('@site/static/img/previews/importexport.png').default,
+    title: 'Import/Export CSV Plugin',
+    link: '/docs/tutorial/Plugins/import-export/',
+    description: 'Export tables to CSV and import from CSV with one click. Move data between environments easily'
+  },
+  {
+    original: require('@site/static/img/previews/translate.png').default,
+    title: 'AI Translation Plugin - translate your admin and External apps',
+    link: '/docs/tutorial/Plugins/i18n/',
+    description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
   }
 ];
 

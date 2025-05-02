@@ -9,9 +9,11 @@ import TextCompletePlugin from "../../plugins/adminforth-text-complete";
 import UploadPlugin from "../../plugins/adminforth-upload";
 import ImportExportPlugin from "../../plugins/adminforth-import-export/index.js";
 import { v1 as uuid } from "uuid";
+import { admin } from '../index.js';
 import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
+import ImageGenerationAdapterOpenAI from "../../adapters/adminforth-image-generation-adapter-openai/index.js";
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -186,6 +188,16 @@ export default {
       editingNote: "Upload image of apartment",
     },
     {
+      name: "apartment_source",
+      showIn: {
+        all: true,
+        show: () => true,
+        filter: false,
+      },
+      required: false,
+      editingNote: "Upload image of apartment",
+    },
+    {
       name: "price",
       showIn: {create: true, edit: true, filter: true, show: true},
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
@@ -281,24 +293,53 @@ export default {
               return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },
             generation: {
-              provider: "openai-dall-e",
-              countToGenerate: 2,
-              openAiOptions: {
-                model: "dall-e-3",
-                size: "1792x1024",
-                apiKey: process.env.OPENAI_API_KEY as string,
-              },
-              fieldsForContext: ["title"],
-              rateLimit: {
-                limit: "2/1m",
-                errorMessage:
-                  "For demo purposes, you can generate only 2 images per minute",
-              },
+              adapter: new ImageGenerationAdapterOpenAI({
+                openAiApiKey: process.env.OPENAI_API_KEY as string,
+              }),
+              
+              // attachFiles: ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
+              //   // attach apartment source image to generation, image should be public
+              //   return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+              // },
+              generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
+              countToGenerate: 1,
+              outputSize: '1024x1024',
+              // rateLimit: {
+              //   limit: "2/1m",
+              //   errorMessage:
+              //     "For demo purposes, you can generate only 2 images per minute",
+              // },
             },
             preview: {
               // Used to display preview (if it is image) in list and show views
               // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-              showInList: true,
+              maxWidth: "200px",
+            },
+          }),
+          new UploadPlugin({
+            pathColumnName: "apartment_source",
+            s3Bucket: "tmpbucket-adminforth",
+            s3Region: "eu-central-1",
+            allowedFileExtensions: [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webm",
+              "exe",
+              "webp",
+            ],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            s3ACL: 'public-read', // ACL which will be set to uploaded file
+            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+              console.log("🔥", JSON.stringify(record));
+              return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
+            },
+            preview: {
+              // Used to display preview (if it is image) in list and show views
+              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
               maxWidth: "200px",
             },
           }),
@@ -314,36 +355,29 @@ export default {
         openAiApiKey: process.env.OPENAI_API_KEY as string,
       }),
     }),
-    // new TextCompletePlugin({
-    //   openAiApiKey: process.env.OPENAI_API_KEY as string,
-    //   fieldName: 'description',
-    //   expert: {
-    //     debounceTime: 250,
-    //   }
-    // }),
-    // new RichEditorPlugin({
-    //   htmlFieldName: "description",
-    //   completion: {
-    //     adapter: new CompletionAdapterOpenAIChatGPT({
-    //       openAiApiKey: process.env.OPENAI_API_KEY as string,
-    //     }),
-    //     expert: {
-    //       debounceTime: 250,
-    //     },
-    //   },
-    //   // requires to have table 'description_images' with upload plugin installed on attachment field
+    new RichEditorPlugin({
+      htmlFieldName: "description",
+      completion: {
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+        }),
+        expert: {
+          debounceTime: 250,
+        },
+      },
+      // requires to have table 'description_images' with upload plugin installed on attachment field
 
-    //   ...(process.env.AWS_ACCESS_KEY_ID
-    //     ? {
-    //         attachments: {
-    //           attachmentResource: "description_images",
-    //           attachmentFieldName: "image_path",
-    //           attachmentRecordIdFieldName: "record_id",
-    //           attachmentResourceIdFieldName: "resource_id",
-    //         },
-    //       }
-    //     : {}),
-    // }),
+      ...(process.env.AWS_ACCESS_KEY_ID
+        ? {
+            attachments: {
+              attachmentResource: "description_images",
+              attachmentFieldName: "image_path",
+              attachmentRecordIdFieldName: "record_id",
+              attachmentResourceIdFieldName: "resource_id",
+            },
+          }
+        : {}),
+    }),
   ],
 
   options: {
@@ -388,7 +422,7 @@ export default {
         confirm:
           "Are you sure you want to mark all selected apartments as listed?",
         action: async function ({ selectedIds, adminUser }: any) {
-          const stmt = db.prepare(
+          const stmt = admin.resource('aparts').dataConnector.client.prepare(
             `UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds
               .map(() => "?")
               .join(",")})`

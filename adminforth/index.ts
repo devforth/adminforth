@@ -144,7 +144,7 @@ class AdminForth implements IAdminForth {
 
    
 
-    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} starting up`)
+    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
   }
 
   formatAdminForth() {
@@ -389,9 +389,9 @@ class AdminForth implements IAdminForth {
     }
     const users = await this.connectors[resource.dataSource].getData({
       resource,
-      filters: [
+      filters: { operator: AdminForthFilterOperators.AND, subFilters: [
         { field: resource.columns.find((col) => col.primaryKey).name, operator: AdminForthFilterOperators.EQ, value: pk },
-      ],
+      ]},
       limit: 1,
       offset: 0,
       sort: [],

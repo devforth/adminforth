@@ -28,6 +28,8 @@ export enum AdminForthFilterOperators {
   ILIKE = 'ilike',
   IN = 'in',
   NIN = 'nin',
+  AND = 'and',
+  OR = 'or',
 };
 
 export enum AdminForthSortDirections {
@@ -92,7 +94,14 @@ export interface AdminForthBulkActionCommon {
    * Label for action button which will be displayed in the list view
    */
   label: string,
-  state: string,
+
+  /**
+   * Bulk Action button state 'danger'|success|'active',
+   *  * 'danger' - red button
+   *  * 'success' - green button
+   *  * 'active' - blue button
+   **/ 
+  state?: 'danger' | 'success' | 'active';
 
   /**
    * Icon for action button which will be displayed in the list view
@@ -445,6 +454,7 @@ export interface AdminForthResourceInputCommon {
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -555,6 +565,11 @@ export interface AdminForthForeignResourceCommon {
   polymorphicOn?: string,
   unsetLabel?: string,
 }
+
+export type FillOnCreateFunction = (params: {
+  initialRecord: any,
+  adminUser: AdminUser,
+}) => any;
 
 /**
  * Column describes one field in the table or collection in database.
@@ -686,7 +701,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Called on the backend when the record is saved to a database. Value returned by `fillOnCreate` will be saved to the database. 
    */
-  fillOnCreate?: Function,
+  fillOnCreate?: FillOnCreateFunction,
 
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.
@@ -810,6 +825,10 @@ export interface AdminForthResourceColumnInputCommon {
      * If false - will force EQ operator for filter instead of ILIKE.
      */
     substringSearch?: boolean,
+    /**
+     * Boolean value that determines what select input type to display on filter page.
+     */
+    multiselect?: boolean,
   },
 
   /**

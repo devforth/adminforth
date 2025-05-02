@@ -30,9 +30,9 @@ export async function callApi({path, method, body=undefined}: {
       return null;
     } 
     return await r.json();
-  } catch(e){
+  } catch(e) {
     adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Something went wrong, please try again later'),})
-    console.error(`error in callApi ${path}`,e);
+    console.error(`error in callApi ${path}`, e);
   }
 }
 

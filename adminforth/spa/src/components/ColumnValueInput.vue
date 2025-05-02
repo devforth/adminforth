@@ -10,35 +10,39 @@
       :record="currentValues"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:inValidity="$emit('update:inValidity', $event)"
       @update:emptiness="$emit('update:emptiness', $event)"
     />
     <Select
       v-else-if="column.foreignResource"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="columnOptions[column.name] || []"
+      teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
     <Select
       v-else-if="column.enum"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="column.enum"
+      teleportToBody
       :modelValue="value"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
     <Select
       v-else-if="(type || column.type) === 'boolean'"
       ref="input"
-      class="w-full"
+      class="w-full min-w-24"
       :options="getBooleanOptions(column)"
+      teleportToBody
       :modelValue="value"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
     <Input
@@ -52,7 +56,7 @@
       :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
@@ -63,7 +67,7 @@
       :valueStart="value"
       auto-hide
       @update:valueStart="$emit('update:modelValue', $event)"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <Input
       v-else-if="['decimal', 'float'].includes(type || column.type)"
@@ -78,7 +82,7 @@
       :suffix="column.inputSuffix"
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
@@ -87,7 +91,7 @@
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
-      :readonly="column.editReadonly && source === 'edit'"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <textarea
       v-else-if="['json'].includes(type || column.type)"
@@ -109,7 +113,7 @@
       @update:modelValue="$emit('update:modelValue', $event)"
       autocomplete="false"
       data-lpignore="true"
-      readonly
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
       @focus="onFocusHandler($event, column, source)"
     />
 
@@ -158,10 +162,12 @@
       columnOptions: any,
       unmasked: any,
       deletable?: boolean,
+      readonly?: boolean,
     }>(),
     {
       type: undefined,
       deletable: false,
+      readonly: false,
     }
   );
 
@@ -172,7 +178,7 @@
       { label: t('Yes'), value: true },
       { label: t('No'), value: false },
     ];
-    if (!column.required[props.mode]) {
+    if (!column.required[props.mode] && !column.isArray?.enabled) {
       options.push({ label: t('Unset'), value: null });
     }
     return options;

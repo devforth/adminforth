@@ -4,7 +4,7 @@ import AdminForth, {
 } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "../../plugins/adminforth-i18n";
-import { v1 as uuid } from "uuid";
+import { randomUUID } from "crypto";
 
 
 export default {
@@ -19,7 +19,7 @@ export default {
       // supportedLanguages: ['en', 'uk', 'ja', 'fr'],
       // supportedLanguages: ['en', 'uk'],
 
-      supportedLanguages: ['en', 'uk', 'ar', 'ru', 'zh', 'es', 'hi', 'bn', 'pt', 'ja', 'de', 'tr', 'fr', 'pa', 'ko', 'ur', 'az', 'vi', 'it'],
+      supportedLanguages: ['zh', 'es', 'en', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
 
       // names of the fields in the resource which will store translations
       translationFieldNames: {
@@ -67,7 +67,7 @@ export default {
 
   ],
   options: {
-    listPageSize: 30,
+    listPageSize: 100,
     allowedActions: {
       edit: true,
     }
@@ -75,7 +75,7 @@ export default {
   columns: [
     {
       name: "id",
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       primaryKey: true,
       showIn: [],
     },
@@ -83,12 +83,15 @@ export default {
       name: "en_string",
       type: AdminForthDataTypes.STRING,
       label: "English",
+      required: true,
+      editingNote: "This is the original string in English. It will be used as a reference for translation.",
     },
     {
       name: "created_at",
       fillOnCreate: ({ initialRecord, adminUser }: any) => new Date().toISOString(),
       showIn: {
-        create: false,
+        all: false,
+        show: true,
       },
     },
     { name: "uk_string", type: AdminForthDataTypes.STRING, label: "Ukrainian" },

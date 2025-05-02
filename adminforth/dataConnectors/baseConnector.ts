@@ -1,13 +1,14 @@
 import { 
   AdminForthResource, IAdminForthDataSourceConnectorBase, 
   AdminForthResourceColumn, 
-  IAdminForthSort, IAdminForthFilter 
+  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter 
 } from "../types/Back.js";
 
 
 
 import { suggestIfTypo } from "../modules/utils.js";
-import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { randomUUID } from "crypto";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -15,7 +16,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   client: any;
 
   get db() {
-    console.warn('db is deprecated, use client instead');
+    console.warn('.db is deprecated, use .client instead');
     return this.client;
   }
 
@@ -32,14 +33,131 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }
 
   async getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, id: string): Promise<any> {
-    const data = await this.getDataWithOriginalTypes({ 
-      resource, 
-      limit: 1, 
+    const data = await this.getDataWithOriginalTypes({
+      resource,
+      limit: 1,
       offset: 0,
-      sort: [], 
-      filters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }],
+      sort: [],
+      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }]},
     });
     return data.length > 0 ? data[0] : null;
+  }
+
+  validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
+    if (!filter) {
+      // if no filter, return empty "and" filter
+      return { operator: AdminForthFilterOperators.AND, subFilters: [] };
+    }
+    if (typeof filter !== 'object') {
+      throw new Error(`Filter should be an array or an object`);
+    }
+    if (Array.isArray(filter)) {
+      // if filter is an array, combine them using "and" operator
+      return { operator: AdminForthFilterOperators.AND, subFilters: filter };
+    }
+    if ((filter as IAdminForthAndOrFilter).subFilters) {
+      // if filter is already AndOr filter - return as is
+      return filter as IAdminForthAndOrFilter;
+    }
+
+    // by default, assume filter is Single filter, turn it into AndOr filter
+    return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
+  }
+
+  validateAndNormalizeFilters(filters: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, resource: AdminForthResource): { ok: boolean, error: string } {
+    if (Array.isArray(filters)) {
+      // go through all filters in array and call validation+normalization for each
+      // as soon as error is encountered, there is no point in calling validation for other filters
+      // if error is not encountered all filters will be validated and normalized
+      return filters.reduce((result, f, fIndex) => {
+        if (!result.ok) {
+          return result;
+        }
+
+        const filterValidation = this.validateAndNormalizeFilters(f, resource);
+
+        // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
+        if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
+          const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
+          // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
+          if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
+            filters[fIndex] = {
+              operator: AdminForthFilterOperators.OR,
+              subFilters: f.value.map((v: any) => {
+                return { field: column.name, operator: AdminForthFilterOperators.LIKE, value: v };
+              }),
+            };
+          }
+        }
+
+        return filterValidation;
+      }, { ok: true, error: '' });
+    }
+
+    if ((filters as IAdminForthSingleFilter).field) {
+      // if "field" is present, filter must be Single
+      if (!filters.operator) {
+        return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).value === undefined) {
+        return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+        return { ok: false, error: `Field "insecureRawSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
+      }
+      if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
+      AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
+      AdminForthFilterOperators.LIKE, AdminForthFilterOperators.ILIKE, AdminForthFilterOperators.IN,
+      AdminForthFilterOperators.NIN].includes(filters.operator)) {
+        return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
+      }
+      const fieldObj = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field);
+      if (!fieldObj) {
+        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), (filters as IAdminForthSingleFilter).field);
+        throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+      }
+      // value normalization
+      if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
+        if (!Array.isArray(filters.value)) {
+          return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
+        }
+        if (filters.value.length === 0) {
+          // nonsense, and some databases might not accept IN []
+          const colType = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field)?.type;
+          if (colType === AdminForthDataTypes.STRING || colType === AdminForthDataTypes.TEXT) {
+            filters.value = [randomUUID()];
+            return { ok: true,  error: `` };
+          } else {
+            return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
+          }
+        }
+        filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
+      } else {
+        (filters as IAdminForthSingleFilter).value = this.setFieldValue(fieldObj, (filters as IAdminForthSingleFilter).value);
+      }
+    } else if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+      // if "insecureRawSQL" filter is insecure sql string
+      if ((filters as IAdminForthSingleFilter).operator) {
+        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      }
+      if ((filters as IAdminForthSingleFilter).value !== undefined) {
+        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      }
+    } else if ((filters as IAdminForthAndOrFilter).subFilters) {
+      // if "subFilters" is present, filter must be AndOr
+      if (!filters.operator) {
+        return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
+      }
+      if (![AdminForthFilterOperators.AND, AdminForthFilterOperators.OR].includes(filters.operator)) {
+        return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
+      }
+
+      return this.validateAndNormalizeFilters((filters as IAdminForthAndOrFilter).subFilters, resource);
+    } else {
+      return { ok: false, error: `Fields "field" or "subFilters" are not specified in filter object: ${JSON.stringify(filters)}` };
+    }
+
+    return { ok: true, error: '' };
   }
 
   getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
@@ -47,12 +165,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     limit: number, 
     offset: number, 
     sort: IAdminForthSort[], 
-    filters: IAdminForthFilter[],
+    filters: IAdminForthAndOrFilter,
   }): Promise<any[]> {
     throw new Error('Method not implemented.');
   }
 
-  getCount({ resource, filters }: { resource: AdminForthResource; filters: { field: string; operator: AdminForthFilterOperators; value: any; }[]; }): Promise<number> {
+  getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {
     throw new Error('Method not implemented.');
   }
 
@@ -72,7 +190,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<void> {
+  createRecordOriginalValues({ resource, record }: { resource: AdminForthResource; record: any; }): Promise<string> {
     throw new Error('Method not implemented.');
   }
 
@@ -80,7 +198,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
     const existingRecord = await this.getData({
       resource,
-      filters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }],
+      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }]},
       limit: 1,
       sort: [],
       offset: 0,
@@ -94,6 +212,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
+
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
 
@@ -106,9 +225,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           });
         }
       }
-      recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+      if (filledRecord[col.name] !== undefined) {
+        // no sense to set value if it is not defined
+        recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+      }
     }
-    
+
     let error: string | null = null;
     await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
@@ -125,12 +247,22 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       return { error, ok: false };
     }
 
-    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record', recordWithOriginalValues);
-    await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
+    let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
+    if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
+      // some data sources always return some value for pk, even if it is was not auto generated
+      // this check prevents wrong value from being used later in get request
+      pkValue = recordWithOriginalValues[this.getPrimaryKey(resource)];
+    }
+
+    let createdRecord = recordWithOriginalValues;
+    if (pkValue) {
+      createdRecord = await this.getRecordByPrimaryKey(resource, pkValue);
+    }
 
     return {
       ok: true,
-      createdRecord: recordWithOriginalValues,
+      createdRecord,
     }
   }
 
@@ -166,38 +298,19 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-
   async getData({ resource, limit, offset, sort, filters, getTotals }: { 
     resource: AdminForthResource, 
     limit: number, 
     offset: number, 
     sort: { field: string, direction: AdminForthSortDirections }[], 
-    filters: { field: string, operator: AdminForthFilterOperators, value: any }[],
+    filters: IAdminForthAndOrFilter,
     getTotals: boolean,
   }): Promise<{ data: any[], total: number }> {
     if (filters) {
-      for (const f of filters) {
-        if (!f.field) {
-          throw new Error(`Field "field" not specified in filter object: ${JSON.stringify(f)}`);
-        }
-        if (!f.operator) {
-          throw new Error(`Field "operator" not specified in filter object: ${JSON.stringify(f)}`);
-        }
-        const fieldObj = resource.dataSourceColumns.find((col) => col.name == f.field);
-        if (!fieldObj) {
-          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), f.field);
-          throw new Error(`Field '${f.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
-        }
-        if (f.operator == AdminForthFilterOperators.IN || f.operator == AdminForthFilterOperators.NIN) {
-          f.value = f.value.map((val) => this.setFieldValue(fieldObj, val));
-        } else {
-          f.value = this.setFieldValue(fieldObj, f.value);
-        }
-        if (f.operator === AdminForthFilterOperators.IN && f.value.length === 0) {
-          // nonsense
-          return { data: [], total: 0 };
-        }
-      };
+      const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+      if (!filterValidation.ok) {
+        throw new Error(filterValidation.error);
+      }
     }
 
     const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters })];

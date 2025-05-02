@@ -1,6 +1,7 @@
 # OAuth Authentication
 
-The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, or other OAuth2 provider accounts.
+The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, Facebook or other OAuth2 provider accounts. 
+Optionaly, you can also enable open signup for new users and assign some default attributes, for example low-permission role for users who will sign up using OAuth.
 
 ## Installation
 
@@ -13,12 +14,13 @@ npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 
 ## Configuration
 
-### 1. OAuth Provider Setup
+This section provides a step-by-step guide to configure the OAuth plugin for Google authentication. See [OAuth2 Providers](#oauth2-providers) for other providers.
+
+### 1. OAuth Provider Setup (Google Example)
 
 You need to get the client ID and client secret from your OAuth2 provider.
 
-For Google:
-1. Go to the [Google Cloud Console](https://console.cloud.google.com)
+1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
 2. Create a new project or select an existing one
 3. Go to `APIs & Services` → `Credentials`
 4. Create credentials for OAuth 2.0 client IDs
@@ -31,6 +33,7 @@ For Google:
 GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
 GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
 ```
+
 
 ### 2. Plugin Configuration
 
@@ -128,5 +131,185 @@ new OAuthPlugin({
 ```
 
 
+## OAuth2 Providers
 
 
+### Facebook Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/facebook-oauth-adapter --save
+```
+
+
+1. Go to the [Facebook Developers](https://developers.facebook.com/)
+2. Go to `My apps`
+3. Create a new project or select an existing one (choose Authenticate and request data from users with Facebook Login)
+4. Go to `Use Cases` - `Authenticate and request data from users with Facebook Login` -> `Customize` and add email permissions 
+5. Go to `App Settings` -> `Basic`
+6. Get App ID and App secret
+7. Add the credentials to your `.env` file:
+
+```bash
+FACEBOOK_OAUTH_CLIENT_ID=your_facebook_client_id
+FACEBOOK_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterFacebookOauth2 from '@adminforth/facebook-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterFacebookOauth2({
+        clientID: process.env.FACEBOOK_OAUTH_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### GitHub Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/github-oauth-adapter --save
+```
+
+
+1. Go to the [GitHub Apps](https://github.com/settings/apps)
+2. Create a new app or select an existing one
+3. Go to the `Permisiions & events` -> `Account permissions` -> `Email addresses` and change to `Read-only`
+3. Go to the `General` and click to `Generate a new client secret` button and copy secret
+4. Add the credentials to your `.env` file:
+
+```bash
+GITHUB_OAUTH_CLIENT_ID=your_facebook_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterGithubOauth2 from '@adminforth/github-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterGithubOauth2({
+        clientID: process.env.GITHUB_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### Kaycloack Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/keycloak-oauth-adapter --save
+```
+
+If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](/blog/keycloak-setup-example).
+
+1. Update your `.env` file with the following Keycloak configuration:
+
+```bash
+KEYCLOAK_CLIENT_ID=your_keycloak_client_id
+KEYCLOAK_CLIENT_SECRET=your_keycloak_client_secret
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=your_keycloak_realm
+```
+
+2. Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterKeycloakOauth2 from '@adminforth/keycloak-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterKeycloakOauth2({
+          name: "Keycloak",
+          clientID: process.env.KEYCLOAK_CLIENT_ID,
+          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+          keycloakUrl: process.env.KEYCLOAK_URL,
+          realm: process.env.KEYCLOAK_REALM,
+          useOpenID: true,
+      }),
+    ],
+  }),
+]
+```
+
+### Microsoft Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/microsoft-oauth-adapter --save
+```
+
+
+1. In the Microsoft [Azure Portal](https://portal.azure.com/), search for and click [App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade), then `New registration`.
+2. Give your application a name. This name will be visible to your users.
+3. Set the audience for the app to `Accounts in my organizational directory and personal Microsoft accounts`. This allows your user to log in using any Microsoft account.
+5. Set the Redirect URI platform to Web and enter your project's redirect URI.
+6. Go to your app and search `API permissions`, click `Add a permission`, select `Microsoft Graph`, select `Delegated permissions`, enable permissions: `offline_access`, `openid`, `profile`, `User.Read`, click `Add permissions`.
+7. Serch `Certificates & secrets`, click `New client secret` and create client secret.
+6. Get Application ID and Client Secret.
+7. Add the credentials to your `.env` file:
+
+```bash
+MICROSOFT_OAUTH_CLIENT_ID=your_application_id
+MICROSOFT_OAUTH_CLIENT_SECRET=your_microsoft_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterMicrosoftOauth2 from '@adminforth/microsoft-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterMicrosoftOauth2({
+        clientID: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        useOpenID: true,
+      }),
+    ],
+  }),
+]
+```
+
+### Need custom provider?
+
+Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 
+
+This is really easy, you have to change less then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
+
+Then just publish it to npm and install it in your project.
+
+
+Links to adapters:
+[Google](https://github.com/devforth/adminforth-google-oauth-adapter)
+[GitHub](https://github.com/devforth/adminforth-github-oauth-adapter)
+[Facebook](https://github.com/devforth/adminforth-facebook-oauth-adapter)
+[Keycloak](https://github.com/devforth/adminforth-keycloak-oauth-adapter)

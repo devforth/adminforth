@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { IAdminForthDataSourceConnector, AdminForthResource } from '../types/Back.js';
+import { Decimal128 } from 'bson';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
@@ -37,6 +38,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         [AdminForthFilterOperators.ILIKE]: (value) => ({ $regex: escapeRegex(value), $options: 'i' }),
         [AdminForthFilterOperators.IN]: (value) => ({ $in: value }),
         [AdminForthFilterOperators.NIN]: (value) => ({ $nin: value }),
+        [AdminForthFilterOperators.AND]: (value) => ({ $and: value }),
+        [AdminForthFilterOperators.OR]: (value) => ({ $or: value }),
     };
 
     SortDirectionsMap = {
@@ -83,7 +86,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(Date.parse(value)).toISOString().split('T')[0];
 
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return !!value;
+          return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return value?.toString();
         }
@@ -105,17 +108,27 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(value).toISOString();
           }
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value ? true : false;
+            return value === null ? null : (value ? true : false);
+        } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            return Decimal128.fromString(value?.toString());
         }
         return value;
     }
 
-    async genQuery({ filters }) {
-        const query = {};
-        for (const filter of filters) {
-            query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
+    getFilterQuery(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any {
+        if ((filter as IAdminForthSingleFilter).field) {
+            const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
+            if (['integer', 'decimal', 'float'].includes(column.type)) {
+                return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
+            }
+            return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
         }
-        return query;
+
+        // filter is a AndOr filter
+        return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters
+            // mongodb should ignore raw sql
+            .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
+            .map((f) => this.getFilterQuery(resource, f)));
     }
     
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
@@ -124,15 +137,16 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             limit: number, 
             offset: number, 
             sort: { field: string, direction: AdminForthSortDirections }[], 
-            filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+            filters: IAdminForthAndOrFilter,
         }
     ): Promise<any[]> {
 
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
 
+
         const collection = this.client.db().collection(tableName);
-        const query = await this.genQuery({ filters });
+        const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
 
         const sortArray: any[] = sort.map((s) => {
             return [s.field, this.SortDirectionsMap[s.direction]];
@@ -148,15 +162,18 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async getCount({ resource, filters }: { 
-            resource: AdminForthResource, 
-            filters: { field: string, operator: AdminForthFilterOperators, value: any }[] 
+        resource: AdminForthResource,
+        filters: IAdminForthAndOrFilter,
     }): Promise<number> {
-
-        const collection = this.client.db().collection(resource.table);
-        const query = {};
-        for (const filter of filters) {
-            query[filter.field] = this.OperatorsMap[filter.operator](filter.value);
+        if (filters) {
+            // validate and normalize in case this method is called from dataAPI
+            const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+            if (!filterValidation.ok) {
+                throw new Error(filterValidation.error);
+            }
         }
+        const collection = this.client.db().collection(resource.table);
+        const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
         return await collection.countDocuments(query);
     }
 
@@ -174,7 +191,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return result;
     }
 
-    async createRecordOriginalValues({ resource, record }) {
+    async createRecordOriginalValues({ resource, record }): Promise<string> {
         const tableName = resource.table;
         const collection = this.client.db().collection(tableName);
         const columns = Object.keys(record);
@@ -182,7 +199,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         for (const colName of columns) {
             newRecord[colName] = record[colName];
         }
-        await collection.insertOne(newRecord);
+        const ret = await collection.insertOne(newRecord);
+        return ret.insertedId;
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
