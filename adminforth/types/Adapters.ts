@@ -141,11 +141,14 @@ export interface OAuth2Adapter {
 
 export interface StorageAdapter {
   /**
-   * This method should return the presigned URL for the given key capable of upload (PUT multipart form data to it).
+   * This method should return the presigned URL for the given key capable of upload (adapter user will call PUT multipart form data to this URL within expiresIn seconds after link generation).
+   * By default file which will be uploaded on PUT should be marked for deletion. So if during 24h it is not marked for not deletion, it adapter should delete it forever.
    * The PUT method should fail if the file already exists.
+   * 
+   * Adapter user will always pass next parameters to the method:
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    * @param expiresIn - The expiration time in seconds for the presigned URL
-   * @param contentType - The content type of the file to be uploaded
+   * @param contentType - The content type of the file to be uploaded, e.g. "image/png"
    * 
    * @returns A promise that resolves to an object containing the upload URL and any extra parameters which should be sent with PUT multipart form data
    */
@@ -155,7 +158,7 @@ export interface StorageAdapter {
   }>;
 
   /**
-   * This method should return the URL for the given key capable of download (200 GET request with response or 200 HEAD request without response).
+   * This method should return the URL for the given key capable of download (200 GET request with response body or 200 HEAD request without response body).
    * If adapter configured to use public storage, this method should return the public URL of the file.
    * If adapter configured to use private storage, this method should return the presigned URL for the file.
    * 
