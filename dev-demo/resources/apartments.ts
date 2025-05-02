@@ -16,6 +16,8 @@ import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion
 import ImageGenerationAdapterOpenAI from "../../adapters/adminforth-image-generation-adapter-openai/index.js";
 import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapter-amazon-s3/index.js";
 import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForth from "../../adminforth";
 
 
 const demoChecker = async ({ record, adminUser, resource }) => {
@@ -24,6 +26,19 @@ const demoChecker = async ({ record, adminUser, resource }) => {
   }
   return { ok: true };
 };
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      AWS_ACCESS_KEY_ID: string;
+      AWS_SECRET_ACCESS_KEY: string;
+      AWS_REGION: string;
+      AWS_BUCKET: string;
+      ADMINFORTH_SECRET: string;
+      OPENAI_API_KEY: string;
+    }
+  }
+}
 
 export default {
   dataSource: "maindb",
@@ -326,13 +341,20 @@ export default {
           new UploadPlugin({
             pathColumnName: "apartment_source",
             
-            storageAdapter: new AdminForthAdapterS3Storage({
-              region: "eu-central-1",
-              bucket: "tmpbucket-adminforth",
-              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-              s3ACL: 'public-read', // ACL which will be set to uploaded file
+            // storageAdapter: new AdminForthAdapterS3Storage({
+            //   region: "eu-central-1",
+            //   bucket: "tmpbucket-adminforth",
+            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            //   s3ACL: 'public-read', // ACL which will be set to uploaded file
+            // }),
+
+            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+              fileSystemFolder: "./db/uploads",
+              mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
+              signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
             }),
+
             allowedFileExtensions: [
               "jpg",
               "jpeg",
@@ -343,7 +365,7 @@ export default {
               "webp",
             ],
             maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
               console.log("🔥", JSON.stringify(record));
               return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },

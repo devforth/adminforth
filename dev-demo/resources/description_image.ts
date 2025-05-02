@@ -1,4 +1,5 @@
 import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapter-amazon-s3";
+import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local";
 import { AdminForthResourceInput } from "../../adminforth";
 import UploadPlugin from "../../plugins/adminforth-upload";
 import { v1 as uuid } from "uuid";
@@ -44,7 +45,7 @@ export default {
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
               s3ACL: 'public-read', // ACL which will be set to uploaded file
             }),
-
+       
             allowedFileExtensions: [
               "jpg",
               "jpeg",
