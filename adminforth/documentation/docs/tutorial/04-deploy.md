@@ -36,10 +36,13 @@ docker run -p 3500:3500 \
 
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
 
+## Automating deployments with CI
+
+If you are looking for a professional way to deploy your AdminForth application, you can follow our blog post [how to deploy your AdminForth application with Terraform From GitHub actions](http://localhost:3000/blog/compose-aws-ec2-ecr-terraform-github-actions/)
+
 ## Adding SSL (https) to AdminForth
 
-There are lots of ways today to put your application behind SSL gateway. You might simply put AdminForth instance behind free Cloudflare CDN,
-change 3500 port to 80 and Cloudflare will automatically add SSL layer and faster CDN for your application.
+There are lots of ways today to put your application behind SSL gateway. You might simply put AdminForth instance behind free Cloudflare CDN, change 3500 port to 80 and Cloudflare will automatically add SSL layer and faster CDN for your application.
 
 However as a bonus here we will give you independent way to add free LetsEncrypt SSL layer to your AdminForth application.
 
