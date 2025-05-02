@@ -14,6 +14,9 @@ import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
 import ImageGenerationAdapterOpenAI from "../../adapters/adminforth-image-generation-adapter-openai/index.js";
+import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapter-amazon-s3/index.js";
+import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
+
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -273,8 +276,14 @@ export default {
       ? [
           new UploadPlugin({
             pathColumnName: "apartment_image",
-            s3Bucket: "tmpbucket-adminforth",
-            s3Region: "eu-central-1",
+
+            storageAdapter: new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }),
             allowedFileExtensions: [
               "jpg",
               "jpeg",
@@ -285,10 +294,8 @@ export default {
               "webp",
             ],
             maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             // s3ACL: 'public-read', // ACL which will be set to uploaded file
-            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
               console.log("🔥", JSON.stringify(record));
               return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },
@@ -318,8 +325,14 @@ export default {
           }),
           new UploadPlugin({
             pathColumnName: "apartment_source",
-            s3Bucket: "tmpbucket-adminforth",
-            s3Region: "eu-central-1",
+            
+            storageAdapter: new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }),
             allowedFileExtensions: [
               "jpg",
               "jpeg",
@@ -330,9 +343,6 @@ export default {
               "webp",
             ],
             maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            s3ACL: 'public-read', // ACL which will be set to uploaded file
             s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
               console.log("🔥", JSON.stringify(record));
               return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
