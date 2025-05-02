@@ -118,21 +118,17 @@ export const admin = new AdminForth({
   //diff-add
     new UploadPlugin({
     //diff-add
-      storage: {
+      storageAdapter: new AdminForthAdapterS3Storage({
       //diff-add
-        adapter: new AdminForthAdapterS3Storage({
-        //diff-add
-          bucket: process.env.AWS_BUCKET_NAME as string,
-        //diff-add
-          region: process.env.AWS_REGION as string,
-        //diff-add
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        //diff-add
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        bucket: process.env.AWS_BUCKET_NAME as string,
       //diff-add
-        }),
+        region: process.env.AWS_REGION as string,
+      //diff-add
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //diff-add
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
     //diff-add
-      },
+      }),
     //diff-add
       pathColumnName: 'apartment_image',
     //diff-add
@@ -198,16 +194,14 @@ Then you can change ACL in plugin configuration:
 ```ts title="./index.ts"
 
   new UploadPlugin({
-    storage: {
-      adapter: new AdminForthAdapterS3Storage({
+      storageAdapter: new AdminForthAdapterS3Storage({
         bucket: process.env.AWS_BUCKET_NAME as string,
         region: process.env.AWS_REGION as string,
         accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
 //diff-add
-          s3ACL: 'public-read',
-        }),
-      },
+        s3ACL: 'public-read',
+      }),
       pathColumnName: 'apartment_image',
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -369,15 +363,13 @@ You can set the maximum width for the preview image in the `./resources/apartmen
 ```ts title="./resources/apartments.ts"
   ...
   new UploadPlugin({
-    storage: {
-      adapter: new AdminForthAdapterS3Storage({
+    storageAdapter: new AdminForthAdapterS3Storage({
         bucket: process.env.AWS_BUCKET_NAME as string,
         region: process.env.AWS_REGION as string,
         accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
         s3ACL: "public-read",
-      }),
-    },
+    }),
     pathColumnName: 'apartment_image',
     allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
     maxFileSize: 5 * 1024 * 1024, // 5MB
