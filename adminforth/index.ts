@@ -125,6 +125,10 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
+    if (global.adminforth) {
+      throw new Error('AdminForth instance already created in this process. '+
+        'If you want to use multiple instances, consider using different process for each instance');
+    }
     this.codeInjector = new CodeInjector(this);
     this.configValidator = new ConfigValidator(this, config);
     this.restApi = new AdminForthRestAPI(this);
@@ -145,6 +149,7 @@ class AdminForth implements IAdminForth {
    
 
     console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    global.adminforth = this;
   }
 
   formatAdminForth() {

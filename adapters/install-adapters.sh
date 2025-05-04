@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses adminforth-google-oauth-adapter adminforth-github-oauth-adapter adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter adminforth-microsoft-oauth-adapter adminforth-image-generation-adapter-openai"
+ADAPTERS="adminforth-completion-adapter-open-ai-chat-gpt adminforth-email-adapter-aws-ses adminforth-google-oauth-adapter adminforth-github-oauth-adapter adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter adminforth-microsoft-oauth-adapter adminforth-image-generation-adapter-openai adminforth-storage-adapter-amazon-s3 adminforth-storage-adapter-local"
 
 # for each
 install_adapter() {
