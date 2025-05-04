@@ -129,7 +129,7 @@ class CodeInjector implements ICodeInjector {
     });
     process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
 
-    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
+    // process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
     if (err) {
       process.env.HEAVY_DEBUG && console.error(`🪲npm ${command} errors/warnings:`, err);
     }

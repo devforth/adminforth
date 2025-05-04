@@ -14,6 +14,12 @@ import RichEditorPlugin from "../../plugins/adminforth-rich-editor";
 import { AdminForthResourceInput } from "../../adminforth";
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
 import ImageGenerationAdapterOpenAI from "../../adapters/adminforth-image-generation-adapter-openai/index.js";
+import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapter-amazon-s3/index.js";
+import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForth from "../../adminforth";
+import { StorageAdapter } from "../../adminforth";
+
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -21,6 +27,21 @@ const demoChecker = async ({ record, adminUser, resource }) => {
   }
   return { ok: true };
 };
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      AWS_ACCESS_KEY_ID: string;
+      AWS_SECRET_ACCESS_KEY: string;
+      AWS_REGION: string;
+      AWS_BUCKET: string;
+      ADMINFORTH_SECRET: string;
+      OPENAI_API_KEY: string;
+    }
+  }
+}
+
+let sourcesAdapter: StorageAdapter;
 
 export default {
   dataSource: "maindb",
@@ -273,8 +294,14 @@ export default {
       ? [
           new UploadPlugin({
             pathColumnName: "apartment_image",
-            s3Bucket: "tmpbucket-adminforth",
-            s3Region: "eu-central-1",
+
+            storageAdapter: new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }),
             allowedFileExtensions: [
               "jpg",
               "jpeg",
@@ -285,10 +312,8 @@ export default {
               "webp",
             ],
             maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             // s3ACL: 'public-read', // ACL which will be set to uploaded file
-            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
               console.log("🔥", JSON.stringify(record));
               return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },
@@ -297,10 +322,14 @@ export default {
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
               }),
               
-              // attachFiles: ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
-              //   // attach apartment source image to generation, image should be public
-              //   return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
-              // },
+              attachFiles: async ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
+                // attach apartment source image to generation, image should be public
+                return [
+                  await sourcesAdapter.getKeyAsDataURL(record.apartment_source)
+                ];
+                    
+                // return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+              },
               generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
               countToGenerate: 1,
               outputSize: '1024x1024',
@@ -318,8 +347,23 @@ export default {
           }),
           new UploadPlugin({
             pathColumnName: "apartment_source",
-            s3Bucket: "tmpbucket-adminforth",
-            s3Region: "eu-central-1",
+            
+            storageAdapter: (sourcesAdapter = new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+              s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }), sourcesAdapter),
+
+            // storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+            //   fileSystemFolder: "./db/uploads", // folder where files will be stored on disk
+            //   adminServeBaseUrl: "static/source", // the adapter not only stores files, but also serves them for HTTP requests
+            //      // this optional path allows to set the base URL for the files. Should be unique for each adapter if set.
+            //   mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
+            //   signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
+            // }), sourcesAdapter),
+
             allowedFileExtensions: [
               "jpg",
               "jpeg",
@@ -330,10 +374,7 @@ export default {
               "webp",
             ],
             maxFileSize: 1024 * 1024 * 20, // 5MB
-            s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            s3ACL: 'public-read', // ACL which will be set to uploaded file
-            s3Path: ({ originalFilename, originalExtension, contentType, record }) => {
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
               console.log("🔥", JSON.stringify(record));
               return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },
