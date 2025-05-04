@@ -18,6 +18,7 @@ import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapte
 import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForth from "../../adminforth";
+import { StorageAdapter } from "../../adminforth";
 
 
 const demoChecker = async ({ record, adminUser, resource }) => {
@@ -39,6 +40,8 @@ declare global {
     }
   }
 }
+
+let sourcesAdapter: StorageAdapter;
 
 export default {
   dataSource: "maindb",
@@ -319,10 +322,14 @@ export default {
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
               }),
               
-              // attachFiles: ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
-              //   // attach apartment source image to generation, image should be public
-              //   return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
-              // },
+              attachFiles: async ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
+                // attach apartment source image to generation, image should be public
+                return [
+                  await sourcesAdapter.getKeyAsDataURL(record.apartment_source)
+                ];
+                    
+                // return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+              },
               generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
               countToGenerate: 1,
               outputSize: '1024x1024',
@@ -341,19 +348,21 @@ export default {
           new UploadPlugin({
             pathColumnName: "apartment_source",
             
-            // storageAdapter: new AdminForthAdapterS3Storage({
-            //   region: "eu-central-1",
-            //   bucket: "tmpbucket-adminforth",
-            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            //   s3ACL: 'public-read', // ACL which will be set to uploaded file
-            // }),
+            storageAdapter: (sourcesAdapter = new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+              s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }), sourcesAdapter),
 
-            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-              fileSystemFolder: "./db/uploads",
-              mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
-              signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
-            }),
+            // storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+            //   fileSystemFolder: "./db/uploads", // folder where files will be stored on disk
+            //   adminServeBaseUrl: "static/source", // the adapter not only stores files, but also serves them for HTTP requests
+            //      // this optional path allows to set the base URL for the files. Should be unique for each adapter if set.
+            //   mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
+            //   signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
+            // }), sourcesAdapter),
 
             allowedFileExtensions: [
               "jpg",

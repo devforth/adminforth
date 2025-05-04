@@ -358,6 +358,59 @@ generation: {
 }
 ```
 
+`attachFiles` function can return an array of URLs to images which will be used as input for image generation. 
+URLs can be absolute HTTP URLs (should be public in this case) or data-URLs (`data:image/png;base64,<base64 content of image>`).
+
+For example you can use `getKeyAsDataURL` function from any storage adapter to get image as data-URL:
+
+```ts title="./apartments.ts"
+
+import { StorageAdapter } from 'adminforth'
+
+let sourceAdapter: StorageAdapter = null;
+
+columns: [
+  ...
+  {
+    name: 'source_image',
+  },
+  {
+    name: 'destination_image',
+  }
+],
+plugins: [ 
+  ...
+  new UploadPlugin({
+    pathColumnName: 'apartment_source',
+    storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+      fileSystemFolder: "./db/uploads",
+      mode: "public",
+      signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
+    }), sourcesAdapter),
+  }),
+  new UploadPlugin({
+    pathColumnName: 'apartment_image',
+    storageAdapter: new AdminForthAdapterLocalFilesystem({
+      fileSystemFolder: "./db/uploads",
+      mode: "public",
+      signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
+    }),
+    generation: {
+      attachFiles: ({ record }) => {
+        // get picture stored in apartment_source column as data-URL
+        return [sourceAdapter.getKeyAsDataURL(record.apartment_source)];
+      },
+      generationPrompt: "Remove text from the image",
+      countToGenerate: 3,
+      outputSize: '1024x1024',
+    }
+  })
+]
+```
+
+With thus setup you can upload image to `apartment_source` column, save entity and then generate new image by clicking on `Generate` button in the `apartment_image` to remove any text from the image.
+
+
 ### Rate limits
 
 You can set rate limits for image generation per IP address:

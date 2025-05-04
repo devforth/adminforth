@@ -201,6 +201,13 @@ export interface StorageAdapter {
    * If adapter is configured to publically, this method should return true.
    */
   objectCanBeAccesedPublicly(): Promise<boolean>;
+
+  /**
+   * This method should return the key as a data URL (base64 encoded string).
+   * @param key - The key of the file to be converted to a data URL
+   * @returns A promise that resolves to a string containing the data URL
+   */
+  getKeyAsDataURL(key: string): Promise<string>;
 }
 
   
