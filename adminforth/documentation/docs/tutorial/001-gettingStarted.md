@@ -19,13 +19,6 @@ nvm use 20
 
 The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management.
 
-First, create and enter a directory where you want your AdminForth project to live. For instance:
-
-```bash
-mkdir myadmin
-cd myadmin
-```
-
 You can provide options directorly:
 
 ```bash
@@ -36,6 +29,12 @@ Or omit them to be prompted interactively:
 
 ```bash
 npx adminforth create-app
+```
+
+Once the project is created, navigate into its directory:
+
+```bash
+cd myadmin # or any other name you provided
 ```
 
 CLI options:
