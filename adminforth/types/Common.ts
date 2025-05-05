@@ -813,6 +813,10 @@ export interface AdminForthResourceColumnInputCommon {
    */
   foreignResource?: AdminForthForeignResourceCommon,
 
+  /**
+   * Whether to allow this column to be sortable in list view.
+   * If true, AdminForth will add sorting buttons to the column header in list view and clicking on it will change sorting state of the column.
+   */
   sortable?: boolean,
 
   
