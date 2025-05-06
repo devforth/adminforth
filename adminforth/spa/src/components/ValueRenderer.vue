@@ -69,9 +69,6 @@
     <span v-else-if="column.type === 'time'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatTime(record[column.name]), route.meta.type) }}
     </span>
-    <span v-else-if="column.type === 'richtext'">
-      <div v-html="protectAgainstXSS(record[column.name])" class="allow-lists"></div>
-    </span>
     <span v-else-if="column.type === 'decimal'">
       {{ checkEmptyValues(record[column.name] && parseFloat(record[column.name]), route.meta.type) }}
     </span>

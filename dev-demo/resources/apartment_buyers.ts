@@ -101,8 +101,11 @@ export default {
     {
       name: 'info',
       sortable: false,
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
       showIn: { list: false },
+      components: {
+        show: "@/renderers/RichText.vue",
+      },
     },
     {
       name: 'contact_info',
