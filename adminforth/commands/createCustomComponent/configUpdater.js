@@ -202,7 +202,12 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
         const outputCode = recast.print(ast).code;
 
         await fs.writeFile(filePath, outputCode, 'utf-8');
-        console.log(chalk.dim(`Successfully updated resource configuration file (preserving formatting): ${filePath}:${injectionLine}`));
+        console.log(
+          chalk.green(
+            `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
+            (injectionLine !== null ? `:${injectionLine}` : '')
+          )
+        );
 
     } catch (error) {
         console.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
@@ -309,7 +314,12 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
   
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    console.log(chalk.green(`✅ Successfully updated login injection in: ${indexFilePath}:${injectionLine}`));
+    console.log(
+      chalk.green(
+        `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
+        (injectionLine !== null ? `:${injectionLine}` : '')
+      )
+    );
   }
 
 
@@ -402,7 +412,12 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    console.log(chalk.green(`✅ Successfully updated global injection '${injectionType}' in: ${indexFilePath}:${injectionLine}`));
+    console.log(
+      chalk.green(
+        `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
+        (injectionLine !== null ? `:${injectionLine}` : '')
+      )
+    );
 }
 
 export async function updateCrudInjectionConfig(resourceId, crudType, injectionPosition, componentPathForConfig, isThin) {
@@ -487,11 +502,23 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
           ]);
           
           if (injectionProp) {
-            injectionProp.value = newInjectionObject;
-            console.log(chalk.dim(`Updated '${injectionPosition}' injection for '${crudType}'.`));
+            if (n.ArrayExpression.check(injectionProp.value)) {
+              injectionProp.value.elements.push(newInjectionObject);
+              console.log(chalk.dim(`Appended new injection to array at '${injectionPosition}' for '${crudType}'.`));
+            }
+            else if (n.ObjectExpression.check(injectionProp.value)) {
+              injectionProp.value = b.arrayExpression([injectionProp.value, newInjectionObject]);
+              console.log(chalk.dim(`Converted to array and added new injection at '${injectionPosition}' for '${crudType}'.`));
+            }
+            else {
+              injectionProp.value = b.arrayExpression([newInjectionObject]);
+              console.log(chalk.yellow(`⚠️ Replaced invalid injection at '${injectionPosition}' with array.`));
+            }
           } else {
-            crudValue.properties.push(b.objectProperty(b.identifier(injectionPosition), newInjectionObject));
-            console.log(chalk.dim(`Added '${injectionPosition}' injection for '${crudType}'.`));
+            crudValue.properties.push(
+              b.objectProperty(b.identifier(injectionPosition), b.arrayExpression([newInjectionObject]))
+            );
+            console.log(chalk.dim(`Added new array of injections at '${injectionPosition}' for '${crudType}'.`));
           }
   
           updateApplied = true;
@@ -506,7 +533,12 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
   
       const outputCode = recast.print(ast).code;
       await fs.writeFile(filePath, outputCode, 'utf-8');
-      console.log(chalk.dim(`✅ Successfully updated CRUD injection in resource file: ${filePath}:${injectionLine}`));
+      console.log(
+        chalk.green(
+          `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
+          (injectionLine !== null ? `:${injectionLine}` : '')
+        )
+      );
   
     } catch (error) {
       console.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
