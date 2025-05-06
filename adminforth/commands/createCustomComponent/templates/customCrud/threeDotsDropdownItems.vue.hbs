@@ -4,9 +4,8 @@
       v-for="item in menuItems"
       :key="item.label"
       @click="item.action"
-      class="w-full text-left text-sm px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white"
     >
-      {{ item.label }}
+      \{{ item.label }}
     </button>
   </div>
 </template>
@@ -35,16 +34,7 @@ const menuItems = [
         variant: 'success',
       });
     },
-  },
-  {
-    label: 'Show Error Alert',
-    action: () => {
-      adminforth.alert({
-        message: t('Error Alert'),
-        variant: 'danger',
-      });
-    },
-  },
+  }
 ];
 
 onMounted(() => {
