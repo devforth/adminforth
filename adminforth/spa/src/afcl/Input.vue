@@ -39,8 +39,8 @@ const props = defineProps<{
   type: string,
   fullWidth: boolean,
   modelValue: string,
-  suffix: string,
-  prefix: string,
+  suffix?: string,
+  prefix?: string,
   readonly?: boolean,
 }>()
 
