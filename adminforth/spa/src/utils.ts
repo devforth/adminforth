@@ -31,6 +31,13 @@ export async function callApi({path, method, body=undefined}: {
     } 
     return await r.json();
   } catch(e) {
+    // if it is internal error, say to user
+    if (e instanceof TypeError && e.message === 'Failed to fetch') {
+      // this is a network error
+      adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Network error, please check your Internet connection and try again'),})
+      return null;
+    }
+
     adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Something went wrong, please try again later'),})
     console.error(`error in callApi ${path}`, e);
   }
