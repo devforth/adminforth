@@ -165,14 +165,15 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     async (req, res) => {
 
-      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction(
-        'aparts',
-        null, // recordId can be null if not applicable
-        'visitedDashboard',
-        { dashboard: 'main' },
-        req.adminUser,
-        req.headers //required if you want log client ip
-      )
+      admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
+        resourceId: 'aparts',
+        recordId: null, // recordId can be null if not applicable
+        actionId: 'visitedDashboard', // any random string you want to useto identify this action 
+        oldData: null, // old data, can be null if not applicable
+        data: { dashboard: 'main' }, // new data or any data you want to log
+        user: req.adminUser,
+        headers: req.headers //required if you want log client ip
+      })
 
       ....
 
