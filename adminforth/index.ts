@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClientIp } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp } from './modules/utils.js';
 
 import { 
   type AdminForthConfig, 
@@ -42,7 +42,7 @@ export * from './types/Common.js';
 export * from './types/Adapters.js';
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, getClientIp };
+export { suggestIfTypo, RateLimiter, RAMLock, getClientIp };
 
 
 class AdminForth implements IAdminForth {
@@ -478,7 +478,6 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
-
     const err = this.validateRecordValues(resource, record);
     if (err) {
       return { error: err };

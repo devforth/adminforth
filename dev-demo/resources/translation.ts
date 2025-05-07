@@ -55,6 +55,9 @@ export default {
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
 
+      // optional field to enable "Reviewed" checkbox for each translation string
+      reviewedCheckboxesFieldName: 'reviewed',
+
       completeAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-4o',
@@ -64,7 +67,6 @@ export default {
         },
       }),
     }),
-
   ],
   options: {
     listPageSize: 100,
@@ -124,6 +126,13 @@ export default {
       name: "category",
       showIn: ['filter', 'show', 'list'],
       type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: "reviewed",
+      type: AdminForthDataTypes.JSON,
+      showIn: {
+        all: false,
+      }
     }
   ],
 } as AdminForthResourceInput;
