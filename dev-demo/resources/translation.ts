@@ -5,7 +5,6 @@ import AdminForth, {
 import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "../../plugins/adminforth-i18n";
 import { randomUUID } from "crypto";
-import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit";
 
 
 export default {
