@@ -85,7 +85,7 @@ Return:
 - A string with an error message to explain why access was denied
 
 Here is how it looks:
-![alt text](<Custom bulk actions.png>)
+![alt text](<Single record actions.png>)
 
 
 You might want to allow only certain users to perform your custom bulk action. 

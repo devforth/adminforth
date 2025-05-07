@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "env": "dotenvx run -f .env.local -f .env --overload --",
+    "_env:dev": "dotenvx run -f .env.local -f .env --overload --",
     "start": "npm run env -- tsx watch index.ts",
     "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
     "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy",
