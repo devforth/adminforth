@@ -19,7 +19,7 @@ export default {
       // supportedLanguages: ['en', 'uk', 'ja', 'fr'],
       // supportedLanguages: ['en', 'uk'],
 
-      supportedLanguages: ['zh', 'es', 'en', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
+      supportedLanguages: ['zh', 'es', 'en', 'ru', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
 
       // names of the fields in the resource which will store translations
       translationFieldNames: {
@@ -69,7 +69,7 @@ export default {
     }),
   ],
   options: {
-    listPageSize: 100,
+    listPageSize: 20,
     allowedActions: {
       edit: true,
     }
