@@ -103,6 +103,11 @@ export interface AdminForthBulkActionCommon {
    **/ 
   state?: 'danger' | 'success' | 'active';
 
+  /** 
+   * Optional small badge for button which will be displayed in the list view
+   */
+  badge?: string,
+
   /**
    * Icon for action button which will be displayed in the list view
    */
