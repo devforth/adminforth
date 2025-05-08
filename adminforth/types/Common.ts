@@ -14,7 +14,6 @@ export enum AdminForthDataTypes {
   TIME = 'time',
   TEXT = 'text',
   JSON = 'json',
-  RICHTEXT = 'richtext',
 }
 
 export enum AdminForthFilterOperators {
@@ -102,6 +101,11 @@ export interface AdminForthBulkActionCommon {
    *  * 'active' - blue button
    **/ 
   state?: 'danger' | 'success' | 'active';
+
+  /** 
+   * Optional small badge for button which will be displayed in the list view
+   */
+  badge?: string,
 
   /**
    * Icon for action button which will be displayed in the list view
