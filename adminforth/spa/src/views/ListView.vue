@@ -66,6 +66,10 @@
           <span class="sr-only">Loading...</span>
         </div>
         {{ `${action.label} (${checkboxes.length})` }}
+        <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 
+          font-medium rounded-sm text-xs px-1 ml-1 text-center ">
+          {{ action.badge }}            
+        </div>
       </button>
 
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
