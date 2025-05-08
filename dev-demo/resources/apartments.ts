@@ -264,8 +264,12 @@ export default {
     {
       name: "description",
       sortable: false,
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
       showIn: {filter: true, show: true, edit: true, create: true},
+      components: {
+        list: "@/renderers/RichText.vue",
+        show: "@/renderers/ZeroStylesRichText.vue",
+      }
     },
     {
       name: "listed",
