@@ -14,7 +14,6 @@ export enum AdminForthDataTypes {
   TIME = 'time',
   TEXT = 'text',
   JSON = 'json',
-  RICHTEXT = 'richtext',
 }
 
 export enum AdminForthFilterOperators {

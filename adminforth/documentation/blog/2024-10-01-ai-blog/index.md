@@ -515,7 +515,10 @@ export default {
     {
       name: 'content',
       showIn: { list: false },
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
+      components: {
+        show: "@/renderers/RichText.vue",
+      }
     },
     {
       name: 'createdAt',
