@@ -13,7 +13,6 @@ export const mapToTypeScriptType = (adminType) => {
   switch (adminType) {
     case "string":
     case "text":
-    case "richtext":
     case "datetime":
     case "date":
     case "time":
