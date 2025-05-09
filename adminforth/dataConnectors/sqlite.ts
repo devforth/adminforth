@@ -29,12 +29,17 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           } else if (baseType == 'text') {
             field.type = AdminForthDataTypes.TEXT;
             field._underlineType = 'text';
-          } else if (baseType.includes('decimal(') || baseType == 'decimal') {
+          } else if (baseType.includes('decimal(')) {
             field.type = AdminForthDataTypes.DECIMAL;
             field._underlineType = 'decimal';
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
+          } else if (baseType === 'decimal') {
+            field.type = AdminForthDataTypes.DECIMAL;
+            field._underlineType = 'decimal';
+            field.precision = 10;
+            field.scale = 2;
           } else if (baseType == 'real') {
             field.type = AdminForthDataTypes.FLOAT; //8-byte IEEE floating point number. It
             field._underlineType = 'real';
