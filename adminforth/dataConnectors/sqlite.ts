@@ -18,7 +18,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         rows.forEach((row) => {
           const field: any = {};
           const baseType = row.type.toLowerCase();
-          if (baseType == 'int') {
+          if (baseType == 'int' || baseType == 'integer') {
             field.type = AdminForthDataTypes.INTEGER;
             field._underlineType = 'int';
           } else if (baseType.includes('varchar(')) {
@@ -29,7 +29,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           } else if (baseType == 'text') {
             field.type = AdminForthDataTypes.TEXT;
             field._underlineType = 'text';
-          } else if (baseType.includes('decimal(')) {
+          } else if (baseType.includes('decimal(') || baseType == 'decimal') {
             field.type = AdminForthDataTypes.DECIMAL;
             field._underlineType = 'decimal';
             const [precision, scale] = baseType.match(/\d+/g);
