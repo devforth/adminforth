@@ -61,7 +61,7 @@ export default class OperationalResource implements IOperationalResource {
   }
 
 
-  async count(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): Promise<number> {
+  async count(filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): Promise<number> {
     return await this.dataConnector.getCount({
       resource: this.resourceConfig,
       filters: this.dataConnector.validateAndNormalizeInputFilters(filter),

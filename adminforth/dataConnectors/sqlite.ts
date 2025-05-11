@@ -263,7 +263,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
       }
       const totalStmt = this.client.prepare(q);
-      return totalStmt.get([...filterValues])['COUNT(*)'];
+      return +totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
