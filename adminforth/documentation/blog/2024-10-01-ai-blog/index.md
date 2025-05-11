@@ -285,8 +285,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   app.use(express.json());
   const port = 3500;
 
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
-  console.log('Bundling AdminForth SPA done.');
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    console.log('Bundling AdminForth SPA done.');
+  });
 
   // api to server recent posts
   app.get('/api/posts', async (req, res) => {
