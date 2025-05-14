@@ -32,7 +32,6 @@ steps:
     when:
       - event: push
         status: [failure, success]
-      - event: push
     image: curlimages/curl
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
