@@ -1124,7 +1124,7 @@ export interface IOperationalResource {
 
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
-  count: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined) => Promise<number>;
+  count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 

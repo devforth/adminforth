@@ -299,14 +299,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const port = 3500;
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    console.log('Bundling AdminForth SPA done.');
+  });
 
   // serve after you added all api
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+    if (await admin.resource('adminuser').count() === 0) {
       await admin.resource('adminuser').create({
         email: 'adminforth',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
