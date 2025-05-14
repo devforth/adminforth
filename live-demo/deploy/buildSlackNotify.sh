@@ -3,9 +3,9 @@
 
 COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
-echo 'CI_PREV_PIPELINE_STATUS', $CI_PREV_PIPELINE_STATUS
+echo 'STATUS', $1;
 
-if [ "$CI_PREV_PIPELINE_STATUS" = "success" ]; then
+if [ "$1" = "success" ]; then
   MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_PIPELINE_FORGE_URL|$COMMIT_SHORT_SHA>)"
 
 
