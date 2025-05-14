@@ -54,7 +54,6 @@ npx adminforth create-app
 
 
 
-
 # For developers
 
 The most convenient way to add new features or fixes is using `dev-demo`. It imports the source code of the repository and plugins so you can edit them and see changes on the fly.
@@ -66,8 +65,6 @@ Fork repo, pull it and do next:
 cd adminforth
 npm ci
 npm run build
-
-
 ```
 
 To run dev demo:
@@ -82,7 +79,7 @@ npm run install-plugins
 npm run install-adapters
 
 npm ci
-npm run migrate
+npm run migrate:local
 npm start
 ```
 
