@@ -1,6 +1,5 @@
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
-
-import type { AdminUser } from  'adminforth';
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
 
 async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
