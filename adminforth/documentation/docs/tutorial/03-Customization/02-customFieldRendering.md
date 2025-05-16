@@ -449,3 +449,36 @@ To format your date fields to display the elapsed time, you can utilize the Rela
       },
     ...
 ```
+
+### Rich text and Zero-style Rich text
+
+If you have some field which holds HTML content you can use `RichText` renderer to render it as HTML.
+
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'content',
+  //diff-add
+      components: {
+  //diff-add
+        list: '@/renderers/RichText.vue'
+  //diff-add
+      },
+      ...
+    }
+  ] 
+```
+
+The renderer will render the HTML content and protect against XSS attacks. 
+If HTML in field has some tags or classes which covered by adminforth internal styles (including Tailwind classes), they will be styled (text/p styles etc). If this is an issue for your task and you need full raw preview of the HTML, you can use `ZeroStyleRichText` renderer:
+
+```ts title='./resources/anyResource.ts'
+//diff-remove
+list: '@/renderers/RichText.vue',
+//diff-add
+list: '@/renderers/ZeroStylesRichText.vue',
+//diff-add
+```
+
+`ZeroStyleRichText` fits well for tasks like email templates preview fields.
