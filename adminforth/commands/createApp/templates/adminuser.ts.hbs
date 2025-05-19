@@ -1,5 +1,6 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
 
 async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -22,7 +23,7 @@ export default {
       name: 'id',
       primaryKey: true,
       type: AdminForthDataTypes.STRING,
-      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
+      fillOnCreate: ({ initialRecord, adminUser }) => randomUUID(),
       showIn: {
         edit: false,
         create: false,
