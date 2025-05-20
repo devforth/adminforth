@@ -93,8 +93,11 @@ export default {
       }
     },
     edit: {
-      beforeSave: async ({ updates, adminUser, resource }: { updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+      beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
         console.log('Updating user', updates);
+        if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+          return { ok: false, error: 'You cannot change your own role' };
+        }
         if (updates.password) {
           updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
         }
