@@ -106,7 +106,7 @@ Let's disable creating and editing of new users for all users apart from users w
 import type { AdminUser } from  'adminforth';
 
 //diff-add
-async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
 //diff-add
   return adminUser.dbUser.role === 'superadmin';
 //diff-add
@@ -121,9 +121,9 @@ async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<
   options: {
     allowedActions: {
 //diff-add
-      create: canModifyUsers,
+      create: allowedForSuperAdmin,
 //diff-add
-      edit: canModifyUsers,
+      edit: allowedForSuperAdmin,
       delete: false
     }
     ...
