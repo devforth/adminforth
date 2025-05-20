@@ -1,6 +1,6 @@
 ---
 slug: compose-ec2-deployment-github-actions-registry
-title: "Amazon EC2 Deployments with GitHub Actions, Terraform, Docker & Amazon ECR"
+title: "Amazon EC2 Deployments with GitHub Actions, Terraform, Docker & Self-hosted Registry"
 authors: ivanb
 tags: [aws, terraform, github-actions]
 description: "The ultimate step-by-step guide to cost-effective, build-time-efficient, and easy managable EC2 deployments using GitHub Actions, Terraform, Docker, and a self-hosted registry."
@@ -34,9 +34,9 @@ When I implmented this solution, I was curious whether it will be faster to buil
 First I used results form [deploying AdminForth to EC2 with Terraform without registry](/blog/compose-ec2-deployment-github-actions/) where we built images on EC2. Then I did the same test but with self-hosted registry on EC2 and compared to [deploying AdminForth to EC2 with Amazon ECR](/blog/compose-aws-ec2-ecr-terraform-github-actions/) where we built images on CI and pushed to Amazon ECR.
 
 | Feature | Without Registry (build directly on EC2) | With self-hosted registry | With Amazon ECR |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | Initial build time\* |  3m 13.541s | 2m 48.412s | 3m 54s |
-| Rebuild time (changed `index.ts`)\*|  0m 51.653s | 0m 54.120s |
+| Rebuild time (changed `index.ts`)\* | 0m 51.653s | 0m42.131s | 0m 54.120s | 
 
 <sub>\* All tests done from local machine (Intel(R) Core(TM) Ultra 9 185H, Docker Desktop/WSL2 64 GB RAM, 300Mbps up/down) up to working state</sub>
 
@@ -63,86 +63,18 @@ Though the challenge is that we need to provide CA certificate to every daemon w
 Assume you have your AdminForth project in `myadmin`.
 
 
-## Step 1 - Dockerfile
+## Step 1 - Dockerfile and .dockerignore
 
-> TODO: Step 1 and 1.* will be accomplished automatically within the part of CLI and moved to manual non-CLI Hello world example
 
-Create file `Dockerfile` in `myadmin`:
+This guide assumes you have created your AdminForth application with latest version of `adminforth create-app` command. 
+This command already creates a `Dockerfile` and `.dockerignore` for you, so you can use them as is.
 
-```Dockerfile title="./myadmin/Dockerfile"
-# use the same node version which you used during dev
-FROM node:22-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci  
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["sh", "-c", "npm run migrate:prod && npm run prod"]
-```
-
-### Step 1.1 - Create bundleNow.ts
-
-Create file `bundleNow.ts` in `myadmin`:
-
-```typescript title="./myadmin/bundleNow.ts"
-import { admin } from './index.js';
-
-await admin.bundleNow({ hotReload: false});
-console.log('Bundling AdminForth done.');
-```
-
-Make sure you are not calling bundleNow in `index.ts` file for non-development mode:
-
-```typescript
-//diff-remove
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-//diff-remove
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-//diff-remove
-  if (process.env.NODE_ENV === 'development') {
-//diff-add
-    await admin.bundleNow({ hotReload: true });
-//diff-add
-    console.log('Bundling AdminForth done');
-//diff-add
-  }
-```
-
-### Step 1.3 - Make sure you have `migrateLiveAndStart` script in `package.json`
-
-```json title="./myadmin/package.json"
-...
-"scripts": {
-  "scripts": {
-    "dev": "npm run _env:dev -- tsx watch index.ts",
-    "prod": "npm run _env:prod -- tsx index.ts",
-    "start": "npm run dev",
-
-    "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
-    "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy",
-    "migrate:prod": "npm run _env:prod -- npx --yes prisma migrate deploy",
-
-    "_env:dev": "dotenvx run -f .env -f .env.local --",
-    "_env:prod": "dotenvx run -f .env.prod --"
-  },
-}
-...
-```
-
-### Step 1.4 - Make sure you have `.dockerignore` file
-
-```./myadmin/.dockerignore
-node_modules
-*.sqlite
-```
 
 ## Step 2 - compose.yml
 
 create folder `deploy` and create file `compose.yml` inside:
 
 ```yml title="deploy/compose.yml"
-
-
 services:
   traefik:
     image: "traefik:v2.5"
@@ -157,14 +89,19 @@ services:
 
   myadmin:
     image: localhost:5000/myadmin:latest
+    build:
+      context: ../adminforth-app
+      tags:
+        - localhost:5000/myadmin:latest
+      cache_from:
+        - type=registry,ref=localhost:5000/myadmin:cache
+      cache_to:
+        - type=registry,ref=localhost:5000/myadmin:cache,mode=max,compression=zstd,image-manifest=true,oci-mediatypes=true
+      
     pull_policy: always
     restart: always
     env_file:
       - .env.secrets.prod
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=sqlite://.db.sqlite
-      - PRISMA_DATABASE_URL=file:.db.sqlite
 
     volumes:
       - myadmin-db:/code/db
@@ -214,27 +151,14 @@ tfplan
 .env.secrets.prod
 ```
 
-## Step 6 - buildx bake file
+## Step 6 - file with secrets for local deploy
 
-Create file `deploy/docker-bake.hcl`:
+Create file `deploy/.env.secrets.prod`
 
-```hcl title="deploy/docker-bake.hcl"
-variable "REGISTRY_BASE" {
-  default = "appserver.local:5000"
-}
-
-group "default" {
-  targets = ["myadmin"]
-}
-
-target "myadmin" {
-  context = "../myadmin"
-  tags = ["${REGISTRY_BASE}/myadmin:latest"]
-  cache-from = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache"]
-  cache-to   = ["type=registry,ref=${REGISTRY_BASE}/myadmin:cache,mode=max,compression=zstd"]
-  push = true
-}
+```bash
+ADMINFORTH_SECRET=<your_secret>
 ```
+
 
 
 ## Step 7 - main terraform file main.tf
@@ -492,7 +416,7 @@ resource "null_resource" "sync_files_and_run" {
       echo '{"auths":{"appserver.local:5000":{"auth":"'$(echo -n "ci-user:$(cat ./.keys/registry.pure)" | base64 -w 0)'"}}}' > ~/.docker/config.json
 
       echo "Running build"
-      docker buildx bake --progress=plain --push --allow=fs.read=..
+      docker buildx bake --progress=plain --push --allow=fs.read=.. -f compose.yml
 
       # compose temporarily it is not working https://github.com/docker/compose/issues/11072#issuecomment-1848974315
       # docker compose --progress=plain -p app -f ./compose.yml build --push

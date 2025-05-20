@@ -118,6 +118,7 @@ class ExpressServer implements IExpressHttpServer {
         }
       }
       this.expressApp.get(`${slashedPrefix}assets/*`, handler);
+      process.env.HEAVY_DEBUG && console.log('®️ Registering SPA serve handler', `${slashedPrefix}assets/*`);
       this.expressApp.get(`${prefix}*`, handler);
      
 

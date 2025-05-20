@@ -5,6 +5,7 @@
     <form autocomplete="off" @submit.prevent>
       <div v-if="!groups || groups.length === 0">
         <GroupsTable
+        :readonlyColumns="props.readonlyColumns"
         :source="source"
         :group="{groupName: '', columns: editableColumns}"
         :currentValues="currentValues"
@@ -22,6 +23,7 @@
       <div v-else class="flex flex-col gap-4">
         <template v-for="group in groupedColumns" :key="group.groupName"> 
           <GroupsTable
+          :readonlyColumns="props.readonlyColumns"
           :source="source"
           :group="group"
           :currentValues="currentValues"
@@ -36,8 +38,9 @@
           @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
           />
         </template>
-        <div v-if="otherColumns.length > 0">
+        <div v-if="otherColumns?.length || 0 > 0">
           <GroupsTable
+          :readonlyColumns="props.readonlyColumns"
           :source="source"
           :group="{groupName: $t('Other'), columns: otherColumns}"
           :currentValues="currentValues"
@@ -58,7 +61,7 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { applyRegexValidation, callAdminForthApi} from '@/utils';
 import { computedAsync } from '@vueuse/core';
@@ -67,18 +70,20 @@ import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
+import { type AdminForthResourceCommon } from '@/types/Common';
 
 const { t } = useI18n();
 
 const coreStore = useCoreStore();
 const router = useRouter();
 const route = useRoute();
-const props = defineProps({
-  resource: Object,
-  record: Object,
-  validating: Boolean,
-  source: String,
-});
+const props = defineProps<{
+  resource: AdminForthResourceCommon,
+  record: any,
+  validating: boolean,
+  source: 'create' | 'edit',
+  readonlyColumns?: string[],
+}>();
 
 const unmasked = ref({});
 

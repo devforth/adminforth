@@ -30,7 +30,11 @@ Now instantiate the plugin and add it to the configuration:
     {
       name: 'description',
 //diff-add
-      type: AdminForthDataTypes.RICHTEXT, // like plain AdminForthDataTypes.TEXT but renders HTML in show/list views
+      type: AdminForthDataTypes.TEXT, // like plain AdminForthDataTypes.TEXT but renders HTML in show/list views
+      components: {
+        show: "@/renderers/RichText.vue",
+        list: "@/renderers/RichText.vue",
+      },
       ...
     }
     ...
@@ -65,12 +69,20 @@ If you need multiple fields in one resource which happens rarely, just add multi
     ...
     {
       name: 'short_description',
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
+      components: {
+        list: "@/renderers/RichText.vue",
+        show: "@/renderers/RichText.vue",
+      }
       ...
     },
     {
       name: 'full_description',
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
+      components: {
+        list: "@/renderers/RichText.vue",
+        show: "@/renderers/RichText.vue",
+      }
       ...
     }
     ...

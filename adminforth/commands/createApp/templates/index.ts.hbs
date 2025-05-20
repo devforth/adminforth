@@ -1,5 +1,5 @@
 import express from 'express';
-import AdminForth, { Filters } from 'adminforth';
+import AdminForth from 'adminforth';
 import usersResource from "./resources/adminuser.js";
 
 const ADMIN_BASE_URL = '';
@@ -61,13 +61,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   const port = 3500;
   
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
-  console.log('Bundling AdminForth SPA done.');
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    console.log('Bundling AdminForth SPA done.');
+  });
 
-  admin.express.serve(app)
+  admin.express.serve(app);
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+    if (await admin.resource('adminuser').count() === 0) {
       await admin.resource('adminuser').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),

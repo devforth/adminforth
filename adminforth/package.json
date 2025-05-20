@@ -20,9 +20,7 @@
     "rollout-doc": "cd documentation && npm run build && npm run deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do npm ci in the package",
-    "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi",
-    "install-plugins": "cd ../plugins && bash install-plugins.sh",
-    "install-adapters": "cd ../adapters && bash install-adapters.sh"
+    "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi"
   },
   "release": {
     "plugins": [
@@ -58,10 +56,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@babel/parser": "^7.27.0",
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
     "@inquirer/prompts": "^7.4.1",
-    "@types/express": "^5.0.0",
+    "@types/express": "^4.17.21",
     "arg": "^5.0.2",
     "better-sqlite3": "^11.5.0",
     "chalk": "^5.4.1",

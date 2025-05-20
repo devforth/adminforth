@@ -10,20 +10,7 @@ Here is a row snippet to deploy AdminForth to Terraform.
 <!-- truncate -->
 
 
-Assume you have your AdminForth project in `myadmin`.
-
-Create file `Dockerfile` in `myadmin`:
-
-```Dockerfile title="./myadmin/Dockerfile"
-# use the same node version which you used during dev
-FROM node:20-alpine
-WORKDIR /code/
-ADD package.json package-lock.json /code/
-RUN npm ci  
-ADD . /code/
-RUN --mount=type=cache,target=/tmp npx tsx bundleNow.ts
-CMD ["npm", "run", "startLive"]
-```
+Assume you have your AdminForth project in `myadmin` created with `adminforth create-app` command. This command already creates a `Dockerfile` and `.dockerignore` for you, so you can use them as is.
 
 
 Create file `compose.yml`:
@@ -190,11 +177,32 @@ resource "aws_instance" "myadmin_instance" {
     systemctl start docker
     systemctl enable docker
     usermod -a -G docker ubuntu
+
+    echo "done" > /home/ubuntu/user_data_done
   EOF
 
   tags = {
     Name = "myadmin-instance"
   }
+}
+
+resource "null_resource" "wait_for_user_data" {
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Waiting for EC2 software install to finish...'",
+      "while [ ! -f /home/ubuntu/user_data_done ]; do echo '...'; sleep 2; done",
+      "echo 'EC2 software install finished.'"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("./.keys/id_rsa")
+      host        = aws_eip_association.eip_assoc.public_ip
+    }
+  }
+
+  depends_on = [aws_instance.app_instance]
 }
 
 resource "null_resource" "sync_files_and_run" {
@@ -208,7 +216,10 @@ resource "null_resource" "sync_files_and_run" {
       --exclude '.git' \
       --exclude '.terraform' \
       --exclude 'terraform*' \
+      --exclude 'tfplan' \
+      --exclude '.keys' \
       --exclude '.vscode' \
+      --exclude '.env' \
       --exclude 'db' \
       ./ ubuntu@${aws_eip_association.eip_assoc.public_ip}:/home/ubuntu/app/
     EOF
@@ -218,13 +229,10 @@ resource "null_resource" "sync_files_and_run" {
   # Run docker compose after files have been copied
   provisioner "remote-exec" {
     inline = [
-      "bash -c 'while ! command -v docker &> /dev/null; do echo \"Waiting for Docker to be installed...\"; sleep 1; done'",
-      "bash -c 'while ! docker info &> /dev/null; do echo \"Waiting for Docker to start...\"; sleep 1; done'",
       # -a would destroy cache
       "docker system prune -f",
       "cd /home/ubuntu/app/",
-      # COMPOSE_FORCE_NO_TTY is needed to run docker compose in non-interactive mode and prevent stdout mess up
-      "COMPOSE_FORCE_NO_TTY=1 docker compose -f compose.yml up --build -d"
+      "COMPOSE_BAKE=true docker compose --progress=plain -p app -f compose.yml up --build -d"
     ]
 
     connection {
@@ -240,7 +248,7 @@ resource "null_resource" "sync_files_and_run" {
     always_run = timestamp()
   }
 
-  depends_on = [aws_instance.myadmin_instance, aws_eip_association.eip_assoc]
+  depends_on = [null_resource.wait_for_user_data, aws_eip_association.eip_assoc]
 }
 
 

@@ -7,7 +7,7 @@ import chalk from "chalk";
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
 
-export function callTsProxy(tsCode) {
+export function callTsProxy(tsCode, silent=false) {
 
   process.env.HEAVY_DEBUG && console.log("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
   return new Promise((resolve, reject) => {
@@ -30,9 +30,11 @@ export function callTsProxy(tsCode) {
       if (code === 0) {
         try {
           const parsed = JSON.parse(stdout);
-          parsed.capturedLogs.forEach((log) => {
-            console.log(...log);
-          });
+          if (!silent) {
+            parsed.capturedLogs.forEach((log) => {
+              console.log(...log);
+            });
+          }
 
           if (parsed.error) {
             reject(new Error(`${parsed.error}\n${parsed.stack}`));
@@ -73,13 +75,13 @@ export async function findAdminInstance() {
       const fileNoTs = file.replace(/\.ts$/, "");
       process.env.HEAVY_DEBUG && console.log(`🪲 Trying bundleing ${file}...`);
       try {
-        res = await callTsProxy(`
+        const res = await callTsProxy(`
           import { admin } from './${fileNoTs}.js';
 
           export async function exec() {
             return admin.formatAdminForth();
           }
-        `);
+        `, true);
         instanceFound.file = fileNoTs;
         instanceFound.version = res;
         break;

@@ -3,9 +3,10 @@
 
 COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
+echo 'STATUS', $1;
 
-if [ "$CI_STEP_STATUS" = "success" ]; then
-  MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
+if [ "$1" = "success" ]; then
+  MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_PIPELINE_FORGE_URL|$COMMIT_SHORT_SHA>)"
 
 
   curl  -s -X POST -H "Content-Type: application/json" -d '{

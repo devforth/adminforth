@@ -19,7 +19,7 @@ export default {
       // supportedLanguages: ['en', 'uk', 'ja', 'fr'],
       // supportedLanguages: ['en', 'uk'],
 
-      supportedLanguages: ['zh', 'es', 'en', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
+      supportedLanguages: ['zh', 'es', 'en', 'ru', 'hi', 'bn', 'pt', 'ar', 'pa', 'ur', 'vi', 'tr', 'ko', 'fr', 'de', 'ja', 'it', 'uk', 'az'],
 
       // names of the fields in the resource which will store translations
       translationFieldNames: {
@@ -55,6 +55,9 @@ export default {
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
 
+      // optional field to enable "Reviewed" checkbox for each translation string
+      reviewedCheckboxesFieldName: 'reviewed',
+
       completeAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-4o',
@@ -64,10 +67,9 @@ export default {
         },
       }),
     }),
-
   ],
   options: {
-    listPageSize: 100,
+    listPageSize: 20,
     allowedActions: {
       edit: true,
     }
@@ -124,6 +126,13 @@ export default {
       name: "category",
       showIn: ['filter', 'show', 'list'],
       type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: "reviewed",
+      type: AdminForthDataTypes.JSON,
+      showIn: {
+        all: false,
+      }
     }
   ],
 } as AdminForthResourceInput;

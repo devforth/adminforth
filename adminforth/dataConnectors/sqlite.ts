@@ -18,7 +18,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         rows.forEach((row) => {
           const field: any = {};
           const baseType = row.type.toLowerCase();
-          if (baseType == 'int') {
+          if (baseType == 'int' || baseType == 'integer') {
             field.type = AdminForthDataTypes.INTEGER;
             field._underlineType = 'int';
           } else if (baseType.includes('varchar(')) {
@@ -35,6 +35,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
+          } else if (baseType === 'decimal') {
+            field.type = AdminForthDataTypes.DECIMAL;
+            field._underlineType = 'decimal';
+            field.precision = 10;
+            field.scale = 2;
           } else if (baseType == 'real') {
             field.type = AdminForthDataTypes.FLOAT; //8-byte IEEE floating point number. It
             field._underlineType = 'real';
@@ -258,7 +263,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
       }
       const totalStmt = this.client.prepare(q);
-      return totalStmt.get([...filterValues])['COUNT(*)'];
+      return +totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
