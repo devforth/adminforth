@@ -83,6 +83,8 @@ model translations {
     category        String
     source          String?
     completedLangs   String?
+
+    reviewed        String?
     
     // we need both indexes on en_string+category and separately on category
     @@index([en_string, category])

@@ -548,9 +548,6 @@ export default class ConfigValidator implements IConfigValidator {
             if (col.isArray.itemType === AdminForthDataTypes.JSON) {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray itemType cannot be JSON`);
             }
-            if (col.isArray.itemType === AdminForthDataTypes.RICHTEXT) {
-              errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray itemType cannot be RICHTEXT`);
-            }
           }
         }
 
@@ -569,7 +566,7 @@ export default class ConfigValidator implements IConfigValidator {
           }
 
           // if suggestOnCreate is string, column should be one of the types with text inputs
-          if (typeof inCol.suggestOnCreate === 'string' && ![AdminForthDataTypes.STRING, AdminForthDataTypes.DATE, AdminForthDataTypes.DATETIME, AdminForthDataTypes.TIME, AdminForthDataTypes.TEXT, AdminForthDataTypes.RICHTEXT, undefined].includes(inCol.type)) {
+          if (typeof inCol.suggestOnCreate === 'string' && ![AdminForthDataTypes.STRING, AdminForthDataTypes.DATE, AdminForthDataTypes.DATETIME, AdminForthDataTypes.TIME, AdminForthDataTypes.TEXT, undefined].includes(inCol.type)) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate value does not match type of a column`);
           }
 

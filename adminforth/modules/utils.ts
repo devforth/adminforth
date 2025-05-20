@@ -456,3 +456,35 @@ export class RateLimiter {
   }
 
 }
+
+export class RAMLock {
+  private locks: Map<string, { locked: boolean; queue: Function[] }>;
+
+  constructor() {
+    this.locks = new Map();
+  }
+
+  _getLock(key) {
+    if (!this.locks.has(key)) {
+      this.locks.set(key, { locked: false, queue: [] });
+    }
+    return this.locks.get(key);
+  }
+
+  async run(key, fn) {
+    const lock = this._getLock(key);
+    while (lock.locked) {
+      await new Promise(resolve => lock.queue.push(resolve));
+    }
+    lock.locked = true;
+    try {
+      return await fn();
+    } finally {
+      lock.locked = false;
+      if (lock.queue.length > 0) {
+        const next = lock.queue.shift();
+        next();
+      }
+    }
+  }
+}

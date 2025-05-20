@@ -6,8 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClientIp } from './modules/utils.js';
-
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -42,7 +41,7 @@ export * from './types/Common.js';
 export * from './types/Adapters.js';
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, getClientIp };
+export { suggestIfTypo, RateLimiter, RAMLock, getClientIp };
 
 
 class AdminForth implements IAdminForth {
@@ -125,6 +124,10 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
+    if (global.adminforth) {
+      throw new Error('AdminForth instance already created in this process. '+
+        'If you want to use multiple instances, consider using different process for each instance');
+    }
     this.codeInjector = new CodeInjector(this);
     this.configValidator = new ConfigValidator(this, config);
     this.restApi = new AdminForthRestAPI(this);
@@ -145,6 +148,7 @@ class AdminForth implements IAdminForth {
    
 
     console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    global.adminforth = this;
   }
 
   formatAdminForth() {
@@ -473,7 +477,6 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
-
     const err = this.validateRecordValues(resource, record);
     if (err) {
       return { error: err };

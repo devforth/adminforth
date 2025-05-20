@@ -100,6 +100,20 @@ function generateDbUrlForPrisma(connectionString) {
   return connectionString.toString();
 }
 
+function generateDbUrlForPrismaProd(connectionString) {
+  if (connectionString.protocol.startsWith('sqlite'))
+    return `file:/code/db/${connectionString.host}`;
+  if (connectionString.protocol.startsWith('mongodb'))
+    return null;
+  return connectionString.toString();
+}
+
+function generateDbUrlForAfProd(connectionString) {
+  if (connectionString.protocol.startsWith('sqlite'))
+    return `sqlite:////code/db/${connectionString.host}`;
+  return connectionString.toString();
+}
+
 function initialChecks(options) {
   return [
     {
@@ -128,8 +142,12 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.ensureDir(projectDir);
 
   const connectionString = parseConnectionString(options.db);
+  const connectionStringProd = generateDbUrlForAfProd(connectionString);
+
   const provider = detectDbProvider(connectionString.protocol);
   const prismaDbUrl = generateDbUrlForPrisma(connectionString);
+  const prismaDbUrlProd = generateDbUrlForPrismaProd(connectionString);
+
 
   ctx.skipPrismaSetup = !prismaDbUrl;
   const appName = options.appName;
@@ -151,17 +169,23 @@ async function scaffoldProject(ctx, options, cwd) {
   // Write templated files
   await writeTemplateFiles(dirname, projectDir, {
     dbUrl: connectionString.toString(),
+    dbUrlProd: connectionStringProd,
     prismaDbUrl,
+    prismaDbUrlProd,
     appName,
     provider,
     nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
+    sqliteFile: connectionString.protocol.startsWith('sqlite') ? connectionString.host : null,
   });
 
   return projectDir;  // Return the new directory path
 }
 
 async function writeTemplateFiles(dirname, cwd, options) {
-  const { dbUrl, prismaDbUrl, appName, provider, nodeMajor } = options;
+  const { 
+    dbUrl, prismaDbUrl, appName, provider, nodeMajor,
+    dbUrlProd, prismaDbUrlProd, sqliteFile
+   } = options;
 
   // Build a list of files to generate
   const templateTasks = [
@@ -199,12 +223,12 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: '.env.prod.hbs',
       dest: '.env.prod',
-      data: { dbUrl, prismaDbUrl },
+      data: { prismaDbUrlProd, dbUrlProd },
     },
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl, appName },
+      data: { dbUrl, prismaDbUrl, appName, sqliteFile },
     },
     {
       // We'll write .env using the same content as .env.sample
@@ -237,7 +261,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       src: '.dockerignore.hbs',
       dest: '.dockerignore',
       data: {
-        sqliteFile: detectDbProvider(options.db).startsWith('sqlite') ? options.db.split('://')[1] : null,
+        sqliteFile,
       },
     }
   ];

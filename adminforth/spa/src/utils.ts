@@ -6,6 +6,7 @@ import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth from './adminforth';
+import sanitizeHtml  from 'sanitize-html'
 
 const LS_LANG_KEY = `afLanguage`;
 
@@ -30,9 +31,16 @@ export async function callApi({path, method, body=undefined}: {
       return null;
     } 
     return await r.json();
-  } catch(e){
+  } catch(e) {
+    // if it is internal error, say to user
+    if (e instanceof TypeError && e.message === 'Failed to fetch') {
+      // this is a network error
+      adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Network error, please check your Internet connection and try again'),})
+      return null;
+    }
+
     adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Something went wrong, please try again later'),})
-    console.error(`error in callApi ${path}`,e);
+    console.error(`error in callApi ${path}`, e);
   }
 }
 
@@ -182,4 +190,22 @@ export function humanifySize(size) {
     i++
   }
   return `${size.toFixed(1)} ${units[i]}`
+}
+
+export function protectAgainstXSS(value: string) {
+  return sanitizeHtml(value, {
+    allowedTags: [
+      "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
+      "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
+      "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
+      "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
+      "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
+      "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
+      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img'
+    ],
+    allowedAttributes: {
+      'li': [ 'data-list' ],
+      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ]
+    } 
+  });
 }

@@ -360,6 +360,30 @@ const coreStore = useCoreStore();
 </script>
 ```
 
+ALso if you want to disable ability to change such fields (but keep them as readonly) you can add `readonlyColumns` to the link:
+
+```html title="./resources/Dashboard.vue
+<template>
+  ...
+  <LinkButton
+    :to="{
+      name: 'resource-create',
+      params: {
+        resourceId: 'aparts',
+      },
+      query: {
+        values: encodeURIComponent(JSON.stringify({
+          realtor_id: coreStore?.adminUser.dbUser.id 
+        })),
+        //diff-add
+        readonlyColumns: encodeURIComponent(JSON.stringify(['realtor_id'])),
+      },
+    }"
+  >
+    {{$t('Create new apartment')}}
+  </LinkButton>
+  ...
+```
 
 ## Editing
 
@@ -510,7 +534,7 @@ export default {
 
 Doing so, will result in UI displaying each item of the array as a separate input corresponding to `isArray.itemType` on create and edit pages.
 
-`itemType` value can be any of `AdminForthDataTypes` except `JSON` and `RICHTEXT`.
+`itemType` value can be any of `AdminForthDataTypes` except `JSON` and `TEXT`.
 
 By default it is forbidden to store duplicate values in an array column. To change that you can add `allowDuplicateItems: true` to `isArray`, like so:
 
