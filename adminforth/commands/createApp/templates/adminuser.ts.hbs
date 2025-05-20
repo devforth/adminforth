@@ -2,7 +2,7 @@ import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
 
-async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
 
@@ -14,8 +14,8 @@ export default {
   recordLabel: (r) => `👤 ${r.email}`,
   options: {
     allowedActions: {
-      edit: canModifyUsers,
-      delete: canModifyUsers,
+      edit: allowedForSuperAdmin,
+      delete: allowedForSuperAdmin,
     },
   },
   columns: [
