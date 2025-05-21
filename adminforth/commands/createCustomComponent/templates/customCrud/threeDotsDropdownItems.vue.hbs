@@ -4,9 +4,8 @@
       v-for="item in menuItems"
       :key="item.label"
       @click="item.action"
-      class="w-full text-left text-sm px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white"
     >
-      {{ t(item.label) }}
+      \{{ item.label }}
     </button>
   </div>
 </template>
@@ -15,8 +14,16 @@
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
 import { onMounted } from 'vue';
+import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
 
 const { t } = useI18n();
+
+const props = defineProps<{
+  record: any
+  resource: AdminForthResourceCommon
+  adminUser: AdminUser
+  meta?: any
+}>();
 
 const menuItems = [
   {
@@ -27,25 +34,7 @@ const menuItems = [
         variant: 'success',
       });
     },
-  },
-  {
-    label: 'Show Warning Alert',
-    action: () => {
-      adminforth.alert({
-        message: t('Warning Alert'),
-        variant: 'warning',
-      });
-    },
-  },
-  {
-    label: 'Show Error Alert',
-    action: () => {
-      adminforth.alert({
-        message: t('Error Alert'),
-        variant: 'danger',
-      });
-    },
-  },
+  }
 ];
 
 onMounted(() => {
