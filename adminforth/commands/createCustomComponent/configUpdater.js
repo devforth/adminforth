@@ -26,7 +26,6 @@ async function findResourceFilePath(resourceId) {
         throw new Error(`Failed to read resources directory ${resourcesDir}: ${error.message}`);
     }
 
-    console.log(chalk.dim(`Found .ts files to scan: ${tsFiles.join(', ') || 'None'}`));
 
     for (const file of tsFiles) {
         const filePath = path.resolve(resourcesDir, file);
@@ -94,6 +93,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
     console.log(chalk.dim(`Attempting to update resource config: ${filePath}`));
 
     let content;
+    let injectionLine = null;
     try {
         content = await fs.readFile(filePath, 'utf-8');
     } catch (error) {
@@ -176,11 +176,16 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
                 const newComponentValue = b.stringLiteral(componentPathForConfig);
 
                 if (fieldTypeProperty) {
+                    injectionLine = fieldTypeProperty.loc?.start.line ?? null;
                     fieldTypeProperty.value = newComponentValue;
                     console.log(chalk.dim(`Updated '${fieldType}' component path in column '${columnName}'.`));
                 } else {
                     fieldTypeProperty = b.objectProperty(b.identifier(fieldType), newComponentValue);
                     componentsObject.properties.push(fieldTypeProperty);
+                    fieldTypeProperty = componentsObject.properties.find(p =>
+                        n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === fieldType
+                    );
+                    injectionLine = fieldTypeProperty.loc?.start.line ?? null;
                     console.log(chalk.dim(`Added '${fieldType}' component path to column '${columnName}'.`));
                 }
 
@@ -197,7 +202,12 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
         const outputCode = recast.print(ast).code;
 
         await fs.writeFile(filePath, outputCode, 'utf-8');
-        console.log(chalk.dim(`Successfully updated resource configuration file (preserving formatting): ${filePath}`));
+        console.log(
+          chalk.green(
+            `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
+            (injectionLine !== null ? `:${injectionLine}` : '')
+          )
+        );
 
     } catch (error) {
         console.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
@@ -211,78 +221,106 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
     console.log(chalk.dim(`Reading file: ${indexFilePath}`));
     const content = await fs.readFile(indexFilePath, 'utf-8');
     const ast = recast.parse(content, {
-        parser: typescriptParser,
+      parser: typescriptParser,
     });
-
+  
     let updated = false;
-
+    let injectionLine = null;
+  
     recast.visit(ast, {
-        visitNewExpression(path) {
-            if (
-                n.Identifier.check(path.node.callee) &&
-                path.node.callee.name === 'AdminForth' &&
-                path.node.arguments.length > 0 &&
-                n.ObjectExpression.check(path.node.arguments[0])
-            ) {
-                const configObject = path.node.arguments[0];
-
-                let customizationProp = configObject.properties.find(
-                    p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'customization'
-                );
-
-                if (!customizationProp) {
-                    const customizationObj = b.objectExpression([]);
-                    customizationProp = b.objectProperty(b.identifier('customization'), customizationObj);
-                    configObject.properties.push(customizationProp);
-                    console.log(chalk.dim(`Added missing 'customization' property.`));
-                }
-
-                const customizationValue = customizationProp.value;
-                if (!n.ObjectExpression.check(customizationValue)) return false;
-
-                let loginPageInjections = customizationValue.properties.find(
-                    p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'loginPageInjections'
-                );
-
-                if (!loginPageInjections) {
-                    const injectionsObj = b.objectExpression([]);
-                    loginPageInjections = b.objectProperty(b.identifier('loginPageInjections'), injectionsObj);
-                    customizationValue.properties.push(loginPageInjections);
-                    console.log(chalk.dim(`Added missing 'loginPageInjections'.`));
-                }
-
-                const injectionsValue = loginPageInjections.value;
-                if (!n.ObjectExpression.check(injectionsValue)) return false;
-
-                let underInputsProp = injectionsValue.properties.find(
-                    p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'underInputs'
-                );
-
-                if (underInputsProp) {
-                    underInputsProp.value = b.stringLiteral(componentPath);
-                    console.log(chalk.dim(`Updated 'underInputs' to ${componentPath}`));
-                } else {
-                    injectionsValue.properties.push(
-                        b.objectProperty(b.identifier('underInputs'), b.stringLiteral(componentPath))
-                    );
-                    console.log(chalk.dim(`Added 'underInputs': ${componentPath}`));
-                }
-
-                updated = true;
-                this.abort();
+      visitNewExpression(path) {
+        if (
+          n.Identifier.check(path.node.callee) &&
+          path.node.callee.name === 'AdminForth' &&
+          path.node.arguments.length > 0 &&
+          n.ObjectExpression.check(path.node.arguments[0])
+        ) {
+          const configObject = path.node.arguments[0];
+  
+          const getOrCreateProp = (obj, name) => {
+            let prop = obj.properties.find(
+              p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === name
+            );
+            if (!prop) {
+              const newObj = b.objectExpression([]);
+              prop = b.objectProperty(b.identifier(name), newObj);
+              obj.properties.push(prop);
+              console.log(chalk.dim(`Added missing '${name}' property.`));
             }
-            return false;
+            return prop.value;
+          };
+  
+          const customization = getOrCreateProp(configObject, 'customization');
+          if (!n.ObjectExpression.check(customization)) return false;
+  
+          const loginPageInjections = getOrCreateProp(customization, 'loginPageInjections');
+          if (!n.ObjectExpression.check(loginPageInjections)) return false;
+  
+          let underInputsProp = loginPageInjections.properties.find(
+            p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'underInputs'
+          );
+  
+          if (underInputsProp) {
+            const currentVal = underInputsProp.value;
+            injectionLine = underInputsProp.loc?.start.line ?? null;
+            if (n.StringLiteral.check(currentVal)) {
+              if (currentVal.value !== componentPath) {
+                underInputsProp.value = b.arrayExpression([
+                  b.stringLiteral(currentVal.value),
+                  b.stringLiteral(componentPath),
+                ]);
+                console.log(chalk.dim(`Converted 'underInputs' to array with existing + new path.`));
+              } else {
+                console.log(chalk.dim(`Component path already present as string. Skipping.`));
+              }
+            } else if (n.ArrayExpression.check(currentVal)) {
+              const exists = currentVal.elements.some(
+                el => n.StringLiteral.check(el) && el.value === componentPath
+              );
+              if (!exists) {
+                currentVal.elements.push(b.stringLiteral(componentPath));
+                console.log(chalk.dim(`Appended new component path to existing 'underInputs' array.`));
+              } else {
+                console.log(chalk.dim(`Component path already present in array. Skipping.`));
+              }
+            } else {
+              console.warn(chalk.yellow(`⚠️ 'underInputs' is not a string or array. Skipping.`));
+              return false;
+            }
+          } else {
+            const newProperty = b.objectProperty(
+                b.identifier('underInputs'), 
+                b.stringLiteral(componentPath)
+              );
+              
+              if (newProperty.loc) {
+                console.log(chalk.dim(`Adding 'underInputs' at line: ${newProperty.loc.start.line}`));
+              }
+              
+              loginPageInjections.properties.push(newProperty);
+              console.log(chalk.dim(`Added 'underInputs': ${componentPath}`));
+          }
+  
+          updated = true;
+          this.abort();
         }
+        return false;
+      }
     });
-
+  
     if (!updated) {
-        throw new Error(`Could not find AdminForth configuration in file: ${indexFilePath}`);
+      throw new Error(`Could not find AdminForth configuration in file: ${indexFilePath}`);
     }
-
+  
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    console.log(chalk.green(`✅ Successfully updated login injection in: ${indexFilePath}`));
-}
+    console.log(
+      chalk.green(
+        `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
+        (injectionLine !== null ? `:${injectionLine}` : '')
+      )
+    );
+  }
 
 
 export async function injectGlobalComponent(indexFilePath, injectionType, componentPath) {
@@ -293,7 +331,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
     });
 
     let updated = false;
-    
+    let injectionLine = null;
     console.log(JSON.stringify(injectionType));
     recast.visit(ast, {
         visitNewExpression(path) {
@@ -315,7 +353,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                     configObject.properties.push(customizationProp);
                     console.log(chalk.dim(`Added missing 'customization' property.`));
                 }
-
+                
                 const customizationValue = customizationProp.value;
                 if (!n.ObjectExpression.check(customizationValue)) return false;
 
@@ -338,7 +376,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                 );
                 if (injectionProp) {
                     const currentValue = injectionProp.value;
-          
+                    injectionLine = injectionProp.loc?.start.line ?? null;
                     if (n.ArrayExpression.check(currentValue)) {
                       currentValue.elements.push(b.stringLiteral(componentPath));
                       console.log(chalk.dim(`Added '${componentPath}' to existing array in '${injectionType}'`));
@@ -374,7 +412,12 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    console.log(chalk.green(`✅ Successfully updated global injection '${injectionType}' in: ${indexFilePath}`));
+    console.log(
+      chalk.green(
+        `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
+        (injectionLine !== null ? `:${injectionLine}` : '')
+      )
+    );
 }
 
 export async function updateCrudInjectionConfig(resourceId, crudType, injectionPosition, componentPathForConfig, isThin) {
@@ -382,6 +425,7 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
     console.log(chalk.dim(`Attempting to update resource CRUD injection: ${filePath}`));
   
     let content;
+    let injectionLine = null;
     try {
       content = await fs.readFile(filePath, 'utf-8');
     } catch (error) {
@@ -439,7 +483,7 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
             );
             pageInjections.properties.push(crudProp);
           }
-  
+          injectionLine = crudProp.loc?.start.line ?? null;
           const crudValue = crudProp.value;
           if (!n.ObjectExpression.check(crudValue)) return false;
   
@@ -458,11 +502,23 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
           ]);
           
           if (injectionProp) {
-            injectionProp.value = newInjectionObject;
-            console.log(chalk.dim(`Updated '${injectionPosition}' injection for '${crudType}'.`));
+            if (n.ArrayExpression.check(injectionProp.value)) {
+              injectionProp.value.elements.push(newInjectionObject);
+              console.log(chalk.dim(`Appended new injection to array at '${injectionPosition}' for '${crudType}'.`));
+            }
+            else if (n.ObjectExpression.check(injectionProp.value)) {
+              injectionProp.value = b.arrayExpression([injectionProp.value, newInjectionObject]);
+              console.log(chalk.dim(`Converted to array and added new injection at '${injectionPosition}' for '${crudType}'.`));
+            }
+            else {
+              injectionProp.value = b.arrayExpression([newInjectionObject]);
+              console.log(chalk.yellow(`⚠️ Replaced invalid injection at '${injectionPosition}' with array.`));
+            }
           } else {
-            crudValue.properties.push(b.objectProperty(b.identifier(injectionPosition), newInjectionObject));
-            console.log(chalk.dim(`Added '${injectionPosition}' injection for '${crudType}'.`));
+            crudValue.properties.push(
+              b.objectProperty(b.identifier(injectionPosition), b.arrayExpression([newInjectionObject]))
+            );
+            console.log(chalk.dim(`Added new array of injections at '${injectionPosition}' for '${crudType}'.`));
           }
   
           updateApplied = true;
@@ -477,7 +533,12 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
   
       const outputCode = recast.print(ast).code;
       await fs.writeFile(filePath, outputCode, 'utf-8');
-      console.log(chalk.dim(`✅ Successfully updated CRUD injection in resource file: ${filePath}`));
+      console.log(
+        chalk.green(
+          `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
+          (injectionLine !== null ? `:${injectionLine}` : '')
+        )
+      );
   
     } catch (error) {
       console.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
