@@ -135,16 +135,10 @@ For example we can prevent the user to see Apartments created by other users. Su
         if (adminUser.dbUser.role === "superadmin") {
           return { ok: true };
         }
-        if (!query.filters || query.filters.length === 0) {
-          query.filters = [];
-        }
-        // skip existing realtor_id filter if it comes from UI Filters (right panel)
-        query.filters = query.filters.filter((filter: any) => filter.field !== "realtor_id");
-        query.filters.push({
-          field: "realtor_id",
-          value: adminUser.dbUser.id,
-          operator: "eq",
-        });
+
+        // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
+        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id).
+       
         return { ok: true };
       },
     },
@@ -199,7 +193,7 @@ Let's limit it:
     dropdownList: {
       beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
         if (adminUser.dbUser.role !== "superadmin") {
-          query.filters = [{field: "id", value: adminUser.dbUser.id, operator: "eq"}];
+          query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
         };
         return {
           "ok": true,
