@@ -11,27 +11,24 @@ export const filtersTools = {
         if (!Array.isArray(query.filters)) {
           throw new Error('query.filters is not an array');
         }
-      
+
         if (!this.checkTopFilterExists(field)) {
           throw new Error(`Top-level filter for field "${field}" not found`);
         }
-      
-        query.filters = query.filters.filter((f: any) => f.field !== field);
+
+        this.removeTopFilterIfExists(field);
       },
-      
+
       removeTopFilterIfExists(field: string) {
-        try {
-          this.removeTopFilter(field);
-        } catch (e) {
-          console.log(e);
-        }
+        if (!Array.isArray(query.filters)) return;
+        query.filters = query.filters.filter((f: any) => f.field !== field);
       },
 
       replaceOrAddTopFilter(filter: { field: string; value: any; operator: string }) {
-          if (!Array.isArray(query.filters)) query.filters = [];
-          this.removeTopFilterIfExists(filter.field);
-          query.filters.push(filter);
-        }
+        if (!Array.isArray(query.filters)) query.filters = [];
+        this.removeTopFilterIfExists(filter.field);
+        query.filters.push(filter);
+      }
     };
   }
 };
