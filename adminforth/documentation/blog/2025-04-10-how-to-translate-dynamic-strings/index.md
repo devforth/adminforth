@@ -234,13 +234,13 @@ You can mitigate this by adding couple of lines into edit hook:
        //diff-add
         const oldStrings = await adminforth.resource('translations').list([
        //diff-add
-            Filters.AND([
+            Filters.AND(
        //diff-add
               Filters.EQ('category', 'seo_page_config'),
        //diff-add
               Filters.IN('en_string', Object.keys(updates).map((key: string) => oldRecord[key]))
        //diff-add
-            ])
+            )
        //diff-add
           ]);
        //diff-add
