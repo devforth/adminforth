@@ -21,6 +21,7 @@ import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, Admin
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
+import { filtersTools } from "../modules/filtersTools.js";
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -614,10 +615,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }[source];
 
         for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest)) {
+          const filterTools = filtersTools.get(body);
+          body.filtersTools = filterTools;
           const resp = await hook({
             resource,
             query: body,
             adminUser,
+            filtersTools: filterTools, 
             extra: {
               body, query, headers, cookies, requestUrl
             },
@@ -856,9 +860,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           targetResources.map(async (targetResource) => {
             return new Promise(async (resolve) => {
               for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
+                const filterTools = filtersTools.get(body);
+                body.filtersTools = filterTools;
                 const resp = await hook({
                   query: body,
                   adminUser,
+                  filtersTools: filterTools, 
                   resource: targetResource,
                   extra: {
                     body, query, headers, cookies, requestUrl
