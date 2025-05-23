@@ -1,6 +1,7 @@
 import {
   ActionCheckSource,
   AdminForthDataTypes,
+  AdminForthResource,
   AdminForthResourcePages,
   AdminUser,
   Filters,
@@ -79,6 +80,20 @@ export default {
          
         });
         return { ok: true, error: "" };
+      },
+      beforeDatasourceRequest: async ({
+        query, adminUser, resource,
+      }: {
+        query: any; adminUser: AdminUser; resource: AdminForthResource;
+      }) => {
+        if (adminUser.dbUser.role === "superadmin") {
+          return { ok: true };
+        }
+
+        // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
+        query.filtersTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id));
+       
+        return { ok: true };
       },
     },
   },
@@ -274,6 +289,25 @@ export default {
     {
       name: "listed",
       required: true, // will be required on create/edit
+    },
+    {
+      name: 'realtor_id',
+      showIn: {filter: true, show: true, edit: true, list: true, create: true},
+      foreignResource: {
+        resourceId: 'users',
+        hooks: {
+          dropdownList: {
+            beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
+              if (adminUser.dbUser.role !== "superadmin") {
+                query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
+              };
+              return {
+                "ok": true,
+              };
+            }
+          },
+        }
+      }
     },
     {
       name: "user_id",
