@@ -99,11 +99,11 @@ hooks: {
         // replace apartment_type filter with complex one
         if (filter.field === 'apartment_type') {
           if (filter.value === 'luxury') {
-            return Filters.OR([Filters.GTE('square_meter', 80), Filters.GTE('price', 100000)]);
+            return Filters.OR(Filters.GTE('square_meter', 80), Filters.GTE('price', 100000));
           }
 
           // filter for "base" apartment as default
-          return Filters.AND([Filters.LT('square_meter', 80), Filters.LT('price', 100000)]);
+          return Filters.AND(Filters.LT('square_meter', 80), Filters.LT('price', 100000));
         }
 
         return filter;
