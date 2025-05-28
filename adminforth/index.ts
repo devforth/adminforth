@@ -236,9 +236,15 @@ class AdminForth implements IAdminForth {
     });
   }
 
-  validateRecordValues(resource: AdminForthResource, record: any): any {
+  validateRecordValues(resource: AdminForthResource, record: any,  mode: 'create' | 'edit'): any {
     // check if record with validation is valid
     for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      const required = typeof column.required === 'object'
+      ? column.required[mode]
+      : true;
+
+      if (!required) continue;
+
       let error = null;
       if (column.isArray?.enabled) {
         error = record[column.name].reduce((err, item) => {
@@ -408,7 +414,7 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
-    const err = this.validateRecordValues(resource, record);
+    const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
     }
@@ -477,7 +483,7 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
-    const err = this.validateRecordValues(resource, record);
+    const err = this.validateRecordValues(resource, record, 'edit');
     if (err) {
       return { error: err };
     }
