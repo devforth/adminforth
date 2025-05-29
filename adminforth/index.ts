@@ -339,6 +339,9 @@ class AdminForth implements IAdminForth {
       }
       if (fieldTypes === null) {
         console.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        if (process.env.NODE_ENV === 'production') {
+          process.exit(1); 
+        }
         return;
       }
       if (!res.columns) {
