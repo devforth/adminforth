@@ -375,6 +375,63 @@ class AdminForth implements IAdminForth {
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
+  async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
+    const results: { [dataSourceId: string]: string[] } = {};
+  
+    // console.log('Connectors to process:', Object.keys(this.connectors));
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = {...this.connectorClasses};
+    }
+    
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllTables === 'function') {
+          try {
+            const tables = await connector.getAllTables();
+            results[dataSourceId] = tables;
+          } catch (err) {
+            console.error(`Error getting tables for dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+
+  async getAllColumnsInTable(
+    tableName: string
+  ): Promise<{ [dataSourceId: string]: string[] }> {
+    const results: { [dataSourceId: string]: string[] } = {};
+  
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = { ...this.connectorClasses };
+    }
+  
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllColumnsInTable === 'function') {
+          try {
+            const columns = await connector.getAllColumnsInTable(tableName);
+            results[dataSourceId] = columns;
+          } catch (err) {
+            console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+  
+
   async bundleNow({ hotReload=false }) {
     await this.codeInjector.bundleNow({ hotReload });
   }

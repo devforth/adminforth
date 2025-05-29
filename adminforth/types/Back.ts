@@ -136,6 +136,15 @@ export interface IAdminForthDataSourceConnector {
   setupClient(url: string): Promise<void>;
   
   /**
+   * Function to get all tables from database.
+   */
+  getAllTables(): Promise<Array<string>>;
+
+  /**
+   * Function to get all columns in table.
+   */
+  getAllColumnsInTable(tableName: string): Promise<Array<string>>;
+  /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.
    * You you will not redefine it, AdminForth will use {@link IAdminForthDataSourceConnector.getData} with limit 1 and offset 0 and
