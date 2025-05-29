@@ -243,7 +243,7 @@ class AdminForth implements IAdminForth {
       ? column.required[mode]
       : true;
 
-      if (!required) continue;
+      if (!required && !record[column.name]) continue;
 
       let error = null;
       if (column.isArray?.enabled) {
