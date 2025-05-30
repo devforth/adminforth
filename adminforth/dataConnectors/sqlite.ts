@@ -9,6 +9,18 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
   async setupClient(url: string): Promise<void> {
     this.client = betterSqlite3(url.replace('sqlite://', ''));
   }
+  async getAllTables(): Promise<Array<string>> {
+    const stmt = this.client.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';`
+    );
+    const rows = stmt.all();
+    return rows.map((row) => row.name);
+  }
+  async getAllColumnsInTable(tableName: string): Promise<Array<string>> {
+    const stmt = this.client.prepare(`PRAGMA table_info(${tableName});`);
+    const rows = stmt.all();
+    return rows.map((row) => row.name);
+  }
 
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;

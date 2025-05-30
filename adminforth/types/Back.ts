@@ -136,6 +136,15 @@ export interface IAdminForthDataSourceConnector {
   setupClient(url: string): Promise<void>;
   
   /**
+   * Function to get all tables from database.
+   */
+  getAllTables(): Promise<Array<string>>;
+
+  /**
+   * Function to get all columns in table.
+   */
+  getAllColumnsInTable(tableName: string): Promise<Array<string>>;
+  /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.
    * You you will not redefine it, AdminForth will use {@link IAdminForthDataSourceConnector.getData} with limit 1 and offset 0 and
@@ -1100,11 +1109,31 @@ export class Filters {
   static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
   }
-  static AND(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
-    return { operator: AdminForthFilterOperators.AND, subFilters };
+  static AND(
+    ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
+  ): IAdminForthAndOrFilter {
+    const subFilters =
+      args.length === 1 && Array.isArray(args[0])
+        ? args[0]
+        : args as Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>;
+  
+    return {
+      operator: AdminForthFilterOperators.AND,
+      subFilters,
+    };
   }
-  static OR(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
-    return { operator: AdminForthFilterOperators.OR, subFilters };
+  static OR(
+    ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
+  ): IAdminForthAndOrFilter {
+    const subFilters =
+      args.length === 1 && Array.isArray(args[0])
+        ? args[0]
+        : args as Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>;
+  
+    return {
+      operator: AdminForthFilterOperators.OR,
+      subFilters,
+    };
   }
 }
 

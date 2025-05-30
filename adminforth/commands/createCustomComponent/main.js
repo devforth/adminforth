@@ -170,6 +170,14 @@ async function handleCrudPageInjectionCreation(config, resources) {
   });
   if (injectionPosition === '__BACK__') return handleCrudPageInjectionCreation(config, resources);
 
+  const additionalName = await input({
+    message: 'Enter additional name (optional, e.g., "CustomExport"):',
+    validate: (value) => {
+      if (!value) return true;
+      return /^[A-Za-z0-9_-]+$/.test(value) || 'Only alphanumeric characters, hyphens or underscores are allowed.';
+    },
+  });
+
   const isThin = await select({
     message: 'Will this component be thin enough to fit on the same page with list (so list will still shrink)?',
     choices: [
@@ -177,9 +185,11 @@ async function handleCrudPageInjectionCreation(config, resources) {
       { name: 'No', value: false },
     ],
   });
-
+  const formattedAdditionalName = additionalName
+    ? additionalName[0].toUpperCase() + additionalName.slice(1)
+    : '';
   const safeResourceLabel = sanitizeLabel(selectedResource.label)
-  const componentFileName = `${safeResourceLabel}${crudType.charAt(0).toUpperCase() + crudType.slice(1)}${injectionPosition.charAt(0).toUpperCase() + injectionPosition.slice(1)}.vue`;
+  const componentFileName = `${safeResourceLabel}${crudType.charAt(0).toUpperCase() + crudType.slice(1)}${injectionPosition.charAt(0).toUpperCase() + injectionPosition.slice(1) + formattedAdditionalName}.vue`;
   const componentPathForConfig = `@@/${componentFileName}`;
 
   try {

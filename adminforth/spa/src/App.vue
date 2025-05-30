@@ -429,6 +429,12 @@ function closeCTA() {
   }
   const hash = ctaBadge.value.hash;
   window.localStorage.setItem(`ctaBadge-${hash}`, '1');
+  nextTick( async() => {
+    loadMenu();
+    await coreStore.fetchMenuBadges();
+    adminforth.menu.refreshMenuBadges();
+  })
+
 }
 
 
