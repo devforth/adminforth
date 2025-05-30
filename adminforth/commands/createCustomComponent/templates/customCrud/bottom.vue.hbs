@@ -1,61 +1,38 @@
 <template>
-  <div class="overflow-auto p-4">
-    <table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-        <tr>
-          <th scope="col" class="px-6 py-3" v-for="header in headers" :key="header">
-            {{ header }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="row in rows"
-          :key="row.id"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <td class="px-6 py-4" v-for="cell in row.cells" :key="cell">
-            {{ cell }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+    <button
+      type="button"
+      @click="handleClick"
+      class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+    >
+      {{ $t('Example') }}
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
 
-const headers = [
-  'ID',
-  'Name',
-  'Email',
-  'Phone',
-  'Address',
-  'City',
-  'Country',
-  'Company',
-  'Position',
-  'Status',
-];
+const { t } = useI18n();
 
-const rows = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  cells: [
-    i + 1,
-    `Name ${i + 1}`,
-    `user${i + 1}@example.com`,
-    `+1-555-010${i.toString().padStart(2, '0')}`,
-    `Address ${i + 1}`,
-    `City ${i + 1}`,
-    `Country ${i + 1}`,
-    `Company ${i + 1}`,
-    `Position ${i + 1}`,
-    i % 2 === 0 ? 'Active' : 'Inactive',
-  ],
-}));
+const props = defineProps<{
+  record: any
+  resource: AdminForthResourceCommon
+  adminUser: AdminUser
+  meta?: any
+}>();
 
 onMounted(() => {
-  console.log('Table mounted. Rows:', rows.length);
+  // Logic on mount if needed
 });
+
+function handleClick() {
+  adminforth.alert({
+    message: t('Confirmed'),
+    variant: 'success',
+  });
+}
 </script>
