@@ -6,10 +6,17 @@ This plugin allows you to upload files to Amazon S3 bucket.
 
 ```
 npm i @adminforth/upload --save
-npm i @adminforth/storage-adapter-amazon-s3 --save
 ```
 
-## S3
+Plugin needs some storage adapter to store files and serve them for preview.
+
+### Using Amazon S3 storage adapter
+
+Amazon S3 is probably the most popular storage service.
+
+```
+npm i @adminforth/storage-adapter-amazon-s3 --save
+```
 
 1. Go to https://aws.amazon.com and login.
 2. Go to Services -> S3 and create a bucket. Put in bucket name e.g. `my-reality-bucket`. 
@@ -204,7 +211,7 @@ export async function getPresignedUrl(s3Path: string): Promise<string> {
 
 Alternatively, if you don't want to generate presigned URLs, you might want to make all objects public. Then you will be able  concatenate backet base domain and path stored in db, and use it as source of image. Let's consider how to do it.
 
-### S3 upload with public access
+#### S3 upload with public access
 
 1. First of all go to your bucket settings, Permissions, scroll down to Block public access (bucket settings for this bucket) and uncheck all checkboxes.
 2. Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" and "Bucket owner preferred" radio buttons.
@@ -267,6 +274,8 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
 ```
 
 Also you will have to enable static website hosting in your bucket settings and set index.html and error.html to empty strings.
+
+### S
 
 
 ## Image generation
