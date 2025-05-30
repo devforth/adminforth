@@ -1,4 +1,3 @@
-import { stringify } from 'flatted';
 import { callTsProxy, findAdminInstance } from "../callTsProxy.js";
 import { toTitleCase } from '../utils.js';
 import { generateResourceFile } from "./generateResourceFile.js";
@@ -8,7 +7,6 @@ import { select } from "@inquirer/prompts";
 export default async function createResource(args) {
   console.log("Bundling admin SPA...");
   const instance = await findAdminInstance();
-  console.log("🪲 AdminForth config:", stringify(instance.file));
   console.log("🪲 Found admin instance:", instance.file);
   console.log("🪲 Found admin instance:", instance.file);
   console.log(JSON.stringify(instance));
