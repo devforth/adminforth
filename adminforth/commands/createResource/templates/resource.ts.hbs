@@ -1,0 +1,19 @@
+import { v1 as uuid } from "uuid";
+import { AdminForthResourceInput } from "adminforth";
+
+export default {
+  dataSource: "{{dataSource}}",
+  table: "{{table}}",
+  resourceId: "{{resourceId}}",
+  label: "{{label}}",
+  columns: [
+    {{#each columns}}
+    {
+      name: "{{this}}"
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  options: {
+    listPageSize: 10,
+  },
+} as AdminForthResourceInput;
