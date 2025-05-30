@@ -353,6 +353,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         return newRecord;
     });
   }
+  async getAllTables(): Promise<string[]> {
+    throw new Error('getAllTables() must be implemented in subclass');
+  }
+
+  async getAllColumnsInTable(tableName: string): Promise<string[]> {
+    throw new Error('getAllColumnsInTable() must be implemented in subclass');
+  }
 
     
 }
