@@ -1,11 +1,17 @@
 <template>
   <div class="text-center text-gray-500 text-sm mt-4">
-    {{reason}}
+    User Menu Text
   </div>
 </template>
 
 <script setup>
-    defineProps({
-        reason: String
-    });
+import { onMounted } from 'vue';
+
+const props = defineProps<{
+  reason: String
+}>();
+
+onMounted(() => {
+  // Logic on mount if needed
+});
 </script>

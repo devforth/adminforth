@@ -519,9 +519,19 @@ Default behavior of the Dialog component will allow user to close it by just cli
   </div>
 </div>
 
-### Dialog open and close
+### Programatically open or close dialog
 
-You can open and close dialog by calling `open` and `close` methods.
+If you want to control dialog programmatically, you can use `ref` to get a reference to the dialog component. 
+
+```html
+<Dialog ref="confirmDialog" class="w-96">
+  <div class="space-y-4">
+    The dialog content goes here.
+  </div>
+</Dialog>
+```
+
+Now you can open and close dialog by calling `open` and `close` methods.
 
 ```ts
 

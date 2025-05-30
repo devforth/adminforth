@@ -236,9 +236,15 @@ class AdminForth implements IAdminForth {
     });
   }
 
-  validateRecordValues(resource: AdminForthResource, record: any): any {
+  validateRecordValues(resource: AdminForthResource, record: any,  mode: 'create' | 'edit'): any {
     // check if record with validation is valid
     for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      const required = typeof column.required === 'object'
+      ? column.required[mode]
+      : true;
+
+      if (!required && !record[column.name]) continue;
+
       let error = null;
       if (column.isArray?.enabled) {
         error = record[column.name].reduce((err, item) => {
@@ -333,6 +339,9 @@ class AdminForth implements IAdminForth {
       }
       if (fieldTypes === null) {
         console.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        if (process.env.NODE_ENV === 'production') {
+          process.exit(1); 
+        }
         return;
       }
       if (!res.columns) {
@@ -368,6 +377,63 @@ class AdminForth implements IAdminForth {
 
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
+
+  async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
+    const results: { [dataSourceId: string]: string[] } = {};
+  
+    // console.log('Connectors to process:', Object.keys(this.connectors));
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = {...this.connectorClasses};
+    }
+    
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllTables === 'function') {
+          try {
+            const tables = await connector.getAllTables();
+            results[dataSourceId] = tables;
+          } catch (err) {
+            console.error(`Error getting tables for dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+
+  async getAllColumnsInTable(
+    tableName: string
+  ): Promise<{ [dataSourceId: string]: string[] }> {
+    const results: { [dataSourceId: string]: string[] } = {};
+  
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = { ...this.connectorClasses };
+    }
+  
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllColumnsInTable === 'function') {
+          try {
+            const columns = await connector.getAllColumnsInTable(tableName);
+            results[dataSourceId] = columns;
+          } catch (err) {
+            console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+  
 
   async bundleNow({ hotReload=false }) {
     await this.codeInjector.bundleNow({ hotReload });
@@ -408,7 +474,7 @@ class AdminForth implements IAdminForth {
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any }> {
 
-    const err = this.validateRecordValues(resource, record);
+    const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
     }
@@ -477,7 +543,7 @@ class AdminForth implements IAdminForth {
     { resource, recordId, record, oldRecord, adminUser, extra }:
     { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
-    const err = this.validateRecordValues(resource, record);
+    const err = this.validateRecordValues(resource, record, 'edit');
     if (err) {
       return { error: err };
     }
