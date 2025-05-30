@@ -13,10 +13,9 @@
     </div>
     <table v-else class=" w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
 
-      <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td scope="col" class="p-4">
+        <!-- <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+          <th scope="col" class="p-4">
             <div class="flex items-center">
               <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
                     :disabled="!rows || !rows.length"
@@ -24,9 +23,9 @@
                     focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
             </div>
-          </td>
+          </th>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <th v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -53,15 +52,16 @@
               </span>
 
             </div>
-          </td>
+          </th>
 
-          <td scope="col" class="px-6 py-3">
+          <th scope="col" class="px-6 py-3">
             {{ $t('Actions') }}
-          </td>
+          </th>
         </tr>
         <tr v-for="c in tableBodyStartInjection" :key="c.id" class="align-top border-b border-lightListBorder dark:border-darkListBorder dark:bg-darkListTable">
           <component :is="getCustomComponent(c)" :meta="c.meta" :resource="resource" :adminUser="coreStore.adminUser" />
-        </tr>
+        </tr> -->
+
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
@@ -83,117 +83,134 @@
 
           </td>
         </tr>
-
-        <tr @click="onClick($event,row)" 
-          v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
-          ref="rowRefs"
-          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-
-          :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+        <DynamicScroller
+          v-else
+          :items="rows"
+          key-field="_primaryKeyValue"
+          :min-item-size="25" 
+          class="scroller"
+          v-bind="$attrs"
+          :prerender="10"
+          emit-update="true"
+          item-tag="tr"
+          list-tag="tbody"
         >
-          <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex items center ">
-              <input
-                @click="(e)=>{e.stopPropagation()}"
-                id="checkbox-table-search-1"
-                type="checkbox"
-                :checked="checkboxesInternal.includes(row._primaryKeyValue)"
-                @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
-              <label for="checkbox-table-search-1" class="sr-only">{{ $t('checkbox') }}</label>
-            </div>
-          </td>
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
-            <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
-            <component
-              :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
-              :meta="c?.components?.list?.meta"
-              :column="c"
-              :record="row"
-              :adminUser="coreStore.adminUser"
-              :resource="resource"
-            />
-          </td>
-          <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
-              <Tooltip>
-                <RouterLink
-                  v-if="resource.options?.allowedActions.show"
-                  :to="{ 
-                    name: 'resource-show', 
-                    params: { 
-                      resourceId: resource.resourceId, 
-                      primaryKey: row._primaryKeyValue,
-                    }
-                  }"
-
-                >
-                  <IconEyeSolid class="w-5 h-5 me-2"/>
-                </RouterLink>
-
-                <template v-slot:tooltip>
-                  {{ $t('Show item') }}
-                </template>
-              </Tooltip>
-
-              <Tooltip>
-                <RouterLink
-                  v-if="resource.options?.allowedActions.edit"
-                  :to="{ 
-                    name: 'resource-edit', 
-                    params: { 
-                      resourceId: resource.resourceId, 
-                      primaryKey: row._primaryKeyValue,
-                    }
-                  }"
-                >
-                  <IconPenSolid class="w-5 h-5 me-2"/>
-                </RouterLink>
-                <template v-slot:tooltip>
-                  {{ $t('Edit item') }}
-                </template>
-              </Tooltip>
-
-              <Tooltip>
-                <button
-                  v-if="resource.options?.allowedActions.delete"
-                  @click="deleteRecord(row)"
-                >
-                  <IconTrashBinSolid class="w-5 h-5 me-2"/>
-                </button>
-
-                <template v-slot:tooltip>
-                  {{ $t('Delete item') }}
-                </template>
-              </Tooltip>
-                
-              <template v-if="customActionsInjection">
-                <component 
-                  v-for="c in customActionsInjection"
-                  :is="getCustomComponent(c)" 
-                  :meta="c.meta"
-                  :resource="coreStore.resource" 
-                  :adminUser="coreStore.adminUser"
+          <template #before>
+            
+       
+          </template>
+          <template #default="{ item: row, index: rowI }">
+            <DynamicScrollerItem
+              :item="row"
+              :active="true"
+              class="scroller-item"
+              :index="rowI"
+              :key="row._primaryKeyValue"
+              @click="onClick($event, row)"
+            >
+              <td class="w-4 p-4 cursor-default" @click.stop>
+                <div class="flex items-center">
+                  <input
+                    @click="(e)=>{e.stopPropagation()}"
+                    type="checkbox"
+                    :checked="checkboxesInternal.includes(row._primaryKeyValue)"
+                    @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded cursor-pointer focus:ring-blue-500"/>
+                  <label for="checkbox-table-search-1" class="sr-only">{{ $t('checkbox') }}</label>
+                </div>
+              </td>
+              <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4 w-[150px]">
+                <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
+                <component
+                  :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
+                  :meta="c?.components?.list?.meta"
+                  :column="c"
                   :record="row"
+                  :adminUser="coreStore.adminUser"
+                  :resource="resource"
                 />
-              </template>
+              </td>
+              <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
+                <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
+                  <Tooltip>
+                    <RouterLink
+                      v-if="resource.options?.allowedActions.show"
+                      :to="{ 
+                        name: 'resource-show', 
+                        params: { 
+                          resourceId: resource.resourceId, 
+                          primaryKey: row._primaryKeyValue,
+                        }
+                      }"
 
-              <template v-if="resource.options?.actions">
-                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
-                  <button
-                    @click="startCustomAction(action.id, row)"
-                  >
-                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
-                  </button>
-                  <template v-slot:tooltip>
-                    {{ action.name }}
+                    >
+                      <IconEyeSolid class="w-5 h-5 me-2"/>
+                    </RouterLink>
+
+                    <template v-slot:tooltip>
+                      {{ $t('Show item') }}
+                    </template>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <RouterLink
+                      v-if="resource.options?.allowedActions.edit"
+                      :to="{ 
+                        name: 'resource-edit', 
+                        params: { 
+                          resourceId: resource.resourceId, 
+                          primaryKey: row._primaryKeyValue,
+                        }
+                      }"
+                    >
+                      <IconPenSolid class="w-5 h-5 me-2"/>
+                    </RouterLink>
+                    <template v-slot:tooltip>
+                      {{ $t('Edit item') }}
+                    </template>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <button
+                      v-if="resource.options?.allowedActions.delete"
+                      @click="deleteRecord(row)"
+                    >
+                      <IconTrashBinSolid class="w-5 h-5 me-2"/>
+                    </button>
+
+                    <template v-slot:tooltip>
+                      {{ $t('Delete item') }}
+                    </template>
+                  </Tooltip>
+                    
+                  <template v-if="customActionsInjection">
+                    <component 
+                      v-for="c in customActionsInjection"
+                      :is="getCustomComponent(c)" 
+                      :meta="c.meta"
+                      :resource="coreStore.resource" 
+                      :adminUser="coreStore.adminUser"
+                      :record="row"
+                    />
                   </template>
-                </Tooltip>
-              </template>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+
+                  <template v-if="resource.options?.actions">
+                    <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
+                      <button
+                        @click="startCustomAction(action.id, row)"
+                      >
+                        <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
+                      </button>
+                      <template v-slot:tooltip>
+                        {{ action.name }}
+                      </template>
+                    </Tooltip>
+                  </template>
+                </div>
+              </td>
+            </DynamicScrollerItem>
+          </template>
+        </DynamicScroller>
     </table>
   </div>
   <!-- pagination
@@ -313,6 +330,7 @@ import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -392,6 +410,10 @@ const rowHeights = ref([]);
 const columnWidths = ref([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
+  console.log('123123', props.rows, props.rows.length);
+  for (const row of props.rows) {
+  console.log(row);
+}
   rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
   columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
 });
@@ -599,5 +621,8 @@ input[type="checkbox"][disabled] {
 }
 input[type="checkbox"]:not([disabled]) {
   @apply cursor-pointer;
+}
+.scroller {
+  @apply overflow-auto h-[600px];
 }
 </style>
