@@ -86,7 +86,9 @@ export const useCoreStore = defineStore('core', () => {
   }
   async function subscribeToMenuBadges() {
     const processItem = (mi: AdminForthConfigMenuItem) => {
-      if (mi.badge) {
+
+      // console.log('🔔 subscribeToMenuBadges', mi.badge, JSON.stringify(mi));
+      if (mi.badge !== undefined) {
         websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
           mi.badge = badge;
         });
