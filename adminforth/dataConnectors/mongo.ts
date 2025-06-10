@@ -46,7 +46,39 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         [AdminForthSortDirections.asc]: 1,
         [AdminForthSortDirections.desc]: -1,
     };
+    async getAllTables(): Promise<Array<string>>{
+        const db = this.client.db();
+    
+        const collections = await db.listCollections().toArray();
+    
+        return collections.map(col => col.name);
+    }
 
+    async getAllColumnsInTable(collectionName: string): Promise<Array<string>> {
+
+        const sampleDocs = await this.client.db().collection(collectionName).find({}).limit(100).toArray();
+        
+        const fieldSet = new Set<string>();
+        
+        function flattenObject(obj: any, prefix = '') {
+            Object.entries(obj).forEach(([key, value]) => {
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+                flattenObject(value, fullKey);
+            } else {
+                fieldSet.add(fullKey);
+            }
+            });
+        }
+        
+        for (const doc of sampleDocs) {
+            flattenObject(doc);
+        }
+        
+        return Array.from(fieldSet);
+    }
+      
+    
     async discoverFields(resource) {
         return resource.columns.filter((col) => !col.virtual).reduce((acc, col) => {
             if (!col.type) {
