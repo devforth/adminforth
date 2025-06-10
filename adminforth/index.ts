@@ -391,7 +391,6 @@ class AdminForth implements IAdminForth {
           // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
           results[dataSourceId] = [];
         }
-        await connector.close();
       })
     );
   
@@ -420,7 +419,6 @@ class AdminForth implements IAdminForth {
         } else {
           results[dataSourceId] = [];
         }
-        await connector.close();
       })
     );
   

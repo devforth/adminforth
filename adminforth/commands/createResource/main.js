@@ -14,7 +14,9 @@ export default async function createResource(args) {
     import { admin } from './${instance.file}.js';
     export async function exec() {
       await admin.discoverDatabases();
-      return await admin.getAllTables();
+      const allTables = await admin.getAllTables();
+      setTimeout(process.exit); 
+      return allTables;
     }
   `);
 
@@ -34,7 +36,9 @@ export default async function createResource(args) {
     import { admin } from './${instance.file}.js';
     export async function exec() {
       await admin.discoverDatabases();
-      return await admin.getAllColumnsInTable("${table.table}");
+      const columns = await admin.getAllColumnsInTable("${table.table}");
+      setTimeout(process.exit);
+      return columns;
     }
   `);
   console.log("🪲 Found columns:", columns);
