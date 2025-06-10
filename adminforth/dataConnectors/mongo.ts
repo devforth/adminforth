@@ -56,7 +56,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async getAllColumnsInTable(collectionName: string): Promise<Array<string>> {
 
-        const sampleDocs = await this.client.db().collection(collectionName).find({}).limit(100).toArray();
+        const sampleDocs = await this.client.db().collection(collectionName).find({}).sort({ _id: -1 }).limit(100).toArray();
         
         const fieldSet = new Set<string>();
         
