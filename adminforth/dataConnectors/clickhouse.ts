@@ -108,7 +108,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           field._underlineType = baseType;
           field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
-          field.primaryKey = row.pk == 1;
+          field.primaryKey = row.is_in_primary_key == 1;
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });

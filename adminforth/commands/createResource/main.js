@@ -2,7 +2,7 @@ import { callTsProxy, findAdminInstance } from "../callTsProxy.js";
 import { toTitleCase } from '../utils.js';
 import { generateResourceFile } from "./generateResourceFile.js";
 import { injectResourceIntoIndex } from "./injectResourceIntoIndex.js";
-import { select } from "@inquirer/prompts";
+import { search, Separator } from "@inquirer/prompts";
 
 export default async function createResource(args) {
   console.log("Bundling admin SPA...");
@@ -27,9 +27,20 @@ export default async function createResource(args) {
     }))
   );
   
-  const table = await select({
-    message: "🗂 Choose a table to generate a resource for:",
-    choices: tableChoices,
+  const table = await search({
+    message: '🔍 Choose a table to generate a resource for:',
+    source: async (input = '') => {
+      const term = input.toLowerCase();
+      const choices = tableChoices
+        .filter(c =>
+          c.name.toLowerCase().includes(term)
+        )
+        .map(c => ({ name: c.name, value: c.value }));
+      return [
+        ...choices,
+        new Separator(),
+      ];
+    },
   });
 
   const columns = await callTsProxy(`
