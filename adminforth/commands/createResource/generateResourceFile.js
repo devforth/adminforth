@@ -17,31 +17,61 @@ export async function generateResourceFile({
   dataSource = "maindb",
   resourcesDir = "resources"
 }) {
-  const fileName = `${table}.ts`;
-  const filePath = path.resolve(process.cwd(), resourcesDir, fileName);
+  const baseFileName = `${table}.ts`;
+  const baseFilePath = path.resolve(process.cwd(), resourcesDir, baseFileName);
 
-  if (fsSync.existsSync(filePath)) {
-    console.log(chalk.yellow(`⚠️ File already exists: ${filePath}`));
-    return { alreadyExists: true, path: filePath };
+  if (fsSync.existsSync(baseFilePath)) {
+    const content = await fs.readFile(baseFilePath, "utf-8");
+    const match = content.match(/dataSource:\s*["'](.+?)["']/);
+    const existingDataSource = match?.[1];
+    console.log(existingDataSource, "123444444444");
+    if (existingDataSource === dataSource) {
+      console.log(chalk.yellow(`⚠️ File already exists with same dataSource: ${baseFilePath}`));
+      return { alreadyExists: true, path: baseFilePath, fileName: baseFileName, resourceId: table };
+    } else {
+      const suffixedFileName = `${table}_${dataSource}.ts`;
+      const suffixedFilePath = path.resolve(process.cwd(), resourcesDir, suffixedFileName);
+      return await writeResourceFile(suffixedFilePath, suffixedFileName, {
+        table,
+        columns,
+        dataSource,
+        resourceId: `${table}_${dataSource}`,
+      });
+    }
   }
+
+  return await writeResourceFile(baseFilePath, baseFileName, {
+    table,
+    columns,
+    dataSource,
+    resourceId: table,
+  });
+}
+
+async function writeResourceFile(filePath, fileName, {
+  table,
+  columns,
+  dataSource,
+  resourceId,
+}) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const templatePath = path.resolve(__dirname, "templates/resource.ts.hbs");
   console.log(chalk.dim(`Using template: ${templatePath}`));
+
   const context = {
     table,
     dataSource,
-    resourceId: table,
+    resourceId,
     label: table.charAt(0).toUpperCase() + table.slice(1),
     columns,
   };
 
   const content = await renderHBSTemplate(templatePath, context);
-
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, content, "utf-8");
 
   console.log(chalk.green(`✅ Generated resource file: ${filePath}`));
 
-  return { alreadyExists: false, path: filePath };
+  return { alreadyExists: false, path: filePath, fileName, resourceId };
 }
