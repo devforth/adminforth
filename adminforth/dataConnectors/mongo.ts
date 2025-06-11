@@ -63,6 +63,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         function flattenObject(obj: any, prefix = '') {
             Object.entries(obj).forEach(([key, value]) => {
             const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (fullKey.startsWith('_id.') && typeof value !== 'string' && typeof value !== 'number') {
+                return;
+              }
             if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
                 flattenObject(value, fullKey);
             } else {

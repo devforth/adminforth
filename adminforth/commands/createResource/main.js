@@ -5,11 +5,7 @@ import { injectResourceIntoIndex } from "./injectResourceIntoIndex.js";
 import { search, Separator } from "@inquirer/prompts";
 
 export default async function createResource(args) {
-  console.log("Bundling admin SPA...");
   const instance = await findAdminInstance();
-  console.log("🪲 Found admin instance:", instance.file);
-  console.log("🪲 Found admin instance:", instance.file);
-  console.log(JSON.stringify(instance));
   const tables = await callTsProxy(`
     import { admin } from './${instance.file}.js';
     export async function exec() {
@@ -52,16 +48,16 @@ export default async function createResource(args) {
       return columns;
     }
   `);
-  console.log("🪲 Found columns:", columns);
 
-  generateResourceFile({
+  const { resourceId } = await generateResourceFile({
     table: table.table,
     columns: columns[table.db],
     dataSource: table.db,
   });
+
   injectResourceIntoIndex({
-    table: table.table,
-    resourceId: table.table,
+    table: resourceId,
+    resourceId: resourceId,
     label: toTitleCase(table.table),
     icon: "flowbite:user-solid",
   });
