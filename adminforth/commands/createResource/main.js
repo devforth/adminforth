@@ -2,19 +2,17 @@ import { callTsProxy, findAdminInstance } from "../callTsProxy.js";
 import { toTitleCase } from '../utils.js';
 import { generateResourceFile } from "./generateResourceFile.js";
 import { injectResourceIntoIndex } from "./injectResourceIntoIndex.js";
-import { select } from "@inquirer/prompts";
+import { search, Separator } from "@inquirer/prompts";
 
 export default async function createResource(args) {
-  console.log("Bundling admin SPA...");
   const instance = await findAdminInstance();
-  console.log("🪲 Found admin instance:", instance.file);
-  console.log("🪲 Found admin instance:", instance.file);
-  console.log(JSON.stringify(instance));
   const tables = await callTsProxy(`
     import { admin } from './${instance.file}.js';
     export async function exec() {
       await admin.discoverDatabases();
-      return await admin.getAllTables();
+      const allTables = await admin.getAllTables();
+      setTimeout(process.exit); 
+      return allTables;
     }
   `);
 
@@ -25,28 +23,41 @@ export default async function createResource(args) {
     }))
   );
   
-  const table = await select({
-    message: "🗂 Choose a table to generate a resource for:",
-    choices: tableChoices,
+  const table = await search({
+    message: '🔍 Choose a table to generate a resource for:',
+    source: async (input = '') => {
+      const term = input.toLowerCase();
+      const choices = tableChoices
+        .filter(c =>
+          c.name.toLowerCase().includes(term)
+        )
+        .map(c => ({ name: c.name, value: c.value }));
+      return [
+        ...choices,
+        new Separator(),
+      ];
+    },
   });
 
   const columns = await callTsProxy(`
     import { admin } from './${instance.file}.js';
     export async function exec() {
       await admin.discoverDatabases();
-      return await admin.getAllColumnsInTable("${table.table}");
+      const columns = await admin.getAllColumnsInTable("${table.table}");
+      setTimeout(process.exit);
+      return columns;
     }
   `);
-  console.log("🪲 Found columns:", columns);
 
-  generateResourceFile({
+  const { resourceId } = await generateResourceFile({
     table: table.table,
     columns: columns[table.db],
     dataSource: table.db,
   });
+
   injectResourceIntoIndex({
-    table: table.table,
-    resourceId: table.table,
+    table: resourceId,
+    resourceId: resourceId,
     label: toTitleCase(table.table),
     icon: "flowbite:user-solid",
   });
