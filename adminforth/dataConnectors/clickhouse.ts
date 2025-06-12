@@ -30,7 +30,36 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       // }
     });
   }
-
+  async getAllTables(): Promise<Array<string>> {
+    const res = await this.client.query({
+        query: `
+            SELECT name
+            FROM system.tables
+            WHERE database = '${this.dbName}'
+        `,
+        format: 'JSON',
+    });
+    const jsonResult = await res.json();
+    return jsonResult.data.map((row: any) => row.name);
+  }
+  
+  async getAllColumnsInTable(tableName: string): Promise<string[]> {
+    const res = await this.client.query({
+      query: `
+        SELECT name
+        FROM system.columns
+        WHERE database = '${this.dbName}' AND table = {table:String}
+      `,
+      format: 'JSON',
+      query_params: {
+        table: tableName,
+      },
+    });
+  
+    const jsonResult = await res.json();
+    return jsonResult.data.map((row: any) => row.name);
+  }
+  
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
 
@@ -79,7 +108,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           field._underlineType = baseType;
           field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
-          field.primaryKey = row.pk == 1;
+          field.primaryKey = row.is_in_primary_key == 1;
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
