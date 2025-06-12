@@ -393,6 +393,11 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
+      
+      /**
+       * Whether to use virtual scroll in list view.
+       */
+      listVirtualScrollEnabled?: boolean,
 
       /**
        * Callback to define what happens when user clicks on record in list view.

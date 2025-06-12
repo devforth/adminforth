@@ -39,6 +39,29 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     [AdminForthSortDirections.desc]: 'DESC',
   };
 
+  async getAllTables(): Promise<Array<string>> {
+    const [rows] = await this.client.query(
+        `
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';
+        `
+    );
+    return rows.map((row: any) => row.TABLE_NAME);
+  }
+
+  async getAllColumnsInTable(tableName: string): Promise<Array<string>> {
+    const [rows] = await this.client.query(
+        `
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = ? AND table_schema = DATABASE();
+        `,
+        [tableName]
+    );
+    return rows.map((row: any) => row.COLUMN_NAME);
+  }
+
   async discoverFields(resource) {
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     const fieldTypes = {};

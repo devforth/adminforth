@@ -16,7 +16,7 @@ async function bundle() {
     `);
 
   } catch (e) {
-    console.log(`Running file ${file} failed`, e);
+    console.log(`Running budndle failed`, e);
   }
 }
 
