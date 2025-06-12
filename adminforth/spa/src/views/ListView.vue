@@ -106,8 +106,27 @@
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
-
+    <ResourceListTableVirtual
+      v-if="isVirtualScrollEnabled"
+      :resource="coreStore.resource"
+      :rows="rows"
+      :page="page"
+      @update:page="page = $event"
+      @update:sort="sort = $event"
+      @update:checkboxes="checkboxes = $event"
+      @update:records="getList"
+      :sort="sort"
+      :pageSize="pageSize"
+      :totalRows="totalRows"
+      :checkboxes="checkboxes"
+      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
+      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
+      :container-height="1100"
+      :item-height="52.5"
+      :buffer-size="30"
+    />
     <ResourceListTable
+      v-else
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -136,6 +155,7 @@
 
 <script setup lang="ts">
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
+import ResourceListTableVirtual from '@/components/ResourceListTableVirtual.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
@@ -181,6 +201,7 @@ const DEFAULT_PAGE_SIZE = 10;
 
 
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
+const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 
 const isPageLoaded = ref(false);
 
