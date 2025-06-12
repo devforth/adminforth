@@ -1059,7 +1059,6 @@ export interface AdminForthConfigForFrontend {
   },
   announcementBadge?: AnnouncementBadgeResponse | null,
   adminforthUserCleanupWarning?: AnnouncementBadgeResponse | null,
-  adminforthUserExists?: boolean,
   globalInjections: {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,

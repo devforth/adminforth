@@ -277,13 +277,7 @@ import adminforth from '@/adminforth';
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
-const adminforthUserCleanupWarning = computed(() => {
-  const badge = coreStore.config?.adminforthUserCleanupWarning;
-  if (!badge) return null;
-  if (process.env.NODE_ENV === 'production' || coreStore.adminUser?.dbUser.role !== 'superadmin') return null;
-  if (!coreStore.config?.adminforthUserExists) return null;
-  return { ...badge };
-});
+
 initFrontedAPI()
 
 createHead()
@@ -455,6 +449,13 @@ function closeCTA() {
     adminforth.menu.refreshMenuBadges();
   })
 }
+
+const adminforthUserCleanupWarning = computed(() => {
+  const badge = coreStore.config?.adminforthUserCleanupWarning;
+  if (!badge) return null;
+  if (process.env.NODE_ENV !== 'production' || coreStore.adminUser?.dbUser.email !== 'adminforth') return null;
+  return { ...badge };
+});
 
 
 </script>

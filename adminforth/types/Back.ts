@@ -971,8 +971,6 @@ export interface AdminForthInputConfig {
        */
       rememberMeDays?: number,
 
-      adminforthUserExists?: () => Promise<boolean>,
-
       /**
        * Can be used to limit user access when subscribing from frontend to websocket topics.
        * @param topic - topic where user is trying to subscribe

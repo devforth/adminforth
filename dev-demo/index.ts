@@ -84,9 +84,6 @@ export const admin = new AdminForth({
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
       adminforth.resource('users').update(adminUser.dbUser.id, { last_login_ip: adminforth.auth.getClientIp(extra.headers) });
     }],
-    adminforthUserExists: async (): Promise<boolean> => {
-      return !!await admin.resource('users').get([Filters.EQ('email', 'adminforth')]);
-    },
     websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
       if (!adminUser) {
         // don't allow anonymous users to subscribe

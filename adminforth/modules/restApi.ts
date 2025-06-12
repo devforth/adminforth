@@ -250,7 +250,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
-        const adminforthUserExists = await this.adminforth.config.auth.adminforthUserExists?.();
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
@@ -316,7 +315,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           emptyFieldPlaceholder: this.adminforth.config.customization.emptyFieldPlaceholder,
           announcementBadge,
           adminforthUserCleanupWarning,
-          adminforthUserExists,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
         }
