@@ -596,7 +596,7 @@ class CodeInjector implements ICodeInjector {
       }
     } catch (e) {
       // ignore
-      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
+      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install', e);
     }
 
     await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
