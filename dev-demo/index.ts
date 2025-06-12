@@ -519,8 +519,8 @@ admin.express.serve(app);
 admin.discoverDatabases().then(async () => {
   console.log('🅿️  Database discovered');
 
-  if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-    await admin.resource('users').create({
+  if (await admin.resource('adminuser').count() === 0) {
+    await admin.resource('adminuser').create({
       email: 'adminforth',
       password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       role: 'superadmin',
