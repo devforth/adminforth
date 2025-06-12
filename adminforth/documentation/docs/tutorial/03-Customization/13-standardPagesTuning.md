@@ -136,6 +136,22 @@ export default {
   ]
 ```
 
+### Virtual scroll
+
+Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table
+
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+//diff-add
+        listVirtualScrollEnabled: true,
+      }
+    }
+  ]
+```
+
 ### Custom row click action
 
 By default, when you click on a record in the list view, the show view will be opened. 
