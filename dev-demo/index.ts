@@ -176,6 +176,19 @@ export const admin = new AdminForth({
       }
     },
 
+    adminforthUserCleanupWarning: (adminUser: AdminUser) => {
+      return {
+        html: `
+          <p>The default admin user adminforth is still active in production.</p>
+          <p>For security reasons, it's strongly recommended to create your own account and delete this default user.</p>
+          <br>
+          <p><strong>This action is critical and cannot be undone.</strong></p>
+        `,
+        closable: false,
+        title: 'Critical Security Warning',
+      }
+    },
+
     // loginPageInjections: {
     //   underInputs: '@@/login2.vue',
     // }
