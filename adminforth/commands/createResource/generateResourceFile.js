@@ -24,7 +24,6 @@ export async function generateResourceFile({
     const content = await fs.readFile(baseFilePath, "utf-8");
     const match = content.match(/dataSource:\s*["'](.+?)["']/);
     const existingDataSource = match?.[1];
-    console.log(existingDataSource, "123444444444");
     if (existingDataSource === dataSource) {
       console.log(chalk.yellow(`⚠️ File already exists with same dataSource: ${baseFilePath}`));
       return { alreadyExists: true, path: baseFilePath, fileName: baseFileName, resourceId: table };
