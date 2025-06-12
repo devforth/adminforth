@@ -165,7 +165,21 @@
           </p>
           <!-- <a class="text-sm text-lightPrimary underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
         </div>
-
+        <div id="user-warning" class="p-4 mt-6 rounded-lg bg-red-900 dark:bg-red-900
+          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="warning"
+          v-if="adminforthUserCleanupWarning">
+          <div class="flex items-center mb-3" :class="!adminforthUserCleanupWarning.title ? 'float-right' : ''">
+            <span>
+              <strong>
+              {{adminforthUserCleanupWarning.title}}
+              </strong>
+            </span>
+          </div>
+          <p class="mb-3 text-sm " v-if="adminforthUserCleanupWarning.html" v-html="adminforthUserCleanupWarning.html"></p>
+          <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
+            {{ adminforthUserCleanupWarning.text }}  
+          </p>
+        </div>
         <component 
           v-for="c in coreStore?.config?.globalInjections?.sidebar || []"
           :is="getCustomComponent(c)"
@@ -263,7 +277,13 @@ import adminforth from '@/adminforth';
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
-
+const adminforthUserCleanupWarning = computed(() => {
+  const badge = coreStore.config?.adminforthUserCleanupWarning;
+  if (!badge) return null;
+  if (process.env.NODE_ENV === 'production' || coreStore.adminUser?.dbUser.role !== 'superadmin') return null;
+  if (!coreStore.config?.adminforthUserExists) return null;
+  return { ...badge };
+});
 initFrontedAPI()
 
 createHead()
@@ -434,7 +454,6 @@ function closeCTA() {
     await coreStore.fetchMenuBadges();
     adminforth.menu.refreshMenuBadges();
   })
-
 }
 
 

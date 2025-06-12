@@ -84,6 +84,9 @@ export const admin = new AdminForth({
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
       adminforth.resource('users').update(adminUser.dbUser.id, { last_login_ip: adminforth.auth.getClientIp(extra.headers) });
     }],
+    adminforthUserExists: async (): Promise<boolean> => {
+      return !!await admin.resource('users').get([Filters.EQ('email', 'adminforth')]);
+    },
     websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
       if (!adminUser) {
         // don't allow anonymous users to subscribe
@@ -173,6 +176,19 @@ export const admin = new AdminForth({
 <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
         closable: true,
         title: 'Support us for free',
+      }
+    },
+
+    adminforthUserCleanupWarning: (adminUser: AdminUser) => {
+      return {
+        html: `
+          <p>The default admin user adminforth is still active in production.</p>
+          <p>For security reasons, it's strongly recommended to create your own account and delete this default user.</p>
+          <br>
+          <p><strong>This action is critical and cannot be undone.</strong></p>
+        `,
+        closable: false,
+        title: 'Critical Security Warning',
       }
     },
 
