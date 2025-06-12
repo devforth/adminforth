@@ -138,7 +138,7 @@ export default {
 
 ### Virtual scroll
 
-Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table
+Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table. The default value is false. Enable this option if you need to display a large number of records on a single page.
 
 ```typescript title="./resources/apartments.ts"
 export default {
