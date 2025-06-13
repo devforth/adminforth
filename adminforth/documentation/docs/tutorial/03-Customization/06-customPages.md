@@ -134,10 +134,25 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
                       show: true,
                       label: $t('Total square'),
                       formatter: () => `${data.totalSquareMeters.toFixed(0)} m²`,
+                      color: textColor,
+                    },
+                    value: {
+                      show: true,
+                      color: textColor,
+                    },
+                    name: {
+                      show: true,
+                      color: textColor,
                     },
                   },
                 },
               },
+            },
+            legend: {
+              position: 'bottom',
+              labels: {
+                colors: legendColors,
+              }
             },
           }"
         />
@@ -169,6 +184,12 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
                 }
               }
             },
+            legend: {
+              position: 'bottom',
+              labels: {
+                colors: legendColors,
+              }
+            },
           }"
         />
       </div>
@@ -180,10 +201,13 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 <script setup lang="ts">
 import { ref, type Ref, onMounted, computed } from 'vue';
 import dayjs from 'dayjs';
+import { useCoreStore } from '@/stores/core';
+import colors from 'tailwindcss/colors'
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
 import { AreaChart, BarChart, PieChart } from '@/afcl';
+const coreStore = useCoreStore();
 
 const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
   apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
@@ -240,6 +264,15 @@ const topCountries = computed(() => {
     })
   );
 });
+
+const textColor = computed(() => {
+  return coreStore.theme === 'dark' ? colors.gray[400] : colors.gray[500];
+});
+
+const legendColors = computed(() => {
+  if (!topCountries.value) return []
+  return Array(topCountries.value.length).fill(textColor.value)
+})
 
 onMounted(async () => {
   // Fetch data from the API
