@@ -84,22 +84,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
-    if (beforeLoginConfirmation?.length){
-      for (const hook of beforeLoginConfirmation) {
-        const resp = await hook({ 
-          adminUser, 
-          response,
-          adminforth: this.adminforth,
-          extra,
-        });
-        
-        if (resp?.body?.redirectTo || resp?.error) {
-          // delete all items from toReturn and add these:
-          toReturn.redirectTo = resp?.body?.redirectTo;
-          toReturn.allowedLogin = resp?.body?.allowedLogin;
-          toReturn.error = resp?.error;
-          break;
-        }
+
+    for (const hook of listify(Array.isArray(beforeLoginConfirmation) ? beforeLoginConfirmation : [beforeLoginConfirmation])) {
+      const resp = await hook({ 
+        adminUser, 
+        response,
+        adminforth: this.adminforth,
+        extra,
+      });
+      
+      if (resp?.body?.redirectTo || resp?.error) {
+        // delete all items from toReturn and add these:
+        toReturn.redirectTo = resp?.body?.redirectTo;
+        toReturn.allowedLogin = resp?.body?.allowedLogin;
+        toReturn.error = resp?.error;
+        break;
       }
     }
   }
