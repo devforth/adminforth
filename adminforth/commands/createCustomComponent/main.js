@@ -58,13 +58,26 @@ async function handleFieldComponentCreation(config, resources) {
 
   console.log(chalk.grey(`Selected ❯ 🔤 Custom fields ❯ ${fieldType}`));
 
-  const resourceId = await select({
-      message: 'Select resource for which you want to change component:',
-      choices: [
-          ...resources.map(r => ({ name: `${r.label} ${chalk.grey(`${r.resourceId}`)}`, value: r.resourceId })),
-          new Separator(),
-          { name: '🔙 BACK', value: '__BACK__' },
-      ]
+  const resourceId = await search({
+    message: 'Select resource for which you want to change component:',
+    source: async (input) => {
+      const searchTerm = input ? input.toLowerCase() : '';
+  
+      const filtered = resources.filter(r => {
+        const label = r.label || '';
+        const id = r.resourceId || '';
+        return label.toLowerCase().includes(searchTerm) || id.toLowerCase().includes(searchTerm);
+      });
+  
+      return [
+        ...filtered.map(r => ({
+          name: `${r.label} ${chalk.grey(`${r.resourceId}`)}`,
+          value: r.resourceId,
+        })),
+        new Separator(),
+        { name: '🔙 BACK', value: '__BACK__' },
+      ];
+    }
   });
    if (resourceId === '__BACK__') return handleFieldComponentCreation(config, resources); // Pass config back
 
@@ -144,14 +157,28 @@ async function handleCrudPageInjectionCreation(config, resources) {
 
   console.log(chalk.grey(`Selected ❯ 📄 CRUD Page Injection ❯ ${crudType}`));
 
-  const resourceId = await select({
+  const resourceId = await search({
     message: 'Select resource for which you want to inject the component:',
-    choices: [
-      ...resources.map(r => ({ name: `${r.label} ${chalk.grey(`${r.resourceId}`)}`, value: r.resourceId })),
-      new Separator(),
-      { name: '🔙 BACK', value: '__BACK__' },
-    ],
+    source: async (input) => {
+      const searchTerm = input ? input.toLowerCase() : '';
+  
+      const filtered = resources.filter(r => {
+        const label = r.label || '';
+        const id = r.resourceId || '';
+        return label.toLowerCase().includes(searchTerm) || id.toLowerCase().includes(searchTerm);
+      });
+  
+      return [
+        ...filtered.map(r => ({
+          name: `${r.label} ${chalk.grey(`${r.resourceId}`)}`,
+          value: r.resourceId,
+        })),
+        new Separator(),
+        { name: '🔙 BACK', value: '__BACK__' },
+      ];
+    }
   });
+  
   if (resourceId === '__BACK__') return handleCrudPageInjectionCreation(config, resources);
 
   const selectedResource = resources.find(r => r.resourceId === resourceId);
