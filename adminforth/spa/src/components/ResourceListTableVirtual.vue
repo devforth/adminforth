@@ -710,12 +710,7 @@ watch(() => props.rows, () => {
   }
 }, { immediate: true });
 
-// Cleanup on unmount
-onUnmounted(() => {
-  if (scrollTimeout.value) {
-    clearTimeout(scrollTimeout.value);
-  }
-});
+
 
 </script>
 
