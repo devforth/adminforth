@@ -187,6 +187,12 @@ export interface AdminForthFieldComponents {
    * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
    */
   list?: AdminForthComponentDeclaration,
+
+  /**
+   * Filter component is used to redefine input field in filter view.
+   * Component accepts next properties: [record, column, resource, adminUser].
+   */
+  filter?: AdminForthComponentDeclaration,
 }
 
 
