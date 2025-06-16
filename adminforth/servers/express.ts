@@ -76,7 +76,7 @@ const respondNoServer = (title, explanation) => {
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 100vh;
+          height: 100dvh;
           flex-direction: column;
         }
       </style>
