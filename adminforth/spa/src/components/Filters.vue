@@ -6,7 +6,7 @@
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
-      :style="{ height: `calc(100vh ` }"
+      :style="{ height: `calc(100dvh ` }"
   >
     <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
       {{ $t('Filters') }}
