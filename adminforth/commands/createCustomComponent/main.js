@@ -50,6 +50,7 @@ async function handleFieldComponentCreation(config, resources) {
           { name: '📃 show', value: 'show' },
           { name: '✏️ edit', value: 'edit' },
           { name: '➕ create', value: 'create' },
+          { name: '🔍 filter', value: 'filter'},
           new Separator(),
           { name: '🔙 BACK', value: '__BACK__' },
       ]
