@@ -658,6 +658,15 @@ const calculateVisibleRows = () => {
   const buffer = props.bufferSize || 5;
   const containerHeight = props.containerHeight || 900;
   
+  // For single item or small datasets, show all rows
+  if (props.rows.length <= buffer * 2 + 1) {
+    startIndex.value = 0;
+    endIndex.value = props.rows.length - 1;
+    visibleRows.value = props.rows;
+    spacerHeight.value = 0;
+    return;
+  }
+  
   // Binary search for start index
   let low = 0;
   let high = rowPositions.value.length - 1;
@@ -678,12 +687,17 @@ const calculateVisibleRows = () => {
     newStartIndex + Math.ceil(containerHeight / (props.itemHeight || 52.5)) + buffer * 2
   );
 
-  if (newStartIndex !== startIndex.value || newEndIndex !== endIndex.value) {
+  // Ensure at least one row is visible
+  if (newEndIndex < newStartIndex) {
+    startIndex.value = 0;
+    endIndex.value = Math.min(props.rows.length - 1, Math.ceil(containerHeight / (props.itemHeight || 52.5)));
+  } else {
     startIndex.value = newStartIndex;
     endIndex.value = newEndIndex;
-    visibleRows.value = props.rows.slice(startIndex.value, endIndex.value + 1);
-    spacerHeight.value = startIndex.value > 0 ? rowPositions.value[startIndex.value - 1] : 0;
   }
+  
+  visibleRows.value = props.rows.slice(startIndex.value, endIndex.value + 1);
+  spacerHeight.value = startIndex.value > 0 ? rowPositions.value[startIndex.value - 1] : 0;
 };
 
 // Throttled scroll handler
