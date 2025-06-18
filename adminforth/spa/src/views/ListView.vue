@@ -123,7 +123,7 @@
       :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
       :container-height="1100"
       :item-height="52.5"
-      :buffer-size="30"
+      :buffer-size="listBufferSize"
     />
     <ResourceListTable
       v-else
@@ -202,6 +202,7 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
+const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
 const isPageLoaded = ref(false);
 
