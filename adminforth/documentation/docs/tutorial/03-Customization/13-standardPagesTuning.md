@@ -151,6 +151,20 @@ export default {
     }
   ]
 ```
+Additionally, you can configure `options.listBufferSize` to specify the number of rows to buffer for virtual scrolling. The default value is 30 rows.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+        listVirtualScrollEnabled: true,
+//diff-add
+        listBufferSize: 20,
+      }
+    }
+  ]
+```
 
 ### Custom row click action
 

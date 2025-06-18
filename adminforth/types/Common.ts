@@ -400,6 +400,11 @@ export interface AdminForthResourceInputCommon {
       listVirtualScrollEnabled?: boolean,
 
       /**
+       * Buffer size for virtual scroll in list view.
+       */
+      listBufferSize?: number,
+
+      /**
        * Callback to define what happens when user clicks on record in list view.
        * By default show view will be opened.
        * If you wish to open custom page, return URL to the custom page (can start with https://, or relative adminforth path)
