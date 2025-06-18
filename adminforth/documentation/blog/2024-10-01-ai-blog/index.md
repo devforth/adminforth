@@ -736,12 +736,12 @@ $grColor5: #695BE9;
     -moz-osx-font-smoothing: grayscale;
     // gradient with color spots
     animation: gradient 15s ease infinite;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
   body {
     margin: 0;
     padding: 0;
-    max-height: 100vh;
+    max-height: 100dvh;
     overflow: overlay;
     background-image: radial-gradient(
   circle farthest-corner at top left, $grColor1 0%, rgba(225, 243, 97,0) 50%),

@@ -1,9 +1,7 @@
 <template>
     <Tooltip>
       <span class="flex items-center">
-        <span 
-          :class="{[`fi-${countryIsoLow}`]: true, 'flag-icon': countryName}"
-        ></span>
+        <CountryFlag class="w-[1.6rem] h-[1.2rem]" :countryCode="countryIsoLow" />
         <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
       </span>
       
@@ -16,10 +14,10 @@
 <script setup>  
 
 import { computed, ref, onMounted } from 'vue';
-import 'flag-icons/css/flag-icons.min.css';
 import isoCountries from 'i18n-iso-countries';
 import enLocal from 'i18n-iso-countries/langs/en.json';
 import Tooltip from '@/afcl/Tooltip.vue';
+import CountryFlag from '@/afcl/CountryFlag.vue';
 
 isoCountries.registerLocale(enLocal);
 
@@ -47,19 +45,3 @@ const countryName = computed(() => {
 });
 
 </script>
-
-<style scoped lang="scss">
-
-.flag-icon {
-  width: 1.6rem;
-  height: 1.2rem;
-  flex-shrink: 0;
-
-  // border radius  for background
-  border-radius: 2px;
-  box-shadow: inset -0.3px -0.3px 0.3px 0px rgba(0 0 0 / 0.2), 
-    inset 0.3px 0.3px 0.3px 0px rgba(255 255 255 / 0.2),
-    0px 0px 3px #00000030;
-}
-
-</style>

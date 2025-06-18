@@ -173,3 +173,22 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style lang="scss">
+:root {
+  --tw-text-gray: #6B7280;
+  
+}
+[data-theme='dark'] {
+  --tw-text-gray: #9CA3AF;
+}
+
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value{
+  fill: var(--tw-text-gray);
+}
+.apexcharts-legend-text {
+  color: var(--tw-text-gray) !important;
+}
+
+</style>
