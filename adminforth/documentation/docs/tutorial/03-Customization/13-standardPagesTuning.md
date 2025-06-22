@@ -138,7 +138,7 @@ export default {
 
 ### Virtual scroll
 
-Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table
+Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table. The default value is false. Enable this option if you need to display a large number of records on a single page.
 
 ```typescript title="./resources/apartments.ts"
 export default {
@@ -147,6 +147,20 @@ export default {
         ...
 //diff-add
         listVirtualScrollEnabled: true,
+      }
+    }
+  ]
+```
+Additionally, you can configure `options.listBufferSize` to specify the number of rows to buffer for virtual scrolling. The default value is 30 rows.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+        listVirtualScrollEnabled: true,
+//diff-add
+        listBufferSize: 20,
       }
     }
   ]

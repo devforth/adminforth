@@ -47,9 +47,27 @@ async function findResourceFilePath(resourceId) {
 
                     if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
                         objectExpressionNode = declaration.expression;
-                    }
-                    else if (n.ObjectExpression.check(declaration)) {
+                    } else if (n.ObjectExpression.check(declaration)) {
                         objectExpressionNode = declaration;
+                    } else if (n.Identifier.check(declaration)) {
+                        const varName = declaration.name;
+                    
+                        recast.visit(ast, {
+                            visitVariableDeclaration(path) {
+                                for (const decl of path.node.declarations) {
+                                    if (
+                                        n.VariableDeclarator.check(decl) &&
+                                        n.Identifier.check(decl.id) &&
+                                        decl.id.name === varName &&
+                                        n.ObjectExpression.check(decl.init)
+                                    ) {
+                                        objectExpressionNode = decl.init;
+                                        return false;
+                                    }
+                                }
+                                this.traverse(path);
+                            }
+                        });
                     }
 
                     if (objectExpressionNode) {
@@ -118,6 +136,25 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
                     objectExpressionNode = declaration.expression;
                 } else if (n.ObjectExpression.check(declaration)) {
                     objectExpressionNode = declaration;
+                } else if (n.Identifier.check(declaration)) {
+                    const varName = declaration.name;
+                
+                    recast.visit(ast, {
+                        visitVariableDeclaration(path) {
+                            for (const decl of path.node.declarations) {
+                                if (
+                                    n.VariableDeclarator.check(decl) &&
+                                    n.Identifier.check(decl.id) &&
+                                    decl.id.name === varName &&
+                                    n.ObjectExpression.check(decl.init)
+                                ) {
+                                    objectExpressionNode = decl.init;
+                                    return false;
+                                }
+                            }
+                            this.traverse(path);
+                        }
+                    });
                 }
 
                 if (!objectExpressionNode) {
@@ -446,9 +483,28 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
           let objectExpressionNode = null;
   
           if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
-            objectExpressionNode = declaration.expression;
+              objectExpressionNode = declaration.expression;
           } else if (n.ObjectExpression.check(declaration)) {
-            objectExpressionNode = declaration;
+              objectExpressionNode = declaration;
+          } else if (n.Identifier.check(declaration)) {
+              const varName = declaration.name;
+          
+              recast.visit(ast, {
+                  visitVariableDeclaration(path) {
+                      for (const decl of path.node.declarations) {
+                          if (
+                              n.VariableDeclarator.check(decl) &&
+                              n.Identifier.check(decl.id) &&
+                              decl.id.name === varName &&
+                              n.ObjectExpression.check(decl.init)
+                          ) {
+                              objectExpressionNode = decl.init;
+                              return false;
+                          }
+                      }
+                      this.traverse(path);
+                  }
+              });
           }
   
           if (!objectExpressionNode) {
