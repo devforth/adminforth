@@ -84,7 +84,7 @@
           </td>
         </tr>
 
-        <tr @click="onClick($event,row)" 
+        <tr @mousedown="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
           ref="rowRefs"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
@@ -457,48 +457,50 @@ function onSortButtonClick(event, field) {
 
 const clickTarget = ref(null);
 
-async function onClick(e,row) {
-  if(clickTarget.value === e.target) return;
+async function onClick(e, row) {
+  if (clickTarget.value === e.target) return;
   clickTarget.value = e.target;
   await new Promise((resolve) => setTimeout(resolve, 100));
   if (window.getSelection().toString()) return;
-  else {
-    if (row._clickUrl === null) {
-      // user asked to nothing on click
-      return;
-    }
-    if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
-      
-      if (row._clickUrl) {
-        window.open(row._clickUrl, '_blank');
-      } else {
-        window.open(
-          router.resolve({
-            name: 'resource-show',
-            params: {
-              resourceId: props.resource.resourceId,
-              primaryKey: row._primaryKeyValue,
-            },
-          }).href,
-          '_blank'
-        );
-      }
+  if (e.button === 2) {
+    return; // right click, do nothing
+  }
+  const openInNewTab =
+    e.ctrlKey ||
+    e.metaKey ||
+    e.button === 1 ||
+    (row._clickUrl?.includes('target=_blank'));
+
+  if (openInNewTab) {
+    if (row._clickUrl) {
+      window.open(row._clickUrl, '_blank');
     } else {
-      if (row._clickUrl) {
-        if (row._clickUrl.startsWith('http')) {
-          document.location.href = row._clickUrl;
-        } else {
-          router.push(row._clickUrl);
-        }
-      } else {
-        router.push({
+      window.open(
+        router.resolve({
           name: 'resource-show',
           params: {
             resourceId: props.resource.resourceId,
             primaryKey: row._primaryKeyValue,
           },
-        });
+        }).href,
+        '_blank'
+      );
+    }
+  } else {
+    if (row._clickUrl) {
+      if (row._clickUrl.startsWith('http')) {
+        document.location.href = row._clickUrl;
+      } else {
+        router.push(row._clickUrl);
       }
+    } else {
+      router.push({
+        name: 'resource-show',
+        params: {
+          resourceId: props.resource.resourceId,
+          primaryKey: row._primaryKeyValue,
+        },
+      });
     }
   }
 }

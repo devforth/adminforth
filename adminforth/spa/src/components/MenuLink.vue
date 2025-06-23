@@ -12,19 +12,20 @@
   >
     <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons dark:text-darkSidebarIcons  transition duration-75  group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover" ></component>
     <span class="text-ellipsis overflow-hidden ms-3">{{ item.label }}</span>
-    <span v-if="item.badge" class="inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]"
+    <span v-if="item.badge"
     >
           
         <Tooltip v-if="item.badgeTooltip">
-          {{ item.badge }}
+          <div class="inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
 
           <template #tooltip>
             {{ item.badgeTooltip }}
           </template>
         </Tooltip>
         <template v-else>
-          {{ item.badge }}
+          <div class="inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
         </template> 
 
     </span>
