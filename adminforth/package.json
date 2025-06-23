@@ -56,7 +56,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@babel/parser": "^7.27.0",
+    "@babel/parser": "^7.27.5",
     "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
     "@inquirer/prompts": "^7.4.1",
