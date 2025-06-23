@@ -3,7 +3,7 @@
   </template>
   
   <script setup lang="ts">
-  import { onMounted, ref, watch } from 'vue'
+  import { nextTick, onMounted, ref, watch } from 'vue'
   import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common'
   import { protectAgainstXSS } from '@/utils'
   
@@ -17,7 +17,7 @@
   
   const iframeRef = ref<HTMLIFrameElement | null>(null)
   
-  const renderHtml = () => {
+  const renderHtml = async () => {
     const iframe = iframeRef.value
     if (!iframe) return
   
@@ -26,11 +26,23 @@
   
     iframe.style.border = "none"
     iframe.style.width = "100%"
-    iframe.style.height = "400px"
   
     doc.open()
     doc.write(protectAgainstXSS(props.record[props.column.name]) || '')
     doc.close()
+
+    await nextTick()
+
+    iframe.onload = () => {
+      try {
+        const iframeBody = iframe.contentWindow?.document.body
+        if (iframeBody) {
+          iframe.style.height = iframeBody.scrollHeight + 'px'
+        }
+      } catch (e) {
+        console.warn("Can't auto-resize iframe:", e)
+      }
+    }
   }
 
 

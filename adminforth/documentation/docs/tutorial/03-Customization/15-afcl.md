@@ -861,6 +861,22 @@ Spinner component is used to display a loading state for a component.
   </div>
 </div>
 
+## Country Flag
+
+The Country Flag component displays national flags using ISO 3166-1 alpha-2 country codes.
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <CountryFlag countryCode="ua" />
+  ```
+  </div>
+  <div>
+  ![Country Flag](image-92.png)
+  </div>
+</div>
+
+
 ## Bar Chart
 
 Under the hood AdminForth uses MIT-licensed [ApexCharts](https://apexcharts.com/). It has very rich variety of options, you can pass
@@ -996,6 +1012,7 @@ any of native settings to `options` prop. Here we will only show some basics.
         }
 //diff-add
       }
+//diff-add
     }
   }"
 />
@@ -1453,7 +1470,7 @@ import { PieChart } from '@/afcl'
 //diff-add
           offset: -10, // Moves labels closer to or further from the slices
 //diff-add
-          minAngleToShowLabel: 10, // Ensures that small slices don’t show labels
+          minAngleToShowLabel: 10, // Ensures that small slices don't show labels
 //diff-add
         },
 //diff-add
@@ -1684,8 +1701,4 @@ import { MixedChart } from '@/afcl'
     ![Mixed Chart](image-91.png)
   </div>
 </div>
-
-
-
-
 

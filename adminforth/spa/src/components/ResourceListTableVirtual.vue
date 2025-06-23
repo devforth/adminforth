@@ -2,6 +2,9 @@
   <!-- table -->
   <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
+    :style="`height: ${containerHeight}px; will-change: transform;`"
+    @scroll="handleScroll"
+    ref="containerRef"
   >
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
@@ -66,7 +69,7 @@
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
-          :rows="rowHeights.length || 3"
+          :rows="rowHeights.length || 20"
           :row-heights="rowHeights"
           :column-widths="columnWidths"
         />
@@ -84,12 +87,19 @@
           </td>
         </tr>
 
-        <tr @mousedown="onClick($event,row)" 
-          v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
+        <!-- Virtual scroll spacer -->
+        <tr v-if="spacerHeight > 0">
+          <td :colspan="resource?.columns.length + 2" :style="{ height: `${spacerHeight}px` }"></td>
+        </tr>
+
+        <!-- Visible rows -->
+        <tr @click="onClick($event,row)" 
+          v-for="(row, rowI) in visibleRows" 
+          :key="`row_${row._primaryKeyValue}`"
           ref="rowRefs"
           class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-
-          :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+          :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+          @mounted="(el) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
         >
           <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex items center ">
@@ -193,6 +203,13 @@
             </div>
           </td>
         </tr>
+
+        <!-- Bottom spacer -->
+        <tr v-if="totalHeight > 0">
+          <td :colspan="resource?.columns.length + 2" 
+              :style="{ height: `${Math.max(0, totalHeight - (endIndex + 1) * (props.itemHeight || 52.5))}px` }">
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -291,7 +308,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref, onUnmounted } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -327,6 +344,9 @@ const props = defineProps<{
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
+  containerHeight?: number,
+  itemHeight?: number,
+  bufferSize?: number,
 }>();
 
 // emits, update page
@@ -457,50 +477,48 @@ function onSortButtonClick(event, field) {
 
 const clickTarget = ref(null);
 
-async function onClick(e, row) {
-  if (clickTarget.value === e.target) return;
+async function onClick(e,row) {
+  if(clickTarget.value === e.target) return;
   clickTarget.value = e.target;
   await new Promise((resolve) => setTimeout(resolve, 100));
   if (window.getSelection().toString()) return;
-  if (e.button === 2) {
-    return; // right click, do nothing
-  }
-  const openInNewTab =
-    e.ctrlKey ||
-    e.metaKey ||
-    e.button === 1 ||
-    (row._clickUrl?.includes('target=_blank'));
-
-  if (openInNewTab) {
-    if (row._clickUrl) {
-      window.open(row._clickUrl, '_blank');
+  else {
+    if (row._clickUrl === null) {
+      // user asked to nothing on click
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
+      
+      if (row._clickUrl) {
+        window.open(row._clickUrl, '_blank');
+      } else {
+        window.open(
+          router.resolve({
+            name: 'resource-show',
+            params: {
+              resourceId: props.resource.resourceId,
+              primaryKey: row._primaryKeyValue,
+            },
+          }).href,
+          '_blank'
+        );
+      }
     } else {
-      window.open(
-        router.resolve({
+      if (row._clickUrl) {
+        if (row._clickUrl.startsWith('http')) {
+          document.location.href = row._clickUrl;
+        } else {
+          router.push(row._clickUrl);
+        }
+      } else {
+        router.push({
           name: 'resource-show',
           params: {
             resourceId: props.resource.resourceId,
             primaryKey: row._primaryKeyValue,
           },
-        }).href,
-        '_blank'
-      );
-    }
-  } else {
-    if (row._clickUrl) {
-      if (row._clickUrl.startsWith('http')) {
-        document.location.href = row._clickUrl;
-      } else {
-        router.push(row._clickUrl);
+        });
       }
-    } else {
-      router.push({
-        name: 'resource-show',
-        params: {
-          resourceId: props.resource.resourceId,
-          primaryKey: row._primaryKeyValue,
-        },
-      });
     }
   }
 }
@@ -592,6 +610,121 @@ function validatePageInput() {
   page.value = validPage;
   pageInput.value = validPage.toString();
 }
+
+// Add throttle utility
+const throttle = (fn: Function, delay: number) => {
+  let lastCall = 0;
+  return (...args: any[]) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    }
+  };
+};
+
+// Virtual scroll state
+const containerRef = ref<HTMLElement | null>(null);
+const scrollTop = ref(0);
+const visibleRows = ref<any[]>([]);
+const startIndex = ref(0);
+const endIndex = ref(0);
+const totalHeight = ref(0);
+const spacerHeight = ref(0);
+const rowHeightsMap = ref<{[key: string]: number}>({});
+const rowPositions = ref<number[]>([]);
+
+// Calculate row positions based on heights
+const calculateRowPositions = () => {
+  if (!props.rows) return;
+  
+  let currentPosition = 0;
+  rowPositions.value = props.rows.map((row) => {
+    const height = rowHeightsMap.value[`row_${row._primaryKeyValue}`] || props.itemHeight || 52.5;
+    const position = currentPosition;
+    currentPosition += height;
+    return position;
+  });
+  totalHeight.value = currentPosition;
+};
+
+// Calculate visible rows based on scroll position
+const calculateVisibleRows = () => {
+  if (!props.rows?.length) {
+    visibleRows.value = props.rows || [];
+    return;
+  }
+
+  const buffer = props.bufferSize || 5;
+  const containerHeight = props.containerHeight || 900;
+  
+  // For single item or small datasets, show all rows
+  if (props.rows.length <= buffer * 2 + 1) {
+    startIndex.value = 0;
+    endIndex.value = props.rows.length - 1;
+    visibleRows.value = props.rows;
+    spacerHeight.value = 0;
+    return;
+  }
+  
+  // Binary search for start index
+  let low = 0;
+  let high = rowPositions.value.length - 1;
+  const targetPosition = scrollTop.value;
+  
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (rowPositions.value[mid] <= targetPosition) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  
+  const newStartIndex = Math.max(0, low - 1 - buffer);
+  const newEndIndex = Math.min(
+    props.rows.length - 1,
+    newStartIndex + Math.ceil(containerHeight / (props.itemHeight || 52.5)) + buffer * 2
+  );
+
+  // Ensure at least one row is visible
+  if (newEndIndex < newStartIndex) {
+    startIndex.value = 0;
+    endIndex.value = Math.min(props.rows.length - 1, Math.ceil(containerHeight / (props.itemHeight || 52.5)));
+  } else {
+    startIndex.value = newStartIndex;
+    endIndex.value = newEndIndex;
+  }
+  
+  visibleRows.value = props.rows.slice(startIndex.value, endIndex.value + 1);
+  spacerHeight.value = startIndex.value > 0 ? rowPositions.value[startIndex.value - 1] : 0;
+};
+
+// Throttled scroll handler
+const handleScroll = throttle((e: Event) => {
+  const target = e.target as HTMLElement;
+  scrollTop.value = target.scrollTop;
+  calculateVisibleRows();
+}, 16);
+
+// Update row height when it changes
+const updateRowHeight = (rowId: string, height: number) => {
+  if (rowHeightsMap.value[rowId] !== height) {
+    rowHeightsMap.value[rowId] = height;
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+};
+
+// Watch for changes in rows
+watch(() => props.rows, () => {
+  if (props.rows) {
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+}, { immediate: true });
+
+
 
 </script>
 

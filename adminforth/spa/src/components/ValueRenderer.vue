@@ -27,9 +27,9 @@
     </span>
         
     <span v-else-if="column.type === 'boolean'">
-      <span v-if="record[column.name] === true" class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">{{ $t('Yes') }}</span>
-      <span v-else-if="record[column.name] === false" class="bg-red-100 text-red-800gg text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">{{ $t('No') }}</span>
-      <span v-else class="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-400 border border-gray-400">{{ $t('Unset') }}</span>
+      <span v-if="record[column.name] === true" class="bg-green-100 whitespace-nowrap text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">{{ $t('Yes') }}</span>
+      <span v-else-if="record[column.name] === false" class="bg-red-100 whitespace-nowrap text-red-800gg text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">{{ $t('No') }}</span>
+      <span v-else class="bg-gray-100 whitespace-nowrap text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-400 border border-gray-400">{{ $t('Unset') }}</span>
     </span>
     <span
       v-else-if="column.type === 'json' && column.isArray?.enabled"
@@ -39,13 +39,13 @@
         <span
           v-if="column.isArray.itemType === 'boolean' && arrayItem"
           :key="`${column.name}-${arrayItemIndex}`"
-          class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+          class="bg-green-100 whitespace-nowrap text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
           {{ $t('Yes') }}
         </span>
         <span
           v-else-if="column.isArray.itemType === 'boolean'"
           :key="`${column.name}-${arrayItemIndex}`"
-          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+          class="bg-red-100 whitespace-nowrap text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
           {{ $t('No') }}
         </span>
         <span
