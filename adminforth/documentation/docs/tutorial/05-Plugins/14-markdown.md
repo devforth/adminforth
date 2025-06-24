@@ -132,6 +132,7 @@ export default {
 Next, add new resource to `index.ts`:
 
 ```typescript title="./index.ts"
+// diff-add
 import descriptionImage from './resources/description_images.js';
 
 ...
