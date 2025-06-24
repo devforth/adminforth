@@ -162,7 +162,7 @@ const columnOptions = computedAsync(async () => {
           body: {
             resourceId: router.currentRoute.value.params.resourceId,
             column: column.name,
-            limit: 1250,
+            limit: 10000,
             offset: 0,
           },
         });
