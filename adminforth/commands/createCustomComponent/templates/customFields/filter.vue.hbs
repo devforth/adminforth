@@ -1,0 +1,34 @@
+<template>
+  <input
+    type="text"
+    :value="localValue"
+    @input="onInput"
+    placeholder="Search"
+    aria-describedby="helper-text-explanation"
+    class="inline-flex bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 dark:text-white translate-y-0 rounded-l-md rounded-r-md w-full"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+
+const emit = defineEmits(['update:modelValue']);
+
+const props = defineProps<{
+  column: any;
+  meta?: any;
+  modelValue: Array<{ operator: string; value: string }> | null;
+}>();
+
+const localValue = ref(props.modelValue?.[0]?.value || '');
+
+watch(() => props.modelValue, (val) => {
+  localValue.value = val?.[0]?.value || '';
+});
+
+function onInput(event: Event) {
+  const target = event.target as HTMLInputElement;
+  localValue.value = target.value;
+  emit('update:modelValue', [{ operator: 'ilike', value: target.value }]);
+}
+</script>
