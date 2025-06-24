@@ -250,7 +250,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
-
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
@@ -291,7 +290,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
-
+        const adminforthUserCleanupWarning: AnnouncementBadgeResponse = this.adminforth.config.customization.adminforthUserCleanupWarning?.(adminUser);
+        
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -314,6 +314,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           title: this.adminforth.config.customization.title,
           emptyFieldPlaceholder: this.adminforth.config.customization.emptyFieldPlaceholder,
           announcementBadge,
+          adminforthUserCleanupWarning,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
         }
