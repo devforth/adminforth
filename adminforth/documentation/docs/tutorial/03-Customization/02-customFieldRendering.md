@@ -495,34 +495,17 @@ Sometimes standard filters are not enough, and you want to make a convenient UI 
     <p class="font-medium mb-1 dark:text-white">{{ $t('Square meters filter') }}</p>
     <div class="flex gap-2">
       <button
-        :class="[
-          baseBtnClass,
-          selected === 'small' ? activeBtnClass : inactiveBtnClass
-        ]"
-        @click="select('small')"
+        v-for="option in options"
+        :key="option.value"
         type="button"
+        class="flex gap-1 items-center py-1 px-3 text-sm font-medium rounded-default border focus:outline-none focus:z-10 focus:ring-4"
+        :class="{
+          'text-white bg-blue-500 border-blue-500 hover:bg-blue-600 focus:ring-blue-200 dark:focus:ring-blue-800': selected === option.value,
+          'text-gray-900 bg-white border-gray-300 hover:bg-gray-100 hover:text-blue-500 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700': selected !== option.value
+        }"
+        @click="select(option.value)"
       >
-        {{ $t('Small') }}
-      </button>
-      <button
-        :class="[
-          baseBtnClass,
-          selected === 'medium' ? activeBtnClass : inactiveBtnClass
-        ]"
-        @click="select('medium')"
-        type="button"
-      >
-        {{ $t('Medium') }}
-      </button>
-      <button
-        :class="[
-          baseBtnClass,
-          selected === 'large' ? activeBtnClass : inactiveBtnClass
-        ]"
-        @click="select('large')"
-        type="button"
-      >
-        {{ $t('Large') }}
+        {{ $t(option.label) }}
       </button>
     </div>
   </div>
@@ -539,29 +522,44 @@ const props = defineProps<{
 
 const selected = ref<string | null>(null);
 
-const baseBtnClass =
-  'flex gap-1 items-center py-1 px-3 text-sm font-medium rounded-default border focus:outline-none focus:z-10 focus:ring-4';
-const activeBtnClass =
-  'text-white bg-blue-500 border-blue-500 hover:bg-blue-600 focus:ring-blue-200 dark:focus:ring-blue-800';
-const inactiveBtnClass =
-  'text-gray-900 bg-white border-gray-300 hover:bg-gray-100 hover:text-blue-500 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700';
+const options = [
+  { value: 'small', label: 'Small' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'large', label: 'Large' }
+];
 
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (!val || val.length === 0) {
-      selected.value = null;
-      return;
-    }
-    const ops = val.map((v) => `${v.operator}:${v.value}`);
+onMounted(() => {
+  const val = props.modelValue;
+  if (!val || val.length === 0) {
+    selected.value = null;
+    return;
+  }
 
-    if (ops.includes('lt:25')) selected.value = 'small';
-    else if (ops.includes('gte:25') && ops.includes('lte:90')) selected.value = 'medium';
-    else if (ops.includes('gt:90')) selected.value = 'large';
-    else selected.value = null;
-  },
-  { immediate: true }
-);
+  const ops = val.map((v) => `${v.operator}:${v.value}`);
+
+  if (ops.includes('lt:25')) selected.value = 'small';
+  else if (ops.includes('gte:25') && ops.includes('lte:90')) selected.value = 'medium';
+  else if (ops.includes('gt:90')) selected.value = 'large';
+  else selected.value = null;
+});
+
+watch(selected, (size) => {
+  if (!size) {
+    emit('update:modelValue', []);
+    return;
+  }
+
+  const filters = {
+    small: [{ operator: 'lt', value: 25 }],
+    medium: [
+      { operator: 'gte', value: 25 },
+      { operator: 'lte', value: 90 }
+    ],
+    large: [{ operator: 'gt', value: 90 }]
+  };
+
+  emit('update:modelValue', filters[size]);
+});
 
 function select(size: string) {
   selected.value = size;
