@@ -27,9 +27,23 @@
               :multiple="c.filterOptions.multiselect"
               class="w-full"
               :options="columnOptions[c.name] || []"
+              :searchDisabled="!c.foreignResource.searchableFields"
+              @scroll-near-end="loadMoreOptions(c.name)"
+              @search="(searchTerm) => {
+                if (c.foreignResource.searchableFields && onSearchInput[c.name]) {
+                  onSearchInput[c.name](searchTerm);
+                }
+              }"
               @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
               :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
-            />
+            >
+              <template #extra-item v-if="columnLoadingState[c.name]?.loading">
+                <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+                  <Spinner class="w-4 h-4" />
+                  {{ $t('Loading...') }}
+                </div>
+              </template>
+            </Select>
             <Select
               :multiple="c.filterOptions.multiselect"
               class="w-full"
@@ -120,17 +134,17 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue';
+import { watch, computed, ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
 import { callAdminForthApi } from '@/utils';
 import { useRouter } from 'vue-router';
-import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
 import debounce from 'debounce';
+import Spinner from '@/afcl/Spinner.vue';
 
 const filtersStore = useFiltersStore();
 const { t } = useI18n();
@@ -148,31 +162,102 @@ const columnsWithFilter = computed(
   () => props.columns?.filter(column => column.showIn.filter) || []
 );
 
-const columnOptions = computedAsync(async () => {
-  const ret = {};
-  if (!props.columns) {
-    return ret;
-  }
-  await Promise.all(
-    Object.values(props.columns).map(async (column) => {
-      if (column.foreignResource) {
-        const list = await callAdminForthApi({
-          method: 'POST',
-          path: `/get_resource_foreign_data`,
-          body: {
-            resourceId: router.currentRoute.value.params.resourceId,
-            column: column.name,
-            limit: 10000,
-            offset: 0,
-          },
-        });
-        ret[column.name] = list.items;
-      }
-    })
-  );
+const columnOptions = ref({});
+const columnLoadingState = reactive({});
+const columnOffsets = reactive({});
 
-  return ret;
-}, {});
+watch(() => props.columns, async (newColumns) => {
+  if (!newColumns) return;
+  
+  for (const column of newColumns) {
+    if (column.foreignResource) {
+      if (!columnOptions.value[column.name]) {
+        columnOptions.value[column.name] = [];
+        columnLoadingState[column.name] = { loading: false, hasMore: true };
+        columnOffsets[column.name] = 0;
+        
+        await loadMoreOptions(column.name);
+      }
+    }
+  }
+}, { immediate: true });
+
+// Function to load more options for a specific column
+async function loadMoreOptions(columnName, searchTerm = '') {
+  const column = props.columns?.find(c => c.name === columnName);
+  if (!column || !column.foreignResource) return;
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading || !state.hasMore) return;
+  
+  state.loading = true;
+  
+  try {
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId: router.currentRoute.value.params.resourceId,
+        column: columnName,
+        limit: 100,
+        offset: columnOffsets[columnName],
+        search: searchTerm,
+      },
+    });
+    
+    if (!columnOptions.value[columnName]) {
+      columnOptions.value[columnName] = [];
+    }
+    columnOptions.value[columnName].push(...list.items);
+    
+    columnOffsets[columnName] += 100;
+    
+    state.hasMore = list.items.length === 100;
+    
+  } catch (error) {
+    console.error('Error loading more options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
+
+async function searchOptions(columnName, searchTerm) {
+  const column = props.columns?.find(c => c.name === columnName);
+
+  if (!column || !column.foreignResource || !column.foreignResource.searchableFields) {
+    return;
+  }
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading) return;
+  
+  state.loading = true;
+  
+  try {
+    
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId: router.currentRoute.value.params.resourceId,
+        column: columnName,
+        limit: 100,
+        offset: 0,
+        search: searchTerm,
+      },
+    });
+    
+    columnOptions.value[columnName] = list.items;
+    columnOffsets[columnName] = 100;
+    state.hasMore = list.items.length === 100;
+
+  } catch (error) {
+    console.error('Error searching options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
+
 
 
 // sync 'body' class 'overflow-hidden' with show prop show
@@ -202,6 +287,24 @@ const onFilterInput = computed(() => {
       }, c.filterOptions?.debounceTimeMs || 10),
     };
   }, {});
+});
+
+const onSearchInput = computed(() => {
+  if (!props.columns) return {};
+
+  const result = props.columns.reduce((acc, c) => {
+    if (c.foreignResource && c.foreignResource.searchableFields) {
+      return {
+        ...acc,
+        [c.name]: debounce((searchTerm) => {
+          searchOptions(c.name, searchTerm);
+        }, c.filterOptions?.debounceTimeMs || 300),
+      };
+    }
+    return acc;
+  }, {});
+  
+  return result;
 });
 
 function setFilterItem({ column, operator, value }) {
