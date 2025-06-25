@@ -205,6 +205,12 @@ async function loadMoreOptions(columnName, searchTerm = '') {
       },
     });
     
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
+    
     if (!columnOptions.value[columnName]) {
       columnOptions.value[columnName] = [];
     }
@@ -246,6 +252,12 @@ async function searchOptions(columnName, searchTerm) {
         search: searchTerm,
       },
     });
+    
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
     
     columnOptions.value[columnName] = list.items;
     columnOffsets[columnName] = 100;
