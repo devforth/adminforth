@@ -6,7 +6,7 @@
       <input
         ref="inputEl"
         type="text"
-        :readonly="readonly"
+        :readonly="readonly || searchDisabled"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
@@ -37,7 +37,8 @@
     <teleport to="body" v-if="teleportToBody && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
         class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
-          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
+          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+        @scroll="handleDropdownScroll">
         <div
           v-for="item in filteredItems"
           :key="item.value"
@@ -60,7 +61,8 @@
 
     <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
-        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
+        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+      @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"
         :key="item.value"
@@ -132,13 +134,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchDisabled: {
+    type: Boolean,
+    default: false,
+  },
   teleportToBody: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
 
 const search = ref('');
 const showDropdown = ref(false);
@@ -159,6 +165,9 @@ function inputInput() {
     selectedItems.value = [];
     emit('update:modelValue', null);
   }
+  if (!props.searchDisabled) {
+    emit('search', search.value);
+  }
 }
 
 function updateFromProps() {
@@ -177,7 +186,7 @@ function updateFromProps() {
 }
 
 function inputClick() {
-  if (props.readonly) return;
+  if (props.readonly && !props.searchDisabled) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search
@@ -221,6 +230,15 @@ const handleScroll = () => {
   }
 };
 
+const handleDropdownScroll = (event: Event) => {
+  const target = event.target as HTMLElement;
+  const threshold = 10; // pixels from bottom
+  
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - threshold) {
+    emit('scroll-near-end');
+  }
+};
+
 onMounted(() => {
   updateFromProps();
 
@@ -241,7 +259,12 @@ onMounted(() => {
 });
 
 const filteredItems = computed(() => {
-  return props.options.filter(item =>
+
+  if (!props.searchDisabled) {
+    return props.options || [];
+  }
+  
+  return (props.options || []).filter((item: any) =>
     item.label.toLowerCase().includes(search.value.toLowerCase())
   );
 });
