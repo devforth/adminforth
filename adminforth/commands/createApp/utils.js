@@ -289,8 +289,8 @@ async function installDependencies(ctx, cwd) {
 
   const customDir = ctx.customDir;
   const res = await Promise.all([
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    await execAsync(`"${nodeBinary}" "${npmPath}" install`, { cwd, env: { PATH: process.env.PATH } }),
+    await execAsync(`"${nodeBinary}" "${npmPath}" install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
   ]);
   // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
