@@ -1,7 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process'); 
-const spaPath = path.join(__dirname, 'dist', 'spa');
+import fs from 'fs';
+import path from 'path';
+
+import { execSync } from 'child_process'; 
+const spaPath = path.join(import.meta.dirname, 'dist', 'spa');
 
 if (fs.existsSync(spaPath)){ 
     console.log('Installing SPA dependencies...');
