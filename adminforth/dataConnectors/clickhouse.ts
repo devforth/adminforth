@@ -43,7 +43,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     return jsonResult.data.map((row: any) => row.name);
   }
   
-  async getAllColumnsInTable(tableName: string): Promise<string[]> {
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
     const res = await this.client.query({
       query: `
         SELECT name
@@ -57,7 +57,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     });
   
     const jsonResult = await res.json();
-    return jsonResult.data.map((row: any) => row.name);
+    return jsonResult.data.map((row: any) => ({ name: row.name }));
   }
   
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {

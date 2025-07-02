@@ -1,5 +1,5 @@
 import { v1 as uuid } from "uuid";
-import { AdminForthResourceInput } from "adminforth";
+import { AdminForthResourceInput, AdminForthDataTypes } from "adminforth";
 
 export default {
   dataSource: "{{dataSource}}",
@@ -9,7 +9,9 @@ export default {
   columns: [
     {{#each columns}}
     {
-      name: "{{this}}"
+      name: "{{this.name}}"{{#if this.type}},
+      type: AdminForthDataTypes.{{this.type}}{{/if}}{{#if this.isPrimaryKey}},
+      primaryKey: true{{/if}}
     }{{#unless @last}},{{/unless}}
     {{/each}}
   ],

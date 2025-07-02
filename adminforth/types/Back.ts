@@ -143,7 +143,7 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Function to get all columns in table.
    */
-  getAllColumnsInTable(tableName: string): Promise<Array<string>>;
+  getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>>;
   /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.

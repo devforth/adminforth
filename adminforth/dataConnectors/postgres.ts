@@ -54,14 +54,15 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rows.map(row => row.table_name);
     }
     
-    async getAllColumnsInTable(tableName: string): Promise<Array<string>> {
+    async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
         const res = await this.client.query(`
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = $1 AND table_schema = 'public';
         `, [tableName]);
-        return res.rows.map(row => row.column_name);
-    }
+        
+        return res.rows.map(row => ({ name: row.column_name }));
+      }
       
     async discoverFields(resource) {
 
