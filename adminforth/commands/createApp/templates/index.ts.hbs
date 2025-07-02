@@ -1,6 +1,8 @@
 import express from 'express';
 import AdminForth from 'adminforth';
 import usersResource from "./resources/adminuser.js";
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 const ADMIN_BASE_URL = '';
 
@@ -55,9 +57,10 @@ export const admin = new AdminForth({
   ],
 });
 
-// Cross-platform check if script is executed directly
-const isMainModule = import.meta.url === new URL(process.argv[1], 'file:').href;
-if (isMainModule) {
+const currentFilePath = fileURLToPath(import.meta.url);
+const executedFilePath = path.resolve(process.argv[1]);
+
+if (currentFilePath === executedFilePath) {
   const app = express();
   app.use(express.json());
 
