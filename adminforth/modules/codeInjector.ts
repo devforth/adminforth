@@ -16,12 +16,11 @@ let TMP_DIR;
 try {
   TMP_DIR = os.tmpdir();
 } catch (e) {
-  // Cross-platform fallback for temp directory
   if (process.platform === 'win32') {
     TMP_DIR = process.env.TEMP || process.env.TMP || 'C:\\Windows\\Temp';
   } else {
     TMP_DIR = '/tmp';
-  }
+  }//maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
 }
 
 function stripAnsiCodes(str) {
@@ -67,11 +66,7 @@ function hashify(obj) {
 function notifyWatcherIssue(limit) {
   console.log('Ran out of file handles after watching %s files.', limit);
   console.log('Falling back to polling which uses more CPU.');
-  if (process.platform === 'win32') {
-    console.log('On Windows, this is usually handled automatically by the system.');
-  } else {
-    console.log('Run ulimit -n 10000 to increase the limit for open files.');
-  }
+  console.log('Run ulimit -n 10000 to increase the limit for open files.');
 }
 
 class CodeInjector implements ICodeInjector {
@@ -83,14 +78,11 @@ class CodeInjector implements ICodeInjector {
   devServerPort: number = null;
 
   spaTmpPath(): string {
-    const brandSlug = this.adminforth.config.customization?.brandNameSlug;
-    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath() - brandSlug: "${brandSlug}", TMP_DIR: "${TMP_DIR}"`);
+    const brandSlug = this.adminforth.config.customization.brandNameSlug
     if (!brandSlug) {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
-    const fullPath = path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
-    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath() result: "${fullPath}"`);
-    return fullPath;
+    return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
   }
 
   cleanup() {
@@ -124,7 +116,7 @@ class CodeInjector implements ICodeInjector {
     envOverrides?: { [key: string]: string }
   }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), process.platform === 'win32' ? 'npm.cmd' : 'npm'); // Cross-platform npm executable
+    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -135,13 +127,7 @@ class CodeInjector implements ICodeInjector {
     console.log(`⚙️ exec: npm ${command}`);
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
-    
-    // Cross-platform command execution
-    const commandToExecute = process.platform === 'win32' 
-      ? `"${nodeBinary}" "${npmPath}" ${command}`
-      : `${nodeBinary} ${npmPath} ${command}`;
-      
-    const { stdout: out, stderr: err } = await execAsync(commandToExecute, {
+    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
       cwd,
       env,
     });
@@ -237,18 +223,12 @@ class CodeInjector implements ICodeInjector {
 
   async prepareSources() {
     // collects all files and folders into SPA_TMP_DIR
-    process.env.HEAVY_DEBUG && console.log(`🔧 prepareSources() started`);
 
     // check spa tmp folder exists and create if not
     try {
-      process.env.HEAVY_DEBUG && console.log(`🔧 Checking if spaTmpPath exists: ${this.spaTmpPath()}`);
       await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
-      process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath already exists`);
     } catch (e) {
-        process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath doesn't exist, creating directory: ${this.spaTmpPath()}`);
-        await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
-        process.env.HEAVY_DEBUG && console.log(`🔧 Successfully created spaTmpPath directory`);
-
+      await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
     }
 
     const icons = [];
@@ -341,14 +321,9 @@ class CodeInjector implements ICodeInjector {
   
     await fsExtra.copy(spaDir, this.spaTmpPath(), {
       filter: (src) => {
-        // Cross-platform path filtering for adminforth/* used for local development and /dist/* used for production
-        const adminforthSpaNodeModules = path.join('adminforth', 'spa', 'node_modules');
-        const adminforthSpaDist = path.join('adminforth', 'spa', 'dist');
-        const distSpaNodeModules = path.join('dist', 'spa', 'node_modules');
-        const distSpaDist = path.join('dist', 'spa', 'dist');
-        
-        const filterPasses = !src.includes(adminforthSpaNodeModules) && !src.includes(adminforthSpaDist) 
-                          && !src.includes(distSpaNodeModules) && !src.includes(distSpaDist);
+        // /adminforth/* used for local development and /dist/* used for production
+        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist') 
+                          && !src.includes('/dist/spa/node_modules') && !src.includes('/dist/spa/dist');
         if (process.env.HEAVY_DEBUG && !filterPasses) {
           console.log('🪲⚙️ fsExtra.copy filtered out', src);
         }
@@ -543,9 +518,9 @@ class CodeInjector implements ICodeInjector {
     // we dont't need to add baseUrl in front of assets here, because it is already added by Vite/Vue
     indexHtmlContent = indexHtmlContent.replace(
       '/* IMPORTANT:ADMINFORTH FAVICON */',
-      this.adminforth.config.customization.favicon?.replace('@@/', '/assets/')
+      this.adminforth.config.customization.favicon?.replace('@@/', `/assets/`)
           ||
-       '/assets/favicon.png'
+       `/assets/favicon.png`
     );
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
@@ -818,12 +793,7 @@ class CodeInjector implements ICodeInjector {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
-    process.env.HEAVY_DEBUG && console.log(`🔧 Starting prepareSources() - Platform: ${process.platform}, TMP_DIR: ${TMP_DIR}`);
-    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath: ${this.spaTmpPath()}`);
-    
     await this.prepareSources();
-    process.env.HEAVY_DEBUG && console.log(`🔧 prepareSources() completed successfully`);
-
 
     if (hotReload) {
       await Promise.all([
@@ -902,14 +872,14 @@ class CodeInjector implements ICodeInjector {
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
-      const npmPath = path.join(path.dirname(nodeBinary), process.platform === 'win32' ? 'npm.cmd' : 'npm');
+      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      const devServer = spawn(nodeBinary, [npmPath, ...command.split(' ')], {
+      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
         cwd,
         env,
       });
