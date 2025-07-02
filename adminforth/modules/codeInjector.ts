@@ -116,7 +116,9 @@ class CodeInjector implements ICodeInjector {
     envOverrides?: { [key: string]: string }
   }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+    // On Windows, npm is npm.cmd, on Unix systems it's npm
+    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -127,7 +129,12 @@ class CodeInjector implements ICodeInjector {
     console.log(`⚙️ exec: npm ${command}`);
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
-    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
+    
+    // Quote paths that contain spaces (especially important on Windows)
+    const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+    const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+    
+    const { stdout: out, stderr: err } = await execAsync(`${quotedNodeBinary} ${quotedNpmPath} ${command}`, {
       cwd,
       env,
     });
@@ -872,17 +879,17 @@ class CodeInjector implements ICodeInjector {
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      // On Windows, npm is npm.cmd, on Unix systems it's npm
+      const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+      const npmPath = path.join(path.dirname(nodeBinary), npmExecutable);
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
-        cwd,
-        env,
-      });
+      // Execute npm directly (npm.cmd on Windows, npm on Unix)
+      const devServer = spawn(npmPath, command.split(' '), { cwd, env });
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
           // TODO: maybe better use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
