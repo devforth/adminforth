@@ -130,14 +130,30 @@ class CodeInjector implements ICodeInjector {
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
     
-    // Quote paths that contain spaces (especially important on Windows)
-    const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
-    const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+    // On Windows, execute npm.cmd directly; on Unix, use node + npm
+    let execCommand: string;
+    if (process.platform === 'win32') {
+      // Quote path if it contains spaces
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNpmPath} ${command}`;
+    } else {
+      // Quote paths that contain spaces (for Unix systems)
+      const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
+    }
     
-    const { stdout: out, stderr: err } = await execAsync(`${quotedNodeBinary} ${quotedNpmPath} ${command}`, {
+    const execOptions: any = {
       cwd,
       env,
-    });
+    };
+    
+    // On Windows, use shell to execute .cmd files
+    if (process.platform === 'win32') {
+      execOptions.shell = true;
+    }
+    
+    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
     process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
 
     // process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
