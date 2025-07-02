@@ -83,11 +83,14 @@ class CodeInjector implements ICodeInjector {
   devServerPort: number = null;
 
   spaTmpPath(): string {
-    const brandSlug = this.adminforth.config.customization.brandNameSlug
+    const brandSlug = this.adminforth.config.customization?.brandNameSlug;
+    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath() - brandSlug: "${brandSlug}", TMP_DIR: "${TMP_DIR}"`);
     if (!brandSlug) {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
-    return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+    const fullPath = path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath() result: "${fullPath}"`);
+    return fullPath;
   }
 
   cleanup() {
@@ -234,12 +237,18 @@ class CodeInjector implements ICodeInjector {
 
   async prepareSources() {
     // collects all files and folders into SPA_TMP_DIR
+    process.env.HEAVY_DEBUG && console.log(`🔧 prepareSources() started`);
 
     // check spa tmp folder exists and create if not
     try {
+      process.env.HEAVY_DEBUG && console.log(`🔧 Checking if spaTmpPath exists: ${this.spaTmpPath()}`);
       await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
+      process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath already exists`);
     } catch (e) {
-      await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
+        process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath doesn't exist, creating directory: ${this.spaTmpPath()}`);
+        await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
+        process.env.HEAVY_DEBUG && console.log(`🔧 Successfully created spaTmpPath directory`);
+
     }
 
     const icons = [];
@@ -809,7 +818,12 @@ class CodeInjector implements ICodeInjector {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
+    process.env.HEAVY_DEBUG && console.log(`🔧 Starting prepareSources() - Platform: ${process.platform}, TMP_DIR: ${TMP_DIR}`);
+    process.env.HEAVY_DEBUG && console.log(`🔧 spaTmpPath: ${this.spaTmpPath()}`);
+    
     await this.prepareSources();
+    process.env.HEAVY_DEBUG && console.log(`🔧 prepareSources() completed successfully`);
+
 
     if (hotReload) {
       await Promise.all([
