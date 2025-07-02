@@ -55,7 +55,9 @@ export const admin = new AdminForth({
   ],
 });
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Cross-platform check if script is executed directly
+const isMainModule = import.meta.url === new URL(process.argv[1], 'file:').href;
+if (isMainModule) {
   const app = express();
   app.use(express.json());
 
