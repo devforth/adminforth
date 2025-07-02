@@ -50,16 +50,19 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return rows.map((row: any) => row.TABLE_NAME);
   }
 
-  async getAllColumnsInTable(tableName: string): Promise<Array<string>> {
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
     const [rows] = await this.client.query(
-        `
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = ? AND table_schema = DATABASE();
-        `,
-        [tableName]
+      `
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = ? AND table_schema = DATABASE();
+      `,
+      [tableName]
     );
-    return rows.map((row: any) => row.COLUMN_NAME);
+  
+    return rows.map((row: any) => ({
+      name: row.COLUMN_NAME,
+    }));
   }
 
   async discoverFields(resource) {
