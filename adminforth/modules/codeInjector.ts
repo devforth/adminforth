@@ -16,7 +16,12 @@ let TMP_DIR;
 try {
   TMP_DIR = os.tmpdir();
 } catch (e) {
-  TMP_DIR = '/tmp'; //maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
+  // Cross-platform fallback for temp directory
+  if (process.platform === 'win32') {
+    TMP_DIR = process.env.TEMP || process.env.TMP || 'C:\\Windows\\Temp';
+  } else {
+    TMP_DIR = '/tmp';
+  }
 }
 
 function stripAnsiCodes(str) {
@@ -62,7 +67,11 @@ function hashify(obj) {
 function notifyWatcherIssue(limit) {
   console.log('Ran out of file handles after watching %s files.', limit);
   console.log('Falling back to polling which uses more CPU.');
-  console.log('Run ulimit -n 10000 to increase the limit for open files.');
+  if (process.platform === 'win32') {
+    console.log('On Windows, this is usually handled automatically by the system.');
+  } else {
+    console.log('Run ulimit -n 10000 to increase the limit for open files.');
+  }
 }
 
 class CodeInjector implements ICodeInjector {
@@ -112,7 +121,7 @@ class CodeInjector implements ICodeInjector {
     envOverrides?: { [key: string]: string }
   }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+    const npmPath = path.join(path.dirname(nodeBinary), process.platform === 'win32' ? 'npm.cmd' : 'npm'); // Cross-platform npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -123,7 +132,13 @@ class CodeInjector implements ICodeInjector {
     console.log(`⚙️ exec: npm ${command}`);
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
-    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
+    
+    // Cross-platform command execution
+    const commandToExecute = process.platform === 'win32' 
+      ? `"${nodeBinary}" "${npmPath}" ${command}`
+      : `${nodeBinary} ${npmPath} ${command}`;
+      
+    const { stdout: out, stderr: err } = await execAsync(commandToExecute, {
       cwd,
       env,
     });
@@ -317,9 +332,14 @@ class CodeInjector implements ICodeInjector {
   
     await fsExtra.copy(spaDir, this.spaTmpPath(), {
       filter: (src) => {
-        // /adminforth/* used for local development and /dist/* used for production
-        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist') 
-                          && !src.includes('/dist/spa/node_modules') && !src.includes('/dist/spa/dist');
+        // Cross-platform path filtering for adminforth/* used for local development and /dist/* used for production
+        const adminforthSpaNodeModules = path.join('adminforth', 'spa', 'node_modules');
+        const adminforthSpaDist = path.join('adminforth', 'spa', 'dist');
+        const distSpaNodeModules = path.join('dist', 'spa', 'node_modules');
+        const distSpaDist = path.join('dist', 'spa', 'dist');
+        
+        const filterPasses = !src.includes(adminforthSpaNodeModules) && !src.includes(adminforthSpaDist) 
+                          && !src.includes(distSpaNodeModules) && !src.includes(distSpaDist);
         if (process.env.HEAVY_DEBUG && !filterPasses) {
           console.log('🪲⚙️ fsExtra.copy filtered out', src);
         }
@@ -357,8 +377,8 @@ class CodeInjector implements ICodeInjector {
       await fsExtra.copy(src, to, {
         recursive: true,
         dereference: true,
-        // exclue if node_modules comes after /custom/ in path
-        filter: (src) => !src.includes('/custom/node_modules'),
+        // exclude if node_modules comes after /custom/ in path
+        filter: (src) => !src.includes(path.join('custom', 'node_modules')),
       });
     }
 
@@ -514,9 +534,9 @@ class CodeInjector implements ICodeInjector {
     // we dont't need to add baseUrl in front of assets here, because it is already added by Vite/Vue
     indexHtmlContent = indexHtmlContent.replace(
       '/* IMPORTANT:ADMINFORTH FAVICON */',
-      this.adminforth.config.customization.favicon?.replace('@@/', `/assets/`)
+      this.adminforth.config.customization.favicon?.replace('@@/', '/assets/')
           ||
-       `/assets/favicon.png`
+       '/assets/favicon.png'
     );
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
@@ -668,7 +688,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (file) => {
         process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
-        await this.updatePartials({ filesUpdated: [file.replace(spaPath + '/', '')] });
+        await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
       }
     )
     watcher.on('fallback', notifyWatcherIssue);
@@ -725,7 +745,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (fileOrDir) => {
         // copy one file
-        const relativeFilename = fileOrDir.replace(customComponentsDir + '/', '');
+        const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
         if (process.env.HEAVY_DEBUG) {
           console.log(`🔎 fileOrDir ${fileOrDir} changed`);
           console.log(`🔎 relativeFilename ${relativeFilename}`);
@@ -868,14 +888,14 @@ class CodeInjector implements ICodeInjector {
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
       const nodeBinary = process.execPath; 
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      const npmPath = path.join(path.dirname(nodeBinary), process.platform === 'win32' ? 'npm.cmd' : 'npm');
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
+      const devServer = spawn(nodeBinary, [npmPath, ...command.split(' ')], {
         cwd,
         env,
       });
