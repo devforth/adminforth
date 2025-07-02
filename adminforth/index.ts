@@ -408,8 +408,8 @@ class AdminForth implements IAdminForth {
 
   async getAllColumnsInTable(
     tableName: string
-  ): Promise<{ [dataSourceId: string]: string[] }> {
-    const results: { [dataSourceId: string]: string[] } = {};
+  ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean }> }> {
+    const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean }> } = {};
   
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = { ...this.connectorClasses };
