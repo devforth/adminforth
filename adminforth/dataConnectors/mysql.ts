@@ -50,18 +50,24 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return rows.map((row: any) => row.TABLE_NAME);
   }
 
-  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
-    const [rows] = await this.client.query(
-      `
-      SELECT column_name
-      FROM information_schema.columns
-      WHERE table_name = ? AND table_schema = DATABASE();
-      `,
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
+    const [columns] = await this.client.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = ? AND table_schema = DATABASE()`,
       [tableName]
     );
   
-    return rows.map((row: any) => ({
-      name: row.COLUMN_NAME,
+    const columnNames = columns.map((c: any) => c.COLUMN_NAME);
+    const orderByField = ['updated_at', 'created_at', 'id'].find(f => columnNames.includes(f));
+  
+    let [rows] = orderByField
+      ? await this.client.query(`SELECT * FROM \`${tableName}\` ORDER BY \`${orderByField}\` DESC LIMIT 1`)
+      : await this.client.query(`SELECT * FROM \`${tableName}\` LIMIT 1`);
+  
+    const sampleRow = rows[0] || {};
+  
+    return columns.map((col: any) => ({
+      name: col.COLUMN_NAME,
+      sampleValue: sampleRow[col.COLUMN_NAME],
     }));
   }
 

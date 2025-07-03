@@ -16,12 +16,24 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     const rows = stmt.all();
     return rows.map((row) => row.name);
   }
-  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string }>> {
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
     const stmt = this.client.prepare(`PRAGMA table_info(${tableName});`);
-    const rows = stmt.all();
+    const columns = stmt.all();
   
-    return rows.map(row => ({
-      name: row.name || '', 
+    const orderByField = columns.find(c => ['created_at', 'id'].includes(c.name))?.name;
+  
+    let sampleRow = {};
+    if (orderByField) {
+      const rowStmt = this.client.prepare(`SELECT * FROM ${tableName} ORDER BY ${orderByField} DESC LIMIT 1`);
+      sampleRow = rowStmt.get() || {};
+    } else {
+      const rowStmt = this.client.prepare(`SELECT * FROM ${tableName} LIMIT 1`);
+      sampleRow = rowStmt.get() || {};
+    }
+  
+    return columns.map(col => ({
+      name: col.name || '',
+      sampleValue: sampleRow[col.name],
     }));
   }
 

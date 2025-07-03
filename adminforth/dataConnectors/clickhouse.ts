@@ -43,7 +43,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     return jsonResult.data.map((row: any) => row.name);
   }
   
-  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
     const res = await this.client.query({
       query: `
         SELECT name
@@ -57,7 +57,31 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     });
   
     const jsonResult = await res.json();
-    return jsonResult.data.map((row: any) => ({ name: row.name }));
+    const orderByField = ['updated_at', 'created_at', 'id'].find(f =>
+      jsonResult.data.some((col: any) => col.name === f)
+    );
+  
+    let sampleRow = {};
+    if (orderByField) {
+      const sampleRes = await this.client.query({
+        query: `SELECT * FROM ${this.dbName}.${tableName} ORDER BY ${orderByField} DESC LIMIT 1`,
+        format: 'JSON',
+      });
+      const sampleJson = await sampleRes.json();
+      sampleRow = sampleJson.data?.[0] ?? {};
+    } else {
+      const sampleRes = await this.client.query({
+        query: `SELECT * FROM ${this.dbName}.${tableName} LIMIT 1`,
+        format: 'JSON',
+      });
+      const sampleJson = await sampleRes.json();
+      sampleRow = sampleJson.data?.[0] ?? {};
+    }
+  
+    return jsonResult.data.map((col: any) => ({
+      name: col.name,
+      sampleValue: sampleRow[col.name],
+    }));
   }
   
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
