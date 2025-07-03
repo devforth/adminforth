@@ -173,7 +173,7 @@ model apartments {
 Run the following command to create a new migration:
 
 ```bash
-npm run makemigration -- --name add-apartments
+npm run makemigration -- --name add-apartments && npm run migrate:local
 ```
 
 ### Step3. Create the `apartments` resource
