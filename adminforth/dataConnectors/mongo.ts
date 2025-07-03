@@ -54,12 +54,13 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return collections.map(col => col.name);
     }
 
-    async getAllColumnsInTable(collectionName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean }>> {
+    async getAllColumnsInTable(collectionName: string): Promise<Array<{ name: string; type: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
 
         const sampleDocs = await this.client.db().collection(collectionName).find({}).sort({ _id: -1 }).limit(100).toArray();
       
         const fieldTypes = new Map<string, Set<string>>();
-      
+        const sampleValues = new Map<string, any>();
+
         function detectType(value: any): string {
           if (value === null || value === undefined) return 'string';
           if (typeof value === 'string') return 'string';
@@ -82,9 +83,10 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         function flattenObject(obj: any, prefix = '') {
           Object.entries(obj).forEach(([key, value]) => {
             const fullKey = prefix ? `${prefix}.${key}` : key;
-      
-            if (fullKey.startsWith('_id.') && typeof value !== 'string' && typeof value !== 'number') {
-              return;
+
+            if (!fieldTypes.has(fullKey)) {
+              fieldTypes.set(fullKey, new Set());
+              sampleValues.set(fullKey, value);
             }
       
             if (
@@ -101,7 +103,6 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
               !Array.isArray(value) && 
               !(value instanceof Date)
             ) {
-              // Вместо рекурсивного прохода — просто добавляем этот объект целиком как json
               addType(fullKey, 'json');
             } else {
               addType(fullKey, detectType(value));
@@ -134,6 +135,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             name,
             type: typeMap[matched] ?? 'STRING',
             ...(primaryKey ? { isPrimaryKey: true } : {}),
+            sampleValue: sampleValues.get(name),
           };
         });
       }

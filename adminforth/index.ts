@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -408,8 +408,8 @@ class AdminForth implements IAdminForth {
 
   async getAllColumnsInTable(
     tableName: string
-  ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean }> }> {
-    const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean }> } = {};
+  ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean; isUUID?: boolean; }> }> {
+    const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean;  isUUID?: boolean; }> } = {};
   
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = { ...this.connectorClasses };
@@ -420,7 +420,10 @@ class AdminForth implements IAdminForth {
         if (typeof connector.getAllColumnsInTable === 'function') {
           try {
             const columns = await connector.getAllColumnsInTable(tableName);
-            results[dataSourceId] = columns;
+            results[dataSourceId] = columns.map(column => ({
+              ...column,
+              isUUID: isProbablyUUIDColumn(column),
+            }));
           } catch (err) {
             console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
             results[dataSourceId] = [];

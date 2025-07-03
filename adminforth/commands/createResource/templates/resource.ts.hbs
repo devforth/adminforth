@@ -1,4 +1,3 @@
-import { v1 as uuid } from "uuid";
 import { AdminForthResourceInput, AdminForthDataTypes } from "adminforth";
 
 export default {
@@ -11,7 +10,10 @@ export default {
     {
       name: "{{this.name}}"{{#if this.type}},
       type: AdminForthDataTypes.{{this.type}}{{/if}}{{#if this.isPrimaryKey}},
-      primaryKey: true{{/if}}
+      primaryKey: true{{/if}}{{#if this.isUUID}},
+      components: {
+        list: "@/renderers/CompactUUID.vue",
+      }{{/if}},
     }{{#unless @last}},{{/unless}}
     {{/each}}
   ],

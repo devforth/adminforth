@@ -488,3 +488,12 @@ export class RAMLock {
     }
   }
 }
+
+export function isProbablyUUIDColumn(column: { name: string; type?: string; sampleValue?: any }): boolean {
+  if (column.type?.toLowerCase() === 'uuid') return true;
+  if (typeof column.sampleValue === 'string') {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(column.sampleValue);
+  }
+
+  return false;
+}
