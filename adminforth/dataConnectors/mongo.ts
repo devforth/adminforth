@@ -54,32 +54,91 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return collections.map(col => col.name);
     }
 
-    async getAllColumnsInTable(collectionName: string): Promise<Array<string>> {
+    async getAllColumnsInTable(collectionName: string): Promise<Array<{ name: string; type: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
 
         const sampleDocs = await this.client.db().collection(collectionName).find({}).sort({ _id: -1 }).limit(100).toArray();
-        
-        const fieldSet = new Set<string>();
-        
+      
+        const fieldTypes = new Map<string, Set<string>>();
+        const sampleValues = new Map<string, any>();
+
+        function detectType(value: any): string {
+          if (value === null || value === undefined) return 'string';
+          if (typeof value === 'string') return 'string';
+          if (typeof value === 'boolean') return 'boolean';
+          if (typeof value === 'number') {
+            return Number.isInteger(value) ? 'integer' : 'float';
+          }
+          if (value instanceof Date) return 'datetime';
+          if (typeof value === 'object') return 'json';
+          return 'string';
+        }
+      
+        function addType(name: string, type: string) {
+          if (!fieldTypes.has(name)) {
+            fieldTypes.set(name, new Set());
+          }
+          fieldTypes.get(name)!.add(type);
+        }
+      
         function flattenObject(obj: any, prefix = '') {
-            Object.entries(obj).forEach(([key, value]) => {
+          Object.entries(obj).forEach(([key, value]) => {
             const fullKey = prefix ? `${prefix}.${key}` : key;
-            if (fullKey.startsWith('_id.') && typeof value !== 'string' && typeof value !== 'number') {
-                return;
-              }
-            if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-                flattenObject(value, fullKey);
-            } else {
-                fieldSet.add(fullKey);
+
+            if (!fieldTypes.has(fullKey)) {
+              fieldTypes.set(fullKey, new Set());
+              sampleValues.set(fullKey, value);
             }
-            });
+      
+            if (
+              value instanceof Buffer ||
+              (value && typeof value === 'object' && (value as any)._bsontype === 'Decimal128')
+            ) {
+              addType(fullKey, 'json');
+              return;
+            }
+      
+            if (
+              value && 
+              typeof value === 'object' && 
+              !Array.isArray(value) && 
+              !(value instanceof Date)
+            ) {
+              addType(fullKey, 'json');
+            } else {
+              addType(fullKey, detectType(value));
+            }
+          });
         }
-        
+      
         for (const doc of sampleDocs) {
-            flattenObject(doc);
+          flattenObject(doc);
         }
-        
-        return Array.from(fieldSet);
-    }
+      
+        return Array.from(fieldTypes.entries()).map(([name, types]) => {
+          const primaryKey = name === '_id';
+      
+          const priority = ['datetime', 'date', 'integer', 'float', 'boolean', 'json', 'string'];
+      
+          const matched = priority.find(t => types.has(t)) || 'string';
+      
+          const typeMap: Record<string, string> = {
+            string: 'STRING',
+            integer: 'INTEGER',
+            float: 'FLOAT',
+            boolean: 'BOOLEAN',
+            datetime: 'DATETIME',
+            date: 'DATE',
+            json: 'JSON',
+          };
+      
+          return {
+            name,
+            type: typeMap[matched] ?? 'STRING',
+            ...(primaryKey ? { isPrimaryKey: true } : {}),
+            sampleValue: sampleValues.get(name),
+          };
+        });
+      }
       
     
     async discoverFields(resource) {
