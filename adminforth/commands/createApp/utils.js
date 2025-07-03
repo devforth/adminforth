@@ -289,7 +289,7 @@ async function installDependencies(ctx, cwd) {
   
   const nodeBinary = process.execPath; 
   const npmPath = path.join(path.dirname(nodeBinary), npmCmd);
-
+  console.log("npmPath",`${nodeBinary} ${npmPath} install`);
   const customDir = ctx.customDir;
   const res = await Promise.all([
     await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
