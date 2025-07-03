@@ -487,7 +487,7 @@ list: '@/renderers/ZeroStylesRichText.vue',
 ### Custom filter component for square meters
 
 
-Sometimes standard filters are not enough, and you want to make a convenient UI for selecting a range of apartment areas. For example, buttons with options for “Small (<25 m²)”, “Medium (25–90 m²)” and “Large (>90 m²)”.
+Sometimes standard filters are not enough, and you want to make a convenient UI for selecting a range of apartment areas. For example, buttons with options for “Small (&lt;25 m²)”, “Medium (25–90 m²)” and “Large (&gt;90 m²)”.
 
 ```ts title='./custom/SquareMetersFilter.vue'
 <template>
