@@ -287,10 +287,13 @@ async function installDependencies(ctx, cwd) {
   const isWindows = process.platform === 'win32';
   const npmCmd = isWindows ? 'npm.cmd' : 'npm';
   
+  const nodeBinary = process.execPath; 
+  const npmPath = path.join(path.dirname(nodeBinary), npmCmd);
+
   const customDir = ctx.customDir;
   const res = await Promise.all([
-    await execAsync(`${npmCmd} install`, { cwd, env: { PATH: process.env.PATH } }),
-    await execAsync(`${npmCmd} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
   ]);
   // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
