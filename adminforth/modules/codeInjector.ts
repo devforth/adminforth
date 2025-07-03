@@ -894,18 +894,21 @@ class CodeInjector implements ICodeInjector {
 
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
-      const nodeBinary = process.execPath; 
-      // On Windows, npm is npm.cmd, on Unix systems it's npm
-      const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-      const npmPath = path.join(path.dirname(nodeBinary), npmExecutable);
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      // Execute npm directly (npm.cmd on Windows, npm on Unix)
-      const devServer = spawn(npmPath, command.split(' '), { cwd, env });
+      // Execute npm with proper Windows compatibility
+      let devServer;
+      if (process.platform === 'win32') {
+        // On Windows, use shell to execute npm.cmd
+        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+      } else {
+        // On Unix systems, execute npm directly
+        devServer = spawn('npm', command.split(' '), { cwd, env });
+      }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
           // TODO: maybe better use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output
