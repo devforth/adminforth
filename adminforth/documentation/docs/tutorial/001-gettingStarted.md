@@ -22,7 +22,7 @@ The recommended way to get started with AdminForth is via the **`create-app`** C
 You can provide options directorly:
 
 ```bash
-npx adminforth create-app --app-name myadmin --db sqlite://.db.sqlite
+npx adminforth create-app --app-name myadmin --db "sqlite://.db.sqlite"
 ```
 
 Or omit them to be prompted interactively:
