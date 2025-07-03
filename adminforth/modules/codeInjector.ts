@@ -900,14 +900,14 @@ class CodeInjector implements ICodeInjector {
         ...process.env,
       };
 
-      // Execute npm with proper Windows compatibility
+      const nodeBinary = process.execPath;
+      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      
       let devServer;
       if (process.platform === 'win32') {
-        // On Windows, use shell to execute npm.cmd
         devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
       } else {
-        // On Unix systems, execute npm directly
-        devServer = spawn('npm', command.split(' '), { cwd, env });
+        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
