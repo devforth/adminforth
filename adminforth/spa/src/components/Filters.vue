@@ -21,9 +21,25 @@
       <ul class="space-y-3 font-medium">
          <li v-for="c in columnsWithFilter" :key="c">
             <p class="dark:text-gray-400">{{ c.label }}</p>
+            <component
+              v-if="c.components?.filter"
+              :is="getCustomComponent(c.components.filter)"
+              :meta="c?.components?.list?.meta"
+              :column="c"
+              class="w-full"
+              @update:modelValue="(filtersArray) => {
+                filtersStore.filters = filtersStore.filters.filter(f => f.field !== c.name);
 
+                for (const f of filtersArray) {
+                  filtersStore.filters.push({ field: c.name, ...f });
+                }
+                console.log('filtersStore.filters', filtersStore.filters);
+                emits('update:filters', [...filtersStore.filters]);
+              }"
+              :modelValue="filtersStore.filters.filter(f => f.field === c.name)"
+            />
             <Select
-              v-if="c.foreignResource"
+              v-else-if="c.foreignResource"
               :multiple="c.filterOptions.multiselect"
               class="w-full"
               :options="columnOptions[c.name] || []"
@@ -128,6 +144,7 @@ import { useRouter } from 'vue-router';
 import { computedAsync } from '@vueuse/core'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
+import { getCustomComponent } from '@/utils';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
 import debounce from 'debounce';
