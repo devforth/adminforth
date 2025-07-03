@@ -289,11 +289,15 @@ async function installDependencies(ctx, cwd) {
   
   const nodeBinary = process.execPath; 
   const npmPath = path.join(path.dirname(nodeBinary), npmCmd);
-  console.log("npmPath",`${nodeBinary} ${npmPath} install`);
+  
+  // Quote paths if they contain spaces to handle paths like "C:\Program Files\nodejs\"
+  const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+  const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+  
   const customDir = ctx.customDir;
   const res = await Promise.all([
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    await execAsync(`${quotedNodeBinary} ${quotedNpmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+    await execAsync(`${quotedNodeBinary} ${quotedNpmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
   ]);
   // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
