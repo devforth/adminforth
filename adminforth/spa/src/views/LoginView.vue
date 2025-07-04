@@ -49,6 +49,7 @@
                         <div>
                             <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
                             <Input 
+                              v-model="username"
                               autocomplete="username"  
                               type="username" 
                               name="username" 
@@ -62,6 +63,7 @@
                         <div class="">
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your password') }}</label>
                             <Input 
+                              v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
                               oninput="setCustomValidity('')"
@@ -142,6 +144,8 @@ const { t } = useI18n();
 const passwordInput = ref(null);
 const usernameInput = ref(null);
 const rememberMeValue= ref(false);
+const username = ref('');
+const password = ref('');
 
 const route = useRoute();
 const router = useRouter();
@@ -172,9 +176,9 @@ onBeforeMount(() => {
 
 onMounted(async () => {
     if (coreStore.config?.demoCredentials) {
-      const [username, password] = coreStore.config.demoCredentials.split(':');
-      usernameInput.value.value = username;
-      passwordInput.value.value = password;
+      const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
+      username.value = demoUsername;
+      password.value = demoPassword;
     }
     usernameInput.value.focus();
 });
@@ -182,14 +186,11 @@ onMounted(async () => {
 
 async function login() {
   
-  const username = usernameInput.value.value;
-  const password = passwordInput.value.value;
-
-  if (!username) {
+  if (!username.value) {
     usernameInput.value.setCustomValidity(t('Please fill out this field.'));
     return;
   }
-  if (!password) {
+  if (!password.value) {
     passwordInput.value.setCustomValidity(t('Please fill out this field.'));
     return;
   }
@@ -202,8 +203,8 @@ async function login() {
     path: '/login',
     method: 'POST',
     body: {
-      username,
-      password,
+      username: username.value,
+      password: password.value,
       rememberMe: rememberMeValue.value,
     }
   });
