@@ -141,7 +141,7 @@ Here is how it looks:
 
 You can also inject custom components to the login page. 
 
-`loginPageInjections.underInputs` and `loginPageInjections.overInputs` allows to add one or more panels under or over the login form inputs:
+`loginPageInjections.underInputs` and `loginPageInjections.panelHeader` allows to add one or more panels under or over the login form inputs:
 
 ![login Page Injections underInputs](<loginPageInjection.png>)
 
@@ -172,7 +172,7 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
 </template>
 ```
 
-Also you can add `overInputs`
+Also you can add `panelHeader`
 
 ```ts title="/index.ts"
 
@@ -182,7 +182,7 @@ new AdminForth({
     loginPageInjections: {
       underInputs: '@@/CustomLoginFooter.vue',
 //diff-add
-      overInputs: '@@/CustomLoginHeader.vue',
+      panelHeader: '@@/CustomLoginHeader.vue',
     }
     ...
   }

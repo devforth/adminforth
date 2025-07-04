@@ -747,7 +747,7 @@ interface AdminForthInputConfigCustomization {
    */
   loginPageInjections?: {
     underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-    overInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    panelHeader?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
   /**
@@ -1055,7 +1055,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
-    overInputs: Array<AdminForthComponentDeclarationFull>,
+    panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
   globalInjections: {

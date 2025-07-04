@@ -295,7 +295,7 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
           if (!n.ObjectExpression.check(loginPageInjections)) return false;
   
           // Determine target property based on injection type
-          targetProperty = injectionType === 'beforeLogin' ? 'overInputs' : 'underInputs';
+          targetProperty = injectionType === 'beforeLogin' ? 'panelHeader' : 'underInputs';
           
           let targetProp = loginPageInjections.properties.find(
             p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === targetProperty

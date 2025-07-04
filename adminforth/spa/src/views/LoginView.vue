@@ -31,9 +31,9 @@
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
-                    <div v-if="coreStore?.config?.loginPageInjections?.overInputs.length > 0">
+                    <div v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
                       <component 
-                        v-for="(c, index) in coreStore?.config?.loginPageInjections?.overInputs || []"
+                        v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
                         :key="index"
                         :is="getCustomComponent(c)"
                         :meta="c.meta"
