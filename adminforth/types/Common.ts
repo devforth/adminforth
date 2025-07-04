@@ -1060,6 +1060,7 @@ export interface AdminForthConfigForFrontend {
   loginPromptHTML?: string,
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
+    panelHeader: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
