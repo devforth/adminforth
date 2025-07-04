@@ -115,10 +115,11 @@ export default class ConfigValidator implements IConfigValidator {
 
     const loginPageInjections: AdminForthConfigCustomization['loginPageInjections'] = {
       underInputs: [],
+      panelHeader: [],
     };
 
     if (this.inputConfig.customization?.loginPageInjections) {
-      const ALLOWED_LOGIN_INJECTIONS = ['underInputs']
+      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'panelHeader']
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
         if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);

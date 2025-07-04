@@ -30,7 +30,16 @@
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+
+                    <div v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
+                      <component 
+                        v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
+                        :key="index"
+                        :is="getCustomComponent(c)"
+                        :meta="c.meta"
+                      />
+                    </div>
+                    <h3 v-else class="text-xl font-semibold text-gray-900 dark:text-white">
                       {{ $t('Sign in to') }} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
