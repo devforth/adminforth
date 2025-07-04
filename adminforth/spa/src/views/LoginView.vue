@@ -23,13 +23,13 @@
 
     <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" 
-      class="overflow-y-auto flex flex-grow
+      class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
+            <div class="af-login-modal-content relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
                 <!-- Modal header -->
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <div class="af-login-modal-header flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
                     <div v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
                       <component 
@@ -44,11 +44,11 @@
                     </h3>
                 </div>
                 <!-- Modal body -->
-                <div class="p-4 md:p-5">
+                <div class="af-login-modal-body p-4 md:p-5">
                     <form class="space-y-4" @submit.prevent>
                         <div>
                             <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
-                            <input 
+                            <Input 
                               autocomplete="username"  
                               type="username" 
                               name="username" 
@@ -56,20 +56,24 @@
                               ref="usernameInput"
                               oninput="setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
-                              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
+                              class="w-full"
+                              placeholder="name@company.com" required />
                         </div>
-                        <div class="relative">
+                        <div class="">
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your password') }}</label>
-                            <input 
+                            <Input 
                               ref="passwordInput"
                               autocomplete="current-password"
                               oninput="setCustomValidity('')"
                               @keydown.enter="login"
-                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
-                            <button type="button" @click="showPw = !showPw" class="absolute top-12 right-3 -translate-y-1/2 text-gray-400 dark:text-gray-300">
-                              <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
-                              <IconEyeSlashSolid class="w-5 h-5" v-else />
-                            </button>
+                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
+                              <template #rightIcon>
+                                <button type="button" @click="showPw = !showPw" class="text-gray-400 dark:text-gray-300">
+                                  <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
+                                  <IconEyeSlashSolid class="w-5 h-5" v-else />
+                                </button>
+                              </template>
+                            </Input>
                         </div>
 
                         <div v-if="coreStore.config.rememberMeDays" 
@@ -88,7 +92,7 @@
                           :meta="c.meta"
                         />
 
-                        <div v-if="error" class="flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                        <div v-if="error" class="af-login-modal-error flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
@@ -130,7 +134,7 @@ import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import { Button, Checkbox } from '@/afcl';
+import { Button, Checkbox, Input } from '@/afcl';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
