@@ -141,9 +141,9 @@ Here is how it looks:
 
 You can also inject custom components to the login page. 
 
-`loginPageInjections.underInputs` allows to add one or more panels under the login form inputs:
+`loginPageInjections.underInputs` and `loginPageInjections.overInputs` allows to add one or more panels under or over the login form inputs:
 
-![login Page Injections underInputs](<Group 2 (1).png>)
+![login Page Injections underInputs](<loginPageInjection.png>)
 
 For example:
 
@@ -171,6 +171,38 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
   </div>
 </template>
 ```
+
+Also you can add `overInputs`
+
+```ts title="/index.ts"
+
+new AdminForth({
+  ...
+  customization: {
+    loginPageInjections: {
+      underInputs: '@@/CustomLoginFooter.vue',
+//diff-add
+      overInputs: '@@/CustomLoginHeader.vue',
+    }
+    ...
+  }
+
+  ...
+})
+```
+
+Now create file `CustomLoginHeader.vue` in the `custom` folder of your project:
+
+```html title="./custom/CustomLoginHeader.vue"
+<template>
+    <div class="flex items-center justify-center gap-2">
+        <div class="text-2xl text-black dark:text-white font-bold">
+          AdminForth
+        </div>
+    </div>
+</template>
+```
+
 
 
 ## List view page injections shrinking: thin enough to shrink?
