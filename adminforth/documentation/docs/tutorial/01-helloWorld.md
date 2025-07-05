@@ -122,7 +122,7 @@ model Post {
 Create database using `prisma migrate`:
 
 ```bash
-npm run makemigration --name init
+npm run makemigration --name init && npm run migrate:local
 ```
 
 ## Setting up AdminForth

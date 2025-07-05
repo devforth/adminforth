@@ -1,5 +1,5 @@
 <template>
-  <div ref="triggerEl" class="inline-flex items-center">
+  <div ref="triggerEl" class="afcl-tooltip inline-flex items-center">
       <slot></slot>
   </div>
   <div

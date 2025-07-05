@@ -254,7 +254,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
 }
 
 
-export async function injectLoginComponent(indexFilePath, componentPath) {
+export async function injectLoginComponent(indexFilePath, componentPath, injectionType) {
     console.log(chalk.dim(`Reading file: ${indexFilePath}`));
     const content = await fs.readFile(indexFilePath, 'utf-8');
     const ast = recast.parse(content, {
@@ -263,6 +263,7 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
   
     let updated = false;
     let injectionLine = null;
+    let targetProperty = null;
   
     recast.visit(ast, {
       visitNewExpression(path) {
@@ -293,20 +294,23 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
           const loginPageInjections = getOrCreateProp(customization, 'loginPageInjections');
           if (!n.ObjectExpression.check(loginPageInjections)) return false;
   
-          let underInputsProp = loginPageInjections.properties.find(
-            p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'underInputs'
+          // Determine target property based on injection type
+          targetProperty = injectionType === 'beforeLogin' ? 'panelHeader' : 'underInputs';
+          
+          let targetProp = loginPageInjections.properties.find(
+            p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === targetProperty
           );
   
-          if (underInputsProp) {
-            const currentVal = underInputsProp.value;
-            injectionLine = underInputsProp.loc?.start.line ?? null;
+          if (targetProp) {
+            const currentVal = targetProp.value;
+            injectionLine = targetProp.loc?.start.line ?? null;
             if (n.StringLiteral.check(currentVal)) {
               if (currentVal.value !== componentPath) {
-                underInputsProp.value = b.arrayExpression([
+                targetProp.value = b.arrayExpression([
                   b.stringLiteral(currentVal.value),
                   b.stringLiteral(componentPath),
                 ]);
-                console.log(chalk.dim(`Converted 'underInputs' to array with existing + new path.`));
+                console.log(chalk.dim(`Converted '${targetProperty}' to array with existing + new path.`));
               } else {
                 console.log(chalk.dim(`Component path already present as string. Skipping.`));
               }
@@ -316,26 +320,26 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
               );
               if (!exists) {
                 currentVal.elements.push(b.stringLiteral(componentPath));
-                console.log(chalk.dim(`Appended new component path to existing 'underInputs' array.`));
+                console.log(chalk.dim(`Appended new component path to existing '${targetProperty}' array.`));
               } else {
                 console.log(chalk.dim(`Component path already present in array. Skipping.`));
               }
             } else {
-              console.warn(chalk.yellow(`⚠️ 'underInputs' is not a string or array. Skipping.`));
+              console.warn(chalk.yellow(`⚠️ '${targetProperty}' is not a string or array. Skipping.`));
               return false;
             }
           } else {
             const newProperty = b.objectProperty(
-                b.identifier('underInputs'), 
-                b.stringLiteral(componentPath)
-              );
-              
-              if (newProperty.loc) {
-                console.log(chalk.dim(`Adding 'underInputs' at line: ${newProperty.loc.start.line}`));
-              }
-              
-              loginPageInjections.properties.push(newProperty);
-              console.log(chalk.dim(`Added 'underInputs': ${componentPath}`));
+              b.identifier(targetProperty), 
+              b.stringLiteral(componentPath)
+            );
+            
+            if (newProperty.loc) {
+              console.log(chalk.dim(`Adding '${targetProperty}' at line: ${newProperty.loc.start.line}`));
+            }
+            
+            loginPageInjections.properties.push(newProperty);
+            console.log(chalk.dim(`Added '${targetProperty}': ${componentPath}`));
           }
   
           updated = true;
@@ -353,7 +357,7 @@ export async function injectLoginComponent(indexFilePath, componentPath) {
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
     console.log(
       chalk.green(
-        `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
+        `✅ Successfully updated login ${targetProperty} injection in: ${indexFilePath}` +
         (injectionLine !== null ? `:${injectionLine}` : '')
       )
     );
