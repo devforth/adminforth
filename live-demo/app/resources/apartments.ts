@@ -1,7 +1,7 @@
 import { AdminForthDataTypes } from 'adminforth';
 import importExport from '@adminforth/import-export';
 import RichEditorPlugin from '@adminforth/rich-editor';
-import ChatGptPlugin from '@adminforth/chat-gpt';
+import TextCompletePlugin from '@adminforth/text-complete';
 import UploadPlugin from '@adminforth/upload';
 import { randomUUID } from 'crypto';
 import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
@@ -167,9 +167,16 @@ export default {
         }
       }
     }),
-    new ChatGptPlugin({
-      openAiApiKey: process.env.OPENAI_API_KEY as string,
+    new TextCompletePlugin({
       fieldName: 'title',
+      adapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+      }),
+      // expert: {
+        // maxTokens: 50, // token limit to generate for each completion. 50 is default
+        // promptInputLimit: 500, // Limit in characters of edited field to be passed to Model. 500 is default value
+        // debounceTime: 300, // Debounce time in milliseconds. 300 is default value
+      // }
     }),
     new UploadPlugin({
       pathColumnName: 'apartment_image',
