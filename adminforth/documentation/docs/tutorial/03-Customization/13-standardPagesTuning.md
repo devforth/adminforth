@@ -640,6 +640,31 @@ export default {
   ],
 ```
 
+### Searchable fields 
+
+Enable search in filter dropdown by specifying which fields to search:
+
+```typescript title="./resources/apartments.ts"
+export default {
+      name: 'apartments',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'adminuser',
+//diff-add
+            searchableFields: ["id", "email"], 
+//diff-add
+            searchIsCaseSensitive: true, // default false
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
 ### Polymorphic foreign resources
 
 Sometimes it is needed for one column to be a foreign key for multiple tables. For example, given the following schema:
