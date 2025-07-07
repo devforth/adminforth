@@ -299,6 +299,44 @@ plugins: [
 ]
 ```
 
+### Twitch Adapter
+
+Install Adapter:
+
+```
+npm install @adminforth/twitch-oauth-adapter --save
+```
+
+1. Go to the [Twitch dashboard](https://dev.twitch.tv/console/)
+2. Create a new app or select an existing one
+3. In `OAuth Redirect URLs` add `https://your-domain/oauth/callback` (`http://localhost:3500/oauth/callback`)
+4. Go to the app and copy `Client ID`, click to `Generate a new client secret`(in Twitch this button can be used only once for some time, becouse of this dont lose it) button and copy secret .
+5. Add the credentials to your `.env` file:
+
+```bash
+TWITCH_OAUTH_CLIENT_ID=your_twitch_client_id
+TWITCH_OAUTH_CLIENT_SECRET=your_twitch_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterTwitchOauth2 from '@adminforth/twitch-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterTwitchOauth2({
+        clientID: process.env.TWITCH_OAUTH_CLIENT_ID,
+        clientSecret: process.env.TWITCH_OAUTH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
 ### Need custom provider?
 
 Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 

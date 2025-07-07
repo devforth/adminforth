@@ -16,7 +16,11 @@ let TMP_DIR;
 try {
   TMP_DIR = os.tmpdir();
 } catch (e) {
-  TMP_DIR = '/tmp'; //maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
+  if (process.platform === 'win32') {
+    TMP_DIR = process.env.TEMP || process.env.TMP || 'C:\\Windows\\Temp';
+  } else {
+    TMP_DIR = '/tmp';
+  }//maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
 }
 
 function stripAnsiCodes(str) {
@@ -112,7 +116,9 @@ class CodeInjector implements ICodeInjector {
     envOverrides?: { [key: string]: string }
   }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+    // On Windows, npm is npm.cmd, on Unix systems it's npm
+    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -123,10 +129,31 @@ class CodeInjector implements ICodeInjector {
     console.log(`⚙️ exec: npm ${command}`);
     process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
-    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
+    
+    // On Windows, execute npm.cmd directly; on Unix, use node + npm
+    let execCommand: string;
+    if (process.platform === 'win32') {
+      // Quote path if it contains spaces
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNpmPath} ${command}`;
+    } else {
+      // Quote paths that contain spaces (for Unix systems)
+      const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
+    }
+    
+    const execOptions: any = {
       cwd,
       env,
-    });
+    };
+    
+    // On Windows, use shell to execute .cmd files
+    if (process.platform === 'win32') {
+      execOptions.shell = true;
+    }
+    
+    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
     process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
 
     // process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
@@ -357,8 +384,8 @@ class CodeInjector implements ICodeInjector {
       await fsExtra.copy(src, to, {
         recursive: true,
         dereference: true,
-        // exclue if node_modules comes after /custom/ in path
-        filter: (src) => !src.includes('/custom/node_modules'),
+        // exclude if node_modules comes after /custom/ in path
+        filter: (src) => !src.includes(path.join('custom', 'node_modules')),
       });
     }
 
@@ -668,7 +695,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (file) => {
         process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
-        await this.updatePartials({ filesUpdated: [file.replace(spaPath + '/', '')] });
+        await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
       }
     )
     watcher.on('fallback', notifyWatcherIssue);
@@ -725,7 +752,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (fileOrDir) => {
         // copy one file
-        const relativeFilename = fileOrDir.replace(customComponentsDir + '/', '');
+        const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
         if (process.env.HEAVY_DEBUG) {
           console.log(`🔎 fileOrDir ${fileOrDir} changed`);
           console.log(`🔎 relativeFilename ${relativeFilename}`);
@@ -867,18 +894,21 @@ class CodeInjector implements ICodeInjector {
 
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
-      const nodeBinary = process.execPath; 
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
-        cwd,
-        env,
-      });
+      const nodeBinary = process.execPath;
+      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      
+      let devServer;
+      if (process.platform === 'win32') {
+        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+      } else {
+        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
+      }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
           // TODO: maybe better use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output

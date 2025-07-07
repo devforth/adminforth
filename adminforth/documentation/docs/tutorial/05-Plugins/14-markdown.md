@@ -51,7 +51,7 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image
+npm run makemigration -- --name add_description_image && npm run migrate:local
 ```
 
 ```bash
@@ -59,10 +59,10 @@ npm i @adminforth/upload --save
 npm i @adminforth/storage-adapter-local --save
 ```
 
-```typescript title="./resources/description_image.ts"
-import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local";
-import { AdminForthResourceInput } from "../../adminforth";
-import UploadPlugin from "../../plugins/adminforth-upload";
+```typescript title="./resources/description_images.ts"
+import AdminForthStorageAdapterLocalFilesystem from "@adminforth/storage-adapter-local";
+import { AdminForthResourceInput } from "adminforth";
+import UploadPlugin from "@adminforth/upload";
 import { v1 as uuid } from "uuid";
 
 export default {
@@ -129,6 +129,21 @@ export default {
   ],
 } as AdminForthResourceInput;
 ```
+Next, add new resource to `index.ts`:
+
+```typescript title="./index.ts"
+// diff-add
+import descriptionImage from './resources/description_images.js';
+
+...
+
+  resources: [
+    usersResource,
+    apartments,
+    // diff-add
+    descriptionImage
+  ],
+```
 
 Next, add attachments to Markdown plugin:
 
@@ -139,7 +154,7 @@ import MarkdownPlugin from '@adminforth/markdown';
 
 plugins: [
   new MarkdownPlugin({
-    fieldName: "description"
+    fieldName: "description",
 // diff-add
     attachments: {
 // diff-add

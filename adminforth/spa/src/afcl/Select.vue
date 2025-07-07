@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block afcl-select" ref="internalSelect" 
+  <div class="afcl-select relative inline-block" ref="internalSelect" 
     :class="{'opacity-50': readonly}"
   >
     <div class="relative">

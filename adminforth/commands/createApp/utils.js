@@ -284,14 +284,22 @@ async function writeTemplateFiles(dirname, cwd, options) {
 }
 
 async function installDependencies(ctx, cwd) {
-  const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-  const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+  const isWindows = process.platform === 'win32';
 
+  const nodeBinary = process.execPath; 
+  const npmPath = path.join(path.dirname(nodeBinary), 'npm');
   const customDir = ctx.customDir;
-  const res = await Promise.all([
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-    await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
-  ]);
+  if (isWindows) {
+    const res = await Promise.all([
+      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  } else {
+    const res = await Promise.all([
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  }
   // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
 
