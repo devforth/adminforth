@@ -67,3 +67,50 @@ Make sure to place your AWS credentials in `.env` file/environment.
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 ```
+
+
+## Mailgun
+
+To Setup Mailgun, you need to have an account and Mailgun service enabled. You can follow the steps below to setup Mailgun.
+
+1. Go to [https://www.mailgun.com/](https://www.mailgun.com/) and create an account.
+2. Add your email address (any email), and verify it.
+3. Add your domain (any domain) and verify it.
+4. Add your API key.
+
+Add plugin to user resource:
+
+```typescript ./resources/adminuser.ts
+import EmailResetPasswordPlugin from '@adminforth/email-password-reset';
+import EmailAdapterMailgun from '@adminforth/email-adapter-mailgun';
+...
+plugins: [
+  ...
+  new EmailResetPasswordPlugin({
+    // field in user resource which contains email
+    emailField: 'email',
+
+    // field in user resource which contains password constrains. Should be virtual field
+    passwordField: 'password',
+
+    // domain part should be verified in Mailgun
+    sendFrom: 'no-reply@devforth.io',
+
+    adapter: new EmailAdapterMailgun({
+        apiKey: process.env.MAILGUN_API_KEY as string,
+        domain: process.env.MAILGUN_DOMAIN as string,
+        //baseUrl is optional, if not provided, will default to "https://api.mailgun.net" but if you are using Mailgun EU, you should use "https://api.eu.mailgun.net" instead
+        baseUrl: process.env.MAILGUN_REGION_URL as string,
+      }),
+
+  }),
+]
+```
+
+Make sure to place your Mailgun credentials in `.env` file/environment.
+
+```bash /.env
+MAILGUN_API_KEY=your-api-key
+MAILGUN_DOMAIN=your-domain
+MAILGUN_REGION_URL=your-region-url # optional
+```
