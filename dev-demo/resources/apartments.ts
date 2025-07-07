@@ -254,6 +254,7 @@ export default {
             showCountryName: true,
           },
         },
+        filter: "@@/CustomSqueareMetersFilter.vue",
       },
     },
     {

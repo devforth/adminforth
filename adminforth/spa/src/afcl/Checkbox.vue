@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center h-5" :class="{'opacity-50' : props.disabled}">
+  <div class="afcl-checkbox flex items-center h-5" :class="{'opacity-50' : props.disabled}">
     <input :id="id" 
       ref="rememberInput"
       type="checkbox"

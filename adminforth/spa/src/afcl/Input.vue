@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex z-0" :class="{'opacity-50' : readonly}">
+  <div class="afcl-input flex z-0 relative" :class="{'opacity-50' : readonly}">
     <span
         v-if="$slots.prefix || prefix"
         class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
@@ -21,7 +21,9 @@
       :disabled="readonly"
     >
 
-
+    <div v-if="$slots.rightIcon" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <slot name="rightIcon" />
+    </div>
     <span
         v-if="$slots.suffix || suffix"
         class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-e-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600 ">
