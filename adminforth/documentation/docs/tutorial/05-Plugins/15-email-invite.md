@@ -40,9 +40,58 @@ export default {
     { name: 'id', primaryKey: true },
     { name: 'email', required: true },
     { name: 'password_hash', showIn: [] }, // Hide from UI
+
     { name: 'role' },
+
+    {
+          name: 'password',
+          virtual: true,
+          required: { create: true },
+          editingNote: { edit: 'Leave empty to keep password unchanged' },
+          minLength: 8,
+          type: AdminForthDataTypes.STRING,
+          showIn: {
+// hide password column - but don't remove whole column it because it has constrains for password field!
+// diff-remove
+            show: false,
+// diff-remove
+            list: false,
+// diff-remove
+            filter: false,
+// diff-add
+            all: false,
+          },
+          masked: true,
+        },
+
     // ... other columns
   ],
+  hooks: {
+    create: {
+      beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+// since we don't show password input in resource - no sense to hande it in hook anymore!       
+//diff-remove   
+          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+          return { ok: true };
+        }
+    },
+    edit: {
+      beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        console.log('Updating user', updates);
+        if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+          return { ok: false, error: 'You cannot change your own role' };
+        }
+// also no sense to have updatres - we dont allow edit password by admin anymore
+//diff-remove  
+        if (updates.password) {
+//diff-remove  
+          updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
+//diff-remove  
+        }
+        return { ok: true }
+      },
+    },
+  },
   plugins: [
     new EmailInvitePlugin({
       emailField: 'email',
@@ -57,9 +106,16 @@ export default {
 };
 ```
 
-## Email Confirmation
+Please note that previously (in defauklt CLI setup) we needed it to allow admins to set passwords when created new users (to invite them). Also Admens were able to edit passwords of users.
+Now since we added this plugin, user will have email link on which he will get form to enter password by hiumself.
+Please note that the form for user will still use constraints from password virtual field, that is why we just hid it using showIn - not remove it.
 
-To enable email confirmation, first add a boolean field to your user table:
+To allow users to edit their passwords please use [email password reset plugin](https://adminforth.dev/docs/tutorial/Plugins/email-password-reset/)
+
+## Email Confirmation boolean flag
+
+This plugin can write into the database the fact that invited user was able to set password and as a result confirmed that he owns his email.
+To enable email this behaviour, first add a boolean field to your user table:
 
 ```prisma title="./schema.prisma"
 model adminuser {
