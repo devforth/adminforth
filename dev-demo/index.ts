@@ -176,6 +176,19 @@ export const admin = new AdminForth({
       }
     },
 
+    adminforthUserCleanupWarning: (adminUser: AdminUser) => {
+      return {
+        html: `
+          <p>The default admin user adminforth is still active in production.</p>
+          <p>For security reasons, it's strongly recommended to create your own account and delete this default user.</p>
+          <br>
+          <p><strong>This action is critical and cannot be undone.</strong></p>
+        `,
+        closable: false,
+        title: 'Critical Security Warning',
+      }
+    },
+
     // loginPageInjections: {
     //   underInputs: '@@/login2.vue',
     // }
@@ -506,8 +519,8 @@ admin.express.serve(app);
 admin.discoverDatabases().then(async () => {
   console.log('🅿️  Database discovered');
 
-  if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-    await admin.resource('users').create({
+  if (await admin.resource('adminuser').count() === 0) {
+    await admin.resource('adminuser').create({
       email: 'adminforth',
       password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
       role: 'superadmin',
