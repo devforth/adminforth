@@ -457,9 +457,17 @@ You can navigate user to this page using any router link, e.g.:
 </template>
 ```
 
+Add to your `<script setup>` section:
+
 ```ts
 import { Link } from '@/afcl';
 ```
+
+If you set `customLayout: true` in the `meta` object, it will not include default layout like sidebar and header, so you can create your own layout for this page. 
+
+> **Redirects to login page**: Any route which has sidebar and header (e.g. default CRUD pages or menu item with `component`) uses internal AdminForth REST API to fetch menu items and user information, so it passes authentication check and if authentication cookie is not provided or has expired JWT user gets redirected to the login page.
+> In case if you set `customLayout: true`, it will not call these APIs so user will not be automatically redirected to the login page in case of expired or not-provided authentication cookie. That feature allows you to implement public pages without authentication, e.g. Terms of Service, Privacy Policy and many others. In case if you need to check if user is logged in just call any custom API which has `admin.express.authorize` middleware. Obviously for public pages you should create API endpoint WITHOUT `admin.express.authorize` middleware.
+
 
 ### Passing meta attributes to the page
 
