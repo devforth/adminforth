@@ -131,7 +131,8 @@ Create `index.ts` file in root directory with following content:
 
 ```ts title="./index.ts"
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, AdminUser, Filters } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
 
 export const admin = new AdminForth({
   baseUrl: '',
@@ -208,6 +209,26 @@ export const admin = new AdminForth({
         },
         { name: 'passwordHash', backendOnly: true, showIn: { all: false } }
       ],
+      hooks: {
+        create: {
+          beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+            return { ok: true };
+          }
+        },
+        edit: {
+          beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+            console.log('Updating user', updates);
+            if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+              return { ok: false, error: 'You cannot change your own role' };
+            }
+            if (updates.password) {
+              updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
+            }
+            return { ok: true }
+          },
+        },
+      }
     },
     {
       table: 'post',
