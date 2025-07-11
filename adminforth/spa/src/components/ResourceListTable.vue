@@ -128,7 +128,7 @@
                   }"
 
                 >
-                  <IconEyeSolid class="af-eye-icon w-5 h-5 me-2"/>
+                  <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
                 </RouterLink>
 
                 <template v-slot:tooltip>
@@ -147,7 +147,7 @@
                     }
                   }"
                 >
-                  <IconPenSolid class="af-pen-icon w-5 h-5 me-2"/>
+                  <IconPenSolid class="af-edit-icon w-5 h-5 me-2"/>
                 </RouterLink>
                 <template v-slot:tooltip>
                   {{ $t('Edit item') }}
@@ -159,7 +159,7 @@
                   v-if="resource.options?.allowedActions.delete"
                   @click="deleteRecord(row)"
                 >
-                  <IconTrashBinSolid class="af-trash-icon w-5 h-5 me-2"/>
+                  <IconTrashBinSolid class="af-delete-icon w-5 h-5 me-2"/>
                 </button>
 
                 <template v-slot:tooltip>
