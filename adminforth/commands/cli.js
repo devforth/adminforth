@@ -21,7 +21,7 @@ function showHelp() {
     chalk.green('  generate-models') + chalk.white('    Generate TypeScript models from your databases\n') +
     chalk.green('  bundle') + chalk.white('             Bundles your AdminForth app SPA for production\n') +
     chalk.green('  component') + chalk.white('          Scaffold a custom Vue component\n') +
-    chalk.green('  resource') + chalk.white('            Scaffold a custom resource\n') +
+    chalk.green('  resource') + chalk.white('            Scaffold a custom resource\n')
   );
 }
 
