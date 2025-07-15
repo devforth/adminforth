@@ -312,7 +312,7 @@ async function installDependencies(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
-  const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
