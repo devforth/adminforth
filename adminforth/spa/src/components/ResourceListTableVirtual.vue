@@ -216,11 +216,11 @@
   <!-- pagination
   totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
   -->
-  <div class="flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3"
-    v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
-  >
+  <div class="flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="inline-flex ">
+    <div class="inline-flex "
+      v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
+    >
         <!-- Buttons -->
         <button
           class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
