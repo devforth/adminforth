@@ -14,6 +14,15 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+function detectAdminforthVersion() {
+  const userAgent = process.env.npm_config_user_agent || '';
+  if (userAgent.includes('adminforth@next')) {
+    return 'next'
+  };
+  return 'main'; 
+}
+
+
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
     {
@@ -58,6 +67,7 @@ export async function promptForMissingOptions(options) {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
+      adminforthVersion: detectAdminforthVersion(),
   };
 }
 
@@ -203,7 +213,10 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: 'package.json.hbs',
       dest: 'package.json',
-      data: { appName },
+      data: { 
+        appName,
+        adminforthVersion: options.adminforthVersion || 'latest'
+       },
     },
     {
       src: 'index.ts.hbs',
