@@ -11,16 +11,29 @@ import { exec } from 'child_process';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
+import { getVersion } from '../cli.js';
 
 const execAsync = promisify(exec);
 
 function detectAdminforthVersion() {
-  const userAgent = process.env.npm_config_user_agent || '';
-  if (userAgent.includes('adminforth@next')) {
-    return 'next'
-  };
-  return 'main'; 
+  try {
+    const version =  getVersion();
+
+    if (typeof version !== 'string') {
+      throw new Error('Invalid version format');
+    }
+
+    if (version.includes('next')) {
+      return 'next';
+    }
+    return 'latest';
+  } catch (err) {
+    console.warn('⚠️ Could not detect AdminForth version, defaulting to "latest".');
+    return 'latest';
+  }
 }
+
+const adminforthVersion = detectAdminforthVersion();
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -67,7 +80,6 @@ export async function promptForMissingOptions(options) {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
-      adminforthVersion: detectAdminforthVersion(),
   };
 }
 
@@ -215,7 +227,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       dest: 'package.json',
       data: { 
         appName,
-        adminforthVersion: options.adminforthVersion || 'latest'
+        adminforthVersion: adminforthVersion,
        },
     },
     {
