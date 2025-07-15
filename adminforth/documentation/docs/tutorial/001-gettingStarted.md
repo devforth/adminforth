@@ -409,7 +409,7 @@ async function seedDatabase() {
 //diff-add
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   ...
 
