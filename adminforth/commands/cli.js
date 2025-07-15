@@ -12,6 +12,7 @@ import createResource from "./createResource/main.js";
 import chalk from "chalk";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from 'url';
 
 function showHelp() {
   console.log(
@@ -26,7 +27,7 @@ function showHelp() {
 }
 
 export function currentFileDir(importMetaUrl) {
-  const filePath = importMetaUrl.replace("file://", "");
+  const filePath = fileURLToPath(importMetaUrl);
   const fileDir = path.dirname(filePath);
   return fileDir;
 }
