@@ -25,7 +25,7 @@ function showHelp() {
   );
 }
 
-function currentFileDir(importMetaUrl) {
+export function currentFileDir(importMetaUrl) {
   const filePath = importMetaUrl.replace("file://", "");
   const fileDir = path.dirname(filePath);
   return fileDir;

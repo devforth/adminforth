@@ -11,16 +11,42 @@ import { exec } from 'child_process';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
+import { currentFileDir } from '../cli.js';
 
 const execAsync = promisify(exec);
 
-function detectAdminforthVersion() {
-  const userAgent = process.env.npm_config_user_agent || '';
-  if (userAgent.includes('adminforth@next')) {
-    return 'next'
-  };
-  return 'main'; 
+
+function getVersion() {
+const ADMIN_FORTH_ABSOLUTE_PATH = path.join(currentFileDir(import.meta.url), '..', '..');
+  
+  const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'package.json'), 'utf8'));
+  
+  const ADMINFORTH_VERSION  = package_json.version;
+
+  return ADMINFORTH_VERSION;
 }
+
+function detectAdminforthVersion() {
+  try {
+    const version =  getVersion();
+
+    if (typeof version !== 'string') {
+      throw new Error('Invalid version format');
+    }
+
+    if (version.includes('next')) {
+      console.log("Installing next version of AdminForth");
+      return 'next';
+    }
+    console.log("Installing latest version of AdminForth");
+    return 'latest';
+  } catch (err) {
+    console.warn('⚠️ Could not detect AdminForth version, defaulting to "latest".');
+    return 'latest';
+  }
+}
+
+const getAdminforthVersion = detectAdminforthVersion();
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -67,7 +93,6 @@ export async function promptForMissingOptions(options) {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
-      adminforthVersion: detectAdminforthVersion(),
   };
 }
 
@@ -215,7 +240,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       dest: 'package.json',
       data: { 
         appName,
-        adminforthVersion: options.adminforthVersion || 'latest'
+        adminforthVersion: getAdminforthVersion,
        },
     },
     {
