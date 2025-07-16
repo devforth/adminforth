@@ -99,7 +99,7 @@ export interface IExpressHttpServer extends IHttpServer {
    *  console.log('User is authorized', req.adminUser);
    *  res.json(\{ message: 'Hello World' \});
    * \}));
-   * ``
+   * ```
    * 
    */
   authorize(callable: Function): void;
