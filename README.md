@@ -1,4 +1,4 @@
-# AdminForth - fully free Node.js admin panel framework on Vue & Tailwind
+# AdminForth - free powerfull Node.js admin panel framework on Vue & Tailwind
 
 
 <a href="https://adminforth.dev"><img src="https://img.shields.io/badge/website-adminforth.dev-blue" style="height:24px"/></a> <a href="https://adminforth.dev"><img src="https://img.shields.io/npm/dw/adminforth" style="height:24px"/></a> <a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" style="height:28px"/></a>
@@ -20,12 +20,15 @@
 <br/>
 
 Why AdminForth:
-* AdminForth is always free and open-source (no paid versions, no cloud subscriptions sh*t)
-* Init AdminForth with your database URL in Node.js file, easily describe the tables you wish to see in admin, and get fully functional UI for your data (filter, create, edit, remove)
-* Define Vue components to change look of various parts of admin (place in data cell, instead of row, add something above the table, inject something to header or sidebar, add custom page with charts or custom components)
-* Rich build-in Components library (AdminForth AFCL) with premade easy-to-use build-blocks which follow your theme
+
+* Init AdminForth project with `npx adminforth create-app` and pass your database URL, import the tables you wish to see in admin using `npx adminforth resource`, and get fully functional UI for your data (filter, create, edit, remove)
+* Modern look and simple Tailwind-ish ability to adjust it
+* Supports Postgres, MySQL, Mongo, SQLite, Clickhouse
+* Define Vue components to change look of various parts of admin using `npx adminforth component` (edit data cells, edit fields, add something above the table, inject something to header or sidebar, add custom page with charts or custom components)
+* Build-in Components library (AdminForth AFCL) with premade easy-to-use build-blocks which follow your theme
 * Define express APIs and call them from your components and pages
-* Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, I18N, Copilot-style AI writing and image generation
+* Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, I18N, Copilot-style AI writing and image generation and many more
+* AdminForth is always free and open-source (no paid versions, no cloud subscriptions sh*t)
 
 
 ## Project initialisation
