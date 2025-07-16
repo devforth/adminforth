@@ -1,4 +1,4 @@
-export interface EmailAdapter {
+interface EmailAdapter {
 
   /**
    * This method is called to validate the configuration of the adapter
@@ -25,3 +25,5 @@ export interface EmailAdapter {
     ok?: boolean;
   }>;
 }
+
+export { EmailAdapter };
