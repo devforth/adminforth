@@ -12,9 +12,9 @@ Import plugin:
 npm i @adminforth/foreign-inline-show --save
 ```
 
-```ts title="./resources/adminuser.ts"
+```ts title="./resources/apartments.ts"
+import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
 import ForeignInlineShowPlugin from '@adminforth/foreign-inline-show';
-import { AdminForthResource, AdminForthResourceColumn } from 'adminforth';
 ```
 
 
@@ -53,7 +53,7 @@ Add to your `'apartments'` resource configuration the plugin instance:
 //diff-add
       new ForeignInlineShowPlugin({
 //diff-add
-        foreignResourceId: 'users',
+        foreignResourceId: 'adminuser',
 //diff-add
       }),
 //diff-add
