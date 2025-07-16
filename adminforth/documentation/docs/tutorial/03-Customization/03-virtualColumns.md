@@ -67,8 +67,6 @@ columns: [
       resource: AdminForthResourceCommon;
       adminUser: AdminUser
   }>();
-
-###
     
    function getFlagEmojiFromIso(iso) {
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
