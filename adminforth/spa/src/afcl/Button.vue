@@ -8,6 +8,9 @@
       'cursor-default': props.disabled,
       'opacity-50': props.disabled,
       'pointer-events-none': props.disabled,
+      'active': props.active,
+      'brightness-200': props.active,
+      'hover:brightness-150': props.active,
     }"
   >
     <svg v-if="props.loader"
@@ -22,6 +25,7 @@
 const props = defineProps({
   loader: Boolean,
   disabled: Boolean,
+  active: Boolean,
 });
 
 </script>
