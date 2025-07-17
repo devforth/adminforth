@@ -314,7 +314,7 @@ Open `index.ts` in your project root and import the new resource:
 ```ts title="./index.ts"
 ...
 //diff-add
-import apartmentsResource from "./resources/apartments";
+import apartmentsResource from "./resources/apartments.js";
 
 ...
 export const admin = new AdminForth({
