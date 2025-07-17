@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { Decimal128 } from 'bson';
+import { Decimal128, ObjectId } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -158,14 +158,6 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }, {});
     }
 
-    getPrimaryKey(resource) {
-        for (const col of resource.dataSourceColumns) {
-            if (col.primaryKey) {
-                return col.name;
-            }
-        }
-    }
-
     getFieldValue(field, value) {
         if (field.type == AdminForthDataTypes.DATETIME) {
             if (!value) {
@@ -183,6 +175,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
           return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return value?.toString();
+        } else if (field.name === '_id' && !field.fillOnCreate) {
+            // value is supposed to be an ObjectId or string representing it
+            if (typeof value === 'object') {
+                return value?.toString();
+            }
         }
 
         return value;
@@ -205,6 +202,21 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
             return Decimal128.fromString(value?.toString());
+        } else if (field.name === '_id' && !field.fillOnCreate) {
+            // value is supposed to be an ObjectId
+            if (!ObjectId.isValid(value)) {
+                return null;
+            }
+            if (typeof value === 'string' || typeof value === 'number') {
+                // if string or number - turn it into ObjectId
+                return new ObjectId(value);
+            } else if (typeof value === 'object') {
+                // assume it is a correct ObjectId
+                return value;
+            }
+
+            // unsupported type for ObjectId
+            return null;
         }
         return value;
     }
@@ -299,13 +311,14 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const collection = this.client.db().collection(resource.table);
-        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
+        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
+        await collection.updateOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
-        const primaryKey = this.getPrimaryKey(resource);
         const collection = this.client.db().collection(resource.table);
-        const res = await collection.deleteOne({ [primaryKey]: recordId });
+        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
+        const res = await collection.deleteOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) });
         return res.deletedCount > 0;
     }
 
