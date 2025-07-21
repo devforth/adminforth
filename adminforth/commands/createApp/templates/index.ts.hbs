@@ -3,6 +3,8 @@ import AdminForth from 'adminforth';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
+import dotenv from "dotenv";
+dotenv.config({ path: '.env.local' });
 
 const ADMIN_BASE_URL = '';
 
