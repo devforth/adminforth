@@ -23,7 +23,7 @@
               labels: { show: false },
             },
             grid: {
-              show: false,
+              show: true,
             }
           }"
         />

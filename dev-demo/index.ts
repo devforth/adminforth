@@ -8,9 +8,9 @@ import apartmentBuyersResource from './resources/apartment_buyers.js';
 import auditLogResource from './resources/audit_log.js';
 import descriptionImageResource from './resources/description_image.js';
 import usersResource from './resources/users.js';
-// import gameResource from './resources/game.js';
-// import gamesUsersResource from './resources/games_users.js';
-// import gamesResource from './resources/games.js';
+import gameResource from './resources/game.js';
+import gamesUsersResource from './resources/games_users.js';
+import gamesResource from './resources/games.js';
 import translationsResource from './resources/translation.js';
 import clinicsResource from './resources/clinics.js';
 import providersResource from './resources/providers.js';
@@ -190,7 +190,7 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: process.env.DATABASE_URL,
+      url: process.env.DATABASE_URL as string,
     },
     {
       id: 'pg',
@@ -202,7 +202,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
     },
     {
       id: 'mysql',
@@ -219,22 +219,18 @@ export const admin = new AdminForth({
     clinicsResource,
     providersResource,
     apiKeysResource,
-    // gamesResource,
-    // gamesUsersResource,
-    // gameResource,
+    gamesResource,
+    gamesUsersResource,
+    gameResource,
     translationsResource,
   ],
   menu: [
     {
-      label: 'Dashboard',
+      label: 'Tests',
+      path: '/Tests',
+      homepage: true,
       icon: 'flowbite:chart-pie-solid',
-      component: '@@/Dash.vue',
-      path: '/dashboard',
-      // homepage: true,
-      isStaticRoute:false,
-      // meta:{
-      //   title: 'Dashboard',
-      // }
+      component: '@@/PageForTests.vue',
     },
     {
       label: 'Core',
@@ -261,11 +257,11 @@ export const admin = new AdminForth({
 
         },
 
-        // {
-        //   label: 'Games',
-        //   icon: 'flowbite:caret-right-solid',
-        //   resourceId: 'game',
-        // },
+        {
+          label: 'Games',
+          icon: 'flowbite:caret-right-solid',
+          resourceId: 'game',
+        },
         // {
         //   label: 'Games Users',
         //   icon: 'flowbite:user-solid',
