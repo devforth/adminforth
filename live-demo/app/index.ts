@@ -59,7 +59,7 @@ export const admin = new AdminForth({
     translations,
   ],
   menu: [
-
+    
     {
         label: 'Dashboard',
         path: '/overview',
@@ -137,6 +137,104 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await admin.bundleNow({ hotReload: true});
     console.log('Bundling AdminForth done');
   }
+
+  app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
+  admin.express.authorize(
+    async (req, res) => {
+      const days = req.body.days || 7;
+      const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at) as day, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY day 
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+
+      const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
+
+      // add listed, unlisted, listedPrice, unlistedPrice
+      const listedVsUnlistedByDays = admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at) as day, 
+          SUM(listed) as listed, 
+          COUNT(*) - SUM(listed) as unlisted,
+          SUM(listed * price) as listedPrice,
+          SUM((1 - listed) * price) as unlistedPrice
+        FROM apartments
+        GROUP BY day
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+
+      const apartsCountsByRooms = await admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          number_of_rooms, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY number_of_rooms 
+        ORDER BY number_of_rooms;
+        `
+      ).all();
+
+      const topCountries = await admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          country, 
+          COUNT(*) as count 
+        FROM apartments 
+        GROUP BY country 
+        ORDER BY count DESC
+        LIMIT 4;
+        `
+      ).all();
+
+      const totalSquare = admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          SUM(square_meter) as totalSquare 
+        FROM apartments;
+        `
+      ).get();
+
+      const listedVsUnlistedPriceByDays = admin.resource('aparts').dataConnector.client.prepare(
+        `SELECT 
+          strftime('%Y-%m-%d', created_at) as day, 
+          SUM(listed * price) as listedPrice,
+          SUM((1 - listed) * price) as unlistedPrice
+        FROM apartments
+        GROUP BY day
+        ORDER BY day DESC
+        LIMIT ?;
+        `
+      ).all(days);
+        
+      const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
+        acc: number, { listedPrice }: { listedPrice:number }
+      ) => acc + listedPrice, 0));
+      const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((
+        acc: number, { unlistedPrice }: { unlistedPrice:number } 
+      ) => acc + unlistedPrice, 0));
+
+      res.json({ 
+        apartsByDays,
+        totalAparts,
+        listedVsUnlistedByDays,
+        apartsCountsByRooms,
+        topCountries,
+        totalSquareMeters: totalSquare.totalSquare,
+        totalListedPrice,
+        totalUnlistedPrice,
+        listedVsUnlistedPriceByDays,
+      });
+    }
+  )
+);
+
+// serve after you added all api
+admin.express.serve(app, express)
+admin.discoverDatabases();
 
   app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
     admin.express.authorize(
@@ -266,3 +364,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
   });
 }
+
+

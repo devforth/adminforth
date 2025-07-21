@@ -2,7 +2,7 @@ import { v1 as uuid } from "uuid";
 import { AdminForthResourceInput } from "../../adminforth";
 
 export default {
-  dataSource: "db2",
+  dataSource: "db3",
   table: "games",
   resourceId: "games",
   label: "Games",
@@ -26,7 +26,7 @@ export default {
     },
     {
       name: "release_date",
-      fillOnCreate: ({ initialRecord }: any) => new Date().toISOString(),
+      // fillOnCreate: ({ initialRecord }: any) => new Date().toISOString(),
     },
     { name: "release_date2" },
     { name: "description" },
