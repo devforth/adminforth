@@ -19,6 +19,6 @@ export { default as Skeleton } from './Skeleton.vue';
 export { default as Dialog } from './Dialog.vue';
 export { default as MixedChart } from './MixedChart.vue';
 export { default as CountryFlag } from './CountryFlag.vue';
-
+export { default as JsonViewer } from './JsonViewer.vue';
 
 
