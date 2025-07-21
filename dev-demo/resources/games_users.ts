@@ -2,21 +2,19 @@ import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
 import { v1 as uuid } from "uuid";
 
 export default {
-  dataSource: "db3",
+  dataSource: "db2",
   table: "users",
   resourceId: "games_users",
   label: "Games users",
   columns: [
     {
       name: "id",
-      type: AdminForthDataTypes.STRING, // ✅ Required!
       primaryKey: true,
       fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
-      showIn: ["list", "filter", "show"],
+      showIn: ["list", "filter", "show"], // the default is full set
     },
     {
       name: "email",
-      type: AdminForthDataTypes.STRING, // ✅ Required!
       required: true,
       isUnique: true,
       sortable: false,
@@ -30,7 +28,6 @@ export default {
     },
     {
       name: "role",
-      type: AdminForthDataTypes.STRING, // ✅ Required!
       enum: [
         { value: "superadmin", label: "Super Admin" },
         { value: "user", label: "User" },
@@ -38,13 +35,14 @@ export default {
     },
     {
       name: "password",
-      type: AdminForthDataTypes.STRING, // ✅ Required!
-      virtual: true,
-      required: { create: true },
+      virtual: true, // field will not be persisted into db
+      required: { create: true }, // to show only in create page
       editingNote: { edit: "Leave empty to keep password unchanged" },
+
       minLength: 8,
-      showIn: ["create", "edit"],
-      masked: true,
+      type: AdminForthDataTypes.STRING,
+      showIn: ["create", "edit"], // to show in create and edit pages
+      masked: true, // to show stars in input field
     },
   ],
 } as AdminForthResourceInput;

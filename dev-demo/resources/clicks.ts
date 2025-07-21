@@ -18,22 +18,16 @@ export default {
 
     */
   columns: [
-  {
-    name: "clickid",
-    primaryKey: true,
-    required: false,
-    fillOnCreate: ({ initialRecord }: any) => uuid(),
-    showIn: {
-      create: false,
-      list: true,
-      filter: true,
-      show: true
+    {
+      name: "clickid",
+      primaryKey: true,
+      required: false,
+      fillOnCreate: ({ initialRecord }: any) => uuid(),
+      showIn: ["list", "filter", "show"],
+      components: {
+        list: "@/renderers/CompactUUID.vue",
+      },
     },
-    components: {
-      list: "@/renderers/CompactUUID.vue",
-    },
-  },
-
     {
       name: "element",
       type: AdminForthDataTypes.STRING,
