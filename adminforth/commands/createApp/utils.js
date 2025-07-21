@@ -61,7 +61,7 @@ export async function promptForMissingOptions(options) {
       questions.push({
       type: 'input',
       name: 'appName',
-      message: 'Please specify the name of the app  (TEEEEEEEEEESTTTTT)>',
+      message: 'Please specify the name of the app >',
       default: 'adminforth-app',
       });
   };
@@ -108,11 +108,9 @@ function detectDbProvider(protocol) {
     return 'mongodb';
   } else if (protocol.startsWith('mysql')) {
     return 'mysql';
-  } else if (protocol.startsWith('clickhouse')) {
-    return 'clickhouse';
   }
 
-  const message = `Unknown database provider for ${protocol}. Only SQLite, PostgreSQL, MongoDB, and ClickHouse are supported now.`;
+  const message = `Unknown database provider for ${protocol}. Only SQLite, PostgreSQL, and MongoDB are supported now.`;
   throw new Error(message);
 }
 

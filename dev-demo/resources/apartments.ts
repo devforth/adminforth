@@ -476,7 +476,7 @@ export default {
       //     beforeBreadcrumbs: '@@/TopLine.vue',
       //   },
     },
-    listPageSize: 5,
+    listPageSize: 25,
     // listTableClickUrl: async (record, adminUser) => null,
     fieldGroups: [
       {
