@@ -86,6 +86,7 @@ One way to do it is to actually add a real column to a table and then fill it ev
 For this purpose following changes will be required for apartments config:
 
 ```ts title='./resources/apartments.ts'
+import { Filters } from "adminforth";
 ...
 resourceId: 'aparts',
 ...
