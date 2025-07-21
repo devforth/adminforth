@@ -1726,3 +1726,46 @@ import { MixedChart } from '@/afcl'
   </div>
 </div>
 
+## Json Viever
+
+```ts
+import { JsonViever } from '@/afcl'
+```
+
+### Basic
+
+<div class="split-screen" >
+
+  <div>
+  ```html
+  <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+            location: { city: 'Kyiv', country: 'Ukraine' }
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+          meta: {
+            age: 25,
+            active: true,
+            scores: { math: 92, english: 88 }
+          }
+        }
+      ]" 
+      :expandDepth="4" 
+    />
+  ```
+</div>
+  <div>
+    ![Mixed Chart](image-93.png)
+  </div>
+</div>
+
+
