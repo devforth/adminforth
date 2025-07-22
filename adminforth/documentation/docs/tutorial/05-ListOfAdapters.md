@@ -1,77 +1,152 @@
 # AdminForth Adapters
 
-> Overview of all available adapters in the AdminForth ecosystem. Adapters enable integration with external services for features like authentication, email delivery, AI completion, image generation, and file storage.
+This page has a list of all available adapters in the AdminForth ecosystem. 
+Adapters are used by AdminForth plugins to implement connections to various 3rd-party services and APIs. 
+Every adapter could be easily forked and customized for any new service or API.
 
 ---
 
-## [📧 Email Adapters](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/EmailAdapter.ts#L17)
+## 📧 Email Adapters
 
->Is used to send emails
+Used to send emails
 
-### `adminforth-email-adapter-aws-ses`
+[🔗Email adapter base class](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/EmailAdapter.ts#L17)
+
+### AWS SES Email Adapter
+
+```
+npm i adminforth-email-adapter-aws-ses
+```
 
 Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazon.com/ses/), suitable for high-volume, programmatic email sending.
 
-### `adminforth-email-adapter-mailgun`
+### Mailgun Email Adapter
+
+```
+npm i adminforth-email-adapter-mailgun
+```
 
 Allows sending transactional or marketing emails using [Mailgun](https://www.mailgun.com/), a developer-friendly email service.
 
 ---
 
-## [🔐 OAuth Adapters](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/OAuth2Adapter.ts#L9)
+## 🔐 OAuth2 Adapters
 
->Is used for integrating third-party login providers using the OAuth 2.0 protocol.
+Used to authenticate users via OAuth 2.0 providers
 
-### `adminforth-google-oauth-adapter`
+[🔗OAuth2Adapter source class](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/OAuth2Adapter.ts#L9)
 
-Supports Google sign-in to allow users to authenticate using their Google accounts.
 
-### `adminforth-github-oauth-adapter`
+### Google OAuth Adapter
+
+```
+npm i adminforth-google-oauth-adapter
+```
+
+Supports Google sign-in to allow users to authenticate using their Google or Google Workspaces accounts.
+
+### GitHub OAuth Adapter
+
+```
+npm i adminforth-github-oauth-adapter
+```
 
 Enables authentication via GitHub accounts, useful for developer tools and open-source apps.
 
-### `adminforth-facebook-oauth-adapter`
+### Facebook OAuth Adapter
 
-Allows users to log in with Facebook credentials.
+```
+npm i adminforth-facebook-oauth-adapter
+```
 
-### `adminforth-keycloak-oauth-adapter`
+Allows users to log in with Facebook credentials. Facebook OAuth is commonly used for social media integrations.
 
-Connects AdminForth to a [Keycloak](https://www.keycloak.org/) identity provider for enterprise-grade SSO (Single Sign-On).
+### Keycloak OAuth Adapter
 
-### `adminforth-microsoft-oauth-adapter`
+```
+npm i adminforth-keycloak-oauth-adapter
+```
+
+Connects AdminForth to an Open-Source [Keycloak](https://www.keycloak.org/) - generally self-hosted - identity provider for enterprise-grade SSO (Single Sign-On).
+
+### Microsoft OAuth Adapter
+
+```
+npm i adminforth-microsoft-oauth-adapter
+```
 
 Supports login through Microsoft accounts including Azure AD, Office365, and Outlook.com.
 
-### `adminforth-twitch-oauth-adapter`
+### Twitch OAuth Adapter
+
+```
+npm i adminforth-twitch-oauth-adapter
+```
 
 Adds support for Twitch authentication, useful for streaming or creator-oriented platforms.
 
 ---
 
-## [🎨 Image Generation Adapters](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/ImageGenerationAdapter.ts#L32)
->Is used for image generating
+## 🎨 Image Generation Adapters
 
-### `adminforth-image-generation-adapter-openai`
+Is used for image generating AI tools.
 
-Uses OpenAI’s image models (like DALL·E) to generate images from text prompts.
+[🔗ImageGenerationAdapter source class](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/ImageGenerationAdapter.ts#L32)
+
+
+### OpenAI Image Generation Adapter
+
+```
+npm i adminforth-image-generation-adapter-openai
+```
+
+Uses OpenAI’s image generation models (like DALL·E and gpt-image-1) to generate images from text prompts.
+
+Up to the summer 2025 OpenAI models are one of the most powerful image generation models available (Especially GPT-Image-1), that is why we started with them.
 
 ---
 
-## [💾 Storage Adapters](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/StorageAdapter.ts#L8)
->Is used for storing files  
-### `adminforth-storage-adapter-amazon-s3`
+## 💾 Storage Adapters
+
+
+[🔗StorageAdapter source class](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/StorageAdapter.ts#L8)
+
+Is used for storing files  
+
+### Amazon S3 Storage Adapter
+
+```
+npm i adminforth-storage-adapter-amazon-s3
+```
 
 Stores uploaded files in [Amazon S3](https://aws.amazon.com/s3/), providing scalable cloud storage.
+Can be easily forked and customized to work with any S3-compatible storage service like MinIO or Wasabi or 3rd-party S3-capable services.
 
-### `adminforth-storage-adapter-local`
+
+### Local Storage Adapter
+
+```
+npm i adminforth-storage-adapter-local
+```
 
 Stores files locally on the server’s filesystem. Suitable for development or small-scale self-hosted setups.
+Not really recommended for production use, cause cloud storage is more reliable and scalable.
 
 ---
 
-## [🧠 AI Completion Adapters](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/CompletionAdapter.ts#L16)
->Is used for AI-powered sentence completion
-### `adminforth-completion-adapter-open-ai-chat-gpt`
+## 🧠 AI Completion Adapters
+
+[🔗CompletionAdapter source class](https://github.com/devforth/adminforth/blob/917d897c866975a4aee29273377f2c07cb6ddf81/adminforth/types/adapters/CompletionAdapter.ts#L16)
+
+
+Is used for AI-powered text completion. 
+Feel free to fork and implement other models including models from Anthropic, Google Gemini, or any other AI model that supports text completion.
+
+### OpenAI Completion Adapter
+
+```
+npm i adminforth-completion-adapter-open-ai-chat-gpt
+```
 
 Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
 
