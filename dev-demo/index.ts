@@ -11,6 +11,7 @@ import usersResource from './resources/users.js';
 // import gameResource from './resources/game.js';
 // import gamesUsersResource from './resources/games_users.js';
 // import gamesResource from './resources/games.js';
+// import groupTableResource from './resources/';
 import translationsResource from './resources/translation.js';
 import clinicsResource from './resources/clinics.js';
 import providersResource from './resources/providers.js';
@@ -78,7 +79,16 @@ export const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
     demoCredentials: "adminforth:adminforth",  // never use it for production
-    loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
+    loginPromptHTML: async () => { return "Nya"},
+    // loginPromptHTML:"Nya without function",
+    // async () =>{
+    //   const adminForthUserExists = await admin.resource('users').count() > 0;
+    //   if (adminForthUserExists) {
+    //     return `<p>Welcome to <b>AdminForth</b> demo!</p>`
+    //   } else {
+    //     return `<p>Welcome to <b>AdminForth</b> demo!</p>`
+    //   }
+    // },
     // loginBackgroundImage: '@@/pho.jpg',
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
@@ -190,7 +200,7 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: process.env.DATABASE_URL,
+      url: process.env.DATABASE_URL as string,
     },
     {
       id: 'pg',
@@ -202,7 +212,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
     },
     {
       id: 'mysql',
@@ -226,9 +236,16 @@ export const admin = new AdminForth({
   ],
   menu: [
     {
+      label: 'TablesGroup',
+      path: '/overview',
+      homepage: true,
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/GroupTable.vue',
+    },
+    {
       label: 'Dashboard',
       icon: 'flowbite:chart-pie-solid',
-      component: '@@/Dash.vue',
+      component: '@@/GroupTable.vue',
       path: '/dashboard',
       // homepage: true,
       isStaticRoute:false,
@@ -336,7 +353,7 @@ export const admin = new AdminForth({
 
 const app = express()
 app.use(express.json());
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 (async () => {
     console.log('🅿️  Bundling AdminForth...');
