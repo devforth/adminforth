@@ -253,8 +253,7 @@
 
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
-        <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && !resource)">{{ $t('Wrong Page') }} </span>
-        <template v-else-if="resource && totalRows > 0">
+        <template v-if="resource && totalRows > 0">
           
           <span class="af-pagination-info hidden sm:inline">
             <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
