@@ -20,7 +20,7 @@ import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-lo
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForth from "../../adminforth";
 import { StorageAdapter } from "../../adminforth";
-import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
+
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -278,9 +278,7 @@ export default {
       },
     },
     {
-      label: "Title",
       name: "description",
-      required: true,
       sortable: false,
       type: AdminForthDataTypes.TEXT,
       showIn: {filter: true, show: true, edit: true, create: true},
@@ -293,13 +291,6 @@ export default {
       name: "listed",
       required: true, // will be required on create/edit
     },
-    // {
-    //   name: 'realtor_id',
-    //   foreignResource: {
-    //     resourceId: 'adminuser',  // this means that aparts.realtor_id refers to primary key of 'adminuser' resource
-    //                           // this is Many-To-One relatin: many aparts can refer to one user
-    //   }
-    // },
     {
       name: 'realtor_id',
       showIn: {filter: true, show: true, edit: true, list: true, create: true},
@@ -340,13 +331,8 @@ export default {
   plugins: [
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
-
-        new ForeignInlineShowPlugin({
-          foreignResourceId: 'users',
-        }),
-
-      new UploadPlugin({
-        pathColumnName: "apartment_image",
+          new UploadPlugin({
+            pathColumnName: "apartment_image",
 
             storageAdapter: new AdminForthAdapterS3Storage({
               region: "eu-central-1",
@@ -490,7 +476,7 @@ export default {
       //     beforeBreadcrumbs: '@@/TopLine.vue',
       //   },
     },
-    listPageSize: 10,
+    listPageSize: 25,
     // listTableClickUrl: async (record, adminUser) => null,
     fieldGroups: [
       {
