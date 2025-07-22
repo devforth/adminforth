@@ -6,7 +6,6 @@
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-
         <div role="status" class="max-w-sm animate-pulse">
             <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
         </div>      
@@ -254,8 +253,8 @@
 
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
-        <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
-        <template v-else>
+        <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && !resource)">{{ $t('Wrong Page') }} </span>
+        <template v-else-if="resource && totalRows > 0">
           
           <span class="af-pagination-info hidden sm:inline">
             <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
