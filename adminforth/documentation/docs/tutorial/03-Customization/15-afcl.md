@@ -1738,7 +1738,7 @@ import { JsonViever } from '@/afcl'
 
   <div>
   ```html
-  <JsonViewer 
+      <JsonViewer 
       :value="[
         {
           id: 1,
@@ -1746,20 +1746,14 @@ import { JsonViever } from '@/afcl'
           meta: {
             age: 30,
             hobbies: ['reading', 'biking'],
-            location: { city: 'Kyiv', country: 'Ukraine' }
           }
         },
         {
           id: 2,
           name: 'Bob',
-          meta: {
-            age: 25,
-            active: true,
-            scores: { math: 92, english: 88 }
-          }
         }
       ]" 
-      :expandDepth="4" 
+      :expandDepth="2" 
     />
   ```
 </div>
