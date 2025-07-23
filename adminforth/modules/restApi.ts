@@ -212,7 +212,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         let loginPromptHTML;
         if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
-          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML({ adminUser, adminforth: this.adminforth, tr });
+          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML();
         } else {
           loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
         }
@@ -300,7 +300,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         
         let loginPromptHTML;
         if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
-          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML({ adminUser, adminforth: this.adminforth, tr });
+          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML();
         } else {
           loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
         }
