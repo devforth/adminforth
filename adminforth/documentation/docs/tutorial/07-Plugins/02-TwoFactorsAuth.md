@@ -31,7 +31,9 @@ model adminuser {
 Then:
 
 ```bash
-npx --yes prisma migrate dev --name init
+npm run makemigration -- --name add-2fa-secret && npm run migrate:local
+
+
 ```
 
 And add it to `adminuser.ts`
