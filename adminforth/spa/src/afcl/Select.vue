@@ -1,5 +1,5 @@
 <template>
-  <div class="afcl-select relative inline-block" ref="internalSelect" 
+  <div class="afcl-select afcl-select-wrapper relative inline-block" ref="internalSelect" 
     :class="{'opacity-50': readonly}"
   >
     <div class="relative">
@@ -74,7 +74,6 @@
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
         {{ options.length ? $t('No results found') : $t('No items here') }}
       </div>
-
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
         <slot name="extra-item"></slot>
       </div>

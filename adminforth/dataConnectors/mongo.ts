@@ -194,13 +194,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
           if (!value) {
             return null;
           }
-          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).unix();
-          } else if (field._underlineType == 'varchar') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).toISOString();
-          }
+          return dayjs(value).toDate();
+          
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
             return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {

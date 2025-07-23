@@ -314,7 +314,7 @@ Open `index.ts` in your project root and import the new resource:
 ```ts title="./index.ts"
 ...
 //diff-add
-import apartmentsResource from "./resources/apartments";
+import apartmentsResource from "./resources/apartments.js";
 
 ...
 export const admin = new AdminForth({
@@ -409,7 +409,7 @@ async function seedDatabase() {
 //diff-add
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   ...
 
