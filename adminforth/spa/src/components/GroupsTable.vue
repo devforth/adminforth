@@ -19,7 +19,7 @@
           v-for="(column, i) in group.columns"
           :key="column.name"
           v-if="currentValues !== null"
-          class="bg-ligftForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+          class="bg-lightForm dark:bg-gray-800 dark:border-gray-700 block md:table-row"
           :class="{ 'border-b': i !== group.columns.length - 1}"
         >
           <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
