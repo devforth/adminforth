@@ -198,7 +198,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'GET',
       path: '/get_public_config',
-      handler: async ({ tr }) => {
+      handler: async ({ tr, adminUser }) => {
 
         // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
 
@@ -210,6 +210,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
+        let loginPromptHTML;
+        if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
+          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML({ adminUser, adminforth: this.adminforth, tr });
+        } else {
+          loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
+        }
+
         return {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -217,7 +224,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
@@ -290,6 +297,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
+        
+        let loginPromptHTML;
+        if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
+          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML({ adminUser, adminforth: this.adminforth, tr });
+        } else {
+          loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
+        }
+
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -298,7 +313,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
         }

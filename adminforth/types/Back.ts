@@ -956,7 +956,7 @@ export interface AdminForthInputConfig {
       /**
        * Any prompt to show users on login. Supports HTML.
        */
-      loginPromptHTML?: string,
+      loginPromptHTML?: string | (() => string | Promise<string>)
 
       /**
        * Remember me days for "Remember Me" checkbox on login page.

@@ -1057,7 +1057,7 @@ export interface AdminForthConfigForFrontend {
   loginBackgroundPosition: string,
   title?: string,
   demoCredentials?: string,
-  loginPromptHTML?: string,
+  loginPromptHTML?: string | (() => string | Promise<string>)
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
