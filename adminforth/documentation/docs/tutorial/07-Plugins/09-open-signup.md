@@ -50,7 +50,9 @@ model adminuser {
 And prisma migrate:
 
 ```bash
-npx --yes prisma migrate dev --name add-email-confirmed-to-adminuser
+npm run makemigration -- --name add-email-confirmed-to-adminuser && npm run migrate:local
+
+
 ```
 
 Next, install the `@adminforth/email-adapter-aws-ses` package:
