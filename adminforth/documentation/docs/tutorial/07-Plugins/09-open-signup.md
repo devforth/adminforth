@@ -50,7 +50,7 @@ model adminuser {
 And prisma migrate:
 
 ```bash
-npm run makemigration -- --name add-email-confirmed-to-adminuser && npm run migrate:local
+npm run makemigration -- --name add-email-confirmed-to-adminuser ; npm run migrate:local
 
 
 ```
