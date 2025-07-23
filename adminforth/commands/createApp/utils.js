@@ -11,8 +11,30 @@ import { exec } from 'child_process';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
+import { getVersion } from '../cli.js';
 
 const execAsync = promisify(exec);
+
+function detectAdminforthVersion() {
+  try {
+    const version =  getVersion();
+
+    if (typeof version !== 'string') {
+      throw new Error('Invalid version format');
+    }
+
+    if (version.includes('next')) {
+      return 'next';
+    }
+    return 'latest';
+  } catch (err) {
+    console.warn('⚠️ Could not detect AdminForth version, defaulting to "latest".');
+    return 'latest';
+  }
+}
+
+const adminforthVersion = detectAdminforthVersion();
+
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -203,7 +225,10 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: 'package.json.hbs',
       dest: 'package.json',
-      data: { appName },
+      data: { 
+        appName,
+        adminforthVersion: adminforthVersion,
+       },
     },
     {
       src: 'index.ts.hbs',
@@ -287,7 +312,7 @@ async function installDependencies(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
-  const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([

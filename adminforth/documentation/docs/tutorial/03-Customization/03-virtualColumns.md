@@ -67,8 +67,6 @@ columns: [
       resource: AdminForthResourceCommon;
       adminUser: AdminUser
   }>();
-
-###
     
    function getFlagEmojiFromIso(iso) {
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
@@ -88,6 +86,7 @@ One way to do it is to actually add a real column to a table and then fill it ev
 For this purpose following changes will be required for apartments config:
 
 ```ts title='./resources/apartments.ts'
+import { Filters } from "adminforth";
 ...
 resourceId: 'aparts',
 ...

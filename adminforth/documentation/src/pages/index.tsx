@@ -212,6 +212,7 @@ export default function Home(): JSX.Element {
             <div className="card-demo" key={`feature${index}`}>
               <div className="card shadow--md" style={{
                       maxWidth: '500px',
+                      height: '100%'
                     }}> 
                 <div className="card__image">
                   <img

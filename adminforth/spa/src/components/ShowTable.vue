@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-x-auto rounded-default shadow-resourseFormShadow dark:shadow-darkResourseFormShadow">
+      <div :class="`overflow-x-auto ${isRounded ? 'rounded-default' : ''} shadow-resourseFormShadow dark:shadow-darkResourseFormShadow`">
         <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
         {{ groupName }}
         </div>
@@ -60,7 +60,7 @@
   import { getCustomComponent } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
-  const props = defineProps<{ 
+  const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
         label: string;
@@ -80,8 +80,11 @@
     noTitle?: boolean;
     resource: Record<string, any>;
     record: Record<string, any>;
-  }>();
-
+    isRounded?: boolean;
+  }>(), {
+    isRounded: true
+  });
+  
   const coreStore = useCoreStore();
   const allColumnsHaveCustomComponent = computed(() => {
     return props.columns.every(column => {
