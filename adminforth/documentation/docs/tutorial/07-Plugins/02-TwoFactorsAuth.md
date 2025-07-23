@@ -31,7 +31,7 @@ model adminuser {
 Then:
 
 ```bash
-npm run makemigration -- --name add-2fa-secret && npm run migrate:local
+npm run makemigration -- --name add-2fa-secret ; npm run migrate:local
 
 
 ```
@@ -137,7 +137,7 @@ model adminuser {
 Then run:
 
 ```bash
-npx --yes prisma migrate dev --name add-use2fa
+npm run makemigration -- --name add-use2fa ; npm run migrate:local
 ```
 
 Then in `adminuser.ts`:
