@@ -121,7 +121,7 @@
                 </svg>
               </button>
 
-              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
+              <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
                       <MenuLink :item="child" isChild="true" @click="hideSidebar"/>

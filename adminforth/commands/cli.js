@@ -12,6 +12,7 @@ import createResource from "./createResource/main.js";
 import chalk from "chalk";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from 'url';
 
 function showHelp() {
   console.log(
@@ -25,18 +26,24 @@ function showHelp() {
   );
 }
 
-function currentFileDir(importMetaUrl) {
-  const filePath = importMetaUrl.replace("file://", "");
+export function currentFileDir(importMetaUrl) {
+  const filePath = fileURLToPath(importMetaUrl);
   const fileDir = path.dirname(filePath);
   return fileDir;
 }
 
-function showVersion() {
+export function getVersion() {
   const ADMIN_FORTH_ABSOLUTE_PATH = path.join(currentFileDir(import.meta.url), '..');
   
   const package_json = JSON.parse(fs.readFileSync(path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'package.json'), 'utf8'));
   
   const ADMINFORTH_VERSION  = package_json.version;
+
+  return ADMINFORTH_VERSION;
+}
+
+function showVersion() {
+  const ADMINFORTH_VERSION = getVersion();
 
   console.log(
     chalk.white('AdminForth CLI version: ') +

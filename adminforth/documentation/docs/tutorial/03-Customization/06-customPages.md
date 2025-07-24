@@ -310,7 +310,7 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req:any, res:any) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
@@ -403,7 +403,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 );
 
 // serve after you added all api
-admin.express.serve(app, express)
+admin.express.serve(app)
 admin.discoverDatabases();
 
 ```

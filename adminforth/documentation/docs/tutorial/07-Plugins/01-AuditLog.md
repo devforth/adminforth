@@ -41,7 +41,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npx --yes prisma migrate dev --name add-audit-logs
+npm run makemigration -- --name add-audit-logs ; npm run migrate:local
 ```
 
 Also to make this code start 
@@ -202,7 +202,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npx --yes prisma migrate dev --name add-ip-address-to-audit-logs
+npm run makemigration -- --name add-ip-address-to-audit-logs ; npm run migrate:local
 ```
 
 Also, update the resource configuration in `./resources/auditLogs.ts`:
