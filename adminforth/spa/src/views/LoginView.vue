@@ -55,7 +55,7 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              @input="clearUsernameValidity"
+                              @input="usernameInput.value?.setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
@@ -66,7 +66,7 @@
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              @input="clearPasswordValidity"
+                              @input="passwordInput.value?.setCustomValidity('')"
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
@@ -161,14 +161,6 @@ const error = ref(null);
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
-
-function clearPasswordValidity() {
-  passwordInput.value?.setCustomValidity('test')
-}
-
-function clearUsernameValidity() {
-  usernameInput.value?.setCustomValidity('test')
-}
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
