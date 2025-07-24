@@ -194,7 +194,7 @@ To open a custom page, return URL to the custom page (can start with https://, o
 //diff-add
         listTableClickUrl: async (record, adminUser) => {
 //diff-add
-          return `https://google.com/search?q=${record.name}`;
+          return `https://google.com/search?q=${record.title}`;
 //diff-add
         }
       }

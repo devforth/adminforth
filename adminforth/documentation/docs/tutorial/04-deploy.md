@@ -38,7 +38,7 @@ Now open your browser and go to `http://localhost:3500` to see your AdminForth a
 
 ## Automating deployments with CI
 
-If you are looking for a professional way to deploy your AdminForth application, you can follow our blog post [how to deploy your AdminForth application with Terraform From GitHub actions](http://localhost:3000/blog/compose-aws-ec2-ecr-terraform-github-actions/)
+If you are looking for a professional way to deploy your AdminForth application, you can follow our blog post [how to deploy your AdminForth application with Terraform From GitHub actions](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/)
 
 ## Adding SSL (https) to AdminForth
 
