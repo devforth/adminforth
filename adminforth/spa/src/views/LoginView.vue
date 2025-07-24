@@ -55,7 +55,7 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              oninput="setCustomValidity('')"
+                              @input="clearUsernameValidity"
                               @keydown.enter="passwordInput.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
@@ -66,7 +66,7 @@
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              oninput="setCustomValidity('')"
+                              @input="clearPasswordValidity"
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
@@ -141,8 +141,8 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const passwordInput = ref(null);
-const usernameInput = ref(null);
+const passwordInput = ref<HTMLInputElement | null>(null)
+const usernameInput = ref<HTMLInputElement | null>(null)
 const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
@@ -161,6 +161,14 @@ const error = ref(null);
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
+
+function clearPasswordValidity() {
+  passwordInput.value?.setCustomValidity('test')
+}
+
+function clearUsernameValidity() {
+  usernameInput.value?.setCustomValidity('test')
+}
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
