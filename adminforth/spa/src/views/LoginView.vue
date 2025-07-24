@@ -141,8 +141,8 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const passwordInput = ref(null)
-const usernameInput = ref(null)
+const passwordInput = ref(null);
+const usernameInput = ref(null);
 const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
