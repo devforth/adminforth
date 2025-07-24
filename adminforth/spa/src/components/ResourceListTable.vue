@@ -6,7 +6,6 @@
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-
         <div role="status" class="max-w-sm animate-pulse">
             <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
         </div>      
@@ -128,7 +127,7 @@
                   }"
 
                 >
-                  <IconEyeSolid class="w-5 h-5 me-2"/>
+                  <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
                 </RouterLink>
 
                 <template v-slot:tooltip>
@@ -147,7 +146,7 @@
                     }
                   }"
                 >
-                  <IconPenSolid class="w-5 h-5 me-2"/>
+                  <IconPenSolid class="af-edit-icon w-5 h-5 me-2"/>
                 </RouterLink>
                 <template v-slot:tooltip>
                   {{ $t('Edit item') }}
@@ -159,7 +158,7 @@
                   v-if="resource.options?.allowedActions.delete"
                   @click="deleteRecord(row)"
                 >
-                  <IconTrashBinSolid class="w-5 h-5 me-2"/>
+                  <IconTrashBinSolid class="af-delete-icon w-5 h-5 me-2"/>
                 </button>
 
                 <template v-slot:tooltip>
@@ -199,14 +198,14 @@
   <!-- pagination
   totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
   -->
-  <div class="flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3"
-    v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
-  >
+  <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="inline-flex ">
+    <div class="af-pagination-buttons-container inline-flex "
+      v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
+    >
         <!-- Buttons -->
         <button
-          class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page--; pageInput = page.toString();" :disabled="page <= 1">
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
@@ -218,14 +217,14 @@
           </span>
         </button>
         <button
-          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
         <div
           contenteditable="true" 
-          class="min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
+          class="af-pagination-input min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
           @keydown="onPageKeydown($event)"
           @input="onPageInput($event)"
           @blur="validatePageInput()"
@@ -234,14 +233,14 @@
         </div>
 
         <button
-          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
           {{ totalPages }}
 
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
-          class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
           @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
           <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -254,10 +253,10 @@
 
     <!-- Help text -->
     <span class="text-sm text-gray-700 dark:text-gray-400">
-        <span v-if="((page || 1) - 1) * pageSize + 1 > totalRows">{{ $t('Wrong Page') }} </span>
-        <template v-else>
+        <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
+        <template v-else-if="resource && totalRows > 0">
           
-          <span class="hidden sm:inline">
+          <span class="af-pagination-info hidden sm:inline">
             <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
               <template v-slot:from>
                 <strong>{{ from }}</strong>

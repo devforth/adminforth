@@ -92,16 +92,16 @@ export interface IExpressHttpServer extends IHttpServer {
    * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
    * @param callable : Function which will be called if user is authorized.
    * 
-   * Example:
    * 
+   * @example
    * ```ts
-   * expressApp.get('/myApi', authorize((req, res) => \{
+   * expressApp.get('/myApi', authorize((req, res) => {
    *  console.log('User is authorized', req.adminUser);
-   *  res.json(\{ message: 'Hello World' \});
-   * \}));
-   * ``
+   *  res.json({ message: 'Hello World' });
+   * }));
+   * ```
    * 
-   */
+   */  
   authorize(callable: Function): void;
 }
 
