@@ -169,13 +169,11 @@ function updateFromProps() {
     startDate.value = date.toString();
   }
 
-  if (!props.valueEnd || props.valueEnd === '' || props.valueEnd === null) {
+  if (!props.valueEnd) {
     datepickerEndEl.value.value = '';
     endTime.value = '';
     endDate.value = '';
-    return;
-  }
-  if (props.column.type === 'time') {
+  } else if (props.column.type === 'time') {
     endTime.value = props.valueEnd;
   } else {
     const date = dayjs(props.valueEnd);
