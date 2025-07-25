@@ -1,5 +1,5 @@
 <template>
-    <component v-if="getFlagComponent(countryCode)" class="flag-icon rounded-sm" :is="getFlagComponent(countryCode)" />
+    <component v-if="getFlagComponent(countryCode)" class="flag-icon !shadow-none rounded-sm" :is="getFlagComponent(countryCode)" />
     <span v-else-if="countryCode">{{ countryCode }}</span>
 </template>
 
