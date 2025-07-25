@@ -853,6 +853,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!newConfig.baseUrl) {
       newConfig.baseUrl = '';
     }
+
+    try {
+      new URL(newConfig.baseUrl);
+      errors.push(`⛔️ This url is absolute path: ${newConfig.baseUrl}, you have to use relative paths`);
+    } catch {
+
+    }
+
     if (!newConfig.baseUrl.endsWith('/')) {
       newConfig.baseUrlSlashed = `${newConfig.baseUrl}/`;
     } else {
