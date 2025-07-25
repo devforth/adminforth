@@ -1,6 +1,8 @@
 <template>
-    <component v-if="getFlagComponent(countryCode)" class="flag-icon !shadow-none rounded-sm" :is="getFlagComponent(countryCode)" />
+  <div class="aspect-[4/3] w-8 h-6 flex items-center justify-center">
+    <component v-if="getFlagComponent(countryCode)" :is="getFlagComponent(countryCode)" class="flag-icon w-full h-full object-contain !shadow-none rounded-sm"/>
     <span v-else-if="countryCode">{{ countryCode }}</span>
+  </div>
 </template>
 
 <script setup lang="ts">
