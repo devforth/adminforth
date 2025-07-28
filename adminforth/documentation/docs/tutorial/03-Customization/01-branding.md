@@ -170,3 +170,36 @@ auth: {
 
 - `over` - image will be over the whole login page with cover mode
 - `1/2`(default), `3/4`, `2/5`, `3/5` etc. - image will be in the left side of the login page with cover mode
+
+## Custom items in html head
+
+If you want to add custom elements to the HTML head, you can define them in the configuration:
+
+```ts title='./index.ts'
+customization: {
+  customHeadItems: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://example.com/custom.css'
+      }
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        src: 'https://example.com/custom.js',
+        defer: true
+      }
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'theme-color',
+        content: ' #000000'
+      }
+    }
+  ]
+}
+
+```
