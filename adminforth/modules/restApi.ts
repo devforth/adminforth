@@ -198,7 +198,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'GET',
       path: '/get_public_config',
-      handler: async ({ tr, adminUser }) => {
+      handler: async ({ tr }) => {
 
         // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
 
