@@ -94,6 +94,26 @@ const admin = new AdminForth({
 Here is how it looks:
 ![AdminForth Themes](image-10.png)
 
+## Single theme
+
+If you want to enforce a consistent theme and disable the theme switcher, you can configure AdminForth to use only one theme variant. 
+
+```ts title='./index.ts'
+
+const admin = new AdminForth({
+  ...
+  customization: {
+  //diff-add
+    singleTheme: "light",
+    styles: {
+      ...
+      }
+    } 
+  },
+  ...
+});
+```
+
 
 ## Square vs rounded buttons?
 
