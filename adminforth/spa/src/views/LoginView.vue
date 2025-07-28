@@ -55,7 +55,6 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              @input="usernameInput.value?.setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
@@ -66,7 +65,6 @@
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              @input="passwordInput.value?.setCustomValidity('')"
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
