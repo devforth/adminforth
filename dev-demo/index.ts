@@ -78,7 +78,14 @@ export const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
     demoCredentials: "adminforth:adminforth",  // never use it for production
-    loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
+    // loginPromptHTML: async () => { 
+    //   const adminforthUserExists = await admin.resource("users").count(Filters.EQ('email', 'adminforth')) > 0;
+    //   if (adminforthUserExists) {
+    //     return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
+    //   }
+    //   return "";
+    // },
+    loginPromptHTML:"Nya without function",
     // loginBackgroundImage: '@@/pho.jpg',
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
@@ -116,6 +123,29 @@ export const admin = new AdminForth({
       userMenu: '@@/login2.vue',
       // header: '@@/PropertyCost.vue',
     },
+    customHeadItems: [
+        {
+          tagName: 'link',
+          attributes: {
+            rel: 'stylesheet',
+            href: 'https://example.com/custom.css'
+          }
+        },
+        {
+          tagName: 'script',
+          attributes: {
+            src: 'https://example.com/custom.js',
+            defer: true
+          }
+        },
+        {
+          tagName: 'meta',
+          attributes: {
+            name: 'theme-color',
+            content: ' #000000'
+          }
+        }
+      ],
     customPages:[{
       path : '/login2',
       component: {
@@ -190,7 +220,7 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'maindb',
-      url: process.env.DATABASE_URL,
+      url: process.env.DATABASE_URL as string,
     },
     {
       id: 'pg',
@@ -202,7 +232,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
     },
     {
       id: 'mysql',
@@ -225,6 +255,13 @@ export const admin = new AdminForth({
     translationsResource,
   ],
   menu: [
+     {
+      label: 'TablesGroup',
+      path: '/overview',
+      homepage: true,
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/GroupTable.vue',
+    },
     {
       label: 'Dashboard',
       icon: 'flowbite:chart-pie-solid',
