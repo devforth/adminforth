@@ -764,6 +764,12 @@ interface AdminForthInputConfigCustomization {
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+
 }
 
 export interface AdminForthActionInput {
@@ -1069,6 +1075,12 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+  
 }
 
 export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {
