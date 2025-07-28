@@ -547,7 +547,7 @@ class CodeInjector implements ICodeInjector {
     );
 
     // inject heads to index.html
-    const headItems = this.adminforth.config.customization!.customHeadItems;
+    const headItems = this.adminforth.config.customization?.customHeadItems;
     const renderedHead = headItems.map(({ tagName, attributes }) => {
       const attrs = Object.entries(attributes)
         .map(([k, v]) => `${k}="${v}"`)
