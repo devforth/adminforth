@@ -548,7 +548,8 @@ class CodeInjector implements ICodeInjector {
 
     // inject heads to index.html
     const headItems = this.adminforth.config.customization?.customHeadItems;
-    const renderedHead = headItems.map(({ tagName, attributes }) => {
+    if(headItems){
+      const renderedHead = headItems.map(({ tagName, attributes }) => {
       const attrs = Object.entries(attributes)
         .map(([k, v]) => `${k}="${v}"`)
         .join(' ');
@@ -556,9 +557,10 @@ class CodeInjector implements ICodeInjector {
       return isVoid
         ? `<${tagName} ${attrs}>`
         : `<${tagName} ${attrs}></${tagName}>`;
-    }).join('\n    ');
+      }).join('\n    ');
 
-    indexHtmlContent = indexHtmlContent.replace("/* IMPORTANT:ADMINFORTH HEAD */", `${renderedHead}` );
+      indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );
+    }
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
