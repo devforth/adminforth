@@ -315,10 +315,10 @@ class AdminForth implements IAdminForth {
           return error;
         }
       } else {
-        if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        if (column.minValue !== undefined && record[column.name] && record[column.name] < column.minValue) {
           return `Value in "${column.name}" must be greater than ${column.minValue}`;
         }
-        if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        if (column.maxValue !== undefined && record[column.name] && record[column.name] > column.maxValue) {
           return `Value in "${column.name}" must be less than ${column.maxValue}`;
         }
       }

@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@adminforth/foreign-inline-show": "^1.0.1",
     "@prisma/client": "^5.22.0",
     "better-sqlite3": "^10.1.0",
     "express": "^4.21.0",
