@@ -20,7 +20,7 @@ import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-lo
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForth from "../../adminforth";
 import { StorageAdapter } from "../../adminforth";
-import ForeignInlineShowPlugin from '@adminforth/foreign-inline-show';
+
 
 const demoChecker = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser.role !== "superadmin") {
@@ -143,7 +143,7 @@ export default {
         list: {
           file: "@/renderers/CountryFlag.vue",
           meta: {
-            showCountryName: true,
+            showCountryName: false,
           },
         },
         edit: {
@@ -245,7 +245,8 @@ export default {
       name: "square_meter",
       label: "Square",
       // allowMinMaxQuery: true,
-      minValue: 2, // you can set min /max value for number fields
+      minValue: 1, // you can set min /max value for number fields
+      maxValue: 100000000,
       components: {
         list: {
           file: "@/renderers/HumanNumber.vue",
@@ -295,6 +296,18 @@ export default {
       showIn: {filter: true, show: true, edit: true, list: true, create: true},
       foreignResource: {
         resourceId: 'users',
+        hooks: {
+          dropdownList: {
+            beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
+              if (adminUser.dbUser.role !== "superadmin") {
+                query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
+              };
+              return {
+                "ok": true,
+              };
+            }
+          },
+        }
       }
     },
     {
@@ -318,11 +331,8 @@ export default {
   plugins: [
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
-        new ForeignInlineShowPlugin({
-          foreignResourceId: 'adminuser',
-        }),
-        new UploadPlugin({
-          pathColumnName: "apartment_image",
+          new UploadPlugin({
+            pathColumnName: "apartment_image",
 
             storageAdapter: new AdminForthAdapterS3Storage({
               region: "eu-central-1",
