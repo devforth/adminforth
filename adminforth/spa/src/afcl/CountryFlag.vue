@@ -1,6 +1,6 @@
 <template>
   <div class="aspect-[4/3] w-8 h-6 flex items-center justify-center">
-    <component v-if="getFlagComponent(countryCode)" :is="getFlagComponent(countryCode)" class="flag-icon w-full h-full object-contain !shadow-none rounded-sm"/>
+    <component v-if="getFlagComponent(countryCode)" :is="getFlagComponent(countryCode)" class="flag-icon w-full h-full object-contain rounded-sm"/>
     <span v-else-if="countryCode">{{ countryCode }}</span>
   </div>
 </template>
