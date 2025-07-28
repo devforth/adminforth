@@ -223,6 +223,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
         };
       },
     });
@@ -301,6 +302,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
         }
 
         const loggedInPart = {
