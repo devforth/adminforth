@@ -21,6 +21,7 @@ export type ResourceColumns = {
 
 export type CoreConfig = {
     brandName: string,
+    singleTheme?: 'light' | 'dark',
     brandLogo: string,
     title: string,
     datesFormat: string,
