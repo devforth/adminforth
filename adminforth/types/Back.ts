@@ -620,6 +620,11 @@ interface AdminForthInputConfigCustomization {
   brandName?: string,
 
   /**
+   * Whether to use single theme for the app
+   */
+  singleTheme?: 'light' | 'dark',
+
+  /**
    * Whether to show brand name in sidebar
    * default is true
    */
