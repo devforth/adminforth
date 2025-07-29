@@ -551,7 +551,7 @@ class CodeInjector implements ICodeInjector {
     if(headItems){
       const renderedHead = headItems.map(({ tagName, attributes }) => {
       const attrs = Object.entries(attributes)
-        .map(([k, v]) => `${k}="${v}"`)
+        .map(([key, value]) => `${key}="${value}"`)
         .join(' ');
       const isVoid = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'].includes(tagName);
       return isVoid
