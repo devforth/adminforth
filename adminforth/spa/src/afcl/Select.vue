@@ -176,6 +176,10 @@ function updateFromProps() {
 }
 
 function inputClick() {
+  setTimeout(() => {
+    handleScroll();
+  }, 0);
+
   if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
