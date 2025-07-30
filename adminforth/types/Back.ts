@@ -941,6 +941,13 @@ export interface AdminForthInputConfig {
       loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
 
       /**
+       * If true, background blend mode will be removed from login background image when position is 'over'
+       * 
+       * Default: false
+       */
+      removeBackgroundBlendMode?: boolean,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */

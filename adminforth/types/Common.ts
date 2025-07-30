@@ -1055,6 +1055,7 @@ export interface AdminForthConfigForFrontend {
   usernameFieldName: string,
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
+  removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
   loginPromptHTML?: string,
