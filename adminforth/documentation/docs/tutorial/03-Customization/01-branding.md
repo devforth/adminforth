@@ -171,6 +171,20 @@ auth: {
 - `over` - image will be over the whole login page with cover mode
 - `1/2`(default), `3/4`, `2/5`, `3/5` etc. - image will be in the left side of the login page with cover mode
 
+### Disabling background blend mode
+
+When using `loginBackgroundPosition: 'over'`, AdminForth applies a background blend mode by default to ensure text readability over the background image. If you want to disable this blend mode and display the background image without any overlay effects, you can add:
+
+```ts title='./index.ts'
+auth: {
+  ...
+  loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
+  loginBackgroundPosition: 'over',
+//diff-add
+  removeBackgroundBlendMode: true,
+}
+```
+
 ## Custom items in html head
 
 If you want to add custom elements to the HTML head, you can define them in the configuration:
