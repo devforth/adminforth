@@ -1082,7 +1082,11 @@ export interface AdminForthConfigForFrontend {
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
-  }
+  },
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[],  
 }
 
 export interface GetBaseConfigResponse {

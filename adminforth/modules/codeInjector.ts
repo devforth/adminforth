@@ -545,8 +545,23 @@ class CodeInjector implements ICodeInjector {
           ||
        `/assets/favicon.png`
     );
-    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
+    // inject heads to index.html
+    const headItems = this.adminforth.config.customization?.customHeadItems;
+    if(headItems){
+      const renderedHead = headItems.map(({ tagName, attributes }) => {
+      const attrs = Object.entries(attributes)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(' ');
+      const isVoid = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'].includes(tagName);
+      return isVoid
+        ? `<${tagName} ${attrs}>`
+        : `<${tagName} ${attrs}></${tagName}>`;
+      }).join('\n    ');
+
+      indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );
+    }
+    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
     let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
