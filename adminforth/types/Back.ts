@@ -764,6 +764,16 @@ interface AdminForthInputConfigCustomization {
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
+
+  /**
+  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Each item must include a tag name and a set of attributes.
+  */
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+
 }
 
 export interface AdminForthActionInput {
@@ -1076,6 +1086,12 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+  
 }
 
 export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {

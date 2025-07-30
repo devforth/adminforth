@@ -41,6 +41,11 @@ export type CoreConfig = {
         show?: string,
         list?: string,
     } | string,
+
+    customHeadItems?: {
+        tagName: string;
+        attributes: { [key: string]: string | boolean };
+    }[],
 }
 
 

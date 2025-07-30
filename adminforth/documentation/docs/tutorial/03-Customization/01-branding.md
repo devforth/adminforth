@@ -184,3 +184,36 @@ auth: {
   removeBackgroundBlendMode: true,
 }
 ```
+
+## Custom items in html head
+
+If you want to add custom elements to the HTML head, you can define them in the configuration:
+
+```ts title='./index.ts'
+customization: {
+  customHeadItems: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://example.com/custom.css'
+      }
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        src: 'https://example.com/custom.js',
+        defer: true
+      }
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'theme-color',
+        content: ' #000000'
+      }
+    }
+  ]
+}
+
+```

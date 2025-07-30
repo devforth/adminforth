@@ -225,6 +225,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
       },
     });
@@ -305,6 +306,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
 
         const loggedInPart = {
