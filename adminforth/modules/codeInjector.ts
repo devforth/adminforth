@@ -909,6 +909,9 @@ class CodeInjector implements ICodeInjector {
 
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
+      if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
+        console.log('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
+      }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
