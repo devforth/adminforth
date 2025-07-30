@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
@@ -175,7 +175,7 @@ function updateFromProps() {
   }
 }
 
-function inputClick() {
+async function inputClick() {
   if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
@@ -183,6 +183,9 @@ function inputClick() {
   if (!showDropdown.value && !search.value) {
     search.value = '';
   }
+
+  await nextTick();
+  handleScroll();
 }
 
 watch(
