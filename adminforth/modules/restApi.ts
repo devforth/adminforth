@@ -210,12 +210,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        let loginPromptHTML;
-        if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
-          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML();
-        } else {
-          loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
-        }
+        let loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
         return {
           brandName: this.adminforth.config.customization.brandName,
@@ -234,7 +229,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
     });
 
-    
+    async function getLoginPromptHTML(prompt) {
+        if(typeof prompt === 'function') {
+          const result = await prompt();
+          if(result !== undefined){
+            return result;
+          }
+          return "";
+        } else {
+          return prompt;
+        }
+    }
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
@@ -298,12 +303,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-        let loginPromptHTML;
-        if(typeof this.adminforth.config.auth.loginPromptHTML === 'function') {
-          loginPromptHTML = await this.adminforth.config.auth.loginPromptHTML();
-        } else {
-          loginPromptHTML = this.adminforth.config.auth.loginPromptHTML;
-        }
+        let loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
 
         const publicPart = {
