@@ -4,7 +4,7 @@
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
-      'background-blend-mode': 'darken'
+      'background-blend-mode': coreStore.config?.removeBackgroundBlendMode ? 'normal' : 'darken'
     }: {}"
   >
     
