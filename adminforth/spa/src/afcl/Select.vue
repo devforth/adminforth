@@ -176,7 +176,6 @@ function updateFromProps() {
 }
 
 async function inputClick() {
-
   if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
