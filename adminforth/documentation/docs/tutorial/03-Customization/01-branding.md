@@ -183,6 +183,7 @@ auth: {
 //diff-add
   removeBackgroundBlendMode: true,
 }
+
 ```
 
 ## Custom items in html head
@@ -215,5 +216,6 @@ customization: {
     }
   ]
 }
+
 
 ```

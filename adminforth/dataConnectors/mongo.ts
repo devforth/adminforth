@@ -69,6 +69,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return Number.isInteger(value) ? 'integer' : 'float';
           }
           if (value instanceof Date) return 'datetime';
+          if (value && typeof value === 'object' && ('$numberDecimal' in value || value._bsontype === 'Decimal128')) return 'decimal';
           if (typeof value === 'object') return 'json';
           return 'string';
         }
@@ -89,11 +90,16 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
               sampleValues.set(fullKey, value);
             }
       
-            if (
-              value instanceof Buffer ||
-              (value && typeof value === 'object' && (value as any)._bsontype === 'Decimal128')
-            ) {
+            if (value instanceof Buffer) {
               addType(fullKey, 'json');
+              return;
+            }
+            if (
+                value &&
+                typeof value === 'object' &&
+                ('$numberDecimal' in value || value._bsontype === 'Decimal128')
+              ) {
+              addType(fullKey, 'decimal');
               return;
             }
       
@@ -104,9 +110,10 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
               !(value instanceof Date)
             ) {
               addType(fullKey, 'json');
-            } else {
-              addType(fullKey, detectType(value));
+              return
             }
+        
+            addType(fullKey, detectType(value));
           });
         }
       
@@ -117,7 +124,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return Array.from(fieldTypes.entries()).map(([name, types]) => {
           const primaryKey = name === '_id';
       
-          const priority = ['datetime', 'date', 'integer', 'float', 'boolean', 'json', 'string'];
+          const priority = ['datetime', 'date', 'integer', 'float', 'boolean', 'json', 'decimal',  'string'];
       
           const matched = priority.find(t => types.has(t)) || 'string';
       
@@ -129,8 +136,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             datetime: 'DATETIME',
             date: 'DATE',
             json: 'JSON',
+            decimal: 'DECIMAL',
           };
-      
           return {
             name,
             type: typeMap[matched] ?? 'STRING',
