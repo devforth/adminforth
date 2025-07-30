@@ -97,7 +97,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             if (
                 value &&
                 typeof value === 'object' &&
-                ('$numberDecimal' in value || value._bsontype === 'Decimal128')
+                ('$numberDecimal' in value || (value as any)._bsontype === 'Decimal128')
               ) {
               addType(fullKey, 'decimal');
               return;
