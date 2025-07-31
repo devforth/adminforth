@@ -1,21 +1,29 @@
 <template>
-  <div class="afcl-checkbox flex items-center h-5" :class="{'opacity-50' : props.disabled}">
-    <input :id="id" 
-      ref="rememberInput"
-      type="checkbox"
-      :checked="props.modelValue"
-      :disabled="props.disabled"
-      @change="$emit('update:modelValue', $event.target.checked)"
-      class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-lightPrimary cursor-pointer 
-        focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 checked:bg-lightPrimary checked:dark:bg-darkPrimary" /> 
+  <div class="afcl-checkbox flex items-center relative h-5" :class="{'opacity-50' : props.disabled}">
+    <div class="flex items-center justify-center">
+      <input :id="id" 
+        ref="rememberInput"
+        type="checkbox"
+        :checked="props.modelValue"
+        :disabled="props.disabled"
+        @change="$emit('update:modelValue', $event.target.checked)"
+        class="peer appearance-none min-w-4 min-h-4 bg-lightCheckboxBgUnchecked border border-lightCheckboxBorderColor rounded-sm checked:bg-lightCheckboxBgChecked 
+                        focus:ring-lightFocusRing dark:focus:ring-darkFocusRing dark:focus:ring-darkFocusRing
+                        focus:ring-2 dark:bg-darkCheckboxBgUnchecked dark:border-darkCheckboxBorderColor dark:checked:bg-darkCheckboxBgChecked cursor-pointer"
+        >     
+        <div class="pointer-events-none absolute text-lightCheckboxIconColor dark:text-darkCheckboxIconColor leading-none peer-checked:block hidden">
+          <IconCheckOutline width="18" height="18" />
+        </div> 
+    </div>
+    <label :for="id" class="ms-2 text-sm font-medium text-lightTextLabel dark:text-darkTextLabel">
+      <slot></slot>
+    </label>
+
   </div>
-  <label :for="id" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-    <slot></slot>
-  </label>
 </template>
 
 <script setup lang="ts">
-
+import { IconCheckOutline } from '@iconify-prerendered/vue-flowbite';
 const props = defineProps({
   modelValue: Boolean,
   disabled: Boolean,
