@@ -183,16 +183,6 @@ onMounted(async () => {
 
 
 async function login() {
-  
-  if (!username.value) {
-    usernameInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-  if (!password.value) {
-    passwordInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-
   if (inProgress.value) {
     return;
   }
