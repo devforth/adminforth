@@ -17,7 +17,7 @@
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
             <Checkbox
-              v-model="allFromThisPageChecked"
+              :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
               @update:modelValue="selectAll"
             >
