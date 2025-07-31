@@ -76,6 +76,14 @@ export const styles = () => ({
     lightFocusRing: "alias:lightPrimary lighten", //focus ring color
     lightTextLabel: "black", //text color of checkbox label
 
+    lightToggleBgUnactive: "alias:lightPrimaryContrast darken",
+    lightToggleBgActive: "alias:lightPrimary darken",
+    lightToggleCircle: "alias:lightPrimaryContrast lighten",
+    lightToggleRing: "alias:lightPrimary lighten",
+    lightToggleText: "black", 
+    lightToggleBorderUnactive: "alias:lightPrimary lighten",
+    lightToggleBorderActive: "alias:lightPrimary darken",
+
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -133,6 +141,14 @@ export const styles = () => ({
     darkCheckboxBorderColor: "alias:darkPrimary darken",  //border color
     darkFocusRing: "alias:darkPrimary lighten",
     darkTextLabel: "white",
+
+    darkToggleBgUnactive: "alias:darkPrimaryContrast darken",
+    darkToggleBgActive: "alias:darkPrimary darken",
+    darkToggleCircle: "alias:darkPrimaryContrast lighten",
+    darkToggleRing: "alias:darkPrimary lighten",
+    darkToggleText: "alias:darkPrimaryContrast lighten", 
+    darkToggleBorderUnactive: "alias:darkPrimary lighten",
+    darkToggleBorderActive: "alias:darkPrimary darken",
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
