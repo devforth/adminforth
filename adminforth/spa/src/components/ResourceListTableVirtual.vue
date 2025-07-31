@@ -5,7 +5,7 @@
     :style="`height: ${containerHeight}px; will-change: transform;`"
     @scroll="handleScroll"
     ref="containerRef"
-  >
+  > 
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
