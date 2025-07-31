@@ -1,6 +1,8 @@
 <template>
-      <div :class="`overflow-x-auto ${isRounded ? 'rounded-default' : ''} shadow-resourseFormShadow dark:shadow-darkResourseFormShadow`">
-        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-gray-700 bg-lightFormHeading dark:bg-darkFormHeading  dark:text-gray-400 rounded-t-lg">
+      <div class="overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
+        :class="{'rounded-default' : isRounded}"
+      >
+        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
