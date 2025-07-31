@@ -21,6 +21,7 @@ export type ResourceColumns = {
 
 export type CoreConfig = {
     brandName: string,
+    singleTheme?: 'light' | 'dark',
     brandLogo: string,
     title: string,
     datesFormat: string,
@@ -33,12 +34,18 @@ export type CoreConfig = {
         passwordHashField: string,
         loginBackgroundImage: string,
         loginBackgroundPosition: string,
+        removeBackgroundBlendMode: boolean,
         userFullnameField: string,
     },
     emptyFieldPlaceholder?: {
         show?: string,
         list?: string,
     } | string,
+
+    customHeadItems?: {
+        tagName: string;
+        attributes: { [key: string]: string | boolean };
+    }[],
 }
 
 

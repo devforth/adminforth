@@ -92,16 +92,16 @@ export interface IExpressHttpServer extends IHttpServer {
    * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
    * @param callable : Function which will be called if user is authorized.
    * 
-   * Example:
    * 
+   * @example
    * ```ts
-   * expressApp.get('/myApi', authorize((req, res) => \{
+   * expressApp.get('/myApi', authorize((req, res) => {
    *  console.log('User is authorized', req.adminUser);
-   *  res.json(\{ message: 'Hello World' \});
-   * \}));
+   *  res.json({ message: 'Hello World' });
+   * }));
    * ```
    * 
-   */
+   */  
   authorize(callable: Function): void;
 }
 
@@ -620,6 +620,11 @@ interface AdminForthInputConfigCustomization {
   brandName?: string,
 
   /**
+   * Whether to use single theme for the app
+   */
+  singleTheme?: 'light' | 'dark',
+
+  /**
    * Whether to show brand name in sidebar
    * default is true
    */
@@ -759,6 +764,16 @@ interface AdminForthInputConfigCustomization {
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
+
+  /**
+  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Each item must include a tag name and a set of attributes.
+  */
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+
 }
 
 export interface AdminForthActionInput {
@@ -936,6 +951,13 @@ export interface AdminForthInputConfig {
       loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
 
       /**
+       * If true, background blend mode will be removed from login background image when position is 'over'
+       * 
+       * Default: false
+       */
+      removeBackgroundBlendMode?: boolean,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
@@ -1064,6 +1086,12 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+  
 }
 
 export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {
