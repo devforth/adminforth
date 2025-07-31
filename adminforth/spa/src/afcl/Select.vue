@@ -184,7 +184,7 @@ async function inputClick() {
     search.value = '';
   }
 
-  if(!props.teleportToBody){
+  if(props.teleportToBody){
     await nextTick();
     handleScroll();
   }
