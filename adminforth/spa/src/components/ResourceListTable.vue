@@ -16,17 +16,13 @@
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
-            <div class="flex items-center justify-center relative">
-              <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                    :disabled="!rows || !rows.length"
-                    class="peer appearance-none w-4 h-4 text-blue-600 bg-light-primary border border-gray-500 rounded-sm checked:bg-blue-500 
-                    focus:ring-blue-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 
-                    focus:ring-2 dark:bg-dark-primary dark:border-gray-600 dark:checked:bg-blue-500 cursor-pointer">
-              <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
-            <div class="pointer-events-none absolute text-white text-[13px] leading-none peer-checked:block hidden">
-              <IconCheckOutline width="18" height="18" />
-            </div>
-            </div>
+            <Checkbox
+              v-model="allFromThisPageChecked"
+              :disabled="!rows || !rows.length"
+              @update:modelValue="selectAll"
+            >
+              <span class="sr-only">{{ $t('checkbox') }}</span>
+            </Checkbox>
           </td>
 
           <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
@@ -95,24 +91,13 @@
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
         <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
-          <div class="flex items-center justify-center relative">
-            <input
-              @click="(e)=>e.stopPropagation()"
-              id="checkbox-table-search-1"
-              type="checkbox"
-              :checked="checkboxesInternal.includes(row._primaryKeyValue)"
-              @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-              class="peer appearance-none w-4 h-4 text-blue-600 bg-light-primary border border-gray-500 rounded-sm checked:bg-blue-500 
-                    focus:ring-blue-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 
-                    focus:ring-2 dark:bg-dark-primary dark:border-gray-600 dark:checked:bg-blue-500 cursor-pointer"
-            />
-            <label for="checkbox-table-search-1" class="sr-only">
-              {{ $t('checkbox') }}
-            </label>
-            <div class="pointer-events-none absolute text-white text-[13px] leading-none peer-checked:block hidden">
-              <IconCheckOutline width="18" height="18" />
-            </div>
-          </div>
+          <Checkbox
+            :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
+            @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
+            @click="(e)=>e.stopPropagation()"
+          >
+            <span class="sr-only">{{ $t('checkbox') }}</span>
+          </Checkbox>
         </td>
 
           <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
@@ -320,12 +305,12 @@ import {
   IconEyeSolid,
   IconPenSolid,
   IconTrashBinSolid,
-  IconCheckOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
+import Checkbox from '@/afcl/Checkbox.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
