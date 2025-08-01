@@ -215,6 +215,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
@@ -223,6 +224,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
       },
     });
@@ -296,11 +299,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
 
         const loggedInPart = {

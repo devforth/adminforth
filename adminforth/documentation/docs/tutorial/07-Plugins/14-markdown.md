@@ -51,7 +51,7 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image && npm run migrate:local
+npm run makemigration -- --name add_description_image ; npm run migrate:local
 ```
 
 ```bash

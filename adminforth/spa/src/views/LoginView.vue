@@ -4,7 +4,7 @@
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
-      'background-blend-mode': 'darken'
+      'background-blend-mode': coreStore.config?.removeBackgroundBlendMode ? 'normal' : 'darken'
     }: {}"
   >
     
@@ -55,7 +55,6 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
@@ -66,7 +65,6 @@
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
@@ -185,16 +183,6 @@ onMounted(async () => {
 
 
 async function login() {
-  
-  if (!username.value) {
-    usernameInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-  if (!password.value) {
-    passwordInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-
   if (inProgress.value) {
     return;
   }

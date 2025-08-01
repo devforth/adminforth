@@ -1,10 +1,12 @@
 <template>
-    <div class="overflow-x-auto rounded-default shadow-resourseFormShadow dark:shadow-darkResourseFormShadow">
+      <div class="overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
+        :class="{'rounded-default' : isRounded}"
+      >
         <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-gray-600 text-gray-700 bg-lightFormHeading dark:bg-gray-700 dark:text-gray-400 rounded-t-lg">
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
-        <thead v-if="!allColumnsHaveCustomComponent"  class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-gray-700 block md:table-row-group">
+        <thead v-if="!allColumnsHaveCustomComponent"  class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-darkFormHeading dark:border-darkFormBorder block md:table-row-group">
           <tr>
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell">
               {{ $t('Field') }}
@@ -19,7 +21,7 @@
             v-for="column in columns"
             :key="column.name"
             class="bg-lightForm border-t border-gray-100 
-              dark:bg-gray-800 dark:border-gray-700 block md:table-row"
+              dark:bg-darkForm dark:border-darkFormBorder block md:table-row"
           >
             <component
                 v-if="column.components?.showRow"
@@ -60,7 +62,7 @@
   import { getCustomComponent } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
-  const props = defineProps<{ 
+  const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
         label: string;
@@ -80,8 +82,11 @@
     noTitle?: boolean;
     resource: Record<string, any>;
     record: Record<string, any>;
-  }>();
-
+    isRounded?: boolean;
+  }>(), {
+    isRounded: true
+  });
+  
   const coreStore = useCoreStore();
   const allColumnsHaveCustomComponent = computed(() => {
     return props.columns.every(column => {
