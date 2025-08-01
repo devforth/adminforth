@@ -186,7 +186,7 @@ function updateFromProps() {
   }
 }
 
-function inputClick() {
+async function inputClick() {
   if (props.readonly && !props.searchDisabled) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
