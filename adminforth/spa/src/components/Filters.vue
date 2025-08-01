@@ -137,7 +137,7 @@
 import { watch, computed, ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, loadMoreForeignOptions, searchForeignOptions } from '@/utils';
 import { useRouter } from 'vue-router';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
@@ -165,6 +165,7 @@ const columnsWithFilter = computed(
 const columnOptions = ref({});
 const columnLoadingState = reactive({});
 const columnOffsets = reactive({});
+const columnEmptyResultsCount = reactive({});
 
 watch(() => props.columns, async (newColumns) => {
   if (!newColumns) return;
@@ -175,6 +176,7 @@ watch(() => props.columns, async (newColumns) => {
         columnOptions.value[column.name] = [];
         columnLoadingState[column.name] = { loading: false, hasMore: true };
         columnOffsets[column.name] = 0;
+        columnEmptyResultsCount[column.name] = 0;
         
         await loadMoreOptions(column.name);
       }
@@ -184,92 +186,30 @@ watch(() => props.columns, async (newColumns) => {
 
 // Function to load more options for a specific column
 async function loadMoreOptions(columnName, searchTerm = '') {
-  const column = props.columns?.find(c => c.name === columnName);
-  if (!column || !column.foreignResource) return;
-  
-  const state = columnLoadingState[columnName];
-  if (state.loading || !state.hasMore) return;
-  
-  state.loading = true;
-  
-  try {
-    const list = await callAdminForthApi({
-      method: 'POST',
-      path: `/get_resource_foreign_data`,
-      body: {
-        resourceId: router.currentRoute.value.params.resourceId,
-        column: columnName,
-        limit: 100,
-        offset: columnOffsets[columnName],
-        search: searchTerm,
-      },
-    });
-    
-    if (!list || !Array.isArray(list.items)) {
-      console.warn(`Unexpected API response for column ${columnName}:`, list);
-      state.hasMore = false;
-      return;
-    }
-    
-    if (!columnOptions.value[columnName]) {
-      columnOptions.value[columnName] = [];
-    }
-    columnOptions.value[columnName].push(...list.items);
-    
-    columnOffsets[columnName] += 100;
-    
-    state.hasMore = list.items.length === 100;
-    
-  } catch (error) {
-    console.error('Error loading more options:', error);
-  } finally {
-    state.loading = false;
-  }
+  return loadMoreForeignOptions({
+    columnName,
+    searchTerm,
+    columns: props.columns,
+    resourceId: router.currentRoute.value.params.resourceId,
+    columnOptions,
+    columnLoadingState,
+    columnOffsets,
+    columnEmptyResultsCount
+  });
 }
 
 async function searchOptions(columnName, searchTerm) {
-  const column = props.columns?.find(c => c.name === columnName);
-
-  if (!column || !column.foreignResource || !column.foreignResource.searchableFields) {
-    return;
-  }
-  
-  const state = columnLoadingState[columnName];
-  if (state.loading) return;
-  
-  state.loading = true;
-  
-  try {
-    
-    const list = await callAdminForthApi({
-      method: 'POST',
-      path: `/get_resource_foreign_data`,
-      body: {
-        resourceId: router.currentRoute.value.params.resourceId,
-        column: columnName,
-        limit: 100,
-        offset: 0,
-        search: searchTerm,
-      },
-    });
-    
-    if (!list || !Array.isArray(list.items)) {
-      console.warn(`Unexpected API response for column ${columnName}:`, list);
-      state.hasMore = false;
-      return;
-    }
-    
-    columnOptions.value[columnName] = list.items;
-    columnOffsets[columnName] = 100;
-    state.hasMore = list.items.length === 100;
-
-  } catch (error) {
-    console.error('Error searching options:', error);
-  } finally {
-    state.loading = false;
-  }
+  return searchForeignOptions({
+    columnName,
+    searchTerm,
+    columns: props.columns,
+    resourceId: router.currentRoute.value.params.resourceId,
+    columnOptions,
+    columnLoadingState,
+    columnOffsets,
+    columnEmptyResultsCount
+  });
 }
-
 
 
 // sync 'body' class 'overflow-hidden' with show prop show
