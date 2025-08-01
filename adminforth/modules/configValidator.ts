@@ -115,10 +115,11 @@ export default class ConfigValidator implements IConfigValidator {
 
     const loginPageInjections: AdminForthConfigCustomization['loginPageInjections'] = {
       underInputs: [],
+      panelHeader: [],
     };
 
     if (this.inputConfig.customization?.loginPageInjections) {
-      const ALLOWED_LOGIN_INJECTIONS = ['underInputs']
+      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'panelHeader']
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
         if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);
@@ -898,6 +899,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!newConfig.baseUrl) {
       newConfig.baseUrl = '';
     }
+
+    try {
+      new URL(newConfig.baseUrl);
+      errors.push(`⛔️ This url is absolute path: ${newConfig.baseUrl}, you have to use relative paths`);
+    } catch {
+
+    }
+
     if (!newConfig.baseUrl.endsWith('/')) {
       newConfig.baseUrlSlashed = `${newConfig.baseUrl}/`;
     } else {
@@ -988,8 +997,16 @@ export default class ConfigValidator implements IConfigValidator {
         throw new Error(`Resource with id "${newConfig.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
       }
 
-      if (!newConfig.auth.beforeLoginConfirmation) {
-        newConfig.auth.beforeLoginConfirmation = [];
+      // normalize beforeLoginConfirmation hooks
+      const blc = this.inputConfig.auth.beforeLoginConfirmation;
+      if (!Array.isArray(blc)) {
+        if (blc) {
+          newConfig.auth.beforeLoginConfirmation = [blc];
+        } else {
+          newConfig.auth.beforeLoginConfirmation = [];
+        }
+      } else {
+        newConfig.auth.beforeLoginConfirmation = blc;
       }
     }
 

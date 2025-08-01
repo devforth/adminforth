@@ -373,7 +373,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('getAllTables() must be implemented in subclass');
   }
 
-  async getAllColumnsInTable(tableName: string): Promise<string[]> {
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
     throw new Error('getAllColumnsInTable() must be implemented in subclass');
   }
 

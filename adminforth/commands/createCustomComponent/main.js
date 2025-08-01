@@ -50,6 +50,7 @@ async function handleFieldComponentCreation(config, resources) {
           { name: '📃 show', value: 'show' },
           { name: '✏️ edit', value: 'edit' },
           { name: '➕ create', value: 'create' },
+          { name: '🔍 filter', value: 'filter'},
           new Separator(),
           { name: '🔙 BACK', value: '__BACK__' },
       ]
@@ -256,6 +257,7 @@ async function handleLoginPageInjectionCreation(config) {
   const injectionType = await select({
     message: 'Select injection type:',
     choices: [
+      { name: 'Before Login and password inputs', value: 'beforeLogin' },
       { name: 'After Login and password inputs', value: 'afterLogin' },
       { name: '🔙 BACK', value: '__BACK__' },
     ],
@@ -286,7 +288,7 @@ async function handleLoginPageInjectionCreation(config) {
       console.log(chalk.dim(`Component generation successful: ${absoluteComponentPath}`));
       const configFilePath = path.resolve(process.cwd(), 'index.ts');
       console.log(chalk.dim(`Injecting component: ${configFilePath}, ${componentFileName}`));
-      await injectLoginComponent(configFilePath, `@@/${componentFileName}`);
+      await injectLoginComponent(configFilePath, `@@/${componentFileName}`, injectionType);
       
       console.log(
         chalk.bold.greenBright('You can now open the component in your IDE:'),

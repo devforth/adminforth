@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -38,7 +38,7 @@ import SocketBroker from './modules/socketBroker.js';
 // exports
 export * from './types/Back.js';
 export * from './types/Common.js';
-export * from './types/Adapters.js';
+export * from './types/adapters/index.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp };
@@ -124,31 +124,58 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor started');
+    
     if (global.adminforth) {
       throw new Error('AdminForth instance already created in this process. '+
         'If you want to use multiple instances, consider using different process for each instance');
     }
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating CodeInjector...');
     this.codeInjector = new CodeInjector(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 CodeInjector created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating ConfigValidator...');
     this.configValidator = new ConfigValidator(this, config);
+    process.env.HEAVY_DEBUG && console.log('🔧 ConfigValidator created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthRestAPI created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 SocketBroker created');
+    
     this.activatedPlugins = [];
     
+    process.env.HEAVY_DEBUG && console.log('🔧 Validating config...');
     this.configValidator.validateConfig();
+    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Activating plugins...');
     this.activatePlugins();
+    process.env.HEAVY_DEBUG && console.log('🔧 Plugins activated');
 
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating ExpressServer...');
     this.express = new ExpressServer(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 ExpressServer created');
+    
     // this.fastify = new FastifyServer(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthAuth...');
     this.auth = new AdminForthAuth(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthAuth created');
+    
     this.connectors = {};
     this.statuses = {
       dbDiscover: 'running',
     };
 
-   
-
     console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    process.env.HEAVY_DEBUG && console.log('🔧 About to set global.adminforth...');
     global.adminforth = this;
+    process.env.HEAVY_DEBUG && console.log('🔧 global.adminforth set successfully');
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor completed');
   }
 
   formatAdminForth() {
@@ -174,14 +201,21 @@ class AdminForth implements IAdminForth {
     process.env.HEAVY_DEBUG && console.log('🔌🔌🔌 Activating plugins');
     const allPluginInstances = [];
     for (let resource of this.config.resources) {
+      process.env.HEAVY_DEBUG && console.log(`🔌 Checking plugins for resource: ${resource.resourceId}`);
       for (let pluginInstance of resource.plugins || []) {
+        process.env.HEAVY_DEBUG && console.log(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
         allPluginInstances.push({pi: pluginInstance, resource});
       }
     }
+    process.env.HEAVY_DEBUG && console.log(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
     allPluginInstances.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
+    
     allPluginInstances.forEach(
-      ({pi: pluginInstance, resource}) => {
+      ({pi: pluginInstance, resource}, index) => {
+        process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
         pluginInstance.modifyResourceConfig(this, resource);
+        process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
+        
         const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
         if (plugin) {
           process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
@@ -190,8 +224,10 @@ class AdminForth implements IAdminForth {
             To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
         }
         this.activatedPlugins.push(pluginInstance);
+        process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
       }
     );
+    process.env.HEAVY_DEBUG && console.log('🔌 All plugins activation completed');
   }
 
   getPluginsByClassName<T>(className: string): T[] {
@@ -279,10 +315,10 @@ class AdminForth implements IAdminForth {
           return error;
         }
       } else {
-        if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        if (column.minValue !== undefined && record[column.name] && record[column.name] < column.minValue) {
           return `Value in "${column.name}" must be greater than ${column.minValue}`;
         }
-        if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        if (column.maxValue !== undefined && record[column.name] && record[column.name] > column.maxValue) {
           return `Value in "${column.name}" must be less than ${column.maxValue}`;
         }
       }
@@ -408,8 +444,8 @@ class AdminForth implements IAdminForth {
 
   async getAllColumnsInTable(
     tableName: string
-  ): Promise<{ [dataSourceId: string]: string[] }> {
-    const results: { [dataSourceId: string]: string[] } = {};
+  ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean; isUUID?: boolean; }> }> {
+    const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean;  isUUID?: boolean; }> } = {};
   
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = { ...this.connectorClasses };
@@ -420,7 +456,10 @@ class AdminForth implements IAdminForth {
         if (typeof connector.getAllColumnsInTable === 'function') {
           try {
             const columns = await connector.getAllColumnsInTable(tableName);
-            results[dataSourceId] = columns;
+            results[dataSourceId] = columns.map(column => ({
+              ...column,
+              isUUID: isProbablyUUIDColumn(column),
+            }));
           } catch (err) {
             console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
             results[dataSourceId] = [];

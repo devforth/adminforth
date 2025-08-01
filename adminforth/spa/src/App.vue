@@ -24,7 +24,8 @@
             />
 
             <div class="flex items-center ms-3 ">
-              <span               
+              <span  
+                v-if="!coreStore.config?.singleTheme"
                 @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
@@ -121,7 +122,7 @@
                 </svg>
               </button>
 
-              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
+              <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li>
                       <MenuLink :item="child" isChild="true" @click="hideSidebar"/>
@@ -409,6 +410,14 @@ onBeforeMount(()=>{
   theme.value = window.localStorage.getItem('af__theme') || 'light';
   document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
+
+watch(() => coreStore.config?.singleTheme, (singleTheme) => {
+  if (singleTheme) {
+    theme.value = singleTheme;
+    window.localStorage.setItem('af__theme', singleTheme);
+    document.documentElement.classList.toggle('dark', theme.value === 'dark');
+  }
+}, { immediate: true })
 
 
 const ctaBadge: Ref<(AnnouncementBadgeResponse & { hash: string; }) | null> = computed(() => {

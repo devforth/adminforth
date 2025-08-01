@@ -3,18 +3,28 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
 import chalk from "chalk";
+import dotenv from "dotenv";
 
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
 
 export function callTsProxy(tsCode, silent=false) {
 
+  const currentDirectory = process.cwd();
+  const envPath = path.resolve(currentDirectory, ".env");
+  const envLocalPath = path.resolve(currentDirectory, ".env.local");
+  if (fs.existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath, override: true });
+  }
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: true });
+  }
+
   process.env.HEAVY_DEBUG && console.log("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
   return new Promise((resolve, reject) => {
-    const child = spawn("tsx", [
-      path.join(currentFileFolder, "proxy.ts")
-    ]);
-
+    const child = spawn("tsx", [path.join(currentFileFolder, "proxy.ts")], {
+      env: process.env,
+    });
     let stdout = "";
     let stderr = "";
 

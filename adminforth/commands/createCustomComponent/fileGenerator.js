@@ -129,7 +129,7 @@ export async function generateLoginOrGlobalComponentFile(componentFileName, inje
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     let templatePath;
-    if (injectionType === 'afterLogin') {
+    if (injectionType === 'afterLogin' || injectionType === 'beforeLogin') {
       templatePath = path.join(__dirname, 'templates', 'login', `${injectionType}.vue.hbs`);
     } else {
       templatePath = path.join(__dirname, 'templates', 'global', `${injectionType}.vue.hbs`);

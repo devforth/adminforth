@@ -84,22 +84,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
-    if (beforeLoginConfirmation?.length){
-      for (const hook of beforeLoginConfirmation) {
-        const resp = await hook({ 
-          adminUser, 
-          response,
-          adminforth: this.adminforth,
-          extra,
-        });
-        
-        if (resp?.body?.redirectTo || resp?.error) {
-          // delete all items from toReturn and add these:
-          toReturn.redirectTo = resp?.body?.redirectTo;
-          toReturn.allowedLogin = resp?.body?.allowedLogin;
-          toReturn.error = resp?.error;
-          break;
-        }
+
+    for (const hook of listify(beforeLoginConfirmation)) {
+      const resp = await hook({ 
+        adminUser, 
+        response,
+        adminforth: this.adminforth,
+        extra,
+      });
+      
+      if (resp?.body?.redirectTo || resp?.error) {
+        // delete all items from toReturn and add these:
+        toReturn.redirectTo = resp?.body?.redirectTo;
+        toReturn.allowedLogin = resp?.body?.allowedLogin;
+        toReturn.error = resp?.error;
+        break;
       }
     }
   }
@@ -216,6 +215,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
@@ -224,6 +224,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
       },
     });
@@ -297,11 +299,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
 
         const loggedInPart = {
