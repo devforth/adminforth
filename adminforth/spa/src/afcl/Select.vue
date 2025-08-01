@@ -12,7 +12,7 @@
         @input="inputInput"
         class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
         placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
-      dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         autocomplete="off" data-custom="no-autofill"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
@@ -24,7 +24,7 @@
           name="selected-item" 
           :option="selectedItems[0]"
         ></slot>
-        <span v-if="!$slots['selected-item']" class="text-lightPrimary dark:text-white font-medium  ">
+        <span v-if="!$slots['selected-item']" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText font-medium  ">
           {{ selectedItems[0]?.label }}
         </span>
       </div>
@@ -44,7 +44,7 @@
           v-for="item in filteredItems"
           :key="item.value"
           class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
-          :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
+          :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
           @click="toogleItem(item)"
         >
           <slot name="item" :option="item"></slot>
@@ -67,7 +67,7 @@
         v-for="item in filteredItems"
         :key="item.value"
         class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
-        :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
+        :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
         <slot name="item" :option="item"></slot>

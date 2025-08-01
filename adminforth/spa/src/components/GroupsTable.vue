@@ -1,10 +1,10 @@
 <template>
   <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl">
-    <div v-if="group.groupName && !group.noTitle" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-darkFormBorder text-gray-700 bg-lightFormHeading dark:bg-darkFormHeading dark:text-gray-400 rounded-t-lg">
+    <div v-if="group.groupName && !group.noTitle" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-darkFormBorder text-lightListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkListTableHeadingText rounded-t-lg">
       {{ group.groupName }}
     </div>
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs text-gray-700 uppercase dark:text-gray-400 bg-lightFormHeading dark:bg-darkFormHeading block md:table-row-group ">
+    <table class="w-full text-sm text-left rtl:text-right text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">
+      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs text-lightListTableHeadingText uppercase dark:text-darkListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading block md:table-row-group ">
         <tr>
           <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-6 py-3 hidden md:w-52 md:table-cell">
               {{ $t('Field') }}
@@ -56,7 +56,7 @@
               :readonly="readonlyColumns?.includes(column.name)"
             />
             <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
-            <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ column.editingNote[mode] }}</div>
+            <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>
       </tbody>
