@@ -45,6 +45,7 @@ export default {
     {
       name: 'owner_id',
       foreignResource: {
+        searchableFields: ['name', 'description'],
         polymorphicResources: [
           {
             resourceId: 'clinics',
