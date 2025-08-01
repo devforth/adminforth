@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 
-import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions} from '@/utils';
+import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers} from '@/utils';
 import { computedAsync } from '@vueuse/core';
 import { computed, onMounted, reactive, ref, watch, provide } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -71,7 +71,6 @@ import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthResourceCommon } from '@/types/Common';
-import debounce from 'debounce';
 
 const { t } = useI18n();
 
@@ -356,21 +355,10 @@ const getOtherColumns = () => {
 const otherColumns = getOtherColumns();
 
 const onSearchInput = computed(() => {
-  if (!props.resource.columns) return {};
-
-  const result = props.resource.columns.reduce((acc, c) => {
-    if (c.foreignResource && c.foreignResource.searchableFields) {
-      return {
-        ...acc,
-        [c.name]: debounce((searchTerm: string) => {
-          searchOptions(c.name, searchTerm);
-        }, 300),
-      };
-    }
-    return acc;
-  }, {} as Record<string, (searchTerm: string) => void>);
-  
-  return result;
+  return createSearchInputHandlers(
+    props.resource.columns,
+    searchOptions
+  );
 });
 
 provide('columnLoadingState', columnLoadingState);
