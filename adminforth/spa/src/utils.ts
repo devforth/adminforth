@@ -7,6 +7,7 @@ import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth from './adminforth';
 import sanitizeHtml  from 'sanitize-html'
+import debounce from 'debounce';
 
 const LS_LANG_KEY = `afLanguage`;
 
@@ -393,4 +394,25 @@ export async function searchForeignOptions({
   } finally {
     state.loading = false;
   }
+}
+
+export function createSearchInputHandlers(
+  columns: any[],
+  searchFunction: (columnName: string, searchTerm: string) => void,
+  getDebounceMs?: (column: any) => number
+) {
+  if (!columns) return {};
+
+  return columns.reduce((acc, c) => {
+    if (c.foreignResource && c.foreignResource.searchableFields) {
+      const debounceMs = getDebounceMs ? getDebounceMs(c) : 300;
+      return {
+        ...acc,
+        [c.name]: debounce((searchTerm: string) => {
+          searchFunction(c.name, searchTerm);
+        }, debounceMs),
+      };
+    }
+    return acc;
+  }, {} as Record<string, (searchTerm: string) => void>);
 }

@@ -153,14 +153,13 @@
 import { watch, computed, ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
-import { callAdminForthApi, loadMoreForeignOptions, searchForeignOptions } from '@/utils';
+import { callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers } from '@/utils';
 import { useRouter } from 'vue-router';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import { useFiltersStore } from '@/stores/filters';
 import { getCustomComponent } from '@/utils';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
-import debounce from 'debounce';
 import Spinner from '@/afcl/Spinner.vue';
 
 const filtersStore = useFiltersStore();
@@ -259,21 +258,11 @@ const onFilterInput = computed(() => {
 });
 
 const onSearchInput = computed(() => {
-  if (!props.columns) return {};
-
-  const result = props.columns.reduce((acc, c) => {
-    if (c.foreignResource && c.foreignResource.searchableFields) {
-      return {
-        ...acc,
-        [c.name]: debounce((searchTerm) => {
-          searchOptions(c.name, searchTerm);
-        }, c.filterOptions?.debounceTimeMs || 300),
-      };
-    }
-    return acc;
-  }, {});
-  
-  return result;
+  return createSearchInputHandlers(
+    props.columns,
+    searchOptions,
+    (column) => column.filterOptions?.debounceTimeMs || 300
+  );
 });
 
 function setFilterItem({ column, operator, value }) {
