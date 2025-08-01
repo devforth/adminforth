@@ -1055,6 +1055,7 @@ export interface AdminForthConfigForFrontend {
   usernameFieldName: string,
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
+  removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
   loginPromptHTML?: string,
@@ -1065,6 +1066,7 @@ export interface AdminForthConfigForFrontend {
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
   brandLogo?: string,
+  singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
   auth: any,
@@ -1080,7 +1082,11 @@ export interface AdminForthConfigForFrontend {
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
-  }
+  },
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[],  
 }
 
 export interface GetBaseConfigResponse {
