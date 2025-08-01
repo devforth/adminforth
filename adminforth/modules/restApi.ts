@@ -839,7 +839,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_foreign_data',
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-        const { resourceId, column } = body;
+        const { resourceId, column, search } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -908,6 +908,46 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 } else {
                   // wrong filter
                   throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+                }
+              }
+
+              if (search && search.trim() && columnConfig.foreignResource.searchableFields) {
+                const searchableFields = Array.isArray(columnConfig.foreignResource.searchableFields) 
+                  ? columnConfig.foreignResource.searchableFields 
+                  : [columnConfig.foreignResource.searchableFields];
+
+                const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
+                  ? AdminForthFilterOperators.LIKE 
+                  : AdminForthFilterOperators.ILIKE;
+                const availableSearchFields = searchableFields.filter((fieldName) => {
+                  const fieldExists = targetResource.columns.some(col => col.name === fieldName);
+                  if (!fieldExists) {
+                    process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                  }
+                  return fieldExists;
+                });
+
+                if (availableSearchFields.length === 0) {
+                  process.env.HEAVY_DEBUG && console.log(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                  resolve({ items: [] });
+                  return;
+                }
+                const searchFilters = availableSearchFields.map((fieldName) => {
+                  const filter = {
+                  field: fieldName,
+                  operator: searchOperator,
+                  value: search.trim(),
+                  };
+                  return filter;
+                });
+
+                if (searchFilters.length > 1) {
+                  normalizedFilters.subFilters.push({
+                    operator: AdminForthFilterOperators.OR,
+                    subFilters: searchFilters,
+                  });
+                } else if (searchFilters.length === 1) {
+                  normalizedFilters.subFilters.push(searchFilters[0]);
                 }
               }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({

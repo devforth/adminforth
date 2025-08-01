@@ -584,6 +584,8 @@ export interface AdminForthForeignResourceCommon {
   polymorphicResources?: Array<AdminForthPolymorphicForeignResource>,
   polymorphicOn?: string,
   unsetLabel?: string,
+  searchableFields?: string | string[],
+  searchIsCaseSensitive?: boolean,
 }
 
 export type FillOnCreateFunction = (params: {

@@ -292,6 +292,7 @@ export default {
       name: 'realtor_id',
       foreignResource: {
         resourceId: 'adminuser',
+        searchableFields: ["id", "email"], // fields available for search in filter
       }
     }
   ],
