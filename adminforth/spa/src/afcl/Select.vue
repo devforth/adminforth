@@ -187,7 +187,7 @@ function updateFromProps() {
 }
 
 async function inputClick() {
-  if (props.readonly && !props.searchDisabled) return;
+  if (props.readonly || props.searchDisabled) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search
@@ -266,7 +266,7 @@ onMounted(() => {
 
 const filteredItems = computed(() => {
 
-  if (!props.searchDisabled) {
+  if (props.searchDisabled) {
     return props.options || [];
   }
   

@@ -10,6 +10,8 @@ import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 
 const LS_LANG_KEY = `afLanguage`;
+const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
+const ITEMS_PER_PAGE_LIMIT = 100;
 
 export async function callApi({path, method, body=undefined}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
@@ -233,7 +235,7 @@ export function handleForeignResourcePagination(
       if (items.length === 0) {
         const newEmptyCount = emptyResultsCount + 1;
         return {
-          hasMore: newEmptyCount < 2, // Stop loading after 2 consecutive empty results
+          hasMore: newEmptyCount < MAX_CONSECUTIVE_EMPTY_RESULTS, // Stop loading after 2 consecutive empty results
           emptyResultsCount: newEmptyCount
         };
       } else {
@@ -245,7 +247,7 @@ export function handleForeignResourcePagination(
     }
   } else {
     return {
-      hasMore: items.length === 100,
+      hasMore: items.length === ITEMS_PER_PAGE_LIMIT,
       emptyResultsCount: 0
     };
   }
