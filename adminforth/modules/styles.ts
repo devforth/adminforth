@@ -33,22 +33,15 @@ export const styles = () => ({
     lightListTable: "#FFFFFF", // list view table background
     lightListTableHeading: "#f5f5f8", // list view table heading
     lightListTableHeadingText: "alias:lightListTableHeading inverse", // list view table heading text
-    lightListTableText: "#333333", // list view table text
+    lightListTableText: "#alias:lightListTableHeadingText", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
     lightListBreadcrumbsText: "#666666", // list view breadcrumbs text
     lightListBorder: "#DDDDDD", // list view  rows border
-    // lightListButton: "#FFFFFF", // list view button
-    // lightListButtonBorder: "#d1d5db", // list view button border
-    // lightListButtonHover: "#f3f4f6", // list view button hover
-    // lightListButtonBorderHover: "#f3f4f6", // list view button border hover
-    // lightListButtonActive: "#f3f4f6", // list view button active
-    // lightListButtonDisabled: "#f3f4f6", // list view button disabled
-    // lightListButtonDisabledText: "#f3f4f6", // list view button disabled text
-    // lightListButtonIcon: "#333333", // list view button icon
 
-    lightForm: "#FFFFFF", // show view background
+    lightForm: "alias:lightListTableHeading lighten", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
     lightFormHeading: "alias:lightListTableHeading", // show view heading
+    lightFormFieldTextColor: "alias:lightListTableText",
 
     lightButtons: "#FFFFFF", // button background
     lightButtonsBorder: "#DDDDDD", // button border
@@ -60,14 +53,15 @@ export const styles = () => ({
     lightButtonsDisabledText: "#f3f4f6", // button disabled text
     lightButtonsIcon: "#333333", // button icon
     
-    lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
-    lightDropownButtonsBorder: "#d1d5db", //border color
-    lightDropdownButtonsText: "#6b7280", //text color
-    lightDropdownButtonsPlaceholderText: "#6b7280", //placeholder text color
+    lightDropdownButtonsBackground: "alias:lightForm darken", // dropdown button/input background color
+    lightDropownButtonsBorder: "alias:lightListTableHeadingText opacity:0.1", //border color
+    lightDropdownButtonsText: "alias:lightFormFieldTextColor", //text color
+    lightDropdownButtonsPlaceholderText: "alias:lightFormFieldTextColor lighten", //placeholder text color
 
-    lightDropdownOptionsBackground: "#FFFFFF", //dropdown menu background color
-    lightDropdownOptionsHoverBackground: "#f3f4f6", //dropdown menu hover background color 
-    lightDropdownOptionsText: "#000000", //dropdown menu hover background color
+    lightDropdownOptionsBackground: "alias:lightForm lighten", //dropdown menu background color
+    lightDropdownOptionsHoverBackground: "#alias:lightForm darken", //dropdown menu hover background color
+    lightDropdownPicked:"alias:lightDropdownOptionsHoverBackground opacity:0.5", //dropdown ,enu picked option
+    lightDropdownOptionsText: "alias:lightFormFieldTextColor", //dropdown menu hover background color
 
     lightCheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",     //checkbox unchecked state bg
     lightCheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
@@ -115,25 +109,27 @@ export const styles = () => ({
 
     darkList: "#111111", 
     darkListTable: "#1f2937", 
-    darkListTableHeading: "#334155", 
-    darkListTableHeadingText: "#9ca3af",
-    darkListTableText: "#9ca3af", 
+    darkListTableHeading: "#374151", 
+    darkListTableHeadingText: "alias:darkListTableHeading inverse",
+    darkListTableText: "alias:darkListTableHeadingText", 
     darkListTableRowHover: "rgb(35 47 65)",
     darkListBreadcrumbsText: "#BBBBBB", 
     darkListBorder: "#444444", 
 
-    darkForm: "#111111", 
+    darkForm: "alias:darkListTableHeading darken", 
     darkFormBorder: "#222222", 
     darkFormHeading: "alias:darkListTableHeading",
+    darkFormFieldTextColor: "alias:darkListTableText",
 
     darkDropdownButtonsBackground: "alias:darkForm darken",
-    darkDropownButtonsBorder: "alias:darkForm lighten",
-    darkDropdownButtonsText: "#ffffff",
-    darkDropdownButtonsPlaceholderText: "#9ca3af",
+    darkDropownButtonsBorder: "darkListTableHeadingText opacity:0.1", 
+    darkDropdownButtonsText: "alias:darkListTableText",
+    darkDropdownButtonsPlaceholderText: "alias:darkListTableText lighten",
 
-    darkDropdownOptionsBackground: "#alias:darkForm lighten",
-    darkDropdownOptionsHoverBackground: "alias:darkForm",
-    darkDropdownOptionsText: "#9ca3af",
+    darkDropdownOptionsBackground: "alias:darkForm lighten",
+    darkDropdownOptionsHoverBackground: "#alias:darkForm darken",
+    darkDropdownPicked:"alias:darkDropdownOptionsHoverBackground opacity:0.5",
+    darkDropdownOptionsText: "alias:darkListTableText",
 
     darkCheckboxBgUnchecked: "alias:darkPrimaryContrast lighten",     //checkbox unchecked state bg
     darkCheckboxBgChecked: "alias:darkPrimary",        //cheched state bg
