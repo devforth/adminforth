@@ -51,7 +51,7 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image
+npm run makemigration -- --name add_description_image ; npm run migrate:local
 ```
 
 ```bash
@@ -132,6 +132,7 @@ export default {
 Next, add new resource to `index.ts`:
 
 ```typescript title="./index.ts"
+// diff-add
 import descriptionImage from './resources/description_images.js';
 
 ...

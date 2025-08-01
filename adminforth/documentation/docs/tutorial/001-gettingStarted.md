@@ -22,7 +22,7 @@ The recommended way to get started with AdminForth is via the **`create-app`** C
 You can provide options directorly:
 
 ```bash
-npx adminforth create-app --app-name myadmin --db sqlite://.db.sqlite
+npx adminforth create-app --app-name myadmin --db "sqlite://.db.sqlite"
 ```
 
 Or omit them to be prompted interactively:
@@ -89,7 +89,7 @@ This will create a migration file in `migrations` and apply it to the database.
 In future, when you need to add new resources, you need to modify `schema.prisma` (add models, change fields, etc.). After doing any modification you need to create a new migration using next command:
 
 ```bash
-npm run makemigration -- --name <name_of_changes>
+npm run makemigration -- --name init ; npm run migrate:local
 ```
 
 Other developers need to pull migration and run `npm run migrateLocal` to apply any unapplied migrations.
@@ -173,7 +173,7 @@ model apartments {
 Run the following command to create a new migration:
 
 ```bash
-npm run makemigration -- --name add-apartments
+npm run makemigration -- --name add-apartments ; npm run migrate:local
 ```
 
 ### Step3. Create the `apartments` resource
@@ -315,7 +315,7 @@ Open `index.ts` in your project root and import the new resource:
 ```ts title="./index.ts"
 ...
 //diff-add
-import apartmentsResource from "./resources/apartments";
+import apartmentsResource from "./resources/apartments.js";
 
 ...
 export const admin = new AdminForth({
@@ -410,7 +410,7 @@ async function seedDatabase() {
 //diff-add
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   ...
 

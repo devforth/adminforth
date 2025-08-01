@@ -20,7 +20,7 @@
     "rollout-doc": "cd documentation && npm run build && npm run deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do npm ci in the package",
-    "postinstall": "if test -d ./dist/spa/; then cd ./dist/spa/ && npm ci && echo 'installed spa dependencies'; fi"
+    "postinstall": "node -e \"const fs=require('fs');const path=require('path');const spaPath=path.join(__dirname,'dist','spa');if(fs.existsSync(spaPath)){process.chdir(spaPath);require('child_process').execSync('npm ci',{stdio:'inherit'});console.log('installed spa dependencies');}\""
   },
   "release": {
     "plugins": [
@@ -79,7 +79,7 @@
     "jsonwebtoken": "^9.0.2",
     "listr2": "^8.2.5",
     "mongodb": "6.6",
-    "mysql2": "^3.12.0",
+    "mysql2": "^3.14.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
     "recast": "^0.23.11",

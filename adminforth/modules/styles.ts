@@ -60,7 +60,14 @@ export const styles = () => ({
     lightButtonsDisabledText: "#f3f4f6", // button disabled text
     lightButtonsIcon: "#333333", // button icon
     
+    lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
+    lightDropownButtonsBorder: "#d1d5db", //border color
+    lightDropdownButtonsText: "#6b7280", //text color
+    lightDropdownButtonsPlaceholderText: "#6b7280", //placeholder text color
 
+    lightDropdownOptionsBackground: "#FFFFFF", //dropdown menu background color
+    lightDropdownOptionsHoverBackground: "#f3f4f6", //dropdown menu hover background color 
+    lightDropdownOptionsText: "#000000", //dropdown menu hover background color
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -102,7 +109,16 @@ export const styles = () => ({
 
     darkForm: "#111111", 
     darkFormBorder: "#222222", 
-    darkFormHeading: "alias:darkListTableHeading" 
+    darkFormHeading: "alias:darkListTableHeading",
+
+    darkDropdownButtonsBackground: "#374151",
+    darkDropownButtonsBorder: "#4b5563",
+    darkDropdownButtonsText: "#ffffff",
+    darkDropdownButtonsPlaceholderText: "#9ca3af",
+
+    darkDropdownOptionsBackground: "#374151",
+    darkDropdownOptionsHoverBackground: "#4b5563",
+    darkDropdownOptionsText: "#9ca3af",
 
   },
   boxShadow: {

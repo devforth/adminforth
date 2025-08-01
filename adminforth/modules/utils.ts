@@ -173,8 +173,11 @@ export function guessLabelFromName(name) {
 export const currentFileDir = (metaUrl) => {
   const __filename = fileURLToPath(metaUrl);
   let __dirname = path.dirname(__filename);
-  if (__dirname.endsWith('/dist/modules')) {
-    // in prod build we are in dist also, so make another back jump to go true sorces
+  
+  // Check for dist/modules in both Unix and Windows path formats
+  const normalizedDir = __dirname.replace(/\\/g, '/');
+  if (normalizedDir.endsWith('/dist/modules')) {
+    // in prod build we are in dist also, so make another back jump to go to sources
     __dirname = path.join(__dirname, '..');
   }
   return __dirname;
@@ -487,4 +490,13 @@ export class RAMLock {
       }
     }
   }
+}
+
+export function isProbablyUUIDColumn(column: { name: string; type?: string; sampleValue?: any }): boolean {
+  if (column.type?.toLowerCase() === 'uuid') return true;
+  if (typeof column.sampleValue === 'string') {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(column.sampleValue);
+  }
+
+  return false;
 }

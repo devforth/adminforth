@@ -240,12 +240,36 @@ import { Input } from '@/afcl'
   </template>
 </Input>
 ```
+
   </div>
   <div>
     ![AFCL Input](image-46.png)
   </div>
 </div>
 
+
+<div class="split-screen" >
+  <div >
+```js
+import { Input } from '@/afcl'
+import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
+```
+
+
+```html
+<Input type="text" class="w-full">
+  <template #rightIcon>
+    <IconSearchOutline class="w-5 h-5 text-gray-400"/>
+  </template>
+</Input>
+```
+
+
+  </div>
+  <div>
+    ![AFCL Input](inputRightIcon.png)
+  </div>
+</div>
 
 ## Tooltip
   
@@ -1701,4 +1725,41 @@ import { MixedChart } from '@/afcl'
     ![Mixed Chart](image-91.png)
   </div>
 </div>
+
+## Json Viever
+
+```ts
+import { JsonViever } from '@/afcl'
+```
+
+### Basic
+
+<div class="split-screen" >
+
+  <div>
+  ```html
+      <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
+  ```
+</div>
+  <div>
+    ![Mixed Chart](image-93.png)
+  </div>
+</div>
+
 

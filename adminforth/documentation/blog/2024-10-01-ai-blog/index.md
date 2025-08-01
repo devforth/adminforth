@@ -199,7 +199,7 @@ model ContentImage {
 Create a migration:
 
 ```bash
-npm run makemigration -- --name add-posts
+npm run makemigration -- --name add-posts ; npm run migrate:local
 ```
 
 

@@ -187,6 +187,12 @@ export interface AdminForthFieldComponents {
    * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
    */
   list?: AdminForthComponentDeclaration,
+
+  /**
+   * Filter component is used to redefine input field in filter view.
+   * Component accepts next properties: [record, column, resource, adminUser].
+   */
+  filter?: AdminForthComponentDeclaration,
 }
 
 
@@ -1051,15 +1057,18 @@ export interface AdminForthConfigForFrontend {
   usernameFieldName: string,
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
+  removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
   loginPromptHTML?: string,
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
+    panelHeader: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
   brandLogo?: string,
+  singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
   auth: any,
@@ -1075,7 +1084,11 @@ export interface AdminForthConfigForFrontend {
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
-  }
+  },
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[],  
 }
 
 export interface GetBaseConfigResponse {

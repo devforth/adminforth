@@ -1,7 +1,9 @@
 import express from 'express';
 import AdminForth from 'adminforth';
 import usersResource from "./resources/adminuser.js";
-
+import { fileURLToPath } from 'url';
+import path from 'path';
+ 
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
@@ -55,7 +57,7 @@ export const admin = new AdminForth({
   ],
 });
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const app = express();
   app.use(express.json());
 
