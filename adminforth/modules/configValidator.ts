@@ -679,18 +679,20 @@ export default class ConfigValidator implements IConfigValidator {
                   }
                 }
               } else if (col.foreignResource.polymorphicResources) {
-                // For polymorphic resources, check all possible target resources
+                let hasFieldInAnyResource = false;
                 for (const pr of col.foreignResource.polymorphicResources) {
                   if (pr.resourceId) {
                     const targetResource = this.inputConfig.resources.find((r) => r.resourceId === pr.resourceId || r.table === pr.resourceId);
                     if (targetResource) {
                       const hasField = targetResource.columns.some((targetCol) => targetCol.name === fieldName);
-                      if (!hasField) {
-                        const similar = suggestIfTypo(targetResource.columns.map((c) => c.name), fieldName);
-                        errors.push(`Resource "${res.resourceId}" column "${col.name}" foreignResource.searchableFields contains field "${fieldName}" which does not exist in polymorphic target resource "${pr.resourceId}". ${similar ? `Did you mean "${similar}"?` : ''}`);
+                      if (hasField) {
+                        hasFieldInAnyResource = true;
                       }
                     }
                   }
+                }      
+                if (!hasFieldInAnyResource) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" foreignResource.searchableFields contains field "${fieldName}" which does not exist in any of the polymorphic target resources`);
                 }
               }
             });

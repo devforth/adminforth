@@ -914,12 +914,24 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
                   ? AdminForthFilterOperators.LIKE 
                   : AdminForthFilterOperators.ILIKE;
+                const availableSearchFields = searchableFields.filter((fieldName) => {
+                  const fieldExists = targetResource.columns.some(col => col.name === fieldName);
+                  if (!fieldExists) {
+                    process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                  }
+                  return fieldExists;
+                });
 
-                const searchFilters = searchableFields.map((fieldName) => {
+                if (availableSearchFields.length === 0) {
+                  process.env.HEAVY_DEBUG && console.log(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                  resolve({ items: [] });
+                  return;
+                }
+                const searchFilters = availableSearchFields.map((fieldName) => {
                   const filter = {
                   field: fieldName,
                   operator: searchOperator,
-                  value: `%${search.trim()}%`,
+                  value: search.trim(),
                   };
                   return filter;
                 });

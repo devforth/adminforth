@@ -114,7 +114,23 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       const fieldObj = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field);
       if (!fieldObj) {
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), (filters as IAdminForthSingleFilter).field);
-        throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        
+        let isPolymorphicTarget = false;
+        if (global.adminforth?.config?.resources) {
+          isPolymorphicTarget = global.adminforth.config.resources.some(res => 
+            res.dataSourceColumns.some(col => 
+              col.foreignResource?.polymorphicResources?.some(pr => 
+                pr.resourceId === resource.resourceId
+              )
+            )
+          );
+        }
+        if (isPolymorphicTarget) {
+          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${(filters as IAdminForthSingleFilter).field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          return { ok: true, error: '' };
+        } else {
+          throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        }
       }
       // value normalization
       if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {

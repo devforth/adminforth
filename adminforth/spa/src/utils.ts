@@ -209,3 +209,188 @@ export function protectAgainstXSS(value: string) {
     } 
   });
 }
+
+export function isPolymorphicColumn(column: any): boolean {
+  return !!(column.foreignResource?.polymorphicResources && column.foreignResource.polymorphicResources.length > 0);
+}
+
+export function handleForeignResourcePagination(
+  column: any,
+  items: any[],
+  emptyResultsCount: number = 0,
+  isSearching: boolean = false
+): { hasMore: boolean; emptyResultsCount: number } {
+  const isPolymorphic = isPolymorphicColumn(column);
+  
+  if (isPolymorphic) {
+    if (isSearching) {
+      return {
+        hasMore: items.length > 0,
+        emptyResultsCount: 0
+      };
+    } else {
+      if (items.length === 0) {
+        const newEmptyCount = emptyResultsCount + 1;
+        return {
+          hasMore: newEmptyCount < 2, // Stop loading after 2 consecutive empty results
+          emptyResultsCount: newEmptyCount
+        };
+      } else {
+        return {
+          hasMore: true,
+          emptyResultsCount: 0
+        };
+      }
+    }
+  } else {
+    return {
+      hasMore: items.length === 100,
+      emptyResultsCount: 0
+    };
+  }
+}
+
+export async function loadMoreForeignOptions({
+  columnName,
+  searchTerm = '',
+  columns,
+  resourceId,
+  columnOptions,
+  columnLoadingState,
+  columnOffsets,
+  columnEmptyResultsCount
+}: {
+  columnName: string;
+  searchTerm?: string;
+  columns: any[];
+  resourceId: string;
+  columnOptions: any;
+  columnLoadingState: any;
+  columnOffsets: any;
+  columnEmptyResultsCount: any;
+}) {
+  const column = columns?.find(c => c.name === columnName);
+  if (!column || !column.foreignResource) return;
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading || !state.hasMore) return;
+  
+  state.loading = true;
+  
+  try {
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId,
+        column: columnName,
+        limit: 100,
+        offset: columnOffsets[columnName],
+        search: searchTerm,
+      },
+    });
+    
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
+    
+    if (!columnOptions.value) {
+      columnOptions.value = {};
+    }
+    if (!columnOptions.value[columnName]) {
+      columnOptions.value[columnName] = [];
+    }
+    columnOptions.value[columnName].push(...list.items);
+    
+    columnOffsets[columnName] += 100;
+    
+    const paginationResult = handleForeignResourcePagination(
+      column,
+      list.items,
+      columnEmptyResultsCount[columnName] || 0,
+      false // not searching
+    );
+    
+    columnEmptyResultsCount[columnName] = paginationResult.emptyResultsCount;
+    state.hasMore = paginationResult.hasMore;
+    
+  } catch (error) {
+    console.error('Error loading more options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
+
+export async function searchForeignOptions({
+  columnName,
+  searchTerm,
+  columns,
+  resourceId,
+  columnOptions,
+  columnLoadingState,
+  columnOffsets,
+  columnEmptyResultsCount
+}: {
+  columnName: string;
+  searchTerm: string;
+  columns: any[];
+  resourceId: string;
+  columnOptions: any;
+  columnLoadingState: any;
+  columnOffsets: any;
+  columnEmptyResultsCount: any;
+}) {
+  const column = columns?.find(c => c.name === columnName);
+
+  if (!column || !column.foreignResource || !column.foreignResource.searchableFields) {
+    return;
+  }
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading) return;
+  
+  state.loading = true;
+  
+  try {
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId,
+        column: columnName,
+        limit: 100,
+        offset: 0,
+        search: searchTerm,
+      },
+    });
+    
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
+    
+    if (!columnOptions.value) {
+      columnOptions.value = {};
+    }
+    columnOptions.value[columnName] = list.items;
+    columnOffsets[columnName] = 100;
+    
+    const paginationResult = handleForeignResourcePagination(
+      column,
+      list.items,
+      columnEmptyResultsCount[columnName] || 0,
+      true // is searching
+    );
+    
+    columnEmptyResultsCount[columnName] = paginationResult.emptyResultsCount;
+    state.hasMore = paginationResult.hasMore;
+
+  } catch (error) {
+    console.error('Error searching options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
