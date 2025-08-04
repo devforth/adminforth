@@ -52,6 +52,16 @@ export default {
   label: "Apartments", // label is defaulted to table name but you can change it
   recordLabel: (r: any) => `🏡 ${r.title}`,
   hooks: {
+    create: {
+      beforeSave: async({record}) => {
+        console.log("HELLO")
+        return {
+          ok: false, 
+          error: null,
+          newRecordId: 1234,
+        } 
+      },
+    },
     edit: {
       afterSave: async ({ record, adminUser, resource, adminforth }) => {
         //  if realtor id is set, recalculate total cost of all apartments
@@ -239,7 +249,7 @@ export default {
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
       editReadonly: true, // you can set field to be readonly on edit page
-      
+      required: false,
     },
     {
       name: "square_meter",
@@ -289,7 +299,7 @@ export default {
     },
     {
       name: "listed",
-      required: true, // will be required on create/edit
+      required: false, // will be required on create/edit
     },
     {
       name: 'realtor_id',

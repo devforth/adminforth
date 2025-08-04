@@ -1,214 +1,11 @@
 <template>
-  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100dvh-55px)] ">
+
   
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data" >
-        <div>
-          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ $t('Apartments') }}</h5>
-          <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
-        </div>
-        <BarChart
-          :data="apartsCountsByDaysChart"
-          :series="[{
-            name: $t('Added apartments'),
-            fieldName: 'count',
-            color: COLORS[0],
-          }]"
-          :options="{
-            chart: {
-              height: 130,
-            },
-            yaxis: {
-              stepSize: 1,
-              labels: { show: false },
-            },
-            grid: {
-              show: false,
-            }
-          }"
-        />
-      </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Top countries') }}</p>
-        <PieChart
-          :data="topCountries"
-          :options="{
-            chart: { type: 'pie', height: 240 },
-            legend: {
-              show: false,
-            },
-            dataLabels: {
-              enabled: true,
-              formatter: function (value, o) {
-                const countryISO = o.w.config.labels[o.seriesIndex];
-                return countryISO;
-              }
-            },
-          }"
-        />
-      </div>
-
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2" v-if="data">
-        <div class="grid grid-cols-2 py-3">
-          <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-green-400" :style="{color:COLORS[0]}">{{
-              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
-                data.totalListedPrice,
-              ) }}
-            </dd>
-          </dl>
-          <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Unlisted price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-red-500" :style="{color:COLORS[1]}">{{
-              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
-                data.totalUnlistedPrice,
-              ) }}
-            </dd>
-          </dl>
-        </div>
-
-        <BarChart
-          :data="listedVsUnlistedCountByDays"
-          :series="[{
-            name: $t('Listed Count'),
-            fieldName: 'listed',
-            color: COLORS[0],
-          },
-          {
-            name: $t('Unlisted Count'),
-            fieldName: 'unlisted',
-            color: COLORS[1],
-          }]"
-          :options="{
-            chart: {
-              height: 500,
-            },
-            xaxis: {
-              labels: { show: true },
-              stepSize: 1,  // since count is integer, otherwise axis will be float
-            },
-            yaxis: {
-              labels: { show: true }
-            },
-            grid: {
-              show: true,
-            },
-            plotOptions: {
-              bar: { 
-                horizontal: true, // by default bars are vertical
-              }
-            },
-          }"
-        />
-
-      </div>
-
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment by rooms') }}</p>
-        <PieChart
-          :data="apartsCountsByRooms"
-          :options="{
-            chart: { height: 350, type: 'donut' },
-            plotOptions: {
-              pie: {
-                donut: {
-                  labels: {
-                    total: {
-                      show: true,
-                      label: $t('Total square'),
-                      formatter: () => `${data.totalSquareMeters.toFixed(0)} m²`,
-                    },
-                  },
-                },
-              },
-            },
-          }"
-        />
-      </div>
-
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Unlisted vs Listed price' ) }}</p>
-
-        <AreaChart 
-          :data="listedVsUnlistedPriceByDays"
-          :series="[{
-            name: $t('Listed'),
-            fieldName: 'listedPrice',
-            color: COLORS[0],
-          },
-          {
-            name: $t('Unlisted'),
-            fieldName: 'unlistedPrice',
-            color: COLORS[1],
-          }]"
-          :options="{
-            chart: {
-              height: 250,
-            },
-            yaxis: {
-              labels: {
-                formatter: function (value) {
-                  return '$' + value;
-                }
-              }
-            },
-          }"
-        />
-      </div>
-
-    </div>
-
-      <!-- <div class="flex justify-center items-center p-80 bg-white">
-        <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
-          <Select
-  class="w-full"
-  :options="[
-    {label: 'Last 7 days', value: '7', records: 110},
-    {label: 'Last 30 days', value: '30', records: 320},
-    {label: 'Last 90 days', value: '90', records: 310},
-    {label: 'None', value: null}
-  ]"
-  v-model="selected"
->
-  <template #item="{option}">
-    <div>
-      <span>{{ option.label }}</span>
-      <span class="ml-2 opacity-50">{{ option.records }} records</span>
-    </div>
-  </template>
-  <template #selected-item="{option}">
-    <span>{{ option.label }} 💫</span>
-  </template>
-</Select>
-
-<Select
-  class="w-full"
-  :options="[
-    {label: 'Last 7 days', value: '7', records: 110},
-    {label: 'Last 30 days', value: '30', records: 320},
-    {label: 'Last 90 days', value: '90', records: 310},
-    {label: 'None', value: null}
-  ]"
-  v-model="selected"
->
-  <template #item="{option}">
-    <div>
-      <span>{{ option.label }}</span>
-      <span class="ml-2 opacity-50">{{ option.records }} records</span>
-    </div>
-  </template>
-  <template #selected-item="{option}">
-    <span>{{ option.label }} 💫</span>
-  </template>
-</Select>
-        </div>
-      </div> -->
-
-      <!-- <div class="bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 mt-4">
-      </div> -->
+  <div class="m-20">
+    <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -223,8 +20,13 @@ import Tooltip from '@/afcl/Tooltip.vue';
 import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
 import Checkbox from '@/afcl/Checkbox.vue';
 const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))
-
 import { Dropzone } from '@/afcl'
+// import Toggle from '@/afcl/Toggle.vue';
+// import BoolToggle from '@/controls/BoolToggle.vue'
+
+function toggleSwitchHandler(value){
+  console.log("toggleSwitched: ",value);
+}
 
 const files: Ref<File[]> = ref([])
 
