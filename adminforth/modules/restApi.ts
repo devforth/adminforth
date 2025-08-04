@@ -1119,7 +1119,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
-              return { error: response.error, ok: false };
+              return { error: response.error, ok: false, newRecordId: response.newRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
