@@ -744,6 +744,13 @@ interface AdminForthInputConfigCustomization {
    * Execution is done on admin app load. 
    */
   announcementBadge?: (user: AdminUser) => AnnouncementBadgeResponse,
+
+  /**
+   * Function to return custom badge in side bar for users. Can return text or html
+   * If function is not passed or returns null, badge will not be shown.
+   * Execution is done on admin app load. 
+   */
+  adminforthUserCleanupWarning?: (user: AdminUser) => AnnouncementBadgeResponse,
   
   /**
    * Custom panel components or array of components which will be displayed in the login form 
@@ -986,7 +993,6 @@ export interface AdminForthInputConfig {
        * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
        */
       rememberMeDays?: number,
-
 
       /**
        * Can be used to limit user access when subscribing from frontend to websocket topics.
