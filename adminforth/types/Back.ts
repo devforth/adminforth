@@ -1346,13 +1346,13 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
     },
     create?: {
       /**
-       * Should return ok: true to continue saving pipeline and allow creating record in database, and ok: false to interrupt pipeline and prevent record creation.
-       * If you need to show error on UI, set error: <error message> in response.
+       * Should return `ok: true` to continue saving pipeline and allow creating record in database, and `ok: false` to interrupt pipeline and prevent record creation.
+       * If you need to show error on UI, set `error: \<error message\>` in response.
        * 
        * Typical use-cases:
-       * - Create record by custom code (return  `{ ok: false, newRecordId: <id of created record from custom code>}`)
-       * - Validate record before saving to database and interrupt execution if validation failed (return `{ok: false, error: <validation error>}`), though `allowedActions.create` should be preferred in most cases
-       * - fill-in adminUser as creator of record (set record.<some field> = x; return {ok: true})
+       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
+       * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
       beforeSave?: Array<BeforeCreateSaveFunction>,
