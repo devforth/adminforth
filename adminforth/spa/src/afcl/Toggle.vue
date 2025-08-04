@@ -11,9 +11,9 @@
                 peer-focus:ring-lightToggleRing dark:peer-focus:ring-darkToggleRing rounded-full peer dark:bg-darkToggleBgUnactive 
                 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
                 peer-checked:after:border-lightToggleBorderActive after:content-[''] after:absolute after:top-[2px] 
-                after:start-[2px] after:bg-lightToggleCircle dark:after:bg-darkToggleCircle after:border-lightToggleBorderUnactive dark:after:border-darkToggleBorderUnactive after:border after:rounded-full 
+                after:start-[2px] after:bg-lightToggleCircleUnactive peer-checked:after:bg-lightToggleCircleActive dark:after:bg-darkToggleCircleUnactive after:border-lightToggleBorderUnactive dark:after:border-darkToggleBorderUnactive after:border after:rounded-full 
                 after:h-5 after:w-5 after:transition-all dark:border-darkToggleBorderUnactive peer-checked:bg-lightToggleBgActive 
-                dark:peer-checked:bg-darkToggleBgActive dark:peer-checked:after:border-darkToggleBorderActive">
+                dark:peer-checked:bg-darkToggleBgActive dark:peer-checked:after:border-darkToggleBorderActive dark:peer-checked:after:bg-darkToggleCircleActive">
             </div>
         <label :for="id" class="cursor-pointer ms-2 text-sm font-medium text-lightToggleText dark:text-darkToggleText">
             <slot></slot>
