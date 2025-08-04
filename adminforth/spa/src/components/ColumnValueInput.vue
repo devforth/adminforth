@@ -87,7 +87,7 @@
     <textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
       ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="bg-lightColumnValueInputBackground border border-lightColumnValueInputBorder text-lightColumnValueInputText placeholder-lightColumnValueInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkColumnValueInputBackground dark:border-darkColumnValueInputBorder dark:placeholder-darkColumnValueInputPlaceholderText dark:text-darkColumnValueInputText dark:border-darkColumnValueInputBorder focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -96,7 +96,7 @@
     <textarea
       v-else-if="['json'].includes(type || column.type)"
       ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="bg-lightColumnValueInputBackground border border-lightColumnValueInputBorder text-lightColumnValueInputText placeholder-lightColumnValueInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkColumnValueInputBackground dark:border-darkColumnValueInputBorder dark:placeholder-darkColumnValueInputPlaceholderText dark:text-darkColumnValueInputText dark:border-darkColumnValueInputBorder focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"

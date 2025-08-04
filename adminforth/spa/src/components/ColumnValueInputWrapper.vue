@@ -26,7 +26,7 @@
         v-if="!column.editReadonly"
         type="button"
       @click="addArrayItem"
-      class="flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+      class="flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightInputText focus:outline-none bg-lightInputBackground rounded border border-lightInputBorder hover:bg-lightInputBackgroundHover hover:text-lightInputTextHover hover:border-lightInputBorderHover focus:z-10 focus:ring-4 focus:ring-lightInputFocusRing dark:focus:ring-darkInputFocusRing dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder dark:hover:darkInputTextHover dark:hover:bg-darkInputHover"
       :class="{'mt-2': currentValues[column.name].length}"
     >
       <IconPlusOutline class="w-4 h-4 me-2"/>
