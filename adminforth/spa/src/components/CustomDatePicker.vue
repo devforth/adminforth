@@ -2,15 +2,15 @@
   <div>
     <div class="grid w-40 gap-4 mb-2">
       <div>
-        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
+        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-lightInputText dark:text-darkInputText">{{ label }}</label>
 
         <div class="relative" :class="{hidden: column.type === 'time'}">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-            <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
+            <IconCalendar class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor"/>
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+                 class="bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText focus:ring-lightInputFocusRing focus:border-lightPrimary dark:focus:ring-darkInputFocusRing dark:focus:border-darkPrimary"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -22,11 +22,11 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
+              <IconTime class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor bg-lightInputBackground dark:bg-darkInputBackground"/>
             </div>
 
             <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
-                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+                   class="bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText focus:ring-lightInputFocusRing focus:border-lightPrimary dark:focus:ring-darkInputFocusRing dark:focus:border-darkPrimary"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
