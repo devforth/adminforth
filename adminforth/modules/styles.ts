@@ -82,7 +82,7 @@ export const styles = () => ({
     lightToggleCircleActive: "#F9FAFB",
     lightToggleRing: "alias:lightPrimary lighten",
     lightToggleText: "black", 
-    lightToggleBorderUnactive: "alias:lightPrimary lighten",
+    lightToggleBorderUnactive: "#E5E7EB",
     lightToggleBorderActive: "alias:lightPrimary darken",
 
     // colors for dark theme
