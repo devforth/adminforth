@@ -7,7 +7,7 @@
             :checked="props.modelValue"
             @change="$emit('update:modelValue', $event.target.checked)"
             >   
-            <div class="relative w-11 h-6 bg-lightToggleBgUnactive peer-focus:outline-none peer-focus:ring-4 
+            <div class="relative min-w-11 h-6 bg-lightToggleBgUnactive peer-focus:outline-none peer-focus:ring-4 
                 peer-focus:ring-lightToggleRing dark:peer-focus:ring-darkToggleRing rounded-full peer dark:bg-darkToggleBgUnactive 
                 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
                 peer-checked:after:border-lightToggleBorderActive after:content-[''] after:absolute after:top-[2px] 
@@ -15,7 +15,7 @@
                 after:h-5 after:w-5 after:transition-all dark:border-darkToggleBorderUnactive peer-checked:bg-lightToggleBgActive 
                 dark:peer-checked:bg-darkToggleBgActive dark:peer-checked:after:border-darkToggleBorderActive dark:peer-checked:after:bg-darkToggleCircleActive">
             </div>
-        <label :for="id" class="cursor-pointer ms-2 text-sm font-medium text-lightToggleText dark:text-darkToggleText">
+        <label :for="id" class="cursor-pointer ms-3 text-sm font-medium text-lightToggleText dark:text-darkToggleText">
             <slot></slot>
         </label>
     </label>
