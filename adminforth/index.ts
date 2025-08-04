@@ -511,7 +511,7 @@ class AdminForth implements IAdminForth {
   async createResourceRecord(
     { resource, record, adminUser, extra }: 
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }> {
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }> {
 
     const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
@@ -528,8 +528,18 @@ class AdminForth implements IAdminForth {
         adminforth: this,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId))) {
+        throw new Error(
+          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any }.\n` +
+          `Note: Return { ok: false, error: null, newRecordId } to stop creation and redirect to an existing record.`
+        );
+      }
+      if (resp.ok === false && !resp.error) {
+        const { error, ok, newRecordId } = resp;
+        return {
+          error: error ?? 'Operation aborted by hook',
+          newRecordId: newRecordId
+        };
       }
       if (resp.error) {
         return { error: resp.error };
@@ -605,8 +615,11 @@ class AdminForth implements IAdminForth {
         adminforth: this,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      if (!resp || typeof resp.ok !== 'boolean') {
+        throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+      }
+      if (resp.ok === false && !resp.error) {
+        return { error: resp.error ?? 'Operation aborted by hook' };
       }
       if (resp.error) {
         return { error: resp.error };
