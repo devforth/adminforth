@@ -161,6 +161,7 @@ import { getCustomComponent } from '@/utils';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
 import Spinner from '@/afcl/Spinner.vue';
+import debounce from 'debounce';
 
 const filtersStore = useFiltersStore();
 const { t } = useI18n();
