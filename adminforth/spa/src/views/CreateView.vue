@@ -154,7 +154,7 @@ async function saveRecord() {
       record: record.value,
     },
   });
-  if (response?.error == true) {
+  if (response?.error && response?.error !== 'Operation aborted by hook') {
     showErrorTost(response.error);
   }
   saving.value = false;
