@@ -336,7 +336,7 @@ export interface IAdminForth {
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }>;
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
     params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
@@ -474,7 +474,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -525,7 +525,7 @@ export type BeforeEditSaveFunction = (params: {
   oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null}>;
 
 
 
@@ -535,7 +535,7 @@ export type BeforeCreateSaveFunction = (params: {
   record: any, 
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
 
 export type AfterCreateSaveFunction = (params: {
   resource: AdminForthResource, 
