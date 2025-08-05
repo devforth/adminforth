@@ -1060,7 +1060,7 @@ export interface AdminForthConfigForFrontend {
   removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
-  loginPromptHTML?: string,
+  loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
