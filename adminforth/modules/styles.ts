@@ -62,6 +62,14 @@ export const styles = () => ({
     lightDropdownOptionsHoverBackground: "#F3F4F6", //dropdown menu hover background color
     lightDropdownPicked:"#F3F4F6", //dropdown ,enu picked option
     lightDropdownOptionsText: "#111827", //dropdown menu hover background color
+    
+    lightDropdownMultipleSelectBackground: "alias:lightPrimaryOpacity", //if select multiple, selected options background 
+    lightDropdownMultipleSelectText: "alias:lightPrimary", // text color
+    lightDropdownMultipleSelectIcon: "#9CA3AF", // delete select icon
+    lightDropdownMultipleSelectIconHover: "#6B7280", // delete select icon color
+    lightDropdownMultipleSelectIconFocus: "#6B7280", // delete select icon focus 
+    lightDropdownMultipleSelectIconFocusBackground: "#F3F4F6", // delete select icon focus background
+
 
     lightCheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",     //checkbox unchecked state bg
     lightCheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
@@ -82,16 +90,19 @@ export const styles = () => ({
     lightColumnValueInputPlaceholderText: "#6B7280", //placeholder text color
     lightColumnValueInputText: "#111827", //text color 
     lightColumnValueInputBorder: "#D1D5DB", //border color 
+    lightColumnValueInputIcons: "#9CA3AF", //icons next to the input
 
     lightInputBackground: "#f9fafb",  // input background
     lightInputPlaceholderText: "#6B7280", //placeholder text color
     lightInputText: "#111827", //text color 
     lightInputBorder: "#D1D5DB", //border color 
-    lightInputBackgroundHover: "#F3F4F6",
-    lightInputTextHover: "alias:lightPrimary",
-    lightInputBorderHover: "alias:lightInputBorder darken",
-    lightInputFocusRing: "#F3F4F6",
-    lightInputIconColor: "#6B7280",
+    lightInputBackgroundHover: "#F3F4F6", //hover
+    lightInputTextHover: "alias:lightPrimary", //text hover
+    lightInputBorderHover: "alias:lightInputBorder darken", //border hover
+    lightInputFocusRing: "#F3F4F6", //focus ring
+    lightInputIconColor: "#6B7280", //input icon
+    lightInputErrorColor: "#EF4444", //color of icon and text, when error shown
+    lightRequiredIconColor: "#9CA3AF", //requires icon color
 
 
     // colors for dark theme
@@ -147,6 +158,13 @@ export const styles = () => ({
     darkDropdownPicked:"#212a40",
     darkDropdownOptionsText: "alias:darkListTableText",
 
+    darkDropdownMultipleSelectBackground: "alias:darkPrimaryOpacity",
+    darkDropdownMultipleSelectText: "alias:darkPrimary",
+    darkDropdownMultipleSelectIcon: "#9CA3AF",
+    darkDropdownMultipleSelectIconHover: "#6B7280",
+    darkDropdownMultipleSelectIconFocus: "#6B7280",
+    darkDropdownMultipleSelectIconFocusBackground: "#F3F4F6",
+
     darkCheckboxBgUnchecked: "alias:darkPrimaryContrast lighten",   
     darkCheckboxBgChecked: "alias:darkPrimary",      
     darkCheckboxIconColor: "alias:darkPrimaryContrast lighten",    
@@ -166,6 +184,8 @@ export const styles = () => ({
     darkColumnValueInputPlaceholderText: "#9CA3AF",
     darkColumnValueInputText: "#FFFFFF",
     darkColumnValueInputBorder: "#4b5563",
+    darkColumnValueInputIcons: "#9CA3AF",
+
 
     darkInputBackground: "#374151",
     darkInputPlaceholderText: "#9CA3AF",
@@ -176,6 +196,8 @@ export const styles = () => ({
     darkInputBorderHover: "alias:darkInputBorder darken",
     darkInputFocusRing: "#374151",
     darkInputIconColor: "#9CA3AF",
+    darkInputErrorColor: "#F87171",
+    darkRequiredIconColor: "#EF4444",
 
 
   },

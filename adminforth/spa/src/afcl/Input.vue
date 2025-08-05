@@ -3,7 +3,7 @@
   <div class="afcl-input-wrapper flex z-0 relative" :class="{'opacity-50' : readonly}">
     <span
         v-if="$slots.prefix || prefix"
-        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-s-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder">
       <slot name="prefix">{{ prefix }}</slot>
     </span>
 
@@ -26,7 +26,7 @@
     </div>
     <span
         v-if="$slots.suffix || suffix"
-        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-e-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600 ">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-e-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder ">
       <slot name="suffix">{{ suffix }}</slot>
     </span>
     

@@ -29,7 +29,7 @@
               <Tooltip v-if="column.required[mode]">
 
                 <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                  :class="(columnError(column) && validating) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'"
+                  :class="(columnError(column) && validating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
                 />
 
                 <template #tooltip>
@@ -55,7 +55,7 @@
               @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
               :readonly="readonlyColumns?.includes(column.name)"
             />
-            <div v-if="columnError(column) && validating" class="mt-1 text-xs text-red-500 dark:text-red-400">{{ columnError(column) }}</div>
+            <div v-if="columnError(column) && validating" class="mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnError(column) }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>

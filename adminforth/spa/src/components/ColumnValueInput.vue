@@ -123,7 +123,7 @@
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
       @click="$emit('delete')"
     >
-      <IconTrashBinSolid class="w-6 h-6 text-gray-400"/>
+      <IconTrashBinSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons"/>
     </button>
     <button
       v-else-if="column.masked"
@@ -131,8 +131,8 @@
       @click="$emit('update:unmasked')"
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
     >
-      <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]"/>
-      <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+      <IconEyeSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons"  v-if="!unmasked[column.name]"/>
+      <IconEyeSlashSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons" v-else />
     </button>
   </div>
 </template>
