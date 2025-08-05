@@ -159,16 +159,14 @@ const csscolors = {
 }
 
 
-export async function getLoginPromptHTML(prompt) {
-  if(typeof prompt === 'function') {
-    const result = await prompt();
-    if(result !== undefined){
-      return result;
+export async function getLoginPromptHTML(loginPrompt: string | Function) {
+  if(typeof loginPrompt === 'function') {
+    loginPrompt = await loginPrompt();
+    if (!loginPrompt) {
+      return null;
     }
-    return "";
-  } else {
-    return prompt;
   }
+  return loginPrompt;
 }
 
 export function guessLabelFromName(name) {
