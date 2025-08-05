@@ -78,7 +78,12 @@ export const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
     demoCredentials: "adminforth:adminforth",  // never use it for production
-    loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
+    loginPromptHTML: async () => { 
+      const adminforthUserExists = await admin.resource("users").count(Filters.EQ('email', 'adminforth')) > 0;
+      if (adminforthUserExists) {
+        return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
+      }
+    },
     // loginBackgroundImage: '@@/pho.jpg',
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
@@ -202,7 +207,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
     },
     {
       id: 'mysql',
