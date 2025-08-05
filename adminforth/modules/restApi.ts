@@ -13,7 +13,7 @@ import {
   IAdminForthAndOrFilter,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
@@ -210,7 +210,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        let loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
         return {
           brandName: this.adminforth.config.customization.brandName,
@@ -229,17 +229,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
     });
 
-    async function getLoginPromptHTML(prompt) {
-        if(typeof prompt === 'function') {
-          const result = await prompt();
-          if(result !== undefined){
-            return result;
-          }
-          return "";
-        } else {
-          return prompt;
-        }
-    }
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
@@ -303,7 +292,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-        let loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
 
         const publicPart = {
