@@ -157,69 +157,79 @@ export const admin = new AdminForth({
           ListTableHeading: '#2fe0c9',
           Form:"#fffa94",
 
-          List: "#FFFFFF", // list view background
-          ListTable: "#FFFFFF", // list view table background
-          // ListTableHeading: "#f5f5f8", // list view table heading
-          ListTableHeadingText: "alias:lightListTableHeading inverse", // list view table heading text
-          ListTableText: "#alias:lightListTableHeadingText", // list view table text
-          ListTableRowHover: "rgb(249 250 251)", // list view row hover
-          ListBreadcrumbsText: "#666666", // list view breadcrumbs text
-          ListBorder: "#DDDDDD", // list view  rows border
+          List: "#FFFFFF", 
+          ListTable: "#FFFFFF",
+          // ListTableHeading: "#f5f5f8", 
+          ListTableHeadingText: "alias:lightListTableHeading inverse",
+          ListTableText: "#alias:lightListTableHeadingText",
+          ListTableRowHover: "rgb(249 250 251)",
+          ListBreadcrumbsText: "#666666",
+          ListBorder: "#DDDDDD", 
 
-          // Form: "alias:lightListTableHeading lighten", // show view background
-          Border: "#F5F5F5", // show view rows border
-          FormHeading: "alias:lightListTableHeading", // show view heading
+          //Form: "alias:lightListTableHeading lighten", 
+          Border: "#F5F5F5", 
+          FormHeading: "alias:lightListTableHeading", 
           FormFieldTextColor: "alias:lightListTableText",
 
-          Buttons: "#FFFFFF", // button background
-          ButtonsBorder: "#DDDDDD", // button border
-          ButtonsText: "#111827", // button text
-          ButtonsHover: "#f3f4f6", // button hover
-          ButtonsBorderHover: "#f3f4f6", // button border hover  
-          ButtonsActive: "#f3f4f6", // button active
-          ButtonsDisabled: "#f3f4f6", // button disabled
-          ButtonsDisabledText: "#f3f4f6", // button disabled text
-          ButtonsIcon: "#333333", // button icon
+          Buttons: "#FFFFFF", 
+          ButtonsBorder: "#DDDDDD", 
+          ButtonsText: "#111827",
+          ButtonsHover: "#f3f4f6",
+          ButtonsBorderHover: "#f3f4f6",  
+          ButtonsActive: "#f3f4f6", 
+          ButtonsDisabled: "#f3f4f6", 
+          ButtonsDisabledText: "#f3f4f6", 
+          ButtonsIcon: "#333333",
           
-          DropdownButtonsBackground: "alias:lightForm lighten", // dropdown button/input background color
-          DropownButtonsBorder: "alias:lightForm darken", //border color
-          DropdownButtonsText: "alias:lightFormFieldTextColor", //text color
-          DropdownButtonsPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", //placeholder text color
+          DropdownButtonsBackground: "alias:lightForm lighten", 
+          DropownButtonsBorder: "alias:lightForm darken",
+          DropdownButtonsText: "alias:lightFormFieldTextColor",
+          DropdownButtonsPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", 
 
-          DropdownOptionsBackground: "alias:lightForm lighten", //dropdown menu background color
-          DropdownOptionsHoverBackground: "#alias:lightForm darken", //dropdown menu hover background color
-          DropdownPicked:"alias:lightDropdownOptionsHoverBackground opacity:0.5", //dropdown ,enu picked option
-          DropdownOptionsText: "alias:lightFormFieldTextColor", //dropdown menu hover background color
+          DropdownOptionsBackground: "alias:lightForm lighten",
+          DropdownOptionsHoverBackground: "#alias:lightForm darken",
+          DropdownPicked:"alias:lightDropdownOptionsHoverBackground opacity:0.5", 
+          DropdownOptionsText: "alias:lightFormFieldTextColor", 
 
-          CheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",     //checkbox unchecked state bg
-          CheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
-          CheckboxIconColor: "alias:lightPrimaryContrast lighten",       //checked icon color
-          CheckboxBorderColor: "alias:lightPrimary darken",  //border color
-          FocusRing: "alias:lightPrimary lighten", //focus ring color
-          TextLabel: "black", //text color of checkbox label
+          DropdownMultipleSelectBackground: "alias:lightDropdownOptionsBackground opacity:0.8",
+          DropdownMultipleSelectText: "alias:lightDropdownOptionsText lighten",
+          DropdownMultipleSelectIcon: "alias:lightPrimary",
+          DropdownMultipleSelectIconHover: "alias:lightPrimary darken",
+          DropdownMultipleSelectIconFocus: "alias:lightPrimary darken",
+          DropdownMultipleSelectIconFocusBackground: "alias:lightPrimary opacity:0.1",
 
-          ToggleBgUnactive: "alias:lightPrimaryContrast darken", //toggle unactive state background
-          ToggleBgActive: "alias:lightPrimary darken", //toggle active state background
-          ToggleCircle: "alias:lightPrimaryContrast lighten", //toggle circle color
-          ToggleRing: "alias:lightPrimary lighten", // toggle ring color
-          ToggleText: "black",  // color of text next to toggle
-          ToggleBorderUnactive: "alias:lightPrimary lighten", // unactive state border
-          ToggleBorderActive: "alias:lightPrimary darken", // active state border
+          CheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",
+          CheckboxBgChecked: "alias:lightPrimary",
+          CheckboxIconColor: "alias:lightPrimaryContrast lighten", 
+          CheckboxBorderColor: "alias:lightPrimary darken", 
+          FocusRing: "alias:lightPrimary lighten",
+          TextLabel: "black",
 
-          ColumnValueInputBackground: "alias:lightForm lighten",  //input column value input background
-          ColumnValueInputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", //placeholder text color
-          ColumnValueInputText: "alias:lightFormFieldTextColor", //text color 
-          ColumnValueInputBorder: "alias:lightForm darken", //border color 
+          ToggleBgUnactive: "alias:lightPrimaryContrast darken",
+          ToggleBgActive: "alias:lightPrimary darken",
+          ToggleCircle: "alias:lightPrimaryContrast lighten",
+          ToggleRing: "alias:lightPrimary lighten",
+          ToggleText: "black",
+          ToggleBorderUnactive: "alias:lightPrimary lighten", 
+          ToggleBorderActive: "alias:lightPrimary darken", 
 
-          InputBackground: "alias:lightForm lighten",  // input background
-          InputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", //placeholder text color
-          InputText: "alias:lightFormFieldTextColor", //text color 
-          InputBorder: "alias:lightForm darken", //border color 
+          ColumnValueInputBackground: "alias:lightForm lighten", 
+          ColumnValueInputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", 
+          ColumnValueInputText: "alias:lightFormFieldTextColor",
+          ColumnValueInputBorder: "alias:lightForm darken",
+          ColumnValueInputIcons: "alias:lightPrimary",
+
+          InputBackground: "alias:lightForm lighten",
+          InputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6",
+          InputText: "alias:lightFormFieldTextColor",
+          InputBorder: "alias:lightForm darken",
           InputBackgroundHover: "alias:lightInputBackground darken",
           InputTextHover: "alias:lightInputText lighten",
           InputBorderHover: "alias:lightInputBorder darken",
           InputFocusRing: "alias:lightInputBorderHover opacity:0.4",
           InputIconColor: "alias:lightPrimary opacity:0.8",
+          InputErrorColor: "#DC2626",
+          RequiredIconColor: "alias:lightPrimary",
         },
         dark: {
           primary: '#bd1a76',
@@ -239,7 +249,7 @@ export const admin = new AdminForth({
           FormFieldTextColor: "alias:darkListTableText",
 
           DropdownButtonsBackground: "alias:darkForm darken",
-          DropownButtonsBorder: "alias:darkForm darken", 
+          DropownButtonsBorder: "alias:darkForm lighten", 
           DropdownButtonsText: "alias:darkListTableText",
           DropdownButtonsPlaceholderText: "alias:darkListTableText opacity:0.6",
 
@@ -247,6 +257,13 @@ export const admin = new AdminForth({
           DropdownOptionsHoverBackground: "#alias:darkForm darken",
           DropdownPicked:"alias:darkDropdownOptionsHoverBackground opacity:0.5",
           DropdownOptionsText: "alias:darkListTableText",
+
+          DropdownMultipleSelectBackground: "alias:darkDropdownOptionsBackground opacity:0.8",
+          DropdownMultipleSelectText: "alias:darkDropdownOptionsText lighten",
+          DropdownMultipleSelectIcon: "alias:darkPrimary",
+          DropdownMultipleSelectIconHover: "alias:darkPrimary darken",
+          DropdownMultipleSelectIconFocus: "alias:darkPrimary darken",
+          DropdownMultipleSelectIconFocusBackground: "alias:darkPrimary opacity:0.1",
 
           CheckboxBgUnchecked: "alias:darkPrimaryContrast lighten",   
           CheckboxBgChecked: "alias:darkPrimary",      
@@ -267,16 +284,19 @@ export const admin = new AdminForth({
           ColumnValueInputPlaceholderText: "alias:darkFormFieldTextColor opacity:0.6",
           ColumnValueInputText: "alias:darkFormFieldTextColor",
           ColumnValueInputBorder: "alias:darkForm darken",
+          ColumnValueInputIcons: "alias:darkPrimary",
 
           InputBackground: "alias:darkForm darken",
           InputPlaceholderText: "alias:darkFormFieldTextColor opacity:0.6",
           InputText: "alias:darkFormFieldTextColor",
-          InputBorder: "alias:darkForm darken",
+          InputBorder: "alias:darkForm lighten",
           InputHover: "alias:darkInputBackground darken",
           InputTextHover: "alias:darkInputText darken",
           InputBorderHover: "alias:darkInputBorder darken",
           InputFocusRing: "alias:darkInputBorderHover opacity:0.4",
           InputIconColor: "alias:darkPrimary opacity:0.8",
+          InputErrorColor: "#DC2626",
+          RequiredIconColor: "alias:darkPrimary",
         }
       }
     },

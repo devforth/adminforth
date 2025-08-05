@@ -19,7 +19,7 @@
         "
       />
 
-      <div v-if="!multiple && selectedItems.length" class="absolute pointer-events-none inset-y-0 left-2 flex items-center pr-2 px-1">
+      <div v-if="!multiple && selectedItems.length" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText absolute pointer-events-none inset-y-0 left-2 flex items-center pr-2 px-1">
         <slot 
           name="selected-item" 
           :option="selectedItems[0]"
@@ -88,12 +88,12 @@
       <template v-for="item in selectedItems" :key="`afcl-select-${item.value}`">
         <slot name="selected-item" :item="item"></slot>
         <div v-if="!$slots['selected-item']"
-          class="bg-lightPrimaryOpacity text-lightPrimary text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkPrimaryOpacity dark:text-darkPrimary">
+          class="bg-lightDropdownMultipleSelectBackground text-lightDropdownMultipleSelectText text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkDropdownMultipleSelectBackground dark:text-darkDropdownMultipleSelectText">
           <span>{{ item.label }}</span>
           <button
             type="button"
             @click="toogleItem(item)"
-            class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 focus:bg-gray-100"
+            class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-lightDropdownMultipleSelectIcon hover:text-lightDropdownMultipleSelectIconHover dark:text-darkDropdownMultipleSelectIcon dark:hover:text-darkDropdownMultipleSelectIconHover focus:outline-none focus:text-lightDropdownMultipleSelectIconFocus focus:bg-lightDropdownMultipleSelectIconFocusBackground dark:focus:text-darkDropdownMultipleSelectIconFocus dark:focus:bg-darkDropdownMultipleSelectIconFocusBackground"
           >
             <span class="sr-only">{{ $t('Remove item') }}</span>
             <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
