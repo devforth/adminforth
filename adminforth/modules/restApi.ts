@@ -13,7 +13,7 @@ import {
   IAdminForthAndOrFilter,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
@@ -210,6 +210,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+
         return {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -218,7 +220,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
@@ -230,7 +232,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
     });
 
-    
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
@@ -293,6 +294,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
+        
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -302,7 +306,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
