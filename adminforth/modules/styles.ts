@@ -123,6 +123,14 @@ export const styles = () => ({
     lightDialogCloseButtonHoverBackground: "#E5E7EB",
     lightDialogBodyText: "#374151",
 
+    lightDropzoneBackground: "#F9FAFB",
+    lightDropzoneBackgroundHover: "#F3F4F6",
+    lightDropzoneBorder: "#D1D5DB",
+    lightDropzoneBorderHover: "#9CA3AF",
+    lightDropzoneBorderDragging: "#2563EB",
+    lightDropzoneBackgroundDragging: "#EFF6FF",
+    lightDropzoneIcon: "#6B7280",
+    lightDropzoneText: "#6B7280",
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -237,6 +245,14 @@ export const styles = () => ({
     darkDialogCloseButtonHoverBackground: "#4B5563",
     darkDialogBodyText: "#9CA3AF",
 
+    darkDropzoneBackground: "#1F2937",
+    darkDropzoneBackgroundHover: "#4B5563",
+    darkDropzoneBackgroundDragging: "#1E40AF",
+    darkDropzoneBorder: "#4B5563",
+    darkDropzoneBorderHover: "#6B7280",
+    darkDropzoneBorderDragging: "#60A5FA",
+    darkDropzoneIcon: "#9CA3AF",
+    darkDropzoneText: "#9CA3AF",
 
   },
   boxShadow: {
