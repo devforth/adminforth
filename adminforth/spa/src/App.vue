@@ -87,14 +87,14 @@
           </span>
         </div>
 
-        <ul class="space-y-2 font-medium">
+        <ul class="af-sidebar-container space-y-2 font-medium">
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
             ">{{ item.label }}</div>
-            <li v-else-if="item.children" class="  ">
-              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+            <li v-else-if="item.children" class="af-sidebar-expand-container">
+              <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
@@ -124,13 +124,13 @@
 
               <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                  <li>
+                  <li class="af-sidebar-menu-link">
                       <MenuLink :item="child" isChild="true" @click="hideSidebar"/>
                     </li>
                 </template>
             </ul>
         </li>
-        <li v-else>
+        <li v-else class="af-sidebar-menu-link">
           <MenuLink :item="item" @click="hideSidebar"/>
         </li>
         </template>
