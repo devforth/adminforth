@@ -104,6 +104,17 @@ export const styles = () => ({
     lightInputErrorColor: "#EF4444", //color of icon and text, when error shown
     lightRequiredIconColor: "#9CA3AF", //requires icon color
 
+    lightTooltipBackground: "#111827",
+    lightTooltipText: "#FFFFFF",
+
+    lightVerticalTabsText: "#6B7280",
+    lightVerticalTabsTextHover: "#374151",
+    lightVerticalTabsBackground: "#F9FAFB",
+    lightVerticalTabsBackgroundHover: "#F3F4F6",
+    lightVerticalTabsTextActive: "alias:lightPrimaryContrast",
+    lightVerticalTabsBackgroundActive: "alias:lightPrimary",
+    lightVerticalTabsSlotText: "#6B7280 ",
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -198,6 +209,17 @@ export const styles = () => ({
     darkInputIconColor: "#9CA3AF",
     darkInputErrorColor: "#F87171",
     darkRequiredIconColor: "#EF4444",
+
+    darkTooltipBackground: "#374151",
+    darkTooltipText: "#FFFFFF",
+
+    darkVerticalTabsText: "#9CA3AF",
+    darkVerticalTabsTextHover: "#FFFFFF",
+    darkVerticalTabsBackground: "#1F2937",
+    darkVerticalTabsBackgroundHover: "#374151",
+    darkVerticalTabsTextActive: "alias:darkPrimaryContrast",
+    darkVerticalTabsBackgroundActive: "alias:darkPrimary",
+    darkVerticalTabsSlotText: "#9CA3AF ",
 
 
   },
