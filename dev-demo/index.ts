@@ -276,6 +276,10 @@ export const admin = new AdminForth({
           ActivePaginationButtonBackground: "alias:lightPrimary",
           ActivePaginationButtonText: "alias:lightPrimaryContrast",
 
+          ProgressBarUnfilledColor: "alias:lightHtml darken",
+          ProgressBarFilledColor: "alias:lightPrimary opacity:0.5",
+          ProgressBarText: "alias:lightHtml inverse",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -388,6 +392,10 @@ export const admin = new AdminForth({
           UnactivePaginationButtonHoverText: "alias:darkUnactivePaginationButtonText lighten",
           ActivePaginationButtonBackground: "alias:darkPrimary",
           ActivePaginationButtonText: "alias:darkPrimaryContrast",
+
+          ProgressBarUnfilledColor: "alias:darkHtml lighten",
+          ProgressBarFilledColor: "alias:darkPrimary opacity:0.5",
+          ProgressBarText: "alias:darkHtml inverse",
         }
       }
     },
