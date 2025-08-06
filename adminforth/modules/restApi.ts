@@ -227,6 +227,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
@@ -234,6 +235,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
       },
     });
@@ -308,10 +311,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
           loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
 
         const loggedInPart = {
@@ -844,7 +850,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_foreign_data',
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-        const { resourceId, column } = body;
+        const { resourceId, column, search } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -913,6 +919,46 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 } else {
                   // wrong filter
                   throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+                }
+              }
+
+              if (search && search.trim() && columnConfig.foreignResource.searchableFields) {
+                const searchableFields = Array.isArray(columnConfig.foreignResource.searchableFields) 
+                  ? columnConfig.foreignResource.searchableFields 
+                  : [columnConfig.foreignResource.searchableFields];
+
+                const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
+                  ? AdminForthFilterOperators.LIKE 
+                  : AdminForthFilterOperators.ILIKE;
+                const availableSearchFields = searchableFields.filter((fieldName) => {
+                  const fieldExists = targetResource.columns.some(col => col.name === fieldName);
+                  if (!fieldExists) {
+                    process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                  }
+                  return fieldExists;
+                });
+
+                if (availableSearchFields.length === 0) {
+                  process.env.HEAVY_DEBUG && console.log(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                  resolve({ items: [] });
+                  return;
+                }
+                const searchFilters = availableSearchFields.map((fieldName) => {
+                  const filter = {
+                  field: fieldName,
+                  operator: searchOperator,
+                  value: search.trim(),
+                  };
+                  return filter;
+                });
+
+                if (searchFilters.length > 1) {
+                  normalizedFilters.subFilters.push({
+                    operator: AdminForthFilterOperators.OR,
+                    subFilters: searchFilters,
+                  });
+                } else if (searchFilters.length === 1) {
+                  normalizedFilters.subFilters.push(searchFilters[0]);
                 }
               }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
@@ -1084,7 +1130,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
-              return { error: response.error, ok: false };
+              return { error: response.error, ok: false, newRecordId: response.newRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 

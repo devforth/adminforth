@@ -19,12 +19,26 @@
       ref="input"
       class="w-full min-w-24"
       :options="columnOptions[column.name] || []"
+      :searchDisabled="!column.foreignResource.searchableFields"
+      @scroll-near-end="loadMoreOptions && loadMoreOptions(column.name)"
+      @search="(searchTerm) => {
+        if (column.foreignResource.searchableFields && onSearchInput && onSearchInput[column.name]) {
+          onSearchInput[column.name](searchTerm);
+        }
+      }"
       teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
-    />
+    >
+      <template #extra-item v-if="columnLoadingState && columnLoadingState[column.name]?.loading">
+        <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+          <Spinner class="w-4 h-4" />
+          {{ $t('Loading...') }}
+        </div>
+      </template>
+    </Select>
     <Select
       v-else-if="column.enum"
       ref="input"
@@ -142,7 +156,8 @@
   import CustomDatePicker from "@/components/CustomDatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';
-  import { ref } from 'vue';
+  import Spinner from '@/afcl/Spinner.vue';
+  import { ref, inject } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';
   import { useCoreStore } from '@/stores/core';
@@ -170,6 +185,10 @@
       readonly: false,
     }
   );
+
+  const columnLoadingState = inject('columnLoadingState', {} as any);
+  const onSearchInput = inject('onSearchInput', {} as any);
+  const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
   const input = ref(null);
 

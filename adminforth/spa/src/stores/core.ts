@@ -118,7 +118,7 @@ export const useCoreStore = defineStore('core', () => {
         item.badge = badge;
       }
     });
-
+    websocket.unsubscribeAll();
     subscribeToMenuBadges();
 
   }
