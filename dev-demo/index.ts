@@ -283,6 +283,23 @@ export const admin = new AdminForth({
           SkeletonBackgroundColor: "alias:lightPrimary opacity:0.7",
           SkeletonIconColor:"alias:lightPrimary opacity:0.3",
 
+          AcceptModalBackground: "alias:lightPrimary",
+          AcceptModalCloseIcon: "alias:lightAcceptModalBackground darken",
+          AcceptModalCloseIconHover: "alias:lightAcceptModalCloseIcon darken",
+          AcceptModalCloseIconHoverBackground: "alias:lightAcceptModalCloseIcon opacity:0.2",
+          AcceptModalWarningIcon: "alias:lightAcceptModalBackground darken",
+          AcceptModalText: "alias:lightAcceptModalBackground inverse",
+          AcceptModalConfirmButtonBackground: "#DC2626",
+          AcceptModalConfirmButtonBackgroundHover: "#991B1B",
+          AcceptModalConfirmButtonText: "#FFFFFF",
+          AcceptModalConfirmButtonFocus: "#FCA5A5",
+          AcceptModalCancelButtonBackground: "#FFFFFF",
+          AcceptModalCancelButtonBackgroundHover: "#F3F4F6",
+          AcceptModalCancelButtonText: "#111827",
+          AcceptModalCancelButtonFocus: "#F3F4F6",
+          AcceptModalCancelButtonBorder: "#E5E7EB",
+
+
         },
         dark: {
           primary: '#bd1a76',
@@ -402,6 +419,13 @@ export const admin = new AdminForth({
 
           SkeletonBackgroundColor: "alias:darkPrimary opacity:0.7",
           SkeletonIconColor:"alias:darkPrimary opacity:0.3",
+
+          AcceptModalBackground: "alias:darkPrimary",
+          AcceptModalCloseIcon: "alias:darkAcceptModalBackground darken",
+          AcceptModalCloseIconHover: "alias:darkAcceptModalCloseIcon darken",
+          AcceptModalCloseIconHoverBackground: "alias:darkAcceptModalCloseIcon opacity:0.2",
+          AcceptModalWarningIcon: "alias:darkAcceptModalBackground darken",
+          AcceptModalText: "alias:darkAcceptModalBackground inverse",
         }
       }
     },

@@ -154,7 +154,24 @@ export const styles = () => ({
     lightProgressBarText: "#6B7280",
 
     lightSkeletonBackgroundColor: "#D1D5DB",
-    lightSkeletonIconColor:"#E5E7EB",
+    lightSkeletonIconColor: "#E5E7EB",
+
+    lightAcceptModalBackground: "#FFFFFF",
+    lightAcceptModalCloseIcon: "#9CA3AF",
+    lightAcceptModalCloseIconHover: "#111827",
+    lightAcceptModalCloseIconHoverBackground: "#E5E7EB",
+    lightAcceptModalWarningIcon: "#9CA3AF",
+    lightAcceptModalText: "#6B7280",
+    lightAcceptModalConfirmButtonBackground: "#DC2626",
+    lightAcceptModalConfirmButtonBackgroundHover: "#991B1B",
+    lightAcceptModalConfirmButtonText: "#FFFFFF",
+    lightAcceptModalConfirmButtonFocus: "#FCA5A5",
+    lightAcceptModalCancelButtonBackground: "#FFFFFF",
+    lightAcceptModalCancelButtonBackgroundHover: "#F3F4F6",
+    lightAcceptModalCancelButtonText: "#111827",
+    lightAcceptModalCancelButtonFocus: "#F3F4F6",
+    lightAcceptModalCancelButtonBorder: "#E5E7EB",
+
 
 
     // colors for dark theme
@@ -303,6 +320,22 @@ export const styles = () => ({
     darkSkeletonBackgroundColor: "#374151",
     darkSkeletonIconColor:"#4B5563",
 
+    darkAcceptModalBackground: "#374151",
+    darkAcceptModalCloseIcon: "#9CA3AF",
+    darkAcceptModalCloseIconHover: "#FFFFFF",
+    darkAcceptModalCloseIconHoverBackground: "#4B5563",
+    darkAcceptModalWarningIcon: "#E5E7EB",
+    darkAcceptModalText: "#9CA3AF",
+    darkAcceptModalConfirmButtonBackground: "#DC2626",
+    darkAcceptModalConfirmButtonBackgroundHover: "#991B1B",
+    darkAcceptModalConfirmButtonText: "#FFFFFF",
+    darkAcceptModalConfirmButtonFocus: "#991B1B",
+    darkAcceptModalCancelButtonBackground: "#1F2937",
+    darkAcceptModalCancelButtonBackgroundHover: "#374151",
+    darkAcceptModalCancelButtonText: "#9CA3AF",
+    darkAcceptModalCancelButtonTextHover: "#FFFFFF",
+    darkAcceptModalCancelButtonFocus: "#1F2937",
+    darkAcceptModalCancelButtonBorder: "#4B5563",
 
   },
   boxShadow: {
