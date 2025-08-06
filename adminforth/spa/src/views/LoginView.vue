@@ -167,7 +167,7 @@ async function getLoginFormConfig() {
     path: '/get_login_form_config',
     method: 'GET',
   });
-  loginPromptHTML.value = response.loginPromptHTML || '';
+  loginPromptHTML.value = response.loginPromptHTML;
 }
 
 onBeforeMount(() => {
