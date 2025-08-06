@@ -132,6 +132,24 @@ export const styles = () => ({
     lightDropzoneIcon: "#6B7280",
     lightDropzoneText: "#6B7280",
 
+    lightTableBackground: "#FFFFFF",
+    lightTableHeadingText: "#374151",
+    lightTableHeadingBackground: "#F9FAFB",
+    lightTableBorder: "#E5E7EB",
+    lightTableText: "#6B7280",
+    lightTableEvenBackground: "#F9FAFB",
+    lightTableOddBackground: "#FFFFFF",
+    lightTablePaginationText: "#6B7280",
+    lightTablePaginationNumeration: "#111827",
+    lightUnactivePaginationButtonBackground: "#FFFFFF",
+    lightUnactivePaginationButtonText: "#6B7280",
+    lightUnactivePaginationButtonBorder: "#D1D5DB",
+    lightUnactivePaginationButtonHoverBackground: "#F3F4F6",
+    lightUnactivePaginationButtonHoverText: "#374151",
+    lightActivePaginationButtonBackground: "alias:lightPrimary",
+    lightActivePaginationButtonText: "alias:lightPrimaryContrast",
+
+
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -253,6 +271,23 @@ export const styles = () => ({
     darkDropzoneBorderDragging: "#60A5FA",
     darkDropzoneIcon: "#9CA3AF",
     darkDropzoneText: "#9CA3AF",
+
+    darkTableBackground: "#111827",
+    darkTableHeadingText: "#9CA3AF",
+    darkTableHeadingBackground: "#374151",
+    darkTableBorder: "#374151",
+    darkTableText: "#9CA3AF",
+    darkTableEvenBackground: "#1F2937",
+    darkTableOddBackground: "#111827",
+    darkTablePaginationText: "#9CA3AF",
+    darkTablePaginationNumeration: "#FFFFFF",
+    darkUnactivePaginationButtonBackground: "#1F2937",
+    darkUnactivePaginationButtonText: "#9CA3AF",
+    darkUnactivePaginationButtonBorder: "#374151",
+    darkUnactivePaginationButtonHoverBackground: "#374151",
+    darkUnactivePaginationButtonHoverText: "#FFFFFF",
+    darkActivePaginationButtonBackground: "alias:darkPrimary",
+    darkActivePaginationButtonText: "alias:darkPrimaryContrast",
 
   },
   boxShadow: {
