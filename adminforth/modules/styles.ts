@@ -115,6 +115,14 @@ export const styles = () => ({
     lightVerticalTabsBackgroundActive: "alias:lightPrimary",
     lightVerticalTabsSlotText: "#6B7280 ",
 
+    lightDialogBackgorund: "#FFFFFF",
+    lightDialogBreakLine: "#E5E7EB",
+    lightDialogHeaderText: "#111827",
+    lightDialogCloseButton: "#9CA3AF",
+    lightDialogCloseButtonHover: "#111827",
+    lightDialogCloseButtonHoverBackground: "#E5E7EB",
+    lightDialogBodyText: "#374151",
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -220,6 +228,14 @@ export const styles = () => ({
     darkVerticalTabsTextActive: "alias:darkPrimaryContrast",
     darkVerticalTabsBackgroundActive: "alias:darkPrimary",
     darkVerticalTabsSlotText: "#9CA3AF ",
+
+    darkDialogBackgorund: "#374151",
+    darkDialogBreakLine: "#4B5563",
+    darkDialogHeaderText: "#FFFFFF",
+    darkDialogCloseButton: "#9CA3AF",
+    darkDialogCloseButtonHover: "#FFFFFF",
+    darkDialogCloseButtonHoverBackground: "#4B5563",
+    darkDialogBodyText: "#9CA3AF",
 
 
   },

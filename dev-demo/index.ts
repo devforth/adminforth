@@ -242,6 +242,14 @@ export const admin = new AdminForth({
           VerticalTabsBackgroundActive: "alias:lightPrimary",
           VerticalTabsSlotText: "alias:lightHtml inverse",
 
+          DialogBackgorund: "alias:lightPrimary",
+          DialogBreakLine: "alias:lightDialogBackgorund darken",
+          DialogHeaderText: "alias:lightDialogBackgorund inverse",
+          DialogCloseButton: "alias:lightDialogBreakLine",
+          DialogCloseButtonHover: "alias:lightDialogCloseButton darken",
+          DialogCloseButtonHoverBackground: "alias:lightDialogBreakLine",
+          DialogBodyText: "alias:lightDialogBackgorund inverse",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -320,6 +328,14 @@ export const admin = new AdminForth({
           VerticalTabsTextActive: "alias:darkPrimaryContrast",
           VerticalTabsBackgroundActive: "alias:darkPrimary",
           VerticalTabsSlotText: "alias:darkHtml inverse",
+
+          DialogBackgorund: "alias:darkPrimary",
+          DialogBreakLine: "alias:darkDialogBackgorund darken",
+          DialogHeaderText: "alias:darkDialogBackgorund inverse",
+          DialogCloseButton: "alias:darkDialogBreakLine",
+          DialogCloseButtonHover: "alias:darkDialogCloseButton darken",
+          DialogCloseButtonHoverBackground: "alias:darkDialogBreakLine",
+          DialogBodyText: "alias:darkDialogBackgorund inverse",
         }
       }
     },
