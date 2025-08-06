@@ -197,6 +197,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       noAuth: true,
       method: 'GET',
+      path: '/get_login_form_config',
+      handler: async ({ tr }) => {
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+        return {
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
+        }
+      }
+    })
+
+    server.endpoint({
+      noAuth: true,
+      method: 'GET',
       path: '/get_public_config',
       handler: async ({ tr }) => {
 
@@ -210,8 +222,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
-
         return {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -220,7 +230,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
@@ -295,7 +304,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
 
         const publicPart = {
@@ -306,7 +314,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
