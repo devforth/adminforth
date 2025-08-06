@@ -280,6 +280,9 @@ export const admin = new AdminForth({
           ProgressBarFilledColor: "alias:lightPrimary opacity:0.5",
           ProgressBarText: "alias:lightHtml inverse",
 
+          SkeletonBackgroundColor: "alias:lightPrimary opacity:0.7",
+          SkeletonIconColor:"alias:lightPrimary opacity:0.3",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -396,6 +399,9 @@ export const admin = new AdminForth({
           ProgressBarUnfilledColor: "alias:darkHtml lighten",
           ProgressBarFilledColor: "alias:darkPrimary opacity:0.5",
           ProgressBarText: "alias:darkHtml inverse",
+
+          SkeletonBackgroundColor: "alias:darkPrimary opacity:0.7",
+          SkeletonIconColor:"alias:darkPrimary opacity:0.3",
         }
       }
     },

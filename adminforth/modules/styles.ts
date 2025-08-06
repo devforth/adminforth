@@ -153,6 +153,9 @@ export const styles = () => ({
     lightProgressBarFilledColor: "alias:lightPrimary",
     lightProgressBarText: "#6B7280",
 
+    lightSkeletonBackgroundColor: "#D1D5DB",
+    lightSkeletonIconColor:"#E5E7EB",
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -296,6 +299,10 @@ export const styles = () => ({
     darkProgressBarUnfilledColor: "#374151",
     darkProgressBarFilledColor: "alias:darkPrimary",
     darkProgressBarText: "#6B7280",
+
+    darkSkeletonBackgroundColor: "#374151",
+    darkSkeletonIconColor:"#4B5563",
+
 
   },
   boxShadow: {
