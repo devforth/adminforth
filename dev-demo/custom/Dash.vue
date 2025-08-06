@@ -83,6 +83,12 @@
         </template>
       </Input>
 
+      <Input type="text" class="w-full">
+        <template #rightIcon>
+          <IconSearchOutline class="w-5 h-5 text-lightPrimary dark:text-darkPrimary "/>
+        </template>
+      </Input>
+
       <Tooltip>
           <a :href="`https://google.com?q=adminforth`" target="_blank" >
               <IconCardSearch class="w-5 h-5 me-2"/>
@@ -103,7 +109,7 @@
           Board
         </template>
         <template #Profile>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Tab</h3>
+          <h3 class="text-lg font-bold text-lightPrimary dark:text-darkPrimary mb-2">Profile Tab</h3>
           <p class="mb-2">This is some placeholder content the Profile tab's associated content</p>
         </template>
         <template #Dashboard>
@@ -224,6 +230,7 @@ import { Table } from '@/afcl'
 import { ProgressBar } from '@/afcl';
 import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
+import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
 
 
 
