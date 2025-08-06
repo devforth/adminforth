@@ -188,7 +188,7 @@
         <Skeleton type="avatar" class="w-20 h-20" />
 
         <Table
-          class="min-h-[300px]"
+          class="min-h-[250px]"
           :columns="[
             { label: 'Name', fieldName: 'name' },
             { label: 'Age', fieldName: 'age' },
@@ -201,6 +201,24 @@
             { name: 'Colin', age: 40, country: 'AU' },
           ]"
         ></Table>
+
+
+        <Table
+        class="min-h-[262px]"
+          :columns="[
+            { label: 'Name', fieldName: 'name' },
+            { label: 'Age', fieldName: 'age' },
+            { label: 'Country', fieldName: 'country' },
+          ]"
+          :data="[
+            { name: 'John', age: 30, country: 'US' },
+            { name: 'Rick', age: 25, country: 'CA' },
+            { name: 'Alice', age: 35, country: 'BR' },
+            { name: 'Colin', age: 40, country: 'AU' },
+          ]"
+          :pageSize="3"
+        >
+        </Table>
 
         <Spinner class="w-10 h-10" />
 

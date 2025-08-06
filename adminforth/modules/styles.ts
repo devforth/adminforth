@@ -149,6 +149,10 @@ export const styles = () => ({
     lightActivePaginationButtonBackground: "alias:lightPrimary",
     lightActivePaginationButtonText: "alias:lightPrimaryContrast",
 
+    lightProgressBarUnfilledColor: "#E5E7EB",
+    lightProgressBarFilledColor: "alias:lightPrimary",
+    lightProgressBarText: "#6B7280",
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -288,6 +292,10 @@ export const styles = () => ({
     darkUnactivePaginationButtonHoverText: "#FFFFFF",
     darkActivePaginationButtonBackground: "alias:darkPrimary",
     darkActivePaginationButtonText: "alias:darkPrimaryContrast",
+
+    darkProgressBarUnfilledColor: "#374151",
+    darkProgressBarFilledColor: "alias:darkPrimary",
+    darkProgressBarText: "#6B7280",
 
   },
   boxShadow: {
