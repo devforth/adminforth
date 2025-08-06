@@ -160,6 +160,10 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
+async function loadPublicConfig() {
+  await coreStore.getPublicConfig();
+}
+
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
     // if route has next param, redirect
@@ -173,6 +177,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
+  loadPublicConfig();
     if (coreStore.config?.demoCredentials) {
       const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
       username.value = demoUsername;
