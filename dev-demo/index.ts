@@ -230,6 +230,18 @@ export const admin = new AdminForth({
           InputIconColor: "alias:lightPrimary opacity:0.8",
           InputErrorColor: "#DC2626",
           RequiredIconColor: "alias:lightPrimary",
+
+          TooltipBackground: "alias:lightPrimary opacity:0.6",
+          TooltipText: "alias:lightTooltipBackground inverse",
+
+          VerticalTabsText: "alias:lightPrimaryContrast",
+          VerticalTabsTextHover: "alias:lightVerticalTabsText lighten",
+          VerticalTabsBackground: "alias:lightPrimary opacity:0.2",
+          VerticalTabsBackgroundHover: "alias:lightPrimary opacity:0.5",
+          VerticalTabsTextActive: "alias:lightPrimaryContrast",
+          VerticalTabsBackgroundActive: "alias:lightPrimary",
+          VerticalTabsSlotText: "alias:lightHtml inverse",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -297,6 +309,17 @@ export const admin = new AdminForth({
           InputIconColor: "alias:darkPrimary opacity:0.8",
           InputErrorColor: "#DC2626",
           RequiredIconColor: "alias:darkPrimary",
+
+          TooltipBackground: "alias:darkPrimary opacity:0.6",
+          TooltipText: "alias:darkTooltipBackground inverse",
+
+          VerticalTabsText: "alias:darkPrimaryContrast",
+          VerticalTabsTextHover: "alias:darkVerticalTabsText darken",
+          VerticalTabsBackground: "alias:darkPrimary opacity:0.2",
+          VerticalTabsBackgroundHover: "alias:darkPrimary opacity:0.5",
+          VerticalTabsTextActive: "alias:darkPrimaryContrast",
+          VerticalTabsBackgroundActive: "alias:darkPrimary",
+          VerticalTabsSlotText: "alias:darkHtml inverse",
         }
       }
     },
