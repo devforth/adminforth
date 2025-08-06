@@ -336,7 +336,7 @@ export interface IAdminForth {
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }>;
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
     params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
@@ -474,7 +474,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -525,7 +525,7 @@ export type BeforeEditSaveFunction = (params: {
   oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null}>;
 
 
 
@@ -535,7 +535,7 @@ export type BeforeCreateSaveFunction = (params: {
   record: any, 
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
 
 export type AfterCreateSaveFunction = (params: {
   resource: AdminForthResource, 
@@ -618,6 +618,11 @@ interface AdminForthInputConfigCustomization {
    * Your app name
    */
   brandName?: string,
+
+  /**
+   * Whether to use single theme for the app
+   */
+  singleTheme?: 'light' | 'dark',
 
   /**
    * Whether to show brand name in sidebar
@@ -759,6 +764,16 @@ interface AdminForthInputConfigCustomization {
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
+
+  /**
+  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Each item must include a tag name and a set of attributes.
+  */
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+
 }
 
 export interface AdminForthActionInput {
@@ -936,6 +951,13 @@ export interface AdminForthInputConfig {
       loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
 
       /**
+       * If true, background blend mode will be removed from login background image when position is 'over'
+       * 
+       * Default: false
+       */
+      removeBackgroundBlendMode?: boolean,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
@@ -1064,6 +1086,12 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[];
+  
 }
 
 export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {
@@ -1318,9 +1346,13 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
     },
     create?: {
       /**
+       * Should return `ok: true` to continue saving pipeline and allow creating record in database, and `ok: false` to interrupt pipeline and prevent record creation.
+       * If you need to show error on UI, set `error: \<error message\>` in response.
+       * 
        * Typical use-cases:
-       * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
-       * - fill-in adminUser as creator of record
+       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
+       * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
       beforeSave?: Array<BeforeCreateSaveFunction>,

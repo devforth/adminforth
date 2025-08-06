@@ -1,5 +1,5 @@
 <template>
-  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`" class="p-4 flex" 
+  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`" class="af-resource-parent p-4 flex" 
     :class="limitHeightToPage ? 'h-[calc(100dvh-3.5rem)]': undefined"
   >
     <RouterView/>

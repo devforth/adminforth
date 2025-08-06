@@ -6,11 +6,13 @@
       <input
         ref="inputEl"
         type="text"
-        :readonly="readonly"
+        :readonly="readonly || searchDisabled"
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 sm:text-sm transition duration-150 ease-in-out dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
+        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
+      dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         autocomplete="off" data-custom="no-autofill"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
@@ -37,18 +39,19 @@
     <teleport to="body" v-if="teleportToBody && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
         class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
-          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
+          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+        @scroll="handleDropdownScroll">
         <div
           v-for="item in filteredItems"
           :key="item.value"
-          class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400"
+          class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
           :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
           @click="toogleItem(item)"
         >
           <slot name="item" :option="item"></slot>
           <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
         </div>
-        <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
+        <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
           {{ options.length ? $t('No results found') : $t('No items here') }}
         </div>
 
@@ -60,21 +63,22 @@
 
     <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
-        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48">
+        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+      @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"
         :key="item.value"
-        class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400"
+        class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
         :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
         <slot name="item" :option="item"></slot>
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
-      <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-gray-400 dark:text-gray-300">
+      <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
         {{ options.length ? $t('No results found') : $t('No items here') }}
       </div>
-      <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-gray-400">
+      <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-darkDropdownOptionsText">
         <slot name="extra-item"></slot>
       </div>
 
@@ -110,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
@@ -131,13 +135,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchDisabled: {
+    type: Boolean,
+    default: false,
+  },
   teleportToBody: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
 
 const search = ref('');
 const showDropdown = ref(false);
@@ -158,6 +166,9 @@ function inputInput() {
     selectedItems.value = [];
     emit('update:modelValue', null);
   }
+  if (!props.searchDisabled) {
+    emit('search', search.value);
+  }
 }
 
 function updateFromProps() {
@@ -175,13 +186,18 @@ function updateFromProps() {
   }
 }
 
-function inputClick() {
+async function inputClick() {
   if (props.readonly) return;
   // Toggle local dropdown
   showDropdown.value = !showDropdown.value;
   // If the dropdown is about to close, reset the search
   if (!showDropdown.value && !search.value) {
     search.value = '';
+  }
+
+  if(props.teleportToBody){
+    await nextTick();
+    handleScroll();
   }
 }
 
@@ -220,6 +236,15 @@ const handleScroll = () => {
   }
 };
 
+const handleDropdownScroll = (event: Event) => {
+  const target = event.target as HTMLElement;
+  const threshold = 10; // pixels from bottom
+  
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight - threshold) {
+    emit('scroll-near-end');
+  }
+};
+
 onMounted(() => {
   updateFromProps();
 
@@ -240,7 +265,12 @@ onMounted(() => {
 });
 
 const filteredItems = computed(() => {
-  return props.options.filter(item =>
+
+  if (props.searchDisabled) {
+    return props.options || [];
+  }
+  
+  return (props.options || []).filter((item: any) =>
     item.label.toLowerCase().includes(search.value.toLowerCase())
   );
 });
