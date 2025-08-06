@@ -60,14 +60,37 @@ export const styles = () => ({
     lightButtonsDisabledText: "#f3f4f6", // button disabled text
     lightButtonsIcon: "#333333", // button icon
     
+    lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
+    lightDropownButtonsBorder: "#d1d5db", //border color
+    lightDropdownButtonsText: "#6b7280", //text color
+    lightDropdownButtonsPlaceholderText: "#6b7280", //placeholder text color
 
+    lightDropdownOptionsBackground: "#FFFFFF", //dropdown menu background color
+    lightDropdownOptionsHoverBackground: "#f3f4f6", //dropdown menu hover background color 
+    lightDropdownOptionsText: "#000000", //dropdown menu hover background color
+
+    lightCheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",     //checkbox unchecked state bg
+    lightCheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
+    lightCheckboxIconColor: "alias:lightPrimaryContrast lighten",       //checked icon color
+    lightCheckboxBorderColor: "alias:lightPrimary darken",  //border color
+    lightFocusRing: "alias:lightPrimary lighten", //focus ring color
+    lightTextLabel: "black", //text color of checkbox label
+
+    lightToggleBgUnactive: "#F9FAFB",
+    lightToggleBgActive: "alias:lightPrimary darken",
+    lightToggleCircleUnactive: "alias:lightPrimary",
+    lightToggleCircleActive: "#F9FAFB",
+    lightToggleRing: "alias:lightPrimary lighten",
+    lightToggleText: "black", 
+    lightToggleBorderUnactive: "#E5E7EB",
+    lightToggleBorderActive: "alias:lightPrimary darken",
 
     // colors for dark theme
     darkHtml: "#111827",
 
     darkPrimary: "rgb(130 172 255)", // primary color
     darkPrimaryContrast: "alias:darkPrimary inverse", // primary color contrast
-    darkPrimaryOpacity: "#212A40", // primary color opacity
+    darkPrimaryOpacity: "alias:darkPrimary opacity:0.2", // primary color opacity
 
     darkNavbar: "#111827", 
     darkNavbarBorder: "#e5e7eb",
@@ -102,8 +125,32 @@ export const styles = () => ({
 
     darkForm: "#111111", 
     darkFormBorder: "#222222", 
-    darkFormHeading: "alias:darkListTableHeading" 
+    darkFormHeading: "alias:darkListTableHeading",
 
+    darkDropdownButtonsBackground: "alias:darkForm darken",
+    darkDropownButtonsBorder: "alias:darkForm lighten",
+    darkDropdownButtonsText: "#ffffff",
+    darkDropdownButtonsPlaceholderText: "#9ca3af",
+
+    darkDropdownOptionsBackground: "#alias:darkForm lighten",
+    darkDropdownOptionsHoverBackground: "alias:darkForm",
+    darkDropdownOptionsText: "#9ca3af",
+
+    darkCheckboxBgUnchecked: "alias:darkPrimaryContrast lighten",     //checkbox unchecked state bg
+    darkCheckboxBgChecked: "alias:darkPrimary",        //cheched state bg
+    darkCheckboxIconColor: "alias:darkPrimaryContrast lighten",       //checked icon color
+    darkCheckboxBorderColor: "alias:darkPrimary darken",  //border color
+    darkFocusRing: "alias:darkPrimary lighten",
+    darkTextLabel: "white",
+
+    darkToggleBgUnactive: "#F9FAFB",
+    darkToggleBgActive: "alias:darkPrimary darken",
+    darkToggleCircleUnactive: "alias:darkPrimary",
+    darkToggleCircleActive: "#F9FAFB",    
+    darkToggleRing: "alias:darkPrimary lighten",
+    darkToggleText: "alias:darkPrimaryContrast lighten", 
+    darkToggleBorderUnactive: "alias:darkPrimary lighten",
+    darkToggleBorderActive: "alias:darkPrimary darken",
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
@@ -121,6 +168,4 @@ export const styles = () => ({
     "default": ".5rem"
   }
 });
-
-
 
