@@ -194,6 +194,7 @@ const props = defineProps<{
   meta: any;
   resource: AdminForthResourceCommon;
   adminUser: AdminUser;
+  readonly: boolean;
 }>();
 
 const emit = defineEmits(["update:value"]);

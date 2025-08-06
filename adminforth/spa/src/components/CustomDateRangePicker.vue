@@ -172,6 +172,7 @@ function updateFromProps() {
   if (!props.valueEnd) {
     datepickerEndEl.value.value = '';
     endTime.value = '';
+    endDate.value = '';
   } else if (props.column.type === 'time') {
     endTime.value = props.valueEnd;
   } else {

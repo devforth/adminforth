@@ -16,13 +16,13 @@
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4">
-            <div class="flex items-center">
-              <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                    :disabled="!rows || !rows.length"
-                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded
-                    focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
-            </div>
+            <Checkbox
+              :modelValue="allFromThisPageChecked"
+              :disabled="!rows || !rows.length"
+              @update:modelValue="selectAll"
+            >
+              <span class="sr-only">{{ $t('checkbox') }}</span>
+            </Checkbox>
           </td>
 
           <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
@@ -90,18 +90,16 @@
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
-          <td class="w-4 p-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex items center ">
-              <input
-                @click="(e)=>{e.stopPropagation()}"
-                id="checkbox-table-search-1"
-                type="checkbox"
-                :checked="checkboxesInternal.includes(row._primaryKeyValue)"
-                @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
-              <label for="checkbox-table-search-1" class="sr-only">{{ $t('checkbox') }}</label>
-            </div>
-          </td>
+        <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
+          <Checkbox
+            :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
+            @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
+            @click="(e)=>e.stopPropagation()"
+          >
+            <span class="sr-only">{{ $t('checkbox') }}</span>
+          </Checkbox>
+        </td>
+
           <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
@@ -306,12 +304,13 @@ import {
 import {
   IconEyeSolid,
   IconPenSolid,
-  IconTrashBinSolid
+  IconTrashBinSolid,
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
+import Checkbox from '@/afcl/Checkbox.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
