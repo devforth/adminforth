@@ -250,6 +250,15 @@ export const admin = new AdminForth({
           DialogCloseButtonHoverBackground: "alias:lightDialogBreakLine",
           DialogBodyText: "alias:lightDialogBackgorund inverse",
 
+          DropzoneBackground: "alias:lightPrimary opacity:0.2",
+          DropzoneBackgroundHover: "alias:lightPrimary opacity:0.4",
+          DropzoneBorder: "alias:lightPrimary",
+          DropzoneBorderHover: "alias:lightDropzoneBorder darken",
+          DropzoneBorderDragging: "alias:lightPrimary",
+          DropzoneBackgroundDragging: "alias:lightPrimary opacity:0.8",
+          DropzoneIcon: "alias:lightDropzoneBorder darken",
+          DropzoneText: "alias:lightDropzoneIcon",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -336,6 +345,15 @@ export const admin = new AdminForth({
           DialogCloseButtonHover: "alias:darkDialogCloseButton darken",
           DialogCloseButtonHoverBackground: "alias:darkDialogBreakLine",
           DialogBodyText: "alias:darkDialogBackgorund inverse",
+
+          DropzoneBackground: "alias:darkPrimary opacity:0.2",
+          DropzoneBackgroundHover: "alias:darkPrimary opacity:0.4",
+          DropzoneBorder: "alias:darkPrimary",
+          DropzoneBorderHover: "alias:darkDropzoneBorder darken",
+          DropzoneBorderDragging: "alias:darkPrimary",
+          DropzoneBackgroundDragging: "alias:darkPrimary opacity:0.6",
+          DropzoneIcon: "alias:darkDropzoneBorder darken",
+          DropzoneText: "alias:darkDropzoneIcon",
         }
       }
     },
