@@ -29,14 +29,23 @@ export const styles = () => ({
     lightSidebarIconsHover: "alias:lightSidebarText", // sidebar list item icons hover
     lightSidebarHeading: "alias:lightSidebarText opacity:0.3", // sidebar heading
 
+    lightListSkeletLoader: "#E5E7EB",
     lightList: "#FFFFFF", // list view background
     lightListTable: "#FFFFFF", // list view table background
     lightListTableHeading: "#f5f5f8", // list view table heading
     lightListTableHeadingText: "#374151", // list view table heading text
-    lightListTableText: "#6b726c", // list view table text
+    lightListTableText: "#6B7280", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
-    lightListBreadcrumbsText: "#666666", // list view breadcrumbs text
-    lightListBorder: "#DDDDDD", // list view  rows border
+    // lightListBreadcrumbsText: "#666666", // list view breadcrumbs text
+    lightListBorder: "#DDDDDD", // list view  rows 
+    lightListTablePaginationBackgoround: "#FFFFFF",
+    lightListTablePaginationBackgoroundHover: "#F3F4F6",
+    lightListTablePaginationBorder: "#D1D5DB",
+    lightListTablePaginationFocusRing: "#F3F4F6",
+    ligthListTablePaginationText: "#111827",
+    ligthListTablePaginationCurrentPageText: "#374151",
+    ligthListTablePaginationTextHover: "alias:lightPrimary",
+    ligthListTablePaginationHelpText: "#374151",
 
     lightForm: "#ffffff", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
@@ -245,10 +254,18 @@ export const styles = () => ({
     darkListTable: "#1f2937", 
     darkListTableHeading: "#374151", 
     darkListTableHeadingText: "#9ca3af",
-    darkListTableText: "#9ca3af", 
+    darkListTableText: "#9CA3AF", 
     darkListTableRowHover: "rgb(35 47 65)",
-    darkListBreadcrumbsText: "#BBBBBB", 
-    darkListBorder: "#444444", 
+    // darkListBreadcrumbsText: "#BBBBBB", 
+    darkListBorder: "#444444",
+    darkListTablePaginationBackgoround: "#1F2937",
+    darkListTablePaginationBackgoroundHover: "#374151",
+    darkListTablePaginationBorder: "#4B5563",
+    darkListTablePaginationFocusRing: "#374151",
+    darkListTablePaginationText: "#9CA3AF",
+    darkListTablePaginationCurrentPageText: "#9CA3AF",
+    darkListTablePaginationTextHover: "#FFFFFF",
+    darkListTablePaginationHelpText: "#9CA3AF", 
 
     darkForm: "#1F2937", 
     darkFormBorder: "#222222", 
@@ -272,7 +289,7 @@ export const styles = () => ({
     darkDropdownMultipleSelectIconFocus: "#6B7280",
     darkDropdownMultipleSelectIconFocusBackground: "#F3F4F6",
 
-    darkCheckboxBgUnchecked: "alias:darkPrimaryContrast lighten",   
+    darkCheckboxBgUnchecked: "#374151",   
     darkCheckboxBgChecked: "alias:darkPrimary",      
     darkCheckboxIconColor: "alias:darkPrimaryContrast lighten",    
     darkCheckboxBorderColor: "alias:darkPrimary darken",  
@@ -306,7 +323,7 @@ export const styles = () => ({
     darkInputFocusBorder: "alias:darkPrimary", 
     darkInputIconColor: "#9CA3AF",
     darkInputErrorColor: "#F87171",
-    darkRequiredIconColor: "#EF4444",
+    darkRequiredIconColor: "#6B7280",
 
     darkDatePickerButtonBackground: "#374151",
     darkDatePickerButtonText: "#FFFFFF",
