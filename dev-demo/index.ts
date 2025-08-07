@@ -362,6 +362,14 @@ export const admin = new AdminForth({
           ThreeDotsMenuBodyText: "alias:lightThreeDotsMenuIconDots",
           ThreeDotsMenuBodyTextHover: "alias:lightlightThreeDotsMenuIconDots opacity:0.8",
 
+          ToastBackground: "alias:lightPrimary opacity:0.6",
+          ToastCloseIcon: "alias:lightPrimary darken",
+          ToastCloseIconHover: "alias:lightToastCloseIcon darken",
+          ToastCloseIconBackground: "alias:lightToastCloseIcon lighten",
+          ToastCloseIconBackgroundHover: "alias:lightToastCloseIcon opacity:0.6",
+          ToastCloseIconFocusRing: "alias:lightToastCloseIcon",
+          ToastText: "alias:lightPrimary inverse",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -552,6 +560,15 @@ export const admin = new AdminForth({
           ThreeDotsMenuBodyBackgroundHover: "alias:darkThreeDotsMenuBodyBackground darken",
           ThreeDotsMenuBodyText: "alias:darkThreeDotsMenuIconDots",
           ThreeDotsMenuBodyTextHover: "alias:darkThreeDotsMenuIconDots opacity:0.8",
+
+          ToastBackground: "alias:darkPrimary opacity:0.6",
+          ToastCloseIcon: "alias:darkPrimary darken",
+          ToastCloseIconHover: "alias:darkToastCloseIcon darken",
+          ToastCloseIconBackground: "alias:darkToastCloseIcon opacity:0.6",
+          ToastCloseIconBackgroundHover: "alias:darkToastCloseIcon lighten",
+          ToastCloseIconFocusRing: "alias:darkToastCloseIcon",
+          ToastText: "alias:darkPrimary inverse",
+
         }
       }
     },

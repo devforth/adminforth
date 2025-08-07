@@ -228,6 +228,58 @@
         :min="1"
         :max="100"
       />
+
+    <Toast
+      :toast="{
+        id: '1',
+        variant: 'info',
+        message: 'This is an info toast',
+        timeout: 'unlimited'
+      }"
+      @close="() => {}"
+    />
+
+    <Toast
+      :toast="{
+        id: '2',
+        variant: 'danger',
+        message: 'This is a danger toast',
+        timeout: 'unlimited'
+      }"
+      @close="() => {}"
+    />
+
+    <Toast
+      :toast="{
+        id: '3',
+        variant: 'warning',
+        message: 'This is a warning toast',
+        timeout: 'unlimited'
+      }"
+      @close="() => {}"
+    />
+
+    <Toast
+      :toast="{
+        id: '4',
+        variant: 'success',
+        message: 'This is a success toast',
+        timeout: 'unlimited'
+      }"
+      @close="() => {}"
+    />
+
+    <Toast
+      :toast="{
+        id: '5',
+        variant: 'info',
+        messageHtml: '<b>This is HTML toast</b><br><i>with custom content</i>',
+        timeout: 'unlimited'
+      }"
+      @close="() => {}"
+    />
+
+
   </div>
 
 
@@ -255,6 +307,7 @@ import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
 import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
+import Toast from '@/components/Toast.vue';
 
 const files: Ref<File[]> = ref([])
 
