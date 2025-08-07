@@ -2,15 +2,15 @@
   <div>
     <div class="grid w-40 gap-4 mb-2">
       <div>
-        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-lightInputText dark:text-darkInputText">{{ label }}</label>
+        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-lightDatePickerButtonText dark:text-darkDatePickerButtonText">{{ label }}</label>
 
         <div class="relative" :class="{hidden: column.type === 'time'}">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-            <IconCalendar class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor"/>
+            <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText focus:ring-lightInputFocusRing focus:border-lightPrimary dark:focus:ring-darkInputFocusRing dark:focus:border-darkPrimary"
+                 class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -22,18 +22,18 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor bg-lightInputBackground dark:bg-darkInputBackground"/>
+              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
             <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
-                   class="bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText focus:ring-lightInputFocusRing focus:border-lightPrimary dark:focus:ring-darkInputFocusRing dark:focus:border-darkPrimary"
+                   class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
       </div>
 
       <button type="button"
-              class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              class="text-lightDatePickerExpandText dark:text-darkDatePickerExpandText text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
               :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
         <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"

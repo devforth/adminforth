@@ -91,6 +91,8 @@ export const styles = () => ({
     lightColumnValueInputText: "#111827", //text color 
     lightColumnValueInputBorder: "#D1D5DB", //border color 
     lightColumnValueInputIcons: "#9CA3AF", //icons next to the input
+    lightColumnValueInputFocusRing: "alias:lightPrimary",
+    lightColumnValueInputFocusBorder: "alias:ligthPrimary",
 
     lightInputBackground: "#f9fafb",  // input background
     lightInputPlaceholderText: "#6B7280", //placeholder text color
@@ -100,9 +102,17 @@ export const styles = () => ({
     lightInputTextHover: "alias:lightPrimary", //text hover
     lightInputBorderHover: "alias:lightInputBorder darken", //border hover
     lightInputFocusRing: "#F3F4F6", //focus ring
+    lightInputFocusBorder: "alias:lightPrimary", 
     lightInputIconColor: "#6B7280", //input icon
     lightInputErrorColor: "#EF4444", //color of icon and text, when error shown
     lightRequiredIconColor: "#9CA3AF", //requires icon color
+
+    lightDatePickerButtonBackground: "#F9FAFB",
+    lightDatePickerButtonText: "#111827",
+    lightDatePickerPlaceHolder: "#9CA3AF",
+    lightDatePickerButtonBorder: "#D1D5DB",
+    lightDatePickerIcon: "#6B7280",
+    lightDatePickerExpandText: "alias:lightPrimary",
 
     lightTooltipBackground: "#111827",
     lightTooltipText: "#FFFFFF",
@@ -257,7 +267,8 @@ export const styles = () => ({
     darkColumnValueInputText: "#FFFFFF",
     darkColumnValueInputBorder: "#4b5563",
     darkColumnValueInputIcons: "#9CA3AF",
-
+    darkColumnValueInputFocusRing: "alias:darkPrimary",
+    darkColumnValueInputFocusBorder: "alias:darkPrimary",
 
     darkInputBackground: "#374151",
     darkInputPlaceholderText: "#9CA3AF",
@@ -267,9 +278,17 @@ export const styles = () => ({
     darkInputTextHover: "#FFFFFF",
     darkInputBorderHover: "alias:darkInputBorder darken",
     darkInputFocusRing: "#374151",
+    darkInputFocusBorder: "alias:darkPrimary", 
     darkInputIconColor: "#9CA3AF",
     darkInputErrorColor: "#F87171",
     darkRequiredIconColor: "#EF4444",
+
+    darkDatePickerButtonBackground: "#374151",
+    darkDatePickerButtonText: "#FFFFFF",
+    darkDatePickerPlaceHolder: "#9CA3AF",
+    darkDatePickerButtonBorder: "#4B5563",
+    darkDatePickerIcon: "#9CA3AF",
+    darkDatePickerExpandText: "alias:darkPrimary",
 
     darkTooltipBackground: "#374151",
     darkTooltipText: "#FFFFFF",
