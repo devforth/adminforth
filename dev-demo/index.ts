@@ -178,6 +178,14 @@ export const admin = new AdminForth({
           FormHeading: "alias:lightListTableHeading", 
           FormFieldTextColor: "alias:lightListTableText",
 
+          ShowTableHeadingBackground: "alias:lightPrimary",
+          ShowTableHeadingText: "alias:lightShowTableHeadingBackground inverse",
+          ShowTableUnderHeadingBackground: "alias:lightShowTableHeadingBackground lighten",
+          ShowTableUnderHeadingText: "alias:lightShowTableUnderHeadingBackground inverse",
+          ShowTablesBodyBackground: "alias:lightShowTableUnderHeadingBackground lighten",
+          ShowTableBodyText: "alias:lightShowTablesBodyBackground inverse",
+          ShowTableBodyBorder: "alias:lightShowTableHeadingBackground darken",
+
           Buttons: "#FFFFFF", 
           ButtonsBorder: "#DDDDDD", 
           ButtonsText: "#111827",
@@ -367,6 +375,14 @@ export const admin = new AdminForth({
           FormBorder: "#222222", 
           FormHeading: "alias:darkListTableHeading",
           FormFieldTextColor: "alias:darkListTableText",
+
+          ShowTableHeadingBackground: "alias:darkPrimary",
+          ShowTableHeadingText: "alias:darkShowTableHeadingBackground inverse",
+          ShowTableUnderHeadingBackground: "alias:darkShowTableHeadingBackground lighten",
+          ShowTableUnderHeadingText: "alias:darkShowTableUnderHeadingBackground inverse",
+          ShowTablesBodyBackground: "alias:darkShowTableUnderHeadingBackground lighten",
+          ShowTableBodyText: "alias:darkShowTablesBodyBackground inverse",
+          ShowTableBodyBorder: "alias:darkShowTableHeadingBackground darken",
 
           DropdownButtonsBackground: "alias:darkForm darken",
           DropownButtonsBorder: "alias:darkForm lighten", 

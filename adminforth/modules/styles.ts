@@ -52,6 +52,14 @@ export const styles = () => ({
     lightFormHeading: "alias:lightListTableHeading", // show view heading
     lightFormFieldTextColor: "alias:lightListTableText",
 
+    lightShowTableHeadingBackground: "alias:lightFormHeading",
+    lightShowTableHeadingText: "#374151",
+    lightShowTableUnderHeadingBackground: "alias:lightFormHeading",
+    lightShowTableUnderHeadingText: "#374151",
+    lightShowTablesBodyBackground: "alias:lightForm",
+    lightShowTableBodyText: "#6B7280",
+    lightShowTableBodyBorder: "#F3F4F6",
+
     lightButtons: "#FFFFFF", // button background
     lightButtonsBorder: "#DDDDDD", // button border
     lightButtonsText: "#111827", // button text
@@ -428,6 +436,14 @@ export const styles = () => ({
     darkFiltersClearAllButtonText: "#9CA3AF",
     darkFiltersClearAllButtonTextHover: "#FFFFFF",
     darkFiltersClearAllButtonFocus: "#374151",
+
+    darkShowTableHeadingBackground: "alias:darkFormHeading",
+    darkShowTableHeadingText: "#9CA3AF",
+    darkShowTableUnderHeadingBackground: "alias:darkFormHeading",
+    darkShowTableUnderHeadingText: "#9CA3AF",
+    darkShowTablesBodyBackground: "alias:darkForm",
+    darkShowTableBodyText: "#9CA3AF",
+    darkShowTableBodyBorder: "#F3F4F6",
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
