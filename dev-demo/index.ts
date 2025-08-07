@@ -153,20 +153,27 @@ export const admin = new AdminForth({
     styles:{
      colors: {
         light: {
+          Html: "#d0f5f4",
+
           primary: '#00acb5',
-          ListTableHeading: '#2fe0c9',
-          Form:"#fffa94",
 
           List: "#FFFFFF", 
-          ListTable: "#FFFFFF",
-          // ListTableHeading: "#f5f5f8", 
+          ListTable: "#b0f5f3",
+          ListTableHeading: "#2fe0c9", 
           ListTableHeadingText: "alias:lightListTableHeading inverse",
-          ListTableText: "#alias:lightListTableHeadingText",
-          ListTableRowHover: "rgb(249 250 251)",
-          ListBreadcrumbsText: "#666666",
-          ListBorder: "#DDDDDD", 
+          ListTableText: "alias:lightListTableHeadingText opacity:0.8",
+          ListTableRowHover: "alias:lightListTable lighten",
+          ListBorder: "#DDDDDD",
+          ListTablePaginationBackgoround: "alias:lightListTable",
+          ListTablePaginationBackgoroundHover: "alias:lightListTablePaginationBackgoround lighten",
+          ListTablePaginationBorder: "alias:lightListTablePaginationBackgoround darken",
+          ListTablePaginationFocusRing: "alias:lightListTablePaginationBackgoround opacity:0.4",
+          ListTablePaginationText: "alias:lightListTablePaginationBackgoround inverse",
+          ListTablePaginationCurrentPageText: "alias:lightListTablePaginationBackgoround inverse",
+          ListTablePaginationTextHover: "alias:lightListTablePaginationText opacity:0.6",
+          ListTablePaginationHelpText: "alias:lightListTablePaginationCurrentPageText", 
 
-          //Form: "alias:lightListTableHeading lighten", 
+          Form: "#fffa94", 
           Border: "#F5F5F5", 
           FormHeading: "alias:lightListTableHeading", 
           FormFieldTextColor: "alias:lightListTableText",
@@ -187,7 +194,7 @@ export const admin = new AdminForth({
           DropdownButtonsPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", 
 
           DropdownOptionsBackground: "alias:lightForm lighten",
-          DropdownOptionsHoverBackground: "#alias:lightForm darken",
+          DropdownOptionsHoverBackground: "alias:lightForm darken",
           DropdownPicked:"alias:lightDropdownOptionsHoverBackground opacity:0.5", 
           DropdownOptionsText: "alias:lightFormFieldTextColor", 
 
@@ -338,15 +345,23 @@ export const admin = new AdminForth({
         },
         dark: {
           primary: '#bd1a76',
+          Html: "#5c0959",
 
-          List: "#111111", 
-          ListTable: "#1f2937", 
+          List: "#470538", 
+          ListTable: "#753767", 
           ListTableHeading: "#db0dbc", 
           ListTableHeadingText: "alias:darkListTableHeading inverse",
           ListTableText: "alias:darkListTableHeadingText", 
-          ListTableRowHover: "rgb(35 47 65)",
-          ListBreadcrumbsText: "#BBBBBB", 
+          ListTableRowHover: "alias:darkListTableHeading opacity:0.6",
           ListBorder: "#444444", 
+          ListTablePaginationBackgoround: "alias:darkListTable",
+          ListTablePaginationBackgoroundHover: "alias:darkListTablePaginationBackgoround lighten",
+          ListTablePaginationBorder: "alias:darkListTablePaginationBackgoround darken",
+          ListTablePaginationFocusRing: "alias:darkListTablePaginationBackgoround opacity:0.4",
+          ListTablePaginationText: "alias:darkListTablePaginationBackgoround inverse",
+          ListTablePaginationCurrentPageText: "alias:darkListTablePaginationBackgoround inverse",
+          ListTablePaginationTextHover: "alias:darkListTablePaginationText opacity:0.6",
+          ListTablePaginationHelpText: "alias:darkListTablePaginationCurrentPageText", 
 
           Form: "#36bfb4", 
           FormBorder: "#222222", 
