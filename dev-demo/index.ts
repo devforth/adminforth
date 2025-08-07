@@ -323,6 +323,18 @@ export const admin = new AdminForth({
           RangePickerInputBorder: "alias:lightRangePickerButtonBackground",
           RangePickerInputText: "alias:lightRangePickerButtonBackground inverse",
           RangePickerInputPlaceholder: "alias:lightRangePickerInputText lighten",
+
+          FiltersBackgroung: "alias:lightPrimary lighten",
+          FiltersHeaderText: "alias:lightFiltersBackgroung inverse",
+          FiltersCloseIcon: "alias:lightFiltersBackgroung darken",
+          FiltersCloseIconHover: "alias:lightFiltersCloseIcon inverse",
+          FiltersCloseIconHoverBackground: "alias:lightFiltersCloseIcon",
+          FiltersClearAllButtonBackground: "alias:lightPrimary darken",
+          FiltersClearAllButtonBackgroundHover: "alias:lightFiltersClearAllButtonBackground ligten",
+          FiltersClearAllButtonBorder: "alias:lightFiltersClearAllButtonBackground darken",
+          FiltersClearAllButtonText: "alias:lightFiltersClearAllButtonBackground inverse",
+          FiltersClearAllButtonTextHover: "alias:lightFiltersClearAllButtonText darken",
+          FiltersClearAllButtonFocus: "alias:lightFiltersClearAllButtonBackground opacity:0.6",
         },
         dark: {
           primary: '#bd1a76',
@@ -474,6 +486,18 @@ export const admin = new AdminForth({
           RangePickerInputBorder: "alias:darkRangePickerButtonBackground",
           RangePickerInputText: "alias:darkRangePickerButtonBackground inverse",
           RangePickerInputPlaceholder: "alias:darkRangePickerInputText lighten",
+
+          FiltersBackgroung: "alias:darkPrimary lighten",
+          FiltersHeaderText: "alias:darkFiltersBackgroung inverse",
+          FiltersCloseIcon: "alias:darkFiltersBackgroung darken",
+          FiltersCloseIconHover: "alias:darkFiltersCloseIcon inverse",
+          FiltersCloseIconHoverBackground: "alias:darkFiltersCloseIcon",
+          FiltersClearAllButtonBackground: "alias:darkPrimary darken",
+          FiltersClearAllButtonBackgroundHover: "alias:darkFiltersClearAllButtonBackground ligten",
+          FiltersClearAllButtonBorder: "alias:darkFiltersClearAllButtonBackground darken",
+          FiltersClearAllButtonText: "alias:darkFiltersClearAllButtonBackground inverse",
+          FiltersClearAllButtonTextHover: "alias:darkFiltersClearAllButtonText darken",
+          FiltersClearAllButtonFocus: "alias:darkFiltersClearAllButtonBackground opacity:0.6",
         }
       }
     },

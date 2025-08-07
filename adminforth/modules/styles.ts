@@ -198,6 +198,19 @@ export const styles = () => ({
     lightRangePickerInputText: "#111827",
     lightRangePickerInputPlaceholder: "#9CA3AF",
 
+    lightFiltersBackgroung: "#FFFFFF",
+    lightFiltersHeaderText: "#6B7280",
+    lightFiltersCloseIcon: "#9CA3AF",
+    lightFiltersCloseIconHover: "#111827",
+    lightFiltersCloseIconHoverBackground: "#E5E7EB",
+    lightFiltersClearAllButtonBackground: "#FFFFFF",
+    lightFiltersClearAllButtonBackgroundHover: "#F3F4F6",
+    lightFiltersClearAllButtonBorder: "#D1D5DB",
+    lightFiltersClearAllButtonText: "#111827",
+    lightFiltersClearAllButtonTextHover: "alias:lightPrimary",
+    lightFiltersClearAllButtonFocus: "#F3F4F6",
+
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -386,6 +399,18 @@ export const styles = () => ({
     darkRangePickerInputBorder: "#4B5563",
     darkRangePickerInputText: "#FFFFFF",
     darkRangePickerInputPlaceholder: "#9CA3AF",
+
+    darkFiltersBackgroung: "#1F2937",
+    darkFiltersHeaderText: "#9CA3AF",
+    darkFiltersCloseIcon: "#9CA3AF",
+    darkFiltersCloseIconHover: "#FFFFFF",
+    darkFiltersCloseIconHoverBackground: "#4B5563",
+    darkFiltersClearAllButtonBackground: "#1F2937",
+    darkFiltersClearAllButtonBackgroundHover: "#374151",
+    darkFiltersClearAllButtonBorder: "#4B5563",
+    darkFiltersClearAllButtonText: "#9CA3AF",
+    darkFiltersClearAllButtonTextHover: "#FFFFFF",
+    darkFiltersClearAllButtonFocus: "#374151",
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow
