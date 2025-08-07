@@ -249,7 +249,7 @@ export const styles = () => ({
     darkSidebarIconsHover: "alias:darkSidebarText", 
     darkSidebarHeading: "alias:darkSidebarText opacity:0.3", 
 
-
+    darkListSkeletLoader: "#374151",
     darkList: "#111111", 
     darkListTable: "#1f2937", 
     darkListTableHeading: "#374151", 

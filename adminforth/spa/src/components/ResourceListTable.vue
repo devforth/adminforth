@@ -7,7 +7,7 @@
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
         <div role="status" class="max-w-sm animate-pulse">
-            <div class="h-2 lightListSkeletLoader rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+            <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
     <table v-else class=" w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
