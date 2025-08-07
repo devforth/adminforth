@@ -92,7 +92,7 @@ export const styles = () => ({
     lightColumnValueInputBorder: "#D1D5DB", //border color 
     lightColumnValueInputIcons: "#9CA3AF", //icons next to the input
     lightColumnValueInputFocusRing: "alias:lightPrimary",
-    lightColumnValueInputFocusBorder: "alias:ligthPrimary",
+    lightColumnValueInputFocusBorder: "alias:lightPrimary",
 
     lightInputBackground: "#f9fafb",  // input background
     lightInputPlaceholderText: "#6B7280", //placeholder text color
@@ -186,6 +186,18 @@ export const styles = () => ({
     lightBreadcrumbsHomepageTextHover: "alias:lightPrimary",
     lightBreadcrumbsArrowIcon: "#9CA3AF",
     lightBreadcrumbsText: "#6B7280",
+
+    lightRangePickerButtonBackground: "#FFFFFF",
+    lightRangePickerButtonBackgroundHover: "#F3F4F6",
+    lightRangePickerButtonBorder: "#D1D5DB",
+    lightRangePickerButtonText: "#111827",
+    lightRangePickerButtonTextHover: "alias:lightPrimary",
+    lightRangePickerFocusRing: "#F3F4F6",
+    lightRangePickerInputBackground: "#F9FAFB",
+    lightRangePickerInputBorder: "#D1D5DB",
+    lightRangePickerInputText: "#111827",
+    lightRangePickerInputPlaceholder: "#9CA3AF",
+
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -364,6 +376,16 @@ export const styles = () => ({
     darkBreadcrumbsArrowIcon: "#9CA3AF",
     darkBreadcrumbsText: "#9CA3AF",
 
+    darkRangePickerButtonBackground: "#1F2937",
+    darkRangePickerButtonBackgroundHover: "#374151",
+    darkRangePickerButtonBorder: "#4B5563",
+    darkRangePickerButtonText: "#9CA3AF",
+    darkRangePickerButtonTextHover: "#FFFFFF",
+    darkRangePickerFocusRing: "#374151",
+    darkRangePickerInputBackground: "#374151",
+    darkRangePickerInputBorder: "#4B5563",
+    darkRangePickerInputText: "#FFFFFF",
+    darkRangePickerInputPlaceholder: "#9CA3AF",
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow

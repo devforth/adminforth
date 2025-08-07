@@ -312,6 +312,17 @@ export const admin = new AdminForth({
           DatePickerButtonBorder: "alias:lightInputBorder",
           DatePickerIcon: "alias:lightPrimary",
           DatePickerExpandText: "alias:lightPrimary",
+
+          RangePickerButtonBackground: "alias:lightPrimary",
+          RangePickerButtonBackgroundHover: "alias:lightRangePickerButtonBackground lighten",
+          RangePickerButtonBorder: "alias:lightRangePickerButtonBackground darken",
+          RangePickerButtonText: "alias:lightRangePickerButtonBackground inverse",
+          RangePickerButtonTextHover: "alias:lightRangePickerButtonText darken",
+          RangePickerFocusRing: "alias:lightRangePickerButtonBackground opacity:0.5",
+          RangePickerInputBackground: "alias:lightRangePickerButtonBackground opacity:0.8",
+          RangePickerInputBorder: "alias:lightRangePickerButtonBackground",
+          RangePickerInputText: "alias:lightRangePickerButtonBackground inverse",
+          RangePickerInputPlaceholder: "alias:lightRangePickerInputText lighten",
         },
         dark: {
           primary: '#bd1a76',
@@ -452,6 +463,17 @@ export const admin = new AdminForth({
           DatePickerButtonBorder: "alias:darkInputBorder",
           DatePickerIcon: "alias:darkPrimary",
           DatePickerExpandText: "alias:darkPrimary",
+
+          RangePickerButtonBackground: "alias:darkPrimary",
+          RangePickerButtonBackgroundHover: "alias:darkRangePickerButtonBackground lighten",
+          RangePickerButtonBorder: "alias:darkRangePickerButtonBackground darken",
+          RangePickerButtonText: "alias:darkRangePickerButtonBackground inverse",
+          RangePickerButtonTextHover: "alias:darkRangePickerButtonText darken",
+          RangePickerFocusRing: "alias:darkRangePickerButtonBackground opacity:0.5",
+          RangePickerInputBackground: "alias:darkRangePickerButtonBackground opacity:0.8",
+          RangePickerInputBorder: "alias:darkRangePickerButtonBackground",
+          RangePickerInputText: "alias:darkRangePickerButtonBackground inverse",
+          RangePickerInputPlaceholder: "alias:darkRangePickerInputText lighten",
         }
       }
     },
