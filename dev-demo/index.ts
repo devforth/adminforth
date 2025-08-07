@@ -218,6 +218,8 @@ export const admin = new AdminForth({
           ColumnValueInputText: "alias:lightFormFieldTextColor",
           ColumnValueInputBorder: "alias:lightForm darken",
           ColumnValueInputIcons: "alias:lightPrimary",
+          ColumnValueInputFocusRing: "alias:lightPrimary",
+          ColumnValueInputFocusBorder: "alias:lightPrimary",
 
           InputBackground: "alias:lightForm lighten",
           InputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6",
@@ -303,6 +305,13 @@ export const admin = new AdminForth({
           BreadcrumbsHomepageTextHover: "alias:lightBreadcrumbsHomepageText darken",
           BreadcrumbsArrowIcon: "alias:lightBreadcrumbsHomepageText opacity:0.6",
           BreadcrumbsText: "alias:lightBreadcrumbsHomepageText lighten",
+
+          DatePickerButtonBackground: "alias:lightInputBackground",
+          DatePickerButtonText: "alias:lightInputText",
+          DatePickerPlaceHolder: "alias:lightInputPlaceholderText",
+          DatePickerButtonBorder: "alias:lightInputBorder",
+          DatePickerIcon: "alias:lightPrimary",
+          DatePickerExpandText: "alias:lightPrimary",
         },
         dark: {
           primary: '#bd1a76',
@@ -358,6 +367,8 @@ export const admin = new AdminForth({
           ColumnValueInputText: "alias:darkFormFieldTextColor",
           ColumnValueInputBorder: "alias:darkForm darken",
           ColumnValueInputIcons: "alias:darkPrimary",
+          ColumnValueInputFocusRing: "alias:darkPrimary",
+          ColumnValueInputFocusBorder: "alias:darkPrimary",
 
           InputBackground: "alias:darkForm darken",
           InputPlaceholderText: "alias:darkFormFieldTextColor opacity:0.6",
@@ -434,6 +445,13 @@ export const admin = new AdminForth({
           BreadcrumbsHomepageTextHover: "alias:darkBreadcrumbsHomepageText lighten",
           BreadcrumbsArrowIcon: "alias:darkBreadcrumbsHomepageText opacity:0.6",
           BreadcrumbsText: "alias:darkBreadcrumbsHomepageText lighten",
+
+          DatePickerButtonBackground: "alias:darkInputBackground",
+          DatePickerButtonText: "alias:darkInputText",
+          DatePickerPlaceHolder: "alias:darkInputPlaceholderText",
+          DatePickerButtonBorder: "alias:darkInputBorder",
+          DatePickerIcon: "alias:darkPrimary",
+          DatePickerExpandText: "alias:darkPrimary",
         }
       }
     },
