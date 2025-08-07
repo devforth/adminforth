@@ -221,9 +221,14 @@
         </Table>
 
         <Spinner class="w-10 h-10" />
-
-
     </div>
+
+  <div class="flex flex-col gap-10 m-10 mt-20">
+    <CustomRangePicker
+        :min="1"
+        :max="100"
+      />
+  </div>
 
 
   </div>
@@ -249,8 +254,7 @@ import { ProgressBar } from '@/afcl';
 import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
 import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
-
-
+import CustomRangePicker from "@/components/CustomRangePicker.vue";
 
 const files: Ref<File[]> = ref([])
 
