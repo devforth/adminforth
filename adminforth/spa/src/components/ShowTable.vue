@@ -1,10 +1,10 @@
 <template>
       <div :class="`overflow-x-auto ${isRounded ? 'rounded-default' : ''} shadow-resourseFormShadow dark:shadow-darkResourseFormShadow`">
-        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-gray-700 bg-lightFormHeading dark:bg-darkFormHeading  dark:text-gray-400 rounded-t-lg">
+        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
         {{ groupName }}
         </div>
-      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
-        <thead v-if="!allColumnsHaveCustomComponent"  class="text-gray-700 dark:text-gray-400 bg-lightFormHeading dark:bg-darkFormHeading dark:border-darkFormBorder block md:table-row-group">
+      <table class="w-full text-sm text-left rtl:text-right text-lightShowTableBodyText dark:text-darkShowTableBodyText table-fixed">
+        <thead v-if="!allColumnsHaveCustomComponent"  class="text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground dark:border-darkFormBorder block md:table-row-group">
           <tr>
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell">
               {{ $t('Field') }}
@@ -18,8 +18,8 @@
           <tr
             v-for="column in columns"
             :key="column.name"
-            class="bg-lightForm border-t border-gray-100 
-              dark:bg-darkForm dark:border-darkFormBorder block md:table-row"
+            class="bg-lightShowTablesBodyBackground border-t border-lightShowTableBodyBorder 
+              dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
           >
             <component
                 v-if="column.components?.showRow"
