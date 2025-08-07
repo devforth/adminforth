@@ -238,6 +238,13 @@ export const styles = () => ({
     lightThreeDotsMenuBodyText: "#111827",
     lightThreeDotsMenuBodyTextHover: "#111827",
 
+    lightToastBackground: "#FFFFFF",
+    lightToastCloseIcon: "#9CA3AF",
+    lightToastCloseIconHover: "#111827",
+    lightToastCloseIconBackground: "#FFFFFF",
+    lightToastCloseIconBackgroundHover: "#F3F4F6",
+    lightToastCloseIconFocusRing: "#D1D5DB",
+    lightToastText: "#6B7280",
     
     
     // colors for dark theme
@@ -466,6 +473,14 @@ export const styles = () => ({
     darkThreeDotsMenuBodyBackgroundHover: "#4B5563",
     darkThreeDotsMenuBodyText: "#9CA3AF",
     darkThreeDotsMenuBodyTextHover: "#FFFFFF",
+
+    darkToastBackground: "#1F2937",
+    darkToastCloseIcon: "#6B7280",
+    darkToastCloseIconHover: "#FFFFFF",
+    darkToastCloseIconBackground: "#1F2937",
+    darkToastCloseIconBackgroundHover: "#374151",
+    darkToastCloseIconFocusRing: "#374151",
+    darkToastText: "#9CA3AF",
 
   },
   boxShadow: {
