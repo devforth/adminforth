@@ -2,16 +2,16 @@
   <!-- drawer component -->
   <div id="drawer-navigation" 
   
-      class="af-filters-sidebar fixed right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-white w-80 dark:bg-gray-800 shadow-xl dark:shadow-gray-900"
+      class="af-filters-sidebar fixed right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-lightFiltersBackgroung w-80 dark:bg-darkFiltersBackgroung shadow-xl dark:shadow-gray-900"
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
       :style="{ height: `calc(100dvh ` }"
   >
-    <h5 id="drawer-navigation-label" class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
+    <h5 id="drawer-navigation-label" class="text-base font-semibold text-lightFiltersHeaderText uppercase dark:text-darkFiltersHeaderText">
       {{ $t('Filters') }}
 
-      <button type="button" @click="$emit('hide')" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" >
+      <button type="button" @click="$emit('hide')" class="text-lightFiltersCloseIcon bg-transparent hover:bg-lightFiltersCloseIconHoverBackground hover:text-lightFiltersCloseIconHover rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:text-darkFiltersCloseIcon dark:hover:bg-darkFiltersCloseIconHoverBackground dark:hover:text-darkFiltersCloseIconHover" >
         <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
         <span class="sr-only">{{ $t('Close menu') }}</span>
       </button>
@@ -124,7 +124,7 @@
       <button 
         :disabled="!filtersStore.filters.length"
         type="button" 
-        class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="flex items-center py-1 px-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear">{{ $t('Clear all') }}</button>
 
    </div>
