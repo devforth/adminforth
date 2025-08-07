@@ -227,8 +227,19 @@ export const styles = () => ({
     lightFiltersClearAllButtonTextHover: "alias:lightPrimary",
     lightFiltersClearAllButtonFocus: "#F3F4F6",
 
+    lightThreeDotsMenuIconBackground: "#FFFFFF",
+    lightThreeDotsMenuIconBackgroundHover: "#F3F4F6",
+    lightThreeDotsMenuIconBackgroundBorder: "#D1D5DB",
+    lightThreeDotsMenuIconDots: "#111827",
+    lightThreeDotsMenuIconDotsHover: "alias:lightPrimary",   
+    lightThreeDotsMenuIconFocus: "#F3F4F6",   
+    lightThreeDotsMenuBodyBackground: "#FFFFFF",
+    lightThreeDotsMenuBodyBackgroundHover: "#F3F4F6",
+    lightThreeDotsMenuBodyText: "#111827",
+    lightThreeDotsMenuBodyTextHover: "#111827",
 
-
+    
+    
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -444,6 +455,18 @@ export const styles = () => ({
     darkShowTablesBodyBackground: "alias:darkForm",
     darkShowTableBodyText: "#9CA3AF",
     darkShowTableBodyBorder: "#F3F4F6",
+
+    darkThreeDotsMenuIconBackground: "#1F2937",
+    darkThreeDotsMenuIconBackgroundHover: "#374151",
+    darkThreeDotsMenuIconBackgroundBorder: "#4B5563",
+    darkThreeDotsMenuIconDots: "#9CA3AF",
+    darkThreeDotsMenuIconDotsHover: "#FFFFFF",   
+    darkThreeDotsMenuIconFocus: "#374151",   
+    darkThreeDotsMenuBodyBackground: "#374151",
+    darkThreeDotsMenuBodyBackgroundHover: "#4B5563",
+    darkThreeDotsMenuBodyText: "#9CA3AF",
+    darkThreeDotsMenuBodyTextHover: "#FFFFFF",
+
   },
   boxShadow: {
     customLight: "0 4px 8px rgba(0, 0, 0, 0.1)", // Lighter shadow

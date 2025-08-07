@@ -350,6 +350,18 @@ export const admin = new AdminForth({
           FiltersClearAllButtonText: "alias:lightFiltersClearAllButtonBackground inverse",
           FiltersClearAllButtonTextHover: "alias:lightFiltersClearAllButtonText darken",
           FiltersClearAllButtonFocus: "alias:lightFiltersClearAllButtonBackground opacity:0.6",
+
+          ThreeDotsMenuIconBackground: "alias:lightPrimary lighten",
+          ThreeDotsMenuIconBackgroundHover: "alias:lightPrimary opacity:0.5",
+          ThreeDotsMenuIconBackgroundBorder: "alias:lightPrimary darken",
+          ThreeDotsMenuIconDots: "alias:lightThreeDotsMenuIconBackground inverse",
+          ThreeDotsMenuIconDotsHover: "alias:lightThreeDotsMenuIconDots opacity:0.3",   
+          ThreeDotsMenuIconFocus: "alias:lightThreeDotsMenuIconBackground opacity:0.2",   
+          ThreeDotsMenuBodyBackground: "alias:lightThreeDotsMenuIconBackground",
+          ThreeDotsMenuBodyBackgroundHover: "alias:lightThreeDotsMenuBodyBackground darken",
+          ThreeDotsMenuBodyText: "alias:lightThreeDotsMenuIconDots",
+          ThreeDotsMenuBodyTextHover: "alias:lightlightThreeDotsMenuIconDots opacity:0.8",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -529,6 +541,17 @@ export const admin = new AdminForth({
           FiltersClearAllButtonText: "alias:darkFiltersClearAllButtonBackground inverse",
           FiltersClearAllButtonTextHover: "alias:darkFiltersClearAllButtonText darken",
           FiltersClearAllButtonFocus: "alias:darkFiltersClearAllButtonBackground opacity:0.6",
+
+          ThreeDotsMenuIconBackground: "alias:darkPrimary lighten",
+          ThreeDotsMenuIconBackgroundHover: "alias:darkPrimary opacity:0.5",
+          ThreeDotsMenuIconBackgroundBorder: "alias:darkPrimary darken",
+          ThreeDotsMenuIconDots: "alias:darkThreeDotsMenuIconBackground inverse",
+          ThreeDotsMenuIconDotsHover: "alias:darkThreeDotsMenuIconDots opacity:0.3",   
+          ThreeDotsMenuIconFocus: "alias:darkThreeDotsMenuIconBackground opacity:0.2",   
+          ThreeDotsMenuBodyBackground: "alias:darkThreeDotsMenuIconBackground",
+          ThreeDotsMenuBodyBackgroundHover: "alias:darkThreeDotsMenuBodyBackground darken",
+          ThreeDotsMenuBodyText: "alias:darkThreeDotsMenuIconDots",
+          ThreeDotsMenuBodyTextHover: "alias:darkThreeDotsMenuIconDots opacity:0.8",
         }
       }
     },
