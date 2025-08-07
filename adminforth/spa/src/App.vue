@@ -95,6 +95,7 @@
             ">{{ item.label }}</div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
               <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+                  :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
