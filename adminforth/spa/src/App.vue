@@ -4,7 +4,7 @@
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
-      <div class="px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
+      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
               type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
