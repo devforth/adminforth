@@ -299,7 +299,10 @@ export const admin = new AdminForth({
           AcceptModalCancelButtonFocus: "#F3F4F6",
           AcceptModalCancelButtonBorder: "#E5E7EB",
 
-
+          BreadcrumbsHomepageText: "alias:lightPrimary",
+          BreadcrumbsHomepageTextHover: "alias:lightBreadcrumbsHomepageText darken",
+          BreadcrumbsArrowIcon: "alias:lightBreadcrumbsHomepageText opacity:0.6",
+          BreadcrumbsText: "alias:lightBreadcrumbsHomepageText lighten",
         },
         dark: {
           primary: '#bd1a76',
@@ -426,6 +429,11 @@ export const admin = new AdminForth({
           AcceptModalCloseIconHoverBackground: "alias:darkAcceptModalCloseIcon opacity:0.2",
           AcceptModalWarningIcon: "alias:darkAcceptModalBackground darken",
           AcceptModalText: "alias:darkAcceptModalBackground inverse",
+
+          BreadcrumbsHomepageText: "alias:darkPrimary",
+          BreadcrumbsHomepageTextHover: "alias:darkBreadcrumbsHomepageText lighten",
+          BreadcrumbsArrowIcon: "alias:darkBreadcrumbsHomepageText opacity:0.6",
+          BreadcrumbsText: "alias:darkBreadcrumbsHomepageText lighten",
         }
       }
     },

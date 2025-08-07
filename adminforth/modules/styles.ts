@@ -172,7 +172,10 @@ export const styles = () => ({
     lightAcceptModalCancelButtonFocus: "#F3F4F6",
     lightAcceptModalCancelButtonBorder: "#E5E7EB",
 
-
+    lightBreadcrumbsHomepageText: "#374151",
+    lightBreadcrumbsHomepageTextHover: "alias:lightPrimary",
+    lightBreadcrumbsArrowIcon: "#9CA3AF",
+    lightBreadcrumbsText: "#6B7280",
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -336,6 +339,11 @@ export const styles = () => ({
     darkAcceptModalCancelButtonTextHover: "#FFFFFF",
     darkAcceptModalCancelButtonFocus: "#1F2937",
     darkAcceptModalCancelButtonBorder: "#4B5563",
+
+    darkBreadcrumbsHomepageText: "#9CA3AF",
+    darkBreadcrumbsHomepageTextHover: "#FFFFFF",
+    darkBreadcrumbsArrowIcon: "#9CA3AF",
+    darkBreadcrumbsText: "#9CA3AF",
 
   },
   boxShadow: {
