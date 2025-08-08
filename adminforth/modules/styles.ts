@@ -278,6 +278,13 @@ export const styles = () => ({
     lightListViewButtonFocusRing: "#F3F4F6",
     lightListViewButtonBorder: "#D1D5DB",
 
+    /* Show View */
+    lightShowViewButtonBackground: "#FFFFFF",
+    lightShowViewButtonBackgroundHover: "#F3F4F6",
+    lightShowViewButtonText: "#111827",
+    lightShowViewButtonTextHover: "alias:lightPrimary",
+    lightShowViewButtonFocusRing: "#F3F4F6",
+    lightShowViewButtonBorder: "#D1D5DB",
 
     /* Login View */
     lightLoginViewBackground: "#FFFFFF",
@@ -555,6 +562,14 @@ export const styles = () => ({
     darkListViewButtonTextHover: "#FFFFFF",
     darkListViewButtonFocusRing: "#374151",
     darkListViewButtonBorder: "#4B5563",
+
+    /* Show View */
+    darkShowViewButtonBackground: "#1F2937",
+    darkShowViewButtonBackgroundHover: "#374151",
+    darkShowViewButtonText: "#9CA3AF",
+    darkShowViewButtonTextHover: "#FFFFFF",
+    darkShowViewButtonFocusRing: "#374151",
+    darkShowViewButtonBorder: "#4B5563",
 
     /* Login view */
     darkLoginViewBackground: "#374151",
