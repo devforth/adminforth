@@ -278,6 +278,15 @@ export const styles = () => ({
     lightListViewButtonFocusRing: "#F3F4F6",
     lightListViewButtonBorder: "#D1D5DB",
 
+
+    /* Login View */
+    lightLoginViewBackground: "#FFFFFF",
+    lightLoginViewTextColor: "#111827",
+    lightLoginViewSubTextColor: "#9CA3AF",
+    lightLoginViewPromptBackground: "#F9FAFB",
+    lightLoginViewPromptText: "#1F2937",
+
+
     
     
     // colors for dark theme
@@ -546,6 +555,13 @@ export const styles = () => ({
     darkListViewButtonTextHover: "#FFFFFF",
     darkListViewButtonFocusRing: "#374151",
     darkListViewButtonBorder: "#4B5563",
+
+    /* Login view */
+    darkLoginViewBackground: "#374151",
+    darkLoginViewTextColor: "#FFFFFF",
+    darkLoginViewSubTextColor: "#D1D5DB",
+    darkLoginViewPromptBackground: "#1F2937",
+    darkLoginViewPromptText: "#9CA3AF",
 
 
   },

@@ -397,6 +397,13 @@ export const admin = new AdminForth({
           ListViewButtonFocusRing: "alias:lightlistViewButtonBackground",
           ListViewButtonBorder: "alias:lightListViewButtonBackground darken",
 
+          LoginViewBackground: "alias:lightPrimary lighten",
+          LoginViewTextColor: "alias:lightLoginViewBackground inverse",
+          LoginViewSubTextColor: "alias:lightLoginViewTextColor opacity:0.8",
+          LoginViewPromptBackground: "alias:lightLoginViewTextColor opacity:0.1",
+          LoginViewPromptText: "alias:ligthLoginViewTextColor",
+
+
 
         },
         dark: {
@@ -624,6 +631,12 @@ export const admin = new AdminForth({
           ListViewButtonTextHover: "alias:darkListViewButtonText opacity:0.8",
           ListViewButtonFocusRing: "alias:darklistViewButtonBackground",
           ListViewButtonBorder: "alias:darkListViewButtonBackground darken",
+
+          LoginViewBackground: "alias:darkPrimary lighten",
+          LoginViewTextColor: "alias:darkLoginViewBackground inverse",
+          LoginViewSubTextColor: "alias:darkLoginViewTextColor opacity:0.8",
+          LoginViewPromptBackground: "alias:darkLoginViewTextColor opacity:0.1",
+          LoginViewPromptText: "alias:darkLoginViewTextColor",
 
         }
       }
