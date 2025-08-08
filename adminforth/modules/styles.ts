@@ -260,6 +260,20 @@ export const styles = () => ({
     lightCreateViewSaveButtonFocusRing: "#F3F4F6",
     lightCreateViewSaveButtonBorder: "#D1D5DB",
 
+    lightEditViewCancelButtonBackground: "#FFFFFF",
+    lightEditViewCancelButtonBackgroundHover: "#F3F4F6",
+    lightEditViewCancelButtonText: "#111827",
+    lightEditViewCancelButtonTextHover: "alias:lightPrimary",
+    lightEditViewCancelButtonFocusRing: "#F3F4F6",
+    lightEditViewCancelButtonBorder: "#D1D5DB",
+
+    lightEditViewSaveButtonBackground: "#FFFFFF",
+    lightEditViewSaveButtonBackgroundHover: "#F3F4F6",
+    lightEditViewSaveButtonText: "#DC2626",
+    lightEditViewSaveButtonTextHover: "#B91C1C",
+    lightEditViewSaveButtonFocusRing: "#F3F4F6",
+    lightEditViewSaveButtonBorder: "#D1D5DB",
+
     
     
     // colors for dark theme
@@ -511,6 +525,20 @@ export const styles = () => ({
     darkCreateViewSaveButtonTextHover: "#FFFFFF",
     darkCreateViewSaveButtonFocusRing: "#374151",
     darkCreateViewSaveButtonBorder: "#4B5563",
+
+    darkEditViewCancelButtonBackground: "#1F2937",
+    darkEditViewCancelButtonBackgroundHover: "#374151",
+    darkEditViewCancelButtonText: "#9CA3AF",
+    darkEditViewCancelButtonTextHover: "#FFFFFF",
+    darkEditViewCancelButtonFocusRing: "#374151",
+    darkEditViewCancelButtonBorder: "#4B5563",
+
+    darkEditViewSaveButtonBackground: "#1F2937",
+    darkEditViewSaveButtonBackgroundHover: "#374151",
+    darkEditViewSaveButtonText: "#EF4444",
+    darkEditViewSaveButtonTextHover: "#FFFFFF",
+    darkEditViewSaveButtonFocusRing: "#374151",
+    darkEditViewSaveButtonBorder: "#4B5563",
 
   },
   boxShadow: {

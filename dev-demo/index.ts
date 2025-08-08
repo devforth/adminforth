@@ -384,6 +384,20 @@ export const admin = new AdminForth({
           CreateViewSaveButtonFocusRing: "alias:lightCreateViewCancelButtonBackground",
           CreateViewSaveButtonBorder: "alias:lightCreateViewCancelButtonBackground darken",
 
+          EditViewCancelButtonBackground: "alias:lightPrimary",
+          EditViewCancelButtonBackgroundHover: "alias:lightEditViewCancelButtonBackground lighten",
+          EditViewCancelButtonText: "alias:lightEditViewCancelButtonBackground inverse",
+          EditViewCancelButtonTextHover: "alias:lightEditViewCancelButtonText opacity:0.8",
+          EditViewCancelButtonFocusRing: "alias:lightEditViewCancelButtonBackground",
+          EditViewCancelButtonBorder: "alias:lightEditViewCancelButtonBackground darken",
+
+          EditViewSaveButtonBackground: "alias:lightPrimary",
+          EditViewSaveButtonBackgroundHover: "alias:lightEditViewCancelButtonBackground lighten",
+          EditViewSaveButtonText: "#DC2626",
+          EditViewSaveButtonTextHover: "#B91C1C",
+          EditViewSaveButtonFocusRing: "alias:lightEditViewCancelButtonBackground",
+          EditViewSaveButtonBorder: "alias:lightEditViewCancelButtonBackground darken",
+
         },
         dark: {
           primary: '#bd1a76',
@@ -582,6 +596,34 @@ export const admin = new AdminForth({
           ToastCloseIconBackgroundHover: "alias:darkToastCloseIcon lighten",
           ToastCloseIconFocusRing: "alias:darkToastCloseIcon",
           ToastText: "alias:darkPrimary inverse",
+
+          CreateViewCancelButtonBackground: "alias:darkPrimary",
+          CreateViewCancelButtonBackgroundHover: "alias:darkCreateViewCancelButtonBackground lighten",
+          CreateViewCancelButtonText: "alias:darkCreateViewCancelButtonBackground inverse",
+          CreateViewCancelButtonTextHover: "alias:darkCreateViewCancelButtonText opacity:0.8",
+          CreateViewCancelButtonFocusRing: "alias:darkCreateViewCancelButtonBackground",
+          CreateViewCancelButtonBorder: "alias:darkCreateViewCancelButtonBackground darken",
+
+          CreateViewSaveButtonBackground: "alias:darkPrimary",
+          CreateViewSaveButtonBackgroundHover: "alias:darkCreateViewCancelButtonBackground lighten",
+          CreateViewSaveButtonText: "#F87171",
+          CreateViewSaveButtonTextHover: "#FFFFFF",
+          CreateViewSaveButtonFocusRing: "alias:darkCreateViewCancelButtonBackground",
+          CreateViewSaveButtonBorder: "alias:darkCreateViewCancelButtonBackground darken",
+
+          EditViewCancelButtonBackground: "alias:darkPrimary",
+          EditViewCancelButtonBackgroundHover: "alias:darkEditViewCancelButtonBackground lighten",
+          EditViewCancelButtonText: "alias:darkEditViewCancelButtonBackground inverse",
+          EditViewCancelButtonTextHover: "alias:darkEditViewCancelButtonText opacity:0.8",
+          EditViewCancelButtonFocusRing: "alias:darkEditViewCancelButtonBackground",
+          EditViewCancelButtonBorder: "alias:darkEditViewCancelButtonBackground darken",
+
+          EditViewSaveButtonBackground: "alias:darkPrimary",
+          EditViewSaveButtonBackgroundHover: "alias:darkEditViewCancelButtonBackground lighten",
+          EditViewSaveButtonText: "#F87171",
+          EditViewSaveButtonTextHover: "#FFFFFF",
+          EditViewSaveButtonFocusRing: "alias:darkEditViewCancelButtonBackground",
+          EditViewSaveButtonBorder: "alias:darkEditViewCancelButtonBackground darken",
 
         }
       }
