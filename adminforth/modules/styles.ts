@@ -245,6 +245,21 @@ export const styles = () => ({
     lightToastCloseIconBackgroundHover: "#F3F4F6",
     lightToastCloseIconFocusRing: "#D1D5DB",
     lightToastText: "#6B7280",
+
+    lightCreateViewCancelButtonBackground: "#FFFFFF",
+    lightCreateViewCancelButtonBackgroundHover: "#F3F4F6",
+    lightCreateViewCancelButtonText: "#111827",
+    lightCreateViewCancelButtonTextHover: "alias:lightPrimary",
+    lightCreateViewCancelButtonFocusRing: "#F3F4F6",
+    lightCreateViewCancelButtonBorder: "#D1D5DB",
+
+    lightCreateViewSaveButtonBackground: "#FFFFFF",
+    lightCreateViewSaveButtonBackgroundHover: "#F3F4F6",
+    lightCreateViewSaveButtonText: "#DC2626",
+    lightCreateViewSaveButtonTextHover: "#B91C1C",
+    lightCreateViewSaveButtonFocusRing: "#F3F4F6",
+    lightCreateViewSaveButtonBorder: "#D1D5DB",
+
     
     
     // colors for dark theme
@@ -481,6 +496,21 @@ export const styles = () => ({
     darkToastCloseIconBackgroundHover: "#374151",
     darkToastCloseIconFocusRing: "#374151",
     darkToastText: "#9CA3AF",
+
+
+    darkCreateViewCancelButtonBackground: "#1F2937",
+    darkCreateViewCancelButtonBackgroundHover: "#374151",
+    darkCreateViewCancelButtonText: "#9CA3AF",
+    darkCreateViewCancelButtonTextHover: "#FFFFFF",
+    darkCreateViewCancelButtonFocusRing: "#374151",
+    darkCreateViewCancelButtonBorder: "#4B5563",
+
+    darkCreateViewSaveButtonBackground: "#1F2937",
+    darkCreateViewSaveButtonBackgroundHover: "#374151",
+    darkCreateViewSaveButtonText: "#EF4444",
+    darkCreateViewSaveButtonTextHover: "#FFFFFF",
+    darkCreateViewSaveButtonFocusRing: "#374151",
+    darkCreateViewSaveButtonBorder: "#4B5563",
 
   },
   boxShadow: {
