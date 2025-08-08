@@ -246,33 +246,32 @@ export const styles = () => ({
     lightToastCloseIconFocusRing: "#D1D5DB",
     lightToastText: "#6B7280",
 
-    lightCreateViewCancelButtonBackground: "#FFFFFF",
-    lightCreateViewCancelButtonBackgroundHover: "#F3F4F6",
-    lightCreateViewCancelButtonText: "#111827",
-    lightCreateViewCancelButtonTextHover: "alias:lightPrimary",
-    lightCreateViewCancelButtonFocusRing: "#F3F4F6",
-    lightCreateViewCancelButtonBorder: "#D1D5DB",
 
-    lightCreateViewSaveButtonBackground: "#FFFFFF",
-    lightCreateViewSaveButtonBackgroundHover: "#F3F4F6",
+    //Show views
+    /* CreateView buttons */
+    lightCreateViewButtonBackground: "#FFFFFF",
+    lightCreateViewButtonBackgroundHover: "#F3F4F6",
+    lightCreateViewButtonText: "#111827",
+    lightCreateViewButtonTextHover: "alias:lightPrimary",
+    lightCreateViewButtonFocusRing: "#F3F4F6",
+    lightCreateViewButtonBorder: "#D1D5DB",
+
     lightCreateViewSaveButtonText: "#DC2626",
     lightCreateViewSaveButtonTextHover: "#B91C1C",
-    lightCreateViewSaveButtonFocusRing: "#F3F4F6",
-    lightCreateViewSaveButtonBorder: "#D1D5DB",
 
-    lightEditViewCancelButtonBackground: "#FFFFFF",
-    lightEditViewCancelButtonBackgroundHover: "#F3F4F6",
-    lightEditViewCancelButtonText: "#111827",
-    lightEditViewCancelButtonTextHover: "alias:lightPrimary",
-    lightEditViewCancelButtonFocusRing: "#F3F4F6",
-    lightEditViewCancelButtonBorder: "#D1D5DB",
+    /* EditView buttons */
+    lightEditViewButtonBackground: "#FFFFFF",
+    lightEditViewButtonBackgroundHover: "#F3F4F6",
+    lightEditViewButtonText: "#111827",
+    lightEditViewButtonTextHover: "alias:lightPrimary",
+    lightEditViewButtonFocusRing: "#F3F4F6",
+    lightEditViewButtonBorder: "#D1D5DB",
 
-    lightEditViewSaveButtonBackground: "#FFFFFF",
-    lightEditViewSaveButtonBackgroundHover: "#F3F4F6",
     lightEditViewSaveButtonText: "#DC2626",
     lightEditViewSaveButtonTextHover: "#B91C1C",
-    lightEditViewSaveButtonFocusRing: "#F3F4F6",
-    lightEditViewSaveButtonBorder: "#D1D5DB",
+
+    /* ListView buttons */
+
 
     
     
@@ -511,34 +510,27 @@ export const styles = () => ({
     darkToastCloseIconFocusRing: "#374151",
     darkToastText: "#9CA3AF",
 
+///////////////////////////////////////////////////////////////////
+    darkCreateViewButtonBackground: "#1F2937",
+    darkCreateViewButtonBackgroundHover: "#374151",
+    darkCreateViewButtonText: "#9CA3AF",
+    darkCreateViewButtonTextHover: "#FFFFFF",
+    darkCreateViewButtonFocusRing: "#374151",
+    darkCreateViewButtonBorder: "#4B5563",
 
-    darkCreateViewCancelButtonBackground: "#1F2937",
-    darkCreateViewCancelButtonBackgroundHover: "#374151",
-    darkCreateViewCancelButtonText: "#9CA3AF",
-    darkCreateViewCancelButtonTextHover: "#FFFFFF",
-    darkCreateViewCancelButtonFocusRing: "#374151",
-    darkCreateViewCancelButtonBorder: "#4B5563",
-
-    darkCreateViewSaveButtonBackground: "#1F2937",
-    darkCreateViewSaveButtonBackgroundHover: "#374151",
     darkCreateViewSaveButtonText: "#EF4444",
     darkCreateViewSaveButtonTextHover: "#FFFFFF",
-    darkCreateViewSaveButtonFocusRing: "#374151",
-    darkCreateViewSaveButtonBorder: "#4B5563",
 
-    darkEditViewCancelButtonBackground: "#1F2937",
-    darkEditViewCancelButtonBackgroundHover: "#374151",
-    darkEditViewCancelButtonText: "#9CA3AF",
-    darkEditViewCancelButtonTextHover: "#FFFFFF",
-    darkEditViewCancelButtonFocusRing: "#374151",
-    darkEditViewCancelButtonBorder: "#4B5563",
+    darkEditViewButtonBackground: "#1F2937",
+    darkEditViewButtonBackgroundHover: "#374151",
+    darkEditViewButtonText: "#9CA3AF",
+    darkEditViewButtonTextHover: "#FFFFFF",
+    darkEditViewButtonFocusRing: "#374151",
+    darkEditViewButtonBorder: "#4B5563",
 
-    darkEditViewSaveButtonBackground: "#1F2937",
-    darkEditViewSaveButtonBackgroundHover: "#374151",
     darkEditViewSaveButtonText: "#EF4444",
     darkEditViewSaveButtonTextHover: "#FFFFFF",
-    darkEditViewSaveButtonFocusRing: "#374151",
-    darkEditViewSaveButtonBorder: "#4B5563",
+
 
   },
   boxShadow: {

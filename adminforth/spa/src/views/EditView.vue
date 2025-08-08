@@ -12,14 +12,14 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="$router.back()"
-        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewCancelButtonText  rounded-default focus:outline-none bg-lightEditViewCancelButtonBackground rounded border border-lightEditViewCancelButtonBorder hover:bg-lightEditViewCancelButtonBackground hover:text-lightEditViewCancelButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewCancelButtonFocusRing dark:focus:ring-darkEditViewCancelButtonFocusRing dark:bg-darkEditViewCancelButtonBackground dark:text-darkEditViewCancelButtonText dark:border-darkEditViewCancelButtonBorder dark:hover:text-darkEditViewCancelButtonTextHover dark:hover:bg-darkEditViewCancelButtonBackgroundHover"
+        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
 
       <button
         @click="saveRecord"
-        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewSaveButtonBackground rounded border border-lightEditViewSaveButtonBorder hover:bg-lightEditViewSaveButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewSaveButtonFocusRing dark:focus:ring-darkEditViewSaveButtonFocusRing dark:bg-darkEditViewSaveButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewSaveButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewSaveButtonBackground disabled:opacity-50"
+        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50"
         :disabled="saving || (validating && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
