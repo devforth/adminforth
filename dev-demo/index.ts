@@ -241,7 +241,7 @@ export const admin = new AdminForth({
           InputText: "alias:lightFormFieldTextColor",
           InputBorder: "alias:lightForm darken",
           InputBackgroundHover: "alias:lightInputBackground darken",
-          InputTextHover: "alias:lightInputText lighten",
+          InputTextHover: "alias:lightInputText",
           InputBorderHover: "alias:lightInputBorder darken",
           InputFocusRing: "alias:lightInputBorderHover opacity:0.4",
           InputIconColor: "alias:lightPrimary opacity:0.8",
@@ -369,6 +369,20 @@ export const admin = new AdminForth({
           ToastCloseIconBackgroundHover: "alias:lightToastCloseIcon opacity:0.6",
           ToastCloseIconFocusRing: "alias:lightToastCloseIcon",
           ToastText: "alias:lightPrimary inverse",
+
+          CreateViewCancelButtonBackground: "alias:lightPrimary",
+          CreateViewCancelButtonBackgroundHover: "alias:lightCreateViewCancelButtonBackground lighten",
+          CreateViewCancelButtonText: "alias:lightCreateViewCancelButtonBackground inverse",
+          CreateViewCancelButtonTextHover: "alias:lightCreateViewCancelButtonText opacity:0.8",
+          CreateViewCancelButtonFocusRing: "alias:lightCreateViewCancelButtonBackground",
+          CreateViewCancelButtonBorder: "alias:lightCreateViewCancelButtonBackground darken",
+
+          CreateViewSaveButtonBackground: "alias:lightPrimary",
+          CreateViewSaveButtonBackgroundHover: "alias:lightCreateViewCancelButtonBackground lighten",
+          CreateViewSaveButtonText: "#DC2626",
+          CreateViewSaveButtonTextHover: "#B91C1C",
+          CreateViewSaveButtonFocusRing: "alias:lightCreateViewCancelButtonBackground",
+          CreateViewSaveButtonBorder: "alias:lightCreateViewCancelButtonBackground darken",
 
         },
         dark: {
