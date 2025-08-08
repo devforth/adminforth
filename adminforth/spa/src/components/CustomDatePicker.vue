@@ -25,7 +25,7 @@
               <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
-            <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
+            <input v-model="startTime" type="time" id="start-time" step="1"
                    class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" :disabled="readonly" required/>
           </div>
@@ -153,7 +153,7 @@ function initDatepickers() {
 }
 
 function addChangeDateListener() {
-  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
+  // datepickerStartEl.value.addEventListener('changeDate', setStartDate)
 }
 
 function removeChangeDateListener() {
@@ -161,7 +161,7 @@ function removeChangeDateListener() {
 }
 
 function destroyDatepickerElement() {
-  datepickerObject.value.destroy();
+  // datepickerObject.value.destroy();
 }
 
 function setStartDate(event) {
@@ -198,3 +198,90 @@ defineExpose({
   focus,
 });
 </script>
+
+<style lang="css" scoped>
+
+:global(.datepicker-controls button svg),
+:global(.datepicker-controls button) {
+  @apply text-lightDatePickerCalendarText;
+}
+
+:global( .datepicker-dropdown ),
+:global( .datepicker-picker ) {
+  @apply !bg-lightDatePickerCalendarBackground
+}
+
+:global(.datepicker-controls button:hover) {
+  @apply bg-lightDatePickerCalendarArrowButtonBackgroundHover;    
+}
+
+:global(.datepicker-controls button) {
+  @apply ring-lightDatePickerCalendarArrowButtonFocusRing bg-lightDatePickerCalendarArrowButtonBackground;    
+}
+
+:global(.datepicker-controls button:focus) {
+  @apply ring-lightDatePickerCalendarArrowButtonFocusRing;
+}
+
+:global(.days-of-week span) {
+  @apply text-lightDatePickerCalendarDaysOfWeekText;
+}
+
+:global(.datepicker-grid span) {
+  @apply text-lightDatePickerCalendarDateButtonText; 
+}
+
+:global(.datepicker-grid span:hover:not(.selected)) {
+  @apply bg-lightDatePickerCalendarDateButtonBackgroundHover; 
+}
+
+:global(.datepicker-grid .selected ) {
+  @apply text-lightDatePickerCalendarDateActiveButtonText bg-lightDatePickerCalendarDateActiveButtonBackground; 
+}
+
+
+
+
+
+
+
+
+:global(.dark .datepicker-controls button svg),
+:global(.dark .datepicker-controls button) {
+  @apply text-darkDatePickerCalendarMainText;
+}
+
+:global(.dark .datepicker-dropdown),
+:global(.dark .datepicker-picker) {
+  @apply !bg-darkDatePickerCalendarBackground;
+}
+
+:global(.dark .datepicker-controls button:hover) {
+  @apply bg-darkDatePickerCalendarArrowButtonBackgroundHover;    
+}
+
+:global(.dark .datepicker-controls button) {
+  @apply ring-darkDatePickerCalendarArrowButtonFocusRing bg-darkDatePickerCalendarArrowButtonBackground;    
+}
+
+:global(.dark .datepicker-controls button) {
+  @apply ring-darkDatePickerCalendarArrowButtonFocusRing;    
+}
+
+:global(.dark .days-of-week span) {
+  @apply text-darkDatePickerCalendarDaysOfWeekText;
+}
+
+:global(.dark .datepicker-grid span) {
+  @apply text-darkDatePickerCalendarDateButtonText; 
+}
+
+:global(.dark .datepicker-grid span:hover:not(.selected)) {
+  @apply bg-darkDatePickerCalendarDateButtonBackgroundHover; 
+}
+
+:global(.dark .datepicker-grid .selected) {
+  @apply text-darkDatePickerCalendarDateActiveButtonText 
+         bg-darkDatePickerCalendarDateActiveButtonBackground; 
+}
+</style>

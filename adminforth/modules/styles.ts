@@ -42,10 +42,10 @@ export const styles = () => ({
     lightListTablePaginationBackgoroundHover: "#F3F4F6",
     lightListTablePaginationBorder: "#D1D5DB",
     lightListTablePaginationFocusRing: "#F3F4F6",
-    ligthListTablePaginationText: "#111827",
-    ligthListTablePaginationCurrentPageText: "#374151",
-    ligthListTablePaginationTextHover: "alias:lightPrimary",
-    ligthListTablePaginationHelpText: "#374151",
+    lightListTablePaginationText: "#111827",
+    lightListTablePaginationCurrentPageText: "#374151",
+    lightListTablePaginationTextHover: "alias:lightPrimary",
+    lightListTablePaginationHelpText: "#374151",
 
     lightForm: "#ffffff", // show view background
     lightFormBorder: "#F5F5F5", // show view rows border
@@ -124,12 +124,25 @@ export const styles = () => ({
     lightInputErrorColor: "#EF4444", //color of icon and text, when error shown
     lightRequiredIconColor: "#9CA3AF", //requires icon color
 
+
     lightDatePickerButtonBackground: "#F9FAFB",
     lightDatePickerButtonText: "#111827",
     lightDatePickerPlaceHolder: "#9CA3AF",
     lightDatePickerButtonBorder: "#D1D5DB",
     lightDatePickerIcon: "#6B7280",
     lightDatePickerExpandText: "alias:lightPrimary",
+
+    lightDatePickerCalendarBackground: "#FFFFFF",
+    lightDatePickerCalendarText: "#111827",
+    lightDatePickerCalendarArrowButtonBackground: "#FFFFFF",
+    lightDatePickerCalendarArrowButtonBackgroundHover: "#F3F4F6",
+    lightDatePickerCalendarArrowButtonFocusRing: "#E5E7EB",
+    lightDatePickerCalendarDaysOfWeekText: "#6B7280",
+    lightDatePickerCalendarDateButtonText: "#111827",
+    lightDatePickerCalendarDateButtonBackgroundHover: "#F3F4F6",
+    lightDatePickerCalendarDateActiveButtonBackground: "#1D4ED8",
+    lightDatePickerCalendarDateActiveButtonText: "#FFFFFF",
+
 
     lightTooltipBackground: "#111827",
     lightTooltipText: "#FFFFFF",
@@ -400,12 +413,26 @@ export const styles = () => ({
     darkInputErrorColor: "#F87171",
     darkRequiredIconColor: "#6B7280",
 
+
     darkDatePickerButtonBackground: "#374151",
     darkDatePickerButtonText: "#FFFFFF",
     darkDatePickerPlaceHolder: "#9CA3AF",
     darkDatePickerButtonBorder: "#4B5563",
     darkDatePickerIcon: "#9CA3AF",
     darkDatePickerExpandText: "alias:darkPrimary",
+
+    darkDatePickerCalendarBackground: "#374151",
+    darkDatePickerCalendarMainText: "#FFFFFF",
+    darkDatePickerCalendarArrowButtonBackground: "#374151",
+    darkDatePickerCalendarArrowButtonBackgroundHover: "#4B5563",
+    darkDatePickerCalendarArrowButtonFocusRing: "#E5E7EB",
+    darkDatePickerCalendarDaysOfWeekText: "#9CA3AF",
+    darkDatePickerCalendarDateButtonText: "#FFFFFF",
+    darkDatePickerCalendarDateActiveButtonBackground: "#2563EB",
+    darkDatePickerCalendarDateButtonBackgroundHover: "#4B5563",
+    darkDatePickerCalendarDateActiveButtonText: "#FFFFFF",
+
+
 
     darkTooltipBackground: "#374151",
     darkTooltipText: "#FFFFFF",

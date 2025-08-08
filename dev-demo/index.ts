@@ -157,6 +157,27 @@ export const admin = new AdminForth({
 
           primary: '#00acb5',
 
+          Navbar: "alias:lightPrimary lighten", 
+          NavbarBorder: "alias:lightPrimary", 
+          NavbarText: "alias:lightPrimary inverse", 
+          NavbarTextHover: "alias:lightNavbarText darken",
+          NavbarTextActive: "alias:lightNavbarText darken",
+          NavbarIcons: "alias:lightNavbarText opacity:0.9", 
+          AnnouncementText: "alias:lightPrimaryContrast", 
+          AnnouncementBG: "alias:lightPrimary", 
+
+          Sidebar: "alias:lightPrimary lighten",
+          SidebarText: "#F5F6F7",
+          SidebarBorder: "alias:lightSidebarText opacity:0.2", 
+          SidebarItemHover: "alias:lightSidebarText opacity:0.2",
+          SidebarItemActive: "alias:lightSidebarText opacity:0.3",
+          SidebarTextHover: "alias:lightSidebarText darken", 
+          SidebarTextActive: "alias:lightSidebarText",
+          SidebarDevider: "alias:lightSidebarText opacity:0.3",
+          SidebarIcons: "alias:lightSidebarText", 
+          SidebarIconsHover: "alias:lightSidebarText darken", 
+          SidebarHeading: "alias:lightSidebarText opacity:0.3",
+
           List: "#FFFFFF", 
           ListTable: "#b0f5f3",
           ListTableHeading: "#2fe0c9", 
@@ -173,7 +194,7 @@ export const admin = new AdminForth({
           ListTablePaginationTextHover: "alias:lightListTablePaginationText opacity:0.6",
           ListTablePaginationHelpText: "alias:lightListTablePaginationCurrentPageText", 
 
-          Form: "#fffa94", 
+          Form: "#alias:lightPrimary lighten", 
           Border: "#F5F5F5", 
           FormHeading: "alias:lightListTableHeading", 
           FormFieldTextColor: "alias:lightListTableText",
@@ -328,6 +349,17 @@ export const admin = new AdminForth({
           DatePickerIcon: "alias:lightPrimary",
           DatePickerExpandText: "alias:lightPrimary",
 
+          DatePickerCalendarBackground: "alias:lightPrimary lighten",
+          DatePickerCalendarText: "alias:lightDatePickerCalendarBackground inverse",
+          DatePickerCalendarArrowButtonBackground: "alias:lightDatePickerCalendarBackground lighten",
+          DatePickerCalendarArrowButtonBackgroundHover: "alias:lightDatePickerCalendarBackground darken",
+          DatePickerCalendarArrowButtonFocusRing: "alias:lightDatePickerCalendarArrowButtonBackgroundHover",
+          DatePickerCalendarDaysOfWeekText: "alias:lightDatePickerCalendarText opacity:0.8",
+          DatePickerCalendarDateButtonText: "alias:lightDatePickerCalendarText",
+          DatePickerCalendarDateButtonBackgroundHover: "alias:lightDatePickerCalendarBackground lighten",
+          DatePickerCalendarDateActiveButtonBackground: "alias:lightDatePickerCalendarText opacity:0.6",
+          DatePickerCalendarDateActiveButtonText: "alias:lightDatePickerCalendarText inverse",
+
           RangePickerButtonBackground: "alias:lightPrimary",
           RangePickerButtonBackgroundHover: "alias:lightRangePickerButtonBackground lighten",
           RangePickerButtonBorder: "alias:lightRangePickerButtonBackground darken",
@@ -417,6 +449,27 @@ export const admin = new AdminForth({
           primary: '#bd1a76',
           Html: "#5c0959",
 
+          Navbar: "alias:darkPrimary opacity:0.2", 
+          NavbarBorder: "alias:darkPrimary", 
+          NavbarText: "alias:darkPrimary inverse", 
+          NavbarTextHover: "alias:darkNavbarText darken",
+          NavbarTextActive: "alias:darkNavbarText darken",
+          NavbarIcons: "alias:darkNavbarText opacity:0.9", 
+          AnnouncementText: "alias:darkPrimaryContrast", 
+          AnnouncementBG: "alias:darkPrimary", 
+
+          Sidebar: "alias:darkPrimary lighten",
+          SidebarText: "alias:darkPrimary inverse",
+          SidebarBorder: "alias:darkSidebarText opacity:0.2", 
+          SidebarItemHover: "alias:darkSidebarText opacity:0.2",
+          SidebarItemActive: "alias:darkSidebarText opacity:0.3",
+          SidebarTextHover: "alias:darkSidebarText darken", 
+          SidebarTextActive: "alias:darkSidebarText",
+          SidebarDevider: "alias:darkSidebarText opacity:0.3",
+          SidebarIcons: "alias:darkSidebarText", 
+          SidebarIconsHover: "alias:darkSidebarText darken", 
+          SidebarHeading: "alias:darkSidebarText opacity:0.3",
+
           List: "#470538", 
           ListTable: "#753767", 
           ListTableHeading: "#db0dbc", 
@@ -433,7 +486,7 @@ export const admin = new AdminForth({
           ListTablePaginationTextHover: "alias:darkListTablePaginationText opacity:0.6",
           ListTablePaginationHelpText: "alias:darkListTablePaginationCurrentPageText", 
 
-          Form: "#36bfb4", 
+          Form: "alias:darkPrimary lighten", 
           FormBorder: "#222222", 
           FormHeading: "alias:darkListTableHeading",
           FormFieldTextColor: "alias:darkListTableText",
@@ -562,12 +615,26 @@ export const admin = new AdminForth({
           BreadcrumbsArrowIcon: "alias:darkBreadcrumbsHomepageText opacity:0.6",
           BreadcrumbsText: "alias:darkBreadcrumbsHomepageText lighten",
 
+
           DatePickerButtonBackground: "alias:darkInputBackground",
           DatePickerButtonText: "alias:darkInputText",
           DatePickerPlaceHolder: "alias:darkInputPlaceholderText",
           DatePickerButtonBorder: "alias:darkInputBorder",
           DatePickerIcon: "alias:darkPrimary",
           DatePickerExpandText: "alias:darkPrimary",
+
+          DatePickerCalendarBackground: "alias:darkPrimary lighten",
+          DatePickerCalendarText: "alias:darkDatePickerCalendarBackground inverse",
+          DatePickerCalendarArrowButtonBackground: "alias:darkDatePickerCalendarBackground lighten",
+          DatePickerCalendarArrowButtonBackgroundHover: "alias:darkDatePickerCalendarBackground darken",
+          DatePickerCalendarArrowButtonFocusRing: "alias:darkDatePickerCalendarArrowButtonBackgroundHover",
+          DatePickerCalendarDaysOfWeekText: "alias:darkDatePickerCalendarBackground inverse",
+          DatePickerCalendarDateButtonText: "alias:darkDatePickerCalendarBackground inverse",
+          DatePickerCalendarDateButtonBackgroundHover: "alias:darkDatePickerCalendarBackground lighten",
+          DatePickerCalendarDateActiveButtonBackground: "alias:darkDatePickerCalendarBackground inverse",
+          DatePickerCalendarDateActiveButtonText: "alias:darkDatePickerCalendarBackground",
+
+
 
           RangePickerButtonBackground: "alias:darkPrimary",
           RangePickerButtonBackgroundHover: "alias:darkRangePickerButtonBackground lighten",

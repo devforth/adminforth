@@ -203,7 +203,7 @@
     >
         <!-- Buttons -->
         <button
-          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-ligthListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-ligthListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page--; pageInput = page.toString();" :disabled="page <= 1">
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
@@ -215,14 +215,14 @@
           </span>
         </button>
         <button
-          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-ligthListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-ligthListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
         <div
           contenteditable="true" 
-          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-ligthListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
+          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
           @input="onPageInput($event)"
           @blur="validatePageInput()"
@@ -231,14 +231,14 @@
         </div>
 
         <button
-          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-ligthListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-ligthListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
           {{ totalPages }}
 
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
-          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-ligthListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-ligthListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
           <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -250,7 +250,7 @@
     </div>
 
     <!-- Help text -->
-    <span class="text-sm text-ligthListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
+    <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
         <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
         <template v-else-if="resource && totalRows > 0">
           
