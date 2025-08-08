@@ -227,7 +227,6 @@ export default class ConfigValidator implements IConfigValidator {
 
     bulkActions.push({
       label: `Delete checked`,
-      state: 'danger',
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
