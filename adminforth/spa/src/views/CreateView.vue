@@ -13,14 +13,14 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="$router.back()"
-        class="af-cancel-button flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewCancelButtonText focus:outline-none bg-lightCreateViewCancelButtonBackground rounded border border-lightCreateViewCancelButtonBorder hover:bg-lightCreateViewCancelButtonBackgroundHover hover:text-lightCreateViewCancelButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewCancelButtonFocusRing dark:focus:ring-darkCreateViewCancelButtonFocusRing dark:bg-darkCreateViewCancelButtonBackground dark:text-darkCreateViewCancelButtonText dark:border-darkCreateViewCancelButtonBorder dark:hover:text-darkCreateViewCancelButtonTextHover dark:hover:bg-darkCreateViewCancelButtonBackgroundHover"
+        class="af-cancel-button flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
 
       <button  
         @click="saveRecord"
-        class="af-save-button flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewSaveButtonBackground rounded border border-lightCreateViewSaveButtonBorder hover:bg-lightCreateViewSaveButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewSaveButtonFocusRing dark:focus:ring-darkCreateViewSaveButtonFocusRing dark:bg-darkCreateViewSaveButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewSaveButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewSaveButtonBackgroundHover disabled:opacity-50"
+        class="af-save-button flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50"
         :disabled="saving || (validating && !isValid)"
       > 
         <svg v-if="saving"
