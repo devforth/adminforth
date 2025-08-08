@@ -271,7 +271,12 @@ export const styles = () => ({
     lightEditViewSaveButtonTextHover: "#B91C1C",
 
     /* ListView buttons */
-
+    lightListViewButtonBackground: "#FFFFFF",
+    lightListViewButtonBackgroundHover: "#F3F4F6",
+    lightListViewButtonText: "#111827",
+    lightListViewButtonTextHover: "alias:lightPrimary",
+    lightListViewButtonFocusRing: "#F3F4F6",
+    lightListViewButtonBorder: "#D1D5DB",
 
     
     
@@ -511,6 +516,8 @@ export const styles = () => ({
     darkToastText: "#9CA3AF",
 
 ///////////////////////////////////////////////////////////////////
+    //Show views
+    /* CreateView buttons */
     darkCreateViewButtonBackground: "#1F2937",
     darkCreateViewButtonBackgroundHover: "#374151",
     darkCreateViewButtonText: "#9CA3AF",
@@ -521,6 +528,7 @@ export const styles = () => ({
     darkCreateViewSaveButtonText: "#EF4444",
     darkCreateViewSaveButtonTextHover: "#FFFFFF",
 
+    /* EditView buttons */
     darkEditViewButtonBackground: "#1F2937",
     darkEditViewButtonBackgroundHover: "#374151",
     darkEditViewButtonText: "#9CA3AF",
@@ -530,6 +538,14 @@ export const styles = () => ({
 
     darkEditViewSaveButtonText: "#EF4444",
     darkEditViewSaveButtonTextHover: "#FFFFFF",
+
+    /* ListView buttons */
+    darkListViewButtonBackground: "#1F2937",
+    darkListViewButtonBackgroundHover: "#374151",
+    darkListViewButtonText: "#9CA3AF",
+    darkListViewButtonTextHover: "#FFFFFF",
+    darkListViewButtonFocusRing: "#374151",
+    darkListViewButtonBorder: "#4B5563",
 
 
   },

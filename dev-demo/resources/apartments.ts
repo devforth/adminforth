@@ -498,7 +498,6 @@ export default {
       {
         label: "Mark as listed",
         // icon: 'typcn:archive',
-        state: "active",
         confirm:
           "Are you sure you want to mark all selected apartments as listed?",
         action: async function ({ selectedIds, adminUser }: any) {

@@ -95,12 +95,9 @@ export interface AdminForthBulkActionCommon {
   label: string,
 
   /**
-   * Bulk Action button state 'danger'|success|'active',
-   *  * 'danger' - red button
-   *  * 'success' - green button
-   *  * 'active' - blue button
+   * Add custom class
    **/ 
-  state?: 'danger' | 'success' | 'active';
+  buttonCustomCssClass?: string;
 
   /** 
    * Optional small badge for button which will be displayed in the list view

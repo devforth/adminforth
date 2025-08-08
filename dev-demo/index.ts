@@ -390,6 +390,14 @@ export const admin = new AdminForth({
           EditViewSaveButtonText: "#DC2626",
           EditViewSaveButtonTextHover: "#B91C1C",
 
+          ListViewButtonBackground: "alias:lightPrimary",
+          ListViewButtonBackgroundHover: "alias:lightListViewButtonBackground lighten",
+          ListViewButtonText: "alias:lightListViewButtonBackground inverse",
+          ListViewButtonTextHover: "alias:lightListViewButtonText opacity:0.8",
+          ListViewButtonFocusRing: "alias:lightlistViewButtonBackground",
+          ListViewButtonBorder: "alias:lightListViewButtonBackground darken",
+
+
         },
         dark: {
           primary: '#bd1a76',
@@ -608,6 +616,14 @@ export const admin = new AdminForth({
 
           EditViewSaveButtonText: "#F87171",
           EditViewSaveButtonTextHover: "#FFFFFF",
+
+
+          ListViewButtonBackground: "alias:darkPrimary",
+          ListViewButtonBackgroundHover: "alias:darkListViewButtonBackground lighten",
+          ListViewButtonText: "alias:darkListViewButtonBackground inverse",
+          ListViewButtonTextHover: "alias:darkListViewButtonText opacity:0.8",
+          ListViewButtonFocusRing: "alias:darklistViewButtonBackground",
+          ListViewButtonBorder: "alias:darkListViewButtonBackground darken",
 
         }
       }
