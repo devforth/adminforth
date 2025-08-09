@@ -87,7 +87,7 @@
     <textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
       ref="input"
-      class="bg-lightColumnValueInputBackground border border-lightColumnValueInputBorder text-lightColumnValueInputText placeholder-lightColumnValueInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkColumnValueInputBackground dark:border-darkColumnValueInputBorder dark:placeholder-darkColumnValueInputPlaceholderText dark:text-darkColumnValueInputText dark:border-darkColumnValueInputBorder focus:ring-lightColumnValueInputFocusRing focus:border-lightColumnValueInputFocusBorder dark:focus:ring-darkColumnValueInputFocusRing dark:focus:border-darkColumnValueInputFocusBorder"
+      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -96,7 +96,7 @@
     <textarea
       v-else-if="['json'].includes(type || column.type)"
       ref="input"
-      class="bg-lightColumnValueInputBackground border border-lightColumnValueInputBorder text-lightColumnValueInputText placeholder-lightColumnValueInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkColumnValueInputBackground dark:border-darkColumnValueInputBorder dark:placeholder-darkColumnValueInputPlaceholderText dark:text-darkColumnValueInputText dark:border-darkColumnValueInputBorder focus:ring-lightColumnValueInputFocusRing focus:border-lightColumnValueInputFocusBorder dark:focus:ring-darkColumnValueInputFocusRing dark:focus:border-darkColumnValueInputFocusBorder"
+      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -123,7 +123,7 @@
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
       @click="$emit('delete')"
     >
-      <IconTrashBinSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons"/>
+      <IconTrashBinSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"/>
     </button>
     <button
       v-else-if="column.masked"
@@ -131,8 +131,8 @@
       @click="$emit('update:unmasked')"
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
     >
-      <IconEyeSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons"  v-if="!unmasked[column.name]"/>
-      <IconEyeSlashSolid class="w-6 h-6 text-lightColumnValueInputIcons dark:text-darkColumnValueInputIcons" v-else />
+      <IconEyeSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"  v-if="!unmasked[column.name]"/>
+      <IconEyeSlashSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons" v-else />
     </button>
   </div>
 </template>

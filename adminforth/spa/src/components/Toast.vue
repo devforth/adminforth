@@ -3,11 +3,6 @@
 
 <div class="flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText"
     role="alert"
-    :class="
-        {
-            'danger': 'bg-red-100 ',
-        }[toast.variant]
-    "
 >
     <div v-if="toast.variant == 'info'" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity rounded-lg dark:bg-blue-800 dark:text-blue-200">
         <svg class="w-4 h-4"  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
