@@ -29,6 +29,24 @@ export const styles = () => ({
     lightSidebarIconsHover: "alias:lightSidebarText", // sidebar list item icons hover
     lightSidebarHeading: "alias:lightSidebarText opacity:0.3", // sidebar heading
 
+
+    /*************************************************************** 
+    *                                                              *
+    *                          Light Views                         *
+    *                                                              *
+    ***************************************************************/
+              /*----------------------------------------*/
+              /* Show/Create/Edit View Table background */
+              /*----------------------------------------*/
+    lightForm: "#ffffff", // show view background
+    lightFormBorder: "#F5F5F5", // show view rows border
+    lightFormHeading: "alias:lightListTableHeading", // show view heading
+    lightFormFieldTextColor: "alias:lightListTableText",
+
+
+              /*----------------------------------------*/
+              /*            List View Table             */
+              /*----------------------------------------*/
     lightListSkeletLoader: "#E5E7EB",
     lightList: "#FFFFFF", // list view background
     lightListTable: "#FFFFFF", // list view table background
@@ -36,8 +54,8 @@ export const styles = () => ({
     lightListTableHeadingText: "#374151", // list view table heading text
     lightListTableText: "#6B7280", // list view table text
     lightListTableRowHover: "rgb(249 250 251)", // list view row hover
-    // lightListBreadcrumbsText: "#666666", // list view breadcrumbs text
     lightListBorder: "#DDDDDD", // list view  rows 
+
     lightListTablePaginationBackgoround: "#FFFFFF",
     lightListTablePaginationBackgoroundHover: "#F3F4F6",
     lightListTablePaginationBorder: "#D1D5DB",
@@ -47,11 +65,18 @@ export const styles = () => ({
     lightListTablePaginationTextHover: "alias:lightPrimary",
     lightListTablePaginationHelpText: "#374151",
 
-    lightForm: "#ffffff", // show view background
-    lightFormBorder: "#F5F5F5", // show view rows border
-    lightFormHeading: "alias:lightListTableHeading", // show view heading
-    lightFormFieldTextColor: "alias:lightListTableText",
+    /* ListView buttons */
+    lightListViewButtonBackground: "#FFFFFF",
+    lightListViewButtonBackgroundHover: "#F3F4F6",
+    lightListViewButtonText: "#111827",
+    lightListViewButtonTextHover: "alias:lightPrimary",
+    lightListViewButtonFocusRing: "#F3F4F6",
+    lightListViewButtonBorder: "#D1D5DB",
 
+
+              /*----------------------------------------*/
+              /*            Show View Table             */
+              /*----------------------------------------*/
     lightShowTableHeadingBackground: "alias:lightFormHeading",
     lightShowTableHeadingText: "#374151",
     lightShowTableUnderHeadingBackground: "alias:lightFormHeading",
@@ -59,6 +84,61 @@ export const styles = () => ({
     lightShowTablesBodyBackground: "alias:lightForm",
     lightShowTableBodyText: "#6B7280",
     lightShowTableBodyBorder: "#F3F4F6",
+
+
+    /* Show View buttons*/
+    lightShowViewButtonBackground: "#FFFFFF",
+    lightShowViewButtonBackgroundHover: "#F3F4F6",
+    lightShowViewButtonText: "#111827",
+    lightShowViewButtonTextHover: "alias:lightPrimary",
+    lightShowViewButtonFocusRing: "#F3F4F6",
+    lightShowViewButtonBorder: "#D1D5DB",
+
+
+              /*----------------------------------------*/
+              /*            Create View Table           */
+              /*----------------------------------------*/
+    /* CreateView buttons */
+    lightCreateViewButtonBackground: "#FFFFFF",
+    lightCreateViewButtonBackgroundHover: "#F3F4F6",
+    lightCreateViewButtonText: "#111827",
+    lightCreateViewButtonTextHover: "alias:lightPrimary",
+    lightCreateViewButtonFocusRing: "#F3F4F6",
+    lightCreateViewButtonBorder: "#D1D5DB",
+
+    lightCreateViewSaveButtonText: "#DC2626",
+    lightCreateViewSaveButtonTextHover: "#B91C1C",
+
+
+              /*----------------------------------------*/
+              /*             Edit View Table            */
+              /*----------------------------------------*/
+    /* EditView buttons */
+    lightEditViewButtonBackground: "#FFFFFF",
+    lightEditViewButtonBackgroundHover: "#F3F4F6",
+    lightEditViewButtonText: "#111827",
+    lightEditViewButtonTextHover: "alias:lightPrimary",
+    lightEditViewButtonFocusRing: "#F3F4F6",
+    lightEditViewButtonBorder: "#D1D5DB",
+
+    lightEditViewSaveButtonText: "#DC2626",
+    lightEditViewSaveButtonTextHover: "#B91C1C",  
+
+              /*----------------------------------------*/
+              /*            Login View Table            */
+              /*----------------------------------------*/
+    /* Login View */
+    lightLoginViewBackground: "#FFFFFF",
+    lightLoginViewTextColor: "#111827",
+    lightLoginViewSubTextColor: "#9CA3AF",
+    lightLoginViewPromptBackground: "#F9FAFB",
+    lightLoginViewPromptText: "#1F2937",
+
+    /*************************************************************** 
+    *                                                              *
+    *                  AdminForth light components                 *
+    *                                                              *
+    ***************************************************************/
 
     lightButtons: "#FFFFFF", // button background
     lightButtonsBorder: "#DDDDDD", // button border
@@ -102,14 +182,6 @@ export const styles = () => ({
     lightToggleText: "black",  // color of text next to toggle
     lightToggleBorderUnactive: "alias:lightPrimary lighten", // unactive state border
     lightToggleBorderActive: "alias:lightPrimary darken", // active state border
-
-    lightColumnValueInputBackground: "#f9fafb",  //input column value input background
-    lightColumnValueInputPlaceholderText: "#6B7280", //placeholder text color
-    lightColumnValueInputText: "#111827", //text color 
-    lightColumnValueInputBorder: "#D1D5DB", //border color 
-    lightColumnValueInputIcons: "#9CA3AF", //icons next to the input
-    lightColumnValueInputFocusRing: "alias:lightPrimary",
-    lightColumnValueInputFocusBorder: "alias:lightPrimary",
 
     lightInputBackground: "#f9fafb",  // input background
     lightInputPlaceholderText: "#6B7280", //placeholder text color
@@ -260,52 +332,6 @@ export const styles = () => ({
     lightToastText: "#6B7280",
 
 
-    //Show views
-    /* CreateView buttons */
-    lightCreateViewButtonBackground: "#FFFFFF",
-    lightCreateViewButtonBackgroundHover: "#F3F4F6",
-    lightCreateViewButtonText: "#111827",
-    lightCreateViewButtonTextHover: "alias:lightPrimary",
-    lightCreateViewButtonFocusRing: "#F3F4F6",
-    lightCreateViewButtonBorder: "#D1D5DB",
-
-    lightCreateViewSaveButtonText: "#DC2626",
-    lightCreateViewSaveButtonTextHover: "#B91C1C",
-
-    /* EditView buttons */
-    lightEditViewButtonBackground: "#FFFFFF",
-    lightEditViewButtonBackgroundHover: "#F3F4F6",
-    lightEditViewButtonText: "#111827",
-    lightEditViewButtonTextHover: "alias:lightPrimary",
-    lightEditViewButtonFocusRing: "#F3F4F6",
-    lightEditViewButtonBorder: "#D1D5DB",
-
-    lightEditViewSaveButtonText: "#DC2626",
-    lightEditViewSaveButtonTextHover: "#B91C1C",
-
-    /* ListView buttons */
-    lightListViewButtonBackground: "#FFFFFF",
-    lightListViewButtonBackgroundHover: "#F3F4F6",
-    lightListViewButtonText: "#111827",
-    lightListViewButtonTextHover: "alias:lightPrimary",
-    lightListViewButtonFocusRing: "#F3F4F6",
-    lightListViewButtonBorder: "#D1D5DB",
-
-    /* Show View */
-    lightShowViewButtonBackground: "#FFFFFF",
-    lightShowViewButtonBackgroundHover: "#F3F4F6",
-    lightShowViewButtonText: "#111827",
-    lightShowViewButtonTextHover: "alias:lightPrimary",
-    lightShowViewButtonFocusRing: "#F3F4F6",
-    lightShowViewButtonBorder: "#D1D5DB",
-
-    /* Login View */
-    lightLoginViewBackground: "#FFFFFF",
-    lightLoginViewTextColor: "#111827",
-    lightLoginViewSubTextColor: "#9CA3AF",
-    lightLoginViewPromptBackground: "#F9FAFB",
-    lightLoginViewPromptText: "#1F2937",
-
 
     
     
@@ -337,6 +363,23 @@ export const styles = () => ({
     darkSidebarIconsHover: "alias:darkSidebarText", 
     darkSidebarHeading: "alias:darkSidebarText opacity:0.3", 
 
+    /*************************************************************** 
+    *                                                              *
+    *                          Light Views                         *
+    *                                                              *
+    ***************************************************************/
+              /*----------------------------------------*/
+              /* Show/Create/Edit View Table background */
+              /*----------------------------------------*/
+    darkForm: "#1F2937", 
+    darkFormBorder: "#FF0000", 
+    darkFormHeading: "alias:darkListTableHeading",
+    darkFormFieldTextColor: "alias:darkListTableText",
+    
+
+              /*----------------------------------------*/
+              /*            List View Table             */
+              /*----------------------------------------*/
     darkListSkeletLoader: "#374151",
     darkList: "#111111", 
     darkListTable: "#1f2937", 
@@ -344,8 +387,8 @@ export const styles = () => ({
     darkListTableHeadingText: "#9ca3af",
     darkListTableText: "#9CA3AF", 
     darkListTableRowHover: "rgb(35 47 65)",
-    // darkListBreadcrumbsText: "#BBBBBB", 
     darkListBorder: "#444444",
+
     darkListTablePaginationBackgoround: "#1F2937",
     darkListTablePaginationBackgoroundHover: "#374151",
     darkListTablePaginationBorder: "#4B5563",
@@ -355,13 +398,80 @@ export const styles = () => ({
     darkListTablePaginationTextHover: "#FFFFFF",
     darkListTablePaginationHelpText: "#9CA3AF", 
 
-    darkForm: "#1F2937", 
-    darkFormBorder: "#222222", 
-    darkFormHeading: "alias:darkListTableHeading",
-    darkFormFieldTextColor: "alias:darkListTableText",
+    /* ListView buttons */
+    darkListViewButtonBackground: "#1F2937",
+    darkListViewButtonBackgroundHover: "#374151",
+    darkListViewButtonText: "#9CA3AF",
+    darkListViewButtonTextHover: "#FFFFFF",
+    darkListViewButtonFocusRing: "#374151",
+    darkListViewButtonBorder: "#4B5563",
 
+              /*----------------------------------------*/
+              /*            Show View Table             */
+              /*----------------------------------------*/
+    darkShowTableHeadingBackground: "alias:darkFormHeading",
+    darkShowTableHeadingText: "#9CA3AF",
+    darkShowTableUnderHeadingBackground: "alias:darkFormHeading",
+    darkShowTableUnderHeadingText: "#9CA3AF",
+    darkShowTablesBodyBackground: "alias:darkForm",
+    darkShowTableBodyText: "#9CA3AF",
+    darkShowTableBodyBorder: "#374151",
+
+        /* Show View buttons*/
+    darkShowViewButtonBackground: "#1F2937",
+    darkShowViewButtonBackgroundHover: "#374151",
+    darkShowViewButtonText: "#9CA3AF",
+    darkShowViewButtonTextHover: "#FFFFFF",
+    darkShowViewButtonFocusRing: "#374151",
+    darkShowViewButtonBorder: "#4B5563",
+              /*----------------------------------------*/
+              /*            Create View Table           */
+              /*----------------------------------------*/
+    /* CreateView buttons */
+    darkCreateViewButtonBackground: "#1F2937",
+    darkCreateViewButtonBackgroundHover: "#374151",
+    darkCreateViewButtonText: "#9CA3AF",
+    darkCreateViewButtonTextHover: "#FFFFFF",
+    darkCreateViewButtonFocusRing: "#374151",
+    darkCreateViewButtonBorder: "#4B5563",
+
+    darkCreateViewSaveButtonText: "#EF4444",
+    darkCreateViewSaveButtonTextHover: "#FFFFFF",
+
+
+              /*----------------------------------------*/
+              /*             Edit View Table            */
+              /*----------------------------------------*/
+    /* EditView buttons */
+    darkEditViewButtonBackground: "#1F2937",
+    darkEditViewButtonBackgroundHover: "#374151",
+    darkEditViewButtonText: "#9CA3AF",
+    darkEditViewButtonTextHover: "#FFFFFF",
+    darkEditViewButtonFocusRing: "#374151",
+    darkEditViewButtonBorder: "#4B5563",
+
+    darkEditViewSaveButtonText: "#EF4444",
+    darkEditViewSaveButtonTextHover: "#FFFFFF",
+
+
+              /*----------------------------------------*/
+              /*             Login View Table           */
+              /*----------------------------------------*/
+    /* Login view */
+    darkLoginViewBackground: "#374151",
+    darkLoginViewTextColor: "#FFFFFF",
+    darkLoginViewSubTextColor: "#D1D5DB",
+    darkLoginViewPromptBackground: "#1F2937",
+    darkLoginViewPromptText: "#9CA3AF",
+
+
+    /*************************************************************** 
+    *                                                              *
+    *                  AdminForth light components                 *
+    *                                                              *
+    ***************************************************************/
     darkDropdownButtonsBackground: "#374151",
-    darkDropownButtonsBorder: "#4b5563", 
+    darkDropdownButtonsBorder: "#4b5563",
     darkDropdownButtonsText: "#FFFFFF",
     darkDropdownButtonsPlaceholderText: "#9CA3AF",
 
@@ -391,14 +501,6 @@ export const styles = () => ({
     darkToggleText: "alias:darkPrimaryContrast lighten", 
     darkToggleBorderUnactive: "alias:darkPrimary lighten",
     darkToggleBorderActive: "alias:darkPrimary darken",
-
-    darkColumnValueInputBackground: "#374151",
-    darkColumnValueInputPlaceholderText: "#9CA3AF",
-    darkColumnValueInputText: "#FFFFFF",
-    darkColumnValueInputBorder: "#4b5563",
-    darkColumnValueInputIcons: "#9CA3AF",
-    darkColumnValueInputFocusRing: "alias:darkPrimary",
-    darkColumnValueInputFocusBorder: "alias:darkPrimary",
 
     darkInputBackground: "#374151",
     darkInputPlaceholderText: "#9CA3AF",
@@ -531,14 +633,6 @@ export const styles = () => ({
     darkFiltersClearAllButtonTextHover: "#FFFFFF",
     darkFiltersClearAllButtonFocus: "#374151",
 
-    darkShowTableHeadingBackground: "alias:darkFormHeading",
-    darkShowTableHeadingText: "#9CA3AF",
-    darkShowTableUnderHeadingBackground: "alias:darkFormHeading",
-    darkShowTableUnderHeadingText: "#9CA3AF",
-    darkShowTablesBodyBackground: "alias:darkForm",
-    darkShowTableBodyText: "#9CA3AF",
-    darkShowTableBodyBorder: "#F3F4F6",
-
     darkThreeDotsMenuIconBackground: "#1F2937",
     darkThreeDotsMenuIconBackgroundHover: "#374151",
     darkThreeDotsMenuIconBackgroundBorder: "#4B5563",
@@ -557,53 +651,6 @@ export const styles = () => ({
     darkToastCloseIconBackgroundHover: "#374151",
     darkToastCloseIconFocusRing: "#374151",
     darkToastText: "#9CA3AF",
-
-///////////////////////////////////////////////////////////////////
-    //Show views
-    /* CreateView buttons */
-    darkCreateViewButtonBackground: "#1F2937",
-    darkCreateViewButtonBackgroundHover: "#374151",
-    darkCreateViewButtonText: "#9CA3AF",
-    darkCreateViewButtonTextHover: "#FFFFFF",
-    darkCreateViewButtonFocusRing: "#374151",
-    darkCreateViewButtonBorder: "#4B5563",
-
-    darkCreateViewSaveButtonText: "#EF4444",
-    darkCreateViewSaveButtonTextHover: "#FFFFFF",
-
-    /* EditView buttons */
-    darkEditViewButtonBackground: "#1F2937",
-    darkEditViewButtonBackgroundHover: "#374151",
-    darkEditViewButtonText: "#9CA3AF",
-    darkEditViewButtonTextHover: "#FFFFFF",
-    darkEditViewButtonFocusRing: "#374151",
-    darkEditViewButtonBorder: "#4B5563",
-
-    darkEditViewSaveButtonText: "#EF4444",
-    darkEditViewSaveButtonTextHover: "#FFFFFF",
-
-    /* ListView buttons */
-    darkListViewButtonBackground: "#1F2937",
-    darkListViewButtonBackgroundHover: "#374151",
-    darkListViewButtonText: "#9CA3AF",
-    darkListViewButtonTextHover: "#FFFFFF",
-    darkListViewButtonFocusRing: "#374151",
-    darkListViewButtonBorder: "#4B5563",
-
-    /* Show View */
-    darkShowViewButtonBackground: "#1F2937",
-    darkShowViewButtonBackgroundHover: "#374151",
-    darkShowViewButtonText: "#9CA3AF",
-    darkShowViewButtonTextHover: "#FFFFFF",
-    darkShowViewButtonFocusRing: "#374151",
-    darkShowViewButtonBorder: "#4B5563",
-
-    /* Login view */
-    darkLoginViewBackground: "#374151",
-    darkLoginViewTextColor: "#FFFFFF",
-    darkLoginViewSubTextColor: "#D1D5DB",
-    darkLoginViewPromptBackground: "#1F2937",
-    darkLoginViewPromptText: "#9CA3AF",
 
 
   },
