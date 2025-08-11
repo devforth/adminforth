@@ -1,8 +1,8 @@
 <template>
 
 <div class="afcl-table-container relative overflow-x-auto shadow-md sm:rounded-lg">
-  <table class="afcl-table w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-      <thead class="afcl-table-thread text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+  <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText">
+      <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
         <tr>
           <th scope="col" class="px-6 py-3"
             v-for="column in columns"
@@ -19,8 +19,8 @@
         <tr
           v-for="(item, index) in dataPage"
           :class="{
-            'afcl-table-body odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800': evenHighlights,
-            'border-b dark:border-gray-700': index !== dataPage.length - 1 || totalPages > 1,
+            'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
+            'border-b border-lightTableBorder dark:border-darkTableBorder': index !== dataPage.length - 1 || totalPages > 1,
           }"
         >
           <td class="px-6 py-4" 
@@ -38,15 +38,15 @@
         </tr>
       </tbody>
   </table>
-  <nav class="afcl-table-pagination-container flex items-center flex-column flex-wrap md:flex-row justify-between p-4" 
+  <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground flex items-center flex-column flex-wrap md:flex-row justify-between p-4" 
     v-if="totalPages > 1"
     :aria-label="$t('Table navigation')">
     <i18n-t 
-      keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto"
+      keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-lightTablePaginationText dark:text-darkTablePaginationText mb-4 md:mb-0 block w-full md:inline md:w-auto"
     >
-      <template #from><span class="font-semibold text-gray-900 dark:text-white">{{ Math.min((currentPage - 1) * props.pageSize + 1, props.data.length) }}</span></template>
-      <template #to><span class="font-semibold text-gray-900 dark:text-white">{{ Math.min(currentPage * props.pageSize, props.data.length) }}</span></template>
-      <template #total><span class="font-semibold text-gray-900 dark:text-white">{{ props.data.length }}</span></template>
+      <template #from><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min((currentPage - 1) * props.pageSize + 1, props.data.length) }}</span></template>
+      <template #to><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min(currentPage * props.pageSize, props.data.length) }}</span></template>
+      <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ props.data.length }}</span></template>
     </i18n-t>
 
     <ul class="afcl-table-pagination-list inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
@@ -55,8 +55,8 @@
           @click.prevent="switchPage(page)"
           :aria-current="page === page ? 'page' : undefined"
           :class='{
-            "afcl-table-pagination-button text-blue-600 bg-lightPrimary text-lightPrimaryContrast dark:bg-darkPrimary dark:text-darkPrimaryContrast hover:opacity-90": page === currentPage,
-            "text-gray-500 border bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white": page !== currentPage,
+            "afcl-table-pagination-button text-blue-600 bg-lightActivePaginationButtonBackground text-lightActivePaginationButtonText dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText hover:opacity-90": page === currentPage,
+            "text-lightUnactivePaginationButtonText border bg-lightUnactivePaginationButtonBackground border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:border-darkUnactivePaginationButtonBorder dark:text-darkUnactivePaginationButtonText dark:hover:bg-darkUnactivePaginationButtonHoverBackground dark:hover:text-darkUnactivePaginationButtonHoverText": page !== currentPage,
             "rounded-s-lg ms-0": page === 1,
             "rounded-e-lg": page === totalPages,
           }'
