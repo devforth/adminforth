@@ -310,7 +310,7 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req:any, res:any) => {
+    async (req:IAdminUserExpressRequest, res:any) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
