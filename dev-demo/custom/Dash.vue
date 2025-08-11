@@ -1,313 +1,230 @@
 <template>
-
-  <div class="flex gap-10">
-    <div class="flex flex-col max-w-[200px] m-10 mt-20 gap-10">
-      <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
-      <Button @click="doSmth" 
-        :loader="false" class="w-full">
-        Your button text
-      </Button>
-
-      <Button @click="doSmth" 
-          :loader="true" class="w-full mt-4">
-        Your button text
-      </Button>
-
-      <Link to="/login">Go to login</Link>
-
-      <LinkButton to="/login">Go to login</LinkButton>
-
-      <Select
-        class="w-full"
-        :options="[
-          {label: 'Last 7 days', value: '7'}, 
-          {label: 'Last 30 days', value: '30'}, 
-          {label: 'Last 90 days', value: '90'},
-          {label: 'None', value: null}
-        ]"
-        v-model="selected"
-      ></Select>
-
-      <Select
-        class="w-full"
-        :options="[
-          {label: 'Last 7 days', value: '7'}, 
-          {label: 'Last 30 days', value: '30'}, 
-          {label: 'Last 90 days', value: '90'},
-          {label: 'None', value: null}
-        ]"
-        v-model="selected2"
-        multiple
-      ></Select>
-
-      <Select
-        class="w-full"
-        :options="[
-          {label: 'Last 7 days', value: '7', records: 110},
-          {label: 'Last 30 days', value: '30', records: 320},
-          {label: 'Last 90 days', value: '90', records: 310},
-          {label: 'None', value: null}
-        ]"
-        v-model="selected"
-      >
-        <template #item="{option}">
-          <div>
-            <span>{{ option.label }}</span>
-            <span class="ml-2 opacity-50">{{ option.records }} records</span>
-          </div>
-        </template>
-        <template #selected-item="{option}">
-          <span>{{ option.label }} 💫</span>
-        </template>
-      </Select>
-
-      <Select
-        class="w-full"
-        :options="[
-          {label: 'Last 7 days', value: '7'}, 
-          {label: 'Last 30 days', value: '30'}, 
-          {label: 'Last 90 days', value: '90'},
-        ]"
-        v-model="selected"
-      >
-        <template #extra-item>
-          <LinkButton to="/ranges">Manage ranges</LinkButton>
-        </template>
-
-      </Select>
-
-
-      <Input type="number" class="w-full">
-        <template #suffix>
-          USD
-        </template>
-      </Input>
-
-      <Input type="text" class="w-full">
-        <template #rightIcon>
-          <IconSearchOutline class="w-5 h-5 text-lightPrimary dark:text-darkPrimary "/>
-        </template>
-      </Input>
-
-      <Tooltip>
-          <a :href="`https://google.com?q=adminforth`" target="_blank" >
-              <IconCardSearch class="w-5 h-5 me-2"/>
-          </a>
-
-          <template #tooltip>
-              Search for AdminForth
-          </template>
-      </Tooltip>
-
-      <VerticalTabs>
-        <template #tab:Profile>
-          <IconUserCircleSolid class="w-5 h-5 me-2"/>
-          Profile
-        </template>
-        <template #tab:Dashboard>
-          <IconGridSolid class="w-5 h-5 me-2"/>
-          Board
-        </template>
-        <template #Profile>
-          <h3 class="text-lg font-bold text-lightPrimary dark:text-darkPrimary mb-2">Profile Tab</h3>
-          <p class="mb-2">This is some placeholder content the Profile tab's associated content</p>
-        </template>
-        <template #Dashboard>
-          Dashboard Tab Content 
-        </template>
-      </VerticalTabs>
-
-      <Checkbox v-model="enable">
-        Enable
-      </Checkbox>
-
-      <Dialog class="w-96">
-        <template #trigger>
-          <Button>Dialog Toggle</Button>
-        </template>
-
-        <div class="space-y-4">
-          <p>This is the first paragraph of dialog content.</p>
-          <p>And this is the second paragraph.</p>
+  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-[calc(100dvh-55px)] ">
+  
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data" >
+        <div>
+          <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ $t('Apartments') }}</h5>
+          <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
         </div>
-      </Dialog>
-    </div>
+        <BarChart
+          :data="apartsCountsByDaysChart"
+          :series="[{
+            name: $t('Added apartments'),
+            fieldName: 'count',
+            color: COLORS[0],
+          }]"
+          :options="{
+            chart: {
+              height: 130,
+            },
+            yaxis: {
+              stepSize: 1,
+              labels: { show: false },
+            },
+            grid: {
+              show: false,
+            }
+          }"
+        />
+      </div>
 
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Top countries') }}</p>
+        <PieChart
+          :data="topCountries"
+          :options="{
+            chart: { type: 'pie', height: 240 },
+            legend: {
+              show: false,
+            },
+            dataLabels: {
+              enabled: true,
+              formatter: function (value, o) {
+                const countryISO = o.w.config.labels[o.seriesIndex];
+                return countryISO;
+              }
+            },
+          }"
+        />
+      </div>
 
-    <div class="flex flex-col gap-10 m-10 mt-20">
-
-      <Dialog
-        class="w-96"
-        header="Dialog Header"
-      >
-        <template #trigger>
-          <Button>Dialog Toggle</Button>
-        </template>
-
-        <div class="space-y-4">
-          <p>This is the first paragraph of dialog content.</p>
-          <p>And this is the second paragraph.</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2" v-if="data">
+        <div class="grid grid-cols-2 py-3">
+          <dl>
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
+            <dd class="leading-none text-xl font-bold dark:text-green-400" :style="{color:COLORS[0]}">{{
+              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
+                data.totalListedPrice,
+              ) }}
+            </dd>
+          </dl>
+          <dl>
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Unlisted price') }}</dt>
+            <dd class="leading-none text-xl font-bold dark:text-red-500" :style="{color:COLORS[1]}">{{
+              new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
+                data.totalUnlistedPrice,
+              ) }}
+            </dd>
+          </dl>
         </div>
-      </Dialog>
 
-      <Dropzone
-        :extensions="['.jpg', '.jpeg', '.png']"
-        :maxSizeBytes="1024 * 1024 * 2"
-        :multiple="false"
-        v-model="files"
-      />
-
-       <ProgressBar
-        :currentValue="2600"
-        :minValue="0"
-        :maxValue="5000"
+        <BarChart
+          :data="listedVsUnlistedCountByDays"
+          :series="[{
+            name: $t('Listed Count'),
+            fieldName: 'listed',
+            color: COLORS[0],
+          },
+          {
+            name: $t('Unlisted Count'),
+            fieldName: 'unlisted',
+            color: COLORS[1],
+          }]"
+          :options="{
+            chart: {
+              height: 500,
+            },
+            xaxis: {
+              labels: { show: true },
+              stepSize: 1,  // since count is integer, otherwise axis will be float
+            },
+            yaxis: {
+              labels: { show: true }
+            },
+            grid: {
+              show: true,
+            },
+            plotOptions: {
+              bar: { 
+                horizontal: true, // by default bars are vertical
+              }
+            },
+          }"
         />
 
-        <ProgressBar
-          :currentValue="1070"
-          :minValue="0"
-          :maxValue="5000"
-          :leftLabel="'Level 2'"
-          :rightLabel="'Level 3'"
-          :formatter="(value: number) => `${value} points`"
-          :progressFormatter="(value: number, percentage: number) => `${value} done`"
+      </div>
+
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment by rooms') }}</p>
+        <PieChart
+          :data="apartsCountsByRooms"
+          :options="{
+            chart: { height: 350, type: 'donut' },
+            plotOptions: {
+              pie: {
+                donut: {
+                  labels: {
+                    total: {
+                      show: true,
+                      label: $t('Total square'),
+                      formatter: () => `${data.totalSquareMeters.toFixed(0)} m²`,
+                    },
+                  },
+                },
+              },
+            },
+          }"
         />
+      </div>
 
-        <div class="flex flex-col gap-2">
-          <Skeleton class="w-full h-4" />
-          <Skeleton class="w-full h-2" />
-          <Skeleton class="w-full h-2" />
-          <Skeleton class="w-full h-2" />
-          <Skeleton class="w-full h-2" />
-        </div>
-        
-        <Skeleton type="image" class="w-full h-full" />
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Unlisted vs Listed price' ) }}</p>
 
-        <Skeleton type="video" class="w-full h-full" />
+        <AreaChart 
+          :data="listedVsUnlistedPriceByDays"
+          :series="[{
+            name: $t('Listed'),
+            fieldName: 'listedPrice',
+            color: COLORS[0],
+          },
+          {
+            name: $t('Unlisted'),
+            fieldName: 'unlistedPrice',
+            color: COLORS[1],
+          }]"
+          :options="{
+            chart: {
+              height: 250,
+            },
+            yaxis: {
+              labels: {
+                formatter: function (value) {
+                  return '$' + value;
+                }
+              }
+            },
+          }"
+        />
+      </div>
 
-        <Skeleton type="avatar" class="w-20 h-20" />
-
-        <Table
-          class="min-h-[250px]"
-          :columns="[
-            { label: 'Name', fieldName: 'name' },
-            { label: 'Age', fieldName: 'age' },
-            { label: 'Country', fieldName: 'country' },
-          ]"
-          :data="[
-            { name: 'John', age: 30, country: 'US' },
-            { name: 'Rick', age: 25, country: 'CA' },
-            { name: 'Alice', age: 35, country: 'UK' },
-            { name: 'Colin', age: 40, country: 'AU' },
-          ]"
-        ></Table>
-
-
-        <Table
-        class="min-h-[262px]"
-          :columns="[
-            { label: 'Name', fieldName: 'name' },
-            { label: 'Age', fieldName: 'age' },
-            { label: 'Country', fieldName: 'country' },
-          ]"
-          :data="[
-            { name: 'John', age: 30, country: 'US' },
-            { name: 'Rick', age: 25, country: 'CA' },
-            { name: 'Alice', age: 35, country: 'BR' },
-            { name: 'Colin', age: 40, country: 'AU' },
-          ]"
-          :pageSize="3"
-        >
-        </Table>
-
-        <Spinner class="w-10 h-10" />
     </div>
 
-  <div class="flex flex-col gap-10 m-10 mt-20">
-    <CustomRangePicker
-        :min="1"
-        :max="100"
-      />
+      <!-- <div class="flex justify-center items-center p-80 bg-white">
+        <div class="border border-indigo-600 p-5 w-80 h-80 min-w-80 min-h-80 flex items-center flex-col">
+          <Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
+  ]"
+  v-model="selected"
+>
+  <template #item="{option}">
+    <div>
+      <span>{{ option.label }}</span>
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
+    </div>
+  </template>
+  <template #selected-item="{option}">
+    <span>{{ option.label }} 💫</span>
+  </template>
+</Select>
 
-    <Toast
-      :toast="{
-        id: '1',
-        variant: 'info',
-        message: 'This is an info toast',
-        timeout: 'unlimited'
-      }"
-      @close="() => {}"
-    />
+<Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7', records: 110},
+    {label: 'Last 30 days', value: '30', records: 320},
+    {label: 'Last 90 days', value: '90', records: 310},
+    {label: 'None', value: null}
+  ]"
+  v-model="selected"
+>
+  <template #item="{option}">
+    <div>
+      <span>{{ option.label }}</span>
+      <span class="ml-2 opacity-50">{{ option.records }} records</span>
+    </div>
+  </template>
+  <template #selected-item="{option}">
+    <span>{{ option.label }} 💫</span>
+  </template>
+</Select>
+        </div>
+      </div> -->
 
-    <Toast
-      :toast="{
-        id: '2',
-        variant: 'danger',
-        message: 'This is a danger toast',
-        timeout: 'unlimited'
-      }"
-      @close="() => {}"
-    />
-
-    <Toast
-      :toast="{
-        id: '3',
-        variant: 'warning',
-        message: 'This is a warning toast',
-        timeout: 'unlimited'
-      }"
-      @close="() => {}"
-    />
-
-    <Toast
-      :toast="{
-        id: '4',
-        variant: 'success',
-        message: 'This is a success toast',
-        timeout: 'unlimited'
-      }"
-      @close="() => {}"
-    />
-
-    <Toast
-      :toast="{
-        id: '5',
-        variant: 'info',
-        messageHtml: '<b>This is HTML toast</b><br><i>with custom content</i>',
-        timeout: 'unlimited'
-      }"
-      @close="() => {}"
-    />
-
-
+      <!-- <div class="bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 mt-4">
+      </div> -->
   </div>
-
-
-  </div>
-
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, type Ref, onMounted, computed, watch } from 'vue';
+import dayjs from 'dayjs';
+import { callApi } from '@/utils';
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+import { AreaChart, BarChart, Input, Link, LinkButton, PieChart, Select, Table, VerticalTabs } from '@/afcl';
+import Button from '@/afcl/Button.vue';
+import Tooltip from '@/afcl/Tooltip.vue';
+import { IconUserCircleSolid, IconGridSolid } from '@iconify-prerendered/vue-flowbite';
 import Checkbox from '@/afcl/Checkbox.vue';
-import { Button } from '@/afcl'
-import { Link } from '@/afcl'
-import { LinkButton } from '@/afcl'
-import { Select } from '@/afcl'
-import { Input } from '@/afcl'
-import { Tooltip } from '@/afcl'
-import { VerticalTabs } from '@/afcl'
-import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
-import { Dialog } from '@/afcl';
-import { Ref } from 'vue'
+const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))
+
 import { Dropzone } from '@/afcl'
-import { Table } from '@/afcl'
-import { ProgressBar } from '@/afcl';
-import { Skeleton } from '@/afcl';
-import { Spinner } from '@/afcl';
-import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
-import CustomRangePicker from "@/components/CustomRangePicker.vue";
-import Toast from '@/components/Toast.vue';
 
 const files: Ref<File[]> = ref([])
 
@@ -318,14 +235,75 @@ watch(files, (files) => {
     files.length = 0;
   }, 5000);
 })
-const enable = ref(false)
-const selected = ref(null)
-const selected2 = ref([])
 
+const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
+  apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
 
+const { t } = useI18n();
 
-function doSmth(){
+const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
 
-}
+const enable = ref(false);
 
+const apartsCountsByDaysChart = computed(() => {
+  return data.value.apartsByDays?.reverse().map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      count: item.count
+    })
+  );
+});
+
+const listedVsUnlistedPriceByDays = computed(() => {
+  return data.value.listedVsUnlistedPriceByDays?.map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      listedPrice: item.listedPrice.toFixed(2),
+      unlistedPrice: item.unlistedPrice.toFixed(2),
+    })
+  );
+});
+
+const listedVsUnlistedCountByDays = computed(() => {
+  return data.value.listedVsUnlistedByDays?.map(
+    (item) => ({
+      x: dayjs(item.day).format('DD MMM'),
+      listed: item.listed,
+      unlisted: item.unlisted,
+    })
+  );
+});
+
+const apartsCountsByRooms = computed(() => {
+  return data.value.apartsCountsByRooms?.map(
+    (item, i) => ({
+      label: t(`{number_of_rooms} rooms`, { number_of_rooms: item.number_of_rooms }),
+      amount: item.count,
+      color: COLORS[i],
+    })
+  );
+});
+
+const topCountries = computed(() => {
+  return data.value.topCountries?.map(
+    (item, i) => ({
+      label: item.country,
+      amount: item.count,
+      color: COLORS[i],
+    })
+  );
+});
+
+onMounted(async () => {
+  // Fetch data from the API
+  try {
+    data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
+  } catch (error) {
+    adminforth.alert({
+      message: `${t('Error fetching data: ')} ${error.message}`,
+      variant: 'danger',
+    });
+  }
+
+})
 </script>

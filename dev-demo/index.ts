@@ -781,6 +781,12 @@ export const admin = new AdminForth({
       //   title: 'Dashboard',
       // }
     },
+     {
+      label: 'Af Components',
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/AfComponents.vue',
+      path: '/af-components',
+     },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
