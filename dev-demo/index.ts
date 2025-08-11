@@ -82,7 +82,7 @@ export const admin = new AdminForth({
     // loginPromptHTML: async () => { 
     //   const adminforthUserExists = await admin.resource("users").count(Filters.EQ('email', 'adminforth')) > 0;
     //     if (adminforthUserExists) {
-    //       return "Please useeee <b>adminforth</b> as username and <b>adminforth</b> as password"
+    //       return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
     //     }
     //   },
     rememberMeDays: 30,
@@ -179,7 +179,7 @@ export const admin = new AdminForth({
           SidebarHeading: "alias:lightSidebarText opacity:0.3",
 
           List: "#FFFFFF", 
-          ListTable: "#alias:lightPrimary lighten",
+          ListTable: "alias:lightPrimary lighten",
           ListTableHeading: "alias:lightPrimary darken", 
           ListTableHeadingText: "alias:lightListTableHeading inverse",
           ListTableText: "alias:lightListTableHeadingText opacity:0.8",
@@ -194,7 +194,7 @@ export const admin = new AdminForth({
           ListTablePaginationTextHover: "alias:lightListTablePaginationText opacity:0.6",
           ListTablePaginationHelpText: "alias:lightListTablePaginationCurrentPageText", 
 
-          Form: "#alias:lightPrimary lighten", 
+          Form: "alias:lightPrimary lighten", 
           Border: "#F5F5F5", 
           FormHeading: "alias:lightListTableHeading", 
           FormFieldTextColor: "alias:lightListTableText",
@@ -366,7 +366,7 @@ export const admin = new AdminForth({
           FiltersCloseIconHover: "alias:lightFiltersCloseIcon inverse",
           FiltersCloseIconHoverBackground: "alias:lightFiltersCloseIcon",
           FiltersClearAllButtonBackground: "alias:lightPrimary darken",
-          FiltersClearAllButtonBackgroundHover: "alias:lightFiltersClearAllButtonBackground ligten",
+          FiltersClearAllButtonBackgroundHover: "alias:lightFiltersClearAllButtonBackground lighten",
           FiltersClearAllButtonBorder: "alias:lightFiltersClearAllButtonBackground darken",
           FiltersClearAllButtonText: "alias:lightFiltersClearAllButtonBackground inverse",
           FiltersClearAllButtonTextHover: "alias:lightFiltersClearAllButtonText darken",
@@ -381,7 +381,7 @@ export const admin = new AdminForth({
           ThreeDotsMenuBodyBackground: "alias:lightThreeDotsMenuIconBackground",
           ThreeDotsMenuBodyBackgroundHover: "alias:lightThreeDotsMenuBodyBackground darken",
           ThreeDotsMenuBodyText: "alias:lightThreeDotsMenuIconDots",
-          ThreeDotsMenuBodyTextHover: "alias:lightlightThreeDotsMenuIconDots opacity:0.8",
+          ThreeDotsMenuBodyTextHover: "alias:lightThreeDotsMenuIconDots opacity:0.8",
 
           ToastBackground: "alias:lightPrimary opacity:0.6",
           ToastCloseIcon: "alias:lightPrimary darken",
@@ -429,7 +429,7 @@ export const admin = new AdminForth({
           LoginViewTextColor: "alias:lightLoginViewBackground inverse",
           LoginViewSubTextColor: "alias:lightLoginViewTextColor opacity:0.8",
           LoginViewPromptBackground: "alias:lightLoginViewTextColor opacity:0.1",
-          LoginViewPromptText: "alias:ligthLoginViewTextColor",
+          LoginViewPromptText: "alias:lightLoginViewTextColor",
 
 
 
@@ -501,7 +501,7 @@ export const admin = new AdminForth({
           DropdownButtonsPlaceholderText: "alias:darkListTableText opacity:0.6",
 
           DropdownOptionsBackground: "alias:darkForm ",
-          DropdownOptionsHoverBackground: "#alias:darkForm darken",
+          DropdownOptionsHoverBackground: "alias:darkForm darken",
           DropdownPicked:"alias:darkDropdownOptionsHoverBackground opacity:0.5",
           DropdownOptionsText: "alias:darkListTableText",
 
@@ -641,7 +641,7 @@ export const admin = new AdminForth({
           FiltersCloseIconHover: "alias:darkFiltersCloseIcon inverse",
           FiltersCloseIconHoverBackground: "alias:darkFiltersCloseIcon",
           FiltersClearAllButtonBackground: "alias:darkPrimary darken",
-          FiltersClearAllButtonBackgroundHover: "alias:darkFiltersClearAllButtonBackground ligten",
+          FiltersClearAllButtonBackgroundHover: "alias:darkFiltersClearAllButtonBackground lighten",
           FiltersClearAllButtonBorder: "alias:darkFiltersClearAllButtonBackground darken",
           FiltersClearAllButtonText: "alias:darkFiltersClearAllButtonBackground inverse",
           FiltersClearAllButtonTextHover: "alias:darkFiltersClearAllButtonText darken",
