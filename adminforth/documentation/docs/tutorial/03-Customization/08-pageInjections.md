@@ -100,7 +100,7 @@ Also we have to add an Api to get percentages:
 ```ts title="./index.ts"
   app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
     admin.express.authorize(
-      async (req, res) => {
+      async (req: IAdminUserExpressRequest, res) => {
         const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             number_of_rooms, 
