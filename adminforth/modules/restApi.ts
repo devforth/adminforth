@@ -840,11 +840,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
-            console.log(visibleColumns?.[key], key);
-            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly) || visibleColumns?.[key] === false ) {
+            const isPk = pkField && key === pkField;
+            const isUnknown      = !resource.columns.find((col) => col.name === key);
+            const isBackendOnly  = resource.columns.find((col) => col.name === key && col.backendOnly);
+            const isHiddenByACL  = visibleColumns?.[key] === false;
+            
+            if (isUnknown || isBackendOnly || (isHiddenByACL && !isPk)) {
               delete item[key];
             }
           })
