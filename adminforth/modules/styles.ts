@@ -140,15 +140,12 @@ export const styles = () => ({
     *                                                              *
     ***************************************************************/
 
-    lightButtons: "#FFFFFF", // button background
-    lightButtonsBorder: "#DDDDDD", // button border
-    lightButtonsText: "#111827", // button text
-    lightButtonsHover: "#f3f4f6", // button hover
-    lightButtonsBorderHover: "#f3f4f6", // button border hover  
-    lightButtonsActive: "#f3f4f6", // button active
-    lightButtonsDisabled: "#f3f4f6", // button disabled
-    lightButtonsDisabledText: "#f3f4f6", // button disabled text
-    lightButtonsIcon: "#333333", // button icon
+    lightButtonsBackground: "alias:lightPrimary", // button background
+    lightButtonsBorder: "alias:lightPrimary", // button border
+    lightButtonsText: "alias:lightPrimaryContrast", // button text
+    lightButtonsHover: "alias:lightPrimary lighten", // button hover
+    lightButtonsBorderHover: "alias:lightPrimary", // button border hover  
+    lightButtonFocusRing: "alias:lightPrimary opacity:0.6", // button focus ring
     
     lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
     lightDropownButtonsBorder: "#D1D5DB", //border color
@@ -365,7 +362,7 @@ export const styles = () => ({
 
     /*************************************************************** 
     *                                                              *
-    *                          Light Views                         *
+    *                          Dark Views                          *
     *                                                              *
     ***************************************************************/
               /*----------------------------------------*/
@@ -467,9 +464,16 @@ export const styles = () => ({
 
     /*************************************************************** 
     *                                                              *
-    *                  AdminForth light components                 *
+    *                  AdminForth dark components                  *
     *                                                              *
     ***************************************************************/
+    darkButtonsBackground: "alias:darkPrimary", // button background
+    darkButtonsBorder: "alias:darkPrimary", // button border
+    darkButtonsText: "alias:darkPrimaryContrast", // button text
+    darkButtonsHover: "alias:darkPrimary lighten", // button hover
+    darkButtonsBorderHover: "alias:darkPrimary", // button border hover
+    darkButtonFocusRing: "alias:darkPrimary opacity:0.6", // button focus ring
+
     darkDropdownButtonsBackground: "#374151",
     darkDropdownButtonsBorder: "#4b5563",
     darkDropdownButtonsText: "#FFFFFF",
