@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
@@ -104,6 +104,25 @@ export interface IExpressHttpServer extends IHttpServer {
    */  
   authorize(callable: Function): void;
 }
+
+export interface ITranslateFunction {
+  (
+    msg: string,
+    category: string,
+    lang: string,
+    params: any,
+    pluralizationNumber?: number
+  ): Promise<string>;
+}
+
+export interface IAdminUserExpressRequest extends Request {
+  adminUser: AdminUser;
+}
+
+export interface ITranslateExpressRequest extends Request {
+  tr: ITranslateFunction;
+}
+
 
 
 export interface IAdminForthSingleFilter {
@@ -332,7 +351,7 @@ export interface IAdminForth {
 
   formatAdminForth(): string;
   
-  tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
+  tr: ITranslateFunction;
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
