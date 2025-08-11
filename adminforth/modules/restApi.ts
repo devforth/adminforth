@@ -70,7 +70,7 @@ export async function interpretResource(
       })
   );
 
-  const resolveAllowed = async (val: any): Promise<boolean> => {
+  const resolveVisible = async (val: any): Promise<boolean> => {
     if (typeof val === 'boolean') return val;
     if (typeof val === 'function') {
       const r = val({ adminUser, resource, meta, source, adminforth });
@@ -79,11 +79,17 @@ export async function interpretResource(
     return true;
   };
 
-  const page: 'list' | 'show' | 'edit' = ({
+  const pageMap = {
     [ActionCheckSource.ListRequest]: 'list',
     [ActionCheckSource.ShowRequest]: 'show',
     [ActionCheckSource.EditLoadRequest]: 'edit',
-  } as const)[source] ?? 'show';
+  } as const;
+  
+  const page = pageMap[source as keyof typeof pageMap] as ('list'|'show'|'edit') | undefined;
+  
+  if (!page) {
+    return { allowedActions, visibleColumns: {} };
+  }
 
   const isColumnVisible = async (col: any): Promise<boolean> => {
     const si = col.showIn;
@@ -93,8 +99,8 @@ export async function interpretResource(
       return si.includes('all') || si.includes(page);
     }
 
-    if (si[page] !== undefined) return await resolveAllowed(si[page]);
-    if (si.all  !== undefined)  return await resolveAllowed(si.all);
+    if (si[page] !== undefined) return await resolveVisible(si[page]);
+    if (si.all  !== undefined)  return await resolveVisible(si.all);
     return true;
   };
 
