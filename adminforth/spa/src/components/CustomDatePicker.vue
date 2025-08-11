@@ -152,7 +152,7 @@ function initDatepickers() {
 }
 
 function addChangeDateListener() {
-  // datepickerStartEl.value.addEventListener('changeDate', setStartDate)
+  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
 }
 
 function removeChangeDateListener() {
@@ -160,7 +160,7 @@ function removeChangeDateListener() {
 }
 
 function destroyDatepickerElement() {
-  // datepickerObject.value.destroy();
+  datepickerObject.value.destroy();
 }
 
 function setStartDate(event) {
