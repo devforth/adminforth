@@ -239,7 +239,7 @@ export default {
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
       editReadonly: true, // you can set field to be readonly on edit page
-      
+      required: true,
     },
     {
       name: "square_meter",
@@ -498,7 +498,6 @@ export default {
       {
         label: "Mark as listed",
         // icon: 'typcn:archive',
-        state: "active",
         confirm:
           "Are you sure you want to mark all selected apartments as listed?",
         action: async function ({ selectedIds, adminUser }: any) {

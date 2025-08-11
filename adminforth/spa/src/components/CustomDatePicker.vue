@@ -2,15 +2,15 @@
   <div>
     <div class="grid w-40 gap-4 mb-2">
       <div>
-        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ label }}</label>
+        <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-lightDatePickerButtonText dark:text-darkDatePickerButtonText">{{ label }}</label>
 
         <div class="relative" :class="{hidden: column.type === 'time'}">
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-            <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
+            <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="af-pick-date-button bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+                 class="af-pick-date-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -22,18 +22,17 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
+              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
-
-            <input v-model="startTime" type="time" id="start-time" onfocus="this.showPicker()" onclick="this.showPicker()" step="1"
-                   class="af-pick-time-button bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+            <input v-model="startTime" type="time" id="start-time" step="1"
+                   class="af-pick-time-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
       </div>
 
       <button type="button"
-              class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              class="text-lightDatePickerExpandText dark:text-darkDatePickerExpandText text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
               :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
         <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
@@ -198,3 +197,90 @@ defineExpose({
   focus,
 });
 </script>
+
+<style lang="css" scoped>
+
+:global(.datepicker-controls button svg),
+:global(.datepicker-controls button) {
+  @apply text-lightDatePickerCalendarText;
+}
+
+:global( .datepicker-dropdown ),
+:global( .datepicker-picker ) {
+  @apply !bg-lightDatePickerCalendarBackground
+}
+
+:global(.datepicker-controls button:hover) {
+  @apply bg-lightDatePickerCalendarArrowButtonBackgroundHover;    
+}
+
+:global(.datepicker-controls button) {
+  @apply ring-lightDatePickerCalendarArrowButtonFocusRing bg-lightDatePickerCalendarArrowButtonBackground;    
+}
+
+:global(.datepicker-controls button:focus) {
+  @apply ring-lightDatePickerCalendarArrowButtonFocusRing;
+}
+
+:global(.days-of-week span) {
+  @apply text-lightDatePickerCalendarDaysOfWeekText;
+}
+
+:global(.datepicker-grid span) {
+  @apply text-lightDatePickerCalendarDateButtonText; 
+}
+
+:global(.datepicker-grid span:hover:not(.selected)) {
+  @apply bg-lightDatePickerCalendarDateButtonBackgroundHover; 
+}
+
+:global(.datepicker-grid .selected ) {
+  @apply text-lightDatePickerCalendarDateActiveButtonText bg-lightDatePickerCalendarDateActiveButtonBackground; 
+}
+
+
+
+
+
+
+
+
+:global(.dark .datepicker-controls button svg),
+:global(.dark .datepicker-controls button) {
+  @apply text-darkDatePickerCalendarMainText;
+}
+
+:global(.dark .datepicker-dropdown),
+:global(.dark .datepicker-picker) {
+  @apply !bg-darkDatePickerCalendarBackground;
+}
+
+:global(.dark .datepicker-controls button:hover) {
+  @apply bg-darkDatePickerCalendarArrowButtonBackgroundHover;    
+}
+
+:global(.dark .datepicker-controls button) {
+  @apply ring-darkDatePickerCalendarArrowButtonFocusRing bg-darkDatePickerCalendarArrowButtonBackground;    
+}
+
+:global(.dark .datepicker-controls button) {
+  @apply ring-darkDatePickerCalendarArrowButtonFocusRing;    
+}
+
+:global(.dark .days-of-week span) {
+  @apply text-darkDatePickerCalendarDaysOfWeekText;
+}
+
+:global(.dark .datepicker-grid span) {
+  @apply text-darkDatePickerCalendarDateButtonText; 
+}
+
+:global(.dark .datepicker-grid span:hover:not(.selected)) {
+  @apply bg-darkDatePickerCalendarDateButtonBackgroundHover; 
+}
+
+:global(.dark .datepicker-grid .selected) {
+  @apply text-darkDatePickerCalendarDateActiveButtonText 
+         bg-darkDatePickerCalendarDateActiveButtonBackground; 
+}
+</style>
