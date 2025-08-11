@@ -177,7 +177,7 @@ async function saveRecord() {
       record: updates,
     },
   });
-  if (resp.error) {
+  if (resp.error && resp.error !== 'Operation aborted by hook') {
     showErrorTost(resp.error);
   } else {
     adminforth.alert({

@@ -55,7 +55,6 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
@@ -66,7 +65,6 @@
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
@@ -103,7 +101,7 @@
                             {{ error }}
                           </div>
                         </div>
-
+                        
                         <div v-if="coreStore.config?.loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
                         >
@@ -111,7 +109,7 @@
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
                           <span class="sr-only">{{ $t('Info') }}</span>
-                          <div v-html="coreStore.config?.loginPromptHTML"></div>
+                          <div v-html="loginPromptHTML"></div>
                         </div>
                         <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
                           {{ $t('Login to your account') }}
@@ -150,7 +148,7 @@ const password = ref('');
 const route = useRoute();
 const router = useRouter();
 const inProgress = ref(false);
-
+const loginPromptHTML = ref()
 const coreStore = useCoreStore();
 const user = useUserStore();
 
@@ -161,6 +159,15 @@ const error = ref(null);
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
+
+
+async function getLoginFormConfig() {
+  const response = await callAdminForthApi({
+    path: '/get_login_form_config',
+    method: 'GET',
+  });
+  loginPromptHTML.value = response.loginPromptHTML;
+}
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
@@ -175,6 +182,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
+  getLoginFormConfig();
     if (coreStore.config?.demoCredentials) {
       const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
       username.value = demoUsername;
@@ -185,16 +193,6 @@ onMounted(async () => {
 
 
 async function login() {
-  
-  if (!username.value) {
-    usernameInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-  if (!password.value) {
-    passwordInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-
   if (inProgress.value) {
     return;
   }

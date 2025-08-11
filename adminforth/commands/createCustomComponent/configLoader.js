@@ -2,7 +2,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import jiti from 'jiti';
+import dotenv from "dotenv";
 
+dotenv.config({ path: '.env.local', override: true });
+dotenv.config({ path: '.env', override: true });
 
 export async function loadAdminForthConfig() {
   const configFileName = 'index.ts';

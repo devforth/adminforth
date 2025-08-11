@@ -336,7 +336,7 @@ export interface IAdminForth {
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }>;
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
     params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
@@ -474,7 +474,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -525,7 +525,7 @@ export type BeforeEditSaveFunction = (params: {
   oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null}>;
 
 
 
@@ -535,7 +535,7 @@ export type BeforeCreateSaveFunction = (params: {
   record: any, 
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
 
 export type AfterCreateSaveFunction = (params: {
   resource: AdminForthResource, 
@@ -978,7 +978,7 @@ export interface AdminForthInputConfig {
       /**
        * Any prompt to show users on login. Supports HTML.
        */
-      loginPromptHTML?: string,
+      loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
 
       /**
        * Remember me days for "Remember Me" checkbox on login page.
@@ -1346,9 +1346,13 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
     },
     create?: {
       /**
+       * Should return `ok: true` to continue saving pipeline and allow creating record in database, and `ok: false` to interrupt pipeline and prevent record creation.
+       * If you need to show error on UI, set `error: \<error message\>` in response.
+       * 
        * Typical use-cases:
-       * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
-       * - fill-in adminUser as creator of record
+       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
+       * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
       beforeSave?: Array<BeforeCreateSaveFunction>,

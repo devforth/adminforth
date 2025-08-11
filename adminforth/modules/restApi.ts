@@ -13,7 +13,7 @@ import {
   IAdminForthAndOrFilter,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
@@ -29,10 +29,11 @@ export async function interpretResource(
   meta: any, 
   source: ActionCheckSource, 
   adminforth: IAdminForth
-): Promise<{allowedActions: AllowedActionsResolved}> {
+): Promise<{ allowedActions: AllowedActionsResolved; visibleColumns: Record<string, boolean> }> {
   if (process.env.HEAVY_DEBUG) {
     console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
   }
+
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
@@ -61,8 +62,6 @@ export async function interpretResource(
           allowedActions[key] = false;
           return;
         }
-      
-        // if callable then call
         if (typeof value === 'function') {
           allowedActions[key] = await value({ adminUser, resource, meta, source, adminforth });
         } else {
@@ -71,7 +70,47 @@ export async function interpretResource(
       })
   );
 
-  return { allowedActions };
+  const resolveVisible = async (val: any): Promise<boolean> => {
+    if (typeof val === 'boolean') return val;
+    if (typeof val === 'function') {
+      const r = val({ adminUser, resource, meta, source, adminforth });
+      return r instanceof Promise ? await r : !!r;
+    }
+    return true;
+  };
+
+  const pageMap = {
+    [ActionCheckSource.ListRequest]: 'list',
+    [ActionCheckSource.ShowRequest]: 'show',
+    [ActionCheckSource.EditLoadRequest]: 'edit',
+  } as const;
+  
+  const page = pageMap[source as keyof typeof pageMap] as ('list'|'show'|'edit') | undefined;
+  
+  if (!page) {
+    return { allowedActions, visibleColumns: {} };
+  }
+
+  const isColumnVisible = async (col: any): Promise<boolean> => {
+    const si = col.showIn;
+    if (!si) return true;
+
+    if (Array.isArray(si)) {
+      return si.includes('all') || si.includes(page);
+    }
+
+    if (si[page] !== undefined) return await resolveVisible(si[page]);
+    if (si.all  !== undefined)  return await resolveVisible(si.all);
+    return true;
+  };
+
+  const visibleColumnsEntries = await Promise.all(
+    resource.columns.map(async (col) => [col.name, await isColumnVisible(col)] as const)
+  );
+
+  const visibleColumns = Object.fromEntries(visibleColumnsEntries) as Record<string, boolean>;
+
+  return { allowedActions, visibleColumns };
 }
 
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
@@ -197,6 +236,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       noAuth: true,
       method: 'GET',
+      path: '/get_login_form_config',
+      handler: async ({ tr }) => {
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+        return {
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
+        }
+      }
+    })
+
+    server.endpoint({
+      noAuth: true,
+      method: 'GET',
       path: '/get_public_config',
       handler: async ({ tr }) => {
 
@@ -218,7 +269,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
@@ -230,7 +280,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
     });
 
-    
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
@@ -293,6 +342,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
+        
+
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -302,7 +353,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(this.adminforth.config.auth.loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
@@ -591,7 +641,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
-        const { allowedActions } = await interpretResource(
+        const { allowedActions, visibleColumns } = await interpretResource(
           adminUser,
           resource,
           meta,
@@ -793,7 +843,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // remove all columns which are not defined in resources, or defined but backendOnly
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
-            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
+            console.log(visibleColumns?.[key], key);
+            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly) || visibleColumns?.[key] === false ) {
               delete item[key];
             }
           })
@@ -839,7 +890,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_foreign_data',
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-        const { resourceId, column } = body;
+        const { resourceId, column, search } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -908,6 +959,46 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 } else {
                   // wrong filter
                   throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+                }
+              }
+
+              if (search && search.trim() && columnConfig.foreignResource.searchableFields) {
+                const searchableFields = Array.isArray(columnConfig.foreignResource.searchableFields) 
+                  ? columnConfig.foreignResource.searchableFields 
+                  : [columnConfig.foreignResource.searchableFields];
+
+                const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
+                  ? AdminForthFilterOperators.LIKE 
+                  : AdminForthFilterOperators.ILIKE;
+                const availableSearchFields = searchableFields.filter((fieldName) => {
+                  const fieldExists = targetResource.columns.some(col => col.name === fieldName);
+                  if (!fieldExists) {
+                    process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                  }
+                  return fieldExists;
+                });
+
+                if (availableSearchFields.length === 0) {
+                  process.env.HEAVY_DEBUG && console.log(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                  resolve({ items: [] });
+                  return;
+                }
+                const searchFilters = availableSearchFields.map((fieldName) => {
+                  const filter = {
+                  field: fieldName,
+                  operator: searchOperator,
+                  value: search.trim(),
+                  };
+                  return filter;
+                });
+
+                if (searchFilters.length > 1) {
+                  normalizedFilters.subFilters.push({
+                    operator: AdminForthFilterOperators.OR,
+                    subFilters: searchFilters,
+                  });
+                } else if (searchFilters.length === 1) {
+                  normalizedFilters.subFilters.push(searchFilters[0]);
                 }
               }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
@@ -1079,7 +1170,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
             if (response.error) {
-              return { error: response.error, ok: false };
+              return { error: response.error, ok: false, newRecordId: response.newRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
