@@ -153,9 +153,9 @@ export const admin = new AdminForth({
     styles:{
      colors: {
         light: {
-          Html: "#d0f5f4",
+          Html: "alias:lightPrimary opacity:0.6",
 
-          primary: '#00acb5',
+          primary: '#ccb193',
 
           Navbar: "alias:lightPrimary lighten", 
           NavbarBorder: "alias:lightPrimary", 
@@ -179,8 +179,8 @@ export const admin = new AdminForth({
           SidebarHeading: "alias:lightSidebarText opacity:0.3",
 
           List: "#FFFFFF", 
-          ListTable: "#b0f5f3",
-          ListTableHeading: "#2fe0c9", 
+          ListTable: "#alias:lightPrimary lighten",
+          ListTableHeading: "alias:lightPrimary darken", 
           ListTableHeadingText: "alias:lightListTableHeading inverse",
           ListTableText: "alias:lightListTableHeadingText opacity:0.8",
           ListTableRowHover: "alias:lightListTable lighten",
@@ -207,18 +207,15 @@ export const admin = new AdminForth({
           ShowTableBodyText: "alias:lightShowTablesBodyBackground inverse",
           ShowTableBodyBorder: "alias:lightShowTableHeadingBackground darken",
 
-          Buttons: "#FFFFFF", 
-          ButtonsBorder: "#DDDDDD", 
-          ButtonsText: "#111827",
-          ButtonsHover: "#f3f4f6",
-          ButtonsBorderHover: "#f3f4f6",  
-          ButtonsActive: "#f3f4f6", 
-          ButtonsDisabled: "#f3f4f6", 
-          ButtonsDisabledText: "#f3f4f6", 
-          ButtonsIcon: "#333333",
-          
+          ButtonsBackground: "alias:lightPrimary",
+          ButtonsBorder: "alias:lightPrimary darken",
+          ButtonsText: "alias:lightPrimaryContrast",
+          ButtonsHover: "alias:lightPrimary opacity:0.8",
+          ButtonsBorderHover: "alias:lightPrimary",
+          ButtonFocusRing: "alias:lightPrimary opacity:0.6",
+    
           DropdownButtonsBackground: "alias:lightForm lighten", 
-          DropownButtonsBorder: "alias:lightForm darken",
+          DropdownButtonsBorder: "alias:lightForm darken",
           DropdownButtonsText: "alias:lightFormFieldTextColor",
           DropdownButtonsPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", 
 
@@ -234,7 +231,7 @@ export const admin = new AdminForth({
           DropdownMultipleSelectIconFocus: "alias:lightPrimary darken",
           DropdownMultipleSelectIconFocusBackground: "alias:lightPrimary opacity:0.1",
 
-          CheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",
+          CheckboxBgUnchecked: "alias:lightPrimary opacity:0.2",
           CheckboxBgChecked: "alias:lightPrimary",
           CheckboxIconColor: "alias:lightPrimaryContrast lighten", 
           CheckboxBorderColor: "alias:lightPrimary darken", 
@@ -248,14 +245,6 @@ export const admin = new AdminForth({
           ToggleText: "black",
           ToggleBorderUnactive: "alias:lightPrimary lighten", 
           ToggleBorderActive: "alias:lightPrimary darken", 
-
-          ColumnValueInputBackground: "alias:lightForm lighten", 
-          ColumnValueInputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6", 
-          ColumnValueInputText: "alias:lightFormFieldTextColor",
-          ColumnValueInputBorder: "alias:lightForm darken",
-          ColumnValueInputIcons: "alias:lightPrimary",
-          ColumnValueInputFocusRing: "alias:lightPrimary",
-          ColumnValueInputFocusBorder: "alias:lightPrimary",
 
           InputBackground: "alias:lightForm lighten",
           InputPlaceholderText: "alias:lightFormFieldTextColor opacity:0.6",
@@ -337,7 +326,7 @@ export const admin = new AdminForth({
           AcceptModalCancelButtonFocus: "#F3F4F6",
           AcceptModalCancelButtonBorder: "#E5E7EB",
 
-          BreadcrumbsHomepageText: "alias:lightPrimary",
+          BreadcrumbsHomepageText: "alias:lightPrimary inverse",
           BreadcrumbsHomepageTextHover: "alias:lightBreadcrumbsHomepageText darken",
           BreadcrumbsArrowIcon: "alias:lightBreadcrumbsHomepageText opacity:0.6",
           BreadcrumbsText: "alias:lightBreadcrumbsHomepageText lighten",
@@ -383,11 +372,11 @@ export const admin = new AdminForth({
           FiltersClearAllButtonTextHover: "alias:lightFiltersClearAllButtonText darken",
           FiltersClearAllButtonFocus: "alias:lightFiltersClearAllButtonBackground opacity:0.6",
 
-          ThreeDotsMenuIconBackground: "alias:lightPrimary lighten",
-          ThreeDotsMenuIconBackgroundHover: "alias:lightPrimary opacity:0.5",
+          ThreeDotsMenuIconBackground: "alias:lightPrimary",
+          ThreeDotsMenuIconBackgroundHover: "alias:lightThreeDotsMenuIconBackground lighten",
           ThreeDotsMenuIconBackgroundBorder: "alias:lightPrimary darken",
           ThreeDotsMenuIconDots: "alias:lightThreeDotsMenuIconBackground inverse",
-          ThreeDotsMenuIconDotsHover: "alias:lightThreeDotsMenuIconDots opacity:0.3",   
+          ThreeDotsMenuIconDotsHover: "alias:lightThreeDotsMenuIconDots opacity:0.9",   
           ThreeDotsMenuIconFocus: "alias:lightThreeDotsMenuIconBackground opacity:0.2",   
           ThreeDotsMenuBodyBackground: "alias:lightThreeDotsMenuIconBackground",
           ThreeDotsMenuBodyBackgroundHover: "alias:lightThreeDotsMenuBodyBackground darken",
@@ -474,7 +463,7 @@ export const admin = new AdminForth({
           ListTable: "#753767", 
           ListTableHeading: "#db0dbc", 
           ListTableHeadingText: "alias:darkListTableHeading inverse",
-          ListTableText: "alias:darkListTableHeadingText", 
+          ListTableText: "#222222", 
           ListTableRowHover: "alias:darkListTableHeading opacity:0.6",
           ListBorder: "#444444", 
           ListTablePaginationBackgoround: "alias:darkListTable",
@@ -499,8 +488,15 @@ export const admin = new AdminForth({
           ShowTableBodyText: "alias:darkShowTablesBodyBackground inverse",
           ShowTableBodyBorder: "alias:darkShowTableHeadingBackground darken",
 
+          ButtonsBackground: "alias:darkPrimary",
+          ButtonsBorder: "alias:darkPrimary",
+          ButtonsText: "alias:darkPrimaryContrast",
+          ButtonsHover: "alias:darkPrimary lighten",
+          ButtonsBorderHover: "alias:darkPrimary",
+          ButtonFocusRing: "alias:darkPrimary opacity:0.6",
+
           DropdownButtonsBackground: "alias:darkForm darken",
-          DropownButtonsBorder: "alias:darkForm lighten", 
+          DropdownButtonsBorder: "alias:darkForm lighten", 
           DropdownButtonsText: "alias:darkListTableText",
           DropdownButtonsPlaceholderText: "alias:darkListTableText opacity:0.6",
 
@@ -530,14 +526,6 @@ export const admin = new AdminForth({
           ToggleText: "alias:darkPrimaryContrast lighten", 
           ToggleBorderUnactive: "alias:darkPrimary lighten",
           ToggleBorderActive: "alias:darkPrimary darken",
-
-          ColumnValueInputBackground: "alias:darkForm darken",
-          ColumnValueInputPlaceholderText: "alias:darkFormFieldTextColor opacity:0.6",
-          ColumnValueInputText: "alias:darkFormFieldTextColor",
-          ColumnValueInputBorder: "alias:darkForm darken",
-          ColumnValueInputIcons: "alias:darkPrimary",
-          ColumnValueInputFocusRing: "alias:darkPrimary",
-          ColumnValueInputFocusBorder: "alias:darkPrimary",
 
           InputBackground: "alias:darkForm darken",
           InputPlaceholderText: "alias:darkFormFieldTextColor opacity:0.6",
