@@ -306,6 +306,9 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 ```ts title="/index.ts"
 
+import type { IAdminUserExpressRequest } from 'adminforth';
+import express from 'express';
+
 ....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,

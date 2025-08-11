@@ -1,7 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
-import type { IAdminUserExpressRequest, ITranslateExpressRequest } from '../adminforth/spa/src/types/Back.js';
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import apartmentBuyersResource from './resources/apartment_buyers.js';

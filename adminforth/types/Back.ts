@@ -114,15 +114,14 @@ export interface ITranslateFunction {
   ): Promise<string>;
 }
 
-export interface IAdminUserExpressRequest extends Request {
+// Omit <Request, 'param'> is used to remove 'param' method from Request type for correct docs generation
+export interface IAdminUserExpressRequest extends Omit<Request, 'param'> {
   adminUser: AdminUser;
 }
 
-export interface ITranslateExpressRequest extends Request {
+export interface ITranslateExpressRequest extends Omit<Request, 'param'> {
   tr: ITranslateFunction;
 }
-
-
 
 export interface IAdminForthSingleFilter {
   field?: string;
