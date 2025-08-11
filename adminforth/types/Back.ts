@@ -109,7 +109,6 @@ export interface ITranslateFunction {
   (
     msg: string,
     category: string,
-    lang: string,
     params: any,
     pluralizationNumber?: number
   ): Promise<string>;
@@ -351,7 +350,7 @@ export interface IAdminForth {
 
   formatAdminForth(): string;
   
-  tr: ITranslateFunction;
+  tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }

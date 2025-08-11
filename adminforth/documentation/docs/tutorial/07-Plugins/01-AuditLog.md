@@ -163,7 +163,7 @@ If you have a custom, self coded actions in your API, you can log them by callin
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req: IAdminUserExpressRequest, res) => {
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
         resourceId: 'aparts',
