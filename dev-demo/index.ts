@@ -464,7 +464,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
 app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
   admin.express.authorize(
-    async (req: IAdminUserExpressRequest, res: express.response) => {
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
       const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 
