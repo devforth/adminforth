@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
@@ -105,6 +105,23 @@ export interface IExpressHttpServer extends IHttpServer {
   authorize(callable: Function): void;
 }
 
+export interface ITranslateFunction {
+  (
+    msg: string,
+    category: string,
+    params: any,
+    pluralizationNumber?: number
+  ): Promise<string>;
+}
+
+// Omit <Request, 'param'> is used to remove 'param' method from Request type for correct docs generation
+export interface IAdminUserExpressRequest extends Omit<Request, 'param'> {
+  adminUser: AdminUser;
+}
+
+export interface ITranslateExpressRequest extends Omit<Request, 'param'> {
+  tr: ITranslateFunction;
+}
 
 export interface IAdminForthSingleFilter {
   field?: string;
