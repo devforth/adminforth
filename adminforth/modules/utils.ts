@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import crypto from 'crypto';
+import AdminForth, { AdminForthConfig } from '../index.js';
 // @ts-ignore-next-line
 
 
@@ -158,6 +159,15 @@ const csscolors = {
 }
 
 
+export async function getLoginPromptHTML(loginPrompt: string | Function) {
+  if(typeof loginPrompt === 'function') {
+    loginPrompt = await loginPrompt();
+    if (!loginPrompt) {
+      return null;
+    }
+  }
+  return loginPrompt;
+}
 
 export function guessLabelFromName(name) {
   if (name.includes('_')) {

@@ -7,8 +7,11 @@ import { useUserStore } from './stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth from './adminforth';
 import sanitizeHtml  from 'sanitize-html'
+import debounce from 'debounce';
 
 const LS_LANG_KEY = `afLanguage`;
+const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
+const ITEMS_PER_PAGE_LIMIT = 100;
 
 export async function callApi({path, method, body=undefined}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
@@ -208,4 +211,210 @@ export function protectAgainstXSS(value: string) {
       'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ]
     } 
   });
+}
+
+export function isPolymorphicColumn(column: any): boolean {
+  return !!(column.foreignResource?.polymorphicResources && column.foreignResource.polymorphicResources.length > 0);
+}
+
+export function handleForeignResourcePagination(
+  column: any,
+  items: any[],
+  emptyResultsCount: number = 0,
+  isSearching: boolean = false
+): { hasMore: boolean; emptyResultsCount: number } {
+  const isPolymorphic = isPolymorphicColumn(column);
+  
+  if (isPolymorphic) {
+    if (isSearching) {
+      return {
+        hasMore: items.length > 0,
+        emptyResultsCount: 0
+      };
+    } else {
+      if (items.length === 0) {
+        const newEmptyCount = emptyResultsCount + 1;
+        return {
+          hasMore: newEmptyCount < MAX_CONSECUTIVE_EMPTY_RESULTS, // Stop loading after 2 consecutive empty results
+          emptyResultsCount: newEmptyCount
+        };
+      } else {
+        return {
+          hasMore: true,
+          emptyResultsCount: 0
+        };
+      }
+    }
+  } else {
+    return {
+      hasMore: items.length === ITEMS_PER_PAGE_LIMIT,
+      emptyResultsCount: 0
+    };
+  }
+}
+
+export async function loadMoreForeignOptions({
+  columnName,
+  searchTerm = '',
+  columns,
+  resourceId,
+  columnOptions,
+  columnLoadingState,
+  columnOffsets,
+  columnEmptyResultsCount
+}: {
+  columnName: string;
+  searchTerm?: string;
+  columns: any[];
+  resourceId: string;
+  columnOptions: any;
+  columnLoadingState: any;
+  columnOffsets: any;
+  columnEmptyResultsCount: any;
+}) {
+  const column = columns?.find(c => c.name === columnName);
+  if (!column || !column.foreignResource) return;
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading || !state.hasMore) return;
+  
+  state.loading = true;
+  
+  try {
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId,
+        column: columnName,
+        limit: 100,
+        offset: columnOffsets[columnName],
+        search: searchTerm,
+      },
+    });
+    
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
+    
+    if (!columnOptions.value) {
+      columnOptions.value = {};
+    }
+    if (!columnOptions.value[columnName]) {
+      columnOptions.value[columnName] = [];
+    }
+    columnOptions.value[columnName].push(...list.items);
+    
+    columnOffsets[columnName] += 100;
+    
+    const paginationResult = handleForeignResourcePagination(
+      column,
+      list.items,
+      columnEmptyResultsCount[columnName] || 0,
+      false // not searching
+    );
+    
+    columnEmptyResultsCount[columnName] = paginationResult.emptyResultsCount;
+    state.hasMore = paginationResult.hasMore;
+    
+  } catch (error) {
+    console.error('Error loading more options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
+
+export async function searchForeignOptions({
+  columnName,
+  searchTerm,
+  columns,
+  resourceId,
+  columnOptions,
+  columnLoadingState,
+  columnOffsets,
+  columnEmptyResultsCount
+}: {
+  columnName: string;
+  searchTerm: string;
+  columns: any[];
+  resourceId: string;
+  columnOptions: any;
+  columnLoadingState: any;
+  columnOffsets: any;
+  columnEmptyResultsCount: any;
+}) {
+  const column = columns?.find(c => c.name === columnName);
+
+  if (!column || !column.foreignResource || !column.foreignResource.searchableFields) {
+    return;
+  }
+  
+  const state = columnLoadingState[columnName];
+  if (state.loading) return;
+  
+  state.loading = true;
+  
+  try {
+    const list = await callAdminForthApi({
+      method: 'POST',
+      path: `/get_resource_foreign_data`,
+      body: {
+        resourceId,
+        column: columnName,
+        limit: 100,
+        offset: 0,
+        search: searchTerm,
+      },
+    });
+    
+    if (!list || !Array.isArray(list.items)) {
+      console.warn(`Unexpected API response for column ${columnName}:`, list);
+      state.hasMore = false;
+      return;
+    }
+    
+    if (!columnOptions.value) {
+      columnOptions.value = {};
+    }
+    columnOptions.value[columnName] = list.items;
+    columnOffsets[columnName] = 100;
+    
+    const paginationResult = handleForeignResourcePagination(
+      column,
+      list.items,
+      columnEmptyResultsCount[columnName] || 0,
+      true // is searching
+    );
+    
+    columnEmptyResultsCount[columnName] = paginationResult.emptyResultsCount;
+    state.hasMore = paginationResult.hasMore;
+
+  } catch (error) {
+    console.error('Error searching options:', error);
+  } finally {
+    state.loading = false;
+  }
+}
+
+export function createSearchInputHandlers(
+  columns: any[],
+  searchFunction: (columnName: string, searchTerm: string) => void,
+  getDebounceMs?: (column: any) => number
+) {
+  if (!columns) return {};
+
+  return columns.reduce((acc, c) => {
+    if (c.foreignResource && c.foreignResource.searchableFields) {
+      const debounceMs = getDebounceMs ? getDebounceMs(c) : 300;
+      return {
+        ...acc,
+        [c.name]: debounce((searchTerm: string) => {
+          searchFunction(c.name, searchTerm);
+        }, debounceMs),
+      };
+    }
+    return acc;
+  }, {} as Record<string, (searchTerm: string) => void>);
 }

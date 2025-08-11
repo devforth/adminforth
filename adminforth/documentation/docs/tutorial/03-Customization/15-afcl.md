@@ -362,6 +362,31 @@ const enable = ref(false)
   </div>
 </div>
 
+
+## Toggle
+
+<div class="split-screen" >
+  <div >
+
+```ts
+import Toggle from '@/afcl/Toggle.vue';
+```
+
+
+```html
+  <Toggle 
+    :disabled="false" 
+    @update:modelValue="toggleSwitchHandler"> 
+    <p>Click me</p> 
+  </Toggle>
+```
+  </div>
+  <div>
+  ![AFCL Checkbox](image-94.png)
+  </div>
+</div>
+
+
 ## Dialog (Pop-up)
 
 <div class="split-screen" >

@@ -330,6 +330,7 @@ export const styles = () => ({
 
 
 
+
     
     
     // colors for dark theme
@@ -498,9 +499,10 @@ export const styles = () => ({
     darkFocusRing: "alias:darkPrimary lighten",
     darkTextLabel: "white",
 
-    darkToggleBgUnactive: "alias:darkPrimaryContrast darken",
+    darkToggleBgUnactive: "#F9FAFB",
     darkToggleBgActive: "alias:darkPrimary darken",
-    darkToggleCircle: "alias:darkPrimaryContrast lighten",
+    darkToggleCircleUnactive: "alias:darkPrimary",
+    darkToggleCircleActive: "#F9FAFB",    
     darkToggleRing: "alias:darkPrimary lighten",
     darkToggleText: "alias:darkPrimaryContrast lighten", 
     darkToggleBorderUnactive: "alias:darkPrimary lighten",

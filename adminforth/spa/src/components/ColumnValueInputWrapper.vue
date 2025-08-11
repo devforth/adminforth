@@ -13,6 +13,7 @@
         :currentValues="currentValues"
         :mode="mode"
         :columnOptions="columnOptions"
+        :unmasked="unmasked"
         :deletable="!column.editReadonly"
         @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
         @update:unmasked="$emit('update:unmasked', column.name)"
