@@ -9,19 +9,19 @@
     <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
       <div v-bind="$attrs" class="relative p-4 max-w-2xl max-h-full" :class="$attrs.class?.includes('w-') ? '' : 'w-full'">
         <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+        <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
           <!-- Modal header -->
           <div
             v-if="header"
-            class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200"
+            class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-darkDialogBreakLine border-lightDialogBreakLine"
           >
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            <h3 class="text-xl font-semibold text-lightDialogHeaderText dark:text-darkDialogHeaderText">
               {{ header }}
             </h3>
             <button
               v-if="headerCloseButton"
               type="button"
-              class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              class="text-lightDialogCloseButton bg-transparent hover:bg-lightDialogCloseButtonHoverBackground hover:text-lightDialogCloseButtonHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkDialogCloseButton dark:hover:bg-darkDialogCloseButtonHoverBackground dark:hover:text-darkDialogCloseButtonHover"
               @click="modal?.hide()"
             >
               <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -31,13 +31,13 @@
             </button>
           </div>
           <!-- Modal body -->
-          <div class="p-4 md:p-5 space-y-4 text-gray-700 dark:text-gray-400">
+          <div class="p-4 md:p-5 space-y-4 text-lightDialogBodyText dark:text-darkDialogBodyText">
             <slot></slot>
           </div>
           <!-- Modal footer -->
           <div
             v-if="buttons.length"
-            class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"
+            class="flex items-center p-4 md:p-5 border-t border-lightDialogBreakLine rounded-b dark:border-darkDialogBreakLine"
           >
             <Button
               v-for="(button, buttonIndex) in buttons"

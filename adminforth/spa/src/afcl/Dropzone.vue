@@ -5,13 +5,13 @@
     @dragleave.prevent="dragging = false"
     @drop.prevent="dragging = false; doEmit($event.dataTransfer.files)"
   >
-      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer dark:hover:bg-gray-800 
-        hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
+      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer
+        hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
         :class="{
-          'border-blue-600 dark:border-blue-400': dragging,
-          'border-gray-300 dark:border-gray-600': !dragging,
-          'bg-blue-50 dark:bg-blue-800': dragging,
-          'bg-gray-50 dark:bg-gray-800': !dragging,
+          'border-lightDropzoneBorderDragging dark:border-darkDropzoneBorderDragging': dragging,
+          'border-lightDropzoneBorder dark:border-darkDropzoneBorder': !dragging,
+          'bg-lightDropzoneBackgroundDragging dark:bg-darkDropzoneBackgroundDragging': dragging,
+          'bg-lightDropzoneBackground dark:bg-darkDropzoneBackground': !dragging,
           'min-h-32 h-full': props.multiple,
           'h-32': !props.multiple,
         }"
@@ -19,12 +19,12 @@
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
               
             
-              <svg v-if="!selectedFiles.length" class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+              <svg v-if="!selectedFiles.length" class="w-8 h-8 mb-4 text-lightDropzoneIcon dark:text-darkDropzoneIcon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
               </svg>
               <div v-else class="flex items-center justify-center flex-wrap gap-1 w-full mt-1 mb-4">
                 <template v-for="file in selectedFiles">
-                  <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <p class="text-sm text-lightDropzoneIcon dark:text-darkDropzoneIcon flex items-center gap-1">
                     <IconFileSolid class="w-5 h-5" />
                     {{ file.name }} ({{ humanifySize(file.size) }})
                   </p>
@@ -32,8 +32,8 @@
 
               </div>
 
-              <p v-if="!selectedFiles.length" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">{{ $t('Click to upload') }}</span> {{ $t('or drag and drop') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
+              <p v-if="!selectedFiles.length" class="mb-2 text-sm text-lightDropzoneText dark:text-darkDropzoneText"><span class="font-semibold">{{ $t('Click to upload') }}</span> {{ $t('or drag and drop') }}</p>
+              <p class="text-xs text-lightDropzoneText dark:text-darkDropzoneText">
                 {{ props.extensions.join(', ').toUpperCase().replace(/\./g, '') }}
                 <template v-if="props.maxSizeBytes">
                  (Max size: {{ humanifySize(props.maxSizeBytes) }})
