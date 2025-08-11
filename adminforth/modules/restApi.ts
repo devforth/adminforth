@@ -29,10 +29,11 @@ export async function interpretResource(
   meta: any, 
   source: ActionCheckSource, 
   adminforth: IAdminForth
-): Promise<{allowedActions: AllowedActionsResolved}> {
+): Promise<{ allowedActions: AllowedActionsResolved; visibleColumns: Record<string, boolean> }> {
   if (process.env.HEAVY_DEBUG) {
     console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
   }
+
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
@@ -61,8 +62,6 @@ export async function interpretResource(
           allowedActions[key] = false;
           return;
         }
-      
-        // if callable then call
         if (typeof value === 'function') {
           allowedActions[key] = await value({ adminUser, resource, meta, source, adminforth });
         } else {
@@ -71,7 +70,41 @@ export async function interpretResource(
       })
   );
 
-  return { allowedActions };
+  const resolveAllowed = async (val: any): Promise<boolean> => {
+    if (typeof val === 'boolean') return val;
+    if (typeof val === 'function') {
+      const r = val({ adminUser, resource, meta, source, adminforth });
+      return r instanceof Promise ? await r : !!r;
+    }
+    return true;
+  };
+
+  const page: 'list' | 'show' | 'edit' = ({
+    [ActionCheckSource.ListRequest]: 'list',
+    [ActionCheckSource.ShowRequest]: 'show',
+    [ActionCheckSource.EditLoadRequest]: 'edit',
+  } as const)[source] ?? 'show';
+
+  const isColumnVisible = async (col: any): Promise<boolean> => {
+    const si = col.showIn;
+    if (!si) return true;
+
+    if (Array.isArray(si)) {
+      return si.includes('all') || si.includes(page);
+    }
+
+    if (si[page] !== undefined) return await resolveAllowed(si[page]);
+    if (si.all  !== undefined)  return await resolveAllowed(si.all);
+    return true;
+  };
+
+  const visibleColumnsEntries = await Promise.all(
+    resource.columns.map(async (col) => [col.name, await isColumnVisible(col)] as const)
+  );
+
+  const visibleColumns = Object.fromEntries(visibleColumnsEntries) as Record<string, boolean>;
+
+  return { allowedActions, visibleColumns };
 }
 
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
@@ -602,7 +635,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
-        const { allowedActions } = await interpretResource(
+        const { allowedActions, visibleColumns } = await interpretResource(
           adminUser,
           resource,
           meta,
@@ -804,7 +837,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // remove all columns which are not defined in resources, or defined but backendOnly
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
-            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
+            console.log(visibleColumns?.[key], key);
+            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly) || visibleColumns?.[key] === false ) {
               delete item[key];
             }
           })
