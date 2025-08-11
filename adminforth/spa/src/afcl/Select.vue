@@ -11,27 +11,27 @@
         @click="inputClick"
         @input="inputInput"
         class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
-        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
-      dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
+        dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         autocomplete="off" data-custom="no-autofill"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
         "
       />
 
-      <div v-if="!multiple && selectedItems.length" class="absolute pointer-events-none inset-y-0 left-2 flex items-center pr-2 px-1">
+      <div v-if="!multiple && selectedItems.length" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText absolute pointer-events-none inset-y-0 left-2 flex items-center pr-2 px-1">
         <slot 
           name="selected-item" 
           :option="selectedItems[0]"
         ></slot>
-        <span v-if="!$slots['selected-item']" class="text-lightPrimary dark:text-white font-medium  ">
+        <span v-if="!$slots['selected-item']" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText font-medium  ">
           {{ selectedItems[0]?.label }}
         </span>
       </div>
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-150 ease-in"
+        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
@@ -45,7 +45,7 @@
           v-for="item in filteredItems"
           :key="item.value"
           class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
-          :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
+          :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
           @click="toogleItem(item)"
         >
           <slot name="item" :option="item"></slot>
@@ -62,14 +62,14 @@
     </teleport>
 
     <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
-      class="absolute z-10 mt-1 w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+      class="absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
-      @scroll="handleDropdownScroll">
+        @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"
         :key="item.value"
-        class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
-        :class="{ 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity': selectedItems.includes(item) }"
+        class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
+        :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
         <slot name="item" :option="item"></slot>
@@ -90,12 +90,12 @@
       <template v-for="item in selectedItems" :key="`afcl-select-${item.value}`">
         <slot name="selected-item" :item="item"></slot>
         <div v-if="!$slots['selected-item']"
-          class="bg-lightPrimaryOpacity text-lightPrimary text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkPrimaryOpacity dark:text-darkPrimary">
+          class="bg-lightDropdownMultipleSelectBackground text-lightDropdownMultipleSelectText text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkDropdownMultipleSelectBackground dark:text-darkDropdownMultipleSelectText">
           <span>{{ item.label }}</span>
           <button
             type="button"
             @click="toogleItem(item)"
-            class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 focus:bg-gray-100"
+            class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-lightDropdownMultipleSelectIcon hover:text-lightDropdownMultipleSelectIconHover dark:text-darkDropdownMultipleSelectIcon dark:hover:text-darkDropdownMultipleSelectIconHover focus:outline-none focus:text-lightDropdownMultipleSelectIconFocus focus:bg-lightDropdownMultipleSelectIconFocusBackground dark:focus:text-darkDropdownMultipleSelectIconFocus dark:focus:bg-darkDropdownMultipleSelectIconFocusBackground"
           >
             <span class="sr-only">{{ $t('Remove item') }}</span>
             <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">

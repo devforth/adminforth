@@ -801,6 +801,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
         data.data.forEach((item) => {
           Object.keys(item).forEach((key) => {
