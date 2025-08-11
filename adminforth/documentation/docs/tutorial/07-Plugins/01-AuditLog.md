@@ -160,10 +160,14 @@ Audit log is able to catch only standard actions like `create`, `update`, `delet
 If you have a custom, self coded actions in your API, you can log them by calling `logCustomAction` method of `AuditLogPlugin` instance:
 
 ```ts title="./resources/index.ts"
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
+import express from 'express';
+
+....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
         resourceId: 'aparts',
