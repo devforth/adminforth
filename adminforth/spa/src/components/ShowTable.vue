@@ -1,5 +1,5 @@
 <template>
-      <div :class="`overflow-x-auto ${isRounded ? 'rounded-default' : ''} shadow-resourseFormShadow dark:shadow-darkResourseFormShadow`"
+      <div :class="`overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow`"
         :class="{'rounded-default' : isRounded}"
       >
         <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
