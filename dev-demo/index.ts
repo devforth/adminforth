@@ -1,7 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
-
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import apartmentBuyersResource from './resources/apartment_buyers.js';
@@ -901,7 +901,7 @@ const port = process.env.PORT || 3000;
 app.get(
   '/api/testtest/', 
   admin.express.authorize(
-    async (req: express.Request, res: express.Response, next: express.NextFunction) => { 
+    async (req: IAdminUserExpressRequest, res: express.Response, next: express.NextFunction) => { 
         res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
     }
   )
@@ -910,7 +910,7 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
-      async (req: any, res: express.Response) => {
+      async (req: IAdminUserExpressRequest & ITranslateExpressRequest, res: express.Response) => {
         const days = req.body.days || 7;
         const apartsByDays = await admin.resource('aparts').dataConnector.client.prepare( 
           `SELECT 
@@ -1010,7 +1010,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
 app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
       const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 
