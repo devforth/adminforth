@@ -12,7 +12,7 @@
                         focus:ring-2 dark:bg-darkCheckboxBgUnchecked dark:border-darkCheckboxBorderColor dark:checked:bg-darkCheckboxBgChecked cursor-pointer"
         >     
         <div class="pointer-events-none absolute text-lightCheckboxIconColor dark:text-darkCheckboxIconColor leading-none peer-checked:block hidden">
-          <IconCheckOutline width="18" height="18" />
+          <IconCheckOutline style="width: 1.1rem; height: 1.1rem;" />
         </div> 
     </div>
     <label :for="id" class="ms-2 text-sm font-medium text-lightTextLabel dark:text-darkTextLabel">
