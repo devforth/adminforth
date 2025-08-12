@@ -809,7 +809,14 @@ export interface AdminForthResourceColumnInputCommon {
    */
   minLength?: number,
 
+  /**
+   * Minimal value stored in this field.
+   */
   min?: number,
+
+  /**
+   * Maximum value stored in this field.
+   */
   max?: number,
 
   /**
