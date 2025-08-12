@@ -370,7 +370,7 @@ export const styles = () => ({
               /* Show/Create/Edit View Table background */
               /*----------------------------------------*/
     darkForm: "#1F2937", 
-    darkFormBorder: "#FF0000", 
+    darkFormBorder: "#374151", 
     darkFormHeading: "alias:darkListTableHeading",
     darkFormFieldTextColor: "alias:darkListTableText",
     
