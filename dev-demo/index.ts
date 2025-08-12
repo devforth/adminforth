@@ -1,7 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
-import type { IAdminUserExpressRequest, ITranslateExpressRequest } from '../adminforth/spa/src/types/Back.js';
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import apartmentBuyersResource from './resources/apartment_buyers.js';
@@ -84,7 +84,7 @@ export const admin = new AdminForth({
         return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
     },
-    // loginBackgroundImage: '@@/pho.jpg',
+
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
       adminforth.resource('users').update(adminUser.dbUser.id, { last_login_ip: adminforth.auth.getClientIp(extra.headers) });
@@ -241,6 +241,12 @@ export const admin = new AdminForth({
       //   title: 'Dashboard',
       // }
     },
+     {
+      label: 'Af Components',
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/AfComponents.vue',
+      path: '/af-components',
+     },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
