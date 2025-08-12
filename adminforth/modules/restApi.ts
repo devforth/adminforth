@@ -11,6 +11,7 @@ import {
   IAdminForthSort,
   HttpExtra,
   IAdminForthAndOrFilter,
+  BackendOnlyInput,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
@@ -22,6 +23,46 @@ import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, Admin
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
+
+async function resolveBoolOrFn(
+  val: BackendOnlyInput | undefined,
+  ctx: {
+    adminUser: AdminUser;
+    resource: AdminForthResource;
+    meta: any;
+    source: ActionCheckSource;
+    adminforth: IAdminForth;
+  }
+): Promise<boolean> {
+  if (typeof val === 'function') {
+    return !!(await (val)(ctx));
+  }
+  return !!val;
+}
+
+async function isBackendOnly(
+  col: AdminForthResource['columns'][number],
+  ctx: {
+    adminUser: AdminUser;
+    resource: AdminForthResource;
+    meta: any;
+    source: ActionCheckSource;
+    adminforth: IAdminForth;
+  }
+): Promise<boolean> {
+  return await resolveBoolOrFn(col.backendOnly, ctx);
+}
+
+async function isShown(
+  col: AdminForthResource['columns'][number],
+  page: 'list' | 'show' | 'edit' | 'create' | 'filter',
+  ctx: Parameters<typeof isBackendOnly>[1]
+): Promise<boolean> {
+  const s = (col.showIn as any) || {};
+  if (s[page] !== undefined) return await resolveBoolOrFn(s[page], ctx);
+  if (s.all !== undefined) return await resolveBoolOrFn(s.all, ctx);
+  return true;
+}
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -197,6 +238,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       noAuth: true,
       method: 'GET',
+      path: '/get_login_form_config',
+      handler: async ({ tr }) => {
+        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
+        return {
+          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
+        }
+      }
+    })
+
+    server.endpoint({
+      noAuth: true,
+      method: 'GET',
       path: '/get_public_config',
       handler: async ({ tr }) => {
 
@@ -210,8 +263,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
-
         return {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -220,7 +271,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
@@ -295,7 +345,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-        const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
 
 
         const publicPart = {
@@ -306,7 +355,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
@@ -356,12 +404,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // strip all backendOnly fields or not described in adminForth fields from dbUser
         // (when user defines column and does not set backendOnly, we assume it is not backendOnly)
-        Object.keys(adminUser.dbUser).forEach((key) => {
-          const col = userResource.columns.find((col) => col.name === key);
-          if (!col || col.backendOnly) {
+        const ctx = {
+          adminUser,
+          resource: userResource,
+          meta: {},
+          source: ActionCheckSource.ShowRequest,
+          adminforth: this.adminforth,
+        };
+        for (const key of Object.keys(adminUser.dbUser)) {
+          const col = userResource.columns.find((c) => c.name === key);
+          const bo = col ? await isBackendOnly(col, ctx) : true;
+          if (!col || bo) {
             delete adminUser.dbUser[key];
           }
-        })
+        }
 
         return {
           user: userData,
@@ -794,15 +850,32 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
-        data.data.forEach((item) => {
-          Object.keys(item).forEach((key) => {
-            if (!resource.columns.find((col) => col.name === key) || resource.columns.find((col) => col.name === key && col.backendOnly)) {
-              delete item[key];
+        {
+          const ctx = {
+            adminUser,
+            resource,
+            meta,
+            source: {
+              show: ActionCheckSource.ShowRequest,
+              list: ActionCheckSource.ListRequest,
+              edit: ActionCheckSource.EditLoadRequest,
+            }[source],
+            adminforth: this.adminforth,
+          };
+        
+          for (const item of data.data) {
+            for (const key of Object.keys(item)) {
+              const col = resource.columns.find((c) => c.name === key);
+              const bo = col ? await isBackendOnly(col, ctx) : true;
+              if (!col || bo) {
+                delete item[key];
+              }
             }
-          })
-          item._label = resource.recordLabel(item);
-        });
+            item._label = resource.recordLabel(item);
+          }
+        }
         if (source === 'list' && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
@@ -1068,11 +1141,30 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
+            const ctxCreate = {
+              adminUser,
+              resource,
+              meta: { requestBody: body },
+              source: ActionCheckSource.CreateRequest,
+              adminforth: this.adminforth,
+            };
+
+            for (const column of resource.columns) {
+              if ((column.required as { create?: boolean })?.create) {
+                const shown = await isShown(column, 'create', ctxCreate);
+                if (shown && record[column.name] === undefined) {
+                  return { error: `Column '${column.name}' is required`, ok: false };
+                }
+              }
+            }
+
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                if (!column.showIn?.create || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false, please set it to true)`, ok: false };
+                const shown = await isShown(column, 'create', ctxCreate);
+                const bo = await isBackendOnly(column, ctxCreate);
+                if (!shown || bo) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
                 }
               }
             }
@@ -1164,15 +1256,24 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: allowedError };
             }
 
+            const ctxEdit = {
+              adminUser,
+              resource,
+              meta: { requestBody: body, newRecord: record, oldRecord, pk: recordId },
+              source: ActionCheckSource.EditRequest,
+              adminforth: this.adminforth,
+            };
+            
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                if (!column.showIn?.edit || column.editReadonly || column.backendOnly) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false, please set it to true)`, ok: false };
+                const shown = await isShown(column, 'edit', ctxEdit);
+                const bo = await isBackendOnly(column, ctxEdit);
+                if (!shown || column.editReadonly || bo) {
+                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly or showIn.edit is false, please set it to true)`, ok: false };
                 }
               }
             }
-
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {
               if (column.foreignResource?.polymorphicOn && record[column.name] === null) {

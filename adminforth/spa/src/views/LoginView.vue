@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800 relative w-screen h-screen"
+  <div class="relative flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml w-screen h-screen"
     :style="coreStore.config?.loginBackgroundImage && backgroundPosition === 'over' ? {
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
@@ -27,7 +27,7 @@
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="af-login-modal-content relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
+            <div class="af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" >
                 <!-- Modal header -->
                 <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
@@ -39,7 +39,7 @@
                         :meta="c.meta"
                       />
                     </template>
-                    <h3 v-else class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
                       {{ $t('Sign in to') }} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
@@ -47,7 +47,7 @@
                 <div class="af-login-modal-body p-4 md:p-5">
                     <form class="space-y-4" @submit.prevent>
                         <div>
-                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
+                            <label for="username" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
                             <Input 
                               v-model="username"
                               autocomplete="username"  
@@ -60,7 +60,7 @@
                               placeholder="name@company.com" required />
                         </div>
                         <div class="">
-                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your password') }}</label>
+                            <label for="password" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your password') }}</label>
                             <Input 
                               v-model="password"
                               ref="passwordInput"
@@ -68,7 +68,7 @@
                               @keydown.enter="login"
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
-                                <button type="button" @click="showPw = !showPw" class="text-gray-400 dark:text-gray-300">
+                                <button type="button" @click="showPw = !showPw" class="text-lightLoginViewSubTextColor dark:text-darkLoginViewSubTextColor">
                                   <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
                                   <IconEyeSlashSolid class="w-5 h-5" v-else />
                                 </button>
@@ -101,15 +101,15 @@
                             {{ error }}
                           </div>
                         </div>
-
-                        <div v-if="coreStore.config?.loginPromptHTML"
-                          class="flex items-center p-4 mb-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-400" role="alert"
+                        
+                        <div v-if="loginPromptHTML"
+                          class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
                         >
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
                           <span class="sr-only">{{ $t('Info') }}</span>
-                          <div v-html="coreStore.config?.loginPromptHTML"></div>
+                          <div v-html="loginPromptHTML"></div>
                         </div>
                         <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
                           {{ $t('Login to your account') }}
@@ -148,7 +148,7 @@ const password = ref('');
 const route = useRoute();
 const router = useRouter();
 const inProgress = ref(false);
-
+const loginPromptHTML = ref()
 const coreStore = useCoreStore();
 const user = useUserStore();
 
@@ -160,8 +160,13 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-async function loadPublicConfig() {
-  await coreStore.getPublicConfig();
+
+async function getLoginFormConfig() {
+  const response = await callAdminForthApi({
+    path: '/get_login_form_config',
+    method: 'GET',
+  });
+  loginPromptHTML.value = response.loginPromptHTML;
 }
 
 onBeforeMount(() => {
@@ -177,7 +182,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-  loadPublicConfig();
+  getLoginFormConfig();
     if (coreStore.config?.demoCredentials) {
       const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
       username.value = demoUsername;

@@ -4,7 +4,7 @@
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
-      <div class="px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
+      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
               type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
@@ -26,7 +26,7 @@
             <div class="flex items-center ms-3 ">
               <span  
                 v-if="!coreStore.config?.singleTheme"
-                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
@@ -95,6 +95,7 @@
             ">{{ item.label }}</div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
               <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+                  :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >

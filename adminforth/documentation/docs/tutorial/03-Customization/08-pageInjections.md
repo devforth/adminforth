@@ -98,6 +98,11 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 Also we have to add an Api to get percentages:
 
 ```ts title="./index.ts"
+import type { IAdminUserExpressRequest } from 'adminforth';
+import express from 'express';
+
+....
+
   app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
     admin.express.authorize(
       async (req: IAdminUserExpressRequest, res: express.Response) => {

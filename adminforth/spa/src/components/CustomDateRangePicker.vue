@@ -3,21 +3,21 @@
     <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: column.type === 'time'}">
       <div class="relative">
         <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-          <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
+          <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
         </div>
 
         <input ref="datepickerStartEl" type="text"
-               class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
                :placeholder="$t('From')">
       </div>
 
       <div class="relative">
         <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-          <IconCalendar class="w-4 h-4 text-gray-500 dark:text-gray-400"/>
+          <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
         </div>
 
         <input ref="datepickerEndEl" type="text"
-               class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
                :placeholder="$t('To')">
       </div>
     </div>
@@ -27,11 +27,11 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
+              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
             <input v-model="startTime" type="time" id="start-time"
-                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    value="00:00" required/>
           </div>
         </div>
@@ -39,11 +39,11 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700"/>
+              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
             <input v-model="endTime" type="time" id="end-time"
-                   class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    value="00:00" required/>
           </div>
         </div>
