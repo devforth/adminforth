@@ -74,7 +74,7 @@
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
-    <CustomDatePicker
+    <DatePicker
       v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
       :column="column"
@@ -153,7 +153,7 @@
 
 <script setup lang="ts">
   import { IconEyeSlashSolid, IconEyeSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
-  import CustomDatePicker from "@/components/CustomDatePicker.vue";
+  import DatePicker from "@/afcl/DatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';
   import Spinner from '@/afcl/Spinner.vue';
