@@ -17,20 +17,19 @@
     />
 
     <BreadcrumbsWithButtons>
-      <button
-        @click="()=>{checkboxes = []}"
-        v-if="checkboxes.length"
-        data-tooltip-target="tooltip-remove-all"
-        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-darkListTable dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
-      >
-        <IconBanOutline class="w-5 h-5 "/>
-
-        <div id="tooltip-remove-all" role="tooltip"
-             class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-          {{ $t('Remove selection') }}
-          <div class="tooltip-arrow" data-popper-arrow></div>
-        </div>
-      </button>
+        <button
+          @click="()=>{checkboxes = []}"
+          v-if="checkboxes.length"
+          data-tooltip-target="tooltip-remove-all"
+          class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-darkListTable dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 rounded-default"
+        >
+          <Tooltip>
+            <IconBanOutline class="w-5 h-5 "/>
+              <template #tooltip >
+                  Remove selection
+              </template>
+          </Tooltip>
+        </button>
 
       <button
         v-if="checkboxes.length" 
@@ -165,7 +164,7 @@ import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-
+import { Tooltip } from '@/afcl'
 
 import {
   IconBanOutline,
