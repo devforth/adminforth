@@ -35,7 +35,7 @@ async function resolveBoolOrFn(
   }
 ): Promise<boolean> {
   if (typeof val === 'function') {
-    return !!(await (val as any)(ctx));
+    return !!(await (val)(ctx));
   }
   return !!val;
 }
@@ -50,7 +50,7 @@ async function isBackendOnly(
     adminforth: IAdminForth;
   }
 ): Promise<boolean> {
-  return await resolveBoolOrFn(col.backendOnly as BackendOnlyInput, ctx);
+  return await resolveBoolOrFn(col.backendOnly, ctx);
 }
 
 async function isShown(
@@ -404,20 +404,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // strip all backendOnly fields or not described in adminForth fields from dbUser
         // (when user defines column and does not set backendOnly, we assume it is not backendOnly)
-        {
-          const ctx = {
-            adminUser,
-            resource: userResource,
-            meta: {},
-            source: ActionCheckSource.ShowRequest,
-            adminforth: this.adminforth,
-          };
-          for (const key of Object.keys(adminUser.dbUser)) {
-            const col = userResource.columns.find((c) => c.name === key);
-            const bo = col ? await isBackendOnly(col, ctx) : true;
-            if (!col || bo) {
-              delete adminUser.dbUser[key];
-            }
+        const ctx = {
+          adminUser,
+          resource: userResource,
+          meta: {},
+          source: ActionCheckSource.ShowRequest,
+          adminforth: this.adminforth,
+        };
+        for (const key of Object.keys(adminUser.dbUser)) {
+          const col = userResource.columns.find((c) => c.name === key);
+          const bo = col ? await isBackendOnly(col, ctx) : true;
+          if (!col || bo) {
+            delete adminUser.dbUser[key];
           }
         }
 
