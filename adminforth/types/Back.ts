@@ -1520,15 +1520,27 @@ export type ShowInInput = ShowInModernInput | ShowInLegacyInput;
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
+export type BackendOnlyInput =
+  | boolean
+  | ((p: {
+      adminUser: AdminUser;
+      resource: AdminForthResource;
+      meta: any;
+      source: ActionCheckSource;
+      adminforth: IAdminForth;
+    }) => boolean | Promise<boolean>);
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
+
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
 export interface IWebSocketClient {
