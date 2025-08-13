@@ -185,7 +185,7 @@ Let's consider example:
 //diff-add
     all: false, 
 //diff-add
-    list: (user :AdminUser) => user.dbUser.role === 'superadmin',
+    list: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
   },
 }
 ```
@@ -200,7 +200,7 @@ So to completely hide the email field from all users apart superadmins, you shou
   name: 'email',
   type: AdminForthDataTypes.STRING,
 //diff-add
-  backendOnly: (user: AdminUser) => user.dbUser.role !== 'superadmin',
+  backendOnly: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
   showIn: { 
     all: false, 
     list: (user: AdminUser) => user.dbUser.role === 'superadmin',
