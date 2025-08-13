@@ -165,7 +165,7 @@ export const styles = () => ({
     lightDropdownMultipleSelectIconFocusBackground: "#F3F4F6", // delete select icon focus background
 
 
-    lightCheckboxBgUnchecked: "alias:lightPrimaryContrast lighten",     //checkbox unchecked state bg
+    lightCheckboxBgUnchecked: "alias:lightPrimaryContrast opacity:0.2",     //checkbox unchecked state bg
     lightCheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
     lightCheckboxIconColor: "alias:lightPrimaryContrast lighten",       //checked icon color
     lightCheckboxBorderColor: "alias:lightPrimary darken",  //border color
