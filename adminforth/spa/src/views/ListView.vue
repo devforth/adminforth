@@ -23,13 +23,12 @@
         data-tooltip-target="tooltip-remove-all"
         class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
       >
-        <IconBanOutline class="w-5 h-5 "/>
-
-        <div id="tooltip-remove-all" role="tooltip"
-             class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-          {{ $t('Remove selection') }}
-          <div class="tooltip-arrow" data-popper-arrow></div>
-        </div>
+          <Tooltip>
+            <IconBanOutline class="w-5 h-5 "/>
+              <template #tooltip >
+                  Remove selection
+              </template>
+          </Tooltip>
       </button>
 
       <button
@@ -161,7 +160,7 @@ import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-
+import { Tooltip } from '@/afcl'
 
 import {
   IconBanOutline,
