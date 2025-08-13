@@ -21,4 +21,5 @@ export { default as MixedChart } from './MixedChart.vue';
 export { default as CountryFlag } from './CountryFlag.vue';
 export { default as JsonViewer } from './JsonViewer.vue';
 export { default as Toggle } from './Toggle.vue';
+export { default as DatePicker } from './DatePicker.vue';
 
