@@ -194,7 +194,7 @@ To open a custom page, return URL to the custom page (can start with https://, o
 //diff-add
         listTableClickUrl: async (record, adminUser) => {
 //diff-add
-          return `https://google.com/search?q=${record.name}`;
+          return `https://google.com/search?q=${record.title}`;
 //diff-add
         }
       }
@@ -632,6 +632,31 @@ export default {
             resourceId: 'adminuser',
 //diff-add
             unsetLabel: 'No realtor',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+### Searchable fields 
+
+Enable search in filter dropdown by specifying which fields to search:
+
+```typescript title="./resources/apartments.ts"
+export default {
+      name: 'apartments',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'adminuser',
+//diff-add
+            searchableFields: ["id", "email"], 
+//diff-add
+            searchIsCaseSensitive: true, // default false
           },
         },
       ],

@@ -95,6 +95,10 @@ To implement this limitation use `allowed`:
 If you want to prohibit the use of bulk action for user, you can do it this way:
 
 ```ts title="./resources/apartments.ts"
+import { admin } from '../index';
+
+....
+
 bulkActions: [
   {
     label: 'Mark as listed',

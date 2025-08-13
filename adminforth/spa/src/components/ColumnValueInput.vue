@@ -19,12 +19,26 @@
       ref="input"
       class="w-full min-w-24"
       :options="columnOptions[column.name] || []"
+      :searchDisabled="!column.foreignResource.searchableFields"
+      @scroll-near-end="loadMoreOptions && loadMoreOptions(column.name)"
+      @search="(searchTerm) => {
+        if (column.foreignResource.searchableFields && onSearchInput && onSearchInput[column.name]) {
+          onSearchInput[column.name](searchTerm);
+        }
+      }"
       teleportToBody
       :placeholder = "columnOptions[column.name]?.length ?$t('Select...'): $t('There are no options available')"
       :modelValue="value"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
-    />
+    >
+      <template #extra-item v-if="columnLoadingState && columnLoadingState[column.name]?.loading">
+        <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+          <Spinner class="w-4 h-4" />
+          {{ $t('Loading...') }}
+        </div>
+      </template>
+    </Select>
     <Select
       v-else-if="column.enum"
       ref="input"
@@ -60,7 +74,7 @@
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
-    <CustomDatePicker
+    <DatePicker
       v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
       :column="column"
@@ -87,7 +101,7 @@
     <textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
       ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -96,7 +110,7 @@
     <textarea
       v-else-if="['json'].includes(type || column.type)"
       ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -123,7 +137,7 @@
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
       @click="$emit('delete')"
     >
-      <IconTrashBinSolid class="w-6 h-6 text-gray-400"/>
+      <IconTrashBinSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"/>
     </button>
     <button
       v-else-if="column.masked"
@@ -131,18 +145,19 @@
       @click="$emit('update:unmasked')"
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
     >
-      <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]"/>
-      <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+      <IconEyeSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"  v-if="!unmasked[column.name]"/>
+      <IconEyeSlashSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons" v-else />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
   import { IconEyeSlashSolid, IconEyeSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
-  import CustomDatePicker from "@/components/CustomDatePicker.vue";
+  import DatePicker from "@/afcl/DatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';
-  import { ref } from 'vue';
+  import Spinner from '@/afcl/Spinner.vue';
+  import { ref, inject } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';
   import { useCoreStore } from '@/stores/core';
@@ -170,6 +185,10 @@
       readonly: false,
     }
   );
+
+  const columnLoadingState = inject('columnLoadingState', {} as any);
+  const onSearchInput = inject('onSearchInput', {} as any);
+  const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
   const input = ref(null);
 

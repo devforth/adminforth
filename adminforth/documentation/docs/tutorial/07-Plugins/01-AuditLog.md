@@ -41,7 +41,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npx --yes prisma migrate dev --name add-audit-logs
+npm run makemigration -- --name add-audit-logs ; npm run migrate:local
 ```
 
 Also to make this code start 
@@ -160,10 +160,14 @@ Audit log is able to catch only standard actions like `create`, `update`, `delet
 If you have a custom, self coded actions in your API, you can log them by calling `logCustomAction` method of `AuditLogPlugin` instance:
 
 ```ts title="./resources/index.ts"
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
+import express from 'express';
+
+....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
 
       admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
         resourceId: 'aparts',
@@ -202,7 +206,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npx --yes prisma migrate dev --name add-ip-address-to-audit-logs
+npm run makemigration -- --name add-ip-address-to-audit-logs ; npm run migrate:local
 ```
 
 Also, update the resource configuration in `./resources/auditLogs.ts`:

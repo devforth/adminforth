@@ -235,21 +235,4 @@ Hook still has access to the virtual field `updates.password`, and we use built-
 After hook is executed, `updates.password` will be removed from the record since it is virtual, so password itself will not be saved to the database.
 
 
-### Backend-only fields
-
-Another important point is that `hashed_password` field should never be passed to frontend due to security reasons.
-
-To do it we have 2 options:
-
-1) Do not list `password_hash` in the `columns` array of the resource. If AdminForth knows nothing about field
-it will never pass this field to frontend.
-2) Define `password_hash` in columns way but set `backendOnly`. The scond option is more explicit and should be preferrred
-
-```ts
-{
-  name: 'password_hash',
-  type: AdminForthDataTypes.STRING,
-  showIn: { all: false },
-  backendOnly: true,  // will never go to frontend
-}
-```
+  
