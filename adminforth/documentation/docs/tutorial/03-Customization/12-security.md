@@ -203,7 +203,7 @@ So to completely hide the email field from all users apart superadmins, you shou
   backendOnly: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
   showIn: { 
     all: false, 
-    list: (user: AdminUser) => user.dbUser.role === 'superadmin',
+    list: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
   },
 }
 ```
