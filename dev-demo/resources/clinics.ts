@@ -2,7 +2,7 @@ import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
 import { v1 as uuid } from "uuid";
 
 export default {
-  dataSource: 'pg',
+  dataSource: 'maindb',
   table: 'clinics',
   resourceId: 'clinics',
   label: 'Clinics',
@@ -12,7 +12,7 @@ export default {
       name: 'id',
       label: 'ID',
       primaryKey: true,
-      // fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
       showIn: {
         create: false,
         edit: false,

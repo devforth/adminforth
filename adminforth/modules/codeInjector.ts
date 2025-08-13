@@ -545,8 +545,23 @@ class CodeInjector implements ICodeInjector {
           ||
        `/assets/favicon.png`
     );
-    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
+    // inject heads to index.html
+    const headItems = this.adminforth.config.customization?.customHeadItems;
+    if(headItems){
+      const renderedHead = headItems.map(({ tagName, attributes }) => {
+      const attrs = Object.entries(attributes)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(' ');
+      const isVoid = ['base', 'link', 'meta'].includes(tagName);
+      return isVoid
+        ? `<${tagName} ${attrs}>`
+        : `<${tagName} ${attrs}></${tagName}>`;
+      }).join('\n    ');
+
+      indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );
+    }
+    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
     let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
@@ -894,6 +909,9 @@ class CodeInjector implements ICodeInjector {
 
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
+      if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
+        console.log('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
+      }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',

@@ -227,7 +227,6 @@ export default class ConfigValidator implements IConfigValidator {
 
     bulkActions.push({
       label: `Delete checked`,
-      state: 'danger',
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
@@ -659,6 +658,46 @@ export default class ConfigValidator implements IConfigValidator {
             }
           }
 
+          if (col.foreignResource.searchableFields) {
+            const searchableFields = Array.isArray(col.foreignResource.searchableFields) 
+              ? col.foreignResource.searchableFields 
+              : [col.foreignResource.searchableFields];
+
+            searchableFields.forEach((fieldName) => {
+              if (typeof fieldName !== 'string') {
+                errors.push(`Resource "${res.resourceId}" column "${col.name}" foreignResource.searchableFields must contain only strings`);
+                return;
+              }
+
+              if (col.foreignResource.resourceId) {
+                const targetResource = this.inputConfig.resources.find((r) => r.resourceId === col.foreignResource.resourceId || r.table === col.foreignResource.resourceId);
+                if (targetResource) {
+                  const targetColumn = targetResource.columns.find((targetCol) => targetCol.name === fieldName);
+                  if (!targetColumn) {
+                    const similar = suggestIfTypo(targetResource.columns.map((c) => c.name), fieldName);
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" foreignResource.searchableFields contains field "${fieldName}" which does not exist in target resource "${targetResource.resourceId || targetResource.table}". ${similar ? `Did you mean "${similar}"?` : ''}`);
+                  }
+                }
+              } else if (col.foreignResource.polymorphicResources) {
+                let hasFieldInAnyResource = false;
+                for (const pr of col.foreignResource.polymorphicResources) {
+                  if (pr.resourceId) {
+                    const targetResource = this.inputConfig.resources.find((r) => r.resourceId === pr.resourceId || r.table === pr.resourceId);
+                    if (targetResource) {
+                      const hasField = targetResource.columns.some((targetCol) => targetCol.name === fieldName);
+                      if (hasField) {
+                        hasFieldInAnyResource = true;
+                      }
+                    }
+                  }
+                }      
+                if (!hasFieldInAnyResource) {
+                  errors.push(`Resource "${res.resourceId}" column "${col.name}" foreignResource.searchableFields contains field "${fieldName}" which does not exist in any of the polymorphic target resources`);
+                }
+              }
+            });
+          }
+
           if (col.foreignResource.unsetLabel) {
             if (typeof col.foreignResource.unsetLabel !== 'string') {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" has foreignResource unsetLabel which is not a string`);
@@ -667,6 +706,12 @@ export default class ConfigValidator implements IConfigValidator {
             // set default unset label
             col.foreignResource.unsetLabel = 'Unset';
           }
+
+          // Set default searchIsCaseSensitive
+          if (col.foreignResource.searchIsCaseSensitive === undefined) {
+            col.foreignResource.searchIsCaseSensitive = false;
+          }
+
           const befHook = col.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest;
           if (befHook) {
             if (!Array.isArray(befHook)) {
@@ -853,6 +898,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!newConfig.baseUrl) {
       newConfig.baseUrl = '';
     }
+
+    try {
+      new URL(newConfig.baseUrl);
+      errors.push(`⛔️ This url is absolute path: ${newConfig.baseUrl}, you have to use relative paths`);
+    } catch {
+
+    }
+
     if (!newConfig.baseUrl.endsWith('/')) {
       newConfig.baseUrlSlashed = `${newConfig.baseUrl}/`;
     } else {

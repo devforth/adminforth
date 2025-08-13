@@ -95,12 +95,9 @@ export interface AdminForthBulkActionCommon {
   label: string,
 
   /**
-   * Bulk Action button state 'danger'|success|'active',
-   *  * 'danger' - red button
-   *  * 'success' - green button
-   *  * 'active' - blue button
+   * Add custom class
    **/ 
-  state?: 'danger' | 'success' | 'active';
+  buttonCustomCssClass?: string;
 
   /** 
    * Optional small badge for button which will be displayed in the list view
@@ -584,6 +581,8 @@ export interface AdminForthForeignResourceCommon {
   polymorphicResources?: Array<AdminForthPolymorphicForeignResource>,
   polymorphicOn?: string,
   unsetLabel?: string,
+  searchableFields?: string | string[],
+  searchIsCaseSensitive?: boolean,
 }
 
 export type FillOnCreateFunction = (params: {
@@ -1055,9 +1054,10 @@ export interface AdminForthConfigForFrontend {
   usernameFieldName: string,
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
+  removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
-  loginPromptHTML?: string,
+  loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
@@ -1065,6 +1065,7 @@ export interface AdminForthConfigForFrontend {
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
   brandLogo?: string,
+  singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
   auth: any,
@@ -1080,7 +1081,11 @@ export interface AdminForthConfigForFrontend {
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
-  }
+  },
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+  }[],  
 }
 
 export interface GetBaseConfigResponse {

@@ -1,14 +1,14 @@
 <template>
-  <div class="relative mt-4 lg:mt-10 w-full max-w-[700px] bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-    <span class="absolute -top-6 left-0 text-sm text-gray-500">{{ leftLabel }}</span>
-    <span class="absolute -top-6 right-0 text-sm text-gray-500">{{ rightLabel }}</span>
+  <div class="relative mt-4 lg:mt-10 w-full max-w-[700px] bg-lightProgressBarUnfilledColor rounded-full h-2.5 dark:bg-darkProgressBarUnfilledColor">
+    <span class="absolute -top-6 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ leftLabel }}</span>
+    <span class="absolute -top-6 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ rightLabel }}</span>
     <div 
-      class="bg-lightPrimary dark:bg-darkPrimary h-2.5 rounded-full transition-all duration-300 ease-in-out"
+      class="bg-lightProgressBarFilledColor dark:bg-darkProgressBarFilledColor h-2.5 rounded-full transition-all duration-300 ease-in-out"
       :style="{ width: `${percentage}%` }"
     ></div>
-    <span v-if="showValues" class="absolute top-4 left-0 text-sm text-gray-500">{{ formatValue(minValue) }}</span>
-    <span v-if="showProgress" class="absolute top-4 right-1/2 translate-x-1/2 text-sm text-gray-500">{{ progressText }}</span>
-    <span v-if="showValues" class="absolute top-4 right-0 text-sm text-gray-500">{{ formatValue(maxValue) }}</span>
+    <span v-if="showValues" class="absolute top-4 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(minValue) }}</span>
+    <span v-if="showProgress" class="absolute top-4 right-1/2 translate-x-1/2 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ progressText }}</span>
+    <span v-if="showValues" class="absolute top-4 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(maxValue) }}</span>
   </div>
 </template>
 

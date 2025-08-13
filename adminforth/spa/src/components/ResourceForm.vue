@@ -63,9 +63,9 @@
 
 <script setup lang="ts">
 
-import { applyRegexValidation, callAdminForthApi} from '@/utils';
+import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers} from '@/utils';
 import { computedAsync } from '@vueuse/core';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch, provide } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
@@ -94,6 +94,11 @@ const emit = defineEmits(['update:record', 'update:isValid']);
 const currentValues = ref(null);
 const customComponentsInValidity = ref({});
 const customComponentsEmptiness = ref({});
+
+const columnOptions = ref<Record<string, any[]>>({});
+const columnLoadingState = reactive<Record<string, { loading: boolean; hasMore: boolean }>>({});
+const columnOffsets = reactive<Record<string, number>>({});
+const columnEmptyResultsCount = reactive<Record<string, number>>({});
 
 const columnError = (column) => {
   const val = computed(() => {
@@ -186,7 +191,7 @@ const validateValue = (type, value, column) => {
 };
 
 
-const setCurrentValue = (key, value, index=null) => {
+const setCurrentValue = (key, value, index = null) => {
   const col = props.resource.columns.find((column) => column.name === key);
   // if field is an array, we need to update the array or individual element
   if (col.type === 'json' && col.isArray?.enabled) {
@@ -239,6 +244,23 @@ const setCurrentValue = (key, value, index=null) => {
   emit('update:record', up);
 };
 
+watch(() => props.resource.columns, async (newColumns) => {
+  if (!newColumns) return;
+  
+  for (const column of newColumns) {
+    if (column.foreignResource) {
+      if (!columnOptions.value[column.name]) {
+        columnOptions.value[column.name] = [];
+        columnLoadingState[column.name] = { loading: false, hasMore: true };
+        columnOffsets[column.name] = 0;
+        columnEmptyResultsCount[column.name] = 0;
+        
+        await loadMoreOptions(column.name);
+      }
+    }
+  }
+}, { immediate: true });
+
 onMounted(() => {
   currentValues.value = Object.assign({}, props.record);
   // json values should transform to string
@@ -266,29 +288,31 @@ onMounted(() => {
   emit('update:isValid', isValid.value);
 });
 
-const columnOptions = computedAsync(async () => { 
-  return (await Promise.all(
-    Object.values(props.resource.columns).map(async (column) => {
-      if (column.foreignResource) {
-        const list = await callAdminForthApi({
-          method: 'POST',
-          path: `/get_resource_foreign_data`,
-          body: {
-            resourceId: router.currentRoute.value.params.resourceId,
-            column: column.name,
-            limit: 1000,
-            offset: 0,
-          },
-        });
+async function loadMoreOptions(columnName: string, searchTerm = '') {
+  return loadMoreForeignOptions({
+    columnName,
+    searchTerm,
+    columns: props.resource.columns,
+    resourceId: router.currentRoute.value.params.resourceId as string,
+    columnOptions,
+    columnLoadingState,
+    columnOffsets,
+    columnEmptyResultsCount
+  });
+}
 
-        if (!column.required[props.source] && !column.isArray?.enabled) list.items.push({ value: null, label: column.foreignResource.unsetLabel });
-
-        return { [column.name]: list.items };
-      }
-    })
-  )).reduce((acc, val) => Object.assign(acc, val), {})
-
-}, {});
+async function searchOptions(columnName: string, searchTerm: string) {
+  return searchForeignOptions({
+    columnName,
+    searchTerm,
+    columns: props.resource.columns,
+    resourceId: router.currentRoute.value.params.resourceId as string,
+    columnOptions,
+    columnLoadingState,
+    columnOffsets,
+    columnEmptyResultsCount
+  });
+}
 
 
 const editableColumns = computed(() => {
@@ -329,6 +353,17 @@ const getOtherColumns = () => {
 };
 
 const otherColumns = getOtherColumns();
+
+const onSearchInput = computed(() => {
+  return createSearchInputHandlers(
+    props.resource.columns,
+    searchOptions
+  );
+});
+
+provide('columnLoadingState', columnLoadingState);
+provide('onSearchInput', onSearchInput);
+provide('loadMoreOptions', loadMoreOptions);
 
 watch(() => isValid.value, (value) => {
   emit('update:isValid', value);
