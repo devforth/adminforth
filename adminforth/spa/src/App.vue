@@ -274,7 +274,7 @@ const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
 //create a ref to store the opened menu items with ts type;
-const opened = ref<string[]>([]);
+const opened = ref<(string|number)[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
@@ -296,7 +296,7 @@ function toggleTheme() {
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem(label: string) {
+function clickOnMenuItem(label: string | number) {
   if (opened.value.includes(label)) {
     opened.value = opened.value.filter((item) => item !== label);
   } else {

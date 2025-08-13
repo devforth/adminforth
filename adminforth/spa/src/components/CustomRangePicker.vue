@@ -57,15 +57,15 @@ const props = defineProps({
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
-const minFormatted = computed(() => Math.floor(props.min));
-const maxFormatted = computed(() => Math.ceil(props.max));
+const minFormatted = computed(() => Math.floor(<number>props.min));
+const maxFormatted = computed(() => Math.ceil(<number>props.max));
 
 const isChanged = computed(() => {
   return start.value && start.value !== minFormatted.value || end.value && end.value !== maxFormatted.value;
 });
 
-const start = ref(props.valueStart);
-const end = ref(props.valueEnd);
+const start = ref<string | number>(props.valueStart);
+const end = ref<string | number>(props.valueEnd);
 
 const sliderValue = ref([minFormatted.value, maxFormatted.value]);
 
@@ -118,7 +118,7 @@ const clear = () => {
   setSliderValues('', '')
 }
 
-function setSliderValues(start, end) {
+function setSliderValues(start:any, end:any) {
   sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
 }
 </script>
