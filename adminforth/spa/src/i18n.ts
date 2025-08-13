@@ -3,7 +3,7 @@ import { createApp } from 'vue';
 
 
 // taken from here https://vue-i18n.intlify.dev/guide/essentials/pluralization.html#custom-pluralization
-function slavicPluralRule(choice, choicesLength, orgRule) {
+function slavicPluralRule(choice: number, choicesLength: number, orgRule: any) {
   if (choice === 0) {
     return 0
   }
