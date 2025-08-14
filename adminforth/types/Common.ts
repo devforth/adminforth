@@ -809,9 +809,6 @@ export interface AdminForthResourceColumnInputCommon {
    */
   minLength?: number,
 
-  min?: number,
-  max?: number,
-
   /**
    * Minimum value that can be entered in this field.
    */
@@ -877,6 +874,15 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /**
+   * Minimal value stored in this field.
+   */
+  min?: number,
+
+  /**
+   * Maximum value stored in this field.
+   */
+  max?: number,
 }
 
 export enum AdminForthMenuTypes {
