@@ -19,7 +19,7 @@
         @update:unmasked="$emit('update:unmasked', column.name)"
         @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
         @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
-        @delete="setCurrentValue(column.name, currentValues[column.name].filter((index: any) => index !== arrayItemIndex))"
+        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_: any, index: any) => index !== arrayItemIndex))"
       />
     </div>
     <div class="flex items-center">
