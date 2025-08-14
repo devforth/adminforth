@@ -3,7 +3,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -27,7 +27,11 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems)
+          ? coreStore.resourceOptions.pageInjections.edit.threeDotsDropdownItems
+          : coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems
+            ? [coreStore.resourceOptions.pageInjections.edit.threeDotsDropdownItems]
+            : undefined"
       ></ThreeDotsMenu>
 
     </BreadcrumbsWithButtons>
@@ -35,7 +39,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -44,7 +48,7 @@
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
 
     <ResourceForm 
-      v-else
+      v-else-if="coreStore.resource"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -58,7 +62,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -76,12 +80,13 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
+import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
@@ -96,9 +101,9 @@ const loading = ref(true);
 
 const saving = ref(false);
 
-const record = ref({});
+const record: Ref<Record<string, any>> = ref({});
 
-async function onUpdateRecord(newRecord) {
+async function onUpdateRecord(newRecord: Record<string, any>) {
   record.value = newRecord;
 }
 
@@ -110,7 +115,7 @@ const editableRecord = computed(() => {
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
       if (column.isArray?.enabled) {
-        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+        newRecord[column.name] = newRecord[column.name]?.map((fr: { pk: any }) => fr.pk);
       } else {
         newRecord[column.name] = newRecord[column.name]?.pk;
       }
@@ -123,16 +128,20 @@ onMounted(async () => {
   loading.value = true;
 
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
   });
   initThreeDotsDropdown();
 
   await coreStore.fetchRecord({
-    resourceId: route.params.resourceId, 
-    primaryKey: route.params.primaryKey,
+    resourceId: route.params.resourceId as string, //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
+    primaryKey: route.params.primaryKey as string, //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
     source: 'edit',
   });
-  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+
+  if (coreStore.resourceOptions) {
+    checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+  }
+
   loading.value = false;
 });
 
@@ -145,7 +154,7 @@ async function saveRecord() {
   }
 
   saving.value = true;
-  const updates = {};
+  const updates: Record<string, any> = {};
   for (const key in record.value) {
     let columnIsUpdated = false;
 
@@ -157,7 +166,8 @@ async function saveRecord() {
       columnIsUpdated = record.value[key] !== coreStore.record[key];
     }
 
-    const column = coreStore.resource.columns.find((c) => c.name === key);
+    if (!coreStore.resource) return;
+      const column = coreStore.resource.columns.find((c) => c.name === key);
 
     if (column?.foreignResource) {
       columnIsUpdated = record.value[key] !== coreStore.record[key]?.pk;
