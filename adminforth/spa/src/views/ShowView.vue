@@ -4,15 +4,15 @@
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
-      <template v-if="coreStore.resource?.options?.actions">
+      <template v-if="coreStore.resource?.options?.bulkActions">
         <button 
-          v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" 
+          v-for="action in coreStore.resource.options.bulkActions.filter(a => a.showIn?.showButton)" 
           :key="action.id"
           @click="startCustomAction(action.id)"
           :disabled="actionLoadingStates[action.id]"
@@ -49,15 +49,19 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems"
-        :customActions="customActions"
+      :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems)
+        ? coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems
+        : coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems
+          ? [coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems]
+          : undefined"
+      :customActions="customActions"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -78,9 +82,9 @@
     >
     <div v-if="!groups.length && allColumns.length">
       <ShowTable
-        :columns="allColumns"
         :resource="coreStore.resource"
         :record="coreStore.record"
+        :columns="allColumns as Array<{ name: string; label?: string; components?: any }>"
       />
     </div>
     <template v-else> 
@@ -95,10 +99,10 @@
       </template>
       <template v-if="otherColumns.length > 0">
         <ShowTable
-          :columns="otherColumns"
           groupName="Other Fields"
           :resource="coreStore.resource"
           :record="coreStore.record"
+          :columns="otherColumns as Array<{ name: string; label?: string; components?: any }>"
         />
       </template>
     </template>
@@ -112,8 +116,7 @@
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
-      :column="column"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -140,6 +143,7 @@ import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
+import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 
 const route = useRoute();
 const router = useRouter();
