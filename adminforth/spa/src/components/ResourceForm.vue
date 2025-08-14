@@ -91,7 +91,7 @@ const mode = computed(() => route.name === 'resource-create' ? 'create' : 'edit'
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
-const currentValues: Ref<Record<string, any>> = ref({});
+const currentValues = ref<any | any[] | null>(null);
 const customComponentsInValidity: Ref<Record<string, AdminForthResourceColumnCommon>> = ref({});
 const customComponentsEmptiness: Ref<Record<string, AdminForthResourceColumnCommon>> = ref({});
 
