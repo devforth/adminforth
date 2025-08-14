@@ -146,7 +146,7 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
           return error || validateValue(column.isArray.itemType, item, column) ||
             (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
         } else {
-          return error || false; 
+          return error; 
         }
       }, null);
     } else {

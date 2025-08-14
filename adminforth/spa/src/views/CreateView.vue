@@ -122,7 +122,7 @@ async function onUpdateRecord(newRecord: any) {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
+    resourceId: route.params.resourceId as string 
   });
   initialValues.value = (coreStore.resource?.columns || []).reduce<Record<string, unknown>>((acc, column) => {
     if (column.suggestOnCreate !== undefined) {

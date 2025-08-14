@@ -128,13 +128,13 @@ onMounted(async () => {
   loading.value = true;
 
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
+    resourceId: route.params.resourceId as string 
   });
   initThreeDotsDropdown();
 
   await coreStore.fetchRecord({
-    resourceId: route.params.resourceId as string, //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
-    primaryKey: route.params.primaryKey as string, //POTENTIONAL PROBLEM: resourceId can requires only <sting> type,  but inside params.resourceId can be string[]
+    resourceId: route.params.resourceId as string,
+    primaryKey: route.params.primaryKey as string,
     source: 'edit',
   });
 

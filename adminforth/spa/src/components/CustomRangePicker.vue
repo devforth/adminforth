@@ -118,7 +118,7 @@ const clear = () => {
   setSliderValues('', '')
 }
 
-function setSliderValues(start:any, end:any) {
+function setSliderValues(start: any, end: any) {
   sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
 }
 </script>
