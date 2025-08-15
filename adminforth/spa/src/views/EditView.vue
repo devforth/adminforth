@@ -46,7 +46,7 @@
     />
 
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
-
+ 
     <ResourceForm 
       v-else-if="coreStore.resource"
       :record="editableRecord"
