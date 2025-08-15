@@ -19,7 +19,7 @@
         @update:unmasked="$emit('update:unmasked', column.name)"
         @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
         @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
-        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_, index) => index !== arrayItemIndex))"
+        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_: any, index: any) => index !== arrayItemIndex))"
       />
     </div>
     <div class="flex items-center">
@@ -71,7 +71,7 @@
   
   const emit = defineEmits(['update:unmasked', 'update:inValidity', 'update:emptiness', 'focus-last-input']);
   
-  const arrayItemRefs = ref([]);
+  const arrayItemRefs = ref<HTMLInputElement[]>([]);
   
   async function addArrayItem() {
     props.setCurrentValue(props.column.name, props.currentValues[props.column.name], props.currentValues[props.column.name].length);

@@ -4,7 +4,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -31,7 +31,11 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems) 
+          ? coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems 
+          : coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems 
+            ? [coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems] 
+            : []"
       ></ThreeDotsMenu>
 
     </BreadcrumbsWithButtons>
@@ -39,7 +43,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -51,7 +55,7 @@
     <ResourceForm 
       v-else
       :record="record"
-      :resource="coreStore.resource"
+      :resource="coreStore.resource!"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
       :validating="validating"
@@ -63,7 +67,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -88,6 +92,7 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
+import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -109,7 +114,7 @@ const initialValues = ref({});
 const readonlyColumns = ref([]);
 
 
-async function onUpdateRecord(newRecord) {
+async function onUpdateRecord(newRecord: any) {
   console.log('newRecord', newRecord);
   record.value = newRecord;
 }
@@ -117,23 +122,23 @@ async function onUpdateRecord(newRecord) {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string 
   });
-  initialValues.value = (coreStore.resource?.columns || []).reduce((acc, column) => {
+  initialValues.value = (coreStore.resource?.columns || []).reduce<Record<string, unknown>>((acc, column) => {
     if (column.suggestOnCreate !== undefined) {
       acc[column.name] = column.suggestOnCreate;
     }
     return acc;
   }, {});
   if (route.query.values) {
-    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values)) };
+    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values as string)) };
   }
   if (route.query.readonlyColumns) {
-    readonlyColumns.value = JSON.parse(decodeURIComponent(route.query.readonlyColumns));
+    readonlyColumns.value = JSON.parse(decodeURIComponent(route.query.readonlyColumns as string));
   }
   record.value = initialValues.value;
   loading.value = false;
-  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'create');
+  checkAcessByAllowedActions(coreStore.resourceOptions!.allowedActions,'create');
   initThreeDotsDropdown();
 });
 
@@ -159,7 +164,7 @@ async function saveRecord() {
   }
   saving.value = false;
   if (route.query.returnTo) {
-    router.push(route.query.returnTo);
+    router.push(<string>route.query.returnTo);
   } else {
     router.push({ 
       name: 'resource-show', 

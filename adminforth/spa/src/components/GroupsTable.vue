@@ -70,6 +70,7 @@
   import { ref, computed, watch, nextTick, type Ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import ColumnValueInputWrapper from "@/components/ColumnValueInputWrapper.vue";
+  import type { AdminForthResourceColumnInputCommon } from '@/types/Common';
 
   const { t } = useI18n();
 
@@ -89,7 +90,7 @@
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
   const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
   const allColumnsHaveCustomComponent = computed(() => {
-    return props.group.columns.every(column => {
+    return props.group.columns.every((column: AdminForthResourceColumnInputCommon) => {
       const componentKey = `${props.source}Row` as keyof typeof column.components;
       return column.components?.[componentKey];
     });

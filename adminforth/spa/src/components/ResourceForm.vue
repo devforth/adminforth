@@ -65,12 +65,12 @@
 
 import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers} from '@/utils';
 import { computedAsync } from '@vueuse/core';
-import { computed, onMounted, reactive, ref, watch, provide } from 'vue';
+import { computed, onMounted, reactive, ref, watch, provide, type Ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthResourceCommon } from '@/types/Common';
+import { type AdminForthResourceColumnCommon, type AdminForthResourceCommon } from '@/types/Common';
 
 const { t } = useI18n();
 
@@ -91,16 +91,16 @@ const mode = computed(() => route.name === 'resource-create' ? 'create' : 'edit'
 
 const emit = defineEmits(['update:record', 'update:isValid']);
 
-const currentValues = ref(null);
-const customComponentsInValidity = ref({});
-const customComponentsEmptiness = ref({});
+const currentValues = ref<any | any[] | null>(null);
+const customComponentsInValidity: Ref<Record<string, AdminForthResourceColumnCommon>> = ref({});
+const customComponentsEmptiness: Ref<Record<string, AdminForthResourceColumnCommon>> = ref({});
 
 const columnOptions = ref<Record<string, any[]>>({});
 const columnLoadingState = reactive<Record<string, { loading: boolean; hasMore: boolean }>>({});
 const columnOffsets = reactive<Record<string, number>>({});
 const columnEmptyResultsCount = reactive<Record<string, number>>({});
 
-const columnError = (column) => {
+const columnError = (column: AdminForthResourceColumnCommon) => {
   const val = computed(() => {
     if (!currentValues.value) {
       return null;
@@ -109,7 +109,7 @@ const columnError = (column) => {
       return customComponentsInValidity.value?.[column.name];
     }
     
-    if ( column.required[mode.value] ) {
+    if ( column.required?.[mode.value] ) {
       const naturalEmptiness = currentValues.value[column.name] === undefined ||
         currentValues.value[column.name] === null ||
         currentValues.value[column.name] === '' || 
@@ -136,17 +136,23 @@ const columnError = (column) => {
       }
     } else if (column.isArray?.enabled) {
       if (!column.isArray.allowDuplicateItems) {
-        if (currentValues.value[column.name].filter((value, index, self) => self.indexOf(value) !== index).length > 0) {
+        if (currentValues.value[column.name].filter((value: any, index: any, self: any) => self.indexOf(value) !== index).length > 0) {
           return t('Array cannot contain duplicate items');
         }
       }
 
-      return currentValues.value[column.name] && currentValues.value[column.name].reduce((error, item) => {
-        return error || validateValue(column.isArray.itemType, item, column) ||
-          (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
+      return currentValues.value[column.name] && currentValues.value[column.name].reduce((error: any, item: any) => {
+        if (column.isArray) {
+          return error || validateValue(column.isArray.itemType, item, column) ||
+            (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
+        } else {
+          return error; 
+        }
       }, null);
     } else {
-      return validateValue(column.type, currentValues.value[column.name], column);
+      if (column.type) {
+        return validateValue(column.type, currentValues.value[column.name], column);
+      }
     }
     
     return null;
@@ -154,7 +160,7 @@ const columnError = (column) => {
   return val.value;
 };
 
-const validateValue = (type, value, column) => {
+const validateValue = (type: string, value: any, column: AdminForthResourceColumnCommon) => {
   if (type === 'string' || type === 'text') {
     if (column.maxLength && value?.length > column.maxLength) {
       return t('This field must be shorter than {maxLength} characters', { maxLength: column.maxLength });
@@ -162,7 +168,7 @@ const validateValue = (type, value, column) => {
     
     if (column.minLength && value?.length < column.minLength) {
       // if column.required[mode.value] is false, then we check if the field is empty
-      let needToCheckEmpty = column.required[mode.value] || value?.length > 0;
+      let needToCheckEmpty = column.required?.[mode.value] || value?.length > 0;
       if (!needToCheckEmpty) {
         return null;
       }
@@ -191,10 +197,10 @@ const validateValue = (type, value, column) => {
 };
 
 
-const setCurrentValue = (key, value, index = null) => {
+const setCurrentValue = (key: any, value: any, index = null) => {
   const col = props.resource.columns.find((column) => column.name === key);
   // if field is an array, we need to update the array or individual element
-  if (col.type === 'json' && col.isArray?.enabled) {
+  if (((col?.type && col.type === 'json') && (col?.type && col.isArray?.enabled))) {
     if (index === null) {
       currentValues.value[key] = value;
     } else if (index === currentValues.value[key].length) {
@@ -209,12 +215,12 @@ const setCurrentValue = (key, value, index = null) => {
       } else {
         currentValues.value[key][index] = value;
       }
-      if (['text', 'richtext', 'string'].includes(col.isArray.itemType) && col.enforceLowerCase) {
+      if (col?.isArray && ['text', 'richtext', 'string'].includes(col.isArray.itemType) && col.enforceLowerCase) {
         currentValues.value[key][index] = currentValues.value[key][index].toLowerCase();
       }
     }
   } else {
-    if (['integer', 'float', 'decimal'].includes(col.type)) {
+    if (col?.type && ['integer', 'float', 'decimal'].includes(col.type)) {
       if (value || value === 0) {
         currentValues.value[key] = +value;
       } else {
@@ -223,7 +229,7 @@ const setCurrentValue = (key, value, index = null) => {
     } else {
       currentValues.value[key] = value;
     }
-    if (['text', 'richtext', 'string'].includes(col.type) && col.enforceLowerCase) {
+    if (col?.type && ['text', 'richtext', 'string'].includes(col?.type) && col.enforceLowerCase) {
       currentValues.value[key] = currentValues.value[key].toLowerCase();
     }
   }
@@ -265,7 +271,7 @@ onMounted(() => {
   currentValues.value = Object.assign({}, props.record);
   // json values should transform to string
   props.resource.columns.forEach((column) => {
-    if (column.type === 'json') {
+    if (column.type === 'json' && currentValues.value) {
       if (column.isArray?.enabled) {
         // if value is null or undefined, we should set it to empty array
         if (!currentValues.value[column.name]) {
@@ -316,7 +322,7 @@ async function searchOptions(columnName: string, searchTerm: string) {
 
 
 const editableColumns = computed(() => {
-  return props.resource?.columns?.filter(column => column.showIn[mode.value]);
+  return props.resource?.columns?.filter(column => column.showIn?.[mode.value]);
 });
 
 const isValid = computed(() => {
@@ -326,12 +332,14 @@ const isValid = computed(() => {
 
 const groups = computed(() => {
   let fieldGroupType;
-  if (mode.value === 'edit' && coreStore.resource.options?.editFieldGroups !== undefined) {
-    fieldGroupType = coreStore.resource.options.editFieldGroups;
-  } else if (mode.value === 'create' && coreStore.resource.options?.createFieldGroups !== undefined) {
-    fieldGroupType = coreStore.resource.options.createFieldGroups;
-  } else {
-    fieldGroupType = coreStore.resource.options?.fieldGroups;
+  if(coreStore.resource){
+    if (mode.value === 'edit' && coreStore.resource.options?.editFieldGroups !== undefined) {
+      fieldGroupType = coreStore.resource.options.editFieldGroups;
+    } else if (mode.value === 'create' && coreStore.resource.options?.createFieldGroups !== undefined) {
+      fieldGroupType = coreStore.resource.options.createFieldGroups;
+    } else {
+      fieldGroupType = coreStore.resource.options?.fieldGroups;
+    }
   }
   return fieldGroupType ?? [];
 });
