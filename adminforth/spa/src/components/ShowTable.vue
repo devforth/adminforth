@@ -62,10 +62,11 @@
   import { getCustomComponent } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
+  import type { AdminForthResourceCommon } from '@/types/Common';
   const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
-        label: string;
+        label?: string;
         components?: {
           show?: {
             file: string;
@@ -77,10 +78,9 @@
           };
         };
     }>;
-    source: string;
     groupName?: string | null;
     noTitle?: boolean;
-    resource: Record<string, any>;
+    resource: AdminForthResourceCommon | null;
     record: Record<string, any>;
     isRounded?: boolean;
   }>(), {

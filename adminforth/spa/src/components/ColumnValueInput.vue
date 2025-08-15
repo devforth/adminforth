@@ -66,6 +66,7 @@
       step="1"
       class="w-40"
       placeholder="0"
+      :fullWidth="true"
       :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
       :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
@@ -90,6 +91,7 @@
       step="0.1"
       class="w-40"
       placeholder="0.0"
+      :fullWidth="true"
       :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
       :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
@@ -104,7 +106,7 @@
       class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <textarea
@@ -113,13 +115,14 @@
       class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
       :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     />
     <Input
       v-else
       ref="input"
       :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
       class="w-full"
+      :fullWidth="true"
       :placeholder="$t('Text')"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
@@ -190,7 +193,7 @@
   const onSearchInput = inject('onSearchInput', {} as any);
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
-  const input = ref(null);
+const input = ref<HTMLInputElement | null>(null);
 
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [

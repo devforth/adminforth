@@ -8,12 +8,12 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
   type AdminForthResourceColumnCommon,
-  AdminForthResourceInputCommon,
-  AdminForthComponentDeclarationFull,
-  AdminForthConfigMenuItem,
-  AnnouncementBadgeResponse,
+  type AdminForthResourceInputCommon,
+  type AdminForthComponentDeclarationFull,
+  type AdminForthConfigMenuItem,
+  type AnnouncementBadgeResponse,
   AdminForthResourcePages,
-  AdminForthResourceColumnInputCommon,
+  type AdminForthResourceColumnInputCommon,
 } from './Common.js';
 
 export interface ICodeInjector {
