@@ -22,7 +22,6 @@ export interface ImageVisionAdapter {
     inputFileUrls,
   }: {
     prompt: string,
-    fieldsToFill: Record<string, string>,
     inputFileUrls: string[],
   }): Promise<{
     response: string;
