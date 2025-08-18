@@ -119,6 +119,10 @@ export interface AdminForthBulkActionCommon {
    */
   successMessage?: string,
 
+  /**
+   * Show in three dots dropdown menu in list view.
+   */
+  showInThreeDotsDropdown?: boolean,
 }
 
 export interface AdminForthFieldComponents {
