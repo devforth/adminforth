@@ -35,6 +35,18 @@
               </div>
             </a>
           </li>
+          <li v-if="checkboxes.length" v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
+            <a href="#" @click.prevent="startBulkAction(action.id)" class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+              <div class="flex items-center gap-2">
+                <component 
+                  v-if="action.icon" 
+                  :is="getIcon(action.icon)" 
+                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                />
+                {{ action.label }}
+              </div>
+            </a>
+          </li>
         </ul>
     </div>
   </template>
@@ -54,8 +66,12 @@ const router = useRouter();
 
 const props = defineProps({
   threeDotsDropdownItems: Array,
-  customActions: Array
+  customActions: Array,
+  bulkActions: Array,
+  checkboxes: Array
 });
+
+const emit = defineEmits(['startBulkAction']);
 
 async function handleActionClick(action) {
   adminforth.list.closeThreeDotsDropdown();
@@ -107,5 +123,10 @@ async function handleActionClick(action) {
       variant: 'danger'
     });
   }
+}
+
+function startBulkAction(actionId) {
+  adminforth.list.closeThreeDotsDropdown();
+  emit('startBulkAction', actionId);
 }
 </script>
