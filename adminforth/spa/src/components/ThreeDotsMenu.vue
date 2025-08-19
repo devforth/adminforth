@@ -1,5 +1,5 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length">
+  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some(action => action.showInThreeDotsDropdown))">
     <button 
       data-dropdown-toggle="listThreeDotsDropdown" 
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
@@ -35,8 +35,14 @@
               </div>
             </a>
           </li>
-          <li v-if="checkboxes.length" v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
-            <a href="#" @click.prevent="startBulkAction(action.id)" class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+          <li v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
+            <a href="#" @click.prevent="startBulkAction(action.id)" 
+                class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+                :class="{
+                  'pointer-events-none': !checkboxes.length,
+                  'opacity-50': !checkboxes.length,
+                  'cursor-not-allowed': !checkboxes.length
+                }">
               <div class="flex items-center gap-2">
                 <component 
                   v-if="action.icon" 
