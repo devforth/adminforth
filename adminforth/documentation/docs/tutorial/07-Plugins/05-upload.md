@@ -288,12 +288,12 @@ npm i @adminforth/storage-adapter-local --save
 import LocalStorageAdapter from '@adminforth/storage-adapter-local';
 
 new UploadPlugin({
-  storageAdapter: (sourcesAdapter = new LocalStorageAdapter({
+  storageAdapter: new LocalStorageAdapter({
     fileSystemFolder: "./db/uploads",
     adminServeBaseUrl: "static/source",
     mode: "public", // or "private"
     signingSecret: process.env.ADMINFORTH_SECRET,
-  })),
+  }),
   pathColumnName: 'apartment_image',
   allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
   maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -418,17 +418,19 @@ plugins: [
   ...
   new UploadPlugin({
     pathColumnName: 'apartment_source',
-    storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+    storageAdapter: (sourcesAdapter = new LocalStorageAdapter({
       fileSystemFolder: "./db/uploads",
       mode: "public",
+      adminServeBaseUrl: "static/source",
       signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
     }), sourcesAdapter),
   }),
   new UploadPlugin({
     pathColumnName: 'apartment_image',
-    storageAdapter: new AdminForthAdapterLocalFilesystem({
+    storageAdapter: new LocalStorageAdapter({
       fileSystemFolder: "./db/uploads",
       mode: "public",
+      adminServeBaseUrl: "static/source",
       signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
     }),
     generation: {
