@@ -176,13 +176,36 @@
               </template>
 
               <template v-if="resource.options?.actions">
-                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
-                  <button
-                    @click="startCustomAction(action.id, row)"
+                <Tooltip
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
+                  :key="action.id"
+                >
+                  <CallActionWrapper
+                    :disabled="rowActionLoadingStates?.[action.id]"
+                    @callAction="startCustomAction(action.id, row)"
                   >
-                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
-                  </button>
-                  <template v-slot:tooltip>
+                    <component
+                      :is="action.customComponent ? getCustomComponent(action.customComponent) : 'span'"
+                      :meta="action.customComponent?.meta"
+                      :row="row"
+                      :resource="resource"
+                      :adminUser="adminUser"
+                    >
+                      <button
+                        type="button"
+                        :disabled="rowActionLoadingStates?.[action.id]"
+                        @click.stop.prevent="startCustomAction(action.id, row)"
+                      >
+                        <component
+                          v-if="action.icon"
+                          :is="getIcon(action.icon)"
+                          class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                        />
+                      </button>
+                    </component>
+                  </CallActionWrapper>
+
+                  <template #tooltip>
                     {{ action.name }}
                   </template>
                 </Tooltip>

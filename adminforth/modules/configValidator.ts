@@ -375,13 +375,17 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.name) {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
-  
+
       if (!action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
       }
       
       if (action.action && action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
+      }
+
+      if (action.customComponent) {
+        action.customComponent = this.validateComponent(action.customComponent as any, errors);
       }
   
       // Generate ID if not present

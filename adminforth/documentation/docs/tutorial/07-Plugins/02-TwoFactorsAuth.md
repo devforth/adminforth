@@ -206,3 +206,53 @@ plugins: [
 ],
 ...
 ```
+
+## Trigger 2FA from Actions via a Custom Component
+
+Enable a one‑time 2FA prompt before running any AdminForth action by attaching a tiny Vue wrapper via `customComponent`. The plugin exposes a global modal: `window.adminforthTwoFaModal.getCode(cb?)`.
+
+### Minimal Wrapper Component
+
+```ts title='/custom/RequireTwoFaGate.vue'
+<template>
+  <div class="contents" @click.stop.prevent="onClick"><slot /></div>
+</template>
+<script setup lang="ts">
+  import { callAdminForthApi } from '@/utils';
+  const emit = defineEmits<{ (e: 'callAction'): void }>();
+  const props = defineProps<{ disabled?: boolean; meta?: { verifyPath?: string; [k: string]: any } }>();
+
+  async function verify2fa(code: string) {
+  const path = props.meta?.verifyPath ?? '/plugin/twofa/verify';
+  const resp = await callAdminForthApi({ method: 'POST', path, body: { code } });
+    return !!resp?.ok;
+  }
+
+  async function onClick() {
+  if (props.disabled) return;
+  if (!window.adminforthTwoFaModal?.getCode) { emit('callAction'); return; }
+  await window.adminforthTwoFaModal.getCode(verify2fa);
+    emit('callAction');
+  }
+</script>
+```
+
+### Attach to an Action
+
+```ts title='/adminuser.ts'
+options: {
+  actions: [
+    {
+    name: 'Auto submit',
+    icon: 'flowbite:play-solid',
+    allowed: () => true,
+    action: async ({ recordId, adminUser }) => ({ ok: true, successMessage: 'Auto submitted' }),
+    showIn: { showButton: true, showThreeDotsMenu: true, list: true },
+    //diff-add
+    customComponent: '@@/RequireTwoFaGate.vue',
+    // or with runtime config:
+    // customComponent: { name: '@@/RequireTwoFaGate.vue', meta: { verifyPath: '/plugin/twofa/verify' } },
+    },
+  ],
+}
+```
