@@ -30,6 +30,7 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
             "*"
         ],
         "AllowedMethods": [
+            "HEAD",
             "PUT"
         ],
         "AllowedOrigins": [
@@ -275,7 +276,33 @@ If for example your domain is `my-domain.com` and you bucket has name `static.my
 
 Also you will have to enable static website hosting in your bucket settings and set index.html and error.html to empty strings.
 
-### S
+### Using local storage adapter
+
+The local storage adapter saves files directly on the server’s filesystem and serves them through Express routes. It supports both public and private modes (with presigned URLs).
+
+```
+npm i @adminforth/storage-adapter-local --save
+```
+
+```ts title="./index.ts"
+import LocalStorageAdapter from '@adminforth/storage-adapter-local';
+
+new UploadPlugin({
+  storageAdapter: new LocalStorageAdapter({
+    fileSystemFolder: "./db/uploads",
+    adminServeBaseUrl: "static/source",
+    mode: "public", // or "private"
+    signingSecret: process.env.ADMINFORTH_SECRET,
+  }),
+  pathColumnName: 'apartment_image',
+  allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+  maxFileSize: 1024 * 1024 * 20, // 20 MB
+  filePath: ({originalFilename, originalExtension, contentType}) => 
+        `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+})
+```
+> adminServeBaseUrl defines the public path prefix. If your AdminForth base URL is /admin, files will be accessible under /admin/static/source/<key>.
+
 
 
 ## Image generation
@@ -391,17 +418,19 @@ plugins: [
   ...
   new UploadPlugin({
     pathColumnName: 'apartment_source',
-    storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+    storageAdapter: (sourcesAdapter = new LocalStorageAdapter({
       fileSystemFolder: "./db/uploads",
       mode: "public",
+      adminServeBaseUrl: "static/source",
       signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
     }), sourcesAdapter),
   }),
   new UploadPlugin({
     pathColumnName: 'apartment_image',
-    storageAdapter: new AdminForthAdapterLocalFilesystem({
+    storageAdapter: new LocalStorageAdapter({
       fileSystemFolder: "./db/uploads",
       mode: "public",
+      adminServeBaseUrl: "static/source",
       signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
     }),
     generation: {
