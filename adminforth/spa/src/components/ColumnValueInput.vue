@@ -100,22 +100,18 @@
       @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
-    <textarea
+    <Textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
-      ref="input"
-      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
-      :value="value"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
-    <textarea
+    <Textarea
       v-else-if="['json'].includes(type || column.type)"
-      ref="input"
-      class="bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
       :placeholder="$t('Text')"
-      :value="value"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
     />
     <Input
       v-else
@@ -160,6 +156,7 @@
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';
   import Spinner from '@/afcl/Spinner.vue';
+  import Textarea from '@/afcl/Textarea.vue';
   import { ref, inject } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';
