@@ -35,7 +35,7 @@
               </div>
             </a>
           </li>
-          <li v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
+          <li v-for="action in bulkActions?.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
             <a href="#" @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
