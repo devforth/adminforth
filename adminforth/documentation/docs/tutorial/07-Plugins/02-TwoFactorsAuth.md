@@ -207,52 +207,125 @@ plugins: [
 ...
 ```
 
-## Trigger 2FA from Actions via a Custom Component
+## Request 2FA on custom Actions
 
-Enable a one‑time 2FA prompt before running any AdminForth action by attaching a tiny Vue wrapper via `customComponent`. The plugin exposes a global modal: `window.adminforthTwoFaModal.getCode(cb?)`.
+You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risk that user cookies might be stolen by some virous/doorway software after login.
 
-### Minimal Wrapper Component
+To do it you first need to create custom component which will call `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to enter a code.
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
-  <div class="contents" @click.stop.prevent="onClick"><slot /></div>
+  <div class="contents" @click.stop.prevent="onClick">
+    <slot />  <!-- render action defgault contend - button/icon -->
+  </div>
 </template>
+
 <script setup lang="ts">
   import { callAdminForthApi } from '@/utils';
   const emit = defineEmits<{ (e: 'callAction'): void }>();
   const props = defineProps<{ disabled?: boolean; meta?: { verifyPath?: string; [k: string]: any } }>();
 
-  async function verify2fa(code: string) {
-  const path = props.meta?.verifyPath ?? '/plugin/twofa/verify';
-  const resp = await callAdminForthApi({ method: 'POST', path, body: { code } });
-    return !!resp?.ok;
-  }
-
   async function onClick() {
-  if (props.disabled) return;
-  if (!window.adminforthTwoFaModal?.getCode) { emit('callAction'); return; }
-  await window.adminforthTwoFaModal.getCode(verify2fa);
-    emit('callAction');
+    if (props.disabled) {
+      return;
+    }
+    const code = await window.adminforthTwoFaModal.getCode();  // this will ask user to enter code
+    emit('callAction', { code }); // then we pass this code to action (from fronted to backend)
   }
 </script>
 ```
 
-### Attach to an Action
+Now we need to read code entered on fronted on backend and verify that is is valid and not expired, on backend action handler:
 
 ```ts title='/adminuser.ts'
 options: {
   actions: [
     {
-    name: 'Auto submit',
-    icon: 'flowbite:play-solid',
-    allowed: () => true,
-    action: async ({ recordId, adminUser }) => ({ ok: true, successMessage: 'Auto submitted' }),
-    showIn: { showButton: true, showThreeDotsMenu: true, list: true },
-    //diff-add
-    customComponent: '@@/RequireTwoFaGate.vue',
-    // or with runtime config:
-    // customComponent: { name: '@@/RequireTwoFaGate.vue', meta: { verifyPath: '/plugin/twofa/verify' } },
+      name: 'Auto submit',
+      icon: 'flowbite:play-solid',
+      allowed: () => true,
+      action: async ({ recordId, adminUser, payload, adminforth }) => { 
+          const { code } = payload;
+          const totpIsValid = adminforth.getPluginByClassName<>('T2FAPlug').verify(code);
+          if (!totpIsValid) {
+             return { ok: false, error: 'TOTP code is invalid' }
+          }
+          // we will also register fact of ussage of this critical action using audit log Plugin
+          getPluginBYClassName<auditlog>.logCustomAction()...
+          .... your critical action logic ....
+          return { ok: true, successMessage: 'Auto submitted' }
+      },
+      showIn: { showButton: true, showThreeDotsMenu: true, list: true },
+      //diff-add
+      customComponent: '@@/RequireTwoFaGate.vue',
     },
   ],
 }
+```
+
+## Request 2FA from custom components
+
+Imagine you have some button which does some API call
+
+```ts
+<Button @click="callApi">Call critical api</Button>
+
+
+<script>
+
+async function callAPI() {
+   const res = await callAdminForthAPI('/myCriticalAction', { param: 1 })
+}
+</scrip>
+```
+
+On backend you have simple express api
+
+```
+
+app.post(
+  adminforth.authorize(
+    () => {
+    req.body.param
+       ... some custom action
+    }
+))
+```
+
+You might want to protect this call with a TOTP code. To do it, we need to make this change
+
+```ts
+<Button @click="callApi">Call critical api</Button>
+
+
+<script>
+
+function callAPI() {
+   // diff-remove
+   const res = callAdminForthAPI('/myCriticalAction', { param: 1 })
+//diff-add
+   const code = await window.adminforthTwoFaModal.getCode(async (code) => {
+//diff-add
+        const res = await callAdminForthAPI('/myCriticalAction', { param: 1, code })
+//diff-add
+        return !res.totpError
+   });  // this will ask user to enter code
+}
+</scrip>
+```
+
+And oin API call we need to verify it:
+
+
+```
+
+app.post(
+  adminforth.authorize(
+    () => {
+//diff-add
+ getPBCNM
+.. log some critical action
+       ... some custom action
+    }
+))
 ```
