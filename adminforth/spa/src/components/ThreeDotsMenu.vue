@@ -15,11 +15,20 @@
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.label}`">
-            <a href="#" class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+            <a  href="#" 
+              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"                 
+              :class="{
+                'pointer-events-none': !checkboxes.length,
+                'opacity-50': !checkboxes.length,
+                'cursor-not-allowed': !checkboxes.length,
+              }">
               <component :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
+                :checkboxes="checkboxes"
+                :updateList="props.updateList"
+                :clearCheckboxes="clearCheckboxes"
               />
             </a>
           </li>
@@ -74,7 +83,13 @@ const props = defineProps({
   threeDotsDropdownItems: Array,
   customActions: Array,
   bulkActions: Array,
-  checkboxes: Array
+  checkboxes: Array,
+  updateList: {
+    type: Function,
+  },
+  clearCheckboxes: {
+    type: Function
+  }
 });
 
 const emit = defineEmits(['startBulkAction']);

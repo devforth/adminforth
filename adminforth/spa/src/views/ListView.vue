@@ -97,6 +97,8 @@
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
         @startBulkAction="startBulkAction"
+        :updateList="getList"
+        :clearCheckboxes="clearCheckboxes"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
@@ -245,6 +247,10 @@ async function getList() {
   checkboxes.value = checkboxes.value.filter(pk => rows.value!.some(r => r._primaryKeyValue === pk));
   await nextTick();
   return {}
+}
+
+function clearCheckboxes() {
+  checkboxes.value = [];
 }
 
 async function refreshExistingList(pk?: any) {
