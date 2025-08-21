@@ -172,9 +172,10 @@ export const styles = () => ({
     lightFocusRing: "alias:lightPrimary lighten", //focus ring color
     lightTextLabel: "black", //text color of checkbox label
 
-    lightToggleBgUnactive: "alias:lightPrimaryContrast darken", //toggle unactive state background
+    lightToggleBgUnactive: "alias:lightPrimaryContrast", //toggle unactive state background
     lightToggleBgActive: "alias:lightPrimary darken", //toggle active state background
-    lightToggleCircle: "alias:lightPrimaryContrast lighten", //toggle circle color
+    lightToggleCircleUnactive: "alias:lightPrimary",
+    lightToggleCircleActive: "alias:lightToggleBgUnactive",        
     lightToggleRing: "alias:lightPrimary lighten", // toggle ring color
     lightToggleText: "black",  // color of text next to toggle
     lightToggleBorderUnactive: "alias:lightPrimary lighten", // unactive state border
