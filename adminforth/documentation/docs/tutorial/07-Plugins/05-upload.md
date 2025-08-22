@@ -301,7 +301,7 @@ new UploadPlugin({
         `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
 })
 ```
-> adminServeBaseUrl defines the public path prefix. If your AdminForth base URL is /admin, files will be accessible under /admin/static/source/<key>.
+> adminServeBaseUrl defines the public path prefix. If your AdminForth base URL is /admin, files will be accessible under /admin/static/source/&lt;key&gt;.
 
 
 
