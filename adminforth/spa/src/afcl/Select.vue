@@ -36,34 +36,9 @@
         />
       </div>
     </div>
-    <teleport to="body" v-if="teleportToBody && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
-        class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
-          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
-        @scroll="handleDropdownScroll">
-        <div
-          v-for="item in filteredItems"
-          :key="item.value"
-          class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
-          :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
-          @click="toogleItem(item)"
-        >
-          <slot name="item" :option="item"></slot>
-          <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
-        </div>
-        <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-          {{ options.length ? $t('No results found') : $t('No items here') }}
-        </div>
-
-        <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
-          <slot name="extra-item"></slot>
-        </div>
-      </div>
-    </teleport>
-
-    <teleport to="body" v-if="teleportToTop && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
-        class="fixed z-[50] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+    <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-[5]': teleportToBody, 'z-[1000]': teleportToTop}"
+        class="fixed w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
         <div
