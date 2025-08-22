@@ -133,7 +133,7 @@ export const admin = new AdminForth({
       //diff-add
         },
       //diff-add
-        adapter: new AdminForthImageVisionAdapterOpenAi(
+        visionAdapter: new AdminForthImageVisionAdapterOpenAi(
       //diff-add
           {
       //diff-add
