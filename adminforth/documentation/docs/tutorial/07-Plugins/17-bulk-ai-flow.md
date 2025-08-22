@@ -94,8 +94,6 @@ export const admin = new AdminForth({
   plugins: [
     ...
   //diff-add
-    plugins: [
-  //diff-add
       new UploadPlugin({
   //diff-add
         storageAdapter: new AdminForthAdapterS3Storage({
