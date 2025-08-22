@@ -143,7 +143,7 @@ export const admin = new AdminForth({
       //diff-add
         ),
       //diff-add
-        outputFields: [{ 
+        fillFieldsFromImages: { 
       //diff-add
           'description': 'describe what is in the image, also take into account that price is {{price}}', 
       //diff-add
@@ -155,7 +155,7 @@ export const admin = new AdminForth({
       //diff-add
           'listed': 'Is the apartment should be listed for sale? If you do not know, just guess, return boolean value',
       //diff-add
-        }],
+        },
       //diff-add
       }),
       //diff-add
