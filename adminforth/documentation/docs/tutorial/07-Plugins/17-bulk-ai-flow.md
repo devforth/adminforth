@@ -1,5 +1,7 @@
 # Bulk AI Flow
-This plugin allows filling fields in records based on data from other fields using AI.
+
+This plugin allows filling fields in multiple selected records based on data from other fields using LLM.
+This also supports vision tasks so you can ask it to e.g. detect dominant color on image or describe what is on the image. Plugin supports classification to enum options automatically.
 
 ## Installation
 
@@ -16,8 +18,16 @@ npm install @adminforth/image-vision-adapter-openai --save
 ```
 
 
-## Setup
-Add a column for storing the URL or path to the image in the database, add this statement to the `./schema.prisma`:
+## Vision mode
+
+This mode covers next generations:
+
+```
+- Image(one or many fields) -> to -> Text/Number/Enum/Boolean(one or many fields)
+- Image(one or many fields) + Text/Number/Enum/Boolean(one or many fields) -> to -> Text/Number/Enum/Boolean(one or many fields)
+```
+
+Lets try both. Add a column for storing the URL or path to the image in the database, add this statement to the `./schema.prisma`:
 
 ```ts title="./schema.prisma"
 model apartments {
@@ -32,7 +42,7 @@ model apartments {
   listed            Boolean
   realtor_id        String?
 //diff-add
-  image_url         String?
+  apartment_image         String?
 }
 ```
 
@@ -41,6 +51,9 @@ Migrate prisma schema:
 ```bash
 npm run makemigration -- --name add-apartment-image-url ; npm run migrate:local
 ```
+
+We will also attach [upload plugin](/docs/tutorial/Plugins/upload/) to this field.
+
 
 Add credentials in your `.env.local` file:
 ```ts title=".env"
@@ -69,7 +82,7 @@ export const admin = new AdminForth({
 //diff-add
     {
 //diff-add
-        name: 'image_url',
+        name: 'apartment_image',
 //diff-add
         label: 'Image',
 //diff-add
@@ -82,46 +95,73 @@ export const admin = new AdminForth({
     ...
   //diff-add
     plugins: [
-    //diff-add
-    new BulkAiFlowPlugin({
-    //diff-add
-      actionName: 'Analyze',
-    //diff-add
-      attachFiles: async ({ record }: { record: any }) => {
-    //diff-add
-        return [record.image_url];
-    //diff-add
-      },
-    //diff-add
-      adapter: new AdminForthImageVisionAdapterOpenAi(
-    //diff-add
-        {
-    //diff-add
-          openAiApiKey:  process.env.OPENAI_API_KEY as string,
-    //diff-add
-          model: 'gpt-4.1-mini',
-    //diff-add
-        }
-    //diff-add
-      ),
-    //diff-add
-      outputFields: [{ 
-    //diff-add
-        'description': 'describe what is in the image, also include fact that price is {{price}}', 
-    //diff-add
-        'country': 'In which country it can be located?', 
-    //diff-add
-        'number_of_rooms': 'How many rooms are in the apartment? If you do not know, just guess',
-    //diff-add
-        'square_meter': 'What is the square of the apartment in square meters? If you do not know, just guess',
-    //diff-add
-        'listed': 'Is the apartment should be listed for sale? If you do not know, just guess, return boolean value',
-    //diff-add
-      }],
-    //diff-add
-    }),
-    //diff-add
-  ],
+  //diff-add
+      new UploadPlugin({
+  //diff-add
+        storageAdapter: new AdminForthAdapterS3Storage({
+  //diff-add
+          bucket: process.env.AWS_BUCKET_NAME,
+  //diff-add
+          region: process.env.AWS_REGION,
+  //diff-add
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  //diff-add
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  //diff-add
+          s3ACL: 'public-read',
+  //diff-add
+        }),
+  //diff-add
+        pathColumnName: 'apartment_image',
+  //diff-add
+        allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+  //diff-add
+        filePath: ({originalFilename, originalExtension, contentType}) => 
+  //diff-add
+              `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+  //diff-add
+      }),
+
+      //diff-add
+      new BulkAiFlowPlugin({
+      //diff-add
+        actionName: 'Analyze',
+      //diff-add
+        attachFiles: async ({ record }: { record: any }) => {
+      //diff-add
+          return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_image}`];
+      //diff-add
+        },
+      //diff-add
+        adapter: new AdminForthImageVisionAdapterOpenAi(
+      //diff-add
+          {
+      //diff-add
+            openAiApiKey:  process.env.OPENAI_API_KEY as string,
+      //diff-add
+            model: 'gpt-4.1-mini',
+      //diff-add
+          }
+      //diff-add
+        ),
+      //diff-add
+        outputFields: [{ 
+      //diff-add
+          'description': 'describe what is in the image, also take into account that price is {{price}}', 
+      //diff-add
+          'country': 'In which country it can be located?', 
+      //diff-add
+          'number_of_rooms': 'How many rooms are in the apartment? Just try to guess what is a typical one. If you do not know, just guess',
+      //diff-add
+          'square_meter': 'Try to guess what is the typical square of the apartment in square meters? If you do not know, just guess',
+      //diff-add
+          'listed': 'Is the apartment should be listed for sale? If you do not know, just guess, return boolean value',
+      //diff-add
+        }],
+      //diff-add
+      }),
+      //diff-add
+    ],
 
   
   ...
