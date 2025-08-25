@@ -452,6 +452,19 @@ class CodeInjector implements ICodeInjector {
           });
         }
       });
+      resource.options.actions.forEach((action) => {
+        const cc = action.customComponent;
+        if (!cc) return;
+      
+        const file = cc.file;
+        if (!file) {
+          throw new Error('customComponent.file is missing for action: ' + JSON.stringify({ id: action.id, name: action.name }));
+        }
+        if (!customResourceComponents.includes(file)) {
+          console.log('Found injection', file);
+          customResourceComponents.push(file);
+        }
+      });
       
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: {file: string}[]) => {

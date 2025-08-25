@@ -221,18 +221,16 @@ To do it you first need to create custom component which will call `window.admin
 </template>
 
 <script setup lang="ts">
-  import { callAdminForthApi } from '@/utils';
-  const emit = defineEmits<{ (e: 'callAction'): void }>();
-  const props = defineProps<{ disabled?: boolean; meta?: { verifyPath?: string; [k: string]: any } }>();
+  const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+  const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
 
   async function onClick() {
-    if (props.disabled) {
-      return;
-    }
+    if (props.disabled) return;
+  
     const code = await window.adminforthTwoFaModal.getCode();  // this will ask user to enter code
     emit('callAction', { code }); // then we pass this code to action (from fronted to backend)
   }
-</script>
+  </script>
 ```
 
 Now we need to read code entered on fronted on backend and verify that is is valid and not expired, on backend action handler:
@@ -244,16 +242,50 @@ options: {
       name: 'Auto submit',
       icon: 'flowbite:play-solid',
       allowed: () => true,
-      action: async ({ recordId, adminUser, payload, adminforth }) => { 
-          const { code } = payload;
-          const totpIsValid = adminforth.getPluginByClassName<>('T2FAPlug').verify(code);
-          if (!totpIsValid) {
-             return { ok: false, error: 'TOTP code is invalid' }
-          }
-          // we will also register fact of ussage of this critical action using audit log Plugin
-          getPluginBYClassName<auditlog>.logCustomAction()...
-          .... your critical action logic ....
-          return { ok: true, successMessage: 'Auto submitted' }
+      action: async ({ recordId, adminUser, adminforth, extra }) => {
+        //diff-add
+        const code = extra?.code
+        //diff-add
+        if (!code) {
+          //diff-add
+          return { ok: false, error: 'No TOTP code provided' };
+        //diff-add
+        }
+        //diff-add
+        const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+        //diff-add
+        const result = await t2fa.verify(code, { adminUser });
+
+        //diff-add
+        if (!result?.ok) {
+          //diff-add
+          return { ok: false, error: result?.error ?? 'TOTP code is invalid' };
+          //diff-add
+        }
+        //diff-add
+        await adminforth
+        //diff-add
+          .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+          //diff-add
+          .logCustomAction({
+            //diff-add
+            resourceId: 'aparts',
+            //diff-add
+            recordId: null,
+            //diff-add
+            actionId: 'visitedDashboard',
+            //diff-add
+            oldData: null,
+            //diff-add
+            data: { dashboard: 'main' },
+            //diff-add
+            user: adminUser,
+            //diff-add
+          });
+
+          //your critical action logic 
+      
+        return { ok: true, successMessage: 'Auto submitted' };
       },
       showIn: { showButton: true, showThreeDotsMenu: true, list: true },
       //diff-add
@@ -268,64 +300,149 @@ options: {
 Imagine you have some button which does some API call
 
 ```ts
-<Button @click="callApi">Call critical api</Button>
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
 
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
 
-<script>
+async function callAdminAPI() {
+  const code = await window.adminforthTwoFaModal.getCode();
 
-async function callAPI() {
-   const res = await callAdminForthAPI('/myCriticalAction', { param: 1 })
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: { param: 1 },
+  });
 }
-</scrip>
+</script>
 ```
 
 On backend you have simple express api
 
-```
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
 
-app.post(
-  adminforth.authorize(
-    () => {
-    req.body.param
-       ... some custom action
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
     }
-))
+  )
+);
 ```
 
 You might want to protect this call with a TOTP code. To do it, we need to make this change
 
 ```ts
-<Button @click="callApi">Call critical api</Button>
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
 
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
 
-<script>
+async function callAdminAPI() {
+  const code = await window.adminforthTwoFaModal.getCode();
 
-function callAPI() {
-   // diff-remove
-   const res = callAdminForthAPI('/myCriticalAction', { param: 1 })
-//diff-add
-   const code = await window.adminforthTwoFaModal.getCode(async (code) => {
-//diff-add
-        const res = await callAdminForthAPI('/myCriticalAction', { param: 1, code })
-//diff-add
-        return !res.totpError
-   });  // this will ask user to enter code
+  // diff-remove
+  const res = await callApi({
+  // diff-remove
+    path: '/myCriticalAction',
+  // diff-remove
+    method: 'POST',
+  // diff-remove
+    body: { param: 1 },
+  // diff-remove
+  });
+
+  // diff-add
+  const res = await callApi({
+  // diff-add
+    path: '/myCriticalAction',
+  // diff-add
+    method: 'POST',
+  // diff-add
+    body: { param: 1, code: String(code) },
+  // diff-add
+  });
+
+  // diff-add
+  if (!res?.ok) {
+  // diff-add
+    adminforth.alert({ message: res.error, variant: 'danger' });
+  // diff-add
+  }
 }
-</scrip>
+</script>
+
 ```
 
 And oin API call we need to verify it:
 
 
-```
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
 
-app.post(
-  adminforth.authorize(
-    () => {
-//diff-add
- getPBCNM
-.. log some critical action
-       ... some custom action
+      // diff-remove
+      // ... your critical logic ...
+
+      // diff-remove
+      return res.json({ ok: true, successMessage: 'Action executed' });
+
+      // diff-add
+      const { adminUser } = req;
+      // diff-add
+      const { param, code } = req.body ?? {};
+      // diff-add
+      const token = String(code ?? '').replace(/\D/g, '');
+      // diff-add
+      if (token.length !== 6) {
+      // diff-add
+        return res.status(401).json({ ok: false, error: 'TOTP must be 6 digits' });
+      // diff-add
+      }
+      // diff-add
+      const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+      // diff-add
+      const verifyRes = await t2fa.verify(token, { adminUser });
+      // diff-add
+      if (!('ok' in verifyRes)) {
+      // diff-add
+        return res.status(400).json({ ok: false, error: verifyRes.error || 'Wrong or expired OTP code' });
+      // diff-add
+      }
+      // diff-add
+      await admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
+      // diff-add
+        resourceId: 'aparts',
+      // diff-add
+        recordId: null,
+      // diff-add
+        actionId: 'myCriticalAction',
+      // diff-add
+        oldData: null,
+      // diff-add
+        data: { param },
+      // diff-add
+        user: adminUser,
+      // diff-add
+      });
+
+      // diff-add
+      // ... your critical logic ...
+
+      // diff-add
+      return res.json({ ok: true, successMessage: 'Action executed' });
     }
-))
+  )
+);
 ```

@@ -1423,7 +1423,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_action',
       handler: async ({ body, adminUser, tr }) => {
-        const { resourceId, actionId, recordId } = body;
+        const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
@@ -1454,7 +1454,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra });
         
         return {
           actionId,

@@ -180,21 +180,18 @@
                   v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
                   :key="action.id"
                 >
-                  <CallActionWrapper
-                    :disabled="rowActionLoadingStates?.[action.id]"
-                    @callAction="startCustomAction(action.id, row)"
-                  >
                     <component
-                      :is="action.customComponent ? getCustomComponent(action.customComponent) : 'span'"
+                      :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
                       :meta="action.customComponent?.meta"
                       :row="row"
                       :resource="resource"
                       :adminUser="adminUser"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
                     >
                       <button
                         type="button"
                         :disabled="rowActionLoadingStates?.[action.id]"
-                        @click.stop.prevent="startCustomAction(action.id, row)"
+                        @click.stop.prevent
                       >
                         <component
                           v-if="action.icon"
@@ -203,7 +200,6 @@
                         />
                       </button>
                     </component>
-                  </CallActionWrapper>
 
                   <template #tooltip>
                     {{ action.name }}
@@ -211,6 +207,7 @@
                 </Tooltip>
               </template>
             </div>
+            
           </td>
         </tr>
       </tbody>

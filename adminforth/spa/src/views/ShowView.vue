@@ -16,7 +16,7 @@
           <component
             :is="getCustomComponent(action.customComponent) || CallActionWrapper"
             :meta="action.customComponent?.meta"
-            @callAction="startCustomAction(action.id)"
+            @callAction="(payload?) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
           >
             <button 
@@ -244,7 +244,7 @@ async function deleteRecord(row) {
     
 }
 
-async function startCustomAction(actionId) {  
+async function startCustomAction(actionId, extra) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -253,7 +253,8 @@ async function startCustomAction(actionId) {
     body: {
       resourceId: route.params.resourceId,
       actionId: actionId,
-      recordId: route.params.primaryKey
+      recordId: route.params.primaryKey,
+      extra: extra,
     }
   });
   
