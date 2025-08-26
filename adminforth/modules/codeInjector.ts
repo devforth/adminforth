@@ -456,7 +456,7 @@ class CodeInjector implements ICodeInjector {
         const cc = action.customComponent;
         if (!cc) return;
       
-        const file = cc.file;
+        const file = (typeof cc === 'string') ? cc : cc.file;
         if (!file) {
           throw new Error('customComponent.file is missing for action: ' + JSON.stringify({ id: action.id, name: action.name }));
         }
