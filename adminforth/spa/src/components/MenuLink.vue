@@ -16,7 +16,7 @@
     >
           
         <Tooltip v-if="item.badgeTooltip">
-          <div class="inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+          <div class="af-badge inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
           fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
 
           <template #tooltip>
@@ -24,7 +24,7 @@
           </template>
         </Tooltip>
         <template v-else>
-          <div class="inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+          <div class="af-badge inline-flex items-center justify-center h-3 py-3 px-1 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
           fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
         </template> 
 
