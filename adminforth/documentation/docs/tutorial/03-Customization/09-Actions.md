@@ -264,3 +264,62 @@ bulkActions: [
   }
 ],
 ```
+
+## Custom Component
+
+If you want to style an action's button/icon without changing its behavior, attach a custom UI wrapper via `customComponent`. 
+The file points to your SFC in the custom folder (alias `@@/`), and `meta` lets you pass lightweight styling options (e.g., border color, radius).
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    actions: [
+      {
+        name: 'Auto submit',
+        icon: 'flowbite:play-solid',
+        // UI wrapper for the built-in action button
+        //diff-add
+        customComponent: {
+          //diff-add
+          file: '@@/ActionBorder.vue',        // SFC path in your custom folder
+          //diff-add
+          meta: { color: '#94a3b8', radius: 10 } // free-form styling params
+          //diff-add
+        },
+        showIn: { list: true, showButton: true, showThreeDotsMenu: true },
+        action: async ({ recordId, adminUser }) => {
+          return { ok: true, successMessage: 'Auto submitted' };
+        }
+      }
+    ]
+  }
+}
+```
+
+Use this minimal wrapper component to add a border/rounding around the default action UI while keeping the action logic intact. 
+Keep the `<slot />` (that's where AdminForth renders the default button) and emit `callAction` to trigger the handler when the wrapper is clicked.
+
+```ts title="./custom/ActionBorder.vue"
+<template>
+  <!-- Keep the slot: AdminForth renders the default action button/icon here -->
+  <!-- Emit `callAction` to trigger the action when the wrapper is clicked -->
+  <div :style="styleObj" @click="emit('callAction')">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{ meta?: { color?: string; radius?: number; padding?: number } }>();
+const emit = defineEmits<{ (e: 'callAction', payload?: unknown): void }>();
+
+const styleObj = computed(() => ({
+  display: 'inline-block',
+  border: `1px solid ${props.meta?.color ?? '#e5e7eb'}`,
+  borderRadius: (props.meta?.radius ?? 8) + 'px',
+  padding: (props.meta?.padding ?? 2) + 'px',
+}));
+</script>
+```
