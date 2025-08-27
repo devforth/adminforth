@@ -1783,7 +1783,7 @@ import { JsonViever } from '@/afcl'
   ```
 </div>
   <div>
-    ![Mixed Chart](image-93.png)
+    ![JSON Viewer](image-93.png)
   </div>
 </div>
 
@@ -1800,14 +1800,14 @@ const datePickerValue = ref()
 <div>
 ```html
 <DatePicker
-  v-model:valueStart="valueStart"
+  v-model:datePickerValue="datePickerValue"
   :column="{ type: 'datetime' }"
   label="Pick start"
 />
 ```
 </div>
   <div>
-    ![Mixed Chart](image-95.png)
+    ![Date Picker](image-95.png)
   </div>
 </div>
 
