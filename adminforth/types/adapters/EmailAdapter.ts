@@ -1,8 +1,8 @@
-interface EmailAdapter {
+export interface EmailAdapter {
 
   /**
    * This method is called to validate the configuration of the adapter
-   * and should throw a clear user-readbale error if the configuration is invalid.
+   * and should throw a clear user-readable error if the configuration is invalid.
    */
   validate(): Promise<void>;
 
@@ -25,5 +25,3 @@ interface EmailAdapter {
     ok?: boolean;
   }>;
 }
-
-export { EmailAdapter };

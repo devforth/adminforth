@@ -3,7 +3,7 @@
   <div class="afcl-input-wrapper flex z-0 relative" :class="{'opacity-50' : readonly}">
     <span
         v-if="$slots.prefix || prefix"
-        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-s-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder">
       <slot name="prefix">{{ prefix }}</slot>
     </span>
 
@@ -12,11 +12,11 @@
       ref="input"
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', $event.target?.value)"
+      @input="$emit('update:modelValue', type === 'number' ? Number($event.target?.value) : $event.target?.value)"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
-      class="afcl-input inline-flex bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
-      blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 dark:text-white translate-y-0"
+      class="afcl-input inline-flex bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
+      blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder placeholder-lightInputPlaceholderText dark:placeholder-darkInputPlaceholderText dark:text-darkInputText translate-y-0"
       :class="{'rounded-l-md': !$slots.prefix && !prefix, 'rounded-r-md': !$slots.suffix && !suffix, 'w-full': fullWidth}"
       :disabled="readonly"
     >
@@ -26,7 +26,7 @@
     </div>
     <span
         v-if="$slots.suffix || suffix"
-        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-s-0 border-gray-300 rounded-e-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600 ">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-e-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder ">
       <slot name="suffix">{{ suffix }}</slot>
     </span>
     

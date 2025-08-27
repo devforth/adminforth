@@ -3,7 +3,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -12,14 +12,14 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="$router.back()"
-        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-gray-900  rounded-default focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
 
       <button
         @click="saveRecord"
-        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-red-600 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-red-500 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50"
         :disabled="saving || (validating && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
@@ -27,7 +27,11 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems)
+          ? coreStore.resourceOptions.pageInjections.edit.threeDotsDropdownItems
+          : coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems
+            ? [coreStore.resourceOptions.pageInjections.edit.threeDotsDropdownItems]
+            : undefined"
       ></ThreeDotsMenu>
 
     </BreadcrumbsWithButtons>
@@ -35,16 +39,16 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
-
+ 
     <ResourceForm 
-      v-else
+      v-else-if="coreStore.resource"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -58,7 +62,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -76,12 +80,13 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
+import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
@@ -96,9 +101,9 @@ const loading = ref(true);
 
 const saving = ref(false);
 
-const record = ref({});
+const record: Ref<Record<string, any>> = ref({});
 
-async function onUpdateRecord(newRecord) {
+async function onUpdateRecord(newRecord: Record<string, any>) {
   record.value = newRecord;
 }
 
@@ -110,7 +115,7 @@ const editableRecord = computed(() => {
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
       if (column.isArray?.enabled) {
-        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+        newRecord[column.name] = newRecord[column.name]?.map((fr: { pk: any }) => fr.pk);
       } else {
         newRecord[column.name] = newRecord[column.name]?.pk;
       }
@@ -123,16 +128,20 @@ onMounted(async () => {
   loading.value = true;
 
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string 
   });
   initThreeDotsDropdown();
 
   await coreStore.fetchRecord({
-    resourceId: route.params.resourceId, 
-    primaryKey: route.params.primaryKey,
+    resourceId: route.params.resourceId as string,
+    primaryKey: route.params.primaryKey as string,
     source: 'edit',
   });
-  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+
+  if (coreStore.resourceOptions) {
+    checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+  }
+
   loading.value = false;
 });
 
@@ -145,7 +154,7 @@ async function saveRecord() {
   }
 
   saving.value = true;
-  const updates = {};
+  const updates: Record<string, any> = {};
   for (const key in record.value) {
     let columnIsUpdated = false;
 
@@ -157,7 +166,8 @@ async function saveRecord() {
       columnIsUpdated = record.value[key] !== coreStore.record[key];
     }
 
-    const column = coreStore.resource.columns.find((c) => c.name === key);
+    if (!coreStore.resource) return;
+      const column = coreStore.resource.columns.find((c) => c.name === key);
 
     if (column?.foreignResource) {
       columnIsUpdated = record.value[key] !== coreStore.record[key]?.pk;
@@ -177,7 +187,7 @@ async function saveRecord() {
       record: updates,
     },
   });
-  if (resp.error) {
+  if (resp.error && resp.error !== 'Operation aborted by hook') {
     showErrorTost(resp.error);
   } else {
     adminforth.alert({

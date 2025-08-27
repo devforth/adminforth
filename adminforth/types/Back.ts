@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
@@ -8,12 +8,12 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
   type AdminForthResourceColumnCommon,
-  AdminForthResourceInputCommon,
-  AdminForthComponentDeclarationFull,
-  AdminForthConfigMenuItem,
-  AnnouncementBadgeResponse,
+  type AdminForthResourceInputCommon,
+  type AdminForthComponentDeclarationFull,
+  type AdminForthConfigMenuItem,
+  type AnnouncementBadgeResponse,
   AdminForthResourcePages,
-  AdminForthResourceColumnInputCommon,
+  type AdminForthResourceColumnInputCommon,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -105,6 +105,23 @@ export interface IExpressHttpServer extends IHttpServer {
   authorize(callable: Function): void;
 }
 
+export interface ITranslateFunction {
+  (
+    msg: string,
+    category: string,
+    params: any,
+    pluralizationNumber?: number
+  ): Promise<string>;
+}
+
+// Omit <Request, 'param'> is used to remove 'param' method from Request type for correct docs generation
+export interface IAdminUserExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
+  adminUser: AdminUser;
+}
+
+export interface ITranslateExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
+  tr: ITranslateFunction;
+}
 
 export interface IAdminForthSingleFilter {
   field?: string;
@@ -978,7 +995,7 @@ export interface AdminForthInputConfig {
       /**
        * Any prompt to show users on login. Supports HTML.
        */
-      loginPromptHTML?: string,
+      loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
 
       /**
        * Remember me days for "Remember Me" checkbox on login page.
@@ -1346,13 +1363,13 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
     },
     create?: {
       /**
-       * Should return ok: true to continue saving pipeline and allow creating record in database, and ok: false to interrupt pipeline and prevent record creation.
-       * If you need to show error on UI, set error: <error message> in response.
+       * Should return `ok: true` to continue saving pipeline and allow creating record in database, and `ok: false` to interrupt pipeline and prevent record creation.
+       * If you need to show error on UI, set `error: \<error message\>` in response.
        * 
        * Typical use-cases:
-       * - Create record by custom code (return  `{ ok: false, newRecordId: <id of created record from custom code>}`)
-       * - Validate record before saving to database and interrupt execution if validation failed (return `{ok: false, error: <validation error>}`), though `allowedActions.create` should be preferred in most cases
-       * - fill-in adminUser as creator of record (set record.<some field> = x; return {ok: true})
+       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
+       * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
       beforeSave?: Array<BeforeCreateSaveFunction>,
@@ -1503,15 +1520,27 @@ export type ShowInInput = ShowInModernInput | ShowInLegacyInput;
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
+export type BackendOnlyInput =
+  | boolean
+  | ((p: {
+      adminUser: AdminUser;
+      resource: AdminForthResource;
+      meta: any;
+      source: ActionCheckSource;
+      adminforth: IAdminForth;
+    }) => boolean | Promise<boolean>);
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
+
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
 export interface IWebSocketClient {

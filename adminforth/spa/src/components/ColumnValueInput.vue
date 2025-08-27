@@ -66,6 +66,7 @@
       step="1"
       class="w-40"
       placeholder="0"
+      :fullWidth="true"
       :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
       :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
@@ -74,7 +75,7 @@
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
     />
-    <CustomDatePicker
+    <DatePicker
       v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
       :column="column"
@@ -90,6 +91,7 @@
       step="0.1"
       class="w-40"
       placeholder="0.0"
+      :fullWidth="true"
       :min="![undefined, null].includes(column.minValue) ? column.minValue : ''"
       :max="![undefined, null].includes(column.maxValue) ? column.maxValue : ''"
       :prefix="column.inputPrefix"
@@ -98,28 +100,25 @@
       @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
-    <textarea
+    <Textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
-      ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
       :placeholder="$t('Text')"
-      :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
-    <textarea
+    <Textarea
       v-else-if="['json'].includes(type || column.type)"
-      ref="input"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
       :placeholder="$t('Text')"
-      :value="value"
-      @input="$emit('update:modelValue', $event.target.value)"
+      :modelValue="value"
+      @update:modelValue="$emit('update:modelValue', $event)"
     />
     <Input
       v-else
       ref="input"
       :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
       class="w-full"
+      :fullWidth="true"
       :placeholder="$t('Text')"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
@@ -137,7 +136,7 @@
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
       @click="$emit('delete')"
     >
-      <IconTrashBinSolid class="w-6 h-6 text-gray-400"/>
+      <IconTrashBinSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"/>
     </button>
     <button
       v-else-if="column.masked"
@@ -145,18 +144,19 @@
       @click="$emit('update:unmasked')"
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
     >
-      <IconEyeSolid class="w-6 h-6 text-gray-400"  v-if="!unmasked[column.name]"/>
-      <IconEyeSlashSolid class="w-6 h-6 text-gray-400" v-else />
+      <IconEyeSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"  v-if="!unmasked[column.name]"/>
+      <IconEyeSlashSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons" v-else />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
   import { IconEyeSlashSolid, IconEyeSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
-  import CustomDatePicker from "@/components/CustomDatePicker.vue";
+  import DatePicker from "@/afcl/DatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';
   import Spinner from '@/afcl/Spinner.vue';
+  import Textarea from '@/afcl/Textarea.vue';
   import { ref, inject } from 'vue';
   import { getCustomComponent } from '@/utils';
   import { useI18n } from 'vue-i18n';
@@ -190,7 +190,7 @@
   const onSearchInput = inject('onSearchInput', {} as any);
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
-  const input = ref(null);
+const input = ref<HTMLInputElement | null>(null);
 
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [

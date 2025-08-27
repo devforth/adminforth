@@ -7,26 +7,22 @@
     <div role="status" v-if="!resource || !resource.columns"
         class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
         <div role="status" class="max-w-sm animate-pulse">
-            <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+            <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class=" w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 rounded-default">
+    <table v-else class=" w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+        <tr class="t-header sticky z-10 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
           <td scope="col" class="p-4">
-            <div class="flex items-center justify-center relative">
-              <input id="checkbox-all-search" type="checkbox" :checked="allFromThisPageChecked" @change="selectAll()" 
-                    :disabled="!rows || !rows.length"
-                    class="peer appearance-none w-4 h-4 text-blue-600 bg-light-primary border border-gray-500 rounded-sm checked:bg-blue-500 
-                    focus:ring-blue-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 
-                    focus:ring-2 dark:bg-dark-primary dark:border-gray-600 dark:checked:bg-blue-500 cursor-pointer">
-              <label for="checkbox-all-search" class="sr-only">{{ $t('checkbox') }}</label>
-            <div class="pointer-events-none absolute text-white text-[13px] leading-none peer-checked:block hidden">
-              <IconCheckOutline width="18" height="18" />
-            </div>
-            </div>
+            <Checkbox
+              :modelValue="allFromThisPageChecked"
+              :disabled="!rows || !rows.length"
+              @update:modelValue="selectAll"
+            >
+              <span class="sr-only">{{ $t('checkbox') }}</span>
+            </Checkbox>
           </td>
 
           <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
@@ -95,24 +91,13 @@
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
         <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
-          <div class="flex items-center justify-center relative">
-            <input
-              @click="(e)=>e.stopPropagation()"
-              id="checkbox-table-search-1"
-              type="checkbox"
-              :checked="checkboxesInternal.includes(row._primaryKeyValue)"
-              @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-              class="peer appearance-none w-4 h-4 text-blue-600 bg-light-primary border border-gray-500 rounded-sm checked:bg-blue-500 
-                    focus:ring-blue-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 
-                    focus:ring-2 dark:bg-dark-primary dark:border-gray-600 dark:checked:bg-blue-500 cursor-pointer"
-            />
-            <label for="checkbox-table-search-1" class="sr-only">
-              {{ $t('checkbox') }}
-            </label>
-            <div class="pointer-events-none absolute text-white text-[13px] leading-none peer-checked:block hidden">
-              <IconCheckOutline width="18" height="18" />
-            </div>
-          </div>
+          <Checkbox
+            :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
+            @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
+            @click="(e)=>e.stopPropagation()"
+          >
+            <span class="sr-only">{{ $t('checkbox') }}</span>
+          </Checkbox>
         </td>
 
           <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
@@ -218,7 +203,7 @@
     >
         <!-- Buttons -->
         <button
-          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0 rounded-s border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page--; pageInput = page.toString();" :disabled="page <= 1">
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
               viewBox="0 0 14 10">
@@ -230,14 +215,14 @@
           </span>
         </button>
         <button
-          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-r-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
         <div
           contenteditable="true" 
-          class="af-pagination-input min-w-10 outline-none inline-block w-auto min-w-10 py-1.5 px-3 text-sm text-center text-gray-700 border border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 z-10"
+          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
           @input="onPageInput($event)"
           @blur="validatePageInput()"
@@ -246,14 +231,14 @@
         </div>
 
         <button
-          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0  border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
           {{ totalPages }}
 
           <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
         </button>
         <button
-          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-gray-900 focus:outline-none bg-white border-l-0 rounded-e border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
           @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
           <span class="hidden sm:inline">{{ $t('Next') }}</span>
           <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -265,7 +250,7 @@
     </div>
 
     <!-- Help text -->
-    <span class="text-sm text-gray-700 dark:text-gray-400">
+    <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
         <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
         <template v-else-if="resource && totalRows > 0">
           
@@ -320,12 +305,12 @@ import {
   IconEyeSolid,
   IconPenSolid,
   IconTrashBinSolid,
-  IconCheckOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
+import Checkbox from '@/afcl/Checkbox.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
