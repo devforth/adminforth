@@ -36,7 +36,7 @@
         v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
       >
         <button
-          v-if="!action.showInThreeDotsDropdown || action.showInThreeDotsDropdown===false"
+          v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
           @click="startBulkAction(action.id)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
@@ -93,7 +93,7 @@
         :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems
           ? ([] as any[]).concat(coreStore.resourceOptions.pageInjections.list.threeDotsDropdownItems)
           : []"
-          :bulkActions="coreStore.resource?.options?.bulkActions"
+        :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
         @startBulkAction="startBulkAction"
         :updateList="getList"
