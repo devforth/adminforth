@@ -87,7 +87,9 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems
+          ? ([] as any[]).concat(coreStore.resourceOptions.pageInjections.list.threeDotsDropdownItems)
+          : []"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
@@ -111,8 +113,18 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
-      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
-      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
+      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
+        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
+          : []
+      "
+      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
+        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
+        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
+          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
+          : []
+      "
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
@@ -130,8 +142,18 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
-      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
-      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
+      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
+        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
+          : []
+      "
+      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
+        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
+        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
+          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
+          : []
+      "
     />
 
     <component 
@@ -177,7 +199,7 @@ const route = useRoute();
 
 const page = ref(1);
 const columnsMinMax = ref({});
-const sort = ref([]);
+const sort = ref();
 
 watch(() => sort, async (to, from) => {
   // in store sort might be needed for plugins
@@ -221,11 +243,11 @@ async function getList() {
     totalRows.value = 0;
     return {error: data.error};
   }
-  rows.value = data.data?.map(row => {
-    if (coreStore.resource.columns.find(c => c.primaryKey).foreignResource) {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name].pk;
-    } else {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
+  rows.value = data.data?.map((row: any) => {
+    if (coreStore.resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name].pk;
+    } else if (coreStore.resource) {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name];
     }
     return row;
   });
@@ -289,9 +311,9 @@ async function refreshExistingList(pk?: any) {
 }
 
 
-async function startBulkAction(actionId) {
-  const action = coreStore.resource.options.bulkActions.find(a => a.id === actionId);
-  if (action.confirm) {
+async function startBulkAction(actionId: any) {
+  const action = coreStore.resource?.options?.bulkActions?.find(a => a.id === actionId);
+  if (action?.confirm) {
     const confirmed = await adminforth.confirm({
       message: action.confirm,
     });
@@ -331,10 +353,10 @@ async function startBulkAction(actionId) {
 
 
 class SortQuerySerializer {
-    static serialize(sort) {
+    static serialize(sort: {field: string, direction: 'asc' | 'desc'}[]) {
         return sort.map(s => `${s.field}__${s.direction}`).join(',');
     }
-    static deserialize(str) {
+    static deserialize(str: string) {
         return str.split(',').map(s => {
             const [field, direction] = s.split('__');
             return { field, direction };
@@ -347,7 +369,7 @@ let listAutorefresher: any = null;
 async function init() {
   
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string
   });
   isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
@@ -358,7 +380,7 @@ async function init() {
     return {
       field,
       operator,
-      value: JSON.parse(decodeURIComponent(route.query[k]))
+      value: JSON.parse(decodeURIComponent(route.query[k] as string))
     }
   });
   if (filters.length) {
@@ -368,8 +390,8 @@ async function init() {
   }
 
   if (route.query.sort) {
-    sort.value = SortQuerySerializer.deserialize(route.query.sort);
-  } else if (coreStore.resource.options?.defaultSort) {
+    sort.value = SortQuerySerializer.deserialize(route.query.sort as string);
+  } else if (coreStore?.resource?.options?.defaultSort) {
     sort.value = [{
         field: coreStore.resource.options.defaultSort.columnName,
         direction: coreStore.resource.options.defaultSort.direction
@@ -379,7 +401,7 @@ async function init() {
   }
   // page init should be also in same tick 
   if (route.query.page) {
-    page.value = parseInt(route.query.page);
+    page.value = parseInt(route.query.page as string);
   }
 
   // getList(); - Not needed here, watch will trigger it
@@ -408,8 +430,18 @@ watch([page, sort, () => filtersStore.filters], async () => {
 }, { deep: true });
 
 adminforth.list.refresh = async () => {
-  return await getList();
-}
+  const result = await getList();
+
+  if (!result) {
+    return {};
+  }
+
+  if ('error' in result && result.error != null) {
+    return { error: String(result.error) };
+  }
+
+  return {};
+};
 
 adminforth.list.silentRefresh = async () => {
   return await refreshExistingList();
@@ -429,7 +461,7 @@ watch(() => filtersStore.filters, async (to, from) => {
   page.value = 1;
   checkboxes.value = []; // TODO: not sure absolutely needed here
   // update query param for each filter as filter_<column_name>=value
-  const query = {};
+  const query:  Record<string, string | undefined> = {};
   const currentQ = currentQuery();
   filtersStore.filters.forEach(f => {
     if (f.value) {
