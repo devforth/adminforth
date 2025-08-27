@@ -47,6 +47,7 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
+import type { AdminForthComponentDeclaration } from '@/types/Common.js';
 
 const route = useRoute();
 const coreStore = useCoreStore();

@@ -11,7 +11,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -41,17 +41,13 @@
         :class="action.buttonCustomCssClass || ''"
       >
         <component
-          v-if="action.icon && !bulkActionLoadingStates[action.id]"
+          v-if="action.icon && !bulkActionLoadingStates[action.id!]"
           :is="getIcon(action.icon)"
           class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
-        <div v-if="bulkActionLoadingStates[action.id]">
+        <div v-if="bulkActionLoadingStates[action.id!]">
           <svg 
             aria-hidden="true" 
-            class="w-5 h-5 animate-spin" 
-            :class="{
-              'text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300': action.state !== 'danger',
-              'text-red-200 dark:text-red-800 fill-red-600 dark:fill-red-500': action.state === 'danger'
-            }"
+            class="w-5 h-5 animate-spin text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" 
             viewBox="0 0 100 101" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +94,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -141,7 +137,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -161,7 +157,7 @@ import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-
+import type { AdminForthComponentDeclarationFull } from '@/types/Common';
 
 import {
   IconBanOutline,
