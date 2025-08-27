@@ -1,8 +1,13 @@
 
 const subscriptions: { [topic: string]: ((data: any) => void)[] } = {};
+
+interface ExtendedWebSocket extends WebSocket {
+  connected?: boolean;
+}
+
 const state: {
   status: 'connecting' | 'connected' | 'disconnected';
-  ws: WebSocket | null;
+  ws: ExtendedWebSocket | null;
 } = {
   status: 'connecting',
   ws: null

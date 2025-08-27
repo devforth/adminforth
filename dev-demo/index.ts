@@ -1,7 +1,7 @@
 import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
 import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
-
+import type { IAdminUserExpressRequest, ITranslateExpressRequest } from 'adminforth';
 import clicksResource from './resources/clicks.js';
 import apartmentsResource from './resources/apartments.js';
 import apartmentBuyersResource from './resources/apartment_buyers.js';
@@ -78,8 +78,13 @@ export const admin = new AdminForth({
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
     demoCredentials: "adminforth:adminforth",  // never use it for production
-    loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
-    // loginBackgroundImage: '@@/pho.jpg',
+    loginPromptHTML: async () => { 
+      const adminforthUserExists = await admin.resource("users").count(Filters.EQ('email', 'adminforth')) > 0;
+      if (adminforthUserExists) {
+        return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
+      }
+    },
+
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
       adminforth.resource('users').update(adminUser.dbUser.id, { last_login_ip: adminforth.auth.getClientIp(extra.headers) });
@@ -202,7 +207,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
     },
     {
       id: 'mysql',
@@ -236,6 +241,12 @@ export const admin = new AdminForth({
       //   title: 'Dashboard',
       // }
     },
+     {
+      label: 'Af Components',
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/AfComponents.vue',
+      path: '/af-components',
+     },
     {
       label: 'Core',
       icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
@@ -350,7 +361,7 @@ const port = process.env.PORT || 3000;
 app.get(
   '/api/testtest/', 
   admin.express.authorize(
-    async (req: express.Request, res: express.Response, next: express.NextFunction) => { 
+    async (req: IAdminUserExpressRequest, res: express.Response, next: express.NextFunction) => { 
         res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
     }
   )
@@ -359,7 +370,7 @@ app.get(
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
     admin.express.translatable(
-      async (req: any, res: express.Response) => {
+      async (req: IAdminUserExpressRequest & ITranslateExpressRequest, res: express.Response) => {
         const days = req.body.days || 7;
         const apartsByDays = await admin.resource('aparts').dataConnector.client.prepare( 
           `SELECT 
@@ -459,7 +470,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
 app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
       const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
           number_of_rooms, 

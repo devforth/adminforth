@@ -4,7 +4,7 @@
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
-      <div class="px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
+      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
               type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
@@ -26,7 +26,7 @@
             <div class="flex items-center ms-3 ">
               <span  
                 v-if="!coreStore.config?.singleTheme"
-                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
@@ -77,24 +77,25 @@
       aria-label="Sidebar"
     >
       <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder">
-        <div class="flex ms-2 m-4">
-          <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
+        <div class="af-logo-title-wrapper flex ms-2 m-4">
+          <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3"  />
           <span 
             v-if="coreStore.config?.showBrandNameInSidebar"
-            class="self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
+            class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
           >
             {{ coreStore.config?.brandName }}
           </span>
         </div>
 
-        <ul class="space-y-2 font-medium">
+        <ul class="af-sidebar-container space-y-2 font-medium">
           <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
             <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
             ">{{ item.label }}</div>
-            <li v-else-if="item.children" class="  ">
-              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+            <li v-else-if="item.children" class="af-sidebar-expand-container">
+              <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+                  :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                   :aria-controls="`dropdown-example${i}`"
                   :data-collapse-toggle="`dropdown-example${i}`"
               >
@@ -124,13 +125,13 @@
 
               <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                  <li>
+                  <li class="af-sidebar-menu-link">
                       <MenuLink :item="child" isChild="true" @click="hideSidebar"/>
                     </li>
                 </template>
             </ul>
         </li>
-        <li v-else>
+        <li v-else class="af-sidebar-menu-link">
           <MenuLink :item="item" @click="hideSidebar"/>
         </li>
         </template>
@@ -273,7 +274,7 @@ const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
 //create a ref to store the opened menu items with ts type;
-const opened = ref<string[]>([]);
+const opened = ref<(string|number)[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
@@ -295,7 +296,7 @@ function toggleTheme() {
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem(label: string) {
+function clickOnMenuItem(label: string | number) {
   if (opened.value.includes(label)) {
     opened.value = opened.value.filter((item) => item !== label);
   } else {

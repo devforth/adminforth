@@ -1,6 +1,6 @@
 import { onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from './spa_types/core';
-import type { ValidationObject } from './types/AdminForthConfig';
+import type { ValidationObject } from './types/Common.js';
 import router from "./router";
 import { useCoreStore } from './stores/core';
 import { useUserStore } from './stores/user';
@@ -95,13 +95,14 @@ export const loadFile = (file: string) => {
 }
 
 export function checkEmptyValues(value: any, viewType: 'show' | 'list' ) {
-  const config: CoreConfig | {} = useCoreStore().config;
+  const config: CoreConfig | {} | null = useCoreStore().config;
   let emptyFieldPlaceholder = '';
-  if (config.emptyFieldPlaceholder) {
-    if(typeof config.emptyFieldPlaceholder === 'string') {
-      emptyFieldPlaceholder = config.emptyFieldPlaceholder;
+  if (config && 'emptyFieldPlaceholder' in config) {
+    const efp = (config as CoreConfig).emptyFieldPlaceholder;
+    if(typeof efp === 'string') {
+      emptyFieldPlaceholder = efp;
     } else {
-       emptyFieldPlaceholder = config.emptyFieldPlaceholder?.[viewType] || '';
+       emptyFieldPlaceholder = efp?.[viewType] || '';
     }
     if (value === null || value === undefined || value === '') {
       return emptyFieldPlaceholder;
@@ -182,7 +183,7 @@ export function verySimpleHash(str: string): string {
   return `${str.split('').reduce((a, b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)}`;
 }
 
-export function humanifySize(size) {
+export function humanifySize(size: number) {
   if (!size) {
     return '';
   }

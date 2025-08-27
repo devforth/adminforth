@@ -362,6 +362,31 @@ const enable = ref(false)
   </div>
 </div>
 
+
+## Toggle
+
+<div class="split-screen" >
+  <div >
+
+```ts
+import Toggle from '@/afcl/Toggle.vue';
+```
+
+
+```html
+  <Toggle 
+    :disabled="false" 
+    @update:modelValue="toggleSwitchHandler"> 
+    <p>Click me</p> 
+  </Toggle>
+```
+  </div>
+  <div>
+  ![AFCL Checkbox](image-94.png)
+  </div>
+</div>
+
+
 ## Dialog (Pop-up)
 
 <div class="split-screen" >
@@ -1758,8 +1783,34 @@ import { JsonViever } from '@/afcl'
   ```
 </div>
   <div>
-    ![Mixed Chart](image-93.png)
+    ![JSON Viewer](image-93.png)
   </div>
 </div>
+
+## Date picker
+
+```ts
+import { DatePicker } from '@/afcl';
+const datePickerValue = ref()
+```
+
+### Basic
+<div class="split-screen" >
+
+<div>
+```html
+<DatePicker
+  v-model:datePickerValue="datePickerValue"
+  :column="{ type: 'datetime' }"
+  label="Pick start"
+/>
+```
+</div>
+  <div>
+    ![Date Picker](image-95.png)
+  </div>
+</div>
+
+
 
 

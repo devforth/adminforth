@@ -306,11 +306,14 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 ```ts title="/index.ts"
 
+import type { IAdminUserExpressRequest } from 'adminforth';
+import express from 'express';
+
 ....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req:any, res:any) => {
+    async (req:IAdminUserExpressRequest, res: express.Response) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
