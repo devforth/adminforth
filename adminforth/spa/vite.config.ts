@@ -69,7 +69,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    ignoreTailwindErrors(),
+    // ignoreTailwindErrors(),
     vue(),
   ],
   resolve: {
