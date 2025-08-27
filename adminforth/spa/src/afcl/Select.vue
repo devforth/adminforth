@@ -36,9 +36,9 @@
         />
       </div>
     </div>
-    <teleport to="body" v-if="teleportToBody && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
-        class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+    <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-[5]': teleportToBody, 'z-[1000]': teleportToTop}"
+        class="fixed w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
         <div
@@ -61,7 +61,7 @@
       </div>
     </teleport>
 
-    <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
+    <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
@@ -140,6 +140,10 @@ const props = defineProps({
     default: false,
   },
   teleportToBody: {
+    type: Boolean,
+    default: false,
+  },
+  teleportToTop: {
     type: Boolean,
     default: false,
   },

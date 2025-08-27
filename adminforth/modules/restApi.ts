@@ -1131,6 +1131,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const { record } = body;
 
+            // todo if showIn.create is function, code below will be buggy (will not detect required fact)
             for (const column of resource.columns) {
               if (
                   (column.required as {create?: boolean, edit?: boolean})?.create &&
