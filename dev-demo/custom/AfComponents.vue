@@ -279,7 +279,14 @@
       @close="() => {}"
     />
 
+    <Toggle />
 
+    <DatePicker
+      v-model:valueStart="valueStart"
+      :column="{ type: 'datetime' }"
+      label="Pick start"
+    />
+    
   </div>
 
 
@@ -305,7 +312,9 @@ import { Table } from '@/afcl'
 import { ProgressBar } from '@/afcl';
 import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
+import { Toggle } from '@/afcl';
 import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
+import { DatePicker } from '@/afcl';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 
@@ -321,8 +330,12 @@ watch(files, (files) => {
 const enable = ref(false)
 const selected = ref(null)
 const selected2 = ref([])
+const valueStart = ref()
 
 
+watch(valueStart, (newVal) => {
+  console.log('New start value:', newVal);
+});
 
 function doSmth(){
 

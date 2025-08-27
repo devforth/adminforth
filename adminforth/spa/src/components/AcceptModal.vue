@@ -6,7 +6,7 @@ const modalStore = useModalStore();
 
 <template>
   <Teleport to="body">
-    <div  v-if="modalStore.isOpened"  class="bg-gray-900/50 dark:bg-gray-900/80  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div  v-if="modalStore.isOpened"  class="bg-gray-900/50 dark:bg-gray-900/80  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100] justify-center items-center w-full md:inset-0 h-full max-h-full">
         <div class="relative p-4 w-full max-w-md max-h-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 " >
             <div class="afcl-confirmation-container relative bg-lightAcceptModalBackground rounded-lg shadow dark:bg-darkAcceptModalBackground dark:shadow-black">
                 <button type="button"@click="modalStore.togleModal" class="absolute top-3 end-2.5 text-lightAcceptModalCloseIcon bg-transparent hover:bg-lightAcceptModalCloseIconHoverBackground hover:text-lightAcceptModalCloseIconHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkAcceptModalCloseIcon dark:hover:bg-darkAcceptModalCloseIconHoverBackground dark:hover:text-darkAcceptModalCloseIconHover" >

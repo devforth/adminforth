@@ -7,7 +7,7 @@
             :checked="props.modelValue"
             @change="$emit('update:modelValue', $event.target.checked)"
             > 
-            <div class="border border-lightToggleBorderUnactive relative min-w-11 min-h-6 bg-lightToggleBgUnactive peer-focus:outline-none peer-focus:ring-4 
+            <div class="afcl-toggle border border-lightToggleBorderUnactive relative min-w-11 min-h-6 bg-lightToggleBgUnactive peer-focus:outline-none peer-focus:ring-4 
                 peer-focus:ring-lightToggleRing dark:peer-focus:ring-darkToggleRing rounded-full peer dark:bg-darkToggleBgUnactive 
                 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:top-[2px] peer-checked:border-none 
                 peer-checked:after:border-lightToggleBorderActive  after:content-[''] after:absolute after:top-[1px] 

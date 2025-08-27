@@ -1,5 +1,5 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length">
+  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some(action => action.showInThreeDotsDropdown))">
     <button 
       data-dropdown-toggle="listThreeDotsDropdown" 
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
@@ -15,11 +15,20 @@
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.label}`">
-            <a href="#" class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+            <a  href="#" 
+              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"                 
+              :class="{
+                'pointer-events-none': !checkboxes.length,
+                'opacity-50': !checkboxes.length,
+                'cursor-not-allowed': !checkboxes.length,
+              }">
               <component :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
+                :checkboxes="checkboxes"
+                :updateList="props.updateList"
+                :clearCheckboxes="clearCheckboxes"
               />
             </a>
           </li>
@@ -32,6 +41,24 @@
                   class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
                 />
                 {{ action.name }}
+              </div>
+            </a>
+          </li>
+          <li v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
+            <a href="#" @click.prevent="startBulkAction(action.id)" 
+                class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+                :class="{
+                  'pointer-events-none': !checkboxes.length,
+                  'opacity-50': !checkboxes.length,
+                  'cursor-not-allowed': !checkboxes.length
+                }">
+              <div class="flex items-center gap-2">
+                <component 
+                  v-if="action.icon" 
+                  :is="getIcon(action.icon)" 
+                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                />
+                {{ action.label }}
               </div>
             </a>
           </li>
@@ -55,8 +82,18 @@ const router = useRouter();
 
 const props = defineProps({
   threeDotsDropdownItems: Array,
-  customActions: Array
+  customActions: Array,
+  bulkActions: Array,
+  checkboxes: Array,
+  updateList: {
+    type: Function,
+  },
+  clearCheckboxes: {
+    type: Function
+  }
 });
+
+const emit = defineEmits(['startBulkAction']);
 
 async function handleActionClick(action) {
   adminforth.list.closeThreeDotsDropdown();
@@ -108,5 +145,10 @@ async function handleActionClick(action) {
       variant: 'danger'
     });
   }
+}
+
+function startBulkAction(actionId) {
+  adminforth.list.closeThreeDotsDropdown();
+  emit('startBulkAction', actionId);
 }
 </script>

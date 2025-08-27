@@ -115,11 +115,11 @@ export interface ITranslateFunction {
 }
 
 // Omit <Request, 'param'> is used to remove 'param' method from Request type for correct docs generation
-export interface IAdminUserExpressRequest extends Omit<Request, 'param'> {
+export interface IAdminUserExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
   adminUser: AdminUser;
 }
 
-export interface ITranslateExpressRequest extends Omit<Request, 'param'> {
+export interface ITranslateExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
   tr: ITranslateFunction;
 }
 

@@ -141,3 +141,71 @@ server {
     }
 }
 ```
+
+
+
+### Backend-only fields
+
+Some fields should never be accessed on frontend. For example, `hashed_password` field which is always created using CLI initial app, should never be passed to frontend due to security reasons.
+If any user of system can read `hashed_password` of another user, it can lead to account compromise.
+
+To eliminate it we have 2 options:
+
+1) Do not list `password_hash` in the `columns` array of the resource. If AdminForth knows nothing about field
+it will never pass this field to frontend!
+2) Define `password_hash` in columns way but set `backendOnly`. 
+
+The second option is more explicit and should be preferred. This option is used by default in CLI-bootstrapped projects:
+
+```ts
+{
+  name: 'password_hash',
+  type: AdminForthDataTypes.STRING,
+  showIn: { all: false },
+  backendOnly: true,  // will never go to frontend
+}
+```
+
+#### Dynamically hide fields depending on user ACL / role
+
+You can use `column.showIn` to show or hide column for user depending on his role.
+
+However even if `showIn` value (or value returned by showIn function) is `false`, record value will still go to frontend and will be
+visible in the Network tab, so advanced user can still access field value. We did it in this way to provide AdminForth developers with ability to quickly use any record field in custom components.
+
+However if you need securely hide only certain fields depending on role, you should use `column.backendOnly` and pass function there.
+
+Let's consider example:
+
+```ts
+{
+  name: 'email',
+  type: AdminForthDataTypes.STRING,
+  showIn: { 
+//diff-add
+    all: false, 
+//diff-add
+    list: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
+  },
+}
+```
+
+So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
+However, the email will still be present in the record and can be accessed by advanced users through the Network tab.
+
+So to completely hide the email field from all users apart superadmins, you should use `column.backendOnly` and pass a function there.
+
+```ts
+{
+  name: 'email',
+  type: AdminForthDataTypes.STRING,
+//diff-add
+  backendOnly: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
+  showIn: { 
+    all: false, 
+    list: ({ adminUser }: { adminUser: AdminUser }) => adminUser.dbUser.role === 'superadmin',
+  },
+}
+```
+
+So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
