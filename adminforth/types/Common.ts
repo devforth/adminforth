@@ -264,7 +264,7 @@ export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull 
 
 export type FieldGroup = {
   groupName: string;
-  columns: AdminForthResourceColumnCommon[];
+  columns: string[];
   noTitle?: boolean;
 };
 
