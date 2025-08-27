@@ -1783,8 +1783,34 @@ import { JsonViever } from '@/afcl'
   ```
 </div>
   <div>
-    ![Mixed Chart](image-93.png)
+    ![JSON Viewer](image-93.png)
   </div>
 </div>
+
+## Date picker
+
+```ts
+import { DatePicker } from '@/afcl';
+const datePickerValue = ref()
+```
+
+### Basic
+<div class="split-screen" >
+
+<div>
+```html
+<DatePicker
+  v-model:datePickerValue="datePickerValue"
+  :column="{ type: 'datetime' }"
+  label="Pick start"
+/>
+```
+</div>
+  <div>
+    ![Date Picker](image-95.png)
+  </div>
+</div>
+
+
 
 
