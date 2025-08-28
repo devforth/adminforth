@@ -44,7 +44,7 @@
               </div>
             </a>
           </li>
-          <li v-for="action in bulkActions.filter(a => a.showInThreeDotsDropdown)" :key="action.id">
+          <li v-for="action in bulkActions?.filter((a:AdminForthBulkActionCommon ) => a.showInThreeDotsDropdown)" :key="action.id">
             <a href="#" @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
@@ -74,7 +74,7 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import type { AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import type { AdminForthComponentDeclarationFull, AdminForthBulkActionCommon, AdminForthActionInput } from '@/types/Common.js';
 
 const route = useRoute();
 const coreStore = useCoreStore();
@@ -82,8 +82,8 @@ const router = useRouter();
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
-  customActions: Array,
-  bulkActions: Array,
+  customActions: Array<AdminForthActionInput>,
+  bulkActions: Array<AdminForthBulkActionCommon>,
   checkboxes: Array,
   updateList: {
     type: Function,
@@ -95,7 +95,7 @@ const props = defineProps({
 
 const emit = defineEmits(['startBulkAction']);
 
-async function handleActionClick(action) {
+async function handleActionClick(action: AdminForthActionInput) {
   adminforth.list.closeThreeDotsDropdown();
   
   const actionId = action.id;
@@ -126,8 +126,8 @@ async function handleActionClick(action) {
   
   if (data?.ok) {
     await coreStore.fetchRecord({
-      resourceId: route.params.resourceId, 
-      primaryKey: route.params.primaryKey,
+      resourceId: route.params.resourceId as string, 
+      primaryKey: route.params.primaryKey as string,
       source: 'show',
     });
 
@@ -147,7 +147,7 @@ async function handleActionClick(action) {
   }
 }
 
-function startBulkAction(actionId) {
+function startBulkAction(actionId: AdminForthBulkActionCommon) {
   adminforth.list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
 }
