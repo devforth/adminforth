@@ -147,7 +147,7 @@ async function handleActionClick(action: AdminForthActionInput) {
   }
 }
 
-function startBulkAction(actionId: AdminForthBulkActionCommon) {
+function startBulkAction(actionId: any) {
   adminforth.list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
 }
