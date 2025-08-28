@@ -52,7 +52,7 @@
           <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
         </div>
         <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-          {{ options.length ? $t('No results found') : $t('No items here') }}
+          {{ options?.length ? $t('No results found') : $t('No items here') }}
         </div>
 
         <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
@@ -76,7 +76,7 @@
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-        {{ options.length ? $t('No results found') : $t('No items here') }}
+        {{ options?.length ? $t('No results found') : $t('No items here') }}
       </div>
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-darkDropdownOptionsText">
         <slot name="extra-item"></slot>
@@ -114,14 +114,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, type Ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
 const props = defineProps({
   options: Array,
   modelValue: {
-    default: undefined,
+    type: Array as PropType<(string | number)[]>,
+    default: () => [],
   },
   multiple: {
     type: Boolean,
@@ -178,14 +179,14 @@ function inputInput() {
 function updateFromProps() {
   if (props.modelValue !== undefined) {
     if (!props.multiple) {
-      const el = props.options.find(item => item.value === props.modelValue);
+      const el = props.options?.find((item: any) => item.value === props.modelValue);
       if (el) {
         selectedItems.value = [el];
       } else {
         selectedItems.value = [];
       }
     } else {
-      selectedItems.value = props.options.filter(item => props.modelValue.includes(item.value));
+      selectedItems.value = props.options?.filter((item: any) => props.modelValue?.includes(item.value)) || [];
     }
   }
 }
@@ -268,7 +269,7 @@ onMounted(() => {
   }
 });
 
-const filteredItems = computed(() => {
+const filteredItems: Ref<any[]> = computed(() => {
 
   if (props.searchDisabled) {
     return props.options || [];
@@ -295,7 +296,7 @@ const removeClickListener = () => {
   document.removeEventListener('click', handleClickOutside);
 };
 
-const toogleItem = (item) => {
+const toogleItem = (item: any) => {
   if (selectedItems.value.includes(item)) {
     selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
