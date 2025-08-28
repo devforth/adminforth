@@ -264,6 +264,8 @@ export interface AdminForthComponentDeclarationFull {
   meta?: any,
 }
 import { type AdminForthActionInput } from './Back.js' 
+export { type AdminForthActionInput } from './Back.js'
+
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
 
 export type FieldGroup = {
