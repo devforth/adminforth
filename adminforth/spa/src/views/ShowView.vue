@@ -49,12 +49,8 @@
       </button>
 
       <ThreeDotsMenu 
-      :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems)
-        ? coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems
-        : coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems
-          ? [coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems]
-          : undefined"
-      :customActions="customActions"
+        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems"
+        :customActions="customActions"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 

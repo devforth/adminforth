@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
  type ModalContentType = {
-  title?: string;
-  content?: string;
-  acceptText?: string;
-  cancelText?: string;
+  title: string;
+  content: string;
+  acceptText: string;
+  cancelText: string;
  }
 
 

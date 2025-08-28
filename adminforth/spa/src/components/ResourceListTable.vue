@@ -384,14 +384,14 @@ watch(() => props.page, (newPage) => {
   page.value = newPage;
 });
 
-const rowRefs = useTemplateRef('rowRefs');
-const headerRefs = useTemplateRef('headerRefs');
+const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
+const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
 const rowHeights = ref<number[]>([]);
 const columnWidths = ref<number[]>([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
-  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
-  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: any) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: any) => el.offsetWidth)];
 });
 
 function addToCheckedValues(id: any) {
