@@ -228,7 +228,7 @@ new BulkAiFlowPlugin({
 }),
 ```
 
-## Text-to-Image generation
+## Text-to-Image generation or image editing
 Generate new images based on existing data and/or images using AI image generation adapters.
 
 ### Example: Creating Cartoon Avatars
