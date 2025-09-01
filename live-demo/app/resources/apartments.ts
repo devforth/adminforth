@@ -272,7 +272,7 @@ export default {
           rateLimit: '2/2m'
         }
       },
-      bulkGenerationRateLimit: "2/2m",
+      bulkGenerationRateLimit: "3/2m",
       isAllowedToSave: blockDemoUsers,
     }),
   ],
