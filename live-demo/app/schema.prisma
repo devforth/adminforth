@@ -23,6 +23,7 @@ model apartments {
   price             Decimal
   number_of_rooms   Int?
   apartment_image   String?
+  processed_image   String?
   description       String?
   country           String?
   listed            Boolean
