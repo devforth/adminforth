@@ -139,7 +139,7 @@ import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
-import { type AdminForthComponentDeclarationFull, type FieldGroup, type AdminForthResourceColumnCommon } from '@/types/Common.js';
+import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon } from '@/types/Common.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -150,13 +150,13 @@ const coreStore = useCoreStore();
 const actionLoadingStates = ref<Record<string, boolean>>({});
 
 const customActions = computed(() => {
-  return coreStore.resource?.options?.actions?.filter(a => a.showIn?.showThreeDotsMenu) || [];
+  return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
 });
 
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string, //route.params.resourceId has type string | string[], but chance, that resourceId can be array is very low
+    resourceId: route.params.resourceId as string,
   });
   initThreeDotsDropdown();
   await coreStore.fetchRecord({
@@ -234,7 +234,7 @@ async function deleteRecord() {
     
 }
 
-async function startCustomAction(actionId: any) {  
+async function startCustomAction(actionId: string) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
