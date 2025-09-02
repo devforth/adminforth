@@ -533,7 +533,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: any, row: any) {
+async function startCustomAction(actionId: string, row: any) {
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({

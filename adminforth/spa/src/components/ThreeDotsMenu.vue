@@ -1,5 +1,5 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: any) => action.showInThreeDotsDropdown))">
+  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
     <button 
       data-dropdown-toggle="listThreeDotsDropdown" 
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
@@ -14,7 +14,7 @@
       id="listThreeDotsDropdown" 
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
-          <li v-for="item in threeDotsDropdownItems">
+          <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.file}`">
             <a  href="#" 
               class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"                 
               :class="{
