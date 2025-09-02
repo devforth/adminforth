@@ -286,7 +286,7 @@
       :column="{ type: 'datetime' }"
       label="Pick start"
     />
-    
+
   </div>
 
 
