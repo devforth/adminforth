@@ -147,7 +147,7 @@ const loading = ref(true);
 const { t } = useI18n();
 const coreStore = useCoreStore();
 
-const actionLoadingStates = ref<Record<string, boolean>>({})
+const actionLoadingStates = ref<Record<string, boolean>>({});
 
 const customActions = computed(() => {
   return coreStore.resource?.options?.actions?.filter(a => a.showIn?.showThreeDotsMenu) || [];

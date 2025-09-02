@@ -358,8 +358,8 @@ export interface AdminForthResourceInputCommon {
       /*
        * Custom actions list. Actions available in show, edit and create views. 
        */
-      actions?: AdminForthActionInput[], // TODO check if type correct
-
+      actions?: AdminForthActionInput[],
+      
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
