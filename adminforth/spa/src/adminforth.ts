@@ -81,8 +81,8 @@ class FrontendAPI implements FrontendAPIInterface {
         acceptText: params.yes || 'Yes',
         cancelText: params.no || 'Cancel' 
       })
-      this.modalStore.onAcceptFunction = () => resolve(true)
-      this.modalStore.onCancelFunction = () => resolve(false)
+      this.modalStore.onAcceptFunction = resolve
+      this.modalStore.onCancelFunction = reject
       this.modalStore.togleModal()
     })
   }

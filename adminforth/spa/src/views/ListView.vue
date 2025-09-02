@@ -38,7 +38,7 @@
         <button
           v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
-          @click="startBulkAction(action.id)"
+          @click="startBulkAction(action.id!)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
           :class="action.buttonCustomCssClass || ''"
         >
@@ -326,7 +326,7 @@ async function refreshExistingList(pk?: any) {
 }
 
 
-async function startBulkAction(actionId: any) {
+async function startBulkAction(actionId: string) {
   const action = coreStore.resource?.options?.bulkActions?.find(a => a.id === actionId);
   if (action?.confirm) {
     const confirmed = await adminforth.confirm({
