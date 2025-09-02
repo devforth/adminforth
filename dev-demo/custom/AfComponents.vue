@@ -287,6 +287,128 @@
       label="Pick start"
     />
     
+    <div class="w-[250px] h-[100px] shadow-md border-2 border-gray-300 gap-8 overflow-y-auto flex-col justify-center items-center">
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+
+
+      <Tooltip>
+        <div class="flex items-center justify-center bg-gray-500">
+          Hover me to see tooltip
+
+        </div>
+        <template #tooltip>
+          Click me
+        </template>
+      </Tooltip>
+    </div>
+
+
+    <div class="w-[250px] h-[100px] shadow-md border-2 bg-gray-50 border-gray-300 gap-8 overflow-y-auto flex-col justify-center items-center">
+
+        <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+
+        <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+
+        <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+
+         <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+
+        <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+
+
+        <div class="flex items-center justify-center bg-gray-500">
+          <Tooltip>
+            Hover me to see tooltip
+            <template #tooltip>
+              Click me
+            </template>
+          </Tooltip>
+        </div>
+    </div>
+
   </div>
 
 
