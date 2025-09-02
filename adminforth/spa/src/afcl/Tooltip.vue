@@ -2,17 +2,14 @@
   <div ref="triggerEl" class="afcl-tooltip inline-flex items-center">
       <slot></slot>
   </div>
-  <Teleport to="body">
-    <div
-      role="tooltip"
-      class="absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
-      ref="tooltip"
-    >
-      <slot name="tooltip"></slot>
-      <div class="tooltip-arrow" data-popper-arrow></div>
-    </div>
-  </Teleport>
-
+  <div
+    role="tooltip"
+    class="absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
+    ref="tooltip"
+  >
+    <slot name="tooltip"></slot>
+    <div class="tooltip-arrow" data-popper-arrow></div>
+  </div>
 </template>
 
 <script setup lang="ts">
