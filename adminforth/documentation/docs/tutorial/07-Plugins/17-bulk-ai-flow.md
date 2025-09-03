@@ -42,7 +42,7 @@ model apartments {
   listed            Boolean
   realtor_id        String?
 //diff-add
-  apartment_image         String?
+  apartment_image   String?
 }
 ```
 
@@ -73,6 +73,12 @@ Add column to `aparts` resource configuration:
 import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
 //diff-add
 import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai';
+//diff-add
+import UploadPlugin from '@adminforth/upload';
+//diff-add
+import { randomUUID } from 'crypto';
+//diff-add
+import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 
 export const admin = new AdminForth({
   ...
@@ -127,6 +133,12 @@ export const admin = new AdminForth({
       //diff-add
         attachFiles: async ({ record }: { record: any }) => {
       //diff-add
+        if (!record.apartment_image) {
+      //diff-add
+          return [];
+      //diff-add
+        }
+      //diff-add
           return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_image}`];
       //diff-add
         },
@@ -166,6 +178,7 @@ export const admin = new AdminForth({
 
 });
 ```
+> ⚠️ Make sure your attachFiles function returns a valid array of image URLs or an empty array. Returning anything else may cause an error.
 
 ## Usage
 1. Select fields you want to fill
@@ -223,6 +236,9 @@ new BulkAiFlowPlugin({
     'age': 'Analyze the image and estimate the age of the person. Return only a number.',
   },
   attachFiles: async ({ record }) => {
+    if (!record.image_url) {
+      return [];
+    }
     return [`https://users-images.s3.eu-north-1.amazonaws.com/${record.image_url}`];
   },
 }),
@@ -244,6 +260,9 @@ new BulkAiFlowPlugin({
     model: 'gpt-image-1',
   }),
   attachFiles: async ({ record }) => {
+    if (!record.user_photo) {
+      return [];
+    }
     return [`https://bulk-ai-flow-playground.s3.eu-north-1.amazonaws.com/${record.users_photo}`];
   },
   generateImages: {
