@@ -248,6 +248,9 @@ export default {
     new BulkAiFlowPlugin({
       actionName: 'Process',
       attachFiles: async ({ record }: { record: any }) => {
+        if (!record.apartment_image) {
+          return [];
+        }
         return [`https://s3.eu-north-1.amazonaws.com/demo-static.adminforth.dev/${record.apartment_image}`];
       },
       visionAdapter: new AdminForthImageVisionAdapterOpenAi(
@@ -272,7 +275,11 @@ export default {
           rateLimit: '2/2m'
         }
       },
-      bulkGenerationRateLimit: "3/2m",
+      rateLimits:{
+        fillFieldsFromImages: "2/2m",
+        generateImages: "2/2m",
+        fillPlainFields: "2/2m",
+      },
       isAllowedToSave: blockDemoUsers,
     }),
   ],
