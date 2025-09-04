@@ -279,7 +279,36 @@ new BulkAiFlowPlugin({
 
 ## Rate Limiting and Best Practices
 
-- Use `rateLimit` for individual image generation operations
-- Set `bulkGenerationRateLimit` to prevent API quota exhaustion
+- Use `rateLimit` for individual image generation operations and for the bulk image generation
+```ts
+  new BulkAiFlowPlugin({
+  ...
+
+  generateImages: {
+    users_avatar: {
+      ... //image re-generation limits
+      //diff-add
+      rateLimit: '1/5m' // one request per 5 minutes
+    }
+  },
+
+  ...
+
+  //diff-add
+  rateLimits: { // bulk generation limits
+  //diff-add
+    fillFieldsFromImages: "5/1d", // 5 requests per day
+  //diff-add
+    fillPlainFields: "3/1h",      // 3 requests per one hour
+  //diff-add
+    generateImages: "1/2m",       // 2 request per one minute
+  //diff-add
+  }
+
+  ...
+
+  })
+```
+
 - Consider using lower resolution (`512x512`) for faster generation and lower costs
 - Test prompts thoroughly before applying to large datasets
