@@ -60,7 +60,7 @@ const optionsBase = {
   tooltip: {
     shared: true,
     intersect: false,
-    formatter: function (value) {
+    formatter: function (value: any) {
       return value
     },
   },
@@ -71,7 +71,7 @@ const optionsBase = {
         fontFamily: "Inter, sans-serif",
         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
       },
-      formatter: function (value) {
+      formatter: function (value: any) {
         return value
       }
     },
