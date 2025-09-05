@@ -16,12 +16,8 @@
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.label}`">
             <a  href="#" 
-              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"                 
-              :class="{
-                'pointer-events-none': !checkboxes.length,
-                'opacity-50': !checkboxes.length,
-                'cursor-not-allowed': !checkboxes.length,
-              }">
+              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+            >
               <component :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
