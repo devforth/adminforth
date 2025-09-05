@@ -272,13 +272,13 @@ export default {
           prompt: "Turn this image into a ghibli cartoon style",
           outputSize: "1536x1024",
           countToGenerate: 2,
-          rateLimit: '2/2m'
+          rateLimit: '1/1m'
         }
       },
       rateLimits:{
-        fillFieldsFromImages: "2/2m",
-        generateImages: "2/2m",
-        fillPlainFields: "2/2m",
+        fillFieldsFromImages: "3/2m",
+        generateImages: "3/2m",
+        fillPlainFields: "3/2m",
       },
       isAllowedToSave: blockDemoUsers,
     }),
