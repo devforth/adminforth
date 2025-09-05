@@ -30,7 +30,7 @@ export const admin = new AdminForth({
   resources: [
     apartmentsResource,
     usersResource,
-    auditLogsResource
+    // auditLogsResource
   ],
   menu: [
     {
@@ -44,11 +44,11 @@ export const admin = new AdminForth({
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },
-        {
-          label: 'Audit Logs',
-          icon: 'flowbite:search-outline',
-          resourceId: 'audit_logs',
-        }
+        // {
+        //   label: 'Audit Logs',
+        //   icon: 'flowbite:search-outline',
+        //   resourceId: 'audit_logs',
+        // }
       ]
     },
     {

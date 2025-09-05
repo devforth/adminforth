@@ -7,102 +7,332 @@ import * as typescriptParser from 'recast/parsers/typescript.js'; // Import the 
 const b = recast.types.builders; // Like t.* in babel/types
 const n = recast.types.namedTypes; // Like t.is* in babel/types
 
+// Helper: find the line number of components[fieldType] inside columns[name===columnName]
+function findComponentPropLine(ast, columnName, fieldType) {
+  let line = null;
+  recast.visit(ast, {
+    visitExportDefaultDeclaration(path) {
+      const declaration = path.node.declaration;
+      let objectExpressionNode = null;
+
+      if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
+        objectExpressionNode = declaration.expression;
+      } else if (n.ObjectExpression.check(declaration)) {
+        objectExpressionNode = declaration;
+      } else if (n.Identifier.check(declaration)) {
+        const varName = declaration.name;
+        recast.visit(ast, {
+          visitVariableDeclaration(path2) {
+            for (const decl of path2.node.declarations) {
+              if (
+                n.VariableDeclarator.check(decl) &&
+                n.Identifier.check(decl.id) &&
+                decl.id.name === varName &&
+                n.ObjectExpression.check(decl.init)
+              ) {
+                objectExpressionNode = decl.init;
+                return false;
+              }
+            }
+            this.traverse(path2);
+          }
+        });
+      }
+
+      if (!objectExpressionNode) return false;
+
+      const isKey = (keyNode, name) => (n.Identifier.check(keyNode) && keyNode.name === name) || (n.StringLiteral.check(keyNode) && keyNode.value === name);
+
+      const columnsProperty = objectExpressionNode.properties.find(prop =>
+        n.ObjectProperty.check(prop) && isKey(prop.key, 'columns')
+      );
+      if (!columnsProperty || !n.ArrayExpression.check(columnsProperty.value)) return false;
+
+      const columnsArray = columnsProperty.value.elements;
+      const targetColumn = columnsArray.find(col => {
+        if (n.ObjectExpression.check(col)) {
+          const nameProp = col.properties.find(p =>
+            n.ObjectProperty.check(p) && isKey(p.key, 'name') &&
+            n.StringLiteral.check(p.value) && p.value.value === columnName
+          );
+          return !!nameProp;
+        }
+        return false;
+      });
+      if (!targetColumn || !n.ObjectExpression.check(targetColumn)) return false;
+
+      const componentsProperty = targetColumn.properties.find(p =>
+        n.ObjectProperty.check(p) && isKey(p.key, 'components')
+      );
+      if (!componentsProperty || !n.ObjectExpression.check(componentsProperty.value)) return false;
+
+      const fieldTypeProperty = componentsProperty.value.properties.find(p =>
+        n.ObjectProperty.check(p) && isKey(p.key, fieldType)
+      );
+      if (fieldTypeProperty && fieldTypeProperty.loc) {
+        line = fieldTypeProperty.loc.start.line;
+        this.abort();
+      }
+      return false;
+    }
+  });
+  return line;
+}
+
+// New Helper: find the line number of the 'components' property inside the target column
+function findComponentsPropLine(ast, columnName) {
+  let line = null;
+  recast.visit(ast, {
+    visitExportDefaultDeclaration(path) {
+      const declaration = path.node.declaration;
+      let objectExpressionNode = null;
+
+      if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
+        objectExpressionNode = declaration.expression;
+      } else if (n.ObjectExpression.check(declaration)) {
+        objectExpressionNode = declaration;
+      } else if (n.Identifier.check(declaration)) {
+        const varName = declaration.name;
+        recast.visit(ast, {
+          visitVariableDeclaration(path2) {
+            for (const decl of path2.node.declarations) {
+              if (
+                n.VariableDeclarator.check(decl) &&
+                n.Identifier.check(decl.id) &&
+                decl.id.name === varName &&
+                n.ObjectExpression.check(decl.init)
+              ) {
+                objectExpressionNode = decl.init;
+                return false;
+              }
+            }
+            this.traverse(path2);
+          }
+        });
+      }
+
+      if (!objectExpressionNode) return false;
+      const isKey = (keyNode, name) => (n.Identifier.check(keyNode) && keyNode.name === name) || (n.StringLiteral.check(keyNode) && keyNode.value === name);
+
+      const columnsProperty = objectExpressionNode.properties.find(prop =>
+        n.ObjectProperty.check(prop) && isKey(prop.key, 'columns')
+      );
+      if (!columnsProperty || !n.ArrayExpression.check(columnsProperty.value)) return false;
+
+      const columnsArray = columnsProperty.value.elements;
+      const targetColumn = columnsArray.find(col => {
+        if (n.ObjectExpression.check(col)) {
+          const nameProp = col.properties.find(p =>
+            n.ObjectProperty.check(p) && isKey(p.key, 'name') &&
+            n.StringLiteral.check(p.value) && p.value.value === columnName
+          );
+          return !!nameProp;
+        }
+        return false;
+      });
+      if (!targetColumn || !n.ObjectExpression.check(targetColumn)) return false;
+
+      const componentsProperty = targetColumn.properties.find(p =>
+        n.ObjectProperty.check(p) && isKey(p.key, 'components')
+      );
+      if (componentsProperty?.loc) {
+        line = componentsProperty.loc.start.line;
+        this.abort();
+      }
+      return false;
+    }
+  });
+  return line;
+}
+
+// New Helper: find start/end lines of the target column object expression
+function findTargetColumnRange(ast, columnName) {
+  let range = null;
+  recast.visit(ast, {
+    visitExportDefaultDeclaration(path) {
+      const declaration = path.node.declaration;
+      let objectExpressionNode = null;
+
+      if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
+        objectExpressionNode = declaration.expression;
+      } else if (n.ObjectExpression.check(declaration)) {
+        objectExpressionNode = declaration;
+      } else if (n.Identifier.check(declaration)) {
+        const varName = declaration.name;
+        recast.visit(ast, {
+          visitVariableDeclaration(path2) {
+            for (const decl of path2.node.declarations) {
+              if (
+                n.VariableDeclarator.check(decl) &&
+                n.Identifier.check(decl.id) &&
+                decl.id.name === varName &&
+                n.ObjectExpression.check(decl.init)
+              ) {
+                objectExpressionNode = decl.init;
+                return false;
+              }
+            }
+            this.traverse(path2);
+          }
+        });
+      }
+
+      if (!objectExpressionNode) return false;
+      const isKey = (keyNode, name) => (n.Identifier.check(keyNode) && keyNode.name === name) || (n.StringLiteral.check(keyNode) && keyNode.value === name);
+
+      const columnsProperty = objectExpressionNode.properties.find(prop =>
+        n.ObjectProperty.check(prop) && isKey(prop.key, 'columns')
+      );
+      if (!columnsProperty || !n.ArrayExpression.check(columnsProperty.value)) return false;
+
+      const columnsArray = columnsProperty.value.elements;
+      const targetColumn = columnsArray.find(col => {
+        if (n.ObjectExpression.check(col)) {
+          const nameProp = col.properties.find(p =>
+            n.ObjectProperty.check(p) && isKey(p.key, 'name') &&
+            n.StringLiteral.check(p.value) && p.value.value === columnName
+          );
+          return !!nameProp;
+        }
+        return false;
+      });
+      if (targetColumn && n.ObjectExpression.check(targetColumn) && targetColumn.loc) {
+        range = { start: targetColumn.loc.start.line, end: targetColumn.loc.end.line };
+        this.abort();
+      }
+      return false;
+    }
+  });
+  return range;
+}
+
+// Helper: remove all blank lines immediately before and after the specified line number
+function removeBlankAroundLine(code, lineNumber) {
+  if (!lineNumber || typeof lineNumber !== 'number') return code;
+  const lines = code.split(/\r?\n/);
+  let idx = Math.max(0, lineNumber - 1);
+  // Remove consecutive blank lines before
+  while (idx > 0 && lines[idx - 1] !== undefined && lines[idx - 1].trim() === '') {
+    lines.splice(idx - 1, 1);
+    idx -= 1;
+  }
+  // Remove consecutive blank lines after
+  while (idx < lines.length - 1 && lines[idx + 1] !== undefined && lines[idx + 1].trim() === '') {
+    lines.splice(idx + 1, 1);
+  }
+  return lines.join('\n');
+}
+
+// New Helper: remove all blank-only lines within a given [start, end] (inclusive) line range
+function removeAllBlankLinesInRange(code, startLine, endLine) {
+  if (!startLine || !endLine) return code;
+  const lines = code.split(/\r?\n/);
+  const startIdx = Math.max(0, startLine - 1);
+  const endIdx = Math.min(lines.length - 1, endLine - 1);
+  for (let i = endIdx - 1; i > startIdx; i--) {
+    if (lines[i] !== undefined && lines[i].trim() === '') {
+      lines.splice(i, 1);
+    }
+  }
+  return lines.join('\n');
+}
+
 
 async function findResourceFilePath(resourceId) {
-    const projectRoot = process.cwd();
-    const resourcesDir = path.resolve(projectRoot, 'resources');
-    console.log(chalk.dim(`Scanning for resource files in: ${resourcesDir}`));
+  const projectRoot = process.cwd();
+  const resourcesDir = path.resolve(projectRoot, 'resources');
+  console.log(chalk.dim(`Scanning for resource files in: ${resourcesDir}`));
 
-    let tsFiles = [];
-    try {
-        const entries = await fs.readdir(resourcesDir, { withFileTypes: true });
-        tsFiles = entries
-            .filter(dirent => dirent.isFile() && dirent.name.endsWith('.ts') && !dirent.name.endsWith('.d.ts'))
-            .map(dirent => dirent.name);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error(`Resources directory not found at ${resourcesDir}. Please ensure it exists.`);
-        }
-        throw new Error(`Failed to read resources directory ${resourcesDir}: ${error.message}`);
-    }
+  let tsFiles = [];
+  try {
+      const entries = await fs.readdir(resourcesDir, { withFileTypes: true });
+      tsFiles = entries
+          .filter(dirent => dirent.isFile() && dirent.name.endsWith('.ts') && !dirent.name.endsWith('.d.ts'))
+          .map(dirent => dirent.name);
+  } catch (error) {
+      if (error.code === 'ENOENT') {
+          throw new Error(`Resources directory not found at ${resourcesDir}. Please ensure it exists.`);
+      }
+      throw new Error(`Failed to read resources directory ${resourcesDir}: ${error.message}`);
+  }
 
 
-    for (const file of tsFiles) {
-        const filePath = path.resolve(resourcesDir, file);
-        console.log(chalk.dim(`Attempting to process file: ${file}`));
-        try {
-            const content = await fs.readFile(filePath, 'utf-8');
-            const ast = recast.parse(content, {
-                parser: typescriptParser 
-            });
+  for (const file of tsFiles) {
+      const filePath = path.resolve(resourcesDir, file);
+      console.log(chalk.dim(`Attempting to process file: ${file}`));
+      try {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const ast = recast.parse(content, {
+              parser: typescriptParser 
+          });
 
-            let foundResourceId = null;
+          let foundResourceId = null;
 
-            recast.visit(ast, {
-                visitExportDefaultDeclaration(path) {
-                    if (foundResourceId !== null) return false; // Stop visiting deeper if already found
+          recast.visit(ast, {
+              visitExportDefaultDeclaration(path) {
+                  if (foundResourceId !== null) return false; // Stop visiting deeper if already found
 
-                    const declaration = path.node.declaration;
-                    let objectExpressionNode = null;
+                  const declaration = path.node.declaration;
+                  let objectExpressionNode = null;
 
-                    if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
-                        objectExpressionNode = declaration.expression;
-                    } else if (n.ObjectExpression.check(declaration)) {
-                        objectExpressionNode = declaration;
-                    } else if (n.Identifier.check(declaration)) {
-                        const varName = declaration.name;
-                    
-                        recast.visit(ast, {
-                            visitVariableDeclaration(path) {
-                                for (const decl of path.node.declarations) {
-                                    if (
-                                        n.VariableDeclarator.check(decl) &&
-                                        n.Identifier.check(decl.id) &&
-                                        decl.id.name === varName &&
-                                        n.ObjectExpression.check(decl.init)
-                                    ) {
-                                        objectExpressionNode = decl.init;
-                                        return false;
-                                    }
-                                }
-                                this.traverse(path);
-                            }
-                        });
-                    }
+                  if (n.TSAsExpression.check(declaration) && n.ObjectExpression.check(declaration.expression)) {
+                      objectExpressionNode = declaration.expression;
+                  } else if (n.ObjectExpression.check(declaration)) {
+                      objectExpressionNode = declaration;
+                  } else if (n.Identifier.check(declaration)) {
+                      const varName = declaration.name;
+                  
+                      recast.visit(ast, {
+                          visitVariableDeclaration(path) {
+                              for (const decl of path.node.declarations) {
+                                  if (
+                                      n.VariableDeclarator.check(decl) &&
+                                      n.Identifier.check(decl.id) &&
+                                      decl.id.name === varName &&
+                                      n.ObjectExpression.check(decl.init)
+                                  ) {
+                                      objectExpressionNode = decl.init;
+                                      return false;
+                                  }
+                              }
+                              this.traverse(path);
+                          }
+                      });
+                  }
 
-                    if (objectExpressionNode) {
-                        const resourceIdProp = objectExpressionNode.properties.find(prop =>
-                            n.ObjectProperty.check(prop) &&
-                            n.Identifier.check(prop.key) &&
-                            prop.key.name === 'resourceId' &&
-                            n.StringLiteral.check(prop.value)
-                        );
-                        if (resourceIdProp) {
-                            foundResourceId = resourceIdProp.value.value; // Get the string value
-                            console.log(chalk.dim(`  Extracted resourceId '${foundResourceId}' from ${file}`));
-                            this.abort(); // Stop traversal for this file once found
-                        }
-                    }
-                    return false;
-                }
-            });
+                  if (objectExpressionNode) {
+                      const resourceIdProp = objectExpressionNode.properties.find(prop =>
+                          n.ObjectProperty.check(prop) &&
+                          n.Identifier.check(prop.key) &&
+                          prop.key.name === 'resourceId' &&
+                          n.StringLiteral.check(prop.value)
+                      );
+                      if (resourceIdProp) {
+                          foundResourceId = resourceIdProp.value.value; // Get the string value
+                          console.log(chalk.dim(`  Extracted resourceId '${foundResourceId}' from ${file}`));
+                          this.abort(); // Stop traversal for this file once found
+                      }
+                  }
+                  return false;
+              }
+          });
 
-            console.log(chalk.dim(`  Finished processing ${file}. Found resourceId: ${foundResourceId || 'null'}`));
+          console.log(chalk.dim(`  Finished processing ${file}. Found resourceId: ${foundResourceId || 'null'}`));
 
-            if (foundResourceId === resourceId) {
-                console.log(chalk.dim(`  Match found! Returning path: ${filePath}`));
-                return filePath;
-            }
-        } catch (parseError) {
-            if (parseError.message.includes('require is not defined')) {
-                 console.error(chalk.red(`❌ Internal Error: Failed to load Recast parser in ESM context for ${file}.`));
-             } else {
-                console.warn(chalk.yellow(`⚠️ Warning: Could not process file ${file}. Skipping. Error: ${parseError.message}`));
-             }
-        }
-    }
+          if (foundResourceId === resourceId) {
+              console.log(chalk.dim(`  Match found! Returning path: ${filePath}`));
+              return filePath;
+          }
+      } catch (parseError) {
+          if (parseError.message.includes('require is not defined')) {
+               console.error(chalk.red(`❌ Internal Error: Failed to load Recast parser in ESM context for ${file}.`));
+           } else {
+              console.warn(chalk.yellow(`⚠️ Warning: Could not process file ${file}. Skipping. Error: ${parseError.message}`));
+           }
+      }
+  }
 
-    throw new Error(`Could not find a resource file in '${resourcesDir}' with resourceId: '${resourceId}'`);
+  throw new Error(`Could not find a resource file in '${resourcesDir}' with resourceId: '${resourceId}'`);
 }
 
 
@@ -236,8 +466,42 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
              throw new Error(`Could not find column '${columnName}' or apply update within the default export's 'columns' array in ${filePath}.`);
         }
 
-        const outputCode = recast.print(ast).code;
+        // Print code
+        const outputAstCode = recast.print(ast).code;
+        // If we injected a new node (no loc), reparse to find its line
+        let outputCode = outputAstCode;
+        let componentsLine = null;
+        let columnRange = null;
+        try {
+          const reparsed = recast.parse(outputAstCode, { parser: typescriptParser });
+          if (injectionLine === null) {
+            injectionLine = findComponentPropLine(reparsed, columnName, fieldType) ?? null;
+          }
+          // Also try to find the 'components' property line (useful when we created it)
+          componentsLine = findComponentsPropLine(reparsed, columnName) ?? null;
+          columnRange = findTargetColumnRange(reparsed, columnName) ?? null;
+        } catch (_) {
+          // Ignore reparse errors; fallback to raw outputAstCode
+        }
 
+        // Strip blank line before/after the injected field line
+        if (injectionLine !== null) {
+          outputCode = removeBlankAroundLine(outputCode, injectionLine);
+        }
+        // Strip blank line before/after the components property line (if we created/updated it)
+        if (componentsLine !== null) {
+          outputCode = removeBlankAroundLine(outputCode, componentsLine);
+        }
+        // Aggressively remove all blank-only lines inside the target column block
+        if (columnRange) {
+          outputCode = removeAllBlankLinesInRange(outputCode, columnRange.start, columnRange.end);
+        }
+
+        // Optionally compact runs of 3+ blank lines anywhere
+        outputCode = outputCode.replace(/(\r?\n){3,}/g, '\n\n');
+
+        // Optionally log the result for debugging
+        // console.log(outputCode);
         await fs.writeFile(filePath, outputCode, 'utf-8');
         console.log(
           chalk.green(
