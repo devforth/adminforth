@@ -14,7 +14,7 @@
       id="listThreeDotsDropdown" 
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
-          <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.file}`">
+          <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
               class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"                 
               :class="{
