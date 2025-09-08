@@ -90,9 +90,7 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems
-          ? ([] as any[]).concat(coreStore.resourceOptions.pageInjections.list.threeDotsDropdownItems)
-          : []"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
         @startBulkAction="startBulkAction"

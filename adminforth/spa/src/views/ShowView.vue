@@ -49,7 +49,7 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
         :customActions="customActions"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
