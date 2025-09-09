@@ -184,7 +184,7 @@ Then, in the adapter options, add:
 
 ``` ts
 //diff-add
-import EmailAdapterMailgun from "@adminforth/adminforth-email-adapter-mailgun";
+import EmailAdapterMailgun from "@adminforth/email-adapter-mailgun";
  
 ...
 
