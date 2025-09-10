@@ -119,16 +119,10 @@ onUnmounted(() => {
 })
 
 function open() {
-  if (props.beforeOpenFunction) {
-    props.beforeOpenFunction();
-  }
   modal.value?.show();
 }
 
 function close() {
-  if (props.beforeCloseFunction) {
-    props.beforeCloseFunction();
-  }
   modal.value?.hide();
 }
 
