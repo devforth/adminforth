@@ -63,32 +63,31 @@ import { Modal } from 'flowbite';
 const modalEl = ref(null);
 const modal: Ref<Modal|null> = ref(null);
 
-const props = defineProps({
-  header: {
-    type: String,
-    default: '',
-  },
-  headerCloseButton: {
-    type: Boolean,
-    default: true,
-  },
-  buttons: {
-    type: Array,
-    default: () => [{ label: 'Close', onclick: (dialog) => dialog.hide(), type: '' }],
-  },
-  clickToCloseOutside: {
-    type: Boolean,
-    default: true,
-  },
-  beforeCloseFunction: {
-    type: Function,
-    default: null,
-  },
-  beforeOpenFunction: {
-    type: Function,
-    default: null,
-  },
-});
+interface DialogButton {
+  label: string
+  onclick: (dialog: any) => void
+  type?: string
+}
+
+interface DialogProps {
+  header?: string
+  headerCloseButton?: boolean
+  buttons?: DialogButton[]
+  clickToCloseOutside?: boolean
+  beforeCloseFunction?: (() => void | Promise<void>) | null
+  beforeOpenFunction?: (() => void | Promise<void>) | null
+}
+
+const props = withDefaults(defineProps<DialogProps>(), {
+  header: '',
+  headerCloseButton: true,
+  buttons: () => [
+    { label: 'Close', onclick: (dialog: any) => dialog.hide(), type: '' },
+  ],
+  clickToCloseOutside: true,
+  beforeCloseFunction: null,
+  beforeOpenFunction: null,
+})
 
 onMounted(async () => {
   //await one tick when all is mounted
@@ -97,16 +96,14 @@ onMounted(async () => {
     modalEl.value,
     {
       backdrop: props.clickToCloseOutside ? 'dynamic' : 'static',
-      onHide: () => {
+      onHide: async () => {
         if (props.beforeCloseFunction) {
-          props.beforeCloseFunction(modal);
-          return;
+          await props.beforeCloseFunction();
         }
       },
-      onShow: () => {
+      onShow: async () => {
         if (props.beforeOpenFunction) {
-          props.beforeOpenFunction(modal);
-          return;
+          await props.beforeOpenFunction();
         }
       },
     }
