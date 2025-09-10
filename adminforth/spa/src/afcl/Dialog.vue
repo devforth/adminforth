@@ -80,6 +80,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  beforeCloseFunction: {
+    type: Function,
+    default: null,
+  },
+  beforeOpenFunction: {
+    type: Function,
+    default: null,
+  },
 });
 
 onMounted(async () => {
@@ -89,7 +97,19 @@ onMounted(async () => {
     modalEl.value,
     {
       backdrop: props.clickToCloseOutside ? 'dynamic' : 'static',
-    },
+      onHide: () => {
+        if (props.beforeCloseFunction) {
+          props.beforeCloseFunction(modal);
+          return;
+        }
+      },
+      onShow: () => {
+        if (props.beforeOpenFunction) {
+          props.beforeOpenFunction(modal);
+          return;
+        }
+      },
+    }
   );
 })
 
@@ -99,10 +119,16 @@ onUnmounted(() => {
 })
 
 function open() {
+  if (props.beforeOpenFunction) {
+    props.beforeOpenFunction();
+  }
   modal.value?.show();
 }
 
 function close() {
+  if (props.beforeCloseFunction) {
+    props.beforeCloseFunction();
+  }
   modal.value?.hide();
 }
 
