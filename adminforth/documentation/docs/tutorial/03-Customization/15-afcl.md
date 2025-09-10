@@ -595,6 +595,41 @@ const closeDialog = () => {
 }
 ```
 
+### Before open/close dialog handlers
+If you want to run custom logic before the dialog opens or closes by passing callback props:
+
+```ts
+<Dialog 
+  class="w-96" 
+  :beforeCloseFunction="onBeforeOpen" 
+  :beforeOpenFunction="onBeforeClose"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+Now you can pass before open/close functions:
+```ts
+const counter = ref(0);
+
+function onBeforeOpen() {
+  counter.value++;
+  console.log(`custom open function called ${counter.value}`);
+}
+
+function onBeforeClose() {
+  counter.value++;
+  console.log(`custom close function called ${counter.value}`);
+}
+```
+
+
 ## Dropzone
 
 ```ts
