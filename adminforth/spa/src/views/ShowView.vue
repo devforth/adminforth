@@ -284,4 +284,21 @@ async function startCustomAction(actionId: string) {
   }
 }
 
+adminforth.show.refresh = () => {
+  (async () => {
+    try {
+      loading.value = true;
+      await coreStore.fetchRecord({
+        resourceId: String(route.params.resourceId),
+        primaryKey: String(route.params.primaryKey),
+        source: 'show',
+      });
+    } catch (e) {
+      showErrorTost((e as Error).message);
+    } finally {
+      loading.value = false;
+    }
+  })();
+}
+
 </script>

@@ -111,7 +111,6 @@ const readonlyColumns = ref([]);
 
 
 async function onUpdateRecord(newRecord: any) {
-  console.log('newRecord', newRecord);
   record.value = newRecord;
 }
 
@@ -139,7 +138,6 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
-  console.log('saveRecord isValid', isValid.value);
   if (!isValid.value) {
     validating.value = true;
     return;

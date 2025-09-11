@@ -3,7 +3,8 @@
     <Teleport to="body">
       <Filters
         :columns="coreStore.resource?.columns"
-        :columnsMinMax="columnsMinMax" :show="filtersShow"
+        :columnsMinMax="columnsMinMax" 
+        :show="filtersShow"
         @hide="filtersShow = false"
       />
     </Teleport>
@@ -477,7 +478,7 @@ watch(() => filtersStore.filters, async (to, from) => {
   const query:  Record<string, string | undefined> = {};
   const currentQ = currentQuery();
   filtersStore.filters.forEach(f => {
-    if (f.value) {
+    if (f.value !== undefined && f.value !== null && f.value !== '') {
       query[`filter__${f.field}__${f.operator}`] = encodeURIComponent(JSON.stringify(f.value));
     }
   });
