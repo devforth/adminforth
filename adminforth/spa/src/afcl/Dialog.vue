@@ -7,8 +7,7 @@
   </div>
   <Teleport to="body">
     <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
-      <div v-bind="$attrs" class="relative p-4 max-w-2xl max-h-full" :class="$attrs.class?.includes('w-') ? '' : 'w-full'">
-        <!-- Modal content -->
+      <div v-bind="$attrs" class="relative p-4 max-w-2xl max-h-full" :class="(typeof $attrs.class === 'string' && $attrs.class.includes('w-')) ? '' : 'w-full'">
         <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
           <!-- Modal header -->
           <div
@@ -66,7 +65,7 @@ const modal: Ref<Modal|null> = ref(null);
 interface DialogButton {
   label: string
   onclick: (dialog: any) => void
-  type?: string
+  options?: Record<string, any> 
 }
 
 interface DialogProps {
