@@ -10,21 +10,29 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
-      <template v-if="coreStore.resource?.options?.bulkActions">
-        <button 
-          v-for="action in coreStore.resource.options.bulkActions.filter(a => a.showIn?.showButton)" 
-          :key="action.id"
-          @click="startCustomAction(action.id)"
-          :disabled="actionLoadingStates[action.id]"
-          class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-        >
-          <component 
-            v-if="action.icon" 
-            :is="getIcon(action.icon)" 
-            class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary"
-          />
-          {{ action.name }}
-        </button>
+      <template v-if="coreStore.resource?.options?.actions">
+
+        <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
+          <component
+            :is="getCustomComponent(action.customComponent) || CallActionWrapper"
+            :meta="action.customComponent?.meta"
+            @callAction="(payload?) => startCustomAction(action.id, payload)"
+            :disabled="actionLoadingStates[action.id]"
+          >
+            <button 
+              :key="action.id"
+              :disabled="actionLoadingStates[action.id]"
+              class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+            >
+              <component 
+                v-if="action.icon" 
+                :is="getIcon(action.icon)" 
+                class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary"
+              />
+              {{ action.name }}
+            </button>
+          </component>
+        </template>
       </template>
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
@@ -144,6 +152,7 @@ import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const route = useRoute();
 const router = useRouter();
@@ -235,7 +244,7 @@ async function deleteRecord(row) {
     
 }
 
-async function startCustomAction(actionId) {  
+async function startCustomAction(actionId, extra) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -244,7 +253,8 @@ async function startCustomAction(actionId) {
     body: {
       resourceId: route.params.resourceId,
       actionId: actionId,
-      recordId: route.params.primaryKey
+      recordId: route.params.primaryKey,
+      extra: extra,
     }
   });
   
