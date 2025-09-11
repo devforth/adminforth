@@ -11,7 +11,7 @@ import tailwindcss from 'tailwindcss';
  * @param {number} startPort - The starting port to check.
  * @returns {Promise<number>} - A promise that resolves with the next available port.
  */
-async function getNextAvailablePort(startPort: any) {
+async function getNextAvailablePort(startPort: number | undefined) {
   return await portfinder.getPortPromise({ port: startPort });
 };
 

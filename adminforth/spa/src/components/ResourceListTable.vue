@@ -394,7 +394,7 @@ watch(() => props.rows, (newRows) => {
   columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: any) => el.offsetWidth)];
 });
 
-function addToCheckedValues(id: any) {
+function addToCheckedValues(id: string) {
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
