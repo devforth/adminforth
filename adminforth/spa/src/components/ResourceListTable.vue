@@ -390,8 +390,8 @@ const rowHeights = ref<number[]>([]);
 const columnWidths = ref<number[]>([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
-  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: any) => el.offsetHeight);
-  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: any) => el.offsetWidth)];
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
 });
 
 function addToCheckedValues(id: string) {
