@@ -139,7 +139,7 @@ import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
-import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon } from '@/types/Common.js';
+import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -183,7 +183,7 @@ const groups = computed(() => {
   }
   const activeGroups: typeof fieldGroupType | [] = fieldGroupType ?? [];
 
-  return activeGroups.map((group: any) => ({
+  return activeGroups.map((group: FieldGroup) => ({
     ...group,
     columns: coreStore.resource?.columns.filter(
       col => group.columns.includes(col.name) && col.showIn?.show
