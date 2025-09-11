@@ -35,6 +35,10 @@ class FrontendAPI implements FrontendAPIInterface {
     refreshMenuBadges: () => void;
   }
 
+  public show: {
+    refresh(): void;
+  }
+
   closeUserMenuDropdown(): void {
     console.log('closeUserMenuDropdown')
   }
@@ -71,6 +75,12 @@ class FrontendAPI implements FrontendAPIInterface {
       setFilter: this.setListFilter.bind(this),
       updateFilter: this.updateListFilter.bind(this),
       clearFilters: this.clearListFilters.bind(this),
+    }
+
+    this.show = {
+      refresh: () => {
+        console.log('show.refresh')
+      }
     }
   }
 
