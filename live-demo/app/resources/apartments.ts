@@ -5,7 +5,10 @@ import TextCompletePlugin from '@adminforth/text-complete';
 import UploadPlugin from '@adminforth/upload';
 import { randomUUID } from 'crypto';
 import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
-
+import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
+import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
+import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
+import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
@@ -97,6 +100,15 @@ export default {
       }, // You can set to ['list', 'show'] if you wish to show path column in list and show views
     },
     {
+      name: 'processed_image',
+      showIn: {
+        list: false, 
+        show: true, 
+        edit: true, 
+        create: true
+      }, // You can set to ['list', 'show'] if you wish to show path column in list and show views
+    },
+    {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME ,
       allowMinMaxQuery: true,
@@ -132,6 +144,10 @@ export default {
       type: AdminForthDataTypes.RICHTEXT,
       sortable: false,
       showIn: ['show', 'edit', 'create', 'filter'],
+        components: {
+        list: "@/renderers/RichText.vue",
+        show: "@/renderers/RichText.vue",
+      }
     },
     {
       name: 'listed',
@@ -180,24 +196,25 @@ export default {
     }),
     new UploadPlugin({
       pathColumnName: 'apartment_image',
-      s3Bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
-      s3Region: 'eu-north-1', // ❗ Selected region
-      s3AccessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      s3SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      s3ACL: 'public-read',
+      storageAdapter: new AdminForthAdapterS3Storage({
+        bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
+        region: 'eu-north-1', // ❗ Selected region
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        s3ACL: 'public-read',
+      }),
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 5MB
-      s3Path: ({originalFilename, originalExtension, contentType}) => 
+      filePath: ({originalFilename, originalExtension, contentType}) => 
             `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
       // You can use next to change preview URLs (if it is image) in list and show views
       generation: {
-        provider: "openai-dall-e",
         countToGenerate: 2,
-        openAiOptions: {
+        adapter: new ImageGenerationAdapterOpenAI({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: "dall-e-3",
-          size: "1792x1024",
-          apiKey: process.env.OPENAI_API_KEY as string,
-        },
+        }),
+        outputSize: "1792x1024",
         fieldsForContext: ["title"],
         rateLimit: {
           limit: "2/1m",
@@ -206,10 +223,65 @@ export default {
         },
       },
       preview: {
-        showInList: true,
-        previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
+        maxShowWidth: "480px",
+        //previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
       }
-    })
+    }),
+    new UploadPlugin({
+      pathColumnName: 'processed_image',
+      storageAdapter: new AdminForthAdapterS3Storage({
+        bucket: 'demo-static.adminforth.dev', // ❗ Your bucket name
+        region: 'eu-north-1', // ❗ Selected region
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        s3ACL: 'public-read',
+      }),
+      allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+      maxFileSize: 1024 * 1024 * 20, // 5MB
+      filePath: ({originalFilename, originalExtension, contentType}) => 
+            `processed_aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
+      // You can use next to change preview URLs (if it is image) in list and show views
+      preview: {
+        maxShowWidth: "480px",
+      }
+    }),
+    new BulkAiFlowPlugin({
+      actionName: 'Process',
+      attachFiles: async ({ record }: { record: any }) => {
+        if (!record.apartment_image) {
+          return [];
+        }
+        return [`https://s3.eu-north-1.amazonaws.com/demo-static.adminforth.dev/${record.apartment_image}`];
+      },
+      visionAdapter: new AdminForthImageVisionAdapterOpenAi(
+        {
+          openAiApiKey:  process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4.1-mini',
+        }
+      ),
+      imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-image-1',
+      }),
+      fillFieldsFromImages: { 
+        'description': 'Describe what is in the image, also take into account that price is {{price}} and title is {{title}}', 
+        'square_meter': 'Try to guess what is the typical square of the apartment in square meters? If you do not know, just guess',
+      },
+      generateImages: {
+        processed_image: {
+          prompt: "Turn this image into a ghibli cartoon style",
+          outputSize: "1536x1024",
+          countToGenerate: 2,
+          rateLimit: '1/1m'
+        }
+      },
+      rateLimits:{
+        fillFieldsFromImages: "3/2m",
+        generateImages: "3/2m",
+        fillPlainFields: "3/2m",
+      },
+      isAllowedToSave: blockDemoUsers,
+    }),
   ],
   options: {
     listPageSize: 8,

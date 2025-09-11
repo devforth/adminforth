@@ -10,7 +10,6 @@
     <slot name="tooltip"></slot>
     <div class="tooltip-arrow" data-popper-arrow></div>
   </div>
-
 </template>
 
 <script setup lang="ts">

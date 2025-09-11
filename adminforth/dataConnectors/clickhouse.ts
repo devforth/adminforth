@@ -231,6 +231,12 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         const column = resource.dataSourceColumns.find((col) => col.name == field);
         let placeholder = `{f$?:${column._underlineType}}`;
         let operator = this.OperatorsMap[filter.operator];
+
+        if (column._underlineType.startsWith('Decimal')) {
+          field = `toDecimal64(${field}, 8)`;
+          placeholder = `toDecimal64({f$?:String}, 8)`;
+        }
+
         if ((filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) && column._underlineType == 'UUID') {
           placeholder = '{f$?:String}';
           field = `toString(${field})`;
