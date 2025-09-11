@@ -42,7 +42,7 @@ model apartments {
   listed            Boolean
   realtor_id        String?
 //diff-add
-  apartment_image         String?
+  apartment_image   String?
 }
 ```
 
@@ -73,6 +73,12 @@ Add column to `aparts` resource configuration:
 import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
 //diff-add
 import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai';
+//diff-add
+import UploadPlugin from '@adminforth/upload';
+//diff-add
+import { randomUUID } from 'crypto';
+//diff-add
+import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 
 export const admin = new AdminForth({
   ...
@@ -127,6 +133,12 @@ export const admin = new AdminForth({
       //diff-add
         attachFiles: async ({ record }: { record: any }) => {
       //diff-add
+        if (!record.apartment_image) {
+      //diff-add
+          return [];
+      //diff-add
+        }
+      //diff-add
           return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_image}`];
       //diff-add
         },
@@ -166,6 +178,7 @@ export const admin = new AdminForth({
 
 });
 ```
+> ⚠️ Make sure your attachFiles function returns a valid array of image URLs or an empty array. Returning anything else may cause an error.
 
 ## Usage
 1. Select fields you want to fill
@@ -177,3 +190,125 @@ export const admin = new AdminForth({
 ![alt text](Bulk-vision-2.png)
 6. Save changhes
 ![alt text](Bulk-vision-3.png)
+
+
+## Text-to-Text Processing
+This is the most basic plugin usage. You can connect any text completion adapter to fill one or several string/number/boolean fields from other fields.
+
+### Example: Translate Names to English
+Normalize user names by translating them from any language to English for internal processing.
+
+```ts
+import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt/index.js';
+
+// Add to your resource plugins array
+new BulkAiFlowPlugin({
+  actionName: 'Translate surnames',
+  textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+    model: 'gpt-4o',
+    expert: {
+      temperature: 0.7
+    }
+  }),
+  fillPlainFields: {
+    'full_name_en': 'Translate this name to English: {{users_full_name}}',
+  },
+}),
+```
+
+## Image-to-Text Analysis (Vision)
+Analyze images and extract information to fill text, number, enum, or boolean fields.
+
+### Example: Age Detection from Photos
+
+```ts
+import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai/index.js';
+
+// Add to your resource plugins array
+new BulkAiFlowPlugin({
+  actionName: 'Guess age',
+  visionAdapter: new AdminForthImageVisionAdapterOpenAi({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+    model: 'gpt-4.1-mini',
+  }),
+  fillFieldsFromImages: { 
+    'age': 'Analyze the image and estimate the age of the person. Return only a number.',
+  },
+  attachFiles: async ({ record }) => {
+    if (!record.image_url) {
+      return [];
+    }
+    return [`https://users-images.s3.eu-north-1.amazonaws.com/${record.image_url}`];
+  },
+}),
+```
+
+## Text-to-Image generation or image editing
+Generate new images based on existing data and/or images using AI image generation adapters.
+
+### Example: Creating Cartoon Avatars
+
+```ts
+import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai/index.js';
+
+// Add to your resource plugins array
+new BulkAiFlowPlugin({
+  actionName: 'Generate cartoon avatars',
+  imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
+    openAiApiKey: process.env.OPENAI_API_KEY as string,
+    model: 'gpt-image-1',
+  }),
+  attachFiles: async ({ record }) => {
+    if (!record.user_photo) {
+      return [];
+    }
+    return [`https://bulk-ai-flow-playground.s3.eu-north-1.amazonaws.com/${record.users_photo}`];
+  },
+  generateImages: {
+    users_avatar: {
+      prompt: 'Transform this photo into a cartoon-style avatar. Maintain the person\'s features but apply cartoon styling. Do not add text or logos.',
+      outputSize: '1024x1024',
+      countToGenerate: 2,
+      rateLimit: '3/1h'
+    },
+  },
+  bulkGenerationRateLimit: "1/1h"
+}),
+```
+
+## Rate Limiting and Best Practices
+
+- Use `rateLimit` for individual image generation operations and for the bulk image generation
+```ts
+  new BulkAiFlowPlugin({
+  ...
+
+  generateImages: {
+    users_avatar: {
+      ... //image re-generation limits
+      //diff-add
+      rateLimit: '1/5m' // one request per 5 minutes
+    }
+  },
+
+  ...
+
+  //diff-add
+  rateLimits: { // bulk generation limits
+  //diff-add
+    fillFieldsFromImages: "5/1d", // 5 requests per day
+  //diff-add
+    fillPlainFields: "3/1h",      // 3 requests per one hour
+  //diff-add
+    generateImages: "1/2m",       // 2 request per one minute
+  //diff-add
+  }
+
+  ...
+
+  })
+```
+
+- Consider using lower resolution (`512x512`) for faster generation and lower costs
+- Test prompts thoroughly before applying to large datasets

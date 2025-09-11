@@ -10,7 +10,7 @@
         ($route.name === item.path)
       }"
   >
-    <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons dark:text-darkSidebarIcons  transition duration-75  group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover" ></component>
+    <component v-if="item.icon" :is="getIcon(item.icon)" class="min-w-5 min-h-5 text-lightSidebarIcons dark:text-darkSidebarIcons  transition duration-75  group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover" ></component>
     <span class="text-ellipsis overflow-hidden ms-3">{{ item.label }}</span>
     <span v-if="item.badge"
     >

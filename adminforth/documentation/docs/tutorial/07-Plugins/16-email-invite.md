@@ -93,14 +93,25 @@ export default {
     },
   },
   plugins: [
+    //diff-add
     new EmailInvitePlugin({
+     //diff-add
       emailField: 'email',
+     //diff-add
+      passwordField: 'password_hash',
+     //diff-add
       sendFrom: 'noreply@yourapp.com',
+     //diff-add
       adapter: new EmailAdapterAwsSes({
+     //diff-add
         region: 'us-east-1',
+     //diff-add
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+     //diff-add
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+     //diff-add
       }),
+     //diff-add
     }),
   ],
 };
@@ -153,6 +164,7 @@ export default {
     new EmailInvitePlugin({
       emailField: 'email',
       sendFrom: 'noreply@yourapp.com',
+      passwordField: 'password_hash',
       adapter: new EmailAdapterAwsSes(/* ... */),
       //diff-add
       emailConfirmedField: 'email_confirmed', // Enable email confirmation
@@ -161,3 +173,37 @@ export default {
 };
 ```
 
+## Mailgun usage example
+If you want to use this plugin with Mailgun, first install it:
+
+```bash
+npm install @adminforth/email-adapter-mailgun
+```
+
+Then, in the adapter options, add:
+
+``` ts
+//diff-add
+import EmailAdapterMailgun from "@adminforth/email-adapter-mailgun";
+ 
+...
+
+  plugins: [
+    new EmailInvitePlugin({
+      emailField: 'email',
+      passwordField: 'password_hash',
+      sendFrom: 'noreply@yourapp.com',
+      //diff-add
+      adapter: new EmailAdapterMailgun({
+      //diff-add
+        apiKey: process.env.MAILGUN_API_KEY as string,
+      //diff-add
+        domain: process.env.MAILGUN_DOMAIN as string,
+      //diff-add
+        baseUrl: process.env.MAILGUN_REGION_URL as string,
+      //diff-add
+      }),
+    }),
+  ],
+
+```

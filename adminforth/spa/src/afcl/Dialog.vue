@@ -7,7 +7,7 @@
   </div>
   <Teleport to="body">
     <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
-      <div v-bind="$attrs" class="relative p-4 max-w-2xl max-h-full" :class="(typeof $attrs.class === 'string' && $attrs.class.includes('w-')) ? '' : 'w-full'">
+      <div v-bind="$attrs" class="relative p-4 max-w-2xl max-h-full" :class="($attrs.class as string)?.includes('w-') ? '' : 'w-full'">
         <!-- Modal content -->
         <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
           <!-- Modal header -->
@@ -63,24 +63,31 @@ import { Modal } from 'flowbite';
 const modalEl = ref(null);
 const modal: Ref<Modal|null> = ref(null);
 
-const props = defineProps({
-  header: {
-    type: String,
-    default: '',
-  },
-  headerCloseButton: {
-    type: Boolean,
-    default: true,
-  },
-  buttons: {
-    type: Array as () => Array<{label: string, onclick: (dialog: any) => void, type: string, options?: Record<string, any>}>,
-    default: () => [{ label: 'Close', onclick: (dialog: any) => dialog.hide(), type: '' }],
-  },
-  clickToCloseOutside: {
-    type: Boolean,
-    default: true,
-  },
-});
+interface DialogButton {
+  label: string
+  onclick: (dialog: any) => void
+  options?: Record<string, any> 
+}
+
+interface DialogProps {
+  header?: string
+  headerCloseButton?: boolean
+  buttons?: DialogButton[]
+  clickToCloseOutside?: boolean
+  beforeCloseFunction?: (() => void | Promise<void>) | null
+  beforeOpenFunction?: (() => void | Promise<void>) | null
+}
+
+const props = withDefaults(defineProps<DialogProps>(), {
+  header: '',
+  headerCloseButton: true,
+  buttons: () => [
+    { label: 'Close', onclick: (dialog: any) => dialog.hide(), type: '' },
+  ],
+  clickToCloseOutside: true,
+  beforeCloseFunction: null,
+  beforeOpenFunction: null,
+})
 
 onMounted(async () => {
   //await one tick when all is mounted
@@ -89,7 +96,17 @@ onMounted(async () => {
     modalEl.value,
     {
       backdrop: props.clickToCloseOutside ? 'dynamic' : 'static',
-    },
+      onHide: async () => {
+        if (props.beforeCloseFunction) {
+          await props.beforeCloseFunction();
+        }
+      },
+      onShow: async () => {
+        if (props.beforeOpenFunction) {
+          await props.beforeOpenFunction();
+        }
+      },
+    }
   );
 })
 

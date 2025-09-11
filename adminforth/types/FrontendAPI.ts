@@ -121,6 +121,14 @@ export interface FrontendAPIInterface {
         clearFilters(): void;
     }
 
+    show: {
+        /**
+         * Full refresh the current record on the show page. Loader may be shown during fetching.
+         * Fire-and-forget; you don't need to await it.
+         */
+        refresh(): void;
+    }
+
     menu: {
         /**
          * Refreshes the badges in the menu, by recalling the badge function for each menu item
