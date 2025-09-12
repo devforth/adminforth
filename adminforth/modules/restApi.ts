@@ -274,6 +274,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
+            sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,

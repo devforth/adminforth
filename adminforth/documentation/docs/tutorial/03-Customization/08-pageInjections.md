@@ -426,6 +426,7 @@ Also there are:
 
 * `config.customization.globalInjections.header`
 * `config.customization.globalInjections.sidebar`
+* `config.customization.globalInjections.sidebarTop` — renders inline at the very top of the sidebar, on the same row with the logo/brand name. If the logo is hidden via `showBrandLogoInSidebar: false`, this area expands to the whole row width.
 * `config.customization.globalInjections.everyPageBottom`
 
 Unlike `userMenu`, `header` and `sidebar` injections, `everyPageBottom` will be added to the bottom of every page even when user is not logged in.
@@ -470,3 +471,22 @@ onMounted(() => {
 });
 </script>
 ```
+
+## Sidebar Top Injection
+
+You can place compact controls on the very top line of the sidebar, next to the logo/brand name:
+
+```ts title="/index.ts"
+new AdminForth({
+  ...
+  customization: {
+    globalInjections: {
+      sidebarTop: [
+        '@@/QuickSwitch.vue',
+      ],
+    }
+  }
+})
+```
+
+If you hide the logo with `showBrandLogoInSidebar: false`, components injected via `sidebarTop` will take the whole line width.
