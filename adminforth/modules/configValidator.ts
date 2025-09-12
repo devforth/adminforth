@@ -177,6 +177,9 @@ export default class ConfigValidator implements IConfigValidator {
     if (customization.showBrandNameInSidebar === undefined) {
       customization.showBrandNameInSidebar = true;
     }
+    if (customization.showBrandLogoInSidebar === undefined) {
+      customization.showBrandLogoInSidebar = true;
+    }
     if (customization.favicon) {
       errors.push(...this.checkCustomFileExists(customization.favicon));
     }

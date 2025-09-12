@@ -363,6 +363,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
+          showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
           brandLogo: this.adminforth.config.customization.brandLogo,
           datesFormat: this.adminforth.config.customization.datesFormat,
           timeFormat: this.adminforth.config.customization.timeFormat,

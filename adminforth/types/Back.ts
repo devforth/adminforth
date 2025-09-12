@@ -648,6 +648,12 @@ interface AdminForthInputConfigCustomization {
   showBrandNameInSidebar?: boolean,
 
   /**
+   * Whether to show brand logo in sidebar
+   * default is true
+   */
+  showBrandLogoInSidebar?: boolean,
+
+  /**
    * Path to your app logo
    * 
    * Example:
