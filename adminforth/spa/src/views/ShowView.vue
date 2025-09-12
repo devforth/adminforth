@@ -10,12 +10,12 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
-      <template v-if="coreStore.resource?.options?.bulkActions">
+      <template v-if="coreStore.resource?.options?.actions">
         <button 
-          v-for="action in coreStore.resource.options.bulkActions.filter(a => a.showIn?.showButton)" 
+          v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" 
           :key="action.id"
           @click="startCustomAction(action.id)"
-          :disabled="actionLoadingStates[action.id]"
+          :disabled="actionLoadingStates[action.id!]"
           class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
         >
           <component 
@@ -49,12 +49,8 @@
       </button>
 
       <ThreeDotsMenu 
-      :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems)
-        ? coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems
-        : coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems
-          ? [coreStore.resourceOptions.pageInjections.show.threeDotsDropdownItems]
-          : undefined"
-      :customActions="customActions"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
+        :customActions="customActions"
       ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
@@ -80,7 +76,7 @@
       v-else-if="coreStore.record"
       class="relative w-full flex flex-col gap-4"
     >
-    <div v-if="!groups.length && allColumns.length">
+    <div v-if="!groups.length && allColumns?.length">
       <ShowTable
         :resource="coreStore.resource"
         :record="coreStore.record"
@@ -97,7 +93,7 @@
           :record="coreStore.record"
         />
       </template>
-      <template v-if="otherColumns.length > 0">
+      <template v-if="otherColumns && otherColumns.length > 0">
         <ShowTable
           groupName="Other Fields"
           :resource="coreStore.resource"
@@ -143,7 +139,7 @@ import ShowTable from '@/components/ShowTable.vue';
 import adminforth from "@/adminforth";
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -151,62 +147,65 @@ const loading = ref(true);
 const { t } = useI18n();
 const coreStore = useCoreStore();
 
-const actionLoadingStates = ref({});
+const actionLoadingStates = ref<Record<string, boolean>>({});
 
 const customActions = computed(() => {
-  return coreStore.resource?.options?.actions?.filter(a => a.showIn?.showThreeDotsMenu) || [];
+  return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
 });
 
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string,
   });
   initThreeDotsDropdown();
   await coreStore.fetchRecord({
-    resourceId: route.params.resourceId, 
-    primaryKey: route.params.primaryKey,
+    resourceId: route.params.resourceId as string, 
+    primaryKey: route.params.primaryKey as string,
     source: 'show',
   });
-  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
+  if(coreStore.resourceOptions){
+    checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
+  }
   loading.value = false;
 });
 
 const groups = computed(() => {
   let fieldGroupType;
-  if (coreStore.resource.options?.showFieldGroups) {
-    fieldGroupType = coreStore.resource.options.showFieldGroups;
-  } else if (coreStore.resource.options?.showFieldGroups === null) {
-    fieldGroupType = [];
-  } else {
-    fieldGroupType = coreStore.resource.options?.fieldGroups;
+  if (coreStore.resource) {
+    if (coreStore.resource.options?.showFieldGroups) {
+      fieldGroupType = coreStore.resource.options.showFieldGroups;
+    } else if (coreStore.resource.options?.showFieldGroups === null) {
+      fieldGroupType = [];
+    } else {
+      fieldGroupType = coreStore.resource.options?.fieldGroups;
+    }
   }
+  const activeGroups: typeof fieldGroupType | [] = fieldGroupType ?? [];
 
-  const activeGroups = fieldGroupType ?? [];
-
-  return activeGroups.map(group => ({
+  return activeGroups.map((group: FieldGroup) => ({
     ...group,
-    columns: coreStore.resource.columns.filter(
-      col => group.columns.includes(col.name) && col.showIn.show
+    columns: coreStore.resource?.columns.filter(
+      col => group.columns.includes(col.name) && col.showIn?.show
     ),
   }));
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource.columns.filter(col => col.showIn.show);
+  return coreStore.resource?.columns.filter(col => col.showIn?.show);
 });
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
-    groups.value.flatMap(group => group.columns.map(col => col.name))
+    groups.value.flatMap(group => group.columns.map((col: AdminForthResourceColumnCommon) => col.name))
   );
 
-  return coreStore.resource.columns.filter(
-    col => !groupedColumnNames.has(col.name) && col.showIn.show
+  return coreStore.resource?.columns.filter(
+    col => !groupedColumnNames.has(col.name) && col.showIn?.show
   );
 });
 
-async function deleteRecord(row) {
+async function deleteRecord() {
   const data = await adminforth.confirm({
     message: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
@@ -235,7 +234,7 @@ async function deleteRecord(row) {
     
 }
 
-async function startCustomAction(actionId) {  
+async function startCustomAction(actionId: string) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -267,8 +266,8 @@ async function startCustomAction(actionId) {
   
   if (data?.ok) {
     await coreStore.fetchRecord({
-      resourceId: route.params.resourceId, 
-      primaryKey: route.params.primaryKey,
+      resourceId: route.params.resourceId as string, 
+      primaryKey: route.params.primaryKey as string,
       source: 'show',
     });
 

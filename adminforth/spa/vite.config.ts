@@ -11,7 +11,7 @@ import tailwindcss from 'tailwindcss';
  * @param {number} startPort - The starting port to check.
  * @returns {Promise<number>} - A promise that resolves with the next available port.
  */
-async function getNextAvailablePort(startPort) {
+async function getNextAvailablePort(startPort: number | undefined) {
   return await portfinder.getPortPromise({ port: startPort });
 };
 
@@ -41,7 +41,7 @@ function ignoreTailwindErrors(): Plugin {
               Once(root, helpers) {
                 try {
                   return tailwindcss()(root, helpers);
-                } catch (error) {
+                } catch (error: any) {
                   console.warn('TailwindCSS warning ignored:', error.message);
                   return;
                 }
@@ -69,7 +69,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    // ignoreTailwindErrors(),
+    ignoreTailwindErrors(),
     vue(),
   ],
   resolve: {

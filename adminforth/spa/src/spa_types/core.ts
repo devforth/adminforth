@@ -1,4 +1,4 @@
-import type { AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig';
+import type { AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
 
 export type resourceById = {
     [key: string]: AdminForthResource;

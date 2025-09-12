@@ -18,7 +18,7 @@
 <script setup lang="ts">
 
 const props = defineProps<{
-  disabled: boolean,
+  disabled?: boolean,
   to: string,
 }>();
 
