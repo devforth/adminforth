@@ -1074,6 +1074,7 @@ export interface AdminForthConfigForFrontend {
   },
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
+  showBrandLogoInSidebar: boolean,
   brandLogo?: string,
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
