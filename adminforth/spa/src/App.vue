@@ -85,6 +85,14 @@
           >
             {{ coreStore.config?.brandName }}
           </span>
+          <div class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
+            <component 
+              v-for="c in coreStore?.config?.globalInjections?.sidebarTop || []"
+              :is="getCustomComponent(c)"
+              :meta="c.meta"
+              :adminUser="coreStore.adminUser"
+            />
+          </div>
         </div>
 
         <ul class="af-sidebar-container space-y-2 font-medium">

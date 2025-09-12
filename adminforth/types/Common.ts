@@ -1085,6 +1085,7 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
   customHeadItems?: {
