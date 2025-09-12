@@ -272,7 +272,7 @@ export default {
         processed_image: {
           prompt: "Turn this image into a ghibli cartoon style",
           outputSize: "1536x1024",
-          countToGenerate: 2,
+          countToGenerate: 1,
           rateLimit: '1/1m'
         }
       },
