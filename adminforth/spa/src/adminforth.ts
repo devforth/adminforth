@@ -1,6 +1,5 @@
-import type { FilterParams, FrontendAPIInterface } from "./types/FrontendAPI";
-import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '@/types/FrontendAPI';
-import type { AdminForthFilterOperators, AdminForthResourceColumn } from '@/types/Common';
+import type { FilterParams, FrontendAPIInterface, ConfirmParams, AlertParams, } from '@/types/FrontendAPI';
+import type { AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
 import { useToastStore } from '@/stores/toast';
 import { useModalStore } from '@/stores/modal';
 import { useCoreStore } from '@/stores/core';
@@ -85,7 +84,7 @@ class FrontendAPI implements FrontendAPIInterface {
     }
   }
 
-  confirm(params: ConfirmParams): Promise<void> {
+  confirm(params: ConfirmParams): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.modalStore.setModalContent({ 
         content: params.message, 
@@ -112,7 +111,7 @@ class FrontendAPI implements FrontendAPIInterface {
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
     } else {
       console.log(this.coreStore.resourceColumnsWithFilters,'core store')
-      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumn) => col.name === filter.field)
+      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumnCommon) => col.name === filter.field)
       if(!filterField){
           throw new Error(`Field ${filter.field} is not available for filtering`)
       }
@@ -123,7 +122,7 @@ class FrontendAPI implements FrontendAPIInterface {
 
   setListFilter(filter: FilterParams): void {
     if(this.listFilterValidation(filter)){
-      if(this.filtersStore.filters.some((f) => {return f.field === filter.field && f.operator === filter.operator})){
+      if(this.filtersStore.filters.some((f: any) => {return f.field === filter.field && f.operator === filter.operator})){
         throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
       } else {
       this.filtersStore.setFilter(filter)
