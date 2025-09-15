@@ -99,7 +99,7 @@
 
   const totalPages = computed(() => {
     if (typeof props.data === 'function') {
-      return recievedTotalPages.value;
+      return Math.ceil(recievedTotalPages.value / props.pageSize);
     };
     return Math.ceil(props.data.length / props.pageSize);
   });
