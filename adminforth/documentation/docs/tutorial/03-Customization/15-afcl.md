@@ -836,11 +836,14 @@ To load pages dynamically, simply pass async callback to data:
 ```ts
 async function loadPageData(offset, limit) {  
     // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
-    return [
+  return {
+    data: [
       { name: 'John', age: offset, country: 'US' },
       { name: 'Rick', age: offset+1, country: 'CA' },
       { name: 'Alice', age: offset+2, country: 'BR' },
-   ]
+    ],
+    total: 3 // should return total amount of records in database
+  }
 }
 
 <Table
