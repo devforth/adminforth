@@ -225,7 +225,7 @@ export default {
       },
       preview: {
         maxShowWidth: "480px",
-        //previewUrl: ({s3Path}) => `https://demo-static.adminforth.dev/${s3Path}`,
+        previewUrl: ({filePath}) => `https://demo-static.adminforth.dev/${filePath}`, 
       }
     }),
     new UploadPlugin({
@@ -244,6 +244,7 @@ export default {
       // You can use next to change preview URLs (if it is image) in list and show views
       preview: {
         maxShowWidth: "480px",
+        previewUrl: ({filePath}) => `https://demo-static.adminforth.dev/${filePath}`, 
       }
     }),
     new BulkAiFlowPlugin({

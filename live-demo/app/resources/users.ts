@@ -20,7 +20,6 @@ export default {
       modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
         // hide column 'square_meter' from both 'list' and 'filter'
         const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
-        resourceConfig.options!.listPageSize = 1;
         // feel free to console.log and edit resourceConfig as you need
       },
     }),
