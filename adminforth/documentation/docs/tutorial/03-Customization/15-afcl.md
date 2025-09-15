@@ -797,7 +797,7 @@ const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.f
 
 
 
-## Pagination
+### Pagination
 
 Table provides front-end side pagination. You can set `pageSize` (default is 10) to set how many rows to show per page.
 If there is less then `pageSize` rows, pagination will not be shown.
@@ -829,6 +829,33 @@ If there is less then `pageSize` rows, pagination will not be shown.
   </div>
 </div>
 
+### Server-side pagination
+
+To load pages dynamically, simply pass async callback to data:
+
+```ts
+async function loadPageData(offset, limit) {  
+    // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+    return [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+   ]
+}
+
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+//diff-remove
+  :data="[...] 
+//diff-add
+  :data="loadPageData"
+
+  :pageSize="3"
+```
 
 ## ProgressBar
 
