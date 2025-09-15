@@ -31,11 +31,7 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems) 
-          ? coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems 
-          : coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems 
-            ? [coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems] 
-            : []"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems as [])"
       ></ThreeDotsMenu>
 
     </BreadcrumbsWithButtons>
