@@ -1,7 +1,7 @@
 <template>
   <Tooltip>
     <span class="flex items-center">
-      {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="w-5 h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>
+      {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="min-w-5 min-h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>
     </span>
     <template #tooltip v-if="visualValue">
       {{ props.record[props.column.name] }}
