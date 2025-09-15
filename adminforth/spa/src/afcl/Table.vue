@@ -66,24 +66,6 @@
       </li>
     </ul>
   </nav>
-  <nav v-if="typeof(props.data)==='function'" class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground flex items-center flex-column flex-wrap md:flex-row justify-between p-4" 
-    :aria-label="$t('Table navigation')">
-    <i18n-t 
-      keypath="Showing page {from}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-lightTablePaginationText dark:text-darkTablePaginationText mb-4 md:mb-0 block w-full md:inline md:w-auto"
-    >
-      <template #from><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{currentPage}}</span></template>
-    </i18n-t>
-    <div>
-      <button 
-        @click="switchPage(Math.max(1, currentPage - 1))"
-        class="afcl-table-pagination-button rounded-s-lg p-2 ms-0 text-blue-600 bg-lightActivePaginationButtonBackground border border-lightActivePaginationButtonBackground text-lightActivePaginationButtonText dark:bg-darkActivePaginationButtonBackground dark:border-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText hover:opacity-90"
-      > <IconArrowLeftOutline /> </button>
-      <button 
-        @click="switchPage(currentPage + 1)"
-        class="afcl-table-pagination-button rounded-e-lg p-2 text-lightUnactivePaginationButtonText border bg-lightUnactivePaginationButtonBackground border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:border-darkUnactivePaginationButtonBorder dark:text-darkUnactivePaginationButtonText dark:hover:bg-darkUnactivePaginationButtonHoverBackground dark:hover:text-darkUnactivePaginationButtonHoverText"
-      > <IconArrowRightOutline /> </button>
-    </div>
-  </nav>
 </div>
 
 
@@ -103,7 +85,7 @@
       }[],
       data: {
         [key: string]: any,
-      }[] | ((offset: number, limit: number) => Promise<{ [key: string]: any }[]>),
+      }[] | ((offset: number, limit: number) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
     }>(), {
@@ -113,9 +95,12 @@
   );
 
   const currentPage = ref(1);
+  const recievedTotalPages = ref(1);
 
   const totalPages = computed(() => {
-    if (typeof props.data === 'function') {};
+    if (typeof props.data === 'function') {
+      return recievedTotalPages.value;
+    };
     return Math.ceil(props.data.length / props.pageSize);
   });
 
@@ -124,7 +109,8 @@
     const end = start + props.pageSize;
     if (typeof props.data === 'function') {
       const res = await props.data(currentPage.value, props.pageSize);
-      return res;
+      recievedTotalPages.value = res.total;
+      return res.data;
     }
     return props.data.slice(start, end);
   });
