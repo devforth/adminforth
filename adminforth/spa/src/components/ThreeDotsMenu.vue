@@ -14,14 +14,15 @@
       id="listThreeDotsDropdown" 
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
-          <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.label}`">
+          <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">            
             <a  href="#" 
               class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
               :class="{
                 'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
-              }">
+              }"
+              @click="handleThreeDotsItemClick(i)">
               <component :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
@@ -29,6 +30,7 @@
                 :checkboxes="checkboxes"
                 :updateList="props.updateList"
                 :clearCheckboxes="clearCheckboxes"
+                :isClicked="threeDotsDropdownItemsClicks[i]"
               />
             </a>
           </li>
@@ -74,6 +76,7 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 const route = useRoute();
 const coreStore = useCoreStore();
@@ -93,6 +96,22 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['startBulkAction']);
+
+const threeDotsDropdownItemsClicks = ref({});
+
+function handleThreeDotsItemClick(i: number) {
+  threeDotsDropdownItemsClicks.value = {
+    ...threeDotsDropdownItemsClicks.value,
+    [i]: true
+  };
+  
+  setTimeout(() => {
+    threeDotsDropdownItemsClicks.value = {
+      ...threeDotsDropdownItemsClicks.value,
+      [i]: false
+    };
+  }, 200);
+}
 
 async function handleActionClick(action) {
   adminforth.list.closeThreeDotsDropdown();
