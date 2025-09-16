@@ -35,7 +35,7 @@
               {{ item[column.fieldName] }}
             </span>
             <div v-else>
-              <div class="h-5 w-full">
+              <div class=" w-full">
                 <Skeleton class="h-4" />
               </div>
             </div>
@@ -43,33 +43,66 @@
         </tr>
       </tbody>
   </table>
-  <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground flex items-center flex-column flex-wrap md:flex-row justify-between p-4" 
+  <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground flex items-center flex-col flex-wrap justify-between px-4 pb-4" 
     v-if="totalPages > 1"
     :aria-label="$t('Table navigation')">
+  <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
+    <div class="af-pagination-buttons-container inline-flex">
+        <!-- Buttons -->
+        <button
+          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          @click="currentPage--; pageInput = currentPage.toString();" :disabled="currentPage <= 1">
+          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 14 10">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 5H1m0 0 4 4M1 5l4-4"/>
+          </svg>
+          <span class="hidden sm:inline">
+            {{ $t('Prev') }}
+          </span>
+        </button>
+        <button
+          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          @click="switchPage(1); pageInput = currentPage.toString();" :disabled="currentPage <= 1">
+          <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
+          1
+        </button>
+        <div
+          contenteditable="true" 
+          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
+          @keydown="onPageKeydown($event)"
+          @input="onPageInput($event)"
+          @blur="validatePageInput()"
+        >
+          {{ pageInput }}
+        </div>
+
+        <button
+          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          @click="currentPage = totalPages; pageInput = currentPage.toString();" :disabled="currentPage >= totalPages">
+          {{ totalPages }}
+
+          <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
+        </button>
+        <button
+          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+          @click="currentPage++; pageInput = currentPage.toString();" :disabled="currentPage >= totalPages">
+          <span class="hidden sm:inline">{{ $t('Next') }}</span>
+          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 14 10">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M1 5h12m0 0L9 1m4 4L9 9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
     <i18n-t 
-      keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-lightTablePaginationText dark:text-darkTablePaginationText mb-4 md:mb-0 block w-full md:inline md:w-auto"
+      keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text mt-2 text-sm font-normal text-lightTablePaginationText dark:text-darkTablePaginationText mb-4 md:mb-0 block w-full md:inline md:w-auto"
     >
       <template #from><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min((currentPage - 1) * props.pageSize + 1, dataResult.total) }}</span></template>
       <template #to><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min(currentPage * props.pageSize, dataResult.total) }}</span></template>
       <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ dataResult.total }}</span></template>
     </i18n-t>
-
-    <ul class="afcl-table-pagination-list inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
-      <li v-for="page in totalPages" :key="page">
-        <a href="#" 
-          @click.prevent="switchPage(page)"
-          :aria-current="page === page ? 'page' : undefined"
-          :class='{
-            "afcl-table-pagination-button text-blue-600 bg-lightActivePaginationButtonBackground text-lightActivePaginationButtonText dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText hover:opacity-90": page === currentPage,
-            "text-lightUnactivePaginationButtonText border bg-lightUnactivePaginationButtonBackground border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:border-darkUnactivePaginationButtonBorder dark:text-darkUnactivePaginationButtonText dark:hover:bg-darkUnactivePaginationButtonHoverBackground dark:hover:text-darkUnactivePaginationButtonHoverText": page !== currentPage,
-            "rounded-s-lg ms-0": page === 1,
-            "rounded-e-lg": page === totalPages,
-          }'
-          class="flex items-center justify-center px-3 h-8 leading-tight ">
-          {{ page }}
-        </a>
-      </li>
-    </ul>
   </nav>
 </div>
 
@@ -101,6 +134,7 @@
 
   const currentPage = ref(1);
   const isLoading = ref(false);
+  const pageInput = ref('1');
 
   const dataResult = asyncComputed( async() => {
     if (typeof props.data === 'function') {
@@ -130,5 +164,28 @@
     'update:activeTab',
   ]);
   
+  function onPageInput(event: any) {
+    pageInput.value = event.target.innerText;
+  }
+
+  function validatePageInput() {
+    const newPage = parseInt(pageInput.value) || 1;
+    const validPage = Math.max(1, Math.min(newPage, totalPages.value));
+    currentPage.value = validPage;
+    pageInput.value = validPage.toString();
+  }
+
+  async function onPageKeydown(event: any) {
+    // page input should accept only numbers, arrow keys and backspace
+    if (['Enter', 'Space'].includes(event.code) ||
+      (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
+      && isNaN(String.fromCharCode(event.keyCode)))) {
+      event.preventDefault();
+      if (event.code === 'Enter') {
+        validatePageInput();
+        event.target.blur();
+      }
+    }
+  }
 
 </script>
