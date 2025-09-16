@@ -171,7 +171,7 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
 
 ```html title="./custom/CustomLoginFooter.vue"
 <template>
-  <div class="text-center text-gray-500 text-sm mt-4">
+  <div class="text-center text-gray-500 text-sm mt-4 px-4 py-2">
     {{$t('By logging in, you agree to our')}} <a href="#" class="text-blue-500">{{$t('Terms of Service')}}</a> {{$t('and')}} <a href="#" class="text-blue-500">{{$t('Privacy Policy')}}</a>
   </div>
 </template>
