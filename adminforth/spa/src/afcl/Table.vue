@@ -31,9 +31,14 @@
               :item="item" :column="column"
             >
             </slot>
-            <span v-else>
+            <span v-else-if="!isLoading" >
               {{ item[column.fieldName] }}
             </span>
+            <div v-else>
+              <div class="h-5 w-full">
+                <Skeleton class="h-4" />
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -75,7 +80,7 @@
 <script setup lang="ts">
   import { ref, type Ref, computed } from 'vue';
   import { asyncComputed } from '@vueuse/core';
-  import { IconArrowRightOutline, IconArrowLeftOutline } from '@iconify-prerendered/vue-flowbite';
+  import { Skeleton } from '@/afcl';
 
   const props = withDefaults(
     defineProps<{
@@ -95,10 +100,14 @@
   );
 
   const currentPage = ref(1);
+  const isLoading = ref(false);
 
   const dataResult = asyncComputed( async() => {
     if (typeof props.data === 'function') {
-      return await props.data(currentPage.value, props.pageSize);
+      isLoading.value = true;
+      const result = await props.data(currentPage.value, props.pageSize);
+      isLoading.value = false;
+      return result;
     }
     const start = (currentPage.value - 1) * props.pageSize;
     const end = start + props.pageSize;
