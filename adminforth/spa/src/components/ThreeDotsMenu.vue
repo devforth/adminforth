@@ -21,8 +21,9 @@
                 'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
-              }">
-              <component :is="getCustomComponent(item)" 
+              }"
+              @click="injectedComponentClick(i)">
+              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
@@ -75,10 +76,12 @@ import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import type { AdminForthComponentDeclarationFull, AdminForthBulkActionCommon, AdminForthActionInput } from '@/types/Common.js';
+import { ref, type ComponentPublicInstance } from 'vue';
 
 const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
+const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -94,6 +97,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['startBulkAction']);
+
+function setComponentRef(el: ComponentPublicInstance | null, index: number) {
+  if (el) {
+    threeDotsDropdownItemsRefs.value[index] = el;
+  }
+}
 
 async function handleActionClick(action: AdminForthActionInput) {
   adminforth.list.closeThreeDotsDropdown();
@@ -150,5 +159,12 @@ async function handleActionClick(action: AdminForthActionInput) {
 function startBulkAction(actionId: string) {
   adminforth.list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
+}
+
+async function injectedComponentClick(index: number) {
+  const componentRef = threeDotsDropdownItemsRefs.value[index];
+  if (componentRef && 'click' in componentRef) {
+    (componentRef as any).click?.();
+  }
 }
 </script>
