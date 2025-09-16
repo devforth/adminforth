@@ -44,9 +44,9 @@
     <i18n-t 
       keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-lightTablePaginationText dark:text-darkTablePaginationText mb-4 md:mb-0 block w-full md:inline md:w-auto"
     >
-      <template #from><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min((currentPage - 1) * props.pageSize + 1, props.data.length) }}</span></template>
-      <template #to><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min(currentPage * props.pageSize, props.data.length) }}</span></template>
-      <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ props.data.length }}</span></template>
+      <template #from><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min((currentPage - 1) * props.pageSize + 1, dataResult.total) }}</span></template>
+      <template #to><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ Math.min(currentPage * props.pageSize, dataResult.total) }}</span></template>
+      <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ dataResult.total }}</span></template>
     </i18n-t>
 
     <ul class="afcl-table-pagination-list inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
@@ -74,6 +74,8 @@
 
 <script setup lang="ts">
   import { ref, type Ref, computed } from 'vue';
+  import { asyncComputed } from '@vueuse/core';
+  import { IconArrowRightOutline, IconArrowLeftOutline } from '@iconify-prerendered/vue-flowbite';
 
   const props = withDefaults(
     defineProps<{
@@ -83,7 +85,7 @@
       }[],
       data: {
         [key: string]: any,
-      }[],
+      }[] | ((offset: number, limit: number) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
     }>(), {
@@ -94,14 +96,21 @@
 
   const currentPage = ref(1);
 
-  const totalPages = computed(() => {
-    return Math.ceil(props.data.length / props.pageSize);
-  });
-
-  const dataPage = computed(() => {
+  const dataResult = asyncComputed( async() => {
+    if (typeof props.data === 'function') {
+      return await props.data(currentPage.value, props.pageSize);
+    }
     const start = (currentPage.value - 1) * props.pageSize;
     const end = start + props.pageSize;
-    return props.data.slice(start, end);
+    return { data: props.data.slice(start, end), total: props.data.length };
+  });
+
+  const totalPages = computed(() => {
+    return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
+  });
+
+  const dataPage = asyncComputed( async() => {
+    return dataResult.value.data;
   });
 
   function switchPage(p: number) {
