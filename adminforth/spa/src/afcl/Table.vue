@@ -4,7 +4,7 @@
   <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText">
       <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
         <tr>
-          <th scope="col" class="px-6 py-3"
+          <th scope="col" class="px-6 py-3" ref="headerRefs"
             v-for="column in columns"
           >
             <slot v-if="$slots[`header:${column.fieldName}`]" :name="`header:${column.fieldName}`" :column="column" />
@@ -26,6 +26,7 @@
         <tr
           v-else="!isLoading"
           v-for="(item, index) in dataPage"
+          ref="rowRefs"
           :class="{
             'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
             'border-b border-lightTableBorder dark:border-darkTableBorder': index !== dataPage.length - 1 || totalPages > 1,
@@ -115,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, type Ref, computed, useTemplateRef, watch } from 'vue';
+  import { ref, type Ref, computed, useTemplateRef, watch, nextTick } from 'vue';
   import { asyncComputed } from '@vueuse/core';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
@@ -143,11 +144,6 @@
   const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
   const rowHeights = ref<number[]>([]);
   const columnWidths = ref<number[]>([]);
-  watch(() => props.pageSize, (newRows) => {
-  // rows are set to null when new records are loading
-  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
-  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
-});
 
   const dataResult = asyncComputed( async() => {
     if (typeof props.data === 'function') {
@@ -160,6 +156,13 @@
     const end = start + props.pageSize;
     return { data: props.data.slice(start, end), total: props.data.length };
   });
+
+  watch(() => currentPage.value, () => {
+    // rows are set to null when new records are loading
+    rowHeights.value = !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
+    columnWidths.value = !headerRefs.value ? [] : headerRefs.value.map((el: HTMLElement) => el.offsetWidth);
+  });
+
 
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
