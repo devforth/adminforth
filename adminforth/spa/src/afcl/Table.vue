@@ -16,7 +16,15 @@
         </tr>
       </thead>
       <tbody>
+        <SkeleteLoader 
+          v-if="isLoading" 
+          :rows="pageSize" 
+          :columns="columns.length" 
+          :row-heights="rowHeights"
+          :column-widths="columnWidths"
+        />
         <tr
+          v-else="!isLoading"
           v-for="(item, index) in dataPage"
           :class="{
             'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
@@ -111,9 +119,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, type Ref, computed } from 'vue';
+  import { ref, type Ref, computed, useTemplateRef, watch } from 'vue';
   import { asyncComputed } from '@vueuse/core';
-  import { Skeleton } from '@/afcl';
+  import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -135,6 +143,15 @@
   const currentPage = ref(1);
   const isLoading = ref(false);
   const pageInput = ref('1');
+  const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
+  const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
+  const rowHeights = ref<number[]>([]);
+  const columnWidths = ref<number[]>([]);
+  watch(() => props.pageSize, (newRows) => {
+  // rows are set to null when new records are loading
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
+});
 
   const dataResult = asyncComputed( async() => {
     if (typeof props.data === 'function') {
@@ -179,7 +196,7 @@
     // page input should accept only numbers, arrow keys and backspace
     if (['Enter', 'Space'].includes(event.code) ||
       (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
-      && isNaN(String.fromCharCode(event.keyCode)))) {
+      && isNaN(Number(String.fromCharCode(event.keyCode || 0))))) {
       event.preventDefault();
       if (event.code === 'Enter') {
         validatePageInput();
