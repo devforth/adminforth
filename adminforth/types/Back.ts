@@ -1164,6 +1164,9 @@ export class Filters {
   static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
   }
+  static ILIKE(field: string, value: any): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.ILIKE, value };
+  }
   static AND(
     ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
   ): IAdminForthAndOrFilter {
