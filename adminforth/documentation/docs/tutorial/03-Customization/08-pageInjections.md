@@ -277,7 +277,7 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 ```html title="./custom/CheckReadingTime.vue"
 <template>
   <div class="text-gray-500 text-sm">
-    <div @click="checkReadingTime" class="cursor-pointer flex gap-2 items-center">
+    <div class="cursor-pointer flex gap-2 items-center">
       Check reading time
     </div>
   </div>
@@ -286,6 +286,10 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 <script setup>
 import { getReadingTime} from "text-analyzer";
 import adminforth from '@/adminforth';
+
+defineExpose({
+  click,
+});
 
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
@@ -298,6 +302,11 @@ function checkReadingTime() {
   }
   adminforth.list.closeThreeDotsDropdown();
 }
+
+function click() {
+  checkReadingTime();
+}
+
 </script>
 ```
 
@@ -312,6 +321,7 @@ npm i text-analyzer
 
 > ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
+>☝️ Please note that the injected component might have an exposed click function as well as a defined click function, which executes the click on component logic.
 
 ## List table custom action icons
 
