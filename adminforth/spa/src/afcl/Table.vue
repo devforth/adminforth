@@ -116,9 +116,55 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, type Ref, computed, useTemplateRef, watch, nextTick } from 'vue';
-  import { asyncComputed } from '@vueuse/core';
+  import { ref, computed, useTemplateRef, watch, shallowRef, toRef } from 'vue';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
+
+  type Row = Record<string, unknown>
+  type LoadFn = (page: number, pageSize: number) => Promise<{ data: Row[]; total: number }>
+
+  const isFunc = (v: unknown): v is LoadFn => typeof v === 'function'
+
+  function usePagedData(props: {
+    data: Row[] | LoadFn
+    pageSize: number
+    currentPage: number
+  }) {
+    const page = ref(props.currentPage)
+    const pageSize = toRef(props, 'pageSize')
+
+    const isLoading = ref(false)
+    const error = shallowRef<unknown>(null)
+    const result = shallowRef<{ data: Row[]; total: number }>({ data: [], total: 0 })
+
+    let requestId = 0
+
+    async function fetchData() {
+      const id = ++requestId
+      isLoading.value = true
+      error.value = null
+      try {
+        if (isFunc(props.data)) {
+          const res = await props.data(page.value, pageSize.value)
+          if (id !== requestId) return
+          result.value = res
+        } else {
+          const start = (page.value - 1) * pageSize.value
+          const end = start + pageSize.value
+          result.value = { data: props.data.slice(start, end), total: props.data.length }
+        }
+      } catch (e) {
+        if (id !== requestId) return
+        error.value = e
+        result.value = { data: [], total: 0 }
+      } finally {
+        if (id === requestId) isLoading.value = false
+      }
+    }
+
+    watch([page, pageSize, () => props.data], fetchData, { immediate: true })
+
+    return { page, pageSize, isLoading, error, result, refresh: fetchData }
+  }
 
   const props = withDefaults(
     defineProps<{
@@ -137,43 +183,34 @@
     }
   );
 
-  const currentPage = ref(1);
-  const isLoading = ref(false);
+  const { result: dataResult, isLoading, error, page: currentPage, pageSize, refresh } = usePagedData({
+    data: props.data,
+    pageSize: props.pageSize,
+    currentPage: 1
+  });
+
   const pageInput = ref('1');
   const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
   const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
   const rowHeights = ref<number[]>([]);
   const columnWidths = ref<number[]>([]);
 
-  const dataResult = asyncComputed( async() => {
-    if (typeof props.data === 'function') {
-      isLoading.value = true;
-      const result = await props.data(currentPage.value, props.pageSize);
-      isLoading.value = false;
-      return result;
-    }
-    const start = (currentPage.value - 1) * props.pageSize;
-    const end = start + props.pageSize;
-    return { data: props.data.slice(start, end), total: props.data.length };
-  });
-
   watch(() => currentPage.value, () => {
-    // rows are set to null when new records are loading
     rowHeights.value = !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
     columnWidths.value = !headerRefs.value ? [] : headerRefs.value.map((el: HTMLElement) => el.offsetWidth);
   });
-
 
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
   });
 
-  const dataPage = asyncComputed( async() => {
+  const dataPage = computed(() => {
     return dataResult.value.data;
   });
 
   function switchPage(p: number) {
     currentPage.value = p;
+    pageInput.value = p.toString();
   }
 
   const emites = defineEmits([
@@ -190,6 +227,10 @@
     currentPage.value = validPage;
     pageInput.value = validPage.toString();
   }
+
+  watch(() => currentPage.value, (newPage) => {
+    pageInput.value = newPage.toString();
+  });
 
   async function onPageKeydown(event: any) {
     // page input should accept only numbers, arrow keys and backspace
