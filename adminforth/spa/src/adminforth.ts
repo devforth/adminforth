@@ -110,14 +110,15 @@ class FrontendAPI implements FrontendAPIInterface {
           onResolve: (value?: any) => resolve(String(value ?? '')),
         })
       })
+    } else {
+      this.toastStore.addToast({
+        message: params.message,
+        messageHtml: params.messageHtml,
+        variant: params.variant,
+        timeout: params.timeout,
+        buttons: params.buttons,  
+      })
     }
-    this.toastStore.addToast({
-      message: params.message,
-      messageHtml: params.messageHtml,
-      variant: params.variant,
-      timeout: params.timeout,
-      buttons: params.buttons,  
-    })
   }
 
   listFilterValidation(filter: FilterParams): boolean {

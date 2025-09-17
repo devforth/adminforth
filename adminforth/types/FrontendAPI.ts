@@ -183,7 +183,7 @@ export type AlertParams = {
     /**
      * Optional buttons to display in the alert
      */
-    buttons?: {value: any, label: string}[]
+    buttons?: {value: any, label: string}[];
 
 }
 
