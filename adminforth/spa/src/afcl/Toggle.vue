@@ -5,7 +5,7 @@
             value="" class="sr-only peer" 
             :disabled="props.disabled"
             :checked="props.modelValue"
-            @change="$emit('update:modelValue', $event.target.checked)"
+            @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
             > 
             <div class="afcl-toggle border border-lightToggleBorderUnactive relative min-w-11 min-h-6 bg-lightToggleBgUnactive peer-focus:outline-none peer-focus:ring-4 
                 peer-focus:ring-lightToggleRing dark:peer-focus:ring-darkToggleRing rounded-full peer dark:bg-darkToggleBgUnactive 

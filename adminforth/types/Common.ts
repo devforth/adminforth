@@ -1,4 +1,3 @@
-
 /**
  * Types that are common for both frontend side (SPA) and backend side (server).
  */
@@ -264,8 +263,16 @@ export interface AdminForthComponentDeclarationFull {
    */
   meta?: any,
 }
+import { type AdminForthActionInput } from './Back.js' 
+export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
+
+export type FieldGroup = {
+  groupName: string;
+  columns: string[];
+  noTitle?: boolean;
+};
 
 /**
  * Resource describes one table or collection in database.
@@ -348,6 +355,11 @@ export interface AdminForthResourceInputCommon {
         direction: AdminForthSortDirections | string,
       }
 
+      /*
+       * Custom actions list. Actions available in show, edit and create views. 
+       */
+      actions?: AdminForthActionInput[],
+      
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
@@ -375,26 +387,10 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Allows to make groups of columns in show, create and edit resource pages.
        */
-      fieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      createFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      editFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      showFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
+      fieldGroups?: FieldGroup[];
+      createFieldGroups?: FieldGroup[];
+      editFieldGroups?: FieldGroup[];
+      showFieldGroups?: FieldGroup[];
 
       /** 
        * Page size for list view
@@ -1074,6 +1070,7 @@ export interface AdminForthConfigForFrontend {
   },
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
+  showBrandLogoInSidebar: boolean,
   brandLogo?: string,
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
@@ -1090,6 +1087,7 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
   customHeadItems?: {

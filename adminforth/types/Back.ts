@@ -648,6 +648,12 @@ interface AdminForthInputConfigCustomization {
   showBrandNameInSidebar?: boolean,
 
   /**
+   * Whether to show brand logo in sidebar
+   * default is true
+   */
+  showBrandLogoInSidebar?: boolean,
+
+  /**
    * Path to your app logo
    * 
    * Example:
@@ -779,6 +785,7 @@ interface AdminForthInputConfigCustomization {
     userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    sidebarTop?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
@@ -1101,6 +1108,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
 
