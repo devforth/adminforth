@@ -98,7 +98,7 @@ export default {
      //diff-add
       emailField: 'email',
      //diff-add
-      passwordField: 'password_hash',
+      passwordField: 'password',
      //diff-add
       sendFrom: 'noreply@yourapp.com',
      //diff-add
@@ -164,7 +164,7 @@ export default {
     new EmailInvitePlugin({
       emailField: 'email',
       sendFrom: 'noreply@yourapp.com',
-      passwordField: 'password_hash',
+      passwordField: 'password',
       adapter: new EmailAdapterAwsSes(/* ... */),
       //diff-add
       emailConfirmedField: 'email_confirmed', // Enable email confirmation
@@ -191,7 +191,7 @@ import EmailAdapterMailgun from "@adminforth/email-adapter-mailgun";
   plugins: [
     new EmailInvitePlugin({
       emailField: 'email',
-      passwordField: 'password_hash',
+      passwordField: 'password',
       sendFrom: 'noreply@yourapp.com',
       //diff-add
       adapter: new EmailAdapterMailgun({

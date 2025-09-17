@@ -134,11 +134,12 @@ export default class ConfigValidator implements IConfigValidator {
       userMenu: [],
       header: [],
       sidebar: [],
+      sidebarTop: [],
       everyPageBottom: [],
     };
 
     if (this.inputConfig.customization?.globalInjections) {
-      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar', 'everyPageBottom'];
+      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
       Object.keys(this.inputConfig.customization.globalInjections).forEach((injection) => {
         if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
           globalInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.globalInjections, injection, errors);
@@ -176,6 +177,9 @@ export default class ConfigValidator implements IConfigValidator {
     }
     if (customization.showBrandNameInSidebar === undefined) {
       customization.showBrandNameInSidebar = true;
+    }
+    if (customization.showBrandLogoInSidebar === undefined) {
+      customization.showBrandLogoInSidebar = true;
     }
     if (customization.favicon) {
       errors.push(...this.checkCustomFileExists(customization.favicon));
