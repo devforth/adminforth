@@ -25,7 +25,7 @@
     "@adminforth/i18n": "^1.2.4",
     "@adminforth/image-generation-adapter-openai": "^1.0.4",
     "@adminforth/image-vision-adapter-openai": "^1.0.3",
-    "@adminforth/import-export": "^1.4.1",
+    "@adminforth/import-export": "^1.3.1",
     "@adminforth/rich-editor": "^1.2.2",
     "@adminforth/storage-adapter-amazon-s3": "^1.0.6",
     "@adminforth/text-complete": "^1.8.1",
