@@ -834,8 +834,9 @@ If there is less then `pageSize` rows, pagination will not be shown.
 To load pages dynamically, simply pass async callback to data:
 
 ```ts
-async function loadPageData(offset, limit) {  
-    // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
   return {
     data: [
       { name: 'John', age: offset, country: 'US' },
@@ -857,8 +858,9 @@ async function loadPageData(offset, limit) {
 //diff-add
   :data="loadPageData"
 
-  :pageSize="3"
+  :pageSize="3"> </Table>
 ```
+> 👆 The page size is used as the limit for pagination.
 
 ## ProgressBar
 
