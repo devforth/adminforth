@@ -120,7 +120,7 @@
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
 
   type Row = Record<string, unknown>
-  type LoadFn = (page: number, pageSize: number) => Promise<{ data: Row[]; total: number }>
+  type LoadFn = (params: { offset: number, limit: number }) => Promise<{ data: Row[]; total: number }>
 
   const isFunc = (v: unknown): v is LoadFn => typeof v === 'function'
 
@@ -144,7 +144,7 @@
       error.value = null
       try {
         if (isFunc(props.data)) {
-          const res = await props.data(page.value, pageSize.value)
+          const res = await props.data({offset: page.value, limit: pageSize.value})
           if (id !== requestId) return
           result.value = res
         } else {
@@ -174,7 +174,7 @@
       }[],
       data: {
         [key: string]: any,
-      }[] | ((offset: number, limit: number) => Promise<{data: {[key: string]: any}[], total: number}>),
+      }[] | ((params: { offset: number, limit: number }) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
     }>(), {
