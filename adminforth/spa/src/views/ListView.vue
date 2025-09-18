@@ -12,7 +12,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -32,29 +32,25 @@
           </Tooltip>
       </button>
 
-      <div 
+           <div 
         v-if="checkboxes.length"
         v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
       >
         <button
-          v-if="!action.showInThreeDotsDropdown || action.showInThreeDotsDropdown===false"
+          v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
-          @click="startBulkAction(action.id)"
+          @click="startBulkAction(action.id!)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
           :class="action.buttonCustomCssClass || ''"
         >
           <component
-            v-if="action.icon && !bulkActionLoadingStates[action.id]"
+            v-if="action.icon && !bulkActionLoadingStates[action.id!]"
             :is="getIcon(action.icon)"
             class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
-          <div v-if="bulkActionLoadingStates[action.id]">
+          <div v-if="bulkActionLoadingStates[action.id!]">
             <svg 
               aria-hidden="true" 
-              class="w-5 h-5 animate-spin" 
-              :class="{
-                'text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300': action.state !== 'danger',
-                'text-red-200 dark:text-red-800 fill-red-600 dark:fill-red-500': action.state === 'danger'
-              }"
+              class="w-5 h-5 animate-spin text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" 
               viewBox="0 0 100 101" 
               fill="none" 
               xmlns="http://www.w3.org/2000/svg"
@@ -71,11 +67,12 @@
           </div>
         </button>
       </div>
+
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button flex items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="af-create-button flex items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
       >
-        <IconPlusOutline class="w-4 h-4 me-2"/>
+        <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Create') }}
       </RouterLink>
 
@@ -84,7 +81,7 @@
         @click="()=>{filtersShow = !filtersShow}"
         v-if="coreStore.resource?.options?.allowedActions?.filter"
       >
-        <IconFilterOutline class="w-4 h-4 me-2"/>
+        <IconFilterOutline class="w-4 h-4"/>
         {{ $t('Filter') }}
         <span
           class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
@@ -94,19 +91,19 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
         @startBulkAction="startBulkAction"
         :updateList="getList"
         :clearCheckboxes="clearCheckboxes"
-      ></ThreeDotsMenu>
+        ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
 
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -123,8 +120,18 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
-      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
-      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
+      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
+        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
+          : []
+      "
+      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
+        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
+        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
+          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
+          : []
+      "
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
@@ -143,14 +150,24 @@
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
-      :customActionsInjection="coreStore.resourceOptions?.pageInjections?.list?.customActionIcons"
-      :tableBodyStartInjection="coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart"
+      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
+        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
+          : []
+      "
+      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
+        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
+        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
+          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
+          : []
+      "
     />
 
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
@@ -171,6 +188,8 @@ import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
+import type { AdminForthComponentDeclarationFull } from '@/types/Common';
+
 
 import {
   IconBanOutline,
@@ -190,7 +209,7 @@ const route = useRoute();
 
 const page = ref(1);
 const columnsMinMax = ref({});
-const sort = ref([]);
+const sort = ref();
 
 watch(() => sort, async (to, from) => {
   // in store sort might be needed for plugins
@@ -234,11 +253,11 @@ async function getList() {
     totalRows.value = 0;
     return {error: data.error};
   }
-  rows.value = data.data?.map(row => {
-    if (coreStore.resource.columns.find(c => c.primaryKey).foreignResource) {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name].pk;
-    } else {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey).name];
+  rows.value = data.data?.map((row: any) => {
+    if (coreStore.resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name].pk;
+    } else if (coreStore.resource) {
+      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name];
     }
     return row;
   });
@@ -306,9 +325,9 @@ async function refreshExistingList(pk?: any) {
 }
 
 
-async function startBulkAction(actionId) {
-  const action = coreStore.resource.options.bulkActions.find(a => a.id === actionId);
-  if (action.confirm) {
+async function startBulkAction(actionId: string) {
+  const action = coreStore.resource?.options?.bulkActions?.find(a => a.id === actionId);
+  if (action?.confirm) {
     const confirmed = await adminforth.confirm({
       message: action.confirm,
     });
@@ -348,10 +367,10 @@ async function startBulkAction(actionId) {
 
 
 class SortQuerySerializer {
-    static serialize(sort) {
+    static serialize(sort: {field: string, direction: 'asc' | 'desc'}[]) {
         return sort.map(s => `${s.field}__${s.direction}`).join(',');
     }
-    static deserialize(str) {
+    static deserialize(str: string) {
         return str.split(',').map(s => {
             const [field, direction] = s.split('__');
             return { field, direction };
@@ -364,7 +383,7 @@ let listAutorefresher: any = null;
 async function init() {
   
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string
   });
   isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
@@ -375,7 +394,7 @@ async function init() {
     return {
       field,
       operator,
-      value: JSON.parse(decodeURIComponent(route.query[k]))
+      value: JSON.parse(decodeURIComponent(route.query[k] as string))
     }
   });
   if (filters.length) {
@@ -385,8 +404,8 @@ async function init() {
   }
 
   if (route.query.sort) {
-    sort.value = SortQuerySerializer.deserialize(route.query.sort);
-  } else if (coreStore.resource.options?.defaultSort) {
+    sort.value = SortQuerySerializer.deserialize(route.query.sort as string);
+  } else if (coreStore?.resource?.options?.defaultSort) {
     sort.value = [{
         field: coreStore.resource.options.defaultSort.columnName,
         direction: coreStore.resource.options.defaultSort.direction
@@ -396,7 +415,7 @@ async function init() {
   }
   // page init should be also in same tick 
   if (route.query.page) {
-    page.value = parseInt(route.query.page);
+    page.value = parseInt(route.query.page as string);
   }
 
   // getList(); - Not needed here, watch will trigger it
@@ -425,8 +444,18 @@ watch([page, sort, () => filtersStore.filters], async () => {
 }, { deep: true });
 
 adminforth.list.refresh = async () => {
-  return await getList();
-}
+  const result = await getList();
+
+  if (!result) {
+    return {};
+  }
+
+  if ('error' in result && result.error != null) {
+    return { error: String(result.error) };
+  }
+
+  return {};
+};
 
 adminforth.list.silentRefresh = async () => {
   return await refreshExistingList();
@@ -446,7 +475,7 @@ watch(() => filtersStore.filters, async (to, from) => {
   page.value = 1;
   checkboxes.value = []; // TODO: not sure absolutely needed here
   // update query param for each filter as filter_<column_name>=value
-  const query = {};
+  const query:  Record<string, string | undefined> = {};
   const currentQ = currentQuery();
   filtersStore.filters.forEach(f => {
     if (f.value !== undefined && f.value !== null && f.value !== '') {

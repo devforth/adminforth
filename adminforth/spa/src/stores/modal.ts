@@ -29,7 +29,12 @@ export const useModalStore = defineStore('modal', () => {
     onCancelFunction.value = func;
   }
   function setModalContent(content: ModalContentType) {
-    modalContent.value = content;
+    modalContent.value = {
+      title: content.title || 'title',
+      content: content.content || 'content',
+      acceptText: content.acceptText || 'acceptText',
+      cancelText: content.cancelText || 'cancelText',
+    };
   }
   function resetmodalState() {
     isOpened.value = false;
