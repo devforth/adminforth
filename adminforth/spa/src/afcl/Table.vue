@@ -128,6 +128,10 @@
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
   import { IconTableRowOutline } from '@iconify-prerendered/vue-flowbite';
 
+  defineExpose({
+    refreshTable
+  })
+
   type Row = Record<string, unknown>
   type LoadFn = (params: { offset: number, limit: number }) => Promise<{ data: Row[]; total: number }>
 
@@ -252,6 +256,11 @@
         event.target.blur();
       }
     }
+  }
+
+  function refreshTable() {
+    currentPage.value = 1;
+    refresh();
   }
 
 </script>
