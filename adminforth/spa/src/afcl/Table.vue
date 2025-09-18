@@ -23,6 +23,14 @@
           :row-heights="rowHeights"
           :column-widths="columnWidths"
         />
+        <tr v-else-if="!isLoading && dataPage.length === 0" class="afcl-table-empty-body">
+          <td :colspan="columns.length" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center justify-center text-lightTableText dark:text-darkTableText">
+              <IconTableRowOutline class="w-10 h-10 mb-4 text-gray-400 dark:text-gray-500" />
+              <p class="text-md">{{ $t('No data available') }}</p>
+            </div>
+          </td>
+        </tr>
         <tr
           v-else="!isLoading"
           v-for="(item, index) in dataPage"
@@ -118,6 +126,7 @@
 <script setup lang="ts">
   import { ref, computed, useTemplateRef, watch, shallowRef, toRef } from 'vue';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
+  import { IconTableRowOutline } from '@iconify-prerendered/vue-flowbite';
 
   type Row = Record<string, unknown>
   type LoadFn = (page: number, pageSize: number) => Promise<{ data: Row[]; total: number }>
