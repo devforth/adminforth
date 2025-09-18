@@ -323,22 +323,16 @@ class CodeInjector implements ICodeInjector {
             }
           },`})
     }}
-    // const registerSettingPages = ( settingPage ) => {
-    //   if (!settingPage) {
-    //     return;
-    //   }
-    //   console.log('🪲⚙️ registerSettingPages', settingPage);
-    //   routes += `{
-    //     path: '/settings',
-    //     name: 'Settings',
-    //     component: () => import('@/views/SettingsView.vue'),
-    //     meta: { title: 'Settings'}
-    //   },\n` 
-    // }
+    const registerSettingPages = ( settingPage ) => {
+      if (!settingPage) {
+        return;
+      }
+      console.log('🪲⚙️ registerSettingPages', settingPage);
+    }
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
-  //  registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
+    registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
     if (process.env.HEAVY_DEBUG) {
@@ -482,6 +476,12 @@ class CodeInjector implements ICodeInjector {
       Object.values(this.adminforth.config.customization.loginPageInjections).forEach((injection) => {
         checkInjections(injection);
       });
+    }
+
+    if (this.adminforth.config.auth.userMenuSettingsPages) {
+      for (const settingPage of this.adminforth.config.auth.userMenuSettingsPages) {
+        checkInjections([{ file: settingPage.component, meta: settingPage.pageLabel }]);
+      }
     }
 
 

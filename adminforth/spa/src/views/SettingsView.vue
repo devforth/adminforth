@@ -1,8 +1,8 @@
 <template>
   <div>
     <nav 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
-      class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
+      class="h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
@@ -69,31 +69,102 @@
       </div>
     </nav>
   </div>
+  <div class="m-4 h-full w-full">
+
+    <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
+      <p>No setting pages configured or still loading...</p>
+    </div>
+    <VerticalTabs v-else>
+      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
+        <div class="flex items-center justify-center whitespace-nowrap px-4 mx-4">
+          {{ c.pageLabel }}
+        </div>
+      </template>
+
+      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`${settingPageSlotName(c,i)}-content`" v-slot:[settingPageSlotName(c,i)]>
+        <component 
+          :is="getCustomComponent({file: c.component || ''})"
+          :resource="coreStore.resource"
+          :adminUser="coreStore.adminUser"
+        />
+      </template>
+    </VerticalTabs>
+  </div>
 </template>
 
 <script setup lang="ts">
-
-import { useCoreStore } from '@/stores/core';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useCoreStore } from '@/stores/core';
+import { useUserStore } from '@/stores/user';
+import { getCustomComponent } from '@/utils';
+import { Dropdown } from 'flowbite';
+import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import adminforth from '@/adminforth';
+import { VerticalTabs } from '@/afcl'
+
 const coreStore = useCoreStore();
+const userStore = useUserStore();
 const router = useRouter();
 
-const loggedIn = computed(() => !!coreStore?.adminUser);
+const loggedIn = computed(() => { return !!coreStore?.adminUser });
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
+const sideBarOpen = ref(false);
+const theme = ref('light');
+const dropdownUserButton = ref<HTMLElement | null>(null);
 
 async function initRouter() {
   await router.isReady();
   routerIsReady.value = true;
 }
 
+function toggleTheme() {
+  theme.value = theme.value === 'light' ? 'dark' : 'light';
+  coreStore.toggleTheme();
+}
+
+function settingPageSlotName(c: { slug?: string; pageLabel?: string }, idx: number) {
+  const base = (c.slug && c.slug.trim()) || (c.pageLabel && c.pageLabel.trim()) || `tab-${idx}`;
+  return base
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '-') || `tab-${idx}`;
+}
+
+
+async function logout() {
+  userStore.unauthorize();
+  await userStore.logout();
+  router.push({ name: 'login' })
+}
+
+watch(dropdownUserButton, (el) => {
+  if (el) {
+    const dd = new Dropdown(
+      document.querySelector('#dropdown-user') as HTMLElement,
+      document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
+    );
+    adminforth.closeUserMenuDropdown = () => dd.hide();
+  }
+});
+
+onMounted(async () => {
+  await loadMenu();
+  await loadPublicConfig();
+  loginRedirectCheckIsReady.value = true;
+  console.log('Setting pages:', coreStore?.config?.settingPages);
+  console.log('Full config:', coreStore?.config);
+});
+
+async function loadPublicConfig() {
+  await coreStore.getPublicConfig();
+}
+
 async function loadMenu() {
   await initRouter();
-  if (!route.meta.customLayout) {
-    // for custom layouts we don't need to fetch menu
-    await coreStore.fetchMenuAndResource();
-  }
-  loginRedirectCheckIsReady.value = true;
+  await coreStore.fetchMenuAndResource();
 }
+
 </script>

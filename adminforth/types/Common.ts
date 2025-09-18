@@ -1093,7 +1093,13 @@ export interface AdminForthConfigForFrontend {
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
-  }[],  
+  }[],
+  settingPages?:{
+    icon?: string,
+    pageLabel: string,
+    slug?: string,
+    component?: string,
+  }[],
 }
 
 export interface GetBaseConfigResponse {
