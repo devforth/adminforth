@@ -323,10 +323,22 @@ class CodeInjector implements ICodeInjector {
             }
           },`})
     }}
+    // const registerSettingPages = ( settingPage ) => {
+    //   if (!settingPage) {
+    //     return;
+    //   }
+    //   console.log('🪲⚙️ registerSettingPages', settingPage);
+    //   routes += `{
+    //     path: '/settings',
+    //     name: 'Settings',
+    //     component: () => import('@/views/SettingsView.vue'),
+    //     meta: { title: 'Settings'}
+    //   },\n` 
+    // }
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
-
+  //  registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
     if (process.env.HEAVY_DEBUG) {
