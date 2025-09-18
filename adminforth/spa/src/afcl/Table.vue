@@ -144,7 +144,7 @@
       error.value = null
       try {
         if (isFunc(props.data)) {
-          const res = await props.data({offset: page.value, limit: pageSize.value})
+          const res = await props.data({offset: ((page.value - 1) * pageSize.value), limit: pageSize.value})
           if (id !== requestId) return
           result.value = res
         } else {
