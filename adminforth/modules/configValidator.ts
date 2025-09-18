@@ -999,6 +999,18 @@ export default class ConfigValidator implements IConfigValidator {
         const similar = suggestIfTypo(newConfig.resources.map((res) => res.resourceId ), newConfig.auth.usersResourceId);
         throw new Error(`Resource with id "${newConfig.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
       }
+      if (newConfig.auth.userMenuSettingsPages) {
+        for (const page of newConfig.auth.userMenuSettingsPages) {
+          if (!page.component.startsWith('@@')) {
+            errors.push(`Menu item component must start with @@ : ${JSON.stringify(page)}`);
+          }
+
+          const path = page.component.replace('@@', newConfig.customization.customComponentsDir);
+          if (!fs.existsSync(path)) {
+            errors.push(`Menu item component "${page.component.replace('@@', '')}" does not exist in "${newConfig.customization.customComponentsDir}"`);
+          }
+        }
+      }
 
       // normalize beforeLoginConfirmation hooks
       const blc = this.inputConfig.auth.beforeLoginConfirmation;
