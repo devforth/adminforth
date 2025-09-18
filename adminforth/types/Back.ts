@@ -131,6 +131,7 @@ export interface IAdminForthSingleFilter {
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
   value?: any;
   insecureRawSQL?: string;
+  insecureRawNoSQL?: any;
 }
 export interface IAdminForthAndOrFilter {
   operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;

@@ -212,6 +212,17 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     getFilterQuery(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any {
+        // accept raw NoSQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawNoSQL !== undefined) {
+            return (filter as IAdminForthSingleFilter).insecureRawNoSQL;
+        }
+
+        // explicitly ignore raw SQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawSQL !== undefined) {
+            console.warn('⚠️  Ignoring insecureRawSQL filter for MongoDB:', (filter as IAdminForthSingleFilter).insecureRawSQL);
+            return {};
+        }
+
         if ((filter as IAdminForthSingleFilter).field) {
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
             if (['integer', 'decimal', 'float'].includes(column.type)) {
@@ -222,7 +233,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // filter is a AndOr filter
         return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters
-            // mongodb should ignore raw sql
+            // mongodb should ignore raw SQL, but allow raw NoSQL
             .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
             .map((f) => this.getFilterQuery(resource, f)));
     }
