@@ -43,7 +43,4 @@
       activeTab.value = tabs.value[0];
     }
   });
-
-  
-
 </script>
