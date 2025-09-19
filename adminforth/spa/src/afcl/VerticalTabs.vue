@@ -5,7 +5,7 @@
         <a 
           href="#"
           @click="activeTab = tab"
-          class="inline-flex items-center px-4 py-3 rounded-lg w-full"
+          class="inline-flex items-center rounded-lg w-full"
           :class="tab === activeTab ? 'text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive active dark:bg-darkVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive' : 'text-lightVerticalTabsText dark:text-darkVerticalTabsText hover:text-lightVerticalTabsTextHover bg-lightVerticalTabsBackground hover:bg-lightVerticalTabsBackgroundHover dark:bg-darkVerticalTabsBackground dark:hover:bg-darkVerticalTabsBackgroundHover dark:hover:darkVerticalTabsTextHover'"
           aria-current="page"
         >
@@ -31,6 +31,11 @@
   const emites = defineEmits([
     'update:activeTab',
   ]);
+
+  defineExpose({
+    setActiveTab
+  });
+
   onMounted(() => {
     const slots = useSlots();
     tabs.value = Object.keys(slots).reduce((tbs: string[], tb: string) => {
@@ -43,4 +48,10 @@
       activeTab.value = tabs.value[0];
     }
   });
+
+  function setActiveTab(tab: string) {
+    if (tabs.value.includes(tab)) {
+      activeTab.value = tab;
+    }
+  }
 </script>
