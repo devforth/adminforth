@@ -4,16 +4,7 @@
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady"
       class="h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
-      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
-          <div class="flex items-center justify-start rtl:justify-end">
-            <button @click="sideBarOpen = !sideBarOpen"
-              type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
-                <span class="sr-only">{{ $t('Open sidebar') }}</span>
-                <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-                </svg>
-            </button>
-          </div>
+      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-end h-full w-full" >
           <div class="flex items-center">
             <component 
               v-if="coreStore?.adminUser"
@@ -58,6 +49,9 @@
                       :meta="c.meta"
                       :adminUser="coreStore.adminUser"
                     />
+                  </li>
+                  <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
+                    <UserMenuSettingsButton />
                   </li>
                   <li>
                     <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">{{ $t('Sign out') }}</button>
@@ -156,7 +150,6 @@ watch(dropdownUserButton, (el) => {
 
 onMounted(async () => {
   await loadMenu();
-  await loadPublicConfig();
   loginRedirectCheckIsReady.value = true;
   const routeParamsPage = route?.params?.page;
   if (!routeParamsPage) {
@@ -180,10 +173,6 @@ onMounted(async () => {
     }
   }
 });
-
-async function loadPublicConfig() {
-  await coreStore.getPublicConfig();
-}
 
 async function loadMenu() {
   await initRouter();
