@@ -68,7 +68,6 @@ const router = createRouter({
       component: () => import('@/views/SettingsView.vue'),
       meta: { 
         title: 'Settings', 
-        customLayout: true 
       },
     },
     /* IMPORTANT:ADMINFORTH ROUTES */
