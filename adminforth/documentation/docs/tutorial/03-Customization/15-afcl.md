@@ -316,16 +316,12 @@ import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flo
   ```html
   <VerticalTabs>
     <template #tab:Profile>
-      <div class="px-4 py-3">
-        <IconUserCircleSolid class="w-5 h-5 me-2"/>
-        Profile
-      </div>
+      <IconUserCircleSolid class="w-5 h-5 me-2"/>
+      Profile
     </template>
     <template #tab:Dashboard>
-      <div class="px-4 py-3">
-        <IconGridSolid class="w-5 h-5 me-2"/>
-        Board
-      </div>
+      <IconGridSolid class="w-5 h-5 me-2"/>
+      Board
     </template>
     <template #Profile>
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Tab</h3>
