@@ -50,7 +50,6 @@ const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);
 
 const options = computed(() => {
-  console.log('Returning setting pages', coreStore.config?.settingPages);
   return coreStore.config?.settingPages?.map((page) => {
     return {
       pageLabel: page.pageLabel,
@@ -69,13 +68,10 @@ function slugifyString(str: string): string {
 }
 
 function navigateTo(option: { slug?: string | null | undefined, pageLabel: string }) {
-  console.log('Navigating to option', option);
   if (option.slug) {
-    console.log('Navigating to settings page', option.slug);
-    router.push({ name: 'settings', query: { page: option.slug } });
+    router.push({ name: 'settings', params: { page: option.slug } });
   } else {
     const destinationSlug = slugifyString(option.pageLabel);
-    console.log('Navigating to settings page by label', destinationSlug);
     router.push({ name: 'settings', params: { page: destinationSlug } });
   }
 }

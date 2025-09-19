@@ -68,7 +68,7 @@
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>No setting pages configured or still loading...</p>
     </div>
-      <VerticalTabs v-else ref="VerticalTabsRef" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
+      <VerticalTabs v-else ref="VerticalTabsRef" v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
         <div class="flex items-center justify-center whitespace-nowrap w-full px-4 gap-2" @click="setURL(c)">
           <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
@@ -98,6 +98,7 @@ import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import adminforth from '@/adminforth';
 import { VerticalTabs } from '@/afcl'
 import { useRoute } from 'vue-router'
+import UserMenuSettingsButton from '../components/UserMenuSettingsButton.vue';
 
 const route = useRoute()
 const coreStore = useCoreStore();
@@ -111,6 +112,11 @@ const sideBarOpen = ref(false);
 const theme = ref('light');
 const dropdownUserButton = ref<HTMLElement | null>(null);
 const VerticalTabsRef = ref();
+const activeTab = ref('');
+
+watch(() => route?.params?.page, (val) => {
+  handleURLChange(val as string | null);
+});
 
 async function initRouter() {
   await router.isReady();
@@ -157,20 +163,7 @@ onMounted(async () => {
       setURL(coreStore.config.settingPages[0]);
     }
   } else {
-    let isParamInTabs;
-    for (const c of coreStore?.config?.settingPages || []) {
-      if (c.slug ? c.slug === routeParamsPage : slugifyString(c.pageLabel) === routeParamsPage) {
-        isParamInTabs = true;
-        break;
-      }
-    }
-    if (isParamInTabs) {
-      VerticalTabsRef.value.setActiveTab(routeParamsPage);
-    } else {
-      if (coreStore.config?.settingPages?.[0]) {
-        setURL(coreStore.config.settingPages[0]);
-      }
-    }
+    handleURLChange(routeParamsPage as string | null);
   }
 });
 
@@ -203,6 +196,24 @@ function setURL(item: {
       name: 'settings',
       params: { page: slugified }
     });
+  }
+}
+
+function handleURLChange(val: string | null) {
+  let isParamInTabs;
+  for (const c of coreStore?.config?.settingPages || []) {
+    if (c.slug ? c.slug === val : slugifyString(c.pageLabel) === val) {
+      isParamInTabs = true;
+      break;
+    }
+  }
+  if (isParamInTabs) {
+    VerticalTabsRef.value.setActiveTab(val);
+    activeTab.value = val as string;
+  } else {
+    if (coreStore.config?.settingPages?.[0]) {
+      setURL(coreStore.config.settingPages[0]);
+    }
   }
 }
 </script>
