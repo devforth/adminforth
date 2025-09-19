@@ -161,7 +161,7 @@
     refresh();
   });
 
-  watch( currentPage, async () => {
+  watch([currentPage, () => props.data], async () => {
     refresh();
   });
 
