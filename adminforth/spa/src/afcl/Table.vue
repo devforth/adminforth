@@ -124,60 +124,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, useTemplateRef, watch, shallowRef, toRef } from 'vue';
+  import { ref, computed, useTemplateRef, watch, onMounted } from 'vue';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
   import { IconTableRowOutline } from '@iconify-prerendered/vue-flowbite';
 
   defineExpose({
     refreshTable
   })
-
-  type Row = Record<string, unknown>
-  type LoadFn = (params: { offset: number, limit: number }) => Promise<{ data: Row[]; total: number }>
-
-  const isFunc = (v: unknown): v is LoadFn => typeof v === 'function'
-
-  function usePagedData(props: {
-    data: Row[] | LoadFn
-    pageSize: number
-    currentPage: number
-  }) {
-    const page = ref(props.currentPage)
-    const pageSize = toRef(props, 'pageSize')
-
-    const isLoading = ref(false)
-    const error = shallowRef<unknown>(null)
-    const result = shallowRef<{ data: Row[]; total: number }>({ data: [], total: 0 })
-
-    let requestId = 0
-
-    async function fetchData() {
-      const id = ++requestId
-      isLoading.value = true
-      error.value = null
-      try {
-        if (isFunc(props.data)) {
-          const res = await props.data({offset: ((page.value - 1) * pageSize.value), limit: pageSize.value})
-          if (id !== requestId) return
-          result.value = res
-        } else {
-          const start = (page.value - 1) * pageSize.value
-          const end = start + pageSize.value
-          result.value = { data: props.data.slice(start, end), total: props.data.length }
-        }
-      } catch (e) {
-        if (id !== requestId) return
-        error.value = e
-        result.value = { data: [], total: 0 }
-      } finally {
-        if (id === requestId) isLoading.value = false
-      }
-    }
-
-    watch([page, pageSize, () => props.data], fetchData, { immediate: true })
-
-    return { page, pageSize, isLoading, error, result, refresh: fetchData }
-  }
 
   const props = withDefaults(
     defineProps<{
@@ -196,17 +149,23 @@
     }
   );
 
-  const { result: dataResult, isLoading, error, page: currentPage, pageSize, refresh } = usePagedData({
-    data: props.data,
-    pageSize: props.pageSize,
-    currentPage: 1
-  });
-
   const pageInput = ref('1');
   const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
   const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
   const rowHeights = ref<number[]>([]);
   const columnWidths = ref<number[]>([]);
+  const currentPage = ref(1);
+  const isLoading = ref(false);
+  const dataResult = ref<{data: {[key: string]: any}[], total: number}>({data: [], total: 0});
+
+  onMounted(() => {
+    refresh();
+  });
+
+  watch( currentPage, async () => {
+    refresh();
+  });
+
 
   watch(() => currentPage.value, () => {
     rowHeights.value = !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
@@ -218,7 +177,7 @@
   });
 
   const dataPage = computed(() => {
-    return dataResult.value.data;
+    return dataResult.value?.data;
   });
 
   function switchPage(p: number) {
@@ -258,9 +217,22 @@
     }
   }
 
+  function refresh() {
+    if (typeof props.data === 'function') {
+      isLoading.value = true;
+      props.data({ offset: (currentPage.value - 1) * props.pageSize, limit: props.pageSize }).then((result) => {
+        isLoading.value = false;
+        dataResult.value = result;
+      });
+    } else {
+      const start = (currentPage.value - 1) * props.pageSize;
+      const end = start + props.pageSize;
+      dataResult.value = { data: props.data.slice(start, end), total: props.data.length };
+    }
+  }
+
   function refreshTable() {
     currentPage.value = 1;
-    refresh();
   }
 
 </script>
