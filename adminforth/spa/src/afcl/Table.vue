@@ -155,6 +155,7 @@
   const currentPage = ref(1);
   const isLoading = ref(false);
   const dataResult = ref<{data: {[key: string]: any}[], total: number}>({data: [], total: 0});
+  const isAtLeastOneLoading = ref<boolean[]>([false]);
 
   onMounted(() => {
     refresh();
@@ -214,13 +215,17 @@
     }
   }
 
-  function refresh() {
+  async function refresh() {
     if (typeof props.data === 'function') {
       isLoading.value = true;
-      props.data({ offset: (currentPage.value - 1) * props.pageSize, limit: props.pageSize }).then((result) => {
+      const currentLoadingIndex = currentPage.value;
+      isAtLeastOneLoading.value[currentLoadingIndex] = true;
+      const result = await props.data({ offset: (currentLoadingIndex - 1) * props.pageSize, limit: props.pageSize });
+      isAtLeastOneLoading.value[currentLoadingIndex] = false;
+      if (isAtLeastOneLoading.value.every(v => v === false)) {
         isLoading.value = false;
-        dataResult.value = result;
-      });
+      }
+      dataResult.value = result;
     } else {
       const start = (currentPage.value - 1) * props.pageSize;
       const end = start + props.pageSize;
@@ -229,7 +234,11 @@
   }
 
   function refreshTable() {
-    currentPage.value = 1;
+    if ( currentPage.value !== 1 ) {
+      currentPage.value = 1;
+    } else {
+      refresh();
+    }
   }
 
 </script>
