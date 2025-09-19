@@ -74,9 +74,9 @@
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>No setting pages configured or still loading...</p>
     </div>
-    <VerticalTabs v-else>
+    <VerticalTabs v-else ref="VerticalTabsRef">
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
-        <div class="flex items-center justify-center whitespace-nowrap px-4 mx-4 gap-2">
+        <div class="flex items-center justify-center whitespace-nowrap px-8 py-3 gap-2" @click="setURL(c)">
           <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
           {{ c.pageLabel }}
         </div>
@@ -103,7 +103,9 @@ import { Dropdown } from 'flowbite';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import adminforth from '@/adminforth';
 import { VerticalTabs } from '@/afcl'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const coreStore = useCoreStore();
 const userStore = useUserStore();
 const router = useRouter();
@@ -114,6 +116,7 @@ const loginRedirectCheckIsReady = ref(false);
 const sideBarOpen = ref(false);
 const theme = ref('light');
 const dropdownUserButton = ref<HTMLElement | null>(null);
+const VerticalTabsRef = ref();
 
 async function initRouter() {
   await router.isReady();
@@ -155,8 +158,27 @@ onMounted(async () => {
   await loadMenu();
   await loadPublicConfig();
   loginRedirectCheckIsReady.value = true;
-  console.log('Setting pages:', coreStore?.config?.settingPages);
-  console.log('Full config:', coreStore?.config);
+  const routeParamsPage = route?.params?.page;
+  if (!routeParamsPage) {
+    if (coreStore.config?.settingPages?.[0]) {
+      setURL(coreStore.config.settingPages[0]);
+    }
+  } else {
+    let isParamInTabs;
+    for (const c of coreStore?.config?.settingPages || []) {
+      if (c.slug ? c.slug === routeParamsPage : slugifyString(c.pageLabel) === routeParamsPage) {
+        isParamInTabs = true;
+        break;
+      }
+    }
+    if (isParamInTabs) {
+      VerticalTabsRef.value.setActiveTab(routeParamsPage);
+    } else {
+      if (coreStore.config?.settingPages?.[0]) {
+        setURL(coreStore.config.settingPages[0]);
+      }
+    }
+  }
 });
 
 async function loadPublicConfig() {
@@ -168,4 +190,32 @@ async function loadMenu() {
   await coreStore.fetchMenuAndResource();
 }
 
+function slugifyString(str: string): string {
+  return str
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '-');
+}
+
+function setURL(item: {
+  icon?: string | undefined;
+  pageLabel: string;
+  slug?: string | undefined;
+  component?: string | undefined;
+}) {
+  const slug = item?.slug;
+  if (slug) {
+    router.replace({
+      name: 'settings',
+      params: { page: slug }
+    });
+  } else {
+    const slugified = slugifyString(item.pageLabel);
+    router.replace({
+      name: 'settings',
+      params: { page: slugified }
+    });
+  }
+}
 </script>
