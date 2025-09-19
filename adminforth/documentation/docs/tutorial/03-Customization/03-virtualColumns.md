@@ -176,6 +176,48 @@ import sqlstring from 'sqlstring';
 This example will allow to search for some nested field in JSONB column, however you can use any SQL query here.
 
 
+### Custom Mongo queries with `insecureRawNoSQL`
+
+For MongoDB data sources, you can inject a raw Mongo filter object via `insecureRawNoSQL`. This is useful when the built-in filters are not enough or you need dot-notation and operators not covered by AdminForth helpers.
+
+Important: The object you provide is sent directly to MongoDB. Validate and sanitize any user inputs to prevent abuse of operators like `$where`, `$regex`, etc.
+
+Example — filter by nested field using dot-notation:
+
+```ts title='./resources/apartments.ts'
+...
+hooks: {
+  list: {
+    beforeDatasourceRequest: async ({ query, body }: { query: any, body: any }) => {
+      // Add raw Mongo filter: meta.is_active must equal body.is_active
+      query.filters.push({
+        insecureRawNoSQL: { 'meta.is_active': body.is_active },
+      });
+      return { ok: true, error: '' };
+    },
+  },
+},
+```
+
+You can combine it with other AdminForth filters using AND/OR:
+
+```ts
+import { Filters } from 'adminforth';
+
+query.filters = [
+  Filters.AND(
+    { insecureRawNoSQL: { 'meta.is_active': true } },
+    Filters.EQ('status', 'active'),
+  )
+];
+```
+
+Notes:
+- `insecureRawNoSQL` is Mongo-only. For SQL databases, use `insecureRawSQL`.
+- If both `field`/`operator`/`value` and `insecureRawNoSQL` are present in one filter object, validation will fail.
+- `insecureRawSQL` is ignored by the Mongo connector.
+
+
 
 ## Virtual columns for editing.
 
