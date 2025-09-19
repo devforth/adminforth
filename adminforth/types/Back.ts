@@ -130,6 +130,7 @@ export interface IAdminForthSingleFilter {
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
   value?: any;
+  rightField?: string;
   insecureRawSQL?: string;
   insecureRawNoSQL?: any;
 }
@@ -1167,6 +1168,18 @@ export class Filters {
   }
   static ILIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.ILIKE, value };
+  }
+  static COMPARE_GT(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GT, rightField };
+  }
+  static COMPARE_GTE(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GTE, rightField };
+  }
+  static COMPARE_LT(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LT, rightField };
+  }
+  static COMPARE_LTE(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LTE, rightField };
   }
   static AND(
     ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]

@@ -224,6 +224,26 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }
 
         if ((filter as IAdminForthSingleFilter).field) {
+            // Field-to-field comparisons via $expr
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                const left = `$${(filter as IAdminForthSingleFilter).field}`;
+                const right = `$${(filter as IAdminForthSingleFilter).rightField}`;
+                const op = (filter as IAdminForthSingleFilter).operator;
+                const exprOpMap = {
+                    [AdminForthFilterOperators.GT]: '$gt',
+                    [AdminForthFilterOperators.GTE]: '$gte',
+                    [AdminForthFilterOperators.LT]: '$lt',
+                    [AdminForthFilterOperators.LTE]: '$lte',
+                    [AdminForthFilterOperators.EQ]: '$eq',
+                    [AdminForthFilterOperators.NE]: '$ne',
+                } as const;
+                const mongoExprOp = exprOpMap[op];
+                if (!mongoExprOp) {
+                    // For unsupported ops with rightField, return empty condition
+                    return {};
+                }
+                return { $expr: { [mongoExprOp]: [left, right] } };
+            }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
             if (['integer', 'decimal', 'float'].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
