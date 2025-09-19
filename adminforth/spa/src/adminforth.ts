@@ -98,26 +98,22 @@ class FrontendAPI implements FrontendAPIInterface {
   }
 
   alert(params: AlertParams): void | Promise<string> | string {
+    const toats = {
+      message: params.message,
+      messageHtml: params.messageHtml,
+      variant: params.variant,
+      timeout: params.timeout,
+      buttons: params.buttons,  
+    }
     if (params.buttons && params.buttons.length > 0) {
       return new Promise<string>((resolve) => {
-        // store a resolver with the toast so the Toast component can resolve it
         this.toastStore.addToast({
-          message: params.message,
-          messageHtml: params.messageHtml,
-          variant: params.variant,
-          timeout: params.timeout,
-          buttons: params.buttons,
+          ...toats,
           onResolve: (value?: any) => resolve(String(value ?? '')),
         })
       })
     } else {
-      this.toastStore.addToast({
-        message: params.message,
-        messageHtml: params.messageHtml,
-        variant: params.variant,
-        timeout: params.timeout,
-        buttons: params.buttons,  
-      })
+      this.toastStore.addToast({...toats})
     }
   }
 
