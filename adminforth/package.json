@@ -36,6 +36,12 @@
           "slackIcon": ":package:",
           "markdownReleaseNotes": true
         }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "successCmd": "sh -lc 'cd ../documentation && npm ci && npm run build && npm run deploy'"
+        }
       ]
     ],
     "branches": [
@@ -86,6 +92,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@semantic-release/exec": "^7.1.0",
     "@types/node": "^20.14.2",
     "semantic-release": "^24.2.1",
     "semantic-release-slack-bot": "^4.0.2",
