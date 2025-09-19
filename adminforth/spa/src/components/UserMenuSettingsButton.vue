@@ -27,7 +27,7 @@
         <span class="mr-1">
           <component v-if="option.icon" :is="getIcon(option.icon)" class="w-5 h-5 transition duration-75" ></component>
         </span>
-        <span class="text-gray-900 dark:text-white">{{ option.pageLabel }}</span>
+        <span>{{ option.pageLabel }}</span>
       </div>
     </div>
 
