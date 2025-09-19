@@ -312,3 +312,23 @@ new BulkAiFlowPlugin({
 
 - Consider using lower resolution (`512x512`) for faster generation and lower costs
 - Test prompts thoroughly before applying to large datasets
+
+## Comparing new and old images
+
+If you want to compare a generated image with an image stored in your storage, you need to add the preview prop in your upload plugin setup:
+
+```ts
+  new UploadPlugin({
+        ...
+    //diff-add
+    preview: {
+    //diff-add
+      previewUrl: ({filePath}) => `https://static.my-domain.com/${filePath}`,
+    //diff-add
+    }
+        ...
+  })
+```
+After generation, you’ll see a button labeled "old image". Clicking it will open a pop-up where you can compare the generated image with the stored one:
+
+![alt text](Bulk-vision-4.png)
