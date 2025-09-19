@@ -327,7 +327,11 @@ class CodeInjector implements ICodeInjector {
       if (!settingPage) {
         return;
       }
-      console.log('🪲⚙️ registerSettingPages', settingPage);
+      for (const page of settingPage) {
+        if (page.icon) {
+          icons.push(page.icon);
+        }
+      }
     }
 
     registerCustomPages(this.adminforth.config);
