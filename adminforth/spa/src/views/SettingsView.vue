@@ -76,7 +76,8 @@
     </div>
     <VerticalTabs v-else>
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
-        <div class="flex items-center justify-center whitespace-nowrap px-4 mx-4">
+        <div class="flex items-center justify-center whitespace-nowrap px-4 mx-4 gap-2">
+          <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
           {{ c.pageLabel }}
         </div>
       </template>
@@ -97,7 +98,7 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, getIcon } from '@/utils';
 import { Dropdown } from 'flowbite';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
 import adminforth from '@/adminforth';
