@@ -74,9 +74,9 @@
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>No setting pages configured or still loading...</p>
     </div>
-    <VerticalTabs v-else ref="VerticalTabsRef">
+      <VerticalTabs v-else ref="VerticalTabsRef" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
-        <div class="flex items-center justify-center whitespace-nowrap px-8 py-3 gap-2" @click="setURL(c)">
+        <div class="flex items-center justify-center whitespace-nowrap w-full px-4 gap-2" @click="setURL(c)">
           <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
           {{ c.pageLabel }}
         </div>
@@ -199,10 +199,8 @@ function slugifyString(str: string): string {
 }
 
 function setURL(item: {
-  icon?: string | undefined;
   pageLabel: string;
   slug?: string | undefined;
-  component?: string | undefined;
 }) {
   const slug = item?.slug;
   if (slug) {
