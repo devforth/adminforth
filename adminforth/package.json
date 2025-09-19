@@ -40,7 +40,7 @@
       [
         "@semantic-release/exec",
         {
-          "successCmd": "sh -lc 'cd documentation && npm ci && npm run build && npm run deploy'"
+          "successCmd": "sh -lc 'cd documentation && npm ci && npm run build && USE_SSH=1 npm run deploy'"
         }
       ]
     ],
