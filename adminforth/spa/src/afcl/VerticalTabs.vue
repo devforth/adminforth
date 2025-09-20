@@ -4,7 +4,7 @@
       <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
         <a 
           href="#"
-          @click="activeTab = tab"
+          @click="setActiveTab(tab)"
           class="inline-flex items-center px-4 py-3 rounded-lg w-full"
           :class="tab === activeTab ? 'text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive active dark:bg-darkVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive' : 'text-lightVerticalTabsText dark:text-darkVerticalTabsText hover:text-lightVerticalTabsTextHover bg-lightVerticalTabsBackground hover:bg-lightVerticalTabsBackgroundHover dark:bg-darkVerticalTabsBackground dark:hover:bg-darkVerticalTabsBackgroundHover dark:hover:darkVerticalTabsTextHover'"
           aria-current="page"
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, useSlots, ref, type Ref } from 'vue';
+import { onMounted, useSlots, ref, type Ref } from 'vue';
   const tabs : Ref<string[]> = ref([]);
   const activeTab = ref('');
   const props = defineProps({
@@ -31,6 +31,11 @@
   const emites = defineEmits([
     'update:activeTab',
   ]);
+
+  defineExpose({
+    setActiveTab
+  });
+
   onMounted(() => {
     const slots = useSlots();
     tabs.value = Object.keys(slots).reduce((tbs: string[], tb: string) => {
@@ -44,6 +49,10 @@
     }
   });
 
-  
-
+  function setActiveTab(tab: string) {
+    if (tabs.value.includes(tab)) {
+      activeTab.value = tab;
+      emites('update:activeTab', tab);
+    }
+  }
 </script>
