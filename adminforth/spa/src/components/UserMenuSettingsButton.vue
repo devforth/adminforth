@@ -14,7 +14,7 @@
 
     <div v-if="showDropdown" >
       
-      <div class="cursor-pointer flex items-center gap-1 block px-4 py-1 text-sm 
+      <router-link class="cursor-pointer flex items-center gap-1 block px-4 py-1 text-sm 
         text-black dark:text-darkSidebarTextHover
         bg-black bg-opacity-10	
         hover:brightness-110
@@ -22,13 +22,13 @@
         hover:bg-lightPrimaryContrast dark:hover:bg-darkPrimaryContrast
         w-full text-select-none pl-5 select-none"
         v-for="option in options"
-        @click="navigateTo(option)"
+        :to="getRoute(option)"
       >
         <span class="mr-1">
           <component v-if="option.icon" :is="getIcon(option.icon)" class="w-5 h-5 transition duration-75" ></component>
         </span>
         <span>{{ option.pageLabel }}</span>
-      </div>
+      </router-link>
     </div>
 
    
@@ -67,12 +67,10 @@ function slugifyString(str: string): string {
     .replace(/[^a-z0-9-_]/g, '-');
 }
 
-function navigateTo(option: { slug?: string | null | undefined, pageLabel: string }) {
-  if (option.slug) {
-    router.push({ name: 'settings', params: { page: option.slug } });
-  } else {
-    const destinationSlug = slugifyString(option.pageLabel);
-    router.push({ name: 'settings', params: { page: destinationSlug } });
+function getRoute(option: { slug?: string | null, pageLabel: string }) {
+  return {
+    name: 'settings',
+    params: { page: option.slug ?? slugifyString(option.pageLabel) }
   }
 }
 

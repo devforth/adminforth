@@ -1001,14 +1001,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
       if (newConfig.auth.userMenuSettingsPages) {
         for (const page of newConfig.auth.userMenuSettingsPages) {
-          if (!page.component.startsWith('@@')) {
-            errors.push(`Menu item component must start with @@ : ${JSON.stringify(page)}`);
-          }
-
-          const path = page.component.replace('@@', newConfig.customization.customComponentsDir);
-          if (!fs.existsSync(path)) {
-            errors.push(`Menu item component "${page.component.replace('@@', '')}" does not exist in "${newConfig.customization.customComponentsDir}"`);
-          }
+          this.validateComponent({file: page.component}, errors);
         }
       }
 
