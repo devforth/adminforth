@@ -55,7 +55,7 @@ export interface FrontendAPIInterface {
      * 
      * @param params - The parameters of the alert
      */
-    alert(params:AlertParams): void;
+    alert(params:AlertParams): void | Promise<string> | string;
 
 
     list: {
@@ -179,7 +179,12 @@ export type AlertParams = {
      * Default is 10 seconds;
      */
     timeout?: number | 'unlimited';
-    
+
+    /**
+     * Optional buttons to display in the alert
+     */
+    buttons?: {value: any, label: string}[];
+
 }
 
 
