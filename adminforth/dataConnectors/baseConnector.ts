@@ -94,16 +94,25 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }, { ok: true, error: '' });
     }
 
-    if ((filters as IAdminForthSingleFilter).field) {
+    const filtersAsSingle = filters as IAdminForthSingleFilter;
+    if (filtersAsSingle.field) {
       // if "field" is present, filter must be Single
       if (!filters.operator) {
         return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).value === undefined) {
+      // Either compare with value or with rightField (field-to-field). If rightField is set, value must be undefined.
+      const comparingWithRightField = filtersAsSingle.rightField !== undefined && filtersAsSingle.rightField !== null;
+      if (!comparingWithRightField && filtersAsSingle.value === undefined) {
         return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+      if (comparingWithRightField && filtersAsSingle.value !== undefined) {
+        return { ok: false, error: `Specify either "value" or "rightField", not both: ${JSON.stringify(filters)}` };
+      }
+      if (filtersAsSingle.insecureRawSQL) {
         return { ok: false, error: `Field "insecureRawSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
+      }
+      if (filtersAsSingle.insecureRawNoSQL) {
+        return { ok: false, error: `Field "insecureRawNoSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
       }
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
@@ -111,9 +120,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       AdminForthFilterOperators.NIN].includes(filters.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
-      const fieldObj = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field);
+      const fieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field);
       if (!fieldObj) {
-        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), (filters as IAdminForthSingleFilter).field);
+        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.field);
         
         let isPolymorphicTarget = false;
         if (global.adminforth?.config?.resources) {
@@ -126,20 +135,28 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           );
         }
         if (isPolymorphicTarget) {
-          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${(filters as IAdminForthSingleFilter).field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
           return { ok: true, error: '' };
         } else {
-          throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+          throw new Error(`Field '${filtersAsSingle.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
       }
       // value normalization
-      if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
+      if (comparingWithRightField) {
+        // ensure rightField exists in resource
+        const rightFieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.rightField);
+        if (!rightFieldObj) {
+          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.rightField as string);
+          throw new Error(`Field '${filtersAsSingle.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        }
+        // No value conversion needed for field-to-field comparison here
+      } else if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
         if (!Array.isArray(filters.value)) {
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
         }
         if (filters.value.length === 0) {
           // nonsense, and some databases might not accept IN []
-          const colType = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field)?.type;
+          const colType = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field)?.type;
           if (colType === AdminForthDataTypes.STRING || colType === AdminForthDataTypes.TEXT) {
             filters.value = [randomUUID()];
             return { ok: true,  error: `` };
@@ -149,15 +166,15 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         }
         filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
       } else {
-        (filters as IAdminForthSingleFilter).value = this.setFieldValue(fieldObj, (filters as IAdminForthSingleFilter).value);
+        filtersAsSingle.value = this.setFieldValue(fieldObj, filtersAsSingle.value);
       }
-    } else if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+    } else if (filtersAsSingle.insecureRawSQL || filtersAsSingle.insecureRawNoSQL) {
       // if "insecureRawSQL" filter is insecure sql string
-      if ((filters as IAdminForthSingleFilter).operator) {
-        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      if (filtersAsSingle.operator) {
+        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).value !== undefined) {
-        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      if (filtersAsSingle.value !== undefined) {
+        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
     } else if ((filters as IAdminForthAndOrFilter).subFilters) {
       // if "subFilters" is present, filter must be AndOr
