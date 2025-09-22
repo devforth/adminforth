@@ -71,15 +71,17 @@ watch(dropdownUserButton, (el) => {
 });
 
 onMounted(async () => {
-  await loadMenu();
-  loginRedirectCheckIsReady.value = true;
-  const routeParamsPage = route?.params?.page;
-  if (!routeParamsPage) {
-    if (coreStore.config?.settingPages?.[0]) {
-      setURL(coreStore.config.settingPages[0]);
+  if (coreStore.adminUser) {
+    await loadMenu();
+    loginRedirectCheckIsReady.value = true;
+    const routeParamsPage = route?.params?.page;
+    if (!routeParamsPage) {
+      if (coreStore.config?.settingPages?.[0]) {
+        setURL(coreStore.config.settingPages[0]);
+      }
+    } else {
+      handleURLChange(routeParamsPage as string | null);
     }
-  } else {
-    handleURLChange(routeParamsPage as string | null);
   }
 });
 
