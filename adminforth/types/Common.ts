@@ -468,6 +468,7 @@ export interface AdminForthResourceInputCommon {
         list?: {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeActionButtons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,

@@ -18,6 +18,13 @@
     />
 
     <BreadcrumbsWithButtons>
+      <component 
+        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons || []"
+        :is="getCustomComponent(c)"
+        :meta="(c as AdminForthComponentDeclarationFull).meta"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+      />
       <button
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
