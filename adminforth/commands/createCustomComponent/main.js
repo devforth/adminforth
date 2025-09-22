@@ -189,6 +189,7 @@ async function handleCrudPageInjectionCreation(config, resources) {
     message: 'Where exactly do you want to inject the component?',
     choices: [
       { name: '⬆️ Before Breadcrumbs', value: 'beforeBreadcrumbs' },
+      { name: '➡️ Before Action Buttons', value: 'beforeActionButtons' },
       { name: '⬇️ After Breadcrumbs', value: 'afterBreadcrumbs' },
       { name: '📄 After Page', value: 'bottom' },
       { name: '⋯ threeDotsDropdownItems', value: 'threeDotsDropdownItems' },

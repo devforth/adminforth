@@ -213,7 +213,7 @@ Now create file `CustomLoginHeader.vue` in the `custom` folder of your project:
 ## List view page injections shrinking: thin enough to shrink?
 
 
-When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
+When none of `bottom`, `beforeBreadcrumbs`, `beforeActionButtons`, `afterBreadcrumbs` injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
 
 ![alt text](<Group 15.png>)
 
@@ -384,6 +384,50 @@ Install used icon:
 cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
+
+## List table beforeActionButtons
+
+`beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
+
+![alt text](<Group 5.png>)
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        beforeActionButtons: {
+          file: '@@/UniversalQuickSearch.vue',
+          meta: {
+            thinEnoughToShrinkTable: true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Multiple components:
+
+```ts
+beforeActionButtons: [
+  {
+    file: '@@/UniversalQuickSearch.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  },
+  {
+    file: '@@/RecordsSummary.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  }
+]
+```
+
+> ☝️ Keep these components visually light; wide or tall content should use `afterBreadcrumbs` or `bottom` instead.
+
+## List table custom
 
 ## Global Injections
 
