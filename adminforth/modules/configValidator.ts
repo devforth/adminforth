@@ -1001,7 +1001,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
       if (newConfig.auth.userMenuSettingsPages) {
         for (const page of newConfig.auth.userMenuSettingsPages) {
-          this.validateComponent({file: page.component}, errors);
+          this.validateComponent(page.component, errors);
         }
       }
 
