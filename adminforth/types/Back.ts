@@ -1044,7 +1044,7 @@ export interface AdminForthInputConfig {
         icon?: string,
         pageLabel: string,
         slug?: string,
-        component: string
+        component: AdminForthComponentDeclarationFull,
       }[],
     },
 
