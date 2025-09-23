@@ -17,6 +17,7 @@
     <Select
       v-else-if="column.foreignResource"
       ref="input"
+      :key="`${column.name}-${(columnOptions[column.name] || []).length}`"
       class="w-full min-w-24"
       :options="columnOptions[column.name] || []"
       :searchDisabled="!column.foreignResource.searchableFields"
