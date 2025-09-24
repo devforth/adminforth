@@ -1098,7 +1098,7 @@ export interface AdminForthConfigForFrontend {
     icon?: string,
     pageLabel: string,
     slug?: string,
-    component?: AdminForthComponentDeclarationFull,
+    component: AdminForthComponentDeclarationFull,
   }[],
 }
 

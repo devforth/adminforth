@@ -1,5 +1,5 @@
 <template>
-  <div class="m-4 mt-16 h-full w-full">
+  <div class="m-4 mt-16 h-full w-full" :class="{ 'hidden': initialTabSet === false }">
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>No setting pages configured or still loading...</p>
     </div>
@@ -41,6 +41,7 @@ const loginRedirectCheckIsReady = ref(false);
 const dropdownUserButton = ref<HTMLElement | null>(null);
 const VerticalTabsRef = ref();
 const activeTab = ref('');
+const initialTabSet = ref(false);
 
 watch(() => route?.params?.page, (val) => {
   handleURLChange(val as string | null);
@@ -128,6 +129,7 @@ function handleURLChange(val: string | null) {
   if (isParamInTabs) {
     VerticalTabsRef.value.setActiveTab(val);
     activeTab.value = val as string;
+    if (!initialTabSet.value) initialTabSet.value = true;
   } else {
     if (coreStore.config?.settingPages?.[0]) {
       setURL(coreStore.config.settingPages[0]);
