@@ -126,10 +126,21 @@ class FrontendAPI implements FrontendAPIInterface {
 
   setListFilter(filter: FilterParams): void {
     if(this.listFilterValidation(filter)){
-      if(this.filtersStore.filters.some((f: any) => {return f.field === filter.field && f.operator === filter.operator})){
-        throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
+      const existingFilterIndex = this.filtersStore.filters.findIndex((f: any) => {
+        return f.field === filter.field && f.operator === filter.operator
+      });
+      
+      if(existingFilterIndex !== -1){
+        // Update existing filter instead of throwing error
+        const filters = [...this.filtersStore.filters];
+        if (filter.value === undefined) {
+          filters.splice(existingFilterIndex, 1);
+        } else {
+          filters[existingFilterIndex] = filter;
+        }
+        this.filtersStore.setFilters(filters);
       } else {
-      this.filtersStore.setFilter(filter)
+        this.filtersStore.setFilter(filter);
       }
     }
   }
