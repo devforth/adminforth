@@ -82,10 +82,9 @@ export interface FrontendAPIInterface {
          */
         closeThreeDotsDropdown(): void;
 
-
         /**
-         * Set a filter in the list
-         * Works only when user located on the list page.
+         * Set a filter in the list.
+         * Works only when user located on the list page. If filter already exists, it will be replaced with the new one.
          * Can be used to set filter from charts or other components in pageInjections.
          * 
          * Example:
@@ -96,11 +95,15 @@ export interface FrontendAPIInterface {
          * adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
          * ```
          * 
+         * Please note that you can set/update filter even for fields which have showIn.filter=false in resource configuration.
+         * Also you can set filter for virtual columns. For example Universal search plugin calls updateFilter for virtual column which has showIn.filter=false (because we dont want to show this column in filter dropdown, plugin renders its own filter UI)
+         * 
          * @param filter - The filter to set
          */
         setFilter(filter: FilterParams): void;
 
         /**
+         * DEPRECATED: does the same as setFilter, kept for backward compatibility
          * Update a filter in the list
          * 
          * Example:

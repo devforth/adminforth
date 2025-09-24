@@ -125,7 +125,7 @@ class FrontendAPI implements FrontendAPIInterface {
       if(this.filtersStore.filters.some((f: any) => {return f.field === filter.field && f.operator === filter.operator})){
         throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
       } else {
-      this.filtersStore.setFilter(filter)
+        this.filtersStore.setFilter(filter)
       }
     }
   }
