@@ -120,13 +120,6 @@ class FrontendAPI implements FrontendAPIInterface {
   listFilterValidation(filter: FilterParams): boolean {
     if(router.currentRoute.value.meta.type !== 'list'){
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
-    } else {
-      console.log(this.coreStore.resourceColumnsWithFilters,'core store')
-      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumnCommon) => col.name === filter.field)
-      if(!filterField){
-          throw new Error(`Field ${filter.field} is not available for filtering`)
-      }
-      
     }
     return true
   }
