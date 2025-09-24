@@ -2,7 +2,8 @@
 PLUGINS="adminforth-audit-log adminforth-email-password-reset adminforth-foreign-inline-list \
 adminforth-i18n adminforth-import-export adminforth-text-complete adminforth-open-signup \
 adminforth-rich-editor adminforth-two-factors-auth adminforth-upload adminforth-oauth \
-adminforth-list-in-place-edit adminforth-inline-create adminforth-markdown adminforth-email-invite adminforth-bulk-ai-flow"
+adminforth-list-in-place-edit adminforth-inline-create adminforth-markdown adminforth-email-invite adminforth-bulk-ai-flow \
+adminforth-universal-search"
 
 # Function to install a plugin
 install_plugin() {
