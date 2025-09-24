@@ -37,6 +37,17 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
         :options="{
           chart: {
             height: 250,
+            events: {
+              dataPointSelection: function (event, chartContext, config) {
+                if (config.selectedDataPoints[0].length) {
+                  const selectedRoomsCount = data[config.dataPointIndex].rooms;
+                  adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+                } else {
+                  // clear filter
+                  adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
+                }
+              }
+            }
           },
           dataLabels: {
             enabled: true,
