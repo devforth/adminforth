@@ -484,7 +484,7 @@ class CodeInjector implements ICodeInjector {
 
     if (this.adminforth.config.auth.userMenuSettingsPages) {
       for (const settingPage of this.adminforth.config.auth.userMenuSettingsPages) {
-        checkInjections([settingPage.component]);
+        checkInjections([{ file: settingPage.component }]);
       }
     }
 

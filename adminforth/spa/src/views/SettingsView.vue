@@ -13,7 +13,7 @@
 
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`${settingPageSlotName(c,i)}-content`" v-slot:[settingPageSlotName(c,i)]>
         <component 
-          :is="getCustomComponent(c.component)"
+          :is="getCustomComponent({file: c.component || ''})"
           :resource="coreStore.resource"
           :adminUser="coreStore.adminUser"
         />
