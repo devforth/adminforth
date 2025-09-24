@@ -33,7 +33,7 @@ const limitHeightToPage = computed(() => {
   }
   const listPageInjects = coreStore.resource.options.pageInjections.list;
   
-  for (const pi of [listPageInjects.beforeBreadcrumbs, listPageInjects.afterBreadcrumbs, listPageInjects.bottom]) {
+  for (const pi of [listPageInjects.beforeBreadcrumbs, listPageInjects.beforeActionButtons, listPageInjects.afterBreadcrumbs, listPageInjects.bottom]) {
     if (pi) {
       for (const piItem of pi) {
         if (!piItem.meta?.thinEnoughToShrinkTable) {
