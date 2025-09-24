@@ -90,7 +90,6 @@ export interface FrontendAPIInterface {
          * 
          * Filters are automatically marked as hidden (won't count in badge) if:
          * - Column has showIn.filter: false
-         * - Field name starts with underscore (e.g., _universal_search)
          * 
          * Example:
          * 
