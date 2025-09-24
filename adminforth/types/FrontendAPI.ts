@@ -88,12 +88,20 @@ export interface FrontendAPIInterface {
          * Works only when user located on the list page.
          * Can be used to set filter from charts or other components in pageInjections.
          * 
+         * Filters are automatically marked as hidden (won't count in badge) if:
+         * - Column has showIn.filter: false
+         * - Field name starts with underscore (e.g., _universal_search)
+         * 
          * Example:
          * 
          * ```ts
          * import adminforth from '@/adminforth'
          * 
+         * // Regular filter (will show in badge if column.showIn.filter !== false)
          * adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * 
+         * // Hidden filter (won't show in badge if column.showIn.filter === false)
+         * adminforth.list.setFilter({field: 'internal_status', operator: 'eq', value: 'active'})
          * ```
          * 
          * @param filter - The filter to set
@@ -102,6 +110,10 @@ export interface FrontendAPIInterface {
 
         /**
          * Update a filter in the list
+         * 
+         * Filters visibility in badge is automatically determined by column configuration:
+         * - Hidden if column has showIn.filter: false
+         * - Hidden if field name starts with underscore (e.g., _universal_search)
          * 
          * Example:
          * 
