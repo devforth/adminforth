@@ -206,3 +206,165 @@ plugins: [
 ],
 ...
 ```
+
+## Passkeys setup
+
+If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
+
+First, you need to create a passkeys table in your schema.prisma file:
+
+```ts title='./schema.prisma'
+  //diff-add
+  model passkeys {
+  //diff-add
+    credential_id           String @id 
+  //diff-add
+    user_id                 String
+  //diff-add
+    meta                    String
+  //diff-add
+    @@index([user_id])
+  //diff-add
+  }
+```
+
+And make migration:
+
+```bash
+npm run makemigration -- --name add-passkeys ; npm run migrate:local
+```
+
+
+Next, you need to create a new resource for passkeys:
+
+```ts title='./resources/passkeys.ts'
+  import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
+
+  export default {
+    dataSource: 'maindb',
+    table: 'passkeys',
+    resourceId: 'passkeys',
+    label: 'Passkeys',
+    columns: [
+      {
+        name: 'credential_id',
+        label: 'Credential ID',
+        primaryKey: true,
+      },
+      {
+        name: 'user_id',
+        label: 'User ID',
+      },
+      {
+        name: "meta",
+        type: AdminForthDataTypes.JSON,
+        label: "Meta",
+      }
+    ],
+    plugins: [],
+    options: {},
+  } as AdminForthResourceInput;
+```
+
+Add the new resource to index.ts:
+
+```ts title='./index.ts'
+    ...
+  //diff-add
+  import passkeysResource from './resources/passkeys.js';
+    ...
+
+  resources: [
+    ...
+  //diff-add
+  passkeysResource,
+    ...
+  ],
+```
+
+Now, update the settings of the Two-Factor Authentication plugin:
+
+```ts tittle='./resources/adminuser.ts'
+  plugins: [
+    new TwoFactorsAuthPlugin ({ 
+      twoFaSecretFieldName: 'secret2fa', 
+      timeStepWindow: 1       
+      //diff-add
+      passkeys: {
+        //diff-add
+        credentialResourceID: "passkeys",
+        //diff-add
+        credentialIdFieldName: "credential_id",
+        //diff-add
+        credentialMetaFieldName: "meta",
+        //diff-add
+        credentialUserIdFieldName: "user_id",
+        //diff-add
+        settings: {
+          // diff-add
+          // relying party config
+          //diff-add
+            rp: {
+              //diff-add
+                name: "New Reality",
+                // diff-add
+                // id should be a app domain name without port
+                // diff-add
+                // e.g. if you run locally in https://localhost:3500 -> then write "localhost"
+                // diff-add
+                // if you run at https://myadmin.myproduct.com -> write  "myadmin.myproduct.com"
+                //diff-add
+                id: "localhost",
+                //diff-add
+            },
+            //diff-add
+            user: {
+              //diff-add
+                nameField: "email",
+                //diff-add
+                displayNameField: "email",
+                //diff-add
+            },
+            //diff-add
+            authenticatorSelection: {
+              // diff-add
+              //  Can be "platform" or "cross-platform"
+              //diff-add
+                authenticatorAttachment: "platform",
+                //diff-add
+                requireResidentKey: true,
+                //diff-add
+                userVerification: "required",
+                //diff-add
+            },
+            //diff-add
+        },
+        //diff-add
+      } 
+    }),
+  ],
+```
+> ☝️ most likely you should set `passkeys.settings.rp.id` it from your process.env depending on your env
+
+The setup is complete. To create a passkey:
+
+> 1) Go to the user menu
+> 2) Click settings
+> 3) Select "passkeys"
+
+ ![alt text](Passkeys1.png)
+
+> 4) Add passkey
+
+ ![alt text](Passkeys2.png)
+
+
+After adding passkey you can use passkey, instead of TOTP:
+
+ ![alt text](Passkeys3.png)
+
+> 💡 **Note**: Adding a passkey does not remove the option to use TOTP. If you lose access to your passkey, you can log in using TOTP and reset your passkey.
+
+
+
+
