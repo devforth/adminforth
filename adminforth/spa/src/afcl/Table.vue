@@ -4,7 +4,7 @@
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
           <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
             <tr>
-              <th scope="col" class="px-6 py-3" ref="headerRefs"
+              <th scope="col" class="px-6 py-3" ref="headerRefs" :key="`header-${column.fieldName}`"
                 v-for="column in columns"
               >
                 <slot v-if="$slots[`header:${column.fieldName}`]" :name="`header:${column.fieldName}`" :column="column" />
@@ -34,13 +34,14 @@
             <tr
               v-else="!isLoading"
               v-for="(item, index) in dataPage"
+              :key="`row-${index}`"
               ref="rowRefs"
               :class="{
                 'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
                 'border-b border-lightTableBorder dark:border-darkTableBorder': index !== dataPage.length - 1 || totalPages > 1,
               }"
             >
-              <td class="px-6 py-4" 
+              <td class="px-6 py-4" :key="`cell-${index}-${column.fieldName}`"
                 v-for="column in props.columns"
               >
                 <slot v-if="$slots[`cell:${column.fieldName}`]" 
