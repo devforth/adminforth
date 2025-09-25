@@ -228,6 +228,13 @@ First, you need to create a passkeys table in your schema.prisma file:
   }
 ```
 
+And make migration:
+
+```bash
+npm run makemigration -- --name add-passkeys ; npm run migrate:local
+```
+
+
 Next, you need to create a new resource for passkeys:
 
 ```ts title='./resources/passkeys.ts'
@@ -277,7 +284,7 @@ Add the new resource to index.ts:
 
 Now, update the settings of the Two-Factor Authentication plugin:
 
-```ts tittle="./resources/adminuser.ts"
+```ts tittle='./resources/adminuser.ts'
   plugins: [
     new TwoFactorsAuthPlugin ({ 
       twoFaSecretFieldName: 'secret2fa', 
