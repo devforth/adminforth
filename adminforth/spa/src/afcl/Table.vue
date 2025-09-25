@@ -17,13 +17,13 @@
           </thead>
           <tbody>
             <SkeleteLoader 
-              v-if="isLoading" 
+              v-if="isLoading || props.isLoading" 
               :rows="pageSize" 
               :columns="columns.length" 
               :row-heights="rowHeights"
               :column-widths="columnWidths"
             />
-            <tr v-else-if="!isLoading && dataPage.length === 0" class="afcl-table-empty-body">
+            <tr v-else-if="!isLoading && !props.isLoading && dataPage.length === 0" class="afcl-table-empty-body">
               <td :colspan="columns.length" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center justify-center text-lightTableText dark:text-darkTableText">
                   <IconTableRowOutline class="w-10 h-10 mb-4 text-gray-400 dark:text-gray-500" />
@@ -32,7 +32,7 @@
               </td>
             </tr>
             <tr
-              v-else="!isLoading"
+              v-else="!isLoading && !props.isLoading"
               v-for="(item, index) in dataPage"
               :key="`row-${index}`"
               ref="rowRefs"
@@ -49,7 +49,7 @@
                   :item="item" :column="column"
                 >
                 </slot>
-                <span v-else-if="!isLoading" >
+                <span v-else-if="!isLoading || props.isLoading" >
                   {{ item[column.fieldName] }}
                 </span>
                 <div v-else>
@@ -142,9 +142,10 @@
       }[] | ((params: { offset: number, limit: number }) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
+      isLoading?: boolean,
     }>(), {
       evenHighlights: true,
-      pageSize: 10,
+      pageSize: 5,
     }
   );
 
