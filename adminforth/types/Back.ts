@@ -1036,6 +1036,16 @@ export interface AdminForthInputConfig {
        * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
        */
       clientIpHeader?: string,
+
+      /**
+       * Add custom page to the settings page
+       */
+      userMenuSettingsPages: {
+        icon?: string,
+        pageLabel: string,
+        slug?: string,
+        component: string
+      }[],
     },
 
      /**
