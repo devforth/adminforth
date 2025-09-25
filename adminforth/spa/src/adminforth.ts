@@ -120,23 +120,27 @@ class FrontendAPI implements FrontendAPIInterface {
   listFilterValidation(filter: FilterParams): boolean {
     if(router.currentRoute.value.meta.type !== 'list'){
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
-    } else {
-      console.log(this.coreStore.resourceColumnsWithFilters,'core store')
-      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumnCommon) => col.name === filter.field)
-      if(!filterField){
-          throw new Error(`Field ${filter.field} is not available for filtering`)
-      }
-      
     }
     return true
   }
 
   setListFilter(filter: FilterParams): void {
     if(this.listFilterValidation(filter)){
-      if(this.filtersStore.filters.some((f: any) => {return f.field === filter.field && f.operator === filter.operator})){
-        throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
+      const existingFilterIndex = this.filtersStore.filters.findIndex((f: any) => {
+        return f.field === filter.field && f.operator === filter.operator
+      });
+      
+      if(existingFilterIndex !== -1){
+        // Update existing filter instead of throwing error
+        const filters = [...this.filtersStore.filters];
+        if (filter.value === undefined) {
+          filters.splice(existingFilterIndex, 1);
+        } else {
+          filters[existingFilterIndex] = filter;
+        }
+        this.filtersStore.setFilters(filters);
       } else {
-        this.filtersStore.setFilter(filter)
+        this.filtersStore.setFilter(filter);
       }
     }
   }

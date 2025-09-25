@@ -9,7 +9,7 @@ steps:
   init-secrets:
     when:
       - event: push
-    image: infisical/cli
+    image: infisical/cli:0.42.3
     environment:
       INFISICAL_TOKEN:
         from_secret: VAULT_TOKEN

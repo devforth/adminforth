@@ -375,6 +375,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
+          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
         }
 
         // translate menu labels

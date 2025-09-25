@@ -59,6 +59,9 @@
                       :adminUser="coreStore.adminUser"
                     />
                   </li>
+                  <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
+                    <UserMenuSettingsButton />
+                  </li>
                   <li>
                     <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">{{ $t('Sign out') }}</button>
                   </li>
@@ -268,7 +271,7 @@ import type { AdminForthConfigMenuItem, AnnouncementBadgeResponse } from './type
 import { Tooltip } from '@/afcl';
 import { initFrontedAPI } from '@/adminforth';
 import adminforth from '@/adminforth';
-
+import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
