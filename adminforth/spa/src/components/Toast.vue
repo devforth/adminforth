@@ -33,7 +33,7 @@
     <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-else>
         <div class="flex flex-col items-center justify-center">
             {{toast.message}}
-            <div class="flex justify-center mt-2 gap-2">
+            <div v-if="toast.buttons" class="flex justify-center mt-2 gap-2">
                 <div v-for="button in toast.buttons" class="rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
                     <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10">
                         {{ button.label }}
