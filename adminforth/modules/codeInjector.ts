@@ -85,6 +85,11 @@ class CodeInjector implements ICodeInjector {
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
   }
 
+  registerCustomComponent(filePath: string): void {
+    const componentName = getComponentNameFromPath(filePath);
+    this.allComponentNames[filePath] = componentName;
+  }
+
   cleanup() {
     console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {

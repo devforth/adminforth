@@ -468,9 +468,13 @@ import { Link } from '@/afcl';
 
 If you set `customLayout: true` in the `meta` object, it will not include default layout like sidebar and header, so you can create your own layout for this page. 
 
-> **Redirects to login page**: Any route which has sidebar and header (e.g. default CRUD pages or menu item with `component`) uses internal AdminForth REST API to fetch menu items and user information, so it passes authentication check and if authentication cookie is not provided or has expired JWT user gets redirected to the login page.
-> In case if you set `customLayout: true`, it will not call these APIs so user will not be automatically redirected to the login page in case of expired or not-provided authentication cookie. That feature allows you to implement public pages without authentication, e.g. Terms of Service, Privacy Policy and many others. In case if you need to check if user is logged in just call any custom API which has `admin.express.authorize` middleware. Obviously for public pages you should create API endpoint WITHOUT `admin.express.authorize` middleware.
+### Disable redirects to login page (Public pages)
 
+Any route which has sidebar and header (e.g. default CRUD pages or menu item with `component`) uses internal AdminForth REST API to fetch menu items and user information, so it passes authentication check and if authentication cookie is not provided or has expired JWT user gets redirected to the login page.
+
+In case if you set `customLayout: true`, it will not call these APIs so user will not be automatically redirected to the login page in case of expired or not-provided authentication cookie. That feature allows you to implement public pages without authentication, e.g. Terms of Service, Privacy Policy and many others. In case if you need to check if user is logged in just call any custom API which has `admin.express.authorize` middleware. Obviously for public pages if they use any APIs you should create API endpoint WITHOUT `admin.express.authorize` middleware.
+
+> Please note that AdminForth uses classic SPA Vue app, so even public pages will be rendered by JavaScript in the browser and not on the server side. If your public page should be indexed by search engines, you should use some SSR framework like Nuxt.js to create such pages. At the same time public pages can still be usefull if you don't focus on old-fashioned search engines (modern search engines can index SPA pages as well) or if indexing is not important for such pages at all (e.g. Terms of Service, Privacy Policy, Contact Us and many others).
 
 ### Passing meta attributes to the page
 

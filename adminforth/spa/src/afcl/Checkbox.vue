@@ -6,13 +6,13 @@
         type="checkbox"
         :checked="props.modelValue"
         :disabled="props.disabled"
-        @change="$emit('update:modelValue', $event.target.checked)"
+        @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
         class="peer appearance-none min-w-4 min-h-4 bg-lightCheckboxBgUnchecked border border-lightCheckboxBorderColor rounded-sm checked:bg-lightCheckboxBgChecked 
                         focus:ring-lightFocusRing dark:focus:ring-darkFocusRing dark:focus:ring-darkFocusRing
                         focus:ring-2 dark:bg-darkCheckboxBgUnchecked dark:border-darkCheckboxBorderColor dark:checked:bg-darkCheckboxBgChecked cursor-pointer"
         >     
         <div class="pointer-events-none absolute text-lightCheckboxIconColor dark:text-darkCheckboxIconColor leading-none peer-checked:block hidden">
-          <IconCheckOutline style="width: 1.1rem; height: 1.1rem;" />
+          <IconCheckOutline class="w-[1.1rem] h-[1.1rem]" />
         </div> 
     </div>
     <label :for="id" class="ms-2 text-sm font-medium text-lightTextLabel dark:text-darkTextLabel">

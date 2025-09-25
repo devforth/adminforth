@@ -30,7 +30,18 @@
     </div>
 
     <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-if="toast.messageHtml" v-html="toast.messageHtml"></div>
-    <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-else>{{toast.message}}</div>
+    <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-else>
+        <div class="flex flex-col items-center justify-center">
+            {{toast.message}}
+            <div v-if="toast.buttons" class="flex justify-center mt-2 gap-2">
+                <div v-for="button in toast.buttons" class="rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
+                    <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10">
+                        {{ button.label }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <button @click="closeToast" type="button" class="ms-auto -mx-1.5 -my-1.5 bg-lightToastCloseIconBackground text-lightToastCloseIcon hover:text-lightToastCloseIconHover rounded-lg focus:ring-2 focus:ring-lightToastCloseIconFocusRing p-1.5 hover:bg-lightToastCloseIconBackgroundHover inline-flex items-center justify-center h-8 w-8 dark:text-darkToastCloseIcon dark:hover:text-darkToastCloseIconHover dark:bg-darkToastCloseIconBackground dark:hover:bg-darkToastCloseIconBackgroundHover dark:focus:ring-darkToastCloseIconFocusRing" >
         <svg class="w-3 h-3"  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -53,16 +64,28 @@ const props = defineProps<{
         variant: string;
         id: string;
         timeout?: number|'unlimited';
+        buttons?: { value: any; label: string }[];
     }
 }>();
 function closeToast() {
+    // resolve with undefined on close (X button)
+    toastStore.resolveToast(props.toast.id);
+    emit('close');
+}
+
+function onButtonClick(value: any) {
+    toastStore.resolveToast(props.toast.id, value);
     emit('close');
 }
 
 onMounted(() => {
     if (props.toast.timeout === 'unlimited') return;
     else { 
-      setTimeout(() => {emit('close');}, (props.toast.timeout || 10) * 1e3 );
+      setTimeout(() => {
+        // resolve with undefined on auto-timeout
+        toastStore.resolveToast(props.toast.id);
+        emit('close');
+      }, (props.toast.timeout || 10) * 1e3 );
     }
 });
 

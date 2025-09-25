@@ -78,13 +78,21 @@
     >
       <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder">
         <div class="af-logo-title-wrapper flex ms-2 m-4">
-          <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3"  />
+          <img v-if="coreStore.config?.showBrandLogoInSidebar !== false" :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3"  />
           <span 
             v-if="coreStore.config?.showBrandNameInSidebar"
             class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
           >
             {{ coreStore.config?.brandName }}
           </span>
+          <div class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
+            <component 
+              v-for="c in coreStore?.config?.globalInjections?.sidebarTop || []"
+              :is="getCustomComponent(c)"
+              :meta="c.meta"
+              :adminUser="coreStore.adminUser"
+            />
+          </div>
         </div>
 
         <ul class="af-sidebar-container space-y-2 font-medium">
@@ -195,7 +203,7 @@
       </div>
     </div>
     <AcceptModal />
-    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-50">
+    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-[100]">
       <transition-group
         name="fade"
         tag="div"
@@ -274,7 +282,7 @@ const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
 //create a ref to store the opened menu items with ts type;
-const opened = ref<string[]>([]);
+const opened = ref<(string|number)[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
@@ -296,7 +304,7 @@ function toggleTheme() {
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem(label: string) {
+function clickOnMenuItem(label: string | number) {
   if (opened.value.includes(label)) {
     opened.value = opened.value.filter((item) => item !== label);
   } else {

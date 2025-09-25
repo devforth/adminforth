@@ -37,6 +37,17 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
         :options="{
           chart: {
             height: 250,
+            events: {
+              dataPointSelection: function (event, chartContext, config) {
+                if (config.selectedDataPoints[0].length) {
+                  const selectedRoomsCount = data[config.dataPointIndex].rooms;
+                  adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+                } else {
+                  // clear filter
+                  adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
+                }
+              }
+            }
           },
           dataLabels: {
             enabled: true,
@@ -213,7 +224,7 @@ Now create file `CustomLoginHeader.vue` in the `custom` folder of your project:
 ## List view page injections shrinking: thin enough to shrink?
 
 
-When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
+When none of `bottom`, `beforeBreadcrumbs`, `beforeActionButtons`, `afterBreadcrumbs` injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
 
 ![alt text](<Group 15.png>)
 
@@ -277,7 +288,7 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 ```html title="./custom/CheckReadingTime.vue"
 <template>
   <div class="text-gray-500 text-sm">
-    <div @click="checkReadingTime" class="cursor-pointer flex gap-2 items-center">
+    <div class="cursor-pointer flex gap-2 items-center">
       Check reading time
     </div>
   </div>
@@ -286,6 +297,10 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 <script setup>
 import { getReadingTime} from "text-analyzer";
 import adminforth from '@/adminforth';
+
+defineExpose({
+  click,
+});
 
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
@@ -298,6 +313,11 @@ function checkReadingTime() {
   }
   adminforth.list.closeThreeDotsDropdown();
 }
+
+function click() {
+  checkReadingTime();
+}
+
 </script>
 ```
 
@@ -312,6 +332,7 @@ npm i text-analyzer
 
 > ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
+>☝️ Please note that the injected component might have an exposed click function as well as a defined click function, which executes the click on component logic.
 
 ## List table custom action icons
 
@@ -375,6 +396,50 @@ cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
 
+## List table beforeActionButtons
+
+`beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
+
+![alt text](<Group 5.png>)
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        beforeActionButtons: {
+          file: '@@/UniversalQuickSearch.vue',
+          meta: {
+            thinEnoughToShrinkTable: true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Multiple components:
+
+```ts
+beforeActionButtons: [
+  {
+    file: '@@/UniversalQuickSearch.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  },
+  {
+    file: '@@/RecordsSummary.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  }
+]
+```
+
+> ☝️ Keep these components visually light; wide or tall content should use `afterBreadcrumbs` or `bottom` instead.
+
+## List table custom
+
 ## Global Injections
 
 You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu
@@ -426,6 +491,7 @@ Also there are:
 
 * `config.customization.globalInjections.header`
 * `config.customization.globalInjections.sidebar`
+* `config.customization.globalInjections.sidebarTop` — renders inline at the very top of the sidebar, on the same row with the logo/brand name. If the logo is hidden via `showBrandLogoInSidebar: false`, this area expands to the whole row width.
 * `config.customization.globalInjections.everyPageBottom`
 
 Unlike `userMenu`, `header` and `sidebar` injections, `everyPageBottom` will be added to the bottom of every page even when user is not logged in.
@@ -470,3 +536,22 @@ onMounted(() => {
 });
 </script>
 ```
+
+## Sidebar Top Injection
+
+You can place compact controls on the very top line of the sidebar, next to the logo/brand name:
+
+```ts title="/index.ts"
+new AdminForth({
+  ...
+  customization: {
+    globalInjections: {
+      sidebarTop: [
+        '@@/QuickSwitch.vue',
+      ],
+    }
+  }
+})
+```
+
+If you hide the logo with `showBrandLogoInSidebar: false`, components injected via `sidebarTop` will take the whole line width.

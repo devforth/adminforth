@@ -595,6 +595,41 @@ const closeDialog = () => {
 }
 ```
 
+### Before open/close dialog handlers
+If you want to run custom logic before the dialog opens or closes by passing callback props:
+
+```ts
+<Dialog 
+  class="w-96" 
+  :beforeCloseFunction="onBeforeOpen" 
+  :beforeOpenFunction="onBeforeClose"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+Now you can pass before open/close functions:
+```ts
+const counter = ref(0);
+
+function onBeforeOpen() {
+  counter.value++;
+  console.log(`custom open function called ${counter.value}`);
+}
+
+function onBeforeClose() {
+  counter.value++;
+  console.log(`custom close function called ${counter.value}`);
+}
+```
+
+
 ## Dropzone
 
 ```ts
@@ -762,7 +797,7 @@ const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.f
 
 
 
-## Pagination
+### Pagination
 
 Table provides front-end side pagination. You can set `pageSize` (default is 10) to set how many rows to show per page.
 If there is less then `pageSize` rows, pagination will not be shown.
@@ -794,6 +829,38 @@ If there is less then `pageSize` rows, pagination will not be shown.
   </div>
 </div>
 
+### Server-side pagination
+
+To load pages dynamically, simply pass async callback to data:
+
+```ts
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 3 // should return total amount of records in database
+  }
+}
+
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+//diff-remove
+  :data="[...] 
+//diff-add
+  :data="loadPageData"
+
+  :pageSize="3"> </Table>
+```
+> 👆 The page size is used as the limit for pagination.
 
 ## ProgressBar
 
@@ -1783,8 +1850,34 @@ import { JsonViever } from '@/afcl'
   ```
 </div>
   <div>
-    ![Mixed Chart](image-93.png)
+    ![JSON Viewer](image-93.png)
   </div>
 </div>
+
+## Date picker
+
+```ts
+import { DatePicker } from '@/afcl';
+const datePickerValue = ref()
+```
+
+### Basic
+<div class="split-screen" >
+
+<div>
+```html
+<DatePicker
+  v-model:datePickerValue="datePickerValue"
+  :column="{ type: 'datetime' }"
+  label="Pick start"
+/>
+```
+</div>
+  <div>
+    ![Date Picker](image-95.png)
+  </div>
+</div>
+
+
 
 

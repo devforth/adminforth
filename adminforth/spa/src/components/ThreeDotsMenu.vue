@@ -1,5 +1,5 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length">
+  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
     <button 
       data-dropdown-toggle="listThreeDotsDropdown" 
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
@@ -14,16 +14,26 @@
       id="listThreeDotsDropdown" 
       class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
-          <li v-for="item in threeDotsDropdownItems" :key="`dropdown-item-${item.label}`">
-            <a href="#" class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
-              <component :is="getCustomComponent(item)" 
+          <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
+            <a  href="#" 
+              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+              :class="{
+                'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
+                'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
+                'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
+              }"
+              @click="injectedComponentClick(i)">
+              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)" 
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
+                :checkboxes="checkboxes"
+                :updateList="props.updateList"
+                :clearCheckboxes="clearCheckboxes"
               />
             </a>
           </li>
-          <li v-for="action in customActions" :key="action.id">
+          <li v-if="customActions" v-for="action in customActions" :key="action.id">
             <a href="#" @click.prevent="handleActionClick(action)" class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
               <div class="flex items-center gap-2">
                 <component 
@@ -32,6 +42,24 @@
                   class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
                 />
                 {{ action.name }}
+              </div>
+            </a>
+          </li>
+          <li v-for="action in bulkActions?.filter((a:AdminForthBulkActionCommon ) => a.showInThreeDotsDropdown)" :key="action.id">
+            <a href="#" @click.prevent="startBulkAction(action.id)" 
+                class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+                :class="{
+                  'pointer-events-none': checkboxes && checkboxes.length === 0,
+                  'opacity-50': checkboxes && checkboxes.length === 0,
+                  'cursor-not-allowed': checkboxes && checkboxes.length === 0
+                }">
+              <div class="flex items-center gap-2">
+                <component 
+                  v-if="action.icon" 
+                  :is="getIcon(action.icon)" 
+                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                />
+                {{ action.label }}
               </div>
             </a>
           </li>
@@ -47,17 +75,36 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
+import type { AdminForthComponentDeclarationFull, AdminForthBulkActionCommon, AdminForthActionInput } from '@/types/Common.js';
+import { ref, type ComponentPublicInstance } from 'vue';
 
 const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
+const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
 
 const props = defineProps({
-  threeDotsDropdownItems: Array,
-  customActions: Array
+  threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
+  customActions: Array<AdminForthActionInput>,
+  bulkActions: Array<AdminForthBulkActionCommon>,
+  checkboxes: Array,
+  updateList: {
+    type: Function,
+  },
+  clearCheckboxes: {
+    type: Function
+  }
 });
 
-async function handleActionClick(action) {
+const emit = defineEmits(['startBulkAction']);
+
+function setComponentRef(el: ComponentPublicInstance | null, index: number) {
+  if (el) {
+    threeDotsDropdownItemsRefs.value[index] = el;
+  }
+}
+
+async function handleActionClick(action: AdminForthActionInput) {
   adminforth.list.closeThreeDotsDropdown();
   
   const actionId = action.id;
@@ -88,8 +135,8 @@ async function handleActionClick(action) {
   
   if (data?.ok) {
     await coreStore.fetchRecord({
-      resourceId: route.params.resourceId, 
-      primaryKey: route.params.primaryKey,
+      resourceId: route.params.resourceId as string, 
+      primaryKey: route.params.primaryKey as string,
       source: 'show',
     });
 
@@ -106,6 +153,18 @@ async function handleActionClick(action) {
       message: data.error,
       variant: 'danger'
     });
+  }
+}
+
+function startBulkAction(actionId: string) {
+  adminforth.list.closeThreeDotsDropdown();
+  emit('startBulkAction', actionId);
+}
+
+async function injectedComponentClick(index: number) {
+  const componentRef = threeDotsDropdownItemsRefs.value[index];
+  if (componentRef && 'click' in componentRef) {
+    (componentRef as any).click?.();
   }
 }
 </script>

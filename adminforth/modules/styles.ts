@@ -172,9 +172,10 @@ export const styles = () => ({
     lightFocusRing: "alias:lightPrimary lighten", //focus ring color
     lightTextLabel: "black", //text color of checkbox label
 
-    lightToggleBgUnactive: "alias:lightPrimaryContrast darken", //toggle unactive state background
+    lightToggleBgUnactive: "alias:lightPrimaryContrast", //toggle unactive state background
     lightToggleBgActive: "alias:lightPrimary darken", //toggle active state background
-    lightToggleCircle: "alias:lightPrimaryContrast lighten", //toggle circle color
+    lightToggleCircleUnactive: "alias:lightPrimary",
+    lightToggleCircleActive: "alias:lightToggleBgUnactive",        
     lightToggleRing: "alias:lightPrimary lighten", // toggle ring color
     lightToggleText: "black",  // color of text next to toggle
     lightToggleBorderUnactive: "alias:lightPrimary lighten", // unactive state border
@@ -250,6 +251,9 @@ export const styles = () => ({
     lightTableOddBackground: "#FFFFFF",
     lightTablePaginationText: "#6B7280",
     lightTablePaginationNumeration: "#111827",
+    lightTablePaginationInputBackground: "#FFFFFF",
+    lightTablePaginationInputBorder: "#D1D5DB",
+    lightTablePaginationInputText: "#111827",
     lightUnactivePaginationButtonBackground: "#FFFFFF",
     lightUnactivePaginationButtonText: "#6B7280",
     lightUnactivePaginationButtonBorder: "#D1D5DB",
@@ -579,6 +583,9 @@ export const styles = () => ({
     darkTableOddBackground: "#111827",
     darkTablePaginationText: "#9CA3AF",
     darkTablePaginationNumeration: "#FFFFFF",
+    darkTablePaginationInputBackground: "#1f2937",
+    darkTablePaginationInputBorder: "#374151",
+    darkTablePaginationInputText: "#FFFFFF",
     darkUnactivePaginationButtonBackground: "#1F2937",
     darkUnactivePaginationButtonText: "#9CA3AF",
     darkUnactivePaginationButtonBorder: "#374151",
