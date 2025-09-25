@@ -72,6 +72,7 @@ Go to bucket settings, Permissions, Object ownership and select "ACLs Enabled" a
             "*"
         ],
         "AllowedMethods": [
+            "HEAD",
             "PUT"
         ],
         "AllowedOrigins": [

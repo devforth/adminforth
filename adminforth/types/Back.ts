@@ -8,12 +8,12 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
   type AdminForthResourceColumnCommon,
-  AdminForthResourceInputCommon,
-  AdminForthComponentDeclarationFull,
-  AdminForthConfigMenuItem,
-  AnnouncementBadgeResponse,
+  type AdminForthResourceInputCommon,
+  type AdminForthComponentDeclarationFull,
+  type AdminForthConfigMenuItem,
+  type AnnouncementBadgeResponse,
   AdminForthResourcePages,
-  AdminForthResourceColumnInputCommon,
+  type AdminForthResourceColumnInputCommon,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -22,7 +22,7 @@ export interface ICodeInjector {
   devServerPort: number;
 
   getServeDir(): string;
-
+  registerCustomComponent(filePath: string): void;
   spaTmpPath(): string;
 }
 
@@ -130,7 +130,9 @@ export interface IAdminForthSingleFilter {
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
   value?: any;
+  rightField?: string;
   insecureRawSQL?: string;
+  insecureRawNoSQL?: any;
 }
 export interface IAdminForthAndOrFilter {
   operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;
@@ -648,6 +650,12 @@ interface AdminForthInputConfigCustomization {
   showBrandNameInSidebar?: boolean,
 
   /**
+   * Whether to show brand logo in sidebar
+   * default is true
+   */
+  showBrandLogoInSidebar?: boolean,
+
+  /**
    * Path to your app logo
    * 
    * Example:
@@ -779,6 +787,7 @@ interface AdminForthInputConfigCustomization {
     userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    sidebarTop?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
@@ -1101,6 +1110,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
 
@@ -1155,6 +1165,21 @@ export class Filters {
   }
   static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
+  }
+  static ILIKE(field: string, value: any): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.ILIKE, value };
+  }
+  static GT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GT, rightField };
+  }
+  static GTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GTE, rightField };
+  }
+  static LT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LT, rightField };
+  }
+  static LTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LTE, rightField };
   }
   static AND(
     ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]

@@ -26,8 +26,8 @@ const props = withDefaults(defineProps<{
     rowHeights?: number[];
     columnWidths?: number[];
 }>(), {
-    rowHeights: [],
-    columnWidths: [],
+    rowHeights: () => [],
+    columnWidths: () => [],
 });
 
 </script>

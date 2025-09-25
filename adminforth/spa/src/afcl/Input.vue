@@ -12,7 +12,7 @@
       ref="input"
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', $event.target?.value)"
+      @input="$emit('update:modelValue', type === 'number' ? Number(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
       class="afcl-input inline-flex bg-lightInputBackground border border-lightInputBorder text-lightInputText text-sm rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
