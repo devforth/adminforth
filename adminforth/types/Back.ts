@@ -22,7 +22,7 @@ export interface ICodeInjector {
   devServerPort: number;
 
   getServeDir(): string;
-
+  registerCustomComponent(filePath: string): void;
   spaTmpPath(): string;
 }
 
