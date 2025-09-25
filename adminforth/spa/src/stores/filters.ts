@@ -14,20 +14,10 @@ export const useFiltersStore = defineStore('filters', () => {
         return sort.value;
     }
     const setFilter = (filter: any) => {
-        const shouldHide = shouldFilterBeHidden(filter.field);
-        filters.value.push({ 
-            ...filter, 
-            countInBadge: !shouldHide 
-        });
+        filters.value.push(filter);
     }
     const setFilters = (f: any) => {
-        filters.value = f.map((filter: any) => {
-            if (filter.countInBadge === undefined) {
-                const shouldHide = shouldFilterBeHidden(filter.field);
-                return { ...filter, countInBadge: !shouldHide };
-            }
-            return filter;
-        });
+        filters.value = f;
     }
     const getFilters = () => {
         return filters.value;
@@ -47,7 +37,7 @@ export const useFiltersStore = defineStore('filters', () => {
     }
 
     const visibleFiltersCount = computed(() => {
-        return filters.value.filter(f => f.countInBadge !== false).length;
+        return filters.value.filter(f => !shouldFilterBeHidden(f.field)).length;
     });
 
     return {
