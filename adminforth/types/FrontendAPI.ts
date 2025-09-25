@@ -115,7 +115,6 @@ export interface FrontendAPIInterface {
          * 
          * Filters visibility in badge is automatically determined by column configuration:
          * - Hidden if column has showIn.filter: false
-         * - Hidden if field name starts with underscore (e.g., _universal_search)
          * 
          * Example:
          * 
