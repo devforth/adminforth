@@ -301,10 +301,18 @@ Now, update the settings of the Two-Factor Authentication plugin:
         credentialUserIdFieldName: "user_id",
         //diff-add
         settings: {
+          // diff-add
+          // relying party config
           //diff-add
             rp: {
               //diff-add
                 name: "New Reality",
+                // diff-add
+                // id should be a app domain name without port
+                // diff-add
+                // e.g. if you run locally in https://localhost:3500 -> then write "localhost"
+                // diff-add
+                // if you run at https://myadmin.myproduct.com -> write  "myadmin.myproduct.com"
                 //diff-add
                 id: "localhost",
                 //diff-add
@@ -319,6 +327,8 @@ Now, update the settings of the Two-Factor Authentication plugin:
             },
             //diff-add
             authenticatorSelection: {
+              // diff-add
+              //  Can be "platform" or "cross-platform"
               //diff-add
                 authenticatorAttachment: "platform",
                 //diff-add
@@ -334,6 +344,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
     }),
   ],
 ```
+> ☝️ most likely you should set `passkeys.settings.rp.id` it from your process.env depending on your env
 
 The setup is complete. To create a passkey:
 
