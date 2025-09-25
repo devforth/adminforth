@@ -85,6 +85,11 @@ class CodeInjector implements ICodeInjector {
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
   }
 
+  registerCustomComponent(filePath: string): void {
+    const componentName = getComponentNameFromPath(filePath);
+    this.allComponentNames[filePath] = componentName;
+  }
+
   cleanup() {
     console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
@@ -323,10 +328,20 @@ class CodeInjector implements ICodeInjector {
             }
           },`})
     }}
+    const registerSettingPages = ( settingPage ) => {
+      if (!settingPage) {
+        return;
+      }
+      for (const page of settingPage) {
+        if (page.icon) {
+          icons.push(page.icon);
+        }
+      }
+    }
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
-
+    registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
     if (process.env.HEAVY_DEBUG) {
@@ -470,6 +485,12 @@ class CodeInjector implements ICodeInjector {
       Object.values(this.adminforth.config.customization.loginPageInjections).forEach((injection) => {
         checkInjections(injection);
       });
+    }
+
+    if (this.adminforth.config.auth.userMenuSettingsPages) {
+      for (const settingPage of this.adminforth.config.auth.userMenuSettingsPages) {
+        checkInjections([{ file: settingPage.component }]);
+      }
     }
 
 

@@ -999,6 +999,11 @@ export default class ConfigValidator implements IConfigValidator {
         const similar = suggestIfTypo(newConfig.resources.map((res) => res.resourceId ), newConfig.auth.usersResourceId);
         throw new Error(`Resource with id "${newConfig.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
       }
+      if (newConfig.auth.userMenuSettingsPages) {
+        for (const page of newConfig.auth.userMenuSettingsPages) {
+          this.validateComponent({file: page.component}, errors);
+        }
+      }
 
       // normalize beforeLoginConfirmation hooks
       const blc = this.inputConfig.auth.beforeLoginConfirmation;
