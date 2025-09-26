@@ -668,6 +668,19 @@ interface AdminForthInputConfigCustomization {
    */
   brandLogo?: string,
 
+
+  /**
+   * Path to your app logo for icon only sidebar
+   * 
+   * Example:
+   * Place file `logo.svg` to `./custom` folder and set this option:
+   * 
+   */
+  iconOnlySidebar?: {
+    logo?: string,
+    enabled?: boolean,
+  },
+
   /**
    * Path to your app favicon
    * 
