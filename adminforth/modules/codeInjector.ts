@@ -331,7 +331,6 @@ class CodeInjector implements ICodeInjector {
         if (page.icon) {
           icons.push(page.icon);
         }
-        page.slug = page.slug ?? slugifyString(page.pageLabel);
       }
     }
 
