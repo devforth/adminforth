@@ -289,7 +289,7 @@ function getFilterItem({ column, operator }) {
 }
 
 async function clear() {
-  filtersStore.clearFilters();
+  filtersStore.filters = [...filtersStore.filters.filter(f => filtersStore.shouldFilterBeHidden(f.field))];
   emits('update:filters', [...filtersStore.filters]);
 }
 
