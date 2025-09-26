@@ -21,7 +21,7 @@
       }" >
     </component>
     <span 
-      class="overflow-hidden block ms-3 text-left rtl:text-right transition-all duration-200 ease-in-out"
+      class="overflow-hidden block ms-3 pr-5 text-left rtl:text-right transition-all duration-200 ease-in-out"
       :class="{
         'opacity-0 ms-0 translate-x-4 flex-none': isSidebarIconOnly && !isSidebarHovering,
         'opacity-100 ms-3 translate-x-0 flex-none': isSidebarIconOnly && isSidebarHovering,
@@ -37,18 +37,18 @@
       } : {}"
     >
       {{ item.label }}
-      <template v-if="item.badge && (!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))">
-        <Tooltip v-if="item.badgeTooltip">
-          <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
-          <template #tooltip>
-            {{ item.badgeTooltip }}
-          </template>
-        </Tooltip>
-        <template v-else>
-          <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
+    </span>
+    <span class="absolute right-1 top-1/2 -translate-y-1/2" v-if="item.badge && (!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))">
+      <Tooltip v-if="item.badgeTooltip">
+        <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+        fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
+        <template #tooltip>
+          {{ item.badgeTooltip }}
         </template>
+      </Tooltip>
+      <template v-else>
+        <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+        fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
       </template>
     </span>
     <div v-if="item.badge && isSidebarIconOnly && !isSidebarHovering"  class="af-badge absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-2 w-2 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
