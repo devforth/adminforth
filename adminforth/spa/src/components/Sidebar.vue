@@ -89,7 +89,7 @@
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
             <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
             ">{{ item.label }}</div>
-            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="opacity-0 w-1">{{ item.label }}</div>
+            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="opacity-0 w-1 h-8">{{ item.label }}</div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
                 <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button relative flex items-center h-10 w-full px-3.5 py-2 text-base text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
                     :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
@@ -145,7 +145,7 @@
      </ul>
 
 
-      <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+      <div id="dropdown-cta" class="p-4 mt-6 w-[230px] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
         v-if="(ctaBadge && !isSidebarIconOnly) || (ctaBadge && isSidebarIconOnly && isSidebarHovering)"
       >
@@ -355,6 +355,8 @@ watch(()=>coreStore.menu, () => {
   });
 })
 
+
+
 watch(isSidebarIconOnly, (isIconOnly) => {
   if (!isMobile.value && iconOnlySidebarEnabled.value) {
     localStorage.setItem('afIconOnlySidebar', isIconOnly.toString());
@@ -401,6 +403,12 @@ onMounted(() => {
   if (!iconOnlySidebarEnabled.value) {
     isSidebarIconOnly.value = false;
   }
+
+  coreStore.menu.forEach((item, i) => {
+    if (item.open) {
+      opened.value.push(i);
+    };
+  });
   // Emit initial state
   emit('sidebarStateChange', { isSidebarIconOnly: isSidebarIconOnly.value, isSidebarHovering: isSidebarHovering.value });
 })
