@@ -355,6 +355,8 @@ watch(()=>coreStore.menu, () => {
   });
 })
 
+
+
 watch(isSidebarIconOnly, (isIconOnly) => {
   if (!isMobile.value && iconOnlySidebarEnabled.value) {
     localStorage.setItem('afIconOnlySidebar', isIconOnly.toString());
@@ -401,6 +403,12 @@ onMounted(() => {
   if (!iconOnlySidebarEnabled.value) {
     isSidebarIconOnly.value = false;
   }
+
+  coreStore.menu.forEach((item, i) => {
+    if (item.open) {
+      opened.value.push(i);
+    };
+  });
   // Emit initial state
   emit('sidebarStateChange', { isSidebarIconOnly: isSidebarIconOnly.value, isSidebarHovering: isSidebarHovering.value });
 })
