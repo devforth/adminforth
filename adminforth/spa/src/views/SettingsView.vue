@@ -4,14 +4,14 @@
       <p>No setting pages configured or still loading...</p>
     </div>
       <VerticalTabs v-else ref="VerticalTabsRef" v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
-      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+settingPageSlotName(c,i)]>
+      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+c.slug]>
         <div class="flex items-center justify-center whitespace-nowrap w-full px-4 gap-2" @click="setURL(c)">
           <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
           {{ c.pageLabel }}
         </div>
       </template>
 
-      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`${settingPageSlotName(c,i)}-content`" v-slot:[settingPageSlotName(c,i)]>
+      <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`${settingPageSlotName(c,i)}-content`" v-slot:[c.slug]>
         <component 
           :is="getCustomComponent({file: c.component || ''})"
           :resource="coreStore.resource"
@@ -50,15 +50,6 @@ watch(() => route?.params?.page, (val) => {
 async function initRouter() {
   await router.isReady();
   routerIsReady.value = true;
-}
-
-function settingPageSlotName(c: { slug?: string; pageLabel?: string }, idx: number) {
-  const base = (c.slug && c.slug.trim()) || (c.pageLabel && c.pageLabel.trim()) || `tab-${idx}`;
-  return base
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-_]/g, '-') || `tab-${idx}`;
 }
 
 watch(dropdownUserButton, (el) => {
@@ -103,19 +94,10 @@ function setURL(item: {
   pageLabel: string;
   slug?: string | undefined;
 }) {
-  const slug = item?.slug;
-  if (slug) {
-    router.replace({
-      name: 'settings',
-      params: { page: slug }
-    });
-  } else {
-    const slugified = slugifyString(item.pageLabel);
-    router.replace({
-      name: 'settings',
-      params: { page: slugified }
-    });
-  }
+  router.replace({
+    name: 'settings',
+    params: { page: item?.slug }
+  });
 }
 
 function handleURLChange(val: string | null) {

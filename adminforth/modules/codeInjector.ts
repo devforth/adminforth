@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 

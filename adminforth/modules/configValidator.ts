@@ -17,7 +17,7 @@ import {
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, suggestIfTypo } from './utils.js';
+import { guessLabelFromName, md5hash, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -28,7 +28,6 @@ import {
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
-
 
 
 export default class ConfigValidator implements IConfigValidator {
@@ -169,9 +168,8 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     // slug should have only lowercase letters, dashes and numbers
-    customization.brandNameSlug = customization.brandName.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    customization.brandNameSlug = slugifyString(customization.brandName);
 
-    
     if (customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(customization.brandLogo));
     }
@@ -1005,6 +1003,7 @@ export default class ConfigValidator implements IConfigValidator {
       if (newConfig.auth.userMenuSettingsPages) {
         for (const page of newConfig.auth.userMenuSettingsPages) {
           this.validateComponent({file: page.component}, errors);
+          page.slug = page.slug ?? slugifyString(page.pageLabel);
         }
       }
 

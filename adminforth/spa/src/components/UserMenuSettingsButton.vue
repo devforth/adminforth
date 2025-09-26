@@ -59,18 +59,10 @@ const options = computed(() => {
   });
 });
 
-function slugifyString(str: string): string {
-  return str
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-_]/g, '-');
-}
-
 function getRoute(option: { slug?: string | null, pageLabel: string }) {
   return {
     name: 'settings',
-    params: { page: option.slug ?? slugifyString(option.pageLabel) }
+    params: { page: option.slug }
   }
 }
 
