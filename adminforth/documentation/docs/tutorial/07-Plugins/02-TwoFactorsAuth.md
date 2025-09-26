@@ -292,6 +292,9 @@ Now, update the settings of the Two-Factor Authentication plugin:
       //diff-add
       passkeys: {
         //diff-add
+        challengesKeyValueAdapter: new RAMKeyValueAdapter(), // you can use any key-value adapter
+
+        //diff-add
         credentialResourceID: "passkeys",
         //diff-add
         credentialIdFieldName: "credential_id",
