@@ -114,3 +114,21 @@ MAILGUN_API_KEY=your-api-key
 MAILGUN_DOMAIN=your-domain
 MAILGUN_REGION_URL=your-region-url # optional
 ```
+
+## Password reset page injection
+If you want create custom header, or want to add some data under input, you can add:
+
+``` ts title='./resources/users'
+  new EmailResetPasswordPlugin({
+    ...
+  //diff-add
+    pageInjection: {
+    //diff-add  
+      panelHeader: "@@/YourCustomHeader";
+    //diff-add
+      underInputs: "@@/YourUnderInput";
+    //diff-add
+    }
+    ...
+  })
+```
