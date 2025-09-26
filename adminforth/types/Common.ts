@@ -1073,6 +1073,10 @@ export interface AdminForthConfigForFrontend {
   showBrandNameInSidebar: boolean,
   showBrandLogoInSidebar: boolean,
   brandLogo?: string,
+  iconOnlySidebar?: { 
+    logo?: string,
+    enabled?: boolean,
+  },
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,

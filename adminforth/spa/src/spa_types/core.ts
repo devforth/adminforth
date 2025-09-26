@@ -23,6 +23,10 @@ export type CoreConfig = {
     brandName: string,
     singleTheme?: 'light' | 'dark',
     brandLogo: string,
+    iconOnlySidebar: {
+        logo?: string,
+        enabled?: boolean,
+    },
     title: string,
     datesFormat: string,
     timeFormat: string,

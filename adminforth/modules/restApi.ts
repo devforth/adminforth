@@ -366,6 +366,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
           brandLogo: this.adminforth.config.customization.brandLogo,
+          iconOnlySidebar: this.adminforth.config.customization.iconOnlySidebar,
           datesFormat: this.adminforth.config.customization.datesFormat,
           timeFormat: this.adminforth.config.customization.timeFormat,
           auth: this.adminforth.config.auth,
