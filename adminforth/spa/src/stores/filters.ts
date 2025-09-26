@@ -48,6 +48,7 @@ export const useFiltersStore = defineStore('filters', () => {
         setFilters, 
         setSort, 
         getSort,
-        visibleFiltersCount
+        visibleFiltersCount,
+        shouldFilterBeHidden
     }
 })
