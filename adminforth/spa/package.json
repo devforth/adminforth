@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@iconify-prerendered/vue-flag": "^0.28.1748584105",
-    "@iconify-prerendered/vue-flowbite": "^0.23.1714023977",
+    "@iconify-prerendered/vue-flowbite": "^0.28.1754899090",
     "@unhead/vue": "^1.9.12",
     "@vueuse/core": "^10.10.0",
     "apexcharts": "^4.7.0",
