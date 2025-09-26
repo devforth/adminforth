@@ -147,7 +147,7 @@
 
       <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
-        v-if="ctaBadge"
+        v-if="(ctaBadge && !isSidebarIconOnly) || (ctaBadge && isSidebarIconOnly && isSidebarHovering)"
       >
         <div class="flex items-center mb-3" :class="!ctaBadge.title ? 'float-right' : ''">
           <!-- <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
