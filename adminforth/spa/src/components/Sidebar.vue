@@ -130,7 +130,7 @@
                     </svg>
                 </button>
 
-                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
+                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i), 'relative after:absolute after:-left-3 after:inset-y-0 after:w-0.5 after:bg-lightSidebarIcons/50 dark:after:bg-darkSidebarIcons/50 after:rounded-full': isSidebarIconOnly && !isSidebarHovering && opened.includes(i) }">
                     <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                         <li class="af-sidebar-menu-link">
                             <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')" :isSidebarIconOnly="isSidebarIconOnly" :isSidebarHovering="isSidebarHovering"/>
