@@ -180,4 +180,9 @@ Key-value adapters are used to store data in a key-value format. They provide a 
 npm i @adminforth/key-value-adapter-ram
 ```
 
-The RAM adapter is a simple in-memory key-value store. Stores data in servers RAM memory
+The RAM adapter is a simplest in-memory key-value storage. Stores data in process RAM memory. Not sutable if you run application with several processes because each process will have own RAM. In last case you need centralized KV adapter, e.g. Redis. 
+
+Pros:
+* Simplest in use - does not reqauire any external daemon.
+Cones:
+* In production sutable for single-process installations only
