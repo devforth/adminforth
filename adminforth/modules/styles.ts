@@ -501,7 +501,7 @@ export const styles = () => ({
     darkDropdownButtonsBorder: "#4b5563",
     darkDropdownButtonsText: "#FFFFFF",
     darkDropdownButtonsPlaceholderText: "#9CA3AF",
-darkdarkDropdownOptionsBackground: "#374151",
+    darkDropdownOptionsBackground: "#374151",
     darkDropdownOptionsHoverBackground: "#4b5563",
     darkDropdownPicked:"#212a40",
     darkDropdownOptionsText: "alias:darkListTableText",
