@@ -1,5 +1,3 @@
-
-
 export const styles = () => ({
   colors: {
     lightHtml: "#FFFFFF", // main background
@@ -146,6 +144,16 @@ export const styles = () => ({
     lightButtonsHover: "alias:lightPrimary lighten", // button hover
     lightButtonsBorderHover: "alias:lightPrimary", // button border hover  
     lightButtonFocusRing: "alias:lightPrimary opacity:0.6", // button focus ring
+
+    lightButtonGroupBackground: "#FFFFFF", // button group background
+    lightButtonGroupBorder: "#D1D5DB", // button group border
+    lightButtonGroupText: "#111827", // button group text
+    lightButtonGroupFocusRing: "#F3F4F6", // button group focus ring
+    lightButtonGroupBackgroundHover: "#F3F4F6", // button group background hover
+    lightButtonGroupTextHover: "alias:lightPrimary", // button group text hover
+    lightButtonGroupActiveBackground: "alias:lightPrimary", // button group active background
+    lightButtonGroupActiveText: "alias:lightPrimaryContrast", // button group active text
+    lightButtonGroupActiveFocusRing: "alias:lightPrimary opacity:0.6", // button group active focus ring
     
     lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
     lightDropownButtonsBorder: "#D1D5DB", //border color
@@ -479,12 +487,21 @@ export const styles = () => ({
     darkButtonsBorderHover: "alias:darkPrimary", // button border hover
     darkButtonFocusRing: "alias:darkPrimary opacity:0.6", // button focus ring
 
+    darkButtonGroupBackground: "#1F2937", // button group background
+    darkButtonGroupBorder: "#4B5563", // button group border
+    darkButtonGroupText: "#9CA3AF", // button group text
+    darkButtonGroupFocusRing: "#374151", // button group focus ring
+    darkButtonGroupBackgroundHover: "#374151", // button group background hover
+    darkButtonGroupTextHover: "alias:darkButtonGroupText", // button group text hover
+    darkButtonGroupActiveBackground: "alias:darkPrimary", // button group active background
+    darkButtonGroupActiveText: "alias:darkPrimaryContrast", // button group active text
+    darkButtonGroupActiveFocusRing: "alias:darkPrimary opacity:0.6", // button group active focus ring
+
     darkDropdownButtonsBackground: "#374151",
     darkDropdownButtonsBorder: "#4b5563",
     darkDropdownButtonsText: "#FFFFFF",
     darkDropdownButtonsPlaceholderText: "#9CA3AF",
-
-    darkDropdownOptionsBackground: "#374151",
+darkdarkDropdownOptionsBackground: "#374151",
     darkDropdownOptionsHoverBackground: "#4b5563",
     darkDropdownPicked:"#212a40",
     darkDropdownOptionsText: "alias:darkListTableText",

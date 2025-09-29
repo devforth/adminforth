@@ -41,6 +41,45 @@ import { Button } from '@/afcl'
 
 loader prop would show loader when it's true.
 
+## Button Group
+
+```ts
+import { IconGridSolid, IconUserCircleSolid, IconLockSolid, IconShieldOutline } from '@iconify-prerendered/vue-flowbite';
+
+const activeButton = ref('')
+
+    ...
+
+<ButtonGroup v-model:activeButton="activeButton">  
+  <template #button:Profile>
+    <div class="flex px-4 py-2">
+      <IconUserCircleSolid class="w-5 h-5 me-2"/>
+      Profile
+    </div>
+  </template>
+  <template #button:Dashboard>
+    <div class="flex px-4 py-2">
+      <IconGridSolid class="w-5 h-5 me-2"/>
+      Board
+    </div>
+  </template>
+  <template #button:Lock>
+    <div class="flex px-4 py-2">
+      <IconShieldOutline class="w-5 h-5 me-2"/>
+      Passkeys
+    </div>
+  </template>
+  <template #button:Security>
+    <div class="flex px-4 py-2">
+      <IconLockSolid class="w-5 h-5 me-2"/>
+      Security
+    </div>
+  </template>
+</ButtonGroup>
+```
+
+![AFCL Button-group](ButtonGroup1.png)
+
 
 ## Link
 
