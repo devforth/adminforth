@@ -31,7 +31,7 @@
             :adminUser="coreStore.adminUser"
           />
         </div>
-        <div class="absolute top-1.5 -right-4 z-10 hidden sm:block" v-if="iconOnlySidebarEnabled && (!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))">
+        <div class="absolute top-1.5 -right-4 z-10 hidden sm:block" v-if="!forceIconOnly && iconOnlySidebarEnabled && (!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))">
           <button class="text-sm text-lightSidebarIcons group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" @click="toggleSidebar">
             <IconCloseSidebarSolid v-if="!isSidebarIconOnly" class="w-5 h-5 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
             <IconOpenSidebarSolid v-else class="w-5 h-5 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
@@ -286,6 +286,7 @@ import adminforth from '@/adminforth';
 
 interface Props {
   sideBarOpen: boolean;
+  forceIconOnly?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -304,15 +305,21 @@ const sidebarAside = ref(null);
 
 const smQuery = window.matchMedia('(min-width: 640px)');
 const isMobile = ref(!smQuery.matches);
-const iconOnlySidebarEnabled = computed(() => coreStore.config?.iconOnlySidebar?.enabled !== false);
-const isSidebarIconOnly = ref(!isMobile.value && localStorage.getItem('afIconOnlySidebar') === 'true');
+const iconOnlySidebarEnabled = computed(() => props.forceIconOnly === true || coreStore.config?.iconOnlySidebar?.enabled !== false);
+const isSidebarIconOnly = ref(false);
 
 function handleBreakpointChange(e: MediaQueryListEvent) {
   isMobile.value = !e.matches;
   if (isMobile.value) {
     isSidebarIconOnly.value = false;
   } else {
-    isSidebarIconOnly.value = iconOnlySidebarEnabled.value && localStorage.getItem('afIconOnlySidebar') === 'true';
+    if (props.forceIconOnly === true) {
+      isSidebarIconOnly.value = true;
+    } else if (iconOnlySidebarEnabled.value && localStorage.getItem('afIconOnlySidebar') === 'true') {
+      isSidebarIconOnly.value = true;
+    } else {
+      isSidebarIconOnly.value = false;
+    }
   }
 }
 
@@ -323,6 +330,9 @@ const isSidebarHovering = ref(false);
 const isTogglingSidebar = ref(false);
 
 function toggleSidebar() {
+  if (props.forceIconOnly) {
+    return;
+  }
   if (!iconOnlySidebarEnabled.value) {
     return;
   }
@@ -358,7 +368,7 @@ watch(()=>coreStore.menu, () => {
 
 
 watch(isSidebarIconOnly, (isIconOnly) => {
-  if (!isMobile.value && iconOnlySidebarEnabled.value) {
+  if (!isMobile.value && iconOnlySidebarEnabled.value && !props.forceIconOnly) {
     localStorage.setItem('afIconOnlySidebar', isIconOnly.toString());
   }
   emit('sidebarStateChange', { isSidebarIconOnly: isIconOnly, isSidebarHovering: isSidebarHovering.value });
@@ -416,4 +426,18 @@ onMounted(() => {
 onUnmounted(() => {
   smQuery.removeEventListener('change', handleBreakpointChange);
 })
+
+watch(() => props.forceIconOnly, (force) => {
+  if (isMobile.value) {
+    isSidebarIconOnly.value = false;
+    return;
+  }
+  if (props.forceIconOnly === true) {
+    isSidebarIconOnly.value = true;
+  } else if (iconOnlySidebarEnabled.value && localStorage.getItem('afIconOnlySidebar') === 'true') {
+    isSidebarIconOnly.value = true;
+  } else {
+    isSidebarIconOnly.value = false;
+  }
+}, { immediate: true })
 </script>
