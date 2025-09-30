@@ -8,7 +8,8 @@
                 : buttonsStyles[button] === 'rounded-right' ? 'border rounded-e-lg border-l-lightButtonGroupBackground focus:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus:border-l-darkButtonGroupBorder' 
                 : buttonsStyles[button] === 'no-rounded' ? 'border border-l-lightButtonGroupBackground focus:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus:border-l-darkButtonGroupBorder' 
                 : buttonsStyles[button] === 'rounded-left-with-right-border' ? 'border rounded-s-lg' : '',
-                button === activeButton ? 'bg-lightButtonGroupActiveBackground text-lightButtonGroupActiveText focus:ring-lightButtonGroupActiveFocusRing dark:bg-darkButtonGroupActiveBackground dark:text-darkButtonGroupActiveText dark:focus:ring-darkButtonGroupActiveFocusRing' : 'text-lightButtonGroupText bg-lightButtonGroupBackground focus:ring-lightButtonGroupFocusRing hover:bg-lightButtonGroupBackgroundHover hover:text-lightButtonGroupTextHover dark:bg-darkButtonGroupBackground dark:text-darkButtonGroupText dark:hover:text-darkButtonGroupTextHover dark:hover:bg-darkButtonGroupBackgroundHover dark:focus:ring-darkButtonGroupFocusRing'
+                (button === activeButton || props.solidColor === true) ? 'bg-lightButtonGroupActiveBackground text-lightButtonGroupActiveText focus:ring-lightButtonGroupActiveFocusRing dark:bg-darkButtonGroupActiveBackground dark:text-darkButtonGroupActiveText dark:focus:ring-darkButtonGroupActiveFocusRing' 
+                                        :'text-lightButtonGroupText bg-lightButtonGroupBackground focus:ring-lightButtonGroupFocusRing hover:bg-lightButtonGroupBackgroundHover hover:text-lightButtonGroupTextHover dark:bg-darkButtonGroupBackground dark:text-darkButtonGroupText dark:hover:text-darkButtonGroupTextHover dark:hover:bg-darkButtonGroupBackgroundHover dark:focus:ring-darkButtonGroupFocusRing'
             ]"
             @click="setActiveButton(button)"
         >
@@ -27,6 +28,10 @@
     const emits = defineEmits([
         'update:activeButton',
     ]);
+
+    const props = defineProps<{
+        solidColor?: boolean;
+    }>();
     
     onMounted(() => {
         const slots = useSlots();

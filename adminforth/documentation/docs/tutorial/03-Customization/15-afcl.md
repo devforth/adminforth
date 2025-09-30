@@ -42,6 +42,8 @@ import { Button } from '@/afcl'
 loader prop would show loader when it's true.
 
 ## Button Group
+### With active button
+<div class="split-screen" >
 
 ```ts
 import { IconGridSolid, IconUserCircleSolid, IconLockSolid, IconShieldOutline } from '@iconify-prerendered/vue-flowbite';
@@ -80,6 +82,38 @@ const activeButton = ref('')
 ```
 
 ![AFCL Button-group](ButtonGroup1.png)
+
+</div>
+
+### With solid color
+
+<div class="split-screen" >
+
+```ts
+  import { ButtonGroup } from '@/afcl'
+  import { IconPlusOutline, IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+
+    ...
+
+  <ButtonGroup :solidColor="true">
+      <template #button:Profile>
+          <div class="flex px-4 py-2">
+              <IconPlusOutline class="w-5 h-5 me-2"/>
+              Add passkey
+          </div>
+      </template>
+      <template #button:Dashboard @click="console.log('Dashboard clicked')">
+          <div class="flex px-2">
+              <IconCaretDownSolid class="w-5 h-5"/>
+          </div>
+      </template>
+  </ButtonGroup>
+
+```
+
+![AFCL Button-group](ButtonGroup2.png)
+
+</div>
 
 
 ## Link
