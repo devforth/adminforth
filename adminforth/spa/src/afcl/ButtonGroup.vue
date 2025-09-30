@@ -27,12 +27,12 @@
     const activeButton = ref('');
     const slotProps = reactive<Record<string, any>>({});
     const isInitFinished = ref(false);
-    const emits = defineEmits([
-        'update:activeButton',
-    ]);
+    
+    const emits = defineEmits(['update:modelValue']);
 
     const props = defineProps<{
         solidColor?: boolean;
+        modelValue?: string;
     }>();
     
     onMounted(() => {
@@ -68,7 +68,7 @@
     function setActiveButton(button: string) {
         if (buttons.value.includes(button)) {
         activeButton.value = button;
-        emits('update:activeButton', button);
+        emits('update:modelValue', button);
         }
     }
 
