@@ -437,7 +437,7 @@ const enable = ref(false)
 </div>
 
 ## Card 
-
+### Standart card
 <div class="split-screen">
 ```ts
 import { Card } from '@/afcl'
@@ -453,6 +453,36 @@ import { Card } from '@/afcl'
 
 ![AFCL Checkbox](Card.png)
 
+</div>
+
+### Different card sizes
+If you want to have smaller card, you can specify size in props:
+
+<div class="split-screen">
+
+```ts
+  <Card
+    size="lg"
+    title="This is a large card"
+    description="Description text for large card. This is a large card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="md"
+    title="This is a medium card"
+    description="Description text for medium card. This is a medium card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="sm"
+    title="This is a small card"
+    description="Description text for small card. This is a small card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+```
+![AFCL Checkbox](Card2.png)
 
 </div>
 
