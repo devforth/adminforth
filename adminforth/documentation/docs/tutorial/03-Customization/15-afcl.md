@@ -53,7 +53,7 @@ const activeButton = ref('')
 
     ...
 
-<ButtonGroup v-model:activeButton="activeButton">  
+<ButtonGroup v-model="activeButton">  
   <template #button:Profile>
     <div class="flex px-4 py-2">
       <IconUserCircleSolid class="w-5 h-5 me-2"/>
@@ -64,18 +64,6 @@ const activeButton = ref('')
     <div class="flex px-4 py-2">
       <IconGridSolid class="w-5 h-5 me-2"/>
       Board
-    </div>
-  </template>
-  <template #button:Lock>
-    <div class="flex px-4 py-2">
-      <IconShieldOutline class="w-5 h-5 me-2"/>
-      Passkeys
-    </div>
-  </template>
-  <template #button:Security>
-    <div class="flex px-4 py-2">
-      <IconLockSolid class="w-5 h-5 me-2"/>
-      Security
     </div>
   </template>
 </ButtonGroup>
@@ -95,19 +83,19 @@ const activeButton = ref('')
 
     ...
 
-  <ButtonGroup :solidColor="true">
-      <template #button:Profile>
-          <div class="flex px-4 py-2">
-              <IconPlusOutline class="w-5 h-5 me-2"/>
-              Add passkey
-          </div>
-      </template>
-      <template #button:Dashboard @click="console.log('Dashboard clicked')">
-          <div class="flex px-2">
-              <IconCaretDownSolid class="w-5 h-5"/>
-          </div>
-      </template>
-  </ButtonGroup>
+    <ButtonGroup :solidColor="true">
+        <template #button:Profile>
+            <div class="flex px-4 py-2" @click="console.log("Add passkey got clicked")">
+                <IconPlusOutline class="w-5 h-5 me-2"/>
+                <p>{{ addPasskeyMode === 'platform' ? 'Add Local Passkey' : 'Add External Passkey' }}</p>
+            </div>
+        </template>
+        <template #button:Dropdown>
+            <div id="dropdown-button" class="flex px-2 py-2" @click="console.log("Dropdown got clicked")">
+                <IconCaretDownSolid class="w-5 h-5"/>
+            </div>
+        </template>
+    </ButtonGroup>
 
 ```
 
