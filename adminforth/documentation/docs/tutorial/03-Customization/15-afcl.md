@@ -431,18 +431,8 @@ If you need custom card, you can make it without
 <div class="split-screen">
 ```ts
 <Card>
-  <h5 class="font-bold text-2xl text-gray-800 dark:text-gray-100 mb-6">Monthly Statistics</h5>
-  <div class="flex justify-between items-center gap-6">
-    <div class="flex flex-col">
-      <p class="font-semibold text-gray-600 dark:text-gray-300">Total Income</p>
-      <p class="text-blue-500 font-bold text-xl mt-2">350,000$</p>
-    </div>
-
-    <div class="flex flex-col">
-      <p class="font-semibold text-gray-600 dark:text-gray-300">Total Profit</p>
-      <p class="text-green-500 font-bold text-xl mt-2">100,000$</p>
-    </div>
-  </div>
+  <p class="font-semibold text-gray-600 text-xl dark:text-gray-300">Total Profit</p>
+  <p class="text-green-500 font-bold mt-2">$100,000</p>
 </Card>
 ```
 
