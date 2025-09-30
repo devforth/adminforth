@@ -441,7 +441,8 @@ new AdminForth({
           file: '@@/pages/TwoFactorsSetup.vue',
           meta: { 
             title: 'Setup 2FA',  // meta title for this page
-            customLayout: true  // don't include default layout like menu/header
+              //diff-add
+            sidebarAndHeader: 'none'  // Layout options: 'none' (no sidebar/header), 'default' (full layout), 'preferIconOnly' (collapsed sidebar)
           }
         }
       }
@@ -449,6 +450,11 @@ new AdminForth({
   }
 })
 ```
+
+> 💡 **Layout Options Explained:**
+> - `'none'`: Renders the page without AdminForth's default sidebar and header layout - perfect for standalone pages like login forms, setup wizards, or public pages
+> - `'default'`: Uses the full AdminForth layout with sidebar and header - ideal for pages that should feel integrated with the admin panel
+> - `'preferIconOnly'`: Uses the default layout but starts with a collapsed sidebar (even if icon-only sidebar is disabled in your configuration) - great for dashboard pages that need more screen space
 
 This will register custom page with path `/setup2fa` and will not include it in the menu. 
 
