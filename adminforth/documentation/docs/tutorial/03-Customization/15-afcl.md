@@ -425,32 +425,41 @@ const enable = ref(false)
 </div>
 
 ## Card 
+
+### Custom card
+If you need custom card, you can make it without 
+<div class="split-screen">
+```ts
+<Card>
+  <h5 class="font-bold text-2xl text-gray-800 dark:text-gray-100 mb-6">Monthly Statistics</h5>
+  <div class="flex justify-between items-center gap-6">
+    <div class="flex flex-col">
+      <p class="font-semibold text-gray-600 dark:text-gray-300">Total Income</p>
+      <p class="text-blue-500 font-bold text-xl mt-2">350,000$</p>
+    </div>
+
+    <div class="flex flex-col">
+      <p class="font-semibold text-gray-600 dark:text-gray-300">Total Profit</p>
+      <p class="text-green-500 font-bold text-xl mt-2">100,000$</p>
+    </div>
+  </div>
+</Card>
+```
+
+
+![AFCL Checkbox](Card3.png)
+
+</div>
+
 ### Standart card
 <div class="split-screen">
+
 ```ts
 import { Card } from '@/afcl'
 
   ...
 
-<Card 
-    title="New Reality" 
-    description="Click this card to visit the new AdminForth reality where you can build your own back-office"
->
-</Card>
-```
-
-![AFCL Checkbox](Card.png)
-
-</div>
-
-### Different card sizes
-If you want to have smaller card, you can specify size in props:
-
-<div class="split-screen">
-
-```ts
   <Card
-    size="lg"
     title="This is a large card"
     description="Description text for large card. This is a large card. Very nice card. Big one. You can put here any content you want."
   >
