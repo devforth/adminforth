@@ -276,8 +276,8 @@ Add the new resource to index.ts:
 
   resources: [
     ...
-  //diff-add
-  passkeysResource,
+    //diff-add
+    passkeysResource,
     ...
   ],
 ```
@@ -302,22 +302,19 @@ Now, update the settings of the Two-Factor Authentication plugin:
         //diff-add
         settings: {
           // diff-add
-          expectedOrigin: "http://localhost:3000",
+          expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
           //diff-add
           // relying party config
           //diff-add
-            rp: {
+          rp: {
               //diff-add
-                name: "New Reality",
-                // diff-add
-                // id should be a app domain name without port
-                // diff-add
-                // e.g. if you run locally in https://localhost:3500 -> then write "localhost"
-                // diff-add
-                // if you run at https://myadmin.myproduct.com -> write  "myadmin.myproduct.com"
-                //diff-add
-                id: "localhost",
-                //diff-add
+              name: "New Reality",
+              
+              //diff-add
+              // optionaly you can set expected id explicitly if you need to:
+              //diff-add
+              // id: "localhost",
+              //diff-add
             },
             //diff-add
             user: {
@@ -330,8 +327,16 @@ Now, update the settings of the Two-Factor Authentication plugin:
             //diff-add
             authenticatorSelection: {
               // diff-add
-              //  Can be "platform", "cross-platform" or both
-              //diff-add
+              // impacts a way how passkey will be created
+              // diff-add
+              // - platform - using browser internal authenticator (e.g. Google Chrome passkey / Google Password Manager )
+              // diff-add
+              // - cross-platform - using external authenticator (e.g. Yubikey, Google Titan etc)
+              // diff-add
+              // - both - plging will show both options to the user
+              // diff-add
+              // Can be "platform", "cross-platform" or "both"
+              // diff-add
                 authenticatorAttachment: "platform",
                 //diff-add
                 requireResidentKey: true,
@@ -346,7 +351,14 @@ Now, update the settings of the Two-Factor Authentication plugin:
     }),
   ],
 ```
-> ☝️ most likely you should set `passkeys.settings.rp.id` it from your process.env depending on your env
+
+> ☝️ most likely you should set `passkeys.settings.expectedOrigin` from your process.env depending on your env (e.g. http://localhost:3500 for local dev, https://admin.yourproduct.com for production etc)
+
+
+> 💡**Note** By default `passkeys.settings.rp.id` is generated from the expectedOrigin so you don't need to set it
+> unless you know what you are doing. Manual setting might be needed for sub-domains isolation.
+> By default, if you set expected origin to https://localhost:3500 it will use "localhost" as rpid
+> If you set origin to https://myadmin.myproduct.com -> it will use  "myadmin.myproduct.com"  as rpid 
 
 The setup is complete. To create a passkey:
 
