@@ -6,7 +6,7 @@
         'hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover active:bg-lightSidebarActive dark:active:bg-darkSidebarHover': !['divider', 'gap', 'heading'].includes(item.type),
         'pl-6 pr-3.5': (isChild && !isSidebarIconOnly && !isSidebarHovering) || (isChild && isSidebarIconOnly && isSidebarHovering),
         'px-3.5 ': !isChild || (isSidebarIconOnly && !isSidebarHovering),
-        'w-12': isSidebarIconOnly && !isSidebarHovering,
+        'max-w-12': isSidebarIconOnly && !isSidebarHovering,
         'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': item.resourceId ?
         ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
         ($route.name === item.path)
