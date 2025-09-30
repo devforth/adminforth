@@ -292,9 +292,6 @@ Now, update the settings of the Two-Factor Authentication plugin:
       //diff-add
       passkeys: {
         //diff-add
-        challengesKeyValueAdapter: new RAMKeyValueAdapter(), // you can use any key-value adapter
-
-        //diff-add
         credentialResourceID: "passkeys",
         //diff-add
         credentialIdFieldName: "credential_id",
@@ -305,6 +302,8 @@ Now, update the settings of the Two-Factor Authentication plugin:
         //diff-add
         settings: {
           // diff-add
+          expectedOrigin: "http://localhost:3000",
+          //diff-add
           // relying party config
           //diff-add
             rp: {
@@ -331,7 +330,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
             //diff-add
             authenticatorSelection: {
               // diff-add
-              //  Can be "platform" or "cross-platform"
+              //  Can be "platform", "cross-platform" or both
               //diff-add
                 authenticatorAttachment: "platform",
                 //diff-add
