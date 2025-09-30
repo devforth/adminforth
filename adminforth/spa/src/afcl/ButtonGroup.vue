@@ -1,7 +1,7 @@
 <template>
     <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button v-for="button in buttons" :key="`${button}-button-controll`"
-            class="inline-flex items-center text-sm font-medium border-t border-b border-r border-lightButtonGroupBorder focus:z-10 focus:ring-2 dark:border-darkButtonGroupBorder"
+        <button v-for="button in buttons" :key="`${button}-button-controll`" :disabled="slotProps[button]?.disabled"
+            class="inline-flex items-center text-sm font-medium border-t border-b border-r border-lightButtonGroupBorder focus:z-10 focus:ring-2 dark:border-darkButtonGroupBorder disabled:opacity-50 disabled:cursor-not-allowed"
             :class="[
                 buttonsStyles[button] === 'rounded' ? 'border rounded-lg' 
                 : buttonsStyles[button] === 'rounded-left' ? 'border rounded-s-lg' 
@@ -24,6 +24,7 @@
     const buttons : Ref<string[]> = ref([]);
     const buttonsStyles : Ref<Record<string, string>> = ref({});
     const activeButton = ref('');
+    const slotProps: Record<string, any> = ref({});
 
     const emits = defineEmits([
         'update:activeButton',
@@ -49,6 +50,12 @@
                 [button]: getButtonsClasses(button)
             }
             buttonsStyles.value = { ...buttonsStyles.value, ...temp };
+            const slot = slots[`button:${button}`];
+            if (slot && slot()[0]?.props) {
+                slotProps[button] = slot()[0].props;
+            } else {
+                slotProps[button] = {};
+            }
         }
     });
 
