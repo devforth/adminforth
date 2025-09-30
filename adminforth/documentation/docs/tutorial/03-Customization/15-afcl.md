@@ -87,7 +87,7 @@ const activeButton = ref('')
         <template #button:Profile>
             <div class="flex px-4 py-2" @click="console.log("Add passkey got clicked")">
                 <IconPlusOutline class="w-5 h-5 me-2"/>
-                <p>{{ addPasskeyMode === 'platform' ? 'Add Local Passkey' : 'Add External Passkey' }}</p>
+                <p>Add Local Passkey</p>
             </div>
         </template>
         <template #button:Dropdown>
