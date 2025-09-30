@@ -436,6 +436,25 @@ const enable = ref(false)
   </div>
 </div>
 
+## Card 
+
+<div class="split-screen">
+```ts
+import { Card } from '@/afcl'
+
+  ...
+
+<Card 
+    title="New Reality" 
+    description="Click this card to visit the new AdminForth reality where you can build your own back-office"
+>
+</Card>
+```
+
+![AFCL Checkbox](Card.png)
+
+
+</div>
 
 ## Toggle
 

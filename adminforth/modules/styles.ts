@@ -340,11 +340,12 @@ export const styles = () => ({
     lightToastCloseIconFocusRing: "#D1D5DB",
     lightToastText: "#6B7280",
 
+    lightCardBackground: "#FFFFFF",
+    lightCardBackgroundHover: "#F3F4F6",
+    lightCardBorder: "#E5E7EB",
+    lightCardTitle: "#374151",
+    lightCardDescription: "#6B7280",
 
-
-
-    
-    
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -682,6 +683,11 @@ export const styles = () => ({
     darkToastCloseIconFocusRing: "#374151",
     darkToastText: "#9CA3AF",
 
+    darkCardBackground: "#1F2937", // card background
+    darkCardBackgroundHover: "#374151", // card background hover
+    darkCardBorder: "#4B5563", // card border
+    darkCardTitle: "#FFFFFF", // card title
+    darkCardDescription: "#9CA3AF", // card description
 
   },
   boxShadow: {
