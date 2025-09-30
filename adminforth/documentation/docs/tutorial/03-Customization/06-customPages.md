@@ -509,3 +509,55 @@ const route = useRoute();
 
 console.log(route.meta.myAttribute);  // a1
 ```
+
+## Settings View 
+
+If you want to add a Settings section to your project:
+
+```ts title='./index.ts' 
+export const admin = new AdminForth({
+  baseUrl : ADMIN_BASE_URL,
+  auth: {
+    //diff-add
+    userMenuSettingsPages: [
+      //diff-add
+      {
+        //diff-add
+        pageLabel: 'Profile settings',
+        //diff-add
+        component: '@@/ProfileSettings.vue',
+        //diff-add
+        // Specify a slug if you want a custom URL path.
+        //diff-add
+        // For example, without a slug, the URL will be:
+        //diff-add
+        //   example.com/settings/profile-settings
+        //diff-add
+        // With a custom slug, you could have:
+        //diff-add
+        //   example.com/settings/users-settings
+        //diff-add
+        slug: "users-settings",
+        //diff-add
+        icon:"flowbite:user-solid"
+        //diff-add
+      },
+      //diff-add
+      {
+        //diff-add
+        pageLabel: 'Security',
+        //diff-add
+        component: "@@/MySecrets.vue",
+        //diff-add
+        icon: "flowbite:lock-solid"
+        //diff-add
+      }
+      //diff-add
+    ],
+  }
+});
+```
+
+After this, you will have a custom Settings section in the users menu:
+
+![alt text](SettingsView-1.png)
