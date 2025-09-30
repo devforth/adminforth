@@ -45,6 +45,7 @@ loader prop would show loader when it's true.
 
 ```ts
 import { IconGridSolid, IconUserCircleSolid, IconLockSolid, IconShieldOutline } from '@iconify-prerendered/vue-flowbite';
+import { ButtonGroup } from '@/afcl'
 
 const activeButton = ref('')
 
