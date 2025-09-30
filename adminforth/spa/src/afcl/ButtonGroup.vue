@@ -1,6 +1,7 @@
 <template>
-    <div class="inline-flex rounded-md shadow-xs" role="group">
-        <button v-for="button in buttons" :key="`${button}-button-controll`" :disabled="slotProps[button]?.disabled"
+    <div v-if="isInitFinished" class="inline-flex rounded-md shadow-xs" role="group">
+        <button v-for="button in buttons" :key="`${button}-button-controll`" 
+            :disabled="slotProps[button].disabled"
             class="inline-flex items-center text-sm font-medium border-t border-b border-r border-lightButtonGroupBorder focus:z-10 focus:ring-2 dark:border-darkButtonGroupBorder disabled:opacity-50 disabled:cursor-not-allowed"
             :class="[
                 buttonsStyles[button] === 'rounded' ? 'border rounded-lg' 
@@ -19,13 +20,13 @@
 </template>
 
 <script lang="ts" setup>
-    import { onMounted, useSlots, ref, type Ref } from 'vue';
+    import { onMounted, useSlots, reactive, ref, type Ref } from 'vue';
 
     const buttons : Ref<string[]> = ref([]);
     const buttonsStyles : Ref<Record<string, string>> = ref({});
     const activeButton = ref('');
-    const slotProps: Record<string, any> = ref({});
-
+    const slotProps = reactive<Record<string, any>>({});
+    const isInitFinished = ref(false);
     const emits = defineEmits([
         'update:activeButton',
     ]);
@@ -56,7 +57,11 @@
             } else {
                 slotProps[button] = {};
             }
+            if (slotProps[button]?.disabled === undefined) {
+                slotProps[button].disabled = false;
+            }
         }
+        isInitFinished.value = true;
     });
 
 
