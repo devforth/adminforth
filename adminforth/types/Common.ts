@@ -261,7 +261,17 @@ export interface AdminForthComponentDeclarationFull {
    * </script>
    * 
    */
-  meta?: any,
+  meta?: {
+    /**
+     * Controls sidebar and header visibility for custom pages
+     * - 'default': Show both sidebar and header (default behavior)
+     * - 'none': Hide both sidebar and header (full custom layout)
+     * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     */
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly',
+    
+    [key: string]: any,
+  }
 }
 import { type AdminForthActionInput } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
