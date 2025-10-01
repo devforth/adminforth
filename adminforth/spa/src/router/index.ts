@@ -68,6 +68,7 @@ const router = createRouter({
       component: () => import('@/views/SettingsView.vue'),
       meta: { 
         title: 'Settings', 
+        sidebarAndHeader: 'preferIconOnly',
       },
     },
     /* IMPORTANT:ADMINFORTH ROUTES */

@@ -75,6 +75,7 @@
     <Sidebar 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       :sideBarOpen="sideBarOpen"
+      :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
       @loadMenu="loadMenu"
       @sidebarStateChange="handleSidebarStateChange"
@@ -82,8 +83,8 @@
 
     <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
       :class="{
-        'sm:ml-18': isSidebarIconOnly,
-        'sm:ml-64': !isSidebarIconOnly,
+        'sm:ml-20': isSidebarIconOnly,
+        'sm:ml-[264px]': !isSidebarIconOnly,
         'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
         'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
       }"
@@ -229,7 +230,7 @@ async function initRouter() {
 
 async function loadMenu() {
   await initRouter();
-  if (!route.meta.customLayout) {
+  if (route.meta.sidebarAndHeader !== 'none') {
     // for custom layouts we don't need to fetch menu
     await coreStore.fetchMenuAndResource();
   }
@@ -237,8 +238,11 @@ async function loadMenu() {
 }
 
 function handleCustomLayout() {
-  if (route.meta?.customLayout) {
+  if (route.meta?.sidebarAndHeader === 'none') {
     defaultLayout.value = false;
+  } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
+    defaultLayout.value = true;
+    isSidebarIconOnly.value = true;
   } else {
     defaultLayout.value = true;
   }
