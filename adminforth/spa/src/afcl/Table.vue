@@ -177,6 +177,10 @@
     columnWidths.value = !headerRefs.value ? [] : headerRefs.value.map((el: HTMLElement) => el.offsetWidth);
   });
 
+  watch([isLoading, () => props.isLoading], () => {
+    emit('update:tableLoading', isLoading.value || props.isLoading);
+  });
+
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
   });
@@ -190,8 +194,8 @@
     pageInput.value = p.toString();
   }
 
-  const emites = defineEmits([
-    'update:activeTab',
+  const emit = defineEmits([
+    'update:tableLoading',
   ]);
   
   function onPageInput(event: any) {
