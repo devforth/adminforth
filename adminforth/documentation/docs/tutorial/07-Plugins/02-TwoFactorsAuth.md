@@ -207,6 +207,20 @@ plugins: [
 ...
 ```
 
+## Custom label in authenticator app
+
+If you want to have custom label in authenticator app, you can specify it: 
+
+```ts label="./adminuser"
+  plugins: [
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+        ...
+      customBrandPrefix: "TechStore",
+    }),
+  ],
+```
+
 ## Passkeys setup
 
 If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
