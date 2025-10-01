@@ -9,9 +9,9 @@ export interface CaptchaAdapter {
     getScriptSrc(): string;
 
     /**
-     * Returns the public key for the captcha.
+     * Returns the site key for the captcha.
      */
-    getPublicKey(): string;
+    getSiteKey(): string;
 
     /**
      * Returns the widget ID for the captcha.
