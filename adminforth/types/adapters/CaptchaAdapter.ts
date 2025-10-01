@@ -1,0 +1,30 @@
+/**
+ * Interface for Captcha adapters.
+ */
+
+export interface CaptchaAdapter {
+    /**
+     * Returns the script source URL for the captcha widget.
+     */
+    getScriptSrc(): string;
+
+    /**
+     * Returns the public key for the captcha.
+     */
+    getPublicKey(): string;
+
+    /**
+     * Returns the widget ID for the captcha.
+     */
+    getWidgetId(): string;
+
+    /**
+     * Returns the token for the captcha.
+     */
+    getToken(): Promise<string> | string;
+
+    /**
+     * Validates the captcha token.
+     */
+    validate(token: string): Promise<boolean>;
+}
