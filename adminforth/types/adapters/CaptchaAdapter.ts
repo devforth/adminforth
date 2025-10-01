@@ -26,5 +26,5 @@ export interface CaptchaAdapter {
     /**
      * Validates the captcha token.
      */
-    validate(token: string, ip: string): Promise<boolean>;
+    validate(token: string, ip: string): Promise<Record<string, any>>;
 }
