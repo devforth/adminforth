@@ -36,7 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import 'flag-icon-css/css/flag-icons.min.css';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { computed, ref, onMounted, watch } from 'vue';
 import { useCoreStore } from '@/stores/core';
