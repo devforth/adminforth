@@ -26,7 +26,7 @@ export interface CaptchaAdapter {
     /**
      * Renders the captcha widget HTML.
      */
-    renderWidget(): string;
+    renderWidget(): void;
 
     /**
      * Validates the captcha token.
