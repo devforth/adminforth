@@ -452,9 +452,9 @@ new AdminForth({
 ```
 
 > 💡 **Layout Options Explained:**
-> - `'none'`: Renders the page without AdminForth's default sidebar and header layout - perfect for standalone pages like login forms, setup wizards, or public pages
+> - `'none'`: Renders the page without AdminForth's default sidebar and header layout - perfect for standalone pages like setup wizards, or public (logged-out) pages (Terms-of-Service/PP/Contact form etc)
 > - `'default'`: Uses the full AdminForth layout with sidebar and header - ideal for pages that should feel integrated with the admin panel
-> - `'preferIconOnly'`: Uses the default layout but starts with a collapsed sidebar (even if icon-only sidebar is disabled in your configuration) - great for dashboard pages that need more screen space
+> - `'preferIconOnly'`: Uses the default layout but starts with a collapsed sidebar (even if icon-only sidebar is disabled in your configuration) - great for pages that need more screen space or already have some navigation
 
 This will register custom page with path `/setup2fa` and will not include it in the menu. 
 
