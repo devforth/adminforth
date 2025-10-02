@@ -207,6 +207,21 @@ plugins: [
 ...
 ```
 
+## Custom label prefix in authenticator app
+
+By default label prefix in Authenticator app is formed from Adminforth [brandName setting](/docs/tutorial/Customization/branding/) which is best behaviour for most admin apps (always remember to configure brandName correctly e.g. "RoyalFinTech Admin") 
+If you want to have custom label prefix for some reason: 
+
+```ts label="./adminuser"
+  plugins: [
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+        ...
+      customBrandPrefix: "TechStore",
+    }),
+  ],
+```
+
 ## Passkeys setup
 
 If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
