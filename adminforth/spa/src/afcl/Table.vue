@@ -1,5 +1,5 @@
 <template>
-  <div class="afcl-table-container relative overflow-x-auto shadow-md sm:rounded-lg">
+  <div class="afcl-table-container relative overflow-x-auto shadow-md rounded-lg">
     <div class="overflow-x-auto w-full">
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
           <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
