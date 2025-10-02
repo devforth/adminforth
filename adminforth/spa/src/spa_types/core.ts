@@ -49,6 +49,7 @@ export type CoreConfig = {
     customHeadItems?: {
         tagName: string;
         attributes: { [key: string]: string | boolean };
+        innerCode?: string;
     }[],
 }
 

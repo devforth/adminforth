@@ -570,14 +570,14 @@ class CodeInjector implements ICodeInjector {
     // inject heads to index.html
     const headItems = this.adminforth.config.customization?.customHeadItems;
     if(headItems){
-      const renderedHead = headItems.map(({ tagName, attributes }) => {
+      const renderedHead = headItems.map(({ tagName, attributes, innerCode }) => {
       const attrs = Object.entries(attributes)
         .map(([key, value]) => `${key}="${value}"`)
         .join(' ');
       const isVoid = ['base', 'link', 'meta'].includes(tagName);
       return isVoid
         ? `<${tagName} ${attrs}>`
-        : `<${tagName} ${attrs}></${tagName}>`;
+        : `<${tagName} ${attrs}> ${innerCode} </${tagName}>`;
       }).join('\n    ');
 
       indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );
