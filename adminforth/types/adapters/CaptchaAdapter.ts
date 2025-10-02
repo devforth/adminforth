@@ -24,10 +24,9 @@ export interface CaptchaAdapter {
     getToken(): Promise<string> | string;
 
     /**
-     * Renders the captcha widget HTML.
+     * Returns the script HTML for the captcha widget.
      */
-    renderWidget(): void;
-
+    getRenderWidgetCode(): string;
     /**
      * Validates the captcha token.
      */
