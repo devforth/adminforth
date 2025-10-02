@@ -1108,6 +1108,7 @@ export interface AdminForthConfigForFrontend {
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[],
   settingPages?:{
     icon?: string,
