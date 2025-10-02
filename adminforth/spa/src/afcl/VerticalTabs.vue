@@ -1,6 +1,6 @@
 <template>
   <div class="md:flex">
-    <ul class="flex-column space-y space-y-4 text-sm font-medium text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0">
+    <ul class="ps-6 flex-column space-y space-y-4 text-sm font-medium text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0 md:mr-0 mr-6">
       <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
         <a 
           href="#"
@@ -13,7 +13,7 @@
         </a>
       </li>
     </ul>
-    <div class="ps-6  text-medium text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText  w-full ">
+    <div class="ps-6 text-medium text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText  w-full ">
       <slot :name="activeTab"></slot>
     </div>
   </div>
