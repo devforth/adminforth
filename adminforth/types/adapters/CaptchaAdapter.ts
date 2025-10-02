@@ -27,6 +27,11 @@ export interface CaptchaAdapter {
      * Returns the script HTML for the captcha widget.
      */
     getRenderWidgetCode(): string;
+
+    /**
+     * Returns the function name to render the captcha widget.
+     */
+    getRenderWidgetFunctionName(): string;
     /**
      * Validates the captcha token.
      */
