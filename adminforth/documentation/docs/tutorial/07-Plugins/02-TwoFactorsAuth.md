@@ -207,9 +207,10 @@ plugins: [
 ...
 ```
 
-## Custom label in authenticator app
+## Custom label prefix in authenticator app
 
-If you want to have custom label in authenticator app, you can specify it: 
+By default label prefix in Authenticator app is formed from Adminforth [brandName setting](/docs/tutorial/Customization/branding/) which is best behaviour for most admin apps (always remember to configure brandName correctly e.g. "RoyalFinTech Admin") 
+If you want to have custom label prefix for some reason: 
 
 ```ts label="./adminuser"
   plugins: [
