@@ -811,6 +811,7 @@ interface AdminForthInputConfigCustomization {
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
 
 }
@@ -1140,6 +1141,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
   
 }
