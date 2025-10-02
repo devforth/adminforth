@@ -24,6 +24,11 @@ export interface CaptchaAdapter {
     getToken(): Promise<string> | string;
 
     /**
+     * Renders the captcha widget HTML.
+     */
+    renderWidget(): string;
+
+    /**
      * Validates the captcha token.
      */
     validate(token: string, ip: string): Promise<Record<string, any>>;
