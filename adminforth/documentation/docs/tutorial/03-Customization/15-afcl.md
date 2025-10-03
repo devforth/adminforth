@@ -975,7 +975,9 @@ async function loadPageData(data) {
 
 ### Table loading states
 
-To control the table’s loading state externally, use the isLoading prop to set it and the @update:tableLoading event to track changes.
+For tables where you load data externally and pass them to `data` prop as array (including case with front-end pagination) you might want to show skeleton loaders in table externaly using `isLoading` props.
+
+For tables with server-side paganation which use async function in data prop you can listen for `@update:tableLoading` to get table internal loading state, in other words this event will let you know when server side function started and finished execution, so you might use it e.g. to disable some external filter buttons and so on.
 
 <div class="split-screen">
 
