@@ -46,7 +46,7 @@ loader prop would show loader when it's true.
 <div class="split-screen" >
 
 ```ts
-import { IconGridSolid, IconUserCircleSolid, IconLockSolid, IconShieldOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
 import { ButtonGroup } from '@/afcl'
 
 const activeButton = ref('')
