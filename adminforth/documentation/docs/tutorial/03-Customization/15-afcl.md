@@ -968,9 +968,46 @@ async function loadPageData(data) {
 //diff-add
   :data="loadPageData"
 
-  :pageSize="3"> </Table>
+  :pageSize="3"> 
+</Table>
 ```
 > 👆 The page size is used as the limit for pagination.
+
+### Table loading states
+
+To control the table’s loading state externally, use the isLoading prop to set it and the @update:tableLoading event to track changes.
+
+<div class="split-screen">
+
+```ts
+import { Table, Button } from "@/afcl"
+const isTableLoading = ref(false);
+const tableState = ref("loading");
+
+  ...
+
+  <Table
+    :columns="[
+      { label: 'Name', fieldName: 'name' },
+      { label: 'Age', fieldName: 'age' },
+      { label: 'Country', fieldName: 'country' },
+    ]"
+    :data="loadPageData" 
+    //diff-add
+    :isLoading="isTableLoading"
+    :pageSize="3"
+    //diff-add
+    @update:tableLoading="(loading) => loading === true ? tableState = 'loading' : tableState = 'loaded'"
+  >
+  </Table>
+
+  <p> Table state: {{ tableState }} </p>
+
+  <Button @click="isTableLoading.value=!isTableLoading.value"> Toggle loading state</Button>
+```
+  ![AFCL Table](TableLoading.png)
+
+</div>
 
 ## ProgressBar
 
