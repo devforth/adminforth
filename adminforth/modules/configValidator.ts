@@ -159,7 +159,7 @@ export default class ConfigValidator implements IConfigValidator {
     if (!customization.customPages) {
       customization.customPages = [];
     }
-    customization.customPages.forEach((page, i) => {
+    customization.customPages.forEach((page) => {
       page.component = this.validateComponent(page.component, errors);
       const meta = page.component.meta || {};
       if (meta.sidebarAndHeader === undefined) {
@@ -167,7 +167,6 @@ export default class ConfigValidator implements IConfigValidator {
       }
       delete meta.customLayout;
       page.component.meta = meta;
-      customization.customPages[i].component = page.component;
     });
     
     if (!customization.brandName) { //} === undefined) {
