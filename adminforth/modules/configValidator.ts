@@ -159,22 +159,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!customization.customPages) {
       customization.customPages = [];
     }
-    const normalizeComponent = (comp: any) => {
-      if (typeof comp === 'string') {
-        return { file: comp, meta: {} };
-      }
-      const meta = comp.meta || {};
+    customization.customPages.forEach((page) => {
+      page.component = this.validateComponent(page.component, errors);
+      const meta = page.component.meta || {};
       if (meta.sidebarAndHeader === undefined) {
         meta.sidebarAndHeader = meta.customLayout === true ? 'none' : 'default';
       }
       delete meta.customLayout;
-      return { ...comp, meta };
-    };
-
-    customization.customPages.forEach((page, i) => {
-      const normalizedComponent = normalizeComponent(page.component);
-      this.validateComponent(normalizedComponent, errors);
-      customization.customPages[i].component = normalizedComponent;
+      page.component.meta = meta;
     });
     
     if (!customization.brandName) { //} === undefined) {
