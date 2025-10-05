@@ -968,9 +968,48 @@ async function loadPageData(data) {
 //diff-add
   :data="loadPageData"
 
-  :pageSize="3"> </Table>
+  :pageSize="3"> 
+</Table>
 ```
 > 👆 The page size is used as the limit for pagination.
+
+### Table loading states
+
+For tables where you load data externally and pass them to `data` prop as array (including case with front-end pagination) you might want to show skeleton loaders in table externaly using `isLoading` props.
+
+For tables with server-side paganation which use async function in data prop you can listen for `@update:tableLoading` to get table internal loading state, in other words this event will let you know when server side function started and finished execution, so you might use it e.g. to disable some external filter buttons and so on.
+
+<div class="split-screen">
+
+```ts
+import { Table, Button } from "@/afcl"
+const isTableLoading = ref(false);
+const tableState = ref("loading");
+
+  ...
+
+  <Table
+    :columns="[
+      { label: 'Name', fieldName: 'name' },
+      { label: 'Age', fieldName: 'age' },
+      { label: 'Country', fieldName: 'country' },
+    ]"
+    :data="loadPageData" 
+    //diff-add
+    :isLoading="isTableLoading"
+    :pageSize="3"
+    //diff-add
+    @update:tableLoading="(loading) => loading === true ? tableState = 'loading' : tableState = 'loaded'"
+  >
+  </Table>
+
+  <p> Table state: {{ tableState }} </p>
+
+  <Button @click="isTableLoading.value=!isTableLoading.value"> Toggle loading state</Button>
+```
+  ![AFCL Table](TableLoading.png)
+
+</div>
 
 ## ProgressBar
 
