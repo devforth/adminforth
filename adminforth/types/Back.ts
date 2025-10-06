@@ -306,6 +306,10 @@ export interface IAdminForthAuth {
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
+  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expiry: number, httpOnly: boolean}}): void;
+
+  getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
+
   setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;

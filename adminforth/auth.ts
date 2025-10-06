@@ -107,6 +107,13 @@ class AdminForthAuth implements IAdminForthAuth {
       httpOnly ? ' HttpOnly;' : ''
     } SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
   }
+
+  getCustomCookie({ cookies, name }: {
+    cookies: {key: string, value: string}[], name: string
+  }): string | null {
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    return cookies.find((cookie) => cookie.key === `adminforth_${brandSlug}_${name}`)?.value || null;
+  }
  
   issueJWT(payload: Object, type: string, expiresIn: string = '24h'): string {
     // read ADMINFORH_SECRET from environment if not drop error
