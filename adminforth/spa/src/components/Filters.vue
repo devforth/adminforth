@@ -136,7 +136,7 @@
 
    <div class="flex justify-end gap-2">
       <button 
-        :disabled="!filtersStore.filters.length"
+        :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
         class="flex items-center py-1 px-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear">{{ $t('Clear all') }}</button>
@@ -289,7 +289,7 @@ function getFilterItem({ column, operator }) {
 }
 
 async function clear() {
-  filtersStore.clearFilters();
+  filtersStore.filters = [...filtersStore.filters.filter(f => filtersStore.shouldFilterBeHidden(f.field))];
   emits('update:filters', [...filtersStore.filters]);
 }
 

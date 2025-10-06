@@ -366,6 +366,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
           brandLogo: this.adminforth.config.customization.brandLogo,
+          iconOnlySidebar: this.adminforth.config.customization.iconOnlySidebar,
           datesFormat: this.adminforth.config.customization.datesFormat,
           timeFormat: this.adminforth.config.customization.timeFormat,
           auth: this.adminforth.config.auth,
@@ -375,6 +376,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
+          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
         }
 
         // translate menu labels

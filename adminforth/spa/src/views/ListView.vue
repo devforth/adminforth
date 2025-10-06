@@ -92,8 +92,8 @@
         {{ $t('Filter') }}
         <span
           class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-          v-if="filtersStore.filters.length">
-            {{ filtersStore.filters.length }}
+          v-if="filtersStore.visibleFiltersCount">
+            {{ filtersStore.visibleFiltersCount }}
         </span>
       </button>
 
@@ -189,7 +189,7 @@ import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
-import { computed, onMounted, ref, watch, nextTick, type Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, nextTick, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi'
 import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
@@ -387,6 +387,13 @@ class SortQuerySerializer {
 
 let listAutorefresher: any = null;
 
+function clearAutoRefresher() {
+  if (listAutorefresher) {
+    clearInterval(listAutorefresher);
+    listAutorefresher = null;
+  }
+}
+
 async function init() {
   
   await coreStore.fetchResourceFull({
@@ -434,10 +441,7 @@ async function init() {
     }
   });
 
-  if (listAutorefresher) {
-    clearInterval(listAutorefresher);
-    listAutorefresher = null;
-  }
+  clearAutoRefresher();
   if (coreStore.resource!.options?.listRowsAutoRefreshSeconds) {
     listAutorefresher = setInterval(async () => {
       await adminforth.list.silentRefresh();
@@ -503,6 +507,10 @@ onMounted(async () => {
   await init();
   initThreeDotsDropdown();
   initInProcess = false;
+});
+
+onUnmounted(() => {
+  clearAutoRefresher();
 });
 
 watch([page], async () => {

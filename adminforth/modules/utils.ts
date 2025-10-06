@@ -510,3 +510,11 @@ export function isProbablyUUIDColumn(column: { name: string; type?: string; samp
 
   return false;
 }
+
+export function slugifyString(str: string): string {
+  return str
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '-');
+}
