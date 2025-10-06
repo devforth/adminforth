@@ -303,7 +303,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
   plugins: [
     new TwoFactorsAuthPlugin ({ 
       twoFaSecretFieldName: 'secret2fa', 
-      timeStepWindow: 1       
+      timeStepWindow: 1,       
       //diff-add
       passkeys: {
         //diff-add
@@ -317,7 +317,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
         //diff-add
         settings: {
           // diff-add
-          expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
+          expectedOrigin: "http://localhost:3500",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
           //diff-add
           // relying party config
           //diff-add
@@ -352,7 +352,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
               // diff-add
               // Can be "platform", "cross-platform" or "both"
               // diff-add
-                authenticatorAttachment: "platform",
+                authenticatorAttachment: "both",
                 //diff-add
                 requireResidentKey: true,
                 //diff-add
