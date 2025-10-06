@@ -50,7 +50,7 @@ export async function callApi({path, method, body=undefined}: {
 
 export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
   path: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: any,
   headers?: Record<string, string>
 }): Promise<any> {
