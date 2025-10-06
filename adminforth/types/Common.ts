@@ -261,7 +261,17 @@ export interface AdminForthComponentDeclarationFull {
    * </script>
    * 
    */
-  meta?: any,
+  meta?: {
+    /**
+     * Controls sidebar and header visibility for custom pages
+     * - 'default': Show both sidebar and header (default behavior)
+     * - 'none': Hide both sidebar and header (full custom layout)
+     * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     */
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly',
+    
+    [key: string]: any,
+  }
 }
 import { type AdminForthActionInput } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
@@ -1073,6 +1083,10 @@ export interface AdminForthConfigForFrontend {
   showBrandNameInSidebar: boolean,
   showBrandLogoInSidebar: boolean,
   brandLogo?: string,
+  iconOnlySidebar?: { 
+    logo?: string,
+    enabled?: boolean,
+  },
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
@@ -1094,7 +1108,14 @@ export interface AdminForthConfigForFrontend {
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
-  }[],  
+    innerCode?: string;
+  }[],
+  settingPages?:{
+    icon?: string,
+    pageLabel: string,
+    slug?: string,
+    component: string,
+  }[],
 }
 
 export interface GetBaseConfigResponse {
