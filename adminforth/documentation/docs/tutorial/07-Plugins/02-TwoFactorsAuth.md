@@ -231,15 +231,19 @@ First, you need to create a passkeys table in your schema.prisma file:
 ```ts title='./schema.prisma'
   //diff-add
   model passkeys {
-  //diff-add
-    credential_id           String @id 
-  //diff-add
+    //diff-add
+    id                      String @id
+    //diff-add
+    credential_id           String  
+    //diff-add
     user_id                 String
-  //diff-add
+    //diff-add
     meta                    String
-  //diff-add
+    //diff-add
     @@index([user_id])
-  //diff-add
+    //diff-add
+    @@index([credential_id])
+    //diff-add
   }
 ```
 
@@ -253,7 +257,8 @@ npm run makemigration -- --name add-passkeys ; npm run migrate:local
 Next, you need to create a new resource for passkeys:
 
 ```ts title='./resources/passkeys.ts'
-  import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
+  import { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+  import { randomUUID } from "crypto";
 
   export default {
     dataSource: 'maindb',
@@ -262,9 +267,15 @@ Next, you need to create a new resource for passkeys:
     label: 'Passkeys',
     columns: [
       {
+        name: 'id',
+        label: 'ID',
+        primaryKey: true,
+        showIn: { all: false},
+        fillOnCreate: () => randomUUID(),
+      },
+      {
         name: 'credential_id',
         label: 'Credential ID',
-        primaryKey: true,
       },
       {
         name: 'user_id',
