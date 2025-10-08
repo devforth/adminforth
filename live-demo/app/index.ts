@@ -17,7 +17,8 @@ const DEMO_EMAIL  = 'demo@adminfoth.dev';
 const DEMO_PASSWORD = 'demo';
 
 
-export const admin = new AdminForth({
+export const admin = 
+new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   auth: {
     //loginBackgroundImage: '@@/adminforthloginimg.avif',
@@ -31,6 +32,9 @@ export const admin = new AdminForth({
     brandName: 'My Admin',
     datesFormat: 'D MMM YY',
     timeFormat: 'HH:mm:ss',
+    iconOnlySidebar: {
+      logo: '@/assets/logo.svg',
+    },
     emptyFieldPlaceholder: '-',
     title: 'My App Admin',  // used to set HTML meta title tag
     // brandLogo: '@@/logo.svg',
