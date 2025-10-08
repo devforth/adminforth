@@ -83,7 +83,7 @@
 
     <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
       :class="{
-        'sm:ml-20': isSidebarIconOnly,
+        'sm:ml-18': isSidebarIconOnly,
         'sm:ml-[264px]': !isSidebarIconOnly,
         'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
         'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
