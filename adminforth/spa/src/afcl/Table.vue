@@ -1,5 +1,5 @@
 <template>
-  <div class="afcl-table-container relative overflow-x-auto shadow-md sm:rounded-lg">
+  <div class="afcl-table-container relative overflow-x-auto shadow-md rounded-lg">
     <div class="overflow-x-auto w-full">
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
           <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
@@ -73,11 +73,12 @@
       <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ dataResult.total }}</span></template>
     </i18n-t>
     <div class="af-pagination-container flex flex-row items-center xs:flex-row xs:justify-between xs:items-center gap-3">
-      <div class="inline-flex">
+      <div class="inline-flex" :class="isLoading || props.isLoading ? 'pointer-events-none select-none opacity-50' : ''">
           <!-- Buttons -->
           <button
             class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText bg-lightActivePaginationButtonBackground border-r-0 rounded-s hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
-            @click="currentPage--; pageInput = currentPage.toString();" :disabled="currentPage <= 1">
+            @click="currentPage--; pageInput = currentPage.toString();" 
+            :disabled="currentPage <= 1 || isLoading || props.isLoading">
             <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 14 10">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -86,12 +87,13 @@
           </button>
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-r-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
-            @click="switchPage(1); pageInput = currentPage.toString();" :disabled="currentPage <= 1">
+            @click="switchPage(1); pageInput = currentPage.toString();" 
+            :disabled="currentPage <= 1 || isLoading || props.isLoading">
             <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
             1
           </button>
           <div
-            contenteditable="true" 
+            :contenteditable="!isLoading && !props.isLoading"
             class="min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightTablePaginationInputText border border-lightTablePaginationInputBorder bg-lightTablePaginationInputBackground dark:border-darkTablePaginationInputBorder dark:text-darkTablePaginationInputText dark:bg-darkTablePaginationInputBackground z-10"
             @keydown="onPageKeydown($event)"
             @input="onPageInput($event)"
@@ -102,14 +104,17 @@
 
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
-            @click="currentPage = totalPages; pageInput = currentPage.toString();" :disabled="currentPage >= totalPages">
+            @click="currentPage = totalPages; pageInput = currentPage.toString();" 
+            :disabled="currentPage >= totalPages || isLoading || props.isLoading"
+          >
             {{ totalPages }}
 
-            <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
           </button>
           <button
             class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText focus:outline-none bg-lightActivePaginationButtonBackground border-l-0 rounded-e hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
-            @click="currentPage++; pageInput = currentPage.toString();" :disabled="currentPage >= totalPages">
+            @click="currentPage++; pageInput = currentPage.toString();" 
+            :disabled="currentPage >= totalPages || isLoading || props.isLoading"
+          >
             <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 14 10">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -172,6 +177,10 @@
     columnWidths.value = !headerRefs.value ? [] : headerRefs.value.map((el: HTMLElement) => el.offsetWidth);
   });
 
+  watch([isLoading, () => props.isLoading], () => {
+    emit('update:tableLoading', isLoading.value || props.isLoading);
+  });
+
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
   });
@@ -185,8 +194,8 @@
     pageInput.value = p.toString();
   }
 
-  const emites = defineEmits([
-    'update:activeTab',
+  const emit = defineEmits([
+    'update:tableLoading',
   ]);
   
   function onPageInput(event: any) {

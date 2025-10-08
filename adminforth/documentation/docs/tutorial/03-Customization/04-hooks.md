@@ -40,7 +40,7 @@ If multiple hooks are defined (e.g. plugin might add own hook to `list.beforeDat
 
 When user opens edit page, AdminForth makes a request to the backend to get the initial data for the form.
 
-![Initial data for edit page flow](initial_edit_data_flow.png)
+![Initial data for edit page flow](get_resource_data.png)
 
 Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
 

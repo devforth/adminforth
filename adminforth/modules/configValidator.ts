@@ -17,7 +17,7 @@ import {
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, suggestIfTypo } from './utils.js';
+import { guessLabelFromName, md5hash, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -28,7 +28,6 @@ import {
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
-
 
 
 export default class ConfigValidator implements IConfigValidator {
@@ -160,8 +159,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!customization.customPages) {
       customization.customPages = [];
     }
-    customization.customPages.forEach((page, i) => {
-      this.validateComponent(page.component, errors);
+    customization.customPages.forEach((page) => {
+      page.component = this.validateComponent(page.component, errors);
+      const meta = page.component.meta || {};
+      if (meta.sidebarAndHeader === undefined) {
+        meta.sidebarAndHeader = meta.customLayout === true ? 'none' : 'default';
+      }
+      delete meta.customLayout;
+      page.component.meta = meta;
     });
     
     if (!customization.brandName) { //} === undefined) {
@@ -169,12 +174,14 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     // slug should have only lowercase letters, dashes and numbers
-    customization.brandNameSlug = customization.brandName.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    customization.brandNameSlug = slugifyString(customization.brandName);
 
-    
     if (customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(customization.brandLogo));
     }
+    if (customization.iconOnlySidebar && customization.iconOnlySidebar.logo) {
+      errors.push(...this.checkCustomFileExists(customization.iconOnlySidebar.logo)); 
+    } 
     if (customization.showBrandNameInSidebar === undefined) {
       customization.showBrandNameInSidebar = true;
     }
@@ -998,6 +1005,12 @@ export default class ConfigValidator implements IConfigValidator {
       if (!userResource) {
         const similar = suggestIfTypo(newConfig.resources.map((res) => res.resourceId ), newConfig.auth.usersResourceId);
         throw new Error(`Resource with id "${newConfig.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
+      }
+      if (newConfig.auth.userMenuSettingsPages) {
+        for (const page of newConfig.auth.userMenuSettingsPages) {
+          this.validateComponent({file: page.component}, errors);
+          page.slug = page.slug ?? slugifyString(page.pageLabel);
+        }
       }
 
       // normalize beforeLoginConfirmation hooks

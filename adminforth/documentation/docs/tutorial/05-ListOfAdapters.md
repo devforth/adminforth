@@ -167,3 +167,22 @@ npm install @adminforth/image-vision-adapter-openai --save
 Integrates AdminForth with OpenAI to provide advanced AI-powered image analysis. Can describe image content, read and extract text from images, identify objects and people, and provide detailed visual insights.
 
 ---
+
+## 🗄️Key-value Adapters
+
+[🔗Key-value adapter source class](https://github.com/devforth/adminforth/blob/86bb9236fed9e844fdb07688318c050641f9eb1c/adminforth/types/adapters/KeyValueAdapter.ts#L6)
+
+Key-value adapters are used to store data in a key-value format. They provide a simple and efficient way to manage data where quick access to values based on unique keys is required.
+
+### RAM Adapter
+
+```
+npm i @adminforth/key-value-adapter-ram
+```
+
+The RAM adapter is a simplest in-memory key-value storage. Stores data in process RAM memory. Not sutable if you run application with several processes because each process will have own RAM. In last case you need centralized KV adapter, e.g. Redis. 
+
+Pros:
+* Simplest in use - does not reqauire any external daemon.
+Cones:
+* In production sutable for single-process installations only

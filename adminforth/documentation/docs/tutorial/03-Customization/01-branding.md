@@ -126,6 +126,27 @@ const admin = new AdminForth({
 });
 ```
 
+## Icon only sidebar 
+
+AdminForth supports a collapsible sidebar that can be toggled between a full-width view (showing labels) and an icon-only view (showing only icons).
+
+```ts title='./index.ts'
+
+const admin = new AdminForth({
+  ...
+  customization: {
+  //diff-add
+    iconOnlySidebar: {
+  //diff-add
+      enabled: true,  // Optional: Enable the collapsible icon-only sidebar feature
+  //diff-add
+      logo: '@@/logo.svg',  // Optional: Custom logo to display in icon-only mode
+  //diff-add
+    }, 
+  },
+  ...
+});
+```
 
 ## Square vs rounded buttons?
 
