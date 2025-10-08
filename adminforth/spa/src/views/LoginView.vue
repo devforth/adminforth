@@ -90,6 +90,7 @@
                           v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
                           :is="getCustomComponent(c)"
                           :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
                         />
 
                         <ErrorMessage :error="error" />
@@ -103,7 +104,7 @@
                           <span class="sr-only">{{ $t('Info') }}</span>
                           <div v-html="loginPromptHTML"></div>
                         </div>
-                        <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
+                        <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton" class="w-full">
                           {{ $t('Login to your account') }}
                         </Button>
                     </form>
@@ -117,7 +118,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import { getCustomComponent } from '@/utils';
 import { onBeforeMount, onMounted, ref, computed } from 'vue';
@@ -148,6 +149,7 @@ const user = useUserStore();
 const showPw = ref(false);
 
 const error = ref(null);
+const disableLoginButton = ref(false);
 
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
@@ -211,5 +213,8 @@ async function login() {
 
 }
 
+function setDisableLoginButton(value: boolean) {
+  disableLoginButton.value = value;
+}
 
 </script>

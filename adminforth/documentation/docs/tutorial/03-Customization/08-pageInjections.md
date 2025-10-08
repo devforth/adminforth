@@ -555,3 +555,23 @@ new AdminForth({
 ```
 
 If you hide the logo with `showBrandLogoInSidebar: false`, components injected via `sidebarTop` will take the whole line width.
+
+## Custom scripts in head
+
+If you want to inject tags in your html head:
+
+```ts title='./index.ts'
+
+customization: {
+  ...
+  customHeadItems: [
+    {
+      tagName: 'script',
+      attributes: { async: 'true', defer: 'true' },
+      innerCode: "console.log('Hello from HTML head')"
+    }
+  ],
+...
+}
+
+```

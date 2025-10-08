@@ -23,3 +23,5 @@ export { default as JsonViewer } from './JsonViewer.vue';
 export { default as Toggle } from './Toggle.vue';
 export { default as DatePicker } from './DatePicker.vue';
 export { default as Textarea } from './Textarea.vue';
+export { default as ButtonGroup } from './ButtonGroup.vue';
+export { default as Card } from './Card.vue';

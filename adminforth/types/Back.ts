@@ -306,6 +306,10 @@ export interface IAdminForthAuth {
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
+  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expiry: number, expirySeconds: number, httpOnly: boolean}}): void;
+
+  getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
+
   setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
@@ -668,6 +672,19 @@ interface AdminForthInputConfigCustomization {
    */
   brandLogo?: string,
 
+
+  /**
+   * Path to your app logo for icon only sidebar
+   * 
+   * Example:
+   * Place file `logo.svg` to `./custom` folder and set this option:
+   * 
+   */
+  iconOnlySidebar?: {
+    logo?: string,
+    enabled?: boolean,
+  },
+
   /**
    * Path to your app favicon
    * 
@@ -798,6 +815,7 @@ interface AdminForthInputConfigCustomization {
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
 
 }
@@ -1036,6 +1054,16 @@ export interface AdminForthInputConfig {
        * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
        */
       clientIpHeader?: string,
+
+      /**
+       * Add custom page to the settings page
+       */
+      userMenuSettingsPages: {
+        icon?: string,
+        pageLabel: string,
+        slug?: string,
+        component: string
+      }[],
     },
 
      /**
@@ -1117,6 +1145,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
   
 }

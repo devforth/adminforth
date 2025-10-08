@@ -41,6 +41,68 @@ import { Button } from '@/afcl'
 
 loader prop would show loader when it's true.
 
+## Button Group
+### With active button
+<div class="split-screen" >
+
+```ts
+import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
+import { ButtonGroup } from '@/afcl'
+
+const activeButton = ref('')
+
+    ...
+
+<ButtonGroup v-model="activeButton">  
+  <template #button:Profile>
+    <div class="flex px-4 py-2">
+      <IconUserCircleSolid class="w-5 h-5 me-2"/>
+      Profile
+    </div>
+  </template>
+  <template #button:Dashboard>
+    <div class="flex px-4 py-2">
+      <IconGridSolid class="w-5 h-5 me-2"/>
+      Board
+    </div>
+  </template>
+</ButtonGroup>
+```
+
+![AFCL Button-group](ButtonGroup1.png)
+
+</div>
+
+### With solid color
+
+<div class="split-screen" >
+
+```ts
+  import { ButtonGroup } from '@/afcl'
+  import { IconPlusOutline, IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+
+    ...
+
+    <ButtonGroup :solidColor="true">
+        <template #button:Profile>
+            <div class="flex px-4 py-2" @click="console.log("Add passkey got clicked")">
+                <IconPlusOutline class="w-5 h-5 me-2"/>
+                <p>Add Local Passkey</p>
+            </div>
+        </template>
+        <template #button:Dropdown>
+            <div id="dropdown-button" class="flex px-2 py-2" @click="console.log("Dropdown got clicked")">
+                <IconCaretDownSolid class="w-5 h-5"/>
+            </div>
+        </template>
+    </ButtonGroup>
+
+```
+
+![AFCL Button-group](ButtonGroup2.png)
+
+</div>
+
 
 ## Link
 
@@ -362,6 +424,54 @@ const enable = ref(false)
   </div>
 </div>
 
+## Card 
+
+### Custom card
+If you need custom card, you can make it without 
+<div class="split-screen">
+```ts
+<Card>
+  <p class="font-semibold text-gray-600 text-xl dark:text-gray-300">Total Profit</p>
+  <p class="text-green-500 font-bold mt-2">$100,000</p>
+</Card>
+```
+
+
+![AFCL Checkbox](Card3.png)
+
+</div>
+
+### Standart card
+<div class="split-screen">
+
+```ts
+import { Card } from '@/afcl'
+
+  ...
+
+  <Card
+    title="This is a large card"
+    description="Description text for large card. This is a large card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="md"
+    title="This is a medium card"
+    description="Description text for medium card. This is a medium card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="sm"
+    title="This is a small card"
+    description="Description text for small card. This is a small card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+```
+![AFCL Checkbox](Card2.png)
+
+</div>
 
 ## Toggle
 
@@ -858,9 +968,48 @@ async function loadPageData(data) {
 //diff-add
   :data="loadPageData"
 
-  :pageSize="3"> </Table>
+  :pageSize="3"> 
+</Table>
 ```
 > 👆 The page size is used as the limit for pagination.
+
+### Table loading states
+
+For tables where you load data externally and pass them to `data` prop as array (including case with front-end pagination) you might want to show skeleton loaders in table externaly using `isLoading` props.
+
+For tables with server-side paganation which use async function in data prop you can listen for `@update:tableLoading` to get table internal loading state, in other words this event will let you know when server side function started and finished execution, so you might use it e.g. to disable some external filter buttons and so on.
+
+<div class="split-screen">
+
+```ts
+import { Table, Button } from "@/afcl"
+const isTableLoading = ref(false);
+const tableState = ref("loading");
+
+  ...
+
+  <Table
+    :columns="[
+      { label: 'Name', fieldName: 'name' },
+      { label: 'Age', fieldName: 'age' },
+      { label: 'Country', fieldName: 'country' },
+    ]"
+    :data="loadPageData" 
+    //diff-add
+    :isLoading="isTableLoading"
+    :pageSize="3"
+    //diff-add
+    @update:tableLoading="(loading) => loading === true ? tableState = 'loading' : tableState = 'loaded'"
+  >
+  </Table>
+
+  <p> Table state: {{ tableState }} </p>
+
+  <Button @click="isTableLoading.value=!isTableLoading.value"> Toggle loading state</Button>
+```
+  ![AFCL Table](TableLoading.png)
+
+</div>
 
 ## ProgressBar
 

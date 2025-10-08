@@ -30,6 +30,7 @@ export async function callApi({path, method, body=undefined}: {
     const r = await fetch(fullPath, options);
     if (r.status == 401 ) {
       useUserStore().unauthorize();
+      useCoreStore().resetAdminUser();
       await router.push({ name: 'login' });
       return null;
     } 
