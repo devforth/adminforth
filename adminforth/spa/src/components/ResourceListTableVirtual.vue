@@ -14,7 +14,7 @@
             <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class=" w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else class="h-full w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
@@ -74,7 +74,7 @@
           :column-widths="columnWidths"
         />
         
-        <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
+        <tr v-else-if="rows.length === 0" class="h-full bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
 
             <div id="toast-simple"
