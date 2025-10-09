@@ -1,9 +1,12 @@
 <template>
   <div class="min-w-40">
-    <div class="cursor-pointer flex items-center justify-between gap-1 block px-4 py-2 text-sm text-black 
-      hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive 
+    <div class="cursor-pointer flex items-center justify-between gap-1 block px-4 py-2 text-sm 
+      bg-lightUserMenuSettingsButtonBackground hover:bg-lightUserMenuSettingsButtonBackgroundHover
+      text-lightUserMenuSettingsButtonText hover:text-lightUserMenuSettingsButtonTextHover
+      dark:bg-darkUserMenuSettingsButtonBackground dark:hover:bg-darkUserMenuSettingsButtonBackgroundHover
+      dark:text-darkUserMenuSettingsButtonText dark:hover:text-darkUserMenuSettingsButtonTextHover
       w-full select-none "
-      :class="{ 'bg-black bg-opacity-10	': showDropdown }"
+      :class="{ 'bg-lightUserMenuSettingsButtonBackgroundExpanded hover:bg-lightUserMenuSettingsButtonBackgroundExpanded dark:bg-darkUserMenuSettingsButtonBackgroundExpanded	hover:dark:bg-darkUserMenuSettingsButtonBackgroundExpanded ': showDropdown }"
       @click="showDropdown = !showDropdown"
     >
         <span>Settings</span>
@@ -15,11 +18,10 @@
     <div v-if="showDropdown" >
       
       <router-link class="cursor-pointer flex items-center gap-1 block px-4 py-1 text-sm 
-        text-black dark:text-darkSidebarTextHover
-        bg-black bg-opacity-10	
-        hover:brightness-110
-        hover:text-lightPrimary dark:hover:text-darkPrimary
-        hover:bg-lightPrimaryContrast dark:hover:bg-darkPrimaryContrast
+        bg-lightUserMenuSettingsButtonDropdownItemBackground hover:bg-lightUserMenuSettingsButtonDropdownItemBackgroundHover
+        text-lightUserMenuSettingsButtonDropdownItemText hover:text-lightUserMenuSettingsButtonDropdownItemTextHover
+        dark:bg-darkUserMenuSettingsButtonDropdownItemBackground dark:hover:bg-darkUserMenuSettingsButtonDropdownItemBackgroundHover
+        dark:text-darkUserMenuSettingsButtonDropdownItemText dark:hover:text-darkUserMenuSettingsButtonDropdownItemTextHover
         w-full text-select-none pl-5 select-none"
         v-for="option in options"
         :to="getRoute(option)"
