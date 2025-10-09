@@ -192,6 +192,12 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
+    /* Right-side only shadow */
+    box-shadow: 12px 0px 14px -5px rgba(0, 0, 0, 0.25);
+  }
+  :deep(.dark) .sidebar-container {
+    /* Slightly stronger in dark mode */
+    box-shadow: 12px 0px 14px -5px rgba(0, 0, 0, 0.45);
   }
   
   .sidebar-collapsed {
