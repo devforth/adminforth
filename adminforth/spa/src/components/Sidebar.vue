@@ -193,11 +193,11 @@
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
     /* Right-side only shadow */
-    box-shadow: 12px 0px 14px -5px rgba(0, 0, 0, 0.25);
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
   :deep(.dark) .sidebar-container {
     /* Slightly stronger in dark mode */
-    box-shadow: 12px 0px 14px -5px rgba(0, 0, 0, 0.45);
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.45);
   }
   
   .sidebar-collapsed {
