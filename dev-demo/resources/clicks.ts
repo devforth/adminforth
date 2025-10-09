@@ -5,7 +5,7 @@ export default {
   dataSource: "ch",
   table: "clicks",
   /*
-    SQL to create table run SQL in http://localhost:8123/play
+    SQL to create table run SQL in http://localhost:8124/play
     CREATE TABLE demo.clicks (
       clickid UUID PRIMARY KEY,
       element String,
