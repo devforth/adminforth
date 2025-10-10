@@ -809,7 +809,7 @@ interface AdminForthInputConfigCustomization {
   }
 
   /**
-  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Allows adding custom elements (e.g., &lt;link&gt;, &lt;script&gt;, &lt;meta&gt;) to the &lt;head&gt; of the HTML document.
   * Each item must include a tag name and a set of attributes.
   */
   customHeadItems?: {
