@@ -286,7 +286,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies, tr}): Promise<GetBaseConfigResponse>=> {
+      handler: async ({input, adminUser, cookies, tr, response}): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -294,6 +294,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
         }
+
+        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+        response.setHeader('Expires', '0');
+        response.setHeader('Surrogate-Control', 'no-store');
 
         const dbUser = adminUser.dbUser;
         username = dbUser[this.adminforth.config.auth.usernameField]; 
