@@ -192,20 +192,19 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
-    /* Right-side only shadow */
-    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
-  }
-  :deep(.dark) .sidebar-container {
-    /* Slightly stronger in dark mode */
-    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.45);
   }
   
   .sidebar-collapsed {
     width: 4.5rem; /* Collapsed width (w-18) */
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
   
   .sidebar-expanded {
     width: 16.5rem; /* Expanded width (w-64) */
+  }
+
+  :deep(.dark) .sidebar-collapsed {
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.45);
   }
 
   /* Text visibility transitions */
