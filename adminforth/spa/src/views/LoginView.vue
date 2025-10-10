@@ -92,8 +92,6 @@
                           :meta="c.meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
-
-                        <ErrorMessage :error="error" />
                         
                         <div v-if="loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
@@ -108,9 +106,10 @@
                           {{ $t('Login to your account') }}
                         </Button>
                     </form>
-
                 </div>
+                <ErrorMessage v-if="error" :error="error" class="rounded-t-none mb-0 w-full" />
             </div>
+            <div v-if="!error" class="h-[52px]"/>
         </div>
     </div> 
 
