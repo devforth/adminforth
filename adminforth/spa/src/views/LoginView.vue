@@ -108,7 +108,7 @@
                     </form>
                 </div>
             </div>
-            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-8" />
+            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-9" />
         </div>
     </div> 
 
