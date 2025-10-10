@@ -27,7 +27,7 @@
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" >
+            <div class="af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
                 <!-- Modal header -->
                 <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
@@ -107,9 +107,8 @@
                         </Button>
                     </form>
                 </div>
-                <ErrorMessage v-if="error" :error="error" class="rounded-t-none mb-0 w-full" />
             </div>
-            <div v-if="!error" class="h-[52px]"/>
+            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-8" />
         </div>
     </div> 
 
