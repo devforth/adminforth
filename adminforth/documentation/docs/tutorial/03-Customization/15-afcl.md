@@ -1967,10 +1967,10 @@ import { MixedChart } from '@/afcl'
   </div>
 </div>
 
-## Json Viever
+## Json Viewer
 
 ```ts
-import { JsonViever } from '@/afcl'
+import { JsonViewer } from '@/afcl'
 ```
 
 ### Basic
