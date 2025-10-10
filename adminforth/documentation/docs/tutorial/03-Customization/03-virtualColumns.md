@@ -163,7 +163,7 @@ import sqlstring from 'sqlstring';
       if (filter.field === 'some_json_b_field') {
         return {
           // check if some_json_b_field->'$.some_field' is equal to filter.value
-          insecureRawSQL: `some_json_b_field->'$.some_field' = ${sqlstring.escape(filter.value)}`,
+          insecureRawSQL: `some_json_b_field->>'$.some_field' = ${sqlstring.escape(filter.value)}`,
         }
       }
 
