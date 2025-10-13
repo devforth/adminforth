@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { toPascalCase, mapToTypeScriptType, getInstance } from "./utils.js";
 import dotenv from "dotenv";
+import { callTsProxy } from "./callTsProxy.js";
 
 const envFileArg = process.argv.find((arg) => arg.startsWith("--env-file="));
 const envFilePath = envFileArg ? envFileArg.split("=")[1] : ".env";
@@ -25,28 +26,40 @@ async function generateModels() {
   let modelContent = "// Generated model file\n\n";
   const files = fs.readdirSync(currentDirectory);
   let instanceFound = false;
-
   for (const file of files) {
     if (file.endsWith(".js") || file.endsWith(".ts")) {
       const instance = await getInstance(file, currentDirectory);
       if (instance) {
         await instance.discoverDatabases();
         instanceFound = true;
-        instance.config.resources.forEach((resource) => {
+        for (const resource of instance.config.resources) {
           if (resource.columns) {
-            modelContent += `export type ${toPascalCase(
-              resource.resourceId
-            )} = {\n`;
-            resource.columns.forEach((column) => {
-              if (column.name && column.type) {
-                modelContent += `  ${column.name}: ${mapToTypeScriptType(
-                  column.type
-                )};\n`;
+            const typeName = toPascalCase(resource.resourceId);
+
+            const tsCode = `
+              export async function exec() {
+                const columns = ${JSON.stringify(resource.columns)};
+                const typeName = "${typeName}";
+                function mapToTypeScriptType(type) {
+                  const map = { "int": "number", "varchar": "string", "boolean": "boolean" };
+                  return map[type] || "any";
+                }
+
+                let typeStr = \`export type \${typeName} = {\\n\`;
+                for (const col of columns) {
+                  if (col.name && col.type) {
+                    typeStr += \`  \${col.name}: \${mapToTypeScriptType(col.type)};\\n\`;
+                  }
+                }
+                typeStr += "}\\n\\n";
+                return typeStr;
               }
-            });
-            modelContent += `}\n\n`;
+            `;
+
+            const result = await callTsProxy(tsCode);
+            modelContent += result;
           }
-        });
+        };
       }
     }
   }
@@ -55,7 +68,6 @@ async function generateModels() {
     console.error("Error: No valid instance found to generate models.");
     return;
   }
-
   fs.writeFileSync(modelFilePath, modelContent, "utf-8");
   console.log(`Generated TypeScript model file: ${modelFilePath}`);
   return true;
