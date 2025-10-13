@@ -207,6 +207,247 @@ plugins: [
 ...
 ```
 
+## Request 2FA on custom Actions
+
+You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risk that user cookies might be stolen by some virous/doorway software after login.
+
+To do it you first need to create custom component which will call `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to enter a code.
+
+```ts title='/custom/RequireTwoFaGate.vue'
+<template>
+  <div class="contents" @click.stop.prevent="onClick">
+    <slot />  <!-- render action defgault contend - button/icon -->
+  </div>
+</template>
+
+<script setup lang="ts">
+  const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+  const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
+
+  async function onClick() {
+    if (props.disabled) return;
+  
+    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+    emit('callAction', { verificationResult }); // then we pass this code to action (from fronted to backend)
+  }
+</script>
+```
+
+Now we need to use code which we got from user on frontend, inside of backend action handler and verify that is is valid and not expired:
+
+```ts title='/adminuser.ts'
+options: {
+  actions: [
+    {
+      name: 'Auto submit',
+      icon: 'flowbite:play-solid',
+      allowed: () => true,
+      action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
+        //diff-add
+        const verificationResult = extra?.verificationResult
+        //diff-add
+        if (!verificationResult) {
+          //diff-add
+          return { ok: false, error: 'No verification result provided' };
+        //diff-add
+        }
+        //diff-add
+        const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+        //diff-add
+        const result = await t2fa.verify(verificationResult, {
+        //diff-add
+          adminUser: adminUser,
+        //diff-add
+          userPk: adminUser.pk,
+        //diff-add
+          cookies: cookies
+        //diff-add
+        });
+
+        //diff-add
+        if (!result?.ok) {
+          //diff-add
+          return { ok: false, error: result?.error ?? 'Provided data is invalid' };
+          //diff-add
+        }
+        //diff-add
+        await adminforth
+        //diff-add
+          .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+          //diff-add
+          .logCustomAction({
+            //diff-add
+            resourceId: 'aparts',
+            //diff-add
+            recordId: null,
+            //diff-add
+            actionId: 'visitedDashboard',
+            //diff-add
+            oldData: null,
+            //diff-add
+            data: { dashboard: 'main' },
+            //diff-add
+            user: adminUser,
+            //diff-add
+          });
+
+          //your critical action logic 
+      
+        return { ok: true, successMessage: 'Auto submitted' };
+      },
+      showIn: { showButton: true, showThreeDotsMenu: true, list: true },
+      //diff-add
+      customComponent: '@@/RequireTwoFaGate.vue',
+    },
+  ],
+}
+```
+
+## Request 2FA from custom components
+
+Imagine you have some button which does some API call
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: { param: 1 },
+  });
+}
+</script>
+```
+
+On backend you have simple express api
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+You might want to protect this call with a TOTP code. To do it, we need to make this change
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  const code = await window.adminforthTwoFaModal.getCode();
+
+  // diff-remove
+  const res = await callApi({
+  // diff-remove
+    path: '/myCriticalAction',
+  // diff-remove
+    method: 'POST',
+  // diff-remove
+    body: { param: 1 },
+  // diff-remove
+  });
+
+  // diff-add
+  const res = await callApi({
+  // diff-add
+    path: '/myCriticalAction',
+  // diff-add
+    method: 'POST',
+  // diff-add
+    body: { param: 1, verificationResult: String(verificationResult) },
+  // diff-add
+  });
+
+  // diff-add
+  if (!res?.ok) {
+  // diff-add
+    adminforth.alert({ message: res.error, variant: 'danger' });
+  // diff-add
+  }
+}
+</script>
+
+```
+
+And oin API call we need to verify it:
+
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // diff-add
+      const { adminUser } = req;
+      // diff-add
+      const { param, verificationResult } = req.body ?? {};
+      // diff-add
+      const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+      // diff-add
+      const verifyRes = await t2fa.verify(verificationResult, {
+      // diff-add
+        adminUser: adminUser,
+      // diff-add
+        userPk: adminUser.pk,
+      // diff-add
+        cookies: cookies
+      // diff-add
+      });
+      // diff-add
+      if (!('ok' in verifyRes)) {
+      // diff-add
+        return res.status(400).json({ ok: false, error: verifyRes.error || 'Verification failed' });
+      // diff-add
+      }
+      // diff-add
+      await admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
+      // diff-add
+        resourceId: 'aparts',
+      // diff-add
+        recordId: null,
+      // diff-add
+        actionId: 'myCriticalAction',
+      // diff-add
+        oldData: null,
+      // diff-add
+        data: { param },
+      // diff-add
+        user: adminUser,
+      // diff-add
+      });
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+
 ## Custom label prefix in authenticator app
 
 By default label prefix in Authenticator app is formed from Adminforth [brandName setting](/docs/tutorial/Customization/branding/) which is best behaviour for most admin apps (always remember to configure brandName correctly e.g. "RoyalFinTech Admin") 
