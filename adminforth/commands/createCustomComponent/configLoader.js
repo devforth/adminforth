@@ -7,16 +7,16 @@ import dotenv from "dotenv";
 dotenv.config({ path: '.env.local', override: true });
 dotenv.config({ path: '.env', override: true });
 
-export async function loadAdminForthConfig() {
+export async function getAdminInstance() {
   const configFileName = 'index.ts';
   const configPath = path.resolve(process.cwd(), configFileName);
-
+  console.log('Loading config from', configPath);
   try {
     await fs.access(configPath);
   } catch (error) {
     console.error(chalk.red(`\nError: Configuration file not found at ${configPath}`));
     console.error(chalk.yellow(`Please ensure you are running this command from your project's root directory and the '${configFileName}' file exists.`));
-    process.exit(1);
+    return null;
   }
 
   try {
@@ -29,7 +29,17 @@ export async function loadAdminForthConfig() {
     const configModule = _require(configPath);
 
     const adminInstance = configModule.admin || configModule.default?.admin;
+    return adminInstance;
+  } catch (error) {
+    console.error(chalk.red(`\nError loading or parsing configuration file: ${configPath}`));
+    console.error(error);
+    return null;
+  }
+}
 
+export async function loadAdminForthConfig() {
+  try {
+    const adminInstance = getAdminInstance();
 
     if (!adminInstance) {
         throw new Error(`Could not find 'admin' export in ${configFileName}. Please ensure your config file exports the AdminForth instance like: 'export const admin = new AdminForth({...});'`);
