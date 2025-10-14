@@ -209,14 +209,14 @@ plugins: [
 
 ## Request 2FA on custom Actions
 
-You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risk that user cookies might be stolen by some virous/doorway software after login.
+You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
-To do it you first need to create custom component which will call `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to enter a code.
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
   <div class="contents" @click.stop.prevent="onClick">
-    <slot />  <!-- render action defgault contend - button/icon -->
+    <slot />  <!-- render action default content - button/icon -->
   </div>
 </template>
 
@@ -228,12 +228,12 @@ To do it you first need to create custom component which will call `window.admin
     if (props.disabled) return;
   
     const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
-    emit('callAction', { verificationResult }); // then we pass this code to action (from fronted to backend)
+    emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
   }
 </script>
 ```
 
-Now we need to use code which we got from user on frontend, inside of backend action handler and verify that is is valid and not expired:
+Now we need to use verification result  which we got from user on frontend, inside of backend action handler and verify that it is valid (and not expired):
 
 ```ts title='/adminuser.ts'
 options: {
@@ -267,7 +267,7 @@ options: {
         //diff-add
         if (!result?.ok) {
           //diff-add
-          return { ok: false, error: result?.error ?? 'Provided data is invalid' };
+          return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
           //diff-add
         }
         //diff-add
@@ -344,7 +344,7 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
 );
 ```
 
-You might want to protect this call with a TOTP code. To do it, we need to make this change
+You might want to protect this call with a second factor also. To do it, we need to make this change
 
 ```ts
 <template>
