@@ -323,7 +323,9 @@ async function callAdminAPI() {
   const res = await callApi({
     path: '/myCriticalAction',
     method: 'POST',
-    body: { param: 1 },
+    body: {
+      param: 1
+    },
   });
 }
 </script>
@@ -357,28 +359,17 @@ import { callApi } from '@/utils';
 import adminforth from '@/adminforth';
 
 async function callAdminAPI() {
-  const code = await window.adminforthTwoFaModal.getCode();
+  // diff-add
+  const verificationResult = await window.adminforthTwoFaModal.getCode();
 
-  // diff-remove
   const res = await callApi({
-  // diff-remove
     path: '/myCriticalAction',
-  // diff-remove
     method: 'POST',
-  // diff-remove
-    body: { param: 1 },
-  // diff-remove
-  });
-
+    body: {
+      param: 1,
   // diff-add
-  const res = await callApi({
-  // diff-add
-    path: '/myCriticalAction',
-  // diff-add
-    method: 'POST',
-  // diff-add
-    body: { param: 1, verificationResult: String(verificationResult) },
-  // diff-add
+      verificationResult: String(verificationResult)
+    },
   });
 
   // diff-add
