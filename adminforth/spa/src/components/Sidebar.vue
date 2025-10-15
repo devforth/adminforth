@@ -13,7 +13,7 @@
      }"
     aria-label="Sidebar"
   >
-    <div class="h-full px-3 pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder sidebar-scroll">
+    <div class="h-full px-3 pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder" :class="{'sidebar-scroll':!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
       <div class="af-logo-title-wrapper flex ms-2 relative transition-all duration-300 ease-in-out h-8 items-center" :class="{'my-4 ': isSidebarIconOnly && !isSidebarHovering, 'm-4': !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
         <img v-if="coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))" :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3"  />
         <img v-if="coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering" :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8 me-3"  />
@@ -188,18 +188,23 @@
 <style lang="scss" scoped>
   /* Sidebar width animations */
   .sidebar-container {
-    width: 16rem; /* Default expanded width (w-64) */
+    width: 16.5rem; /* Default expanded width (w-64) */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
   }
   
   .sidebar-collapsed {
-    width: 5rem; /* Collapsed width (w-18) */
+    width: 4.5rem; /* Collapsed width (w-18) */
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
   
   .sidebar-expanded {
     width: 16.5rem; /* Expanded width (w-64) */
+  }
+
+  :deep(.dark) .sidebar-collapsed {
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.45);
   }
 
   /* Text visibility transitions */

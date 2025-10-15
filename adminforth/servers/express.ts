@@ -269,6 +269,19 @@ class ExpressServer implements IExpressHttpServer {
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
     const expressHandler = async (req, res) => {
+      // Enforce JSON-only for mutation HTTP methods
+      // AdminForth API endpoints accept only application/json for POST, PUT, PATCH, DELETE
+      // If you need other content types, use a custom server endpoint.
+      const method = (req.method || '').toUpperCase();
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
+        const isJson = contentTypeHeader.toLowerCase().startsWith('application/json');
+        if (!isJson) {
+          const passed = contentTypeHeader || 'undefined';
+          res.status(415).send(`AdminForth API endpoints support only requests with Content/Type: application/json, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          return;
+        }
+      }
       let body = req.body || {};
       if (typeof body === 'string') {
         try {

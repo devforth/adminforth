@@ -207,6 +207,238 @@ plugins: [
 ...
 ```
 
+## Request 2FA on custom Actions
+
+You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
+
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
+
+```ts title='/custom/RequireTwoFaGate.vue'
+<template>
+  <div class="contents" @click.stop.prevent="onClick">
+    <slot />  <!-- render action default content - button/icon -->
+  </div>
+</template>
+
+<script setup lang="ts">
+  const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+  const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
+
+  async function onClick() {
+    if (props.disabled) return;
+  
+    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+    emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
+  }
+</script>
+```
+
+Now we need to use verification result  which we got from user on frontend, inside of backend action handler and verify that it is valid (and not expired):
+
+```ts title='/adminuser.ts'
+options: {
+  actions: [
+    {
+      name: 'Auto submit',
+      icon: 'flowbite:play-solid',
+      allowed: () => true,
+      action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
+        //diff-add
+        const verificationResult = extra?.verificationResult
+        //diff-add
+        if (!verificationResult) {
+          //diff-add
+          return { ok: false, error: 'No verification result provided' };
+        //diff-add
+        }
+        //diff-add
+        const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+        //diff-add
+        const result = await t2fa.verify(verificationResult, {
+        //diff-add
+          adminUser: adminUser,
+        //diff-add
+          userPk: adminUser.pk,
+        //diff-add
+          cookies: cookies
+        //diff-add
+        });
+
+        //diff-add
+        if (!result?.ok) {
+          //diff-add
+          return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+          //diff-add
+        }
+        //diff-add
+        await adminforth
+        //diff-add
+          .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+          //diff-add
+          .logCustomAction({
+            //diff-add
+            resourceId: 'aparts',
+            //diff-add
+            recordId: null,
+            //diff-add
+            actionId: 'visitedDashboard',
+            //diff-add
+            oldData: null,
+            //diff-add
+            data: { dashboard: 'main' },
+            //diff-add
+            user: adminUser,
+            //diff-add
+          });
+
+          //your critical action logic 
+      
+        return { ok: true, successMessage: 'Auto submitted' };
+      },
+      showIn: { showButton: true, showThreeDotsMenu: true, list: true },
+      //diff-add
+      customComponent: '@@/RequireTwoFaGate.vue',
+    },
+  ],
+}
+```
+
+## Request 2FA from custom components
+
+Imagine you have some button which does some API call
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: {
+      param: 1
+    },
+  });
+}
+</script>
+```
+
+On backend you have simple express api
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+You might want to protect this call with a second factor also. To do it, we need to make this change
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  // diff-add
+  const verificationResult = await window.adminforthTwoFaModal.getCode();
+
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: {
+      param: 1,
+  // diff-add
+      verificationResult: String(verificationResult)
+    },
+  });
+
+  // diff-add
+  if (!res?.ok) {
+  // diff-add
+    adminforth.alert({ message: res.error, variant: 'danger' });
+  // diff-add
+  }
+}
+</script>
+
+```
+
+And oin API call we need to verify it:
+
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // diff-add
+      const { adminUser } = req;
+      // diff-add
+      const { param, verificationResult } = req.body ?? {};
+      // diff-add
+      const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+      // diff-add
+      const verifyRes = await t2fa.verify(verificationResult, {
+      // diff-add
+        adminUser: adminUser,
+      // diff-add
+        userPk: adminUser.pk,
+      // diff-add
+        cookies: cookies
+      // diff-add
+      });
+      // diff-add
+      if (!('ok' in verifyRes)) {
+      // diff-add
+        return res.status(400).json({ ok: false, error: verifyRes.error || 'Verification failed' });
+      // diff-add
+      }
+      // diff-add
+      await admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
+      // diff-add
+        resourceId: 'aparts',
+      // diff-add
+        recordId: null,
+      // diff-add
+        actionId: 'myCriticalAction',
+      // diff-add
+        oldData: null,
+      // diff-add
+        data: { param },
+      // diff-add
+        user: adminUser,
+      // diff-add
+      });
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+
 ## Custom label prefix in authenticator app
 
 By default label prefix in Authenticator app is formed from Adminforth [brandName setting](/docs/tutorial/Customization/branding/) which is best behaviour for most admin apps (always remember to configure brandName correctly e.g. "RoyalFinTech Admin") 
@@ -231,15 +463,19 @@ First, you need to create a passkeys table in your schema.prisma file:
 ```ts title='./schema.prisma'
   //diff-add
   model passkeys {
-  //diff-add
-    credential_id           String @id 
-  //diff-add
+    //diff-add
+    id                      String @id
+    //diff-add
+    credential_id           String  
+    //diff-add
     user_id                 String
-  //diff-add
+    //diff-add
     meta                    String
-  //diff-add
+    //diff-add
     @@index([user_id])
-  //diff-add
+    //diff-add
+    @@index([credential_id])
+    //diff-add
   }
 ```
 
@@ -253,7 +489,8 @@ npm run makemigration -- --name add-passkeys ; npm run migrate:local
 Next, you need to create a new resource for passkeys:
 
 ```ts title='./resources/passkeys.ts'
-  import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth";
+  import { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+  import { randomUUID } from "crypto";
 
   export default {
     dataSource: 'maindb',
@@ -262,9 +499,15 @@ Next, you need to create a new resource for passkeys:
     label: 'Passkeys',
     columns: [
       {
+        name: 'id',
+        label: 'ID',
+        primaryKey: true,
+        showIn: { all: false},
+        fillOnCreate: () => randomUUID(),
+      },
+      {
         name: 'credential_id',
         label: 'Credential ID',
-        primaryKey: true,
       },
       {
         name: 'user_id',
@@ -303,7 +546,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
   plugins: [
     new TwoFactorsAuthPlugin ({ 
       twoFaSecretFieldName: 'secret2fa', 
-      timeStepWindow: 1       
+      timeStepWindow: 1,       
       //diff-add
       passkeys: {
         //diff-add
@@ -317,7 +560,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
         //diff-add
         settings: {
           // diff-add
-          expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
+          expectedOrigin: "http://localhost:3500",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
           //diff-add
           // relying party config
           //diff-add
@@ -352,7 +595,7 @@ Now, update the settings of the Two-Factor Authentication plugin:
               // diff-add
               // Can be "platform", "cross-platform" or "both"
               // diff-add
-                authenticatorAttachment: "platform",
+                authenticatorAttachment: "both",
                 //diff-add
                 requireResidentKey: true,
                 //diff-add
