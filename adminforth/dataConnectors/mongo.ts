@@ -189,6 +189,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            if (value === null || value === undefined) {
+                return null;
+            }
             return value?.toString();
         }
 
@@ -206,6 +209,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
             return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            if (value === null || value === undefined) {
+                return null;
+            }
             return Decimal128.fromString(value?.toString());
         }
         return value;
