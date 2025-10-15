@@ -34,6 +34,10 @@ export default class ConfigValidator implements IConfigValidator {
 
   customComponentsDir: string | undefined;
 
+  private static readonly LOGIN_INJECTION_KEYS = ['underInputs', 'underLoginButton', 'panelHeader'];
+  private static readonly GLOBAL_INJECTION_KEYS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
+  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
+
   constructor(private adminforth: IAdminForth, private inputConfig: AdminForthInputConfig) {
     this.adminforth = adminforth;
     this.inputConfig = inputConfig;
@@ -58,7 +62,6 @@ export default class ConfigValidator implements IConfigValidator {
     injections.forEach((target, i) => {
       injections[i] = this.validateComponent(target, errors);
     });
-    // sort by injection.meta?.afOrder || 0 desc
     return injections;
   }
 
@@ -120,13 +123,12 @@ export default class ConfigValidator implements IConfigValidator {
     };
 
     if (this.inputConfig.customization?.loginPageInjections) {
-      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'underLoginButton', 'panelHeader']
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
-        if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
+        if (ConfigValidator.LOGIN_INJECTION_KEYS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);
         } else {
-          const similar = suggestIfTypo(ALLOWED_LOGIN_INJECTIONS, injection);
-          errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_LOGIN_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          const similar = suggestIfTypo(ConfigValidator.LOGIN_INJECTION_KEYS, injection);
+          errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ConfigValidator.LOGIN_INJECTION_KEYS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
         }
       });
     }
@@ -139,13 +141,12 @@ export default class ConfigValidator implements IConfigValidator {
     };
 
     if (this.inputConfig.customization?.globalInjections) {
-      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
       Object.keys(this.inputConfig.customization.globalInjections).forEach((injection) => {
-        if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
+        if (ConfigValidator.GLOBAL_INJECTION_KEYS.includes(injection)) {
           globalInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.globalInjections, injection, errors);
         } else {
-          const similar = suggestIfTypo(ALLOWED_GLOBAL_INJECTIONS, injection);
-          errors.push(`Global injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_GLOBAL_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          const similar = suggestIfTypo(ConfigValidator.GLOBAL_INJECTION_KEYS, injection);
+          errors.push(`Global injection key "${injection}" is not allowed. Allowed keys are ${ConfigValidator.GLOBAL_INJECTION_KEYS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
         }
       });
     }
@@ -807,7 +808,6 @@ export default class ConfigValidator implements IConfigValidator {
       });
 
       // if pageInjection is a string, make array with one element. Also check file exists
-      const possibleInjections = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
       const possiblePages = ['list', 'show', 'create', 'edit'];
 
       if (options.pageInjections) {
@@ -819,11 +819,11 @@ export default class ConfigValidator implements IConfigValidator {
           }
 
           Object.entries(value).map(([injection, target]) => {
-            if (possibleInjections.includes(injection)) {
-              this.validateAndListifyInjection(options.pageInjections[key], injection, errors);
+            if (ConfigValidator.PAGE_INJECTION_KEYS.includes(injection)) {
+              options.pageInjections[key][injection] = this.validateAndListifyInjectionNew(options.pageInjections[key], injection, errors);
             } else {
-              const similar = suggestIfTypo(possibleInjections, injection);
-              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
+              const similar = suggestIfTypo(ConfigValidator.PAGE_INJECTION_KEYS, injection);
+              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${ConfigValidator.PAGE_INJECTION_KEYS.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
             }
           });
 
@@ -898,14 +898,62 @@ export default class ConfigValidator implements IConfigValidator {
   }
 
   validateAfterPluginsActivation() {
-    const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'underLoginButton', 'panelHeader']
-    Object.entries(this.adminforth.config.customization).map(([key, value]) => {
-      Object.entries(value).map(([injection, target]) => {
-        if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
-          (target as Array<AdminForthComponentDeclarationFull>).sort((a, b) => (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0));
+    // Sort all page injections throughout the config by afOrder
+    this.sortAllPageInjections();
+  }
+
+  private sortAllPageInjections(): void {
+    const config = this.adminforth.config;
+    
+    // Sort login page injections
+    if (config.customization?.loginPageInjections) {
+      const loginInjections = config.customization.loginPageInjections;
+      ConfigValidator.LOGIN_INJECTION_KEYS.forEach(key => {
+        if (loginInjections[key]) {
+          this.sortInjectionArray(loginInjections[key]);
         }
       });
-    })
+    }
+
+    // Sort global injections
+    if (config.customization?.globalInjections) {
+      const globalInjections = config.customization.globalInjections;
+      ConfigValidator.GLOBAL_INJECTION_KEYS.forEach(key => {
+        if (globalInjections[key]) {
+          this.sortInjectionArray(globalInjections[key]);
+        }
+      });
+    }
+
+    // Sort resource page injections
+    if (config.resources) {
+      config.resources.forEach(resource => {
+        if (resource.options?.pageInjections) {
+          const pageInjections = resource.options.pageInjections;
+          
+          // For each page type (list, show, create, edit)
+          Object.keys(pageInjections).forEach(pageType => {
+            const pageTypeInjections = pageInjections[pageType];
+            if (pageTypeInjections) {
+              // For each injection point within the page
+              ConfigValidator.PAGE_INJECTION_KEYS.forEach(injectionKey => {
+                if (pageTypeInjections[injectionKey]) {
+                  this.sortInjectionArray(pageTypeInjections[injectionKey]);
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  private sortInjectionArray(injections: any): void {
+    if (Array.isArray(injections)) {
+      injections.sort((a: AdminForthComponentDeclarationFull, b: AdminForthComponentDeclarationFull) => 
+        (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0)
+      );
+    }
   }
 
   validateConfig() {
