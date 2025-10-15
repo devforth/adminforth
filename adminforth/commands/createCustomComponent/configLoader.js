@@ -10,7 +10,6 @@ dotenv.config({ path: '.env', override: true });
 export async function getAdminInstance() {
   const configFileName = 'index.ts';
   const configPath = path.resolve(process.cwd(), configFileName);
-  console.log('Loading config from', configPath);
   try {
     await fs.access(configPath);
   } catch (error) {
