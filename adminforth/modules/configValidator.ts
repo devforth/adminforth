@@ -57,9 +57,16 @@ export default class ConfigValidator implements IConfigValidator {
     }
     injections.forEach((target, i) => {
       injections[i] = this.validateComponent(target, errors);
+      injections[i].meta.afInitialOrder = injections.length - i; // to keep initial order for sorting later
     });
-    // sort by injection.meta?.afOrder || 0 desc
-    return injections.sort((a, b) => (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0));
+    // sort by (injection.meta?.afOrder || 0) * 1000 desc, fallback to initial order in array
+    return injections.sort(
+      (a, b) => (
+        (b.meta?.afOrder ?? 0) * 1000 || b.meta?.afInitialOrder
+      ) - (
+        (a.meta?.afOrder ?? 0) * 1000 || a.meta?.afInitialOrder
+      )
+    );
   }
 
   checkCustomFileExists(filePath: string): Array<string> {
