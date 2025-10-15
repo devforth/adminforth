@@ -57,16 +57,9 @@ export default class ConfigValidator implements IConfigValidator {
     }
     injections.forEach((target, i) => {
       injections[i] = this.validateComponent(target, errors);
-      injections[i].meta.afInitialOrder = injections.length - i; // to keep initial order for sorting later
     });
-    // sort by (injection.meta?.afOrder || 0) * 1000 desc, fallback to initial order in array
-    return injections.sort(
-      (a, b) => (
-        (b.meta?.afOrder ?? 0) * 1000 || b.meta?.afInitialOrder
-      ) - (
-        (a.meta?.afOrder ?? 0) * 1000 || a.meta?.afInitialOrder
-      )
-    );
+    // sort by injection.meta?.afOrder || 0 desc
+    return injections;
   }
 
   checkCustomFileExists(filePath: string): Array<string> {
@@ -122,11 +115,12 @@ export default class ConfigValidator implements IConfigValidator {
 
     const loginPageInjections: AdminForthConfigCustomization['loginPageInjections'] = {
       underInputs: [],
+      underLoginButton: [],
       panelHeader: [],
     };
 
     if (this.inputConfig.customization?.loginPageInjections) {
-      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'panelHeader']
+      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'underLoginButton', 'panelHeader']
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
         if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);
@@ -136,7 +130,6 @@ export default class ConfigValidator implements IConfigValidator {
         }
       });
     }
-    
     const globalInjections: AdminForthConfigCustomization['globalInjections'] = {
       userMenu: [],
       header: [],
@@ -814,7 +807,7 @@ export default class ConfigValidator implements IConfigValidator {
       });
 
       // if pageInjection is a string, make array with one element. Also check file exists
-  const possibleInjections = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
+      const possibleInjections = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
       const possiblePages = ['list', 'show', 'create', 'edit'];
 
       if (options.pageInjections) {
@@ -902,6 +895,17 @@ export default class ConfigValidator implements IConfigValidator {
       return res as AdminForthResource;
     });
     
+  }
+
+  validateAfterPluginsActivation() {
+    const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'underLoginButton', 'panelHeader']
+    Object.entries(this.adminforth.config.customization).map(([key, value]) => {
+      Object.entries(value).map(([injection, target]) => {
+        if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
+          (target as Array<AdminForthComponentDeclarationFull>).sort((a, b) => (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0));
+        }
+      });
+    })
   }
 
   validateConfig() {

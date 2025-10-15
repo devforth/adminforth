@@ -28,6 +28,7 @@ export interface ICodeInjector {
 
 export interface IConfigValidator {
   validateConfig(): void;
+  validateAfterPluginsActivation(): void;
   postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
@@ -794,6 +795,7 @@ interface AdminForthInputConfigCustomization {
    */
   loginPageInjections?: {
     underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
@@ -1131,6 +1133,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
