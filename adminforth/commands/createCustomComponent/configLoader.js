@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import jiti from 'jiti';
-import dotenv from "dotenv";
+import dotenv, { config } from "dotenv";
 
 dotenv.config({ path: '.env.local', override: true });
 dotenv.config({ path: '.env', override: true });
@@ -29,7 +29,7 @@ export async function getAdminInstance() {
     const configModule = _require(configPath);
 
     const adminInstance = configModule.admin || configModule.default?.admin;
-    return adminInstance;
+    return { adminInstance, configPath, configFileName };
   } catch (error) {
     console.error(chalk.red(`\nError loading or parsing configuration file: ${configPath}`));
     console.error(error);
@@ -38,9 +38,10 @@ export async function getAdminInstance() {
 }
 
 export async function loadAdminForthConfig() {
-  try {
-    const adminInstance = getAdminInstance();
+  
+  const { adminInstance, configPath, configFileName } = await getAdminInstance();
 
+  try {
     if (!adminInstance) {
         throw new Error(`Could not find 'admin' export in ${configFileName}. Please ensure your config file exports the AdminForth instance like: 'export const admin = new AdminForth({...});'`);
     }
@@ -63,7 +64,7 @@ export async function loadAdminForthConfig() {
     return config;
 
   } catch (error) {
-    console.error(chalk.red(`\nError loading or parsing configuration file: ${configPath}`));
+    console.error(chalk.red(`\nError loading or parsing configuration file: ${configPath},  error: ${error}`));
     console.error(error);
     process.exit(1);
   }

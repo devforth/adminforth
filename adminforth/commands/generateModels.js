@@ -27,11 +27,11 @@ async function generateModels() {
   let modelContent = "// Generated model file\n\n";
   let instanceFound = false;
 
-  const instance = await getAdminInstance();
-  if (instance) {
-    await instance.discoverDatabases();
+  const { adminInstance, configPath, configFileName } = await getAdminInstance();
+  if (adminInstance) {
+    await adminInstance.discoverDatabases();
     instanceFound = true;
-    for (const resource of instance.config.resources) {
+    for (const resource of adminInstance.config.resources) {
       if (resource.columns) {
         const typeName = toPascalCase(resource.resourceId);
         const tsCode = `
