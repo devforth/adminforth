@@ -28,6 +28,7 @@ export interface ICodeInjector {
 
 export interface IConfigValidator {
   validateConfig(): void;
+  validateAfterPluginsActivation(): void;
   postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
@@ -794,6 +795,7 @@ interface AdminForthInputConfigCustomization {
    */
   loginPageInjections?: {
     underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
@@ -809,7 +811,7 @@ interface AdminForthInputConfigCustomization {
   }
 
   /**
-  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Allows adding custom elements (e.g., &lt;link&gt;, &lt;script&gt;, &lt;meta&gt;) to the &lt;head&gt; of the HTML document.
   * Each item must include a tag name and a set of attributes.
   */
   customHeadItems?: {
@@ -1131,6 +1133,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 

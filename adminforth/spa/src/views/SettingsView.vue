@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-16 h-full w-full" :class="{ 'hidden': initialTabSet === false }">
+  <div class="mt-20 h-full w-full" :class="{ 'hidden': initialTabSet === false }">
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>No setting pages configured or still loading...</p>
     </div>

@@ -346,6 +346,18 @@ export const styles = () => ({
     lightCardTitle: "#374151",
     lightCardDescription: "#6B7280",
 
+    lightUserMenuSettingsButtonBackground: "#FFFFFF",
+    lightUserMenuSettingsButtonBackgroundHover: "#FFFFFF",
+    lightUserMenuSettingsButtonBackgroundExpanded: "#E6E6E6",
+    lightUserMenuSettingsButtonText: "#000000",
+    lightUserMenuSettingsButtonTextHover: "#000000",
+    lightUserMenuSettingsButtonDropdownItemBackground: "#E6E6E6",
+    lightUserMenuSettingsButtonDropdownItemBackgroundHover: "#FFFFFF",
+    lightUserMenuSettingsButtonDropdownItemText: "alias:lightBreadcrumbsHomepageText",
+    lightUserMenuSettingsButtonDropdownItemTextHover: "alias:lightBreadcrumbsHomepageTextHover",
+
+
+
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -688,6 +700,16 @@ export const styles = () => ({
     darkCardBorder: "#4B5563", // card border
     darkCardTitle: "#FFFFFF", // card title
     darkCardDescription: "#9CA3AF", // card description
+
+    darkUserMenuSettingsButtonBackground: "alias:darkPrimary",
+    darkUserMenuSettingsButtonBackgroundHover: "alias:darkSidebarItemHover",
+    darkUserMenuSettingsButtonBackgroundExpanded: "alias:darkUserMenuSettingsButtonBackgroundHover",
+    darkUserMenuSettingsButtonText: "#FFFFFF",
+    darkUserMenuSettingsButtonTextHover: "#FFFFFF",
+    darkUserMenuSettingsButtonDropdownItemBackground: "alias:darkUserMenuSettingsButtonBackgroundHover",
+    darkUserMenuSettingsButtonDropdownItemBackgroundHover: "#alias:darkUserMenuSettingsButtonBackground",
+    darkUserMenuSettingsButtonDropdownItemText: "#FFFFFF",
+    darkUserMenuSettingsButtonDropdownItemTextHover: "#FFFFFF",
 
   },
   boxShadow: {

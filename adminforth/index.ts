@@ -157,6 +157,10 @@ class AdminForth implements IAdminForth {
     this.activatePlugins();
     process.env.HEAVY_DEBUG && console.log('🔧 Plugins activated');
 
+    process.env.HEAVY_DEBUG && console.log('🔧 Validating after plugin activation...');
+    this.configValidator.validateAfterPluginsActivation();
+    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+
     process.env.HEAVY_DEBUG && console.log('🔧 Creating ExpressServer...');
     this.express = new ExpressServer(this);
     process.env.HEAVY_DEBUG && console.log('🔧 ExpressServer created');

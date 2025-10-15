@@ -74,17 +74,47 @@ export default {
       twoFaSecretFieldName: "secret2fa",
       timeStepWindow: 1, // optional time step window for 2FA
       // optional callback to define which users should be enforced to use 2FA
-      usersFilterToApply: (adminUser: AdminUser) => {
-        if (process.env.NODE_ENV === "development") {
-          return false;
-        }
-        // return true if user should be enforced to use 2FA,
-        // return true;
-        return adminUser.dbUser.email !== "adminforth";
-      },
-      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-        return adminUser.dbUser.email === "adminforth";
-      },
+      // usersFilterToApply: (adminUser: AdminUser) => {
+      //   if (process.env.NODE_ENV === "development") {
+      //     return false;
+      //   }
+      //   // return true if user should be enforced to use 2FA,
+      //   // return true;
+      //   return adminUser.dbUser.email !== "adminforth";
+      // },
+      // usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+      //   return adminUser.dbUser.email === "adminforth";
+      // },
+      passkeys: {
+        credentialResourceID: "passkeys",
+        credentialIdFieldName: "credential_id",
+        credentialMetaFieldName: "meta",
+        credentialUserIdFieldName: "user_id",
+        settings: {
+          expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
+          // relying party config
+          rp: {
+              name: "New Reality",
+              
+              // optionaly you can set expected id explicitly if you need to:
+              // id: "localhost",
+            },
+            user: {
+                nameField: "email",
+                displayNameField: "email",
+            },
+            authenticatorSelection: {
+              // impacts a way how passkey will be created
+              // - platform - using browser internal authenticator (e.g. Google Chrome passkey / Google Password Manager )
+              // - cross-platform - using external authenticator (e.g. Yubikey, Google Titan etc)
+              // - both - plging will show both options to the user
+              // Can be "platform", "cross-platform" or "both"
+                authenticatorAttachment: "both",
+                requireResidentKey: true,
+                userVerification: "required",
+            },
+        },
+      } 
     }),
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
