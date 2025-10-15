@@ -58,7 +58,8 @@ export default class ConfigValidator implements IConfigValidator {
     injections.forEach((target, i) => {
       injections[i] = this.validateComponent(target, errors);
     });
-    return injections;
+    // sort by injection.meta?.afOrder || 0 desc
+    return injections.sort((a, b) => (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0));
   }
 
   checkCustomFileExists(filePath: string): Array<string> {
