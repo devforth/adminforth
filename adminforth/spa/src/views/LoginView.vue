@@ -105,6 +105,12 @@
                         <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton" class="w-full">
                           {{ $t('Login to your account') }}
                         </Button>
+                        <component 
+                          v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          :is="getCustomComponent(c)"
+                          :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
+                        />
                     </form>
                 </div>
             </div>
