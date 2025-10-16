@@ -90,6 +90,7 @@ export default {
         credentialIdFieldName: "credential_id",
         credentialMetaFieldName: "meta",
         credentialUserIdFieldName: "user_id",
+        continueWithButtonsOrder: 5,
         settings: {
           expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
           // relying party config
@@ -118,17 +119,18 @@ export default {
     }),
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
-        new EmailResetPasswordPlugin({
-          emailField: "email",
-          sendFrom: "no-reply@devforth.io",
-          adapter: new EmailAdapterAwsSes({
-            region: "eu-central-1",
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          }),
-          passwordField: "password",
-        })]
-      : []
+      new EmailResetPasswordPlugin({
+        emailField: "email",
+        sendFrom: "no-reply@devforth.io",
+        adapter: new EmailAdapterAwsSes({
+          region: "eu-central-1",
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        }),
+        passwordField: "password",
+        loginPageComponentOrder: 2,
+      })]
+    : []
     ),
     new OpenSignupPlugin({
       emailField: "email",
@@ -137,6 +139,7 @@ export default {
       defaultFieldValues: {
         role: "user",
       },
+      loginPageComponentOrder: 3, 
       // confirmEmails: {
       //   emailConfirmedField: "email_confirmed",
       //   sendFrom: "no-reply@devforth.io",
