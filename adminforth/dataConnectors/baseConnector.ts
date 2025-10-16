@@ -319,6 +319,23 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
     }
+    
+    let error: string | null = null;
+     await Promise.all(
+      resource.dataSourceColumns.map(async (col) => {
+        if (col.isUnique && !col.virtual && !error) {
+          const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name]);
+          if (exists) {
+            error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
+          }
+        }
+      })
+    );
+    if (error) {
+      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      return { error, ok: false };
+    }
+
 
     process.env.HEAVY_DEBUG && console.log(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
