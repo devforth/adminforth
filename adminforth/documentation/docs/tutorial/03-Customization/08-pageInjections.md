@@ -595,7 +595,7 @@ For example "OAuth2 plugin", when registers a login button component for login p
 
 ```ts title="/index.ts"
 // plugin CODE
-YYY.push({
+adminforth.config.customization.loginPageInjections.underLoginButton.push({
     file: '@@/..vue',
     meta: {
       afOrder: this.pluginOptions.YYY || 0
@@ -603,7 +603,7 @@ YYY.push({
  })
 ```
 
-So you can jsut pass `YYY` option to the plugin to control the order of the injection.
+So you can just pass `YYY` option to the plugin to control the order of the injection.
 
 ## Custom scripts in head
 
