@@ -872,6 +872,10 @@ export interface AdminForthResourceColumnInputCommon {
    */
   masked?: boolean,
 
+  /**
+   * Sticky position for column
+   */
+  listSticky?: boolean;
 }
 
 export interface AdminForthResourceColumnCommon extends AdminForthResourceColumnInputCommon {

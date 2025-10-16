@@ -776,6 +776,11 @@ export default class ConfigValidator implements IConfigValidator {
         return col as AdminForthResourceColumn;
       })
 
+      // Check for multiple sticky columns
+      if (res.columns.filter(c => c.listSticky).length > 1) {
+        errors.push(`Resource "${res.resourceId}" has more than one listSticky column. Only one column can be sticky in the list view.`);
+      }
+
       const options: Partial<AdminForthResource['options']> = {...resInput.options, bulkActions: undefined, allowedActions: undefined};
 
       options.allowedActions = this.validateAndNormalizeAllowedActions(resInput, errors);
