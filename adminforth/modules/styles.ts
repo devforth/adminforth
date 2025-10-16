@@ -356,7 +356,13 @@ export const styles = () => ({
     lightUserMenuSettingsButtonDropdownItemText: "alias:lightBreadcrumbsHomepageText",
     lightUserMenuSettingsButtonDropdownItemTextHover: "alias:lightBreadcrumbsHomepageTextHover",
 
-
+    lightUserMenuBackground: "#FFFFFF",
+    lightUserMenuBorder: "#f3f4f6",
+    lightUserMenuText: "#111827",
+    lightUserMenuItemBackground: "alias:lightUserMenuBackground",
+    lightUserMenuItemBackgroundHover: "alias:lightUserMenuBackground",
+    lightUserMenuItemText: "#000000",
+    lightUserMenuItemTextHover: "#000000",
 
     // colors for dark theme
     darkHtml: "#111827",
@@ -710,6 +716,14 @@ export const styles = () => ({
     darkUserMenuSettingsButtonDropdownItemBackgroundHover: "#alias:darkUserMenuSettingsButtonBackground",
     darkUserMenuSettingsButtonDropdownItemText: "#FFFFFF",
     darkUserMenuSettingsButtonDropdownItemTextHover: "#FFFFFF",
+
+    darkUserMenuBackground: "alias:darkSidebar",
+    darkUserMenuBorder: "alias:darkSidebarDevider",
+    darkUserMenuText: "#FFFFFF",
+    darkUserMenuItemBackground: "alias:darkSidebar",
+    darkUserMenuItemBackgroundHover: "alias:darkSidebarItemHover",
+    darkUserMenuItemText: "#FFFFFF",
+    darkUserMenuItemTextHover: "#FFFFFF",
 
   },
   boxShadow: {
