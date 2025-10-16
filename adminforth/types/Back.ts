@@ -611,6 +611,19 @@ export type BeforeLoginConfirmationFunction = (params?: {
   }
 }>;
 
+/**
+ * Allow to make extra authorization
+ */
+export type AdminUserAuthorizeFunction = ((params?: { 
+    adminUser: AdminUser,
+    response: IAdminForthHttpResponse,
+    adminforth: IAdminForth,
+    extra?: HttpExtra,
+}) => Promise<{
+  error?: string,
+  allowed?: boolean,
+}>);
+
   
 /**
  * Data source describes database connection which will be used to fetch data for resources.
@@ -1008,6 +1021,11 @@ export interface AdminForthInputConfig {
        * Each function will resive User object as an argument
        */
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
+
+      /**
+       * Array of functions which will be called before any request to AdminForth API.
+       */
+      adminUserAuthorize?: AdminUserAuthorizeFunction | Array<AdminUserAuthorizeFunction>,
 
       /**
        * Optionally if your users table has a field(column) with full name, you can set it here.
