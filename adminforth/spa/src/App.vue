@@ -41,7 +41,7 @@
                 </button>
               </div>
 
-              <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-darkSidebar dark:divide-darkSidebarDevider dark:shadow-black" id="dropdown-user">
+              <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                     {{ coreStore.userFullname }}
@@ -52,7 +52,7 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" >
+                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
@@ -63,7 +63,7 @@
                     <UserMenuSettingsButton />
                   </li>
                   <li>
-                    <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">{{ $t('Sign out') }}</button>
+                    <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover w-full" role="menuitem">{{ $t('Sign out') }}</button>
                   </li>
                 </ul>
               </div>

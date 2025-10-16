@@ -18,7 +18,7 @@ import AdminForthAdapterGithubOauth2 from  "../../adapters/adminforth-github-oau
 import AdminForthAdapterFacebookOauth2 from "../../adapters/adminforth-facebook-oauth-adapter";
 import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-oauth-adapter";
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
-import AdminForthAdapterTwitchOauth2 from "../../adapters/adminforth-twitch-oauth-adapter";
+// import AdminForthAdapterTwitchOauth2 from "../../adapters/adminforth-twitch-oauth-adapter";
 import { randomUUID } from "crypto";
 
 declare global {
@@ -166,10 +166,10 @@ export default {
           clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
           useOpenID: true,
         }),
-        new AdminForthAdapterTwitchOauth2({
-          clientID: process.env.TWITCH_CLIENT_ID,
-          clientSecret: process.env.TWITCH_CLIENT_SECRET,
-        }),
+        // new AdminForthAdapterTwitchOauth2({
+        //   clientID: process.env.TWITCH_CLIENT_ID,
+        //   clientSecret: process.env.TWITCH_CLIENT_SECRET,
+        // }),
         // new AdminForthAdapterKeycloakOauth2({
         //   name: "Keycloak",
         //   clientID: process.env.KEYCLOAK_CLIENT_ID,
