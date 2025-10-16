@@ -139,6 +139,7 @@ export default {
     },
     {
       name: "country",
+      listSticky: true,
       components: {
         list: {
           file: "@/renderers/CountryFlag.vue",

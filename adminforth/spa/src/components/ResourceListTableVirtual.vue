@@ -19,7 +19,7 @@
       <tbody>
         <!-- table header -->
         <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td scope="col" class="p-4">
+          <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -29,7 +29,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -101,7 +101,7 @@
           :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
           @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
         >
-        <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
+        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
             @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
@@ -110,7 +110,7 @@
             <span class="sr-only">{{ $t('checkbox') }}</span>
           </Checkbox>
           </td>
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
+          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
@@ -732,5 +732,16 @@ input[type="checkbox"][disabled] {
 }
 input[type="checkbox"]:not([disabled]) {
   @apply cursor-pointer;
+}
+td.sticky-column {
+  @apply sticky left-0 z-10;
+  &:not(:first-child) {
+    @apply left-[56px];
+  }
+}
+tr:not(:first-child):hover {
+  td.sticky-column {
+    @apply bg-lightListTableRowHover dark:bg-darkListTableRowHover;
+  }
 }
 </style>
