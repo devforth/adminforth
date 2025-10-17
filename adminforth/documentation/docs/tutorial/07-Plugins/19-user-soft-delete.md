@@ -8,7 +8,7 @@ Allows to deactivate users accound without deleting it.
 To install the plugin:
 
 ```bash
-npm install @adminforth/bulk-ai-flow --save
+npm install @adminforth/user-soft-delete --save
 ```
 
 ## Setting up
