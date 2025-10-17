@@ -78,11 +78,5 @@ columns[
 
 ]
 ```
-## Usage
-
-To deactivate user you'll need to:
-1) Check user you want to delete
-2) Click three dots menu
-3) Select "Deactivate user"
 
 > ☝️Note that by default deactivated users hidden by filters, so if you want to see them, you'll have to change filters
