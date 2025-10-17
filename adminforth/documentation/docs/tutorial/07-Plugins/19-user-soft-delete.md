@@ -41,19 +41,6 @@ import UserSoftDelete from "@adminforth/user-soft-delete";
 
     ...
 
-new UserSoftDelete({
-    activeFieldName: "is_active",
-    //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
-    canDeactivate: async (adminUser: AdminUser) => {
-    if (adminUser.dbUser.role === "superadmin") {
-        return true;
-    }
-    return false;
-    }
-}),
-
-    ...
-
 columns[
 
     ...
@@ -77,6 +64,27 @@ columns[
 
     ...
 
+]
+
+    ...
+
+plugins: [
+    
+    ...
+
+    new UserSoftDelete({
+        activeFieldName: "is_active",
+        //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
+        canDeactivate: async (adminUser: AdminUser) => {
+        if (adminUser.dbUser.role === "superadmin") {
+            return true;
+        }
+        return false;
+        }
+    }),
+
+    ...
+ 
 ]
 ```
 
