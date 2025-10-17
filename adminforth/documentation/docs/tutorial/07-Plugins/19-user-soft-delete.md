@@ -67,11 +67,12 @@ columns[
             multiselect: false,
         },
         showIn: {
-        list: true,
-        filter: true,
-        show: true,
-        create: false,
-        edit: true,
+            list: true,
+            filter: true,
+            show: true,
+            create: false,
+            edit: true,
+        },
     },
 
     ...
