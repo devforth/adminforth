@@ -120,6 +120,29 @@ export default {
 }
 ```
 
+### Sticky column
+
+
+You can make a column sticky in the list view by setting `listSticky` to `true`. This keeps the column visible when horizontally scrolling through the table, which is particularly useful for important columns like titles or IDs that should always remain in view.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+  {
+    name: "title",
+//diff-add
+    listSticky: true,
+    ...
+  },
+  ...
+  ]
+}
+```
+
+>⚠️ Please note that sticky columns can only be applied to one column per resource.
+
 ### Page size 
 
 use `options.listPageSize` to define how many records will be shown on the page
