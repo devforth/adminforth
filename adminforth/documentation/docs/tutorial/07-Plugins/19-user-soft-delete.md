@@ -51,6 +51,32 @@ new UserSoftDelete({
     return false;
     }
 }),
+
+    ...
+
+columns[
+
+    ...
+
+    {
+        name: "is_active",
+        type: AdminForthDataTypes.BOOLEAN,
+        label: "Is Active",
+        fillOnCreate: () => true,
+        filterOptions: {
+            multiselect: false,
+        },
+        showIn: {
+        list: true,
+        filter: true,
+        show: true,
+        create: false,
+        edit: true,
+    },
+
+    ...
+
+]
 ```
 ## Usage
 
