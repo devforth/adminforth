@@ -186,3 +186,24 @@ Pros:
 * Simplest in use - does not reqauire any external daemon.
 Cones:
 * In production sutable for single-process installations only
+
+
+## 🤖Captcha adapters
+
+Used to add capthca to the login screen
+
+[🔗Captcha adapter source class](https://github.com/devforth/adminforth/blob/65153408a119314dad339f452700e0937952034a/adminforth/types/adapters/CaptchaAdapter.ts#L5)
+
+### Cloudflare adapter
+
+```
+npm i @adminforth/login-captcha-adapter-cloudflare
+```
+
+
+### reCaptcha adapter
+
+```
+npm i @adminforth/login-captcha-adapter-recaptcha
+```
+
