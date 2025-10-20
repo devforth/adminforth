@@ -34,10 +34,10 @@
         <div class="flex flex-col items-center justify-center">
             {{toast.message}}
             <div v-if="toast.buttons" class="flex justify-center mt-2 gap-2">
-                <div v-for="button in toast.buttons" class="rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
-                    <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10">
+                <div v-for="button in toast.buttons">
+                    <Button @click="onButtonClick(button.value)" class="!px-2 py-0 text-md font-normal rounded-md">
                         {{ button.label }}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -55,6 +55,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useToastStore } from '@/stores/toast';
+import { Button } from '@/afcl';
 const toastStore = useToastStore();
 const emit = defineEmits(['close']);
 const props = defineProps<{
