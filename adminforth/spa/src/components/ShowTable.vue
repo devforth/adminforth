@@ -24,14 +24,14 @@
               dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
           >
             <component
-                v-if="column.components?.showRow"
+                v-if="column.components?.showRow && checkShowIf(column, record)"
                   :is="getCustomComponent(column.components.showRow)"
                   :meta="column.components.showRow.meta"
                   :column="column"
                   :resource="coreStore.resource"
                   :record="coreStore.record"
               />
-            <template v-else>
+            <template v-else-if="checkShowIf(column, record)">
               <td class="px-6 py-4 relative block md:table-cell font-bold md:font-normal pb-0 md:pb-4">
                 {{ column.label }}
               </td>
@@ -59,14 +59,15 @@
   
   <script setup lang="ts">
   import ValueRenderer from '@/components/ValueRenderer.vue';
-  import { getCustomComponent } from '@/utils';
+  import { getCustomComponent, checkShowIf } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
-  import type { AdminForthResourceCommon } from '@/types/Common';
+  import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon } from '@/types/Common';
   const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
         label?: string;
+        showIf?: AdminForthResourceColumnInputCommon['showIf'];
         components?: {
           show?: {
             file: string;

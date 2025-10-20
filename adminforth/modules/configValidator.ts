@@ -25,6 +25,7 @@ import {
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
   AdminForthDataTypes,
+  Predicate,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -779,6 +780,48 @@ export default class ConfigValidator implements IConfigValidator {
       // Check for multiple sticky columns
       if (res.columns.filter(c => c.listSticky).length > 1) {
         errors.push(`Resource "${res.resourceId}" has more than one listSticky column. Only one column can be sticky in the list view.`);
+      }
+
+      const conditionalColumns = res.columns.filter(c => c.showIf);
+      if (conditionalColumns.length) {
+        const checkConditionArrays = (predicate: Predicate, column: AdminForthResourceColumn) => {
+          if ("$and" in predicate && !Array.isArray(predicate.$and)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $and that is not an array`);
+          } else if ("$and" in predicate && Array.isArray(predicate.$and)) {
+        predicate.$and.forEach((item) => checkConditionArrays(item, column));
+          }
+
+          if ("$or" in predicate && !Array.isArray(predicate.$or)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $or that is not an array`);
+          } else if ("$or" in predicate && Array.isArray(predicate.$or)) {
+        predicate.$or.forEach((item) => checkConditionArrays(item, column));
+          }
+      
+          const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
+          if (fieldEntries.length > 0) {
+        fieldEntries.forEach(([field, condition]) => {
+          if (typeof condition !== 'object') {
+            return;
+          }
+          if ("$in" in condition && !Array.isArray(condition.$in)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $in that is not an array`);
+          }
+          if ("$nin" in condition && !Array.isArray(condition.$nin)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $nin that is not an array`);
+          }
+          if ("$includes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $includes on non-array column "${column.name}"`);
+          }
+          if ("$nincludes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $nincludes on non-array column "${column.name}"`);
+          }
+        });
+          }
+        };
+        
+        conditionalColumns.forEach((column) => {
+          checkConditionArrays(column.showIf, column);
+        });
       }
 
       const options: Partial<AdminForthResource['options']> = {...resInput.options, bulkActions: undefined, allowedActions: undefined};
