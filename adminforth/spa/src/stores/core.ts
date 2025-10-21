@@ -198,6 +198,13 @@ export const useCoreStore = defineStore('core', () => {
     config.value = {...config.value, ...res};
   }
 
+  async function getLoginFormConfig() {
+    const res = await callAdminForthApi({
+      path: '/get_login_form_config',
+      method: 'GET',
+    });
+    config.value = {...config.value, ...res};
+  }
 
   const username = computed(() => {
     const usernameField = config.value?.usernameField;
@@ -218,6 +225,7 @@ export const useCoreStore = defineStore('core', () => {
     userFullname,
     getPublicConfig,
     fetchMenuAndResource, 
+    getLoginFormConfig,
     fetchRecord, 
     record, 
     fetchResourceFull, 
