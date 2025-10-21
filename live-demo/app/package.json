@@ -22,7 +22,7 @@
     "@adminforth/completion-adapter-open-ai-chat-gpt": "^1.0.2",
     "@adminforth/email-password-reset": "^1.1.0",
     "@adminforth/foreign-inline-list": "^1.6.2",
-    "@adminforth/i18n": "^1.2.4",
+    "@adminforth/i18n": "^1.6.1",
     "@adminforth/image-generation-adapter-openai": "^1.0.4",
     "@adminforth/image-vision-adapter-openai": "^1.0.3",
     "@adminforth/import-export": "^1.4.1",
