@@ -6,6 +6,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { initI18n } from './i18n'
+declare global {
+  interface Window {
+	i18n: any;
+  }
+}
 
 export const app: ReturnType<typeof createApp> = createApp(App)
 /* IMPORTANT:ADMINFORTH COMPONENT REGISTRATIONS */
