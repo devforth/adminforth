@@ -223,7 +223,7 @@ export const admin = new AdminForth({
   auth: {
     adminUserAuthorize: [
       async ({adminUser, adminforth, extra}) => {
-        if (adminUser.dbUser.role === 'banned') {
+        if (adminUser.dbUser.status === 'banned') {
           return { allowed: false, error: "User is banned" };
         }
         return { allowed: true };
@@ -236,4 +236,4 @@ export const admin = new AdminForth({
 
 ```
 
-Now, if a user’s role is changed to "banned", they won’t be able to perform any actions and will be automatically logged out upon accessing the page.
+Now, if a user’s field "status" is changed to "banned", they won’t be able to perform any actions and will be automatically logged out upon accessing the page.
