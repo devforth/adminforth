@@ -1,15 +1,9 @@
-<script setup lang="ts">
-import { useModalStore } from '@/stores/modal';
-
-const modalStore = useModalStore();
-</script>
-
 <template>
   <Teleport to="body">
-    <div  v-if="modalStore.isOpened"  class="bg-gray-900/50 dark:bg-gray-900/80  overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100] justify-center items-center w-full md:inset-0 h-full max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 " >
+  <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 w-full h-full overflow-y-auto overflow-x-hidden flex items-center justify-center">
+    <div class="relative p-4 w-full max-w-md max-h-full" >
             <div class="afcl-confirmation-container relative bg-lightAcceptModalBackground rounded-lg shadow dark:bg-darkAcceptModalBackground dark:shadow-black">
-                <button type="button"@click="modalStore.togleModal" class="absolute top-3 end-2.5 text-lightAcceptModalCloseIcon bg-transparent hover:bg-lightAcceptModalCloseIconHoverBackground hover:text-lightAcceptModalCloseIconHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkAcceptModalCloseIcon dark:hover:bg-darkAcceptModalCloseIconHoverBackground dark:hover:text-darkAcceptModalCloseIconHover" >
+        <button type="button" @click="modalStore.togleModal" class="absolute top-3 end-2.5 text-lightAcceptModalCloseIcon bg-transparent hover:bg-lightAcceptModalCloseIconHoverBackground hover:text-lightAcceptModalCloseIconHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkAcceptModalCloseIcon dark:hover:bg-darkAcceptModalCloseIconHoverBackground dark:hover:text-darkAcceptModalCloseIconHover" >
                     <svg class="w-3 h-3"  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
@@ -31,6 +25,45 @@ const modalStore = useModalStore();
 
 </Teleport>
 </template>
+
+<script setup lang="ts">
+import { watch, onMounted, nextTick, ref } from 'vue';
+import { useModalStore } from '@/stores/modal';
+import { Modal } from 'flowbite';
+
+const modalStore = useModalStore();
+const modalEl = ref(null);
+const modal = ref(null);
+
+watch( () => modalStore.isOpened, (newVal) => {
+    if (newVal) {
+        open();
+    } else {
+        close();
+    }
+  }
+);
+
+onMounted(async () => {
+  await nextTick();
+  modal.value = new Modal(
+    modalEl.value,
+    {
+      closable: true,
+      backdrop: 'static',
+    }
+  );
+})
+
+function open() {
+  modal.value?.show();
+}
+
+function close() {
+  modal.value?.hide();
+}
+
+</script>
 
 <style scoped>
 .modal {
