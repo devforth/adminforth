@@ -179,6 +179,13 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
   
     getFilterString(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
+        // Field-to-field comparison support
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          const left = (filter as IAdminForthSingleFilter).field;
+          const right = (filter as IAdminForthSingleFilter).rightField;
+          const operator = this.OperatorsMap[filter.operator];
+          return `${left} ${operator} ${right}`;
+        }
         // filter is a Single filter
         let placeholder = '?';
         let field = (filter as IAdminForthSingleFilter).field;
@@ -222,6 +229,10 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          // No params for field-to-field comparisons
+          return [];
+        }
         // filter is a Single filter
         if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [`%${filter.value}%`];

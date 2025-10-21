@@ -27,7 +27,7 @@
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" >
+            <div class="af-login-popup af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
                 <!-- Modal header -->
                 <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
@@ -90,17 +90,8 @@
                           v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
                           :is="getCustomComponent(c)"
                           :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
                         />
-
-                        <div v-if="error" class="af-login-modal-error flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                          <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                          </svg>
-                          <span class="sr-only">{{ $t('Info') }}</span>
-                          <div>
-                            {{ error }}
-                          </div>
-                        </div>
                         
                         <div v-if="loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
@@ -111,13 +102,19 @@
                           <span class="sr-only">{{ $t('Info') }}</span>
                           <div v-html="loginPromptHTML"></div>
                         </div>
-                        <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
+                        <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton" class="w-full">
                           {{ $t('Login to your account') }}
                         </Button>
+                        <component 
+                          v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          :is="getCustomComponent(c)"
+                          :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
+                        />
                     </form>
-
                 </div>
             </div>
+            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-9" />
         </div>
     </div> 
 
@@ -125,7 +122,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import { getCustomComponent } from '@/utils';
 import { onBeforeMount, onMounted, ref, computed } from 'vue';
@@ -136,6 +133,7 @@ import { callAdminForthApi, loadFile } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import { Button, Checkbox, Input } from '@/afcl';
 import { useI18n } from 'vue-i18n';
+import ErrorMessage from '@/components/ErrorMessage.vue';
 
 const { t } = useI18n();
 
@@ -155,6 +153,7 @@ const user = useUserStore();
 const showPw = ref(false);
 
 const error = ref(null);
+const disableLoginButton = ref(false);
 
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
@@ -218,5 +217,8 @@ async function login() {
 
 }
 
+function setDisableLoginButton(value: boolean) {
+  disableLoginButton.value = value;
+}
 
 </script>

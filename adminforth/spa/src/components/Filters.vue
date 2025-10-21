@@ -108,9 +108,9 @@
              :min="getFilterMinValue(c.name)"
              :max="getFilterMaxValue(c.name)"
              :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
+             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
              :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
+             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
            />
 
            <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
@@ -118,14 +118,14 @@
               type="number"
               aria-describedby="helper-text-explanation"
               :placeholder="$t('From')"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
               :modelValue="getFilterItem({ column: c, operator: 'gte' })"
             />
             <Input
               type="number"
               aria-describedby="helper-text-explanation"
               :placeholder="$t('To')"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event|| undefined })"
+              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
               :modelValue="getFilterItem({ column: c, operator: 'lte' })"
             />
            </div>
@@ -136,7 +136,7 @@
 
    <div class="flex justify-end gap-2">
       <button 
-        :disabled="!filtersStore.filters.length"
+        :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
         class="flex items-center py-1 px-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear">{{ $t('Clear all') }}</button>
@@ -269,7 +269,7 @@ const onSearchInput = computed(() => {
 function setFilterItem({ column, operator, value }) {
 
   const index = filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
-  if (value === undefined) {
+  if (value === undefined || value === '' || value === null) {
     if (index !== -1) {
       filtersStore.filters.splice(index, 1);
     }
@@ -284,11 +284,12 @@ function setFilterItem({ column, operator, value }) {
 }
 
 function getFilterItem({ column, operator }) {
-  return filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value || '';
+  const filterValue = filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value;
+  return filterValue !== undefined ? filterValue : '';
 }
 
 async function clear() {
-  filtersStore.clearFilters();
+  filtersStore.filters = [...filtersStore.filters.filter(f => filtersStore.shouldFilterBeHidden(f.field))];
   emits('update:filters', [...filtersStore.filters]);
 }
 

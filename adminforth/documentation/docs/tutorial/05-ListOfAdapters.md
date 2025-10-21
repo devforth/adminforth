@@ -15,7 +15,7 @@ Used to send emails
 ### AWS SES Email Adapter
 
 ```
-npm i adminforth-email-adapter-aws-ses
+npm i @adminforth/email-adapter-aws-ses
 ```
 
 Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazon.com/ses/), suitable for high-volume, programmatic email sending.
@@ -23,7 +23,7 @@ Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazo
 ### Mailgun Email Adapter
 
 ```
-npm i adminforth-email-adapter-mailgun
+npm i @adminforth/email-adapter-mailgun
 ```
 
 Allows sending transactional or marketing emails using [Mailgun](https://www.mailgun.com/), a developer-friendly email service.
@@ -40,7 +40,7 @@ Used to authenticate users via OAuth 2.0 providers
 ### Google OAuth Adapter
 
 ```
-npm i adminforth-google-oauth-adapter
+npm i @adminforth/google-oauth-adapter
 ```
 
 Supports Google sign-in to allow users to authenticate using their Google or Google Workspaces accounts.
@@ -48,7 +48,7 @@ Supports Google sign-in to allow users to authenticate using their Google or Goo
 ### GitHub OAuth Adapter
 
 ```
-npm i adminforth-github-oauth-adapter
+npm i @adminforth/github-oauth-adapter
 ```
 
 Enables authentication via GitHub accounts, useful for developer tools and open-source apps.
@@ -56,7 +56,7 @@ Enables authentication via GitHub accounts, useful for developer tools and open-
 ### Facebook OAuth Adapter
 
 ```
-npm i adminforth-facebook-oauth-adapter
+npm i @adminforth/facebook-oauth-adapter
 ```
 
 Allows users to log in with Facebook credentials. Facebook OAuth is commonly used for social media integrations.
@@ -64,7 +64,7 @@ Allows users to log in with Facebook credentials. Facebook OAuth is commonly use
 ### Keycloak OAuth Adapter
 
 ```
-npm i adminforth-keycloak-oauth-adapter
+npm i @adminforth/keycloak-oauth-adapter
 ```
 
 Connects AdminForth to an Open-Source [Keycloak](https://www.keycloak.org/) - generally self-hosted - identity provider for enterprise-grade SSO (Single Sign-On).
@@ -72,7 +72,7 @@ Connects AdminForth to an Open-Source [Keycloak](https://www.keycloak.org/) - ge
 ### Microsoft OAuth Adapter
 
 ```
-npm i adminforth-microsoft-oauth-adapter
+npm i @adminforth/microsoft-oauth-adapter
 ```
 
 Supports login through Microsoft accounts including Azure AD, Office365, and Outlook.com.
@@ -80,7 +80,7 @@ Supports login through Microsoft accounts including Azure AD, Office365, and Out
 ### Twitch OAuth Adapter
 
 ```
-npm i adminforth-twitch-oauth-adapter
+npm i @adminforth/twitch-oauth-adapter
 ```
 
 Adds support for Twitch authentication, useful for streaming or creator-oriented platforms.
@@ -97,7 +97,7 @@ Is used for image generating AI tools.
 ### OpenAI Image Generation Adapter
 
 ```
-npm i adminforth-image-generation-adapter-openai
+npm i @adminforth/image-generation-adapter-openai
 ```
 
 Uses OpenAI’s image generation models (like DALL·E and gpt-image-1) to generate images from text prompts.
@@ -116,7 +116,7 @@ Is used for storing files
 ### Amazon S3 Storage Adapter
 
 ```
-npm i adminforth-storage-adapter-amazon-s3
+npm i @adminforth/storage-adapter-amazon-s3
 ```
 
 Stores uploaded files in [Amazon S3](https://aws.amazon.com/s3/), providing scalable cloud storage.
@@ -126,7 +126,7 @@ Can be easily forked and customized to work with any S3-compatible storage servi
 ### Local Storage Adapter
 
 ```
-npm i adminforth-storage-adapter-local
+npm i @adminforth/storage-adapter-local
 ```
 
 Stores files locally on the server’s filesystem. Suitable for development or small-scale self-hosted setups.
@@ -145,9 +145,44 @@ Feel free to fork and implement other models including models from Anthropic, Go
 ### OpenAI Completion Adapter
 
 ```
-npm i adminforth-completion-adapter-open-ai-chat-gpt
+npm i @adminforth/completion-adapter-open-ai-chat-gpt
 ```
 
 Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
 
 ---
+
+## 🔎 Image Analysis
+
+[🔗ImageVisionAdapter source class](https://github.com/devforth/adminforth/blob/1efdc19e3bb7a5fc3b19106704e4ae8bb7c73276/adminforth/types/adapters/ImageVisionAdapter.ts#L1)
+
+Used for AI-powered image analysis. These adapters can automatically analyze image content, extract text from images, identify objects, describe scenes, and provide detailed image insights. 
+
+### OpenAI Vision Adapter
+
+```
+npm install @adminforth/image-vision-adapter-openai --save
+```
+
+Integrates AdminForth with OpenAI to provide advanced AI-powered image analysis. Can describe image content, read and extract text from images, identify objects and people, and provide detailed visual insights.
+
+---
+
+## 🗄️Key-value Adapters
+
+[🔗Key-value adapter source class](https://github.com/devforth/adminforth/blob/86bb9236fed9e844fdb07688318c050641f9eb1c/adminforth/types/adapters/KeyValueAdapter.ts#L6)
+
+Key-value adapters are used to store data in a key-value format. They provide a simple and efficient way to manage data where quick access to values based on unique keys is required.
+
+### RAM Adapter
+
+```
+npm i @adminforth/key-value-adapter-ram
+```
+
+The RAM adapter is a simplest in-memory key-value storage. Stores data in process RAM memory. Not sutable if you run application with several processes because each process will have own RAM. In last case you need centralized KV adapter, e.g. Redis. 
+
+Pros:
+* Simplest in use - does not reqauire any external daemon.
+Cones:
+* In production sutable for single-process installations only

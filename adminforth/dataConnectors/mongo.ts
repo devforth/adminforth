@@ -189,6 +189,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
           return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            if (value === null || value === undefined) {
+                return null;
+            }
             return value?.toString();
         }
 
@@ -206,13 +209,47 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
             return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            if (value === null || value === undefined) {
+                return null;
+            }
             return Decimal128.fromString(value?.toString());
         }
         return value;
     }
 
     getFilterQuery(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any {
+        // accept raw NoSQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawNoSQL !== undefined) {
+            return (filter as IAdminForthSingleFilter).insecureRawNoSQL;
+        }
+
+        // explicitly ignore raw SQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawSQL !== undefined) {
+            console.warn('⚠️  Ignoring insecureRawSQL filter for MongoDB:', (filter as IAdminForthSingleFilter).insecureRawSQL);
+            return {};
+        }
+
         if ((filter as IAdminForthSingleFilter).field) {
+            // Field-to-field comparisons via $expr
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                const left = `$${(filter as IAdminForthSingleFilter).field}`;
+                const right = `$${(filter as IAdminForthSingleFilter).rightField}`;
+                const op = (filter as IAdminForthSingleFilter).operator;
+                const exprOpMap = {
+                    [AdminForthFilterOperators.GT]: '$gt',
+                    [AdminForthFilterOperators.GTE]: '$gte',
+                    [AdminForthFilterOperators.LT]: '$lt',
+                    [AdminForthFilterOperators.LTE]: '$lte',
+                    [AdminForthFilterOperators.EQ]: '$eq',
+                    [AdminForthFilterOperators.NE]: '$ne',
+                } as const;
+                const mongoExprOp = exprOpMap[op];
+                if (!mongoExprOp) {
+                    // For unsupported ops with rightField, return empty condition
+                    return {};
+                }
+                return { $expr: { [mongoExprOp]: [left, right] } };
+            }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
             if (['integer', 'decimal', 'float'].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
@@ -222,7 +259,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // filter is a AndOr filter
         return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters
-            // mongodb should ignore raw sql
+            // mongodb should ignore raw SQL, but allow raw NoSQL
             .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
             .map((f) => this.getFilterQuery(resource, f)));
     }

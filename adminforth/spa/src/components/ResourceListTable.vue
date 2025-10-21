@@ -14,8 +14,8 @@
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
-          <td scope="col" class="p-4">
+        <tr class="t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
+          <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -25,7 +25,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -47,8 +47,8 @@
               </div>
               <span
                 class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-                v-if="sort.findIndex((s) => s.field === c.name) !== -1 && sort?.length > 1">
-                {{ sort.findIndex((s) => s.field === c.name) + 1 }}
+                v-if="sort.findIndex((s: any) => s.field === c.name) !== -1 && sort?.length > 1">
+                {{ sort.findIndex((s: any) => s.field === c.name) + 1 }}
               </span>
 
             </div>
@@ -64,7 +64,7 @@
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
-          :columns="resource?.columns.filter(c => c.showIn.list).length + 2"
+          :columns="resource?.columns.filter((c: AdminForthResourceColumnInputCommon) => c.showIn?.list).length + 2"
           :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
           :column-widths="columnWidths"
@@ -90,21 +90,21 @@
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
-        <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
+        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
-            @change="(e)=>{addToCheckedValues(row._primaryKeyValue)}"
-            @click="(e)=>e.stopPropagation()"
+            @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
+            @click="(e: any)=>e.stopPropagation()"
           >
             <span class="sr-only">{{ $t('checkbox') }}</span>
           </Checkbox>
         </td>
 
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
+          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
-              :is="c?.components?.list ? getCustomComponent(c.components.list) : ValueRenderer"
-              :meta="c?.components?.list?.meta"
+              :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
+              :meta="typeof c?.components?.list === 'object' ? c.components.list.meta : undefined"
               :column="c"
               :record="row"
               :adminUser="coreStore.adminUser"
@@ -115,7 +115,7 @@
             <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
               <Tooltip>
                 <RouterLink
-                  v-if="resource.options?.allowedActions.show"
+                  v-if="resource.options?.allowedActions?.show"
                   :to="{ 
                     name: 'resource-show', 
                     params: { 
@@ -135,7 +135,7 @@
 
               <Tooltip>
                 <RouterLink
-                  v-if="resource.options?.allowedActions.edit"
+                  v-if="resource.options?.allowedActions?.edit"
                   :to="{ 
                     name: 'resource-edit', 
                     params: { 
@@ -153,7 +153,7 @@
 
               <Tooltip>
                 <button
-                  v-if="resource.options?.allowedActions.delete"
+                  v-if="resource.options?.allowedActions?.delete"
                   @click="deleteRecord(row)"
                 >
                   <IconTrashBinSolid class="af-delete-icon w-5 h-5 me-2"/>
@@ -172,6 +172,7 @@
                   :resource="coreStore.resource" 
                   :adminUser="coreStore.adminUser"
                   :record="row"
+                  :updateRecords="()=>emits('update:records', true)"
                 />
               </template>
 
@@ -328,7 +329,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 
@@ -359,7 +360,7 @@ const emits = defineEmits([
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');
 const page = ref(1);
-const sort = ref([]);
+const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 
 
 const from = computed(() => ((page.value || 1) - 1) * props.pageSize + 1);
@@ -368,11 +369,11 @@ const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.tot
 watch(() => page.value, (newPage) => {
   emits('update:page', newPage);
 });
-async function onPageKeydown(event) {
+async function onPageKeydown(event: any) {
   // page input should accept only numbers, arrow keys and backspace
   if (['Enter', 'Space'].includes(event.code) ||
     (!['Backspace', 'ArrowRight', 'ArrowLeft'].includes(event.code)
-    && isNaN(String.fromCharCode(event.keyCode)))) {
+    && isNaN(Number(String.fromCharCode(event.keyCode || 0))))) {
     event.preventDefault();
     if (event.code === 'Enter') {
       validatePageInput();
@@ -393,7 +394,7 @@ watch(() => props.checkboxes, (newCheckboxes) => {
   checkboxesInternal.value = newCheckboxes;
 });
 
-watch(() => props.sort, (newSort) => {
+watch(() => props.sort, (newSort: any) => {
   sort.value = newSort;
 });
 
@@ -404,17 +405,17 @@ watch(() => props.page, (newPage) => {
   page.value = newPage;
 });
 
-const rowRefs = useTemplateRef('rowRefs');
-const headerRefs = useTemplateRef('headerRefs');
-const rowHeights = ref([]);
-const columnWidths = ref([]);
+const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
+const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
+const rowHeights = ref<number[]>([]);
+const columnWidths = ref<number[]>([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
-  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el) => el.offsetHeight);
-  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el) => el.offsetWidth)];
+  rowHeights.value = newRows || !rowRefs.value ? [] : rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
+  columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
 });
 
-function addToCheckedValues(id) {
+function addToCheckedValues(id: string) {
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
@@ -423,17 +424,17 @@ function addToCheckedValues(id) {
   checkboxesInternal.value = [ ...checkboxesInternal.value ]
 }
 
-const columnsListed = computed(() => props.resource?.columns?.filter(c => c.showIn.list));
+const columnsListed = computed(() => props.resource?.columns?.filter((c: AdminForthResourceColumnCommon) => c.showIn?.list));
 
-async function selectAll(value) {
+async function selectAll() {
   if (!allFromThisPageChecked.value) {
-    props.rows.forEach((r) => {
+    props.rows?.forEach((r) => {
       if (!checkboxesInternal.value.includes(r._primaryKeyValue)) {
         checkboxesInternal.value.push(r._primaryKeyValue)
       } 
     });
   } else {
-    props.rows.forEach((r) => {
+    props.rows?.forEach((r) => {
       checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== r._primaryKeyValue);
     });
   }
@@ -446,15 +447,15 @@ const allFromThisPageChecked = computed(() => {
   if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
-const ascArr = computed(() => sort.value.filter((s) => s.direction === 'asc').map((s) => s.field));
-const descArr = computed(() => sort.value.filter((s) => s.direction === 'desc').map((s) => s.field));
+const ascArr = computed(() => sort.value.filter((s:any) => s.direction === 'asc').map((s: any) => s.field));
+const descArr = computed(() => sort.value.filter((s: any) => s.direction === 'desc').map((s: any) => s.field));
 
 
-function onSortButtonClick(event, field) {
+function onSortButtonClick(event: any, field: string) {
   // if ctrl key is pressed, add to sort otherwise sort by this field
   // in any case if field is already in sort, toggle direction
   
-  const sortIndex = sort.value.findIndex((s) => s.field === field);
+  const sortIndex = sort.value.findIndex((s: any) => s.field === field);
   if (sortIndex === -1) {
     // field is not in sort, add it
     if (event.ctrlKey) {
@@ -465,9 +466,9 @@ function onSortButtonClick(event, field) {
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
-      sort.value = sort.value.map((s) => s.field === field ? {field, direction: 'desc'} : s);
+      sort.value = sort.value.map((s: any) => s.field === field ? {field, direction: 'desc'} : s);
     } else {
-      sort.value = sort.value.filter((s) => s.field !== field);
+      sort.value = sort.value.filter((s: any) => s.field !== field);
     }
   }
 }
@@ -475,11 +476,11 @@ function onSortButtonClick(event, field) {
 
 const clickTarget = ref(null);
 
-async function onClick(e,row) {
+async function onClick(e: any, row: any) {
   if(clickTarget.value === e.target) return;
   clickTarget.value = e.target;
   await new Promise((resolve) => setTimeout(resolve, 100));
-  if (window.getSelection().toString()) return;
+  if (window.getSelection()?.toString()) return;
   else {
     if (row._clickUrl === null) {
       // user asked to nothing on click
@@ -494,7 +495,7 @@ async function onClick(e,row) {
           router.resolve({
             name: 'resource-show',
             params: {
-              resourceId: props.resource.resourceId,
+              resourceId: props.resource?.resourceId,
               primaryKey: row._primaryKeyValue,
             },
           }).href,
@@ -512,7 +513,7 @@ async function onClick(e,row) {
         router.push({
           name: 'resource-show',
           params: {
-            resourceId: props.resource.resourceId,
+            resourceId: props.resource?.resourceId,
             primaryKey: row._primaryKeyValue,
           },
         });
@@ -521,7 +522,7 @@ async function onClick(e,row) {
   }
 }
 
-async function deleteRecord(row) {
+async function deleteRecord(row: any) {
   const data = await adminforth.confirm({
     message: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
@@ -533,7 +534,7 @@ async function deleteRecord(row) {
         path: '/delete_record',
         method: 'POST',
         body: {
-          resourceId: props.resource.resourceId,
+          resourceId: props.resource?.resourceId,
           primaryKey: row._primaryKeyValue,
         }
       });
@@ -551,16 +552,16 @@ async function deleteRecord(row) {
   }
 }
 
-const actionLoadingStates = ref({});
+const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId, row) {
+async function startCustomAction(actionId: string, row: any) {
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
     path: '/start_custom_action',
     method: 'POST',
     body: {
-      resourceId: props.resource.resourceId,
+      resourceId: props.resource?.resourceId,
       actionId: actionId,
       recordId: row._primaryKeyValue
     }
@@ -598,7 +599,7 @@ async function startCustomAction(actionId, row) {
   }
 }
 
-function onPageInput(event) {
+function onPageInput(event: any) {
   pageInput.value = event.target.innerText;
 }
 
@@ -617,5 +618,16 @@ input[type="checkbox"][disabled] {
 }
 input[type="checkbox"]:not([disabled]) {
   @apply cursor-pointer;
+}
+td.sticky-column {
+  @apply sticky left-0 z-10;
+  &:not(:first-child) {
+    @apply left-[56px];
+  }
+}
+tr:not(:first-child):hover {
+  td.sticky-column {
+    @apply bg-lightListTableRowHover dark:bg-darkListTableRowHover;
+  }
 }
 </style>

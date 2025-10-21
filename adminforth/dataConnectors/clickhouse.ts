@@ -226,11 +226,24 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
   
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
+        // Field-to-field comparison support
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          const left = (filter as IAdminForthSingleFilter).field;
+          const right = (filter as IAdminForthSingleFilter).rightField;
+          const operator = this.OperatorsMap[filter.operator];
+          return `${left} ${operator} ${right}`;
+        }
         // filter is a Single filter
         let field = (filter as IAdminForthSingleFilter).field;
         const column = resource.dataSourceColumns.find((col) => col.name == field);
         let placeholder = `{f$?:${column._underlineType}}`;
         let operator = this.OperatorsMap[filter.operator];
+
+        if (column._underlineType.startsWith('Decimal')) {
+          field = `toDecimal64(${field}, 8)`;
+          placeholder = `toDecimal64({f$?:String}, 8)`;
+        }
+
         if ((filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) && column._underlineType == 'UUID') {
           placeholder = '{f$?:String}';
           field = `toString(${field})`;
@@ -274,6 +287,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          // No params for field-to-field comparisons
+          return [];
+        }
         // filter is a Single filter
         if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];

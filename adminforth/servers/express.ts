@@ -3,12 +3,13 @@ import path from 'path';
 import fs from 'fs';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
+import { AdminUserAuthorizeFunction, IAdminForth, IExpressHttpServer, HttpExtra } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
 import http from 'http';
 import { randomUUID } from 'crypto';
+import { listify } from '../modules/utils.js';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -216,6 +217,25 @@ class ExpressServer implements IExpressHttpServer {
     this.server.listen(...args);
   }
 
+  async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: any) {
+    const adminUserAuthorize = this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined);
+
+    for (const hook of listify(adminUserAuthorize)) {
+      const resp = await hook({ 
+        adminUser, 
+        response,
+        adminforth: this.adminforth,
+        extra,
+      });
+      if (resp?.allowed === false || resp?.error) {
+        // delete all items from toReturn and add these:
+        toReturn.allowed = resp?.allowed;
+        toReturn.error = resp?.error;
+        break;
+      }
+    }
+  }
+  
 
   authorize(handler) {
     return async (req, res, next) => {
@@ -248,7 +268,13 @@ class ExpressServer implements IExpressHttpServer {
         res.status(401).send('Unauthorized by AdminForth');
       } else {
         req.adminUser = adminforthUser;
-        handler(req, res, next);
+        const toReturn: { error?: string, allowed: boolean } = { allowed: true };
+        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {});
+        if (!toReturn.allowed) {
+          res.status(401).send('Unauthorized by AdminForth');
+        } else {
+          handler(req, res, next);
+        }
       }
     };
   }
@@ -269,6 +295,19 @@ class ExpressServer implements IExpressHttpServer {
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
     const expressHandler = async (req, res) => {
+      // Enforce JSON-only for mutation HTTP methods
+      // AdminForth API endpoints accept only application/json for POST, PUT, PATCH, DELETE
+      // If you need other content types, use a custom server endpoint.
+      const method = (req.method || '').toUpperCase();
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+        const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
+        const isJson = contentTypeHeader.toLowerCase().startsWith('application/json');
+        if (!isJson) {
+          const passed = contentTypeHeader || 'undefined';
+          res.status(415).send(`AdminForth API endpoints support only requests with Content/Type: application/json, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          return;
+        }
+      }
       let body = req.body || {};
       if (typeof body === 'string') {
         try {

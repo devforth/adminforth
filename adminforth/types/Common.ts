@@ -1,4 +1,3 @@
-
 /**
  * Types that are common for both frontend side (SPA) and backend side (server).
  */
@@ -67,6 +66,11 @@ export enum AllowedActionsEnum {
 export type AllowedActionsResolved = {
   [key in AllowedActionsEnum]: boolean
 }
+
+// conditional operators for predicates
+type Value = any;
+type Operators = { $eq: Value } | { $not: Value } | { $gt: Value } | { $gte: Value } | { $lt: Value } | { $lte: Value } | { $in: Value[] } | { $nin: Value[] } | { $includes: Value } | { $nincludes: Value };
+export type Predicate = { $and: Predicate[] } | { $or: Predicate[] } | { [key: string]: Operators | Value };
 
 export interface AdminUser {
   /**
@@ -262,10 +266,28 @@ export interface AdminForthComponentDeclarationFull {
    * </script>
    * 
    */
-  meta?: any,
+  meta?: {
+    /**
+     * Controls sidebar and header visibility for custom pages
+     * - 'default': Show both sidebar and header (default behavior)
+     * - 'none': Hide both sidebar and header (full custom layout)
+     * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     */
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly',
+    
+    [key: string]: any,
+  }
 }
+import { type AdminForthActionInput } from './Back.js' 
+export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
+
+export type FieldGroup = {
+  groupName: string;
+  columns: string[];
+  noTitle?: boolean;
+};
 
 /**
  * Resource describes one table or collection in database.
@@ -348,6 +370,11 @@ export interface AdminForthResourceInputCommon {
         direction: AdminForthSortDirections | string,
       }
 
+      /*
+       * Custom actions list. Actions available in show, edit and create views. 
+       */
+      actions?: AdminForthActionInput[],
+      
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
@@ -375,26 +402,10 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Allows to make groups of columns in show, create and edit resource pages.
        */
-      fieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      createFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      editFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      showFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
+      fieldGroups?: FieldGroup[];
+      createFieldGroups?: FieldGroup[];
+      editFieldGroups?: FieldGroup[];
+      showFieldGroups?: FieldGroup[];
 
       /** 
        * Page size for list view
@@ -472,6 +483,7 @@ export interface AdminForthResourceInputCommon {
         list?: {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeActionButtons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
@@ -813,9 +825,6 @@ export interface AdminForthResourceColumnInputCommon {
    */
   minLength?: number,
 
-  min?: number,
-  max?: number,
-
   /**
    * Minimum value that can be entered in this field.
    */
@@ -868,6 +877,15 @@ export interface AdminForthResourceColumnInputCommon {
    */
   masked?: boolean,
 
+  /**
+   * Sticky position for column
+   */
+  listSticky?: boolean;
+
+  /**
+   * Show field only if certain conditions are met.
+   */
+  showIf?: Predicate;
 }
 
 export interface AdminForthResourceColumnCommon extends AdminForthResourceColumnInputCommon {
@@ -881,6 +899,15 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /**
+   * Minimal value stored in this field.
+   */
+  min?: number,
+
+  /**
+   * Maximum value stored in this field.
+   */
+  max?: number,
 }
 
 export enum AdminForthMenuTypes {
@@ -1068,7 +1095,12 @@ export interface AdminForthConfigForFrontend {
   },
   rememberMeDays: number,
   showBrandNameInSidebar: boolean,
+  showBrandLogoInSidebar: boolean,
   brandLogo?: string,
+  iconOnlySidebar?: { 
+    logo?: string,
+    enabled?: boolean,
+  },
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
@@ -1084,12 +1116,20 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
-  }[],  
+    innerCode?: string;
+  }[],
+  settingPages?:{
+    icon?: string,
+    pageLabel: string,
+    slug?: string,
+    component: string,
+  }[],
 }
 
 export interface GetBaseConfigResponse {

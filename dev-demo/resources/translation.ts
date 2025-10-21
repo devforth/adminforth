@@ -66,6 +66,7 @@ export default {
           temperature: 0.5,
         },
       }),
+      loginPageLanguageSelectorOrder: 1,
     }),
   ],
   options: {

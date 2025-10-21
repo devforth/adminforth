@@ -1,5 +1,3 @@
-
-
 export const styles = () => ({
   colors: {
     lightHtml: "#FFFFFF", // main background
@@ -146,6 +144,16 @@ export const styles = () => ({
     lightButtonsHover: "alias:lightPrimary lighten", // button hover
     lightButtonsBorderHover: "alias:lightPrimary", // button border hover  
     lightButtonFocusRing: "alias:lightPrimary opacity:0.6", // button focus ring
+
+    lightButtonGroupBackground: "#FFFFFF", // button group background
+    lightButtonGroupBorder: "#D1D5DB", // button group border
+    lightButtonGroupText: "#111827", // button group text
+    lightButtonGroupFocusRing: "#F3F4F6", // button group focus ring
+    lightButtonGroupBackgroundHover: "#F3F4F6", // button group background hover
+    lightButtonGroupTextHover: "alias:lightPrimary", // button group text hover
+    lightButtonGroupActiveBackground: "alias:lightPrimary", // button group active background
+    lightButtonGroupActiveText: "alias:lightPrimaryContrast", // button group active text
+    lightButtonGroupActiveFocusRing: "alias:lightPrimary opacity:0.6", // button group active focus ring
     
     lightDropdownButtonsBackground: "#f9fafb", // dropdown button/input background color
     lightDropownButtonsBorder: "#D1D5DB", //border color
@@ -172,9 +180,10 @@ export const styles = () => ({
     lightFocusRing: "alias:lightPrimary lighten", //focus ring color
     lightTextLabel: "black", //text color of checkbox label
 
-    lightToggleBgUnactive: "alias:lightPrimaryContrast darken", //toggle unactive state background
+    lightToggleBgUnactive: "alias:lightPrimaryContrast", //toggle unactive state background
     lightToggleBgActive: "alias:lightPrimary darken", //toggle active state background
-    lightToggleCircle: "alias:lightPrimaryContrast lighten", //toggle circle color
+    lightToggleCircleUnactive: "alias:lightPrimary",
+    lightToggleCircleActive: "alias:lightToggleBgUnactive",        
     lightToggleRing: "alias:lightPrimary lighten", // toggle ring color
     lightToggleText: "black",  // color of text next to toggle
     lightToggleBorderUnactive: "alias:lightPrimary lighten", // unactive state border
@@ -250,6 +259,9 @@ export const styles = () => ({
     lightTableOddBackground: "#FFFFFF",
     lightTablePaginationText: "#6B7280",
     lightTablePaginationNumeration: "#111827",
+    lightTablePaginationInputBackground: "#FFFFFF",
+    lightTablePaginationInputBorder: "#D1D5DB",
+    lightTablePaginationInputText: "#111827",
     lightUnactivePaginationButtonBackground: "#FFFFFF",
     lightUnactivePaginationButtonText: "#6B7280",
     lightUnactivePaginationButtonBorder: "#D1D5DB",
@@ -328,11 +340,20 @@ export const styles = () => ({
     lightToastCloseIconFocusRing: "#D1D5DB",
     lightToastText: "#6B7280",
 
+    lightCardBackground: "#FFFFFF",
+    lightCardBackgroundHover: "#F3F4F6",
+    lightCardBorder: "#E5E7EB",
+    lightCardTitle: "#374151",
+    lightCardDescription: "#6B7280",
 
+    lightUserMenuBackground: "#FFFFFF",
+    lightUserMenuBorder: "#f3f4f6",
+    lightUserMenuText: "#111827",
+    lightUserMenuItemBackground: "alias:lightUserMenuBackground",
+    lightUserMenuItemBackgroundHover: "alias:lightUserMenuBackground darken",
+    lightUserMenuItemText: "#000000",
+    lightUserMenuItemTextHover: "#000000",
 
-
-    
-    
     // colors for dark theme
     darkHtml: "#111827",
 
@@ -475,11 +496,20 @@ export const styles = () => ({
     darkButtonsBorderHover: "alias:darkPrimary", // button border hover
     darkButtonFocusRing: "alias:darkPrimary opacity:0.6", // button focus ring
 
+    darkButtonGroupBackground: "#1F2937", // button group background
+    darkButtonGroupBorder: "#4B5563", // button group border
+    darkButtonGroupText: "#9CA3AF", // button group text
+    darkButtonGroupFocusRing: "#374151", // button group focus ring
+    darkButtonGroupBackgroundHover: "#374151", // button group background hover
+    darkButtonGroupTextHover: "alias:darkButtonGroupText", // button group text hover
+    darkButtonGroupActiveBackground: "alias:darkPrimary", // button group active background
+    darkButtonGroupActiveText: "alias:darkPrimaryContrast", // button group active text
+    darkButtonGroupActiveFocusRing: "alias:darkPrimary opacity:0.6", // button group active focus ring
+
     darkDropdownButtonsBackground: "#374151",
     darkDropdownButtonsBorder: "#4b5563",
     darkDropdownButtonsText: "#FFFFFF",
     darkDropdownButtonsPlaceholderText: "#9CA3AF",
-
     darkDropdownOptionsBackground: "#374151",
     darkDropdownOptionsHoverBackground: "#4b5563",
     darkDropdownPicked:"#212a40",
@@ -579,6 +609,9 @@ export const styles = () => ({
     darkTableOddBackground: "#111827",
     darkTablePaginationText: "#9CA3AF",
     darkTablePaginationNumeration: "#FFFFFF",
+    darkTablePaginationInputBackground: "#1f2937",
+    darkTablePaginationInputBorder: "#374151",
+    darkTablePaginationInputText: "#FFFFFF",
     darkUnactivePaginationButtonBackground: "#1F2937",
     darkUnactivePaginationButtonText: "#9CA3AF",
     darkUnactivePaginationButtonBorder: "#374151",
@@ -658,6 +691,19 @@ export const styles = () => ({
     darkToastCloseIconFocusRing: "#374151",
     darkToastText: "#9CA3AF",
 
+    darkCardBackground: "#1F2937", // card background
+    darkCardBackgroundHover: "#374151", // card background hover
+    darkCardBorder: "#4B5563", // card border
+    darkCardTitle: "#FFFFFF", // card title
+    darkCardDescription: "#9CA3AF", // card description
+
+    darkUserMenuBackground: "alias:darkSidebar",
+    darkUserMenuBorder: "alias:darkSidebarDevider",
+    darkUserMenuText: "#FFFFFF",
+    darkUserMenuItemBackground: "alias:darkSidebar",
+    darkUserMenuItemBackgroundHover: "alias:darkSidebarItemHover",
+    darkUserMenuItemText: "#FFFFFF",
+    darkUserMenuItemTextHover: "#FFFFFF",
 
   },
   boxShadow: {

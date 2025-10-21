@@ -62,6 +62,14 @@ const router = createRouter({
         },
       ]
     },
+    {
+      path: '/settings/:page?',
+      name: 'settings',
+      component: () => import('@/views/SettingsView.vue'),
+      meta: { 
+        title: 'Settings', 
+      },
+    },
     /* IMPORTANT:ADMINFORTH ROUTES */
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ]

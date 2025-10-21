@@ -3,7 +3,7 @@
   <form class="flex items-center justify-center w-full"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
-    @drop.prevent="dragging = false; doEmit($event.dataTransfer.files)"
+    @drop.prevent="dragging = false; doEmit(($event.dataTransfer as DataTransfer).files)"
   >
       <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer
         hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
@@ -42,7 +42,7 @@
           </div>
           <input :id="id" type="file" class="hidden" 
             :accept="props.extensions.join(', ')"
-            @change="doEmit($event.target.files)"
+            @change="$event.target && doEmit(($event.target as HTMLInputElement).files!)"
             :multiple="props.multiple || false"
           />
       </label>

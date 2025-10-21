@@ -22,12 +22,13 @@ export interface ICodeInjector {
   devServerPort: number;
 
   getServeDir(): string;
-
+  registerCustomComponent(filePath: string): void;
   spaTmpPath(): string;
 }
 
 export interface IConfigValidator {
   validateConfig(): void;
+  validateAfterPluginsActivation(): void;
   postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
@@ -130,7 +131,9 @@ export interface IAdminForthSingleFilter {
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
   value?: any;
+  rightField?: string;
   insecureRawSQL?: string;
+  insecureRawNoSQL?: any;
 }
 export interface IAdminForthAndOrFilter {
   operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;
@@ -303,6 +306,10 @@ export interface IAdminForthAuth {
   issueJWT(payload: Object, type: string, expiresIn?: string): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
+
+  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expiry: number, expirySeconds: number, httpOnly: boolean}}): void;
+
+  getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
 
   setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
   
@@ -604,6 +611,19 @@ export type BeforeLoginConfirmationFunction = (params?: {
   }
 }>;
 
+/**
+ * Allow to make extra authorization
+ */
+export type AdminUserAuthorizeFunction = ((params?: { 
+    adminUser: AdminUser,
+    response: IAdminForthHttpResponse,
+    adminforth: IAdminForth,
+    extra?: HttpExtra,
+}) => Promise<{
+  error?: string,
+  allowed?: boolean,
+}>);
+
   
 /**
  * Data source describes database connection which will be used to fetch data for resources.
@@ -648,6 +668,12 @@ interface AdminForthInputConfigCustomization {
   showBrandNameInSidebar?: boolean,
 
   /**
+   * Whether to show brand logo in sidebar
+   * default is true
+   */
+  showBrandLogoInSidebar?: boolean,
+
+  /**
    * Path to your app logo
    * 
    * Example:
@@ -659,6 +685,19 @@ interface AdminForthInputConfigCustomization {
    * 
    */
   brandLogo?: string,
+
+
+  /**
+   * Path to your app logo for icon only sidebar
+   * 
+   * Example:
+   * Place file `logo.svg` to `./custom` folder and set this option:
+   * 
+   */
+  iconOnlySidebar?: {
+    logo?: string,
+    enabled?: boolean,
+  },
 
   /**
    * Path to your app favicon
@@ -769,6 +808,7 @@ interface AdminForthInputConfigCustomization {
    */
   loginPageInjections?: {
     underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
@@ -779,16 +819,18 @@ interface AdminForthInputConfigCustomization {
     userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    sidebarTop?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
   /**
-  * Allows adding custom elements (e.g., <link>, <script>, <meta>) to the <head> of the HTML document.
+  * Allows adding custom elements (e.g., &lt;link&gt;, &lt;script&gt;, &lt;meta&gt;) to the &lt;head&gt; of the HTML document.
   * Each item must include a tag name and a set of attributes.
   */
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
 
 }
@@ -982,6 +1024,11 @@ export interface AdminForthInputConfig {
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
 
       /**
+       * Array of functions which will be called before any request to AdminForth API.
+       */
+      adminUserAuthorize?: AdminUserAuthorizeFunction | Array<AdminUserAuthorizeFunction>,
+
+      /**
        * Optionally if your users table has a field(column) with full name, you can set it here.
        * This field will be used to display user name in the top right corner of the admin panel.
        */
@@ -1028,6 +1075,16 @@ export interface AdminForthInputConfig {
        * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
        */
       clientIpHeader?: string,
+
+      /**
+       * Add custom page to the settings page
+       */
+      userMenuSettingsPages: {
+        icon?: string,
+        pageLabel: string,
+        slug?: string,
+        component: string
+      }[],
     },
 
      /**
@@ -1095,6 +1152,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
@@ -1102,12 +1160,14 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
 
   customHeadItems?: {
     tagName: string;
     attributes: Record<string, string | boolean>;
+    innerCode?: string;
   }[];
   
 }
@@ -1156,6 +1216,21 @@ export class Filters {
   }
   static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
+  }
+  static ILIKE(field: string, value: any): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.ILIKE, value };
+  }
+  static GT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GT, rightField };
+  }
+  static GTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GTE, rightField };
+  }
+  static LT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LT, rightField };
+  }
+  static LTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LTE, rightField };
   }
   static AND(
     ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
