@@ -46,7 +46,7 @@ The installation is complete. You can now use it.
 Here is an example prompt you can use to add the adminforth bulk-ai-flow plugin:
 
 **Prompt:**  
-`Add adminforth bulk-ai-flow plugin to this file using only Context7 MCP`
+`Add adminforth bulk-ai-flow plugin to this file using Context7 MCP`
 
 **Generated Code:**  
 ![](image_6.png)
@@ -58,3 +58,14 @@ As we can see, the generation works really well.
 
 ### Tips
 If you don’t want to add `use context7` to every prompt, you can [define a simple rule in your MCP client's rule section](https://github.com/upstash/context7?tab=readme-ov-file#-tips).
+
+If you're using github copilot, you can:
+1) In the root of your repository, create the .github directory if it does not already exist.
+2) create a file named `.github/copilot-instructions.md`
+3) Inside new file add:
+
+```txt
+Always use context7 when I need code generation, setup or configuration steps, or
+library/API documentation. This means you should automatically use the Context7 MCP
+tools to resolve library id and get library docs without me having to explicitly ask.
+```
