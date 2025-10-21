@@ -62,7 +62,7 @@ If you don’t want to add `use context7` to every prompt, you can [define a sim
 If you're using github copilot, you can:
 1) In the root of your repository, create the .github directory if it does not already exist.
 2) create a file named `.github/copilot-instructions.md`
-3) Inside new file add:
+3) Inside of new file add:
 
 ```txt
 Always use context7 when I need code generation, setup or configuration steps, or
