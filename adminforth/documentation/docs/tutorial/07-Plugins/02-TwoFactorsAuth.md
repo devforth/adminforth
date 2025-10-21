@@ -206,3 +206,437 @@ plugins: [
 ],
 ...
 ```
+
+## Request 2FA on custom Actions
+
+You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
+
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
+
+```ts title='/custom/RequireTwoFaGate.vue'
+<template>
+  <div class="contents" @click.stop.prevent="onClick">
+    <slot />  <!-- render action default content - button/icon -->
+  </div>
+</template>
+
+<script setup lang="ts">
+  const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+  const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
+
+  async function onClick() {
+    if (props.disabled) return;
+  
+    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+    emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
+  }
+</script>
+```
+
+Now we need to use verification result  which we got from user on frontend, inside of backend action handler and verify that it is valid (and not expired):
+
+```ts title='/adminuser.ts'
+options: {
+  actions: [
+    {
+      name: 'Auto submit',
+      icon: 'flowbite:play-solid',
+      allowed: () => true,
+      action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
+        //diff-add
+        const verificationResult = extra?.verificationResult
+        //diff-add
+        if (!verificationResult) {
+          //diff-add
+          return { ok: false, error: 'No verification result provided' };
+        //diff-add
+        }
+        //diff-add
+        const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+        //diff-add
+        const result = await t2fa.verify(verificationResult, {
+        //diff-add
+          adminUser: adminUser,
+        //diff-add
+          userPk: adminUser.pk,
+        //diff-add
+          cookies: cookies
+        //diff-add
+        });
+
+        //diff-add
+        if (!result?.ok) {
+          //diff-add
+          return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+          //diff-add
+        }
+        //diff-add
+        await adminforth
+        //diff-add
+          .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+          //diff-add
+          .logCustomAction({
+            //diff-add
+            resourceId: 'aparts',
+            //diff-add
+            recordId: null,
+            //diff-add
+            actionId: 'visitedDashboard',
+            //diff-add
+            oldData: null,
+            //diff-add
+            data: { dashboard: 'main' },
+            //diff-add
+            user: adminUser,
+            //diff-add
+          });
+
+          //your critical action logic 
+      
+        return { ok: true, successMessage: 'Auto submitted' };
+      },
+      showIn: { showButton: true, showThreeDotsMenu: true, list: true },
+      //diff-add
+      customComponent: '@@/RequireTwoFaGate.vue',
+    },
+  ],
+}
+```
+
+## Request 2FA from custom components
+
+Imagine you have some button which does some API call
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: {
+      param: 1
+    },
+  });
+}
+</script>
+```
+
+On backend you have simple express api
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+You might want to protect this call with a second factor also. To do it, we need to make this change
+
+```ts
+<template>
+  <Button @click="callAdminAPI">Call critical API</Button>
+</template>
+  
+
+<script setup lang="ts">
+import { callApi } from '@/utils';
+import adminforth from '@/adminforth';
+
+async function callAdminAPI() {
+  // diff-add
+  const verificationResult = await window.adminforthTwoFaModal.getCode();
+
+  const res = await callApi({
+    path: '/myCriticalAction',
+    method: 'POST',
+    body: {
+      param: 1,
+  // diff-add
+      verificationResult: String(verificationResult)
+    },
+  });
+
+  // diff-add
+  if (!res?.ok) {
+  // diff-add
+    adminforth.alert({ message: res.error, variant: 'danger' });
+  // diff-add
+  }
+}
+</script>
+
+```
+
+And oin API call we need to verify it:
+
+
+```ts
+app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
+  admin.express.authorize(
+    async (req: any, res: any) => {
+
+      // diff-add
+      const { adminUser } = req;
+      // diff-add
+      const { param, verificationResult } = req.body ?? {};
+      // diff-add
+      const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+      // diff-add
+      const verifyRes = await t2fa.verify(verificationResult, {
+      // diff-add
+        adminUser: adminUser,
+      // diff-add
+        userPk: adminUser.pk,
+      // diff-add
+        cookies: cookies
+      // diff-add
+      });
+      // diff-add
+      if (!('ok' in verifyRes)) {
+      // diff-add
+        return res.status(400).json({ ok: false, error: verifyRes.error || 'Verification failed' });
+      // diff-add
+      }
+      // diff-add
+      await admin.getPluginByClassName<AuditLogPlugin>('AuditLogPlugin').logCustomAction({
+      // diff-add
+        resourceId: 'aparts',
+      // diff-add
+        recordId: null,
+      // diff-add
+        actionId: 'myCriticalAction',
+      // diff-add
+        oldData: null,
+      // diff-add
+        data: { param },
+      // diff-add
+        user: adminUser,
+      // diff-add
+      });
+
+      // ... your critical logic ...
+
+      return res.json({ ok: true, successMessage: 'Action executed' });
+    }
+  )
+);
+```
+
+
+## Custom label prefix in authenticator app
+
+By default label prefix in Authenticator app is formed from Adminforth [brandName setting](/docs/tutorial/Customization/branding/) which is best behaviour for most admin apps (always remember to configure brandName correctly e.g. "RoyalFinTech Admin") 
+If you want to have custom label prefix for some reason: 
+
+```ts label="./adminuser"
+  plugins: [
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+        ...
+      customBrandPrefix: "TechStore",
+    }),
+  ],
+```
+
+## Passkeys setup
+
+If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
+
+First, you need to create a passkeys table in your schema.prisma file:
+
+```ts title='./schema.prisma'
+  //diff-add
+  model passkeys {
+    //diff-add
+    id                      String @id
+    //diff-add
+    credential_id           String  
+    //diff-add
+    user_id                 String
+    //diff-add
+    meta                    String
+    //diff-add
+    @@index([user_id])
+    //diff-add
+    @@index([credential_id])
+    //diff-add
+  }
+```
+
+And make migration:
+
+```bash
+npm run makemigration -- --name add-passkeys ; npm run migrate:local
+```
+
+
+Next, you need to create a new resource for passkeys:
+
+```ts title='./resources/passkeys.ts'
+  import { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+  import { randomUUID } from "crypto";
+
+  export default {
+    dataSource: 'maindb',
+    table: 'passkeys',
+    resourceId: 'passkeys',
+    label: 'Passkeys',
+    columns: [
+      {
+        name: 'id',
+        label: 'ID',
+        primaryKey: true,
+        showIn: { all: false},
+        fillOnCreate: () => randomUUID(),
+      },
+      {
+        name: 'credential_id',
+        label: 'Credential ID',
+      },
+      {
+        name: 'user_id',
+        label: 'User ID',
+      },
+      {
+        name: "meta",
+        type: AdminForthDataTypes.JSON,
+        label: "Meta",
+      }
+    ],
+    plugins: [],
+    options: {},
+  } as AdminForthResourceInput;
+```
+
+Add the new resource to index.ts:
+
+```ts title='./index.ts'
+    ...
+  //diff-add
+  import passkeysResource from './resources/passkeys.js';
+    ...
+
+  resources: [
+    ...
+    //diff-add
+    passkeysResource,
+    ...
+  ],
+```
+
+Now, update the settings of the Two-Factor Authentication plugin:
+
+```ts tittle='./resources/adminuser.ts'
+  plugins: [
+    new TwoFactorsAuthPlugin ({ 
+      twoFaSecretFieldName: 'secret2fa', 
+      timeStepWindow: 1,       
+      //diff-add
+      passkeys: {
+        //diff-add
+        credentialResourceID: "passkeys",
+        //diff-add
+        credentialIdFieldName: "credential_id",
+        //diff-add
+        credentialMetaFieldName: "meta",
+        //diff-add
+        credentialUserIdFieldName: "user_id",
+        //diff-add
+        settings: {
+          // diff-add
+          expectedOrigin: "http://localhost:3500",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
+          //diff-add
+          // relying party config
+          //diff-add
+          rp: {
+              //diff-add
+              name: "New Reality",
+              
+              //diff-add
+              // optionaly you can set expected id explicitly if you need to:
+              //diff-add
+              // id: "localhost",
+              //diff-add
+            },
+            //diff-add
+            user: {
+              //diff-add
+                nameField: "email",
+                //diff-add
+                displayNameField: "email",
+                //diff-add
+            },
+            //diff-add
+            authenticatorSelection: {
+              // diff-add
+              // impacts a way how passkey will be created
+              // diff-add
+              // - platform - using browser internal authenticator (e.g. Google Chrome passkey / Google Password Manager )
+              // diff-add
+              // - cross-platform - using external authenticator (e.g. Yubikey, Google Titan etc)
+              // diff-add
+              // - both - plging will show both options to the user
+              // diff-add
+              // Can be "platform", "cross-platform" or "both"
+              // diff-add
+                authenticatorAttachment: "both",
+                //diff-add
+                requireResidentKey: true,
+                //diff-add
+                userVerification: "required",
+                //diff-add
+            },
+            //diff-add
+        },
+        //diff-add
+      } 
+    }),
+  ],
+```
+
+> ☝️ most likely you should set `passkeys.settings.expectedOrigin` from your process.env depending on your env (e.g. http://localhost:3500 for local dev, https://admin.yourproduct.com for production etc)
+
+
+> 💡**Note** By default `passkeys.settings.rp.id` is generated from the expectedOrigin so you don't need to set it
+> unless you know what you are doing. Manual setting might be needed for sub-domains isolation.
+> By default, if you set expected origin to https://localhost:3500 it will use "localhost" as rpid
+> If you set origin to https://myadmin.myproduct.com -> it will use  "myadmin.myproduct.com"  as rpid 
+
+The setup is complete. To create a passkey:
+
+> 1) Go to the user menu
+> 2) Click settings
+> 3) Select "passkeys"
+
+ ![alt text](Passkeys1.png)
+
+> 4) Add passkey
+
+ ![alt text](Passkeys2.png)
+
+
+After adding passkey you can use passkey, instead of TOTP:
+
+ ![alt text](Passkeys3.png)
+
+> 💡 **Note**: Adding a passkey does not remove the option to use TOTP. If you lose access to your passkey, you can log in using TOTP and reset your passkey.
+
+
+
+

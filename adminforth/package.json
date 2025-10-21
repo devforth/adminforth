@@ -82,10 +82,12 @@
     "mysql2": "^3.14.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
+    "rate-limiter-flexible": "^8.1.0",
     "recast": "^0.23.11",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@semantic-release/exec": "^7.1.0",
     "@types/node": "^20.14.2",
     "semantic-release": "^24.2.1",
     "semantic-release-slack-bot": "^4.0.2",

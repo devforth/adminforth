@@ -1,6 +1,5 @@
-import type { FilterParams, FrontendAPIInterface } from "./types/FrontendAPI";
-import type { FrontendAPIInterface, ConfirmParams, AlertParams, } from '@/types/FrontendAPI';
-import type { AdminForthFilterOperators, AdminForthResourceColumn } from '@/types/Common';
+import type { FilterParams, FrontendAPIInterface, ConfirmParams, AlertParams, } from '@/types/FrontendAPI';
+import type { AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
 import { useToastStore } from '@/stores/toast';
 import { useModalStore } from '@/stores/modal';
 import { useCoreStore } from '@/stores/core';
@@ -34,6 +33,10 @@ class FrontendAPI implements FrontendAPIInterface {
 
   public menu: {
     refreshMenuBadges: () => void;
+  }
+
+  public show: {
+    refresh(): void;
   }
 
   closeUserMenuDropdown(): void {
@@ -73,9 +76,15 @@ class FrontendAPI implements FrontendAPIInterface {
       updateFilter: this.updateListFilter.bind(this),
       clearFilters: this.clearListFilters.bind(this),
     }
+
+    this.show = {
+      refresh: () => {
+        console.log('show.refresh')
+      }
+    }
   }
 
-  confirm(params: ConfirmParams): Promise<void> {
+  confirm(params: ConfirmParams): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.modalStore.setModalContent({ 
         content: params.message, 
@@ -88,35 +97,50 @@ class FrontendAPI implements FrontendAPIInterface {
     })
   }
 
-  alert(params: AlertParams): void {
-    this.toastStore.addToast({
+  alert(params: AlertParams): void | Promise<string> | string {
+    const toats = {
       message: params.message,
       messageHtml: params.messageHtml,
       variant: params.variant,
-      timeout: params.timeout  
-    })
+      timeout: params.timeout,
+      buttons: params.buttons,  
+    }
+    if (params.buttons && params.buttons.length > 0) {
+      return new Promise<string>((resolve) => {
+        this.toastStore.addToast({
+          ...toats,
+          onResolve: (value?: any) => resolve(String(value ?? '')),
+        })
+      })
+    } else {
+      this.toastStore.addToast({...toats})
+    }
   }
 
   listFilterValidation(filter: FilterParams): boolean {
     if(router.currentRoute.value.meta.type !== 'list'){
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
-    } else {
-      console.log(this.coreStore.resourceColumnsWithFilters,'core store')
-      const filterField = this.coreStore.resourceColumnsWithFilters.find((col: AdminForthResourceColumn) => col.name === filter.field)
-      if(!filterField){
-          throw new Error(`Field ${filter.field} is not available for filtering`)
-      }
-      
     }
     return true
   }
 
   setListFilter(filter: FilterParams): void {
     if(this.listFilterValidation(filter)){
-      if(this.filtersStore.filters.some((f) => {return f.field === filter.field && f.operator === filter.operator})){
-        throw new Error(`Filter ${filter.field} with operator ${filter.operator} already exists`)
+      const existingFilterIndex = this.filtersStore.filters.findIndex((f: any) => {
+        return f.field === filter.field && f.operator === filter.operator
+      });
+      
+      if(existingFilterIndex !== -1){
+        // Update existing filter instead of throwing error
+        const filters = [...this.filtersStore.filters];
+        if (filter.value === undefined) {
+          filters.splice(existingFilterIndex, 1);
+        } else {
+          filters[existingFilterIndex] = filter;
+        }
+        this.filtersStore.setFilters(filters);
       } else {
-      this.filtersStore.setFilter(filter)
+        this.filtersStore.setFilter(filter);
       }
     }
   }

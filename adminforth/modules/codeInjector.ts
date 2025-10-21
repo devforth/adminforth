@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 
@@ -83,6 +83,11 @@ class CodeInjector implements ICodeInjector {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+  }
+
+  registerCustomComponent(filePath: string): void {
+    const componentName = getComponentNameFromPath(filePath);
+    this.allComponentNames[filePath] = componentName;
   }
 
   cleanup() {
@@ -243,7 +248,12 @@ class CodeInjector implements ICodeInjector {
       }
     }));
   }
-
+  async migrateLegacyCustomLayout(oldMeta) {
+    if (oldMeta.customLayout === true) {
+      oldMeta.sidebarAndHeader = "none";
+    }
+    return oldMeta;
+  }
   async prepareSources() {
     // collects all files and folders into SPA_TMP_DIR
 
@@ -310,23 +320,34 @@ class CodeInjector implements ICodeInjector {
     };
     const registerCustomPages = (config) => {
       if (config.customization.customPages) {
-        config.customization.customPages.forEach((page) => {
+        config.customization.customPages.forEach(async (page) => {
+          const newMeta = await this.migrateLegacyCustomLayout(page?.component?.meta || {});
           routes += `{
             path: '${page.path}',
             name: '${page.path}',
             component: () => import('${page?.component?.file || page.component}'),
             meta: ${
                 JSON.stringify({
-                  ...(page?.component?.meta || {}),
+                  ...newMeta,
                   title: page.meta?.title || page.path.replace('/', '')
                 })
             }
           },`})
     }}
+    const registerSettingPages = ( settingPage ) => {
+      if (!settingPage) {
+        return;
+      }
+      for (const page of settingPage) {
+        if (page.icon) {
+          icons.push(page.icon);
+        }
+      }
+    }
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
-
+    registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
     if (process.env.HEAVY_DEBUG) {
@@ -485,6 +506,12 @@ class CodeInjector implements ICodeInjector {
       });
     }
 
+    if (this.adminforth.config.auth.userMenuSettingsPages) {
+      for (const settingPage of this.adminforth.config.auth.userMenuSettingsPages) {
+        checkInjections([{ file: settingPage.component }]);
+      }
+    }
+
 
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
@@ -562,14 +589,14 @@ class CodeInjector implements ICodeInjector {
     // inject heads to index.html
     const headItems = this.adminforth.config.customization?.customHeadItems;
     if(headItems){
-      const renderedHead = headItems.map(({ tagName, attributes }) => {
+      const renderedHead = headItems.map(({ tagName, attributes, innerCode }) => {
       const attrs = Object.entries(attributes)
         .map(([key, value]) => `${key}="${value}"`)
         .join(' ');
       const isVoid = ['base', 'link', 'meta'].includes(tagName);
       return isVoid
         ? `<${tagName} ${attrs}>`
-        : `<${tagName} ${attrs}></${tagName}>`;
+        : `<${tagName} ${attrs}> ${innerCode} </${tagName}>`;
       }).join('\n    ');
 
       indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );

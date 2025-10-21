@@ -274,6 +274,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
           globalInjections: {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
+            sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
           },
           rememberMeDays: this.adminforth.config.auth.rememberMeDays,
           singleTheme: this.adminforth.config.customization.singleTheme,
@@ -285,7 +286,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies, tr}): Promise<GetBaseConfigResponse>=> {
+      handler: async ({input, adminUser, cookies, tr, response}): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -293,6 +294,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
         }
+
+        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+        response.setHeader('Expires', '0');
+        response.setHeader('Surrogate-Control', 'no-store');
 
         const dbUser = adminUser.dbUser;
         username = dbUser[this.adminforth.config.auth.usernameField]; 
@@ -363,7 +369,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
+          showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
           brandLogo: this.adminforth.config.customization.brandLogo,
+          iconOnlySidebar: this.adminforth.config.customization.iconOnlySidebar,
           datesFormat: this.adminforth.config.customization.datesFormat,
           timeFormat: this.adminforth.config.customization.timeFormat,
           auth: this.adminforth.config.auth,
@@ -373,6 +381,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
+          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
         }
 
         // translate menu labels

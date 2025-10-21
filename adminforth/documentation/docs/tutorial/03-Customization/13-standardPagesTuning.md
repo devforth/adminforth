@@ -120,6 +120,190 @@ export default {
 }
 ```
 
+### Sticky column
+
+
+You can make a column sticky in the list view by setting `listSticky` to `true`. This keeps the column visible when horizontally scrolling through the table, which is particularly useful for important columns like titles or IDs that should always remain in view.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+  {
+    name: "title",
+//diff-add
+    listSticky: true,
+    ...
+  },
+  ...
+  ]
+}
+```
+
+>⚠️ Please note that sticky columns can only be applied to one column per resource.
+
+### Conditional display
+You can conditionally display columns in forms and views based on the values of other fields in the current record using the `showIf` property. This enables dynamic layouts that automatically adapt to user input, creating more intuitive and context-aware interfaces.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  columns: [
+    {
+      name: 'apartment_type',
+      enum: [
+        { value: 'studio', label: 'Studio' },
+        { value: 'apartment', label: 'Apartment' },
+        { value: 'penthouse', label: 'Penthouse' }
+      ]
+    },
+    {
+      name: 'number_of_rooms',
+      type: AdminForthDataTypes.INTEGER,
+//diff-add
+      showIf: { apartment_type: { $not: 'studio' } }
+    },
+    {
+      name: 'has_balcony',
+      type: AdminForthDataTypes.BOOLEAN,
+//diff-add
+      showIf: { apartment_type: 'penthouse' }
+    }
+  ]
+}
+```
+
+#### Logical Operators
+
+Use `$and` and `$or` operators to create complex conditional logic:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'premium_features',
+      type: AdminForthDataTypes.JSON,
+//diff-add
+      showIf: {
+//diff-add
+        $and: [
+//diff-add
+          { price: { $gte: 500000 } },
+//diff-add
+          { apartment_type: { $in: ['penthouse', 'apartment'] } }
+//diff-add
+        ]
+//diff-add
+      }
+    },
+    {
+      name: 'discount_reason',
+      type: AdminForthDataTypes.STRING,
+//diff-add
+      showIf: {
+//diff-add
+        $or: [
+//diff-add
+          { price: { $lt: 100000 } },
+//diff-add
+          { listed: false }
+//diff-add
+        ]
+//diff-add
+      }
+    }
+  ]
+}
+```
+
+#### Comparison Operators
+
+Use various comparison operators for numeric and string fields:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'luxury_amenities',
+//diff-add
+      showIf: { square_meter: { $gt: 100 } }
+    },
+    {
+      name: 'budget_options',
+//diff-add
+      showIf: { price: { $lte: 200000 } }
+    },
+    {
+      name: 'special_offers',
+//diff-add
+      showIf: { country: { $nin: ['US', 'GB'] } }
+    }
+  ]
+}
+```
+
+#### Array Operators
+
+For fields that contain arrays, use array-specific operators:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'pet_policy',
+//diff-add
+      showIf: { amenities: { $includes: 'pet_friendly' } }
+    },
+    {
+      name: 'security_deposit',
+//diff-add
+      showIf: { features: { $nincludes: 'furnished' } }
+    }
+  ]
+}
+```
+
+#### Available Operators
+
+The following operators are available for use in `showIf` conditions:
+
+**Equality Operators:**
+- `$eq` - Equal to (default if no operator specified)
+  - `{ price: { $eq: 100000 } }` or `{ price: 100000 }`
+- `$not` - Not equal to
+  - `{ apartment_type: { $not: 'studio' } }`
+
+**Comparison Operators:**
+- `$gt` - Greater than
+  - `{ square_meter: { $gt: 100 } }`
+- `$gte` - Greater than or equal to
+  - `{ price: { $gte: 500000 } }`
+- `$lt` - Less than
+  - `{ price: { $lt: 100000 } }`
+- `$lte` - Less than or equal to
+  - `{ price: { $lte: 200000 } }`
+
+**Array Operators:**
+- `$in` - Value is in array
+  - `{ apartment_type: { $in: ['penthouse', 'apartment'] } }`
+- `$nin` - Value is not in array
+  - `{ country: { $nin: ['US', 'GB'] } }`
+- `$includes` - Array includes value
+  - `{ amenities: { $includes: 'pet_friendly' } }`
+- `$nincludes` - Array does not include value
+  - `{ features: { $nincludes: 'furnished' } }`
+
+**Logical Operators:**
+- `$and` - Logical AND operation
+  - `{ $and: [{ price: { $gte: 500000 } }, { listed: true }] }`
+- `$or` - Logical OR operation
+  - `{ $or: [{ price: { $lt: 100000 } }, { listed: false }] }`
+
+> ⚠️ **Warning**: When using `showIf` with complex conditions, ensure that:
+> - `$and` and `$or` operators contain arrays of conditions
+> - `$in` and `$nin` operators contain arrays of values
+> - `$includes` and `$nincludes` operators are only used on columns marked as arrays (`isArray: { enabled: true }`)
 ### Page size 
 
 use `options.listPageSize` to define how many records will be shown on the page

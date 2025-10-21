@@ -54,6 +54,18 @@ showBrandNameInSidebar: false,
 
 `brandName` will still be used in the other places e.g. login form.
 
+## Removing brand logo from sidebar
+
+If you want to hide the logo image in the sidebar while keeping the brand name text (or vice versa), disable the logo with:
+
+```ts title='./index.ts'
+brandName: 'My App',
+//diff-add
+showBrandLogoInSidebar: false,
+```
+
+By default, the logo is shown when available. This flag controls the sidebar logo only and does not affect the login page.
+
 ## Theming
 
 AdminForth uses TailwindCSS for styling. You are able to customize the look of the application by changing the TailwindCSS configuration.
@@ -114,6 +126,27 @@ const admin = new AdminForth({
 });
 ```
 
+## Icon only sidebar 
+
+AdminForth supports a collapsible sidebar that can be toggled between a full-width view (showing labels) and an icon-only view (showing only icons).
+
+```ts title='./index.ts'
+
+const admin = new AdminForth({
+  ...
+  customization: {
+  //diff-add
+    iconOnlySidebar: {
+  //diff-add
+      enabled: true,  // Optional: Enable the collapsible icon-only sidebar feature
+  //diff-add
+      logo: '@@/logo.svg',  // Optional: Custom logo to display in icon-only mode
+  //diff-add
+    }, 
+  },
+  ...
+});
+```
 
 ## Square vs rounded buttons?
 

@@ -17,7 +17,7 @@ import {
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, suggestIfTypo } from './utils.js';
+import { guessLabelFromName, md5hash, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -25,15 +25,19 @@ import {
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
   AdminForthDataTypes,
+  Predicate,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
 
 
-
 export default class ConfigValidator implements IConfigValidator {
 
   customComponentsDir: string | undefined;
+
+  private static readonly LOGIN_INJECTION_KEYS = ['underInputs', 'underLoginButton', 'panelHeader'];
+  private static readonly GLOBAL_INJECTION_KEYS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
+  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
 
   constructor(private adminforth: IAdminForth, private inputConfig: AdminForthInputConfig) {
     this.adminforth = adminforth;
@@ -115,36 +119,35 @@ export default class ConfigValidator implements IConfigValidator {
 
     const loginPageInjections: AdminForthConfigCustomization['loginPageInjections'] = {
       underInputs: [],
+      underLoginButton: [],
       panelHeader: [],
     };
 
     if (this.inputConfig.customization?.loginPageInjections) {
-      const ALLOWED_LOGIN_INJECTIONS = ['underInputs', 'panelHeader']
       Object.keys(this.inputConfig.customization.loginPageInjections).forEach((injection) => {
-        if (ALLOWED_LOGIN_INJECTIONS.includes(injection)) {
+        if (ConfigValidator.LOGIN_INJECTION_KEYS.includes(injection)) {
           loginPageInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.loginPageInjections, injection, errors);
         } else {
-          const similar = suggestIfTypo(ALLOWED_LOGIN_INJECTIONS, injection);
-          errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_LOGIN_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          const similar = suggestIfTypo(ConfigValidator.LOGIN_INJECTION_KEYS, injection);
+          errors.push(`Login page injection key "${injection}" is not allowed. Allowed keys are ${ConfigValidator.LOGIN_INJECTION_KEYS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
         }
       });
     }
-    
     const globalInjections: AdminForthConfigCustomization['globalInjections'] = {
       userMenu: [],
       header: [],
       sidebar: [],
+      sidebarTop: [],
       everyPageBottom: [],
     };
 
     if (this.inputConfig.customization?.globalInjections) {
-      const ALLOWED_GLOBAL_INJECTIONS = ['userMenu', 'header', 'sidebar', 'everyPageBottom'];
       Object.keys(this.inputConfig.customization.globalInjections).forEach((injection) => {
-        if (ALLOWED_GLOBAL_INJECTIONS.includes(injection)) {
+        if (ConfigValidator.GLOBAL_INJECTION_KEYS.includes(injection)) {
           globalInjections[injection] = this.validateAndListifyInjectionNew(this.inputConfig.customization.globalInjections, injection, errors);
         } else {
-          const similar = suggestIfTypo(ALLOWED_GLOBAL_INJECTIONS, injection);
-          errors.push(`Global injection key "${injection}" is not allowed. Allowed keys are ${ALLOWED_GLOBAL_INJECTIONS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+          const similar = suggestIfTypo(ConfigValidator.GLOBAL_INJECTION_KEYS, injection);
+          errors.push(`Global injection key "${injection}" is not allowed. Allowed keys are ${ConfigValidator.GLOBAL_INJECTION_KEYS.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
         }
       });
     }
@@ -159,8 +162,14 @@ export default class ConfigValidator implements IConfigValidator {
     if (!customization.customPages) {
       customization.customPages = [];
     }
-    customization.customPages.forEach((page, i) => {
-      this.validateComponent(page.component, errors);
+    customization.customPages.forEach((page) => {
+      page.component = this.validateComponent(page.component, errors);
+      const meta = page.component.meta || {};
+      if (meta.sidebarAndHeader === undefined) {
+        meta.sidebarAndHeader = meta.customLayout === true ? 'none' : 'default';
+      }
+      delete meta.customLayout;
+      page.component.meta = meta;
     });
     
     if (!customization.brandName) { //} === undefined) {
@@ -168,14 +177,19 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     // slug should have only lowercase letters, dashes and numbers
-    customization.brandNameSlug = customization.brandName.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    customization.brandNameSlug = slugifyString(customization.brandName);
 
-    
     if (customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(customization.brandLogo));
     }
+    if (customization.iconOnlySidebar && customization.iconOnlySidebar.logo) {
+      errors.push(...this.checkCustomFileExists(customization.iconOnlySidebar.logo)); 
+    } 
     if (customization.showBrandNameInSidebar === undefined) {
       customization.showBrandNameInSidebar = true;
+    }
+    if (customization.showBrandLogoInSidebar === undefined) {
+      customization.showBrandLogoInSidebar = true;
     }
     if (customization.favicon) {
       errors.push(...this.checkCustomFileExists(customization.favicon));
@@ -767,6 +781,53 @@ export default class ConfigValidator implements IConfigValidator {
         return col as AdminForthResourceColumn;
       })
 
+      // Check for multiple sticky columns
+      if (res.columns.filter(c => c.listSticky).length > 1) {
+        errors.push(`Resource "${res.resourceId}" has more than one listSticky column. Only one column can be sticky in the list view.`);
+      }
+
+      const conditionalColumns = res.columns.filter(c => c.showIf);
+      if (conditionalColumns.length) {
+        const checkConditionArrays = (predicate: Predicate, column: AdminForthResourceColumn) => {
+          if ("$and" in predicate && !Array.isArray(predicate.$and)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $and that is not an array`);
+          } else if ("$and" in predicate && Array.isArray(predicate.$and)) {
+        predicate.$and.forEach((item) => checkConditionArrays(item, column));
+          }
+
+          if ("$or" in predicate && !Array.isArray(predicate.$or)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $or that is not an array`);
+          } else if ("$or" in predicate && Array.isArray(predicate.$or)) {
+        predicate.$or.forEach((item) => checkConditionArrays(item, column));
+          }
+      
+          const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
+          if (fieldEntries.length > 0) {
+        fieldEntries.forEach(([field, condition]) => {
+          if (typeof condition !== 'object') {
+            return;
+          }
+          if ("$in" in condition && !Array.isArray(condition.$in)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $in that is not an array`);
+          }
+          if ("$nin" in condition && !Array.isArray(condition.$nin)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $nin that is not an array`);
+          }
+          if ("$includes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $includes on non-array column "${column.name}"`);
+          }
+          if ("$nincludes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $nincludes on non-array column "${column.name}"`);
+          }
+        });
+          }
+        };
+        
+        conditionalColumns.forEach((column) => {
+          checkConditionArrays(column.showIf, column);
+        });
+      }
+
       const options: Partial<AdminForthResource['options']> = {...resInput.options, bulkActions: undefined, allowedActions: undefined};
 
       options.allowedActions = this.validateAndNormalizeAllowedActions(resInput, errors);
@@ -799,7 +860,6 @@ export default class ConfigValidator implements IConfigValidator {
       });
 
       // if pageInjection is a string, make array with one element. Also check file exists
-      const possibleInjections = ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
       const possiblePages = ['list', 'show', 'create', 'edit'];
 
       if (options.pageInjections) {
@@ -811,11 +871,11 @@ export default class ConfigValidator implements IConfigValidator {
           }
 
           Object.entries(value).map(([injection, target]) => {
-            if (possibleInjections.includes(injection)) {
-              this.validateAndListifyInjection(options.pageInjections[key], injection, errors);
+            if (ConfigValidator.PAGE_INJECTION_KEYS.includes(injection)) {
+              options.pageInjections[key][injection] = this.validateAndListifyInjectionNew(options.pageInjections[key], injection, errors);
             } else {
-              const similar = suggestIfTypo(possibleInjections, injection);
-              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${possibleInjections.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
+              const similar = suggestIfTypo(ConfigValidator.PAGE_INJECTION_KEYS, injection);
+              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${ConfigValidator.PAGE_INJECTION_KEYS.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
             }
           });
 
@@ -887,6 +947,65 @@ export default class ConfigValidator implements IConfigValidator {
       return res as AdminForthResource;
     });
     
+  }
+
+  validateAfterPluginsActivation() {
+    // Sort all page injections throughout the config by afOrder
+    this.sortAllPageInjections();
+  }
+
+  private sortAllPageInjections(): void {
+    const config = this.adminforth.config;
+    
+    // Sort login page injections
+    if (config.customization?.loginPageInjections) {
+      const loginInjections = config.customization.loginPageInjections;
+      ConfigValidator.LOGIN_INJECTION_KEYS.forEach(key => {
+        if (loginInjections[key]) {
+          this.sortInjectionArray(loginInjections[key]);
+        }
+      });
+    }
+
+    // Sort global injections
+    if (config.customization?.globalInjections) {
+      const globalInjections = config.customization.globalInjections;
+      ConfigValidator.GLOBAL_INJECTION_KEYS.forEach(key => {
+        if (globalInjections[key]) {
+          this.sortInjectionArray(globalInjections[key]);
+        }
+      });
+    }
+
+    // Sort resource page injections
+    if (config.resources) {
+      config.resources.forEach(resource => {
+        if (resource.options?.pageInjections) {
+          const pageInjections = resource.options.pageInjections;
+          
+          // For each page type (list, show, create, edit)
+          Object.keys(pageInjections).forEach(pageType => {
+            const pageTypeInjections = pageInjections[pageType];
+            if (pageTypeInjections) {
+              // For each injection point within the page
+              ConfigValidator.PAGE_INJECTION_KEYS.forEach(injectionKey => {
+                if (pageTypeInjections[injectionKey]) {
+                  this.sortInjectionArray(pageTypeInjections[injectionKey]);
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  private sortInjectionArray(injections: any): void {
+    if (Array.isArray(injections)) {
+      injections.sort((a: AdminForthComponentDeclarationFull, b: AdminForthComponentDeclarationFull) => 
+        (b.meta?.afOrder ?? 0) - (a.meta?.afOrder ?? 0)
+      );
+    }
   }
 
   validateConfig() {
@@ -998,6 +1117,12 @@ export default class ConfigValidator implements IConfigValidator {
       if (!userResource) {
         const similar = suggestIfTypo(newConfig.resources.map((res) => res.resourceId ), newConfig.auth.usersResourceId);
         throw new Error(`Resource with id "${newConfig.auth.usersResourceId}" not found. ${similar ? `Did you mean "${similar}"?` : ''}`);
+      }
+      if (newConfig.auth.userMenuSettingsPages) {
+        for (const page of newConfig.auth.userMenuSettingsPages) {
+          this.validateComponent({file: page.component}, errors);
+          page.slug = page.slug ?? slugifyString(page.pageLabel);
+        }
       }
 
       // normalize beforeLoginConfirmation hooks

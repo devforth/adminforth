@@ -99,13 +99,29 @@ class AdminForthAuth implements IAdminForthAuth {
   }
 
   setCustomCookie({ response, payload }: {
-    response: any, payload: {name: string, value: string, expiry: number, httpOnly: boolean}
+    response: any, payload: { name: string, value: string, expiry: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
   }) {
-    const {name, value, expiry, httpOnly} = payload;
+    const {name, value, expiry, httpOnly, expirySeconds } = payload;
+
+    let expiryMs = 24 * 60 * 60 * 1000; // default 1 day
+    if (expirySeconds !== undefined) {
+      expiryMs = expirySeconds * 1000;
+    } else if (expiry !== undefined) {
+      console.warn('setCustomCookie: expiry(in ms) is deprecated, use expirySeconds instead (seconds), traceback:', new Error().stack);
+      expiryMs = expiry;
+    }
+
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
       httpOnly ? ' HttpOnly;' : ''
-    } SameSite=Strict; Expires=${new Date(Date.now() + expiry).toUTCString() } `);
+    } SameSite=Strict; Expires=${new Date(Date.now() + expiryMs).toUTCString() } `);
+  }
+
+  getCustomCookie({ cookies, name }: {
+    cookies: {key: string, value: string}[], name: string
+  }): string | null {
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    return cookies.find((cookie) => cookie.key === `adminforth_${brandSlug}_${name}`)?.value || null;
   }
  
   issueJWT(payload: Object, type: string, expiresIn: string = '24h'): string {

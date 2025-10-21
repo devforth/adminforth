@@ -1,4 +1,4 @@
-import type { AdminForthResource, AdminForthResourceColumn } from '../types/AdminForthConfig';
+import type { AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
 
 export type resourceById = {
     [key: string]: AdminForthResource;
@@ -23,6 +23,10 @@ export type CoreConfig = {
     brandName: string,
     singleTheme?: 'light' | 'dark',
     brandLogo: string,
+    iconOnlySidebar: {
+        logo?: string,
+        enabled?: boolean,
+    },
     title: string,
     datesFormat: string,
     timeFormat: string,
@@ -45,6 +49,7 @@ export type CoreConfig = {
     customHeadItems?: {
         tagName: string;
         attributes: { [key: string]: string | boolean };
+        innerCode?: string;
     }[],
 }
 

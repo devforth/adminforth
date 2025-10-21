@@ -36,9 +36,9 @@
         />
       </div>
     </div>
-    <teleport to="body" v-if="teleportToBody && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop}"
-        class="fixed z-[5] w-full bg-white shadow-lg dark:shadow-black dark:bg-gray-700 
+    <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-[5]': teleportToBody, 'z-[1000]': teleportToTop}"
+        class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
         <div
@@ -52,7 +52,7 @@
           <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
         </div>
         <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-          {{ options.length ? $t('No results found') : $t('No items here') }}
+          {{ options?.length ? $t('No results found') : $t('No items here') }}
         </div>
 
         <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
@@ -61,7 +61,7 @@
       </div>
     </teleport>
 
-    <div v-if="!teleportToBody && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
+    <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
@@ -76,7 +76,7 @@
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
       <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-        {{ options.length ? $t('No results found') : $t('No items here') }}
+        {{ options?.length ? $t('No results found') : $t('No items here') }}
       </div>
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-darkDropdownOptionsText">
         <slot name="extra-item"></slot>
@@ -114,14 +114,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, type Ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
 const props = defineProps({
   options: Array,
   modelValue: {
-    default: undefined,
+    type: Array as PropType<(string | number)[]>,
+    default: () => [],
   },
   multiple: {
     type: Boolean,
@@ -140,6 +141,10 @@ const props = defineProps({
     default: false,
   },
   teleportToBody: {
+    type: Boolean,
+    default: false,
+  },
+  teleportToTop: {
     type: Boolean,
     default: false,
   },
@@ -174,14 +179,14 @@ function inputInput() {
 function updateFromProps() {
   if (props.modelValue !== undefined) {
     if (!props.multiple) {
-      const el = props.options.find(item => item.value === props.modelValue);
+      const el = props.options?.find((item: any) => item.value === props.modelValue);
       if (el) {
         selectedItems.value = [el];
       } else {
         selectedItems.value = [];
       }
     } else {
-      selectedItems.value = props.options.filter(item => props.modelValue.includes(item.value));
+      selectedItems.value = props.options?.filter((item: any) => props.modelValue?.includes(item.value)) || [];
     }
   }
 }
@@ -264,7 +269,7 @@ onMounted(() => {
   }
 });
 
-const filteredItems = computed(() => {
+const filteredItems: Ref<any[]> = computed(() => {
 
   if (props.searchDisabled) {
     return props.options || [];
@@ -291,7 +296,7 @@ const removeClickListener = () => {
   document.removeEventListener('click', handleClickOutside);
 };
 
-const toogleItem = (item) => {
+const toogleItem = (item: any) => {
   if (selectedItems.value.includes(item)) {
     selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {

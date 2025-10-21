@@ -225,6 +225,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
         if ((filter as IAdminForthSingleFilter).field) {
+            // Field-to-field comparison support
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                const left = `"${(filter as IAdminForthSingleFilter).field}"`;
+                const right = `"${(filter as IAdminForthSingleFilter).rightField}"`;
+                const operator = this.OperatorsMap[filter.operator];
+                return `${left} ${operator} ${right}`;
+            }
             let placeholder = '$?';
             let field = (filter as IAdminForthSingleFilter).field;
             const fieldData = resource.dataSourceColumns.find((col) => col.name == field);
@@ -265,6 +272,10 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
         if ((filter as IAdminForthSingleFilter).field) {
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                // No params for field-to-field comparisons
+                return [];
+            }
             // filter is a Single filter
             if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
                 return [`%${filter.value}%`];
