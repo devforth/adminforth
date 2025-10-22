@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-  <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 w-full h-full overflow-y-auto overflow-x-hidden flex items-center justify-center">
+  <div ref="modalEl" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-[100] w-full h-full overflow-y-auto overflow-x-hidden flex items-center justify-center">
     <div class="relative p-4 w-full max-w-md max-h-full" >
             <div class="afcl-confirmation-container relative bg-lightAcceptModalBackground rounded-lg shadow dark:bg-darkAcceptModalBackground dark:shadow-black">
         <button type="button" @click="modalStore.togleModal" class="absolute top-3 end-2.5 text-lightAcceptModalCloseIcon bg-transparent hover:bg-lightAcceptModalCloseIconHoverBackground hover:text-lightAcceptModalCloseIconHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkAcceptModalCloseIcon dark:hover:bg-darkAcceptModalCloseIconHoverBackground dark:hover:text-darkAcceptModalCloseIconHover" >
