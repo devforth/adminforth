@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 
-import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers} from '@/utils';
+import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, checkShowIf } from '@/utils';
 import { computedAsync } from '@vueuse/core';
 import { computed, onMounted, reactive, ref, watch, provide, type Ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -322,7 +322,7 @@ async function searchOptions(columnName: string, searchTerm: string) {
 
 
 const editableColumns = computed(() => {
-  return props.resource?.columns?.filter(column => column.showIn?.[mode.value]);
+  return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value) : true));
 });
 
 const isValid = computed(() => {

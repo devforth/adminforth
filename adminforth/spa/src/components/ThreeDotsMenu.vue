@@ -12,7 +12,7 @@
     <!-- Dropdown menu -->
     <div 
       id="listThreeDotsDropdown" 
-      class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      class="z-30 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -23,7 +23,7 @@
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
               @click="injectedComponentClick(i)">
-              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)" 
+              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"

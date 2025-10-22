@@ -182,6 +182,7 @@
                   :resource="coreStore.resource" 
                   :adminUser="coreStore.adminUser"
                   :record="row"
+                  :updateRecords="()=>emits('update:records', true)"
                 />
               </template>
 
