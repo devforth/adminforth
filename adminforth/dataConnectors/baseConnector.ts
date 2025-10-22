@@ -227,11 +227,19 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any) {
+  async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any, record?: any): Promise<boolean> {
     process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+
+    const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
       resource,
-      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: column.name, operator: AdminForthFilterOperators.EQ, value }]},
+      filters: { 
+        operator: AdminForthFilterOperators.AND, 
+        subFilters: [
+          { field: column.name, operator: AdminForthFilterOperators.EQ, value },
+          ...(record ? [{ field: primaryKeyField, operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE, value: record[primaryKeyField] }] : [])
+        ]
+      },
       limit: 1,
       sort: [],
       offset: 0,
@@ -306,7 +314,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<{ error?: string; ok: boolean; }> {
     // transform value using setFieldValue and call updateRecordOriginalValues
     const recordWithOriginalValues = {...newValues};
-
+    
     for (const field of Object.keys(newValues)) {
       const col = resource.dataSourceColumns.find((col) => col.name == field);
       // todo instead of throwing error, we can just not use setFieldValue here, and pass original value to updateRecordOriginalValues
@@ -319,12 +327,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
     }
-    
+    const record = await this.getRecordByPrimaryKey(resource, recordId);
     let error: string | null = null;
      await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
         if (col.isUnique && !col.virtual && !error) {
-          const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name]);
+          const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name], record);
           if (exists) {
             error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
           }
