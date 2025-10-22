@@ -76,6 +76,7 @@ interface DialogProps {
   clickToCloseOutside?: boolean
   beforeCloseFunction?: (() => void | Promise<void>) | null
   beforeOpenFunction?: (() => void | Promise<void>) | null
+  closable?: boolean
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
@@ -87,6 +88,7 @@ const props = withDefaults(defineProps<DialogProps>(), {
   clickToCloseOutside: true,
   beforeCloseFunction: null,
   beforeOpenFunction: null,
+  closable: true,
 })
 
 onMounted(async () => {
@@ -95,6 +97,7 @@ onMounted(async () => {
   modal.value = new Modal(
     modalEl.value,
     {
+      closable: props.closable,
       backdrop: props.clickToCloseOutside ? 'dynamic' : 'static',
       onHide: async () => {
         if (props.beforeCloseFunction) {

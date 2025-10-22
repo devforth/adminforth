@@ -248,7 +248,12 @@ class CodeInjector implements ICodeInjector {
       }
     }));
   }
-
+  async migrateLegacyCustomLayout(oldMeta) {
+    if (oldMeta.customLayout === true) {
+      oldMeta.sidebarAndHeader = "none";
+    }
+    return oldMeta;
+  }
   async prepareSources() {
     // collects all files and folders into SPA_TMP_DIR
 
@@ -315,14 +320,15 @@ class CodeInjector implements ICodeInjector {
     };
     const registerCustomPages = (config) => {
       if (config.customization.customPages) {
-        config.customization.customPages.forEach((page) => {
+        config.customization.customPages.forEach(async (page) => {
+          const newMeta = await this.migrateLegacyCustomLayout(page?.component?.meta || {});
           routes += `{
             path: '${page.path}',
             name: '${page.path}',
             component: () => import('${page?.component?.file || page.component}'),
             meta: ${
                 JSON.stringify({
-                  ...(page?.component?.meta || {}),
+                  ...newMeta,
                   title: page.meta?.title || page.path.replace('/', '')
                 })
             }

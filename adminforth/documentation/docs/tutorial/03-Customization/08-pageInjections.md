@@ -556,6 +556,55 @@ new AdminForth({
 
 If you hide the logo with `showBrandLogoInSidebar: false`, components injected via `sidebarTop` will take the whole line width.
 
+## Injection order
+
+Most of injections accept an array of components. By defult the order of components is the same as in the array. You can use standard array methods e.g. `push`, `unshift`, `splice` to put item in desired place.
+
+However, if you want to control the order of injections dynamically, which is very handly for plugins, you can use `meta.afOrder` property in the injection instantiation. The higher the number, the earlier the component will be rendered. For example
+
+```ts title="/index.ts"
+{
+  ...
+  customization: {
+    globalInjections: {
+      userMenu: [
+        {
+          file: '@@/CustomUserMenuItem.vue',
+          meta: { afOrder: 10 }
+        },
+        {
+          file: '@@/AnotherCustomUserMenuItem.vue',
+          meta: { afOrder: 20 }
+        },
+        {
+          file: '@@/LastCustomUserMenuItem.vue',
+          meta: { afOrder: 5 }
+        },
+      ]
+    }
+  }
+  ...
+}
+```
+
+## Order of components inserted by plugins
+
+For plugins, the plugin developers encouraged to use `meta.afOrder` to control the order of injections and allow to pass it from plugin options.
+
+For example "OAuth2 plugin", when registers a login button component for login page injection, uses `meta.afOrder` and sets it equal to 'YYY' passed in plugin options:
+
+```ts title="/index.ts"
+// plugin CODE
+YYY.push({
+    file: '@@/..vue',
+    meta: {
+      afOrder: this.pluginOptions.YYY || 0
+    }
+ })
+```
+
+So you can jsut pass `YYY` option to the plugin to control the order of the injection.
+
 ## Custom scripts in head
 
 If you want to inject tags in your html head:

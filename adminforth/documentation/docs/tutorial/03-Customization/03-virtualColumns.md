@@ -142,10 +142,10 @@ This way, when admin selects, for example, "Luxury" option for "Apartment Type" 
 
 ### Custom SQL queries with `insecureRawSQL`
 
-Rarely the sec of Filters supported by AdminForth is not enough for your needs.
+Rarely the set of Filters supported by AdminForth is not enough for your needs.
 In this case you can use `insecureRawSQL` to write your own part of where clause.
 
-However the vital concern that the SQL passed to DB as is, so if you substitute any user inputs it will not be escaped and can lead to SQL injection. To miticate the issue we recommend using `sqlstring` package which will escape the inputs for you.
+However the vital concern that the SQL passed to DB as is, so if you substitute any user inputs it will not be escaped and can lead to SQL injection. To mitigate the issue we recommend using `sqlstring` package which will escape the inputs for you.
 
 ```bash
 npm i sqlstring
@@ -163,7 +163,7 @@ import sqlstring from 'sqlstring';
       if (filter.field === 'some_json_b_field') {
         return {
           // check if some_json_b_field->'$.some_field' is equal to filter.value
-          insecureRawSQL: `some_json_b_field->'$.some_field' = ${sqlstring.escape(filter.value)}`,
+          insecureRawSQL: `some_json_b_field->>'$.some_field' = ${sqlstring.escape(filter.value)}`,
         }
       }
 

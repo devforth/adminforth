@@ -18,6 +18,8 @@ import apiKeysResource from './resources/api_keys.js';
 import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 import pkg from 'pg';
 import I18nPlugin from '../plugins/adminforth-i18n/index.js';
+import passkeysResource from './resources/passkeys.js';
+
 const { Client } = pkg;
 
 
@@ -215,6 +217,7 @@ export const admin = new AdminForth({
     },
   ],
   resources: [
+    passkeysResource,
     clicksResource,
     auditLogResource,
     apartmentsResource,
