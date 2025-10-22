@@ -3,13 +3,12 @@ import path from 'path';
 import fs from 'fs';
 import { Express } from 'express';
 import fetch from 'node-fetch';
-import { AdminUserAuthorizeFunction, IAdminForth, IExpressHttpServer, HttpExtra } from '../types/Back.js';
+import { IAdminForth, IExpressHttpServer } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
 import http from 'http';
 import { randomUUID } from 'crypto';
-import { listify } from '../modules/utils.js';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -217,25 +216,6 @@ class ExpressServer implements IExpressHttpServer {
     this.server.listen(...args);
   }
 
-  async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: any) {
-    const adminUserAuthorize = this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined);
-
-    for (const hook of listify(adminUserAuthorize)) {
-      const resp = await hook({ 
-        adminUser, 
-        response,
-        adminforth: this.adminforth,
-        extra,
-      });
-      if (resp?.allowed === false || resp?.error) {
-        // delete all items from toReturn and add these:
-        toReturn.allowed = resp?.allowed;
-        toReturn.error = resp?.error;
-        break;
-      }
-    }
-  }
-  
 
   authorize(handler) {
     return async (req, res, next) => {
@@ -268,13 +248,7 @@ class ExpressServer implements IExpressHttpServer {
         res.status(401).send('Unauthorized by AdminForth');
       } else {
         req.adminUser = adminforthUser;
-        const toReturn: { error?: string, allowed: boolean } = { allowed: true };
-        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {});
-        if (!toReturn.allowed) {
-          res.status(401).send('Unauthorized by AdminForth');
-        } else {
-          handler(req, res, next);
-        }
+        handler(req, res, next);
       }
     };
   }
