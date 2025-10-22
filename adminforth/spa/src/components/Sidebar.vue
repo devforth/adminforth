@@ -4,7 +4,7 @@
     @mouseover="!isTogglingSidebar && (isSidebarHovering = true)" 
     @mouseleave="!isTogglingSidebar && (isSidebarHovering = false)"
     id="logo-lightSidebar" 
-    class="sidebar-container fixed border-none top-0 left-0 z-30 h-screen transition-all duration-300 ease-in-out bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder sm:translate-x-0 dark:border-darkSidebarBorder"
+    class="sidebar-container fixed border-none top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder sm:translate-x-0 dark:border-darkSidebarBorder"
     :class="{ 
       '-translate-x-full': !sideBarOpen, 
       'transform-none': sideBarOpen,
