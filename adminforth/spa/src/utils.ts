@@ -13,15 +13,17 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body=undefined}: {
+export async function callApi({path, method, body, headers}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
+  headers?: Record<string, string>
 }): Promise<any> {
   const options = {
     method,
     headers: {
       'Content-Type': 'application/json',
       'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+      ...headers
     },
     body: JSON.stringify(body),
   };
@@ -50,7 +52,7 @@ export async function callApi({path, method, body=undefined}: {
 
 export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
   path: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: any,
   headers?: Record<string, string>
 }): Promise<any> {

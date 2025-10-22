@@ -1,29 +1,34 @@
 <template>
-  <div ref="triggerEl" class="afcl-tooltip inline-flex items-center">
+  <div ref="triggerEl" class="afcl-tooltip inline-flex items-center" @mouseenter="mouseOn" @mouseleave="mouseOff">
       <slot></slot>
   </div>
-  <div
-    role="tooltip"
-    class="absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
-    ref="tooltip"
-  >
-    <slot name="tooltip"></slot>
-    <div class="tooltip-arrow" data-popper-arrow></div>
-  </div>
+  <teleport to="body" v-if="showTooltip">
+    <div
+      role="tooltip"
+      class="absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
+      ref="tooltip"
+    >
+      <slot name="tooltip"></slot>
+      <div class="tooltip-arrow" data-popper-arrow></div>
+    </div>
+  </teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, onUnmounted, type Ref } from 'vue';
+import { ref, nextTick, type Ref } from 'vue';
 import { Tooltip } from 'flowbite';
 
 const triggerEl = ref(null);
 const tooltip = ref(null);
-
+const showTooltip = ref(false);
 const tp: Ref<Tooltip|null> = ref(null);
 
-onMounted(async () => {
-  //await one tick when all is mounted
+async function mouseOn() {
+  showTooltip.value = true;
   await nextTick();
+
+  tp.value?.destroy();
+
   tp.value = new Tooltip(
     tooltip.value,
     triggerEl.value,
@@ -32,11 +37,15 @@ onMounted(async () => {
       triggerType: 'hover',
     },
   );
-})
 
+  tp.value.show();
+}
 
-onUnmounted(() => {
-  //destroy tooltip
+function mouseOff() {
+  tp.value?.hide();
   tp.value?.destroy();
-})
+  tp.value = null;
+  showTooltip.value = false;
+}
+
 </script>
