@@ -416,9 +416,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         newMenu.forEach((menuItem) => {
           processItem(menuItem);
         });
-        this.adminforth.config.auth.userMenuSettingsPages.forEach((page) => {
-          processItem(page);
-        });
+        if( this.adminforth.config.auth.userMenuSettingsPages) {
+          this.adminforth.config.auth.userMenuSettingsPages.forEach((page) => {
+            processItem(page);
+          });
+        }
         await Promise.all(translateRoutines);
 
         // strip all backendOnly fields or not described in adminForth fields from dbUser
@@ -1344,7 +1346,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 }
               }
             }
-
+            
             const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
             if (error) {
               return { error };
