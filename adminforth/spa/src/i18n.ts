@@ -7,7 +7,7 @@ function slavicPluralRule(choice: number, choicesLength: number, orgRule: any) {
   if (choice === 0) {
     return 0
   }
-
+  
   const teen = choice > 10 && choice < 20
   const endsWithOne = choice % 10 === 1
 
@@ -20,6 +20,8 @@ function slavicPluralRule(choice: number, choicesLength: number, orgRule: any) {
 
   return choicesLength < 4 ? 2 : 3
 }
+
+export let i18nInstance: ReturnType<typeof createI18n> | null = null
 
 export function initI18n(app: ReturnType<typeof createApp>) {
   const i18n = createI18n({
@@ -48,7 +50,7 @@ export function initI18n(app: ReturnType<typeof createApp>) {
       return key + ' ';
     },
   });
-
   app.use(i18n);
+  i18nInstance = i18n 
   return i18n
 }
