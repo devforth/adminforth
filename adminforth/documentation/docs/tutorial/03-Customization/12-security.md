@@ -209,3 +209,31 @@ So to completely hide the email field from all users apart superadmins, you shou
 ```
 
 So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
+
+## Custom user authorization hook
+
+Default user authorization checks that cookie with JWT token is valid, signed and not expired. 
+You can use custom hook to decide whether to allow exections of all default and cusotm API endpoints (wraped by authorize middleware) based on user fields.
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    adminUserAuthorize: [
+      async ({adminUser, adminforth, extra}) => {
+        if (adminUser.dbUser.status === 'banned') {
+          return { allowed: false, error: "User is banned" };
+        }
+        return { allowed: true };
+      }]
+  }
+
+  ...
+
+})
+
+```
+
+Now, if a user’s field "status" is changed to "banned", they won’t be able to perform any actions and will be automatically logged out upon accessing the page.
