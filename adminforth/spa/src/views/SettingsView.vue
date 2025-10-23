@@ -1,7 +1,7 @@
 <template>
   <div class="mt-20 h-full w-full" :class="{ 'hidden': initialTabSet === false }">
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
-      <p>No setting pages configured or still loading...</p>
+      <p>{{ $t('No setting pages configured or still loading...') }}</p>
     </div>
       <VerticalTabs v-else ref="VerticalTabsRef" v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+c.slug]>

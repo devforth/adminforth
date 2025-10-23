@@ -405,9 +405,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.children) {
             menuItem.children.forEach(processItem);
           }
+          if (menuItem.pageLabel) {
+            translateRoutines.push(
+              (async () => {
+                menuItem.pageLabel = await tr(menuItem.pageLabel, `UserMenu.${menuItem.pageLabel}`);
+              })()
+            );
+          }
         }
         newMenu.forEach((menuItem) => {
           processItem(menuItem);
+        });
+        this.adminforth.config.auth.userMenuSettingsPages.forEach((page) => {
+          processItem(page);
         });
         await Promise.all(translateRoutines);
 
