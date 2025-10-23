@@ -16,6 +16,7 @@ export const useCoreStore = defineStore('core', () => {
   const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
+  const isResourceFetching = ref(false);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -172,6 +173,7 @@ export const useCoreStore = defineStore('core', () => {
       // already fetched
       return;
     }
+    isResourceFetching.value = true;
     resourceColumnsId.value = resourceId;
     resourceColumnsError.value = '';
     const res = await callAdminForthApi({
@@ -188,6 +190,7 @@ export const useCoreStore = defineStore('core', () => {
       resource.value = res.resource;
       resourceOptions.value = res.resource.options;
     }
+    isResourceFetching.value = false;
   }
 
   async function getPublicConfig() {
@@ -239,5 +242,6 @@ export const useCoreStore = defineStore('core', () => {
     fetchMenuBadges,
     resetAdminUser,
     resetResource,
+    isResourceFetching,
   }
 })

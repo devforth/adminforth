@@ -10,6 +10,7 @@
     </Teleport>
 
     <component 
+      v-if="!coreStore.isResourceFetching"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
@@ -19,6 +20,7 @@
 
     <BreadcrumbsWithButtons>
       <component 
+        v-if="!coreStore.isResourceFetching"
         v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons || []"
         :is="getCustomComponent(c)"
         :meta="(c as AdminForthComponentDeclarationFull).meta"
@@ -98,6 +100,7 @@
       </button>
 
       <ThreeDotsMenu 
+        v-if="!coreStore.isResourceFetching"
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
@@ -108,6 +111,7 @@
     </BreadcrumbsWithButtons>
 
     <component 
+      v-if="!coreStore.isResourceFetching"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
