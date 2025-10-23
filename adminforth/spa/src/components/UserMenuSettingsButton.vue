@@ -7,7 +7,7 @@
       w-full select-none "
       @click="showDropdown = !showDropdown"
     >
-        <span>Settings</span>
+        <span>{{ $t('Settings') }}</span>
         <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-150 ease-in"
             :class="{ 'transform rotate-180': showDropdown }"
       />
@@ -40,9 +40,11 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { getIcon } from '@/utils';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const coreStore = useCoreStore();
+const { t } = useI18n();
 
 const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);
