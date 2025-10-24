@@ -100,7 +100,7 @@
       </button>
 
       <ThreeDotsMenu 
-        v-if="!coreStore.isResourceFetching && !initInProcess"
+        v-if="!coreStore.isResourceFetching"
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
@@ -412,7 +412,7 @@ async function init() {
     return {
       field,
       operator,
-      value: JSON.parse(decodeURIComponent(route.query[k] as string))
+      value: JSON.parse((route.query[k] as string))
     }
   });
   if (filters.length) {
@@ -494,7 +494,7 @@ watch(() => filtersStore.filters, async (to, from) => {
   const currentQ = currentQuery();
   filtersStore.filters.forEach(f => {
     if (f.value !== undefined && f.value !== null && f.value !== '') {
-      query[`filter__${f.field}__${f.operator}`] = encodeURIComponent(JSON.stringify(f.value));
+      query[`filter__${f.field}__${f.operator}`] = (JSON.stringify(f.value));
     }
   });
   // set every key in currentQ which starts with filter_ to undefined if it is not in query
