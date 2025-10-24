@@ -5,7 +5,7 @@
   <teleport to="body" v-if="showTooltip">
     <div
       role="tooltip"
-      class="absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
+      class="absolute z-[100] invisible inline-block px-3 py-2 text-sm font-medium text-lightTooltipText dark:darkTooltipText transition-opacity duration-300 bg-lightTooltipBackground rounded-lg shadow-sm opacity-0 tooltip dark:bg-darkTooltipBackground"
       ref="tooltip"
     >
       <slot name="tooltip"></slot>
