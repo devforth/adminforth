@@ -100,7 +100,7 @@
       </button>
 
       <ThreeDotsMenu 
-        v-if="!coreStore.isResourceFetching && !initInProcess"
+        v-if="!coreStore.isResourceFetching"
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
