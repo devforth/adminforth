@@ -82,14 +82,21 @@ class AdminForthAuth implements IAdminForthAuth {
     username: string, 
     pk: string | null
   }) {
+    console.log("in days", expireInDays);
     const expiresIn: string = expireInDays ? `${expireInDays}d` : (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
+    console.log("in string", expiresIn);
     // might be h,m,d in string
+
     const expiresInSec = parseTimeToSeconds(expiresIn);
 
+    console.log("expiresInSec", expiresInSec);
+
     const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
+    console.log("token", token);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
-    
+    console.log("expiresCookieFormat", expiresCookieFormat);
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    console.log("brandSlug", brandSlug);
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
   }
 
