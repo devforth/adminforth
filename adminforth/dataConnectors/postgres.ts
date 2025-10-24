@@ -97,57 +97,62 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         rows.forEach((row) => {
             const field: any = {};
             const baseType = row.type.toLowerCase();
-            if (baseType == 'int') {
+            const isPgArray = baseType.endsWith('[]');
+            const normalizedBaseType = isPgArray ? baseType.slice(0, -2) : baseType;
+            if (normalizedBaseType == 'int') {
                 field.type = AdminForthDataTypes.INTEGER;
                 field._underlineType = 'int';
 
-            } else if (baseType.includes('float') || baseType.includes('double')) {
+            } else if (normalizedBaseType.includes('float') || normalizedBaseType.includes('double')) {
                 field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'float';
 
-            } else if (baseType.includes('bool')) {
+            } else if (normalizedBaseType.includes('bool')) {
                 field.type = AdminForthDataTypes.BOOLEAN;
                 field._underlineType = 'bool';
 
-            } else if (baseType == 'uuid') {
+            } else if (normalizedBaseType == 'uuid') {
                 field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'uuid';
 
-            } else if (baseType.includes('character varying')) {
+            } else if (normalizedBaseType.includes('character varying')) {
                 field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'varchar';
-                const length = baseType.match(/\d+/);
+                const length = normalizedBaseType.match(/\d+/);
                 field.maxLength = length ? parseInt(length[0]) : null;
 
-            } else if (baseType == 'text') {
+            } else if (normalizedBaseType == 'text') {
                 field.type = AdminForthDataTypes.TEXT;
                 field._underlineType = 'text';
 
-            } else if (baseType.includes('decimal(') || baseType.includes('numeric(')) {
+            } else if (normalizedBaseType.includes('decimal(') || normalizedBaseType.includes('numeric(')) {
                 field.type = AdminForthDataTypes.DECIMAL;
                 field._underlineType = 'decimal';
-                const [precision, scale] = baseType.match(/\d+/g);
+                const [precision, scale] = normalizedBaseType.match(/\d+/g);
                 field.precision = parseInt(precision);
                 field.scale = parseInt(scale);
 
-            } else if (baseType == 'real') {
+            } else if (normalizedBaseType == 'real') {
                 field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'real';
 
-            } else if (baseType == 'date') {
+            } else if (normalizedBaseType == 'date') {
                 field.type = AdminForthDataTypes.DATE;
                 field._underlineType = 'timestamp';
 
-            } else if (baseType.includes('date') || baseType.includes('time')) {
+            } else if (normalizedBaseType.includes('date') || normalizedBaseType.includes('time')) {
                 field.type = AdminForthDataTypes.DATETIME;
                 field._underlineType = 'timestamp';
-            } else if (baseType == 'json' || baseType == 'jsonb') {
+            } else if (normalizedBaseType == 'json' || normalizedBaseType == 'jsonb') {
                 field.type = AdminForthDataTypes.JSON;
                 field._underlineType = 'json';
             } else {
                 field.type = 'unknown'
             }
             field._baseTypeDebug = baseType;
+            if (isPgArray) {
+                field._isPgArray = true;
+            }
             field.primaryKey = row.pk == 1;
             field.default = row.dflt_value;
             field.required = row.notnull && !row.dflt_value;
@@ -211,11 +216,22 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else if (field._underlineType == 'varchar') {
                 return dayjs(value).toISOString();
             }
+        } else if (field.isArray?.enabled) {
+            if (value === null || value === undefined) {
+                return null;
+            }
+            if (field._isPgArray) {
+                return value;
+            }
+            if (field._underlineType == 'json') {
+                return JSON.stringify(value);
+            }
+            return JSON.stringify(value);
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
             return value === null ? null : (value ? 1 : 0);
         } else if (field.type == AdminForthDataTypes.JSON) {
             if (field._underlineType == 'json') {
-                return value;
+                return typeof value === 'string' || value === null ? value : JSON.stringify(value);
             } else {
                 return JSON.stringify(value);
             }
