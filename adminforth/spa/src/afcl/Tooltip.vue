@@ -9,7 +9,9 @@
       ref="tooltip"
     >
       <slot name="tooltip"></slot>
-      <div class="tooltip-arrow" data-popper-arrow></div>
+      <div class="tooltip-arrow absolute -top-2" data-popper-arrow>
+        <div class="absolute top-0 -left-0.5 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-lightTooltipBackground dark:border-b-darkTooltipBackground"></div>
+      </div>
     </div>
   </teleport>
 </template>
