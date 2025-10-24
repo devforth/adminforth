@@ -602,6 +602,11 @@ class AdminForth implements IAdminForth {
     if (err) {
       return { error: err };
     }
+
+    if (record) {
+      console.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
+    }
+
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
       if (column.name in dataToUse)
