@@ -603,6 +603,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
+    rememberMeDays?: number,
 }) => Promise<{
   error?: string, 
   body: {
