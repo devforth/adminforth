@@ -123,7 +123,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, rememberMeDays?: number) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -132,6 +132,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response,
         adminforth: this.adminforth,
         extra,
+        rememberMeDays
       });
       
       if (resp?.body?.redirectTo || resp?.error) {
@@ -197,10 +198,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
             username,
           };
-          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies, requestUrl });
+
+          const expireInDays = rememberMe ? this.adminforth.config.auth.rememberMeDays || 30 : 1;
+
+
+          await this.processLoginCallbacks(adminUser, toReturn, response, { 
+            body, headers, query, cookies, requestUrl, 
+          }, expireInDays);
 
           if (toReturn.allowedLogin) {
-            const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
+            
             this.adminforth.auth.setAuthCookie({ 
               expireInDays,
               response, 
