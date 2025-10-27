@@ -555,7 +555,7 @@ Sometimes you might need to create a link that will open the create form with so
         resourceId: 'aparts',
       },
       query: {
-        values: encodeURIComponent(JSON.stringify({
+        values: (JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
       },
@@ -586,11 +586,11 @@ ALso if you want to disable ability to change such fields (but keep them as read
         resourceId: 'aparts',
       },
       query: {
-        values: encodeURIComponent(JSON.stringify({
+        values: (JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
         //diff-add
-        readonlyColumns: encodeURIComponent(JSON.stringify(['realtor_id'])),
+        readonlyColumns: (JSON.stringify(['realtor_id'])),
       },
     }"
   >
