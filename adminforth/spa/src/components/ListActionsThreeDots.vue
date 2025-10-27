@@ -55,7 +55,7 @@
             Delete item
           </button>
         </template>
-        <div v-for="action in resourceOptions.actions.filter(a => a.showIn?.listThreeDotsMenu)" :key="action.id" >
+        <div v-for="action in (resourceOptions.actions ?? []).filter(a => a.showIn?.listThreeDotsMenu)" :key="action.id" >
             <button class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300" @click="() => { startCustomAction(action.id, record); showMenu = false; }">
                 <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
                 {{ action.name }}
@@ -138,7 +138,7 @@ function toggleMenu() {
       const gap = 8;
       menuStyles.value = {
         position: 'fixed',
-        top: `${Math.round(rect.bottom )}px`,
+        top: `${Math.round(rect.bottom)}px`,
         left: `${Math.round(rect.left)}px`,
       };
     }
