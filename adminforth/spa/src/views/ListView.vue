@@ -521,7 +521,6 @@ onMounted(async () => {
   await init();
   initThreeDotsDropdown();
   initInProcess = false;
-  console.log('ListView initialized:', coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems);
 });
 
 onUnmounted(() => {
