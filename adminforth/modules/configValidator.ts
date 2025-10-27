@@ -37,7 +37,7 @@ export default class ConfigValidator implements IConfigValidator {
 
   private static readonly LOGIN_INJECTION_KEYS = ['underInputs', 'underLoginButton', 'panelHeader'];
   private static readonly GLOBAL_INJECTION_KEYS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
-  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
+  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems'];
 
   constructor(private adminforth: IAdminForth, private inputConfig: AdminForthInputConfig) {
     this.adminforth = adminforth;
@@ -404,12 +404,14 @@ export default class ConfigValidator implements IConfigValidator {
       }
       if (!action.showIn) {
         action.showIn = {
-          list: true,
+          listQuickIcon: true,
+          listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
-        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.listQuickIcon = action.showIn.listQuickIcon ?? true;
+        action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
