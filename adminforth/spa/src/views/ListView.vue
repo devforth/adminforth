@@ -119,7 +119,7 @@
       :adminUser="coreStore.adminUser"
     />
     <ResourceListTableVirtual
-      v-if="isVirtualScrollEnabled"
+      v-if="isVirtualScrollEnabled && !coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -143,13 +143,18 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
     />
 
     <ResourceListTable
-      v-else
+      v-else-if="!coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -173,6 +178,11 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
     />
 
     <component 
@@ -511,6 +521,7 @@ onMounted(async () => {
   await init();
   initThreeDotsDropdown();
   initInProcess = false;
+  console.log('ListView initialized:', coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems);
 });
 
 onUnmounted(() => {

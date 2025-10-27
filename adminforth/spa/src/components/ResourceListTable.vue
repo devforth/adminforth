@@ -113,57 +113,58 @@
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
-              <Tooltip>
-                <RouterLink
-                  v-if="resource.options?.allowedActions?.show"
-                  :to="{ 
-                    name: 'resource-show', 
-                    params: { 
-                      resourceId: resource.resourceId, 
-                      primaryKey: row._primaryKeyValue,
-                    }
-                  }"
+              <template v-if="resource.options.moveBaseActionsOutOfThreeDotsMenu === true">
+                <Tooltip>
+                  <RouterLink
+                    v-if="resource.options?.allowedActions?.show"
+                    :to="{ 
+                      name: 'resource-show', 
+                      params: { 
+                        resourceId: resource.resourceId, 
+                        primaryKey: row._primaryKeyValue,
+                      }
+                    }"
 
-                >
-                  <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
-                </RouterLink>
+                  >
+                    <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
+                  </RouterLink>
 
-                <template v-slot:tooltip>
-                  {{ $t('Show item') }}
-                </template>
-              </Tooltip>
+                  <template v-slot:tooltip>
+                    {{ $t('Show item') }}
+                  </template>
+                </Tooltip>
 
-              <Tooltip>
-                <RouterLink
-                  v-if="resource.options?.allowedActions?.edit"
-                  :to="{ 
-                    name: 'resource-edit', 
-                    params: { 
-                      resourceId: resource.resourceId, 
-                      primaryKey: row._primaryKeyValue,
-                    }
-                  }"
-                >
-                  <IconPenSolid class="af-edit-icon w-5 h-5 me-2"/>
-                </RouterLink>
-                <template v-slot:tooltip>
-                  {{ $t('Edit item') }}
-                </template>
-              </Tooltip>
+                <Tooltip>
+                  <RouterLink
+                    v-if="resource.options?.allowedActions?.edit"
+                    :to="{ 
+                      name: 'resource-edit', 
+                      params: { 
+                        resourceId: resource.resourceId, 
+                        primaryKey: row._primaryKeyValue,
+                      }
+                    }"
+                  >
+                    <IconPenSolid class="af-edit-icon w-5 h-5 me-2"/>
+                  </RouterLink>
+                  <template v-slot:tooltip>
+                    {{ $t('Edit item') }}
+                  </template>
+                </Tooltip>
 
-              <Tooltip>
-                <button
-                  v-if="resource.options?.allowedActions?.delete"
-                  @click="deleteRecord(row)"
-                >
-                  <IconTrashBinSolid class="af-delete-icon w-5 h-5 me-2"/>
-                </button>
+                <Tooltip>
+                  <button
+                    v-if="resource.options?.allowedActions?.delete"
+                    @click="deleteRecord(row)"
+                  >
+                    <IconTrashBinSolid class="af-delete-icon w-5 h-5 me-2"/>
+                  </button>
 
-                <template v-slot:tooltip>
-                  {{ $t('Delete item') }}
-                </template>
-              </Tooltip>
-                
+                  <template v-slot:tooltip>
+                    {{ $t('Delete item') }}
+                  </template>
+                </Tooltip>
+              </template>
               <template v-if="customActionsInjection">
                 <component 
                   v-for="c in customActionsInjection"
@@ -177,7 +178,7 @@
               </template>
 
               <template v-if="resource.options?.actions">
-                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
+                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)" :key="action.id">
                   <button
                     @click="startCustomAction(action.id, row)"
                   >
@@ -188,6 +189,16 @@
                   </template>
                 </Tooltip>
               </template>
+              <ListActionsThreeDots
+                v-if="resource.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) || resource.options.moveBaseActionsOutOfThreeDotsMenu !== true"
+                :resourceOptions="resource?.options"
+                :record="row"
+                :updateRecords="()=>emits('update:records', true)"
+                :deleteRecord="deleteRecord"
+                :resourceId="resource.resourceId"
+                :startCustomAction="startCustomAction"
+                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems"
+              />
             </div>
           </td>
         </tr>
@@ -312,6 +323,7 @@ import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
+import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -326,6 +338,7 @@ const props = defineProps<{
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
+  customActionIconsThreeDotsMenuItems?: any[]
 }>();
 
 // emits, update page
