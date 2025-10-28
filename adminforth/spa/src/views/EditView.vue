@@ -218,9 +218,9 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
       variant: 'success',
       timeout: 400000
     });
+    router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
-  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
 }
 
 </script>
