@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, decodeQueryJSON } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -125,25 +125,26 @@ onMounted(async () => {
     }
     return acc;
   }, {});
-  let userUseMultipleEncoding = false;  //TODO remove this in future versions
+  let userUseMultipleEncoding = true;  //TODO remove this in future versions
   if (route.query.values) {
     try {
-      JSON.parse((route.query.values as string));
+      JSON.parse(decodeURIComponent(route.query.values as string));
+      console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
     } catch (e) {
-      userUseMultipleEncoding = true;
+      userUseMultipleEncoding = false;
       console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
     }
     if (userUseMultipleEncoding) {
       initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent((route.query.values as string))) };
     } else {
-      initialValues.value = { ...initialValues.value, ...JSON.parse(decodeQueryJSON(route.query.values as string)) };
+      initialValues.value = { ...initialValues.value, ...JSON.parse(atob(route.query.values as string)) };
     }
   }
   if (route.query.readonlyColumns) {
     if (userUseMultipleEncoding) {
       readonlyColumns.value = JSON.parse(decodeURIComponent((route.query.readonlyColumns as string)));
     } else {
-      readonlyColumns.value = JSON.parse(decodeQueryJSON(route.query.readonlyColumns as string));
+      readonlyColumns.value = JSON.parse(atob(route.query.readonlyColumns as string));
     }
   }
   record.value = initialValues.value;
