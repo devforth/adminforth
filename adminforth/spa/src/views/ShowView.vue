@@ -243,7 +243,7 @@ async function deleteRecord() {
     
 }
 
-async function startCustomAction(actionId, extra) {  
+async function startCustomAction(actionId: string, extra: any) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({

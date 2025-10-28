@@ -482,7 +482,6 @@ class CodeInjector implements ICodeInjector {
           throw new Error('customComponent.file is missing for action: ' + JSON.stringify({ id: action.id, name: action.name }));
         }
         if (!customResourceComponents.includes(file)) {
-          console.log('Found injection', file);
           customResourceComponents.push(file);
         }
       });
