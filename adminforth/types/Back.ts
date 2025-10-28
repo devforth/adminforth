@@ -363,7 +363,8 @@ export interface IAdminForth {
   ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }>;
 
   deleteResourceRecord(
@@ -603,6 +604,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
+    rememberMeDays?: number,
 }) => Promise<{
   error?: string, 
   body: {

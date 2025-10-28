@@ -593,18 +593,24 @@ class AdminForth implements IAdminForth {
    * record is partial record with only changed fields
    */
   async updateResourceRecord(
-    { resource, recordId, record, oldRecord, adminUser, extra }:
-    { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
+    { resource, recordId, record, oldRecord, adminUser, extra, updates }:
+    | { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }> {
-    const err = this.validateRecordValues(resource, record, 'edit');
+    const dataToUse = updates || record;
+    const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };
     }
 
+    if (record) {
+      console.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
+    }
+
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
-      if (column.name in record)
-        delete record[column.name];
+      if (column.name in dataToUse)
+        delete dataToUse[column.name];
     }
 
     // execute hook if needed
@@ -612,8 +618,8 @@ class AdminForth implements IAdminForth {
       const resp = await hook({
         recordId,
         resource,
-        record,
-        updates: record,
+        record: dataToUse,
+        updates: dataToUse,
         oldRecord,
         adminUser,
         adminforth: this,
@@ -633,13 +639,13 @@ class AdminForth implements IAdminForth {
     const newValues = {};
     const connector = this.connectors[resource.dataSource];
 
-    for (const recordField in record) {
-      if (record[recordField] !== oldRecord[recordField]) {
+    for (const recordField in dataToUse) {
+      if (dataToUse[recordField] !== oldRecord[recordField]) {
         // leave only changed fields to reduce data transfer/modifications in db
         const column = resource.columns.find((col) => col.name === recordField);
         if (!column || !column.virtual) {
           // exclude virtual columns
-          newValues[recordField] = record[recordField];
+          newValues[recordField] = dataToUse[recordField];
         }
       }
     } 
@@ -652,8 +658,8 @@ class AdminForth implements IAdminForth {
     for (const hook of listify(resource.hooks?.edit?.afterSave)) {
       const resp = await hook({ 
         resource, 
-        record,
-        updates: record,
+        record: dataToUse,
+        updates: dataToUse,
         adminUser, 
         oldRecord,
         recordId,

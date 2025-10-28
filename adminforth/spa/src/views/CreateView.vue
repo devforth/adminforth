@@ -125,11 +125,27 @@ onMounted(async () => {
     }
     return acc;
   }, {});
+  let userUseMultipleEncoding = true;  //TODO remove this in future versions
   if (route.query.values) {
-    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values as string)) };
+    try {
+      JSON.parse(decodeURIComponent(route.query.values as string));
+      console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
+    } catch (e) {
+      userUseMultipleEncoding = false;
+      console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
+    }
+    if (userUseMultipleEncoding) {
+      initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent((route.query.values as string))) };
+    } else {
+      initialValues.value = { ...initialValues.value, ...JSON.parse(atob(route.query.values as string)) };
+    }
   }
   if (route.query.readonlyColumns) {
-    readonlyColumns.value = JSON.parse(decodeURIComponent(route.query.readonlyColumns as string));
+    if (userUseMultipleEncoding) {
+      readonlyColumns.value = JSON.parse(decodeURIComponent((route.query.readonlyColumns as string)));
+    } else {
+      readonlyColumns.value = JSON.parse(atob(route.query.readonlyColumns as string));
+    }
   }
   record.value = initialValues.value;
   loading.value = false;

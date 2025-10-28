@@ -118,9 +118,6 @@ export default {
       showIn: {list: true, create: true, edit: true, filter: true, show: true}, // the default is full set
       maxLength: 255, // you can set max length for string fields
       minLength: 3, // you can set min length for string fields
-      showIf: {number_of_rooms: {
-        $in: [3, 4]
-      }},
       components: {
         // edit: {
         //     file: '@@/IdShow.vue',
@@ -430,15 +427,15 @@ export default {
         ]
       : []),
     new ImportExportPlugin({}),
-    new TextCompletePlugin({
-      fieldName: "title",
-      expert: {
-        debounceTime: 250,
-      },
-      adapter: new CompletionAdapterOpenAIChatGPT({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-      }),
-    }),
+    // new TextCompletePlugin({
+    //   fieldName: "title",
+    //   expert: {
+    //     debounceTime: 250,
+    //   },
+    //   adapter: new CompletionAdapterOpenAIChatGPT({
+    //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //   }),
+    // }),
     new RichEditorPlugin({
       htmlFieldName: "description",
       completion: {

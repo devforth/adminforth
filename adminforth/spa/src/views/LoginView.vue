@@ -93,14 +93,14 @@
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                         
-                        <div v-if="loginPromptHTML"
+                        <div v-if="coreStore.config?.loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
                         >
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                           </svg>
                           <span class="sr-only">{{ $t('Info') }}</span>
-                          <div v-html="loginPromptHTML"></div>
+                          <div v-html="coreStore.config?.loginPromptHTML"></div>
                         </div>
                         <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton" class="w-full">
                           {{ $t('Login to your account') }}
@@ -146,7 +146,6 @@ const password = ref('');
 const route = useRoute();
 const router = useRouter();
 const inProgress = ref(false);
-const loginPromptHTML = ref()
 const coreStore = useCoreStore();
 const user = useUserStore();
 
@@ -159,14 +158,6 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-
-async function getLoginFormConfig() {
-  const response = await callAdminForthApi({
-    path: '/get_login_form_config',
-    method: 'GET',
-  });
-  loginPromptHTML.value = response.loginPromptHTML;
-}
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
@@ -181,7 +172,7 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
-  getLoginFormConfig();
+  coreStore.getLoginFormConfig();
     if (coreStore.config?.demoCredentials) {
       const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
       username.value = demoUsername;

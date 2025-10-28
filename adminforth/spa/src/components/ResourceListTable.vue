@@ -271,7 +271,7 @@
     </div>
 
     <!-- Help text -->
-    <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
+    <span class="ml-4 text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
         <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
         <template v-else-if="resource && totalRows > 0">
           
