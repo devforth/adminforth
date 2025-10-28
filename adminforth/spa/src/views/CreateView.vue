@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, decodeQueryJSON } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -136,14 +136,14 @@ onMounted(async () => {
     if (userUseMultipleEncoding) {
       initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent((route.query.values as string))) };
     } else {
-      initialValues.value = { ...initialValues.value, ...JSON.parse((route.query.values as string)) };
+      initialValues.value = { ...initialValues.value, ...JSON.parse(decodeQueryJSON(route.query.values as string)) };
     }
   }
   if (route.query.readonlyColumns) {
     if (userUseMultipleEncoding) {
       readonlyColumns.value = JSON.parse(decodeURIComponent((route.query.readonlyColumns as string)));
     } else {
-      readonlyColumns.value = JSON.parse((route.query.readonlyColumns as string));
+      readonlyColumns.value = JSON.parse(decodeQueryJSON(route.query.readonlyColumns as string));
     }
   }
   record.value = initialValues.value;

@@ -479,3 +479,22 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 
   return evaluatePredicate(c.showIf);
 }
+
+
+export function encodeQueryJSON(obj) {
+  return JSON.stringify(obj)
+    .replace(/{/g, '(')
+    .replace(/}/g, ')')
+    .replace(/\[/g, '<')
+    .replace(/]/g, '>')
+}
+
+export function decodeQueryJSON(str) {
+  return JSON.parse(
+    str
+      .replace(/\(/g, '{')
+      .replace(/\)/g, '}')
+      .replace(/</g, '[')
+      .replace(/>/g, ']')
+  );
+}
