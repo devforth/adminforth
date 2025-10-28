@@ -188,6 +188,9 @@ async function handleCrudPageInjectionCreation(config, resources) {
   const injectionPosition = await select({
     message: 'Where exactly do you want to inject the component?',
     choices: [
+      ...(crudType === 'create' || crudType === 'edit'
+        ? [{ name: '💾 Save button on create/edit page', value: 'saveButton' }, new Separator()]
+        : []),
       { name: '⬆️ Before Breadcrumbs', value: 'beforeBreadcrumbs' },
       { name: '➡️ Before Action Buttons', value: 'beforeActionButtons' },
       { name: '⬇️ After Breadcrumbs', value: 'afterBreadcrumbs' },
@@ -207,13 +210,15 @@ async function handleCrudPageInjectionCreation(config, resources) {
     },
   });
 
-  const isThin = await select({
-    message: 'Will this component be thin enough to fit on the same page with list (so list will still shrink)?',
-    choices: [
-      { name: 'Yes', value: true },
-      { name: 'No', value: false },
-    ],
-  });
+  const isThin = crudType === 'list'
+    ? await select({
+        message: 'Will this component be thin enough to fit on the same page with list (so list will still shrink)?',
+        choices: [
+          { name: 'Yes', value: true },
+          { name: 'No', value: false },
+        ],
+      })
+    : false;
   const formattedAdditionalName = additionalName
     ? additionalName[0].toUpperCase() + additionalName.slice(1)
     : '';

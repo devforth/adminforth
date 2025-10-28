@@ -863,6 +863,7 @@ export interface AdminForthActionInput {
   }>;
   icon?: string;
   id?: string;
+  customComponent?: AdminForthComponentDeclaration;
 }
 
 export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
