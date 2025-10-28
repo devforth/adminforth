@@ -107,7 +107,7 @@ const props = defineProps({
 
 const emit = defineEmits(['startBulkAction']);
 
-async function handleActionClick(action: any, payload: any) {
+async function handleActionClick(action: AdminForthActionInput, payload: any) {
   adminforth.list.closeThreeDotsDropdown();
   
   const actionId = action.id;

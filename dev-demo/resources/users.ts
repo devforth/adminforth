@@ -50,7 +50,7 @@ export default {
   dataSource: "maindb",
   table: "users",
   resourceId: "users",
-  label: "Users1",
+  label: "Users",
 
   recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
