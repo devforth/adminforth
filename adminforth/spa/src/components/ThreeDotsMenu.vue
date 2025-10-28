@@ -82,6 +82,9 @@ import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { ref, type ComponentPublicInstance } from 'vue';
+import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthActionInput } from '@/types/Back';
 
 
 const route = useRoute();
