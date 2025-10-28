@@ -14,7 +14,7 @@ app.use(createPinia())
 app.use(router)
 
 // get access to i18n instance outside components
-window.i18n = initI18n(app);
+initI18n(app);
 
 
 /* IMPORTANT:ADMINFORTH CUSTOM USES */

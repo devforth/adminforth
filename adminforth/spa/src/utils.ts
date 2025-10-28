@@ -9,6 +9,7 @@ import adminforth from './adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
+import { i18nInstance } from './i18n'
 
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
@@ -19,6 +20,7 @@ export async function callApi({path, method, body, headers}: {
   body?: any
   headers?: Record<string, string>
 }): Promise<any> {
+  const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
     method,
     headers: {
@@ -42,11 +44,11 @@ export async function callApi({path, method, body, headers}: {
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
-      adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Network error, please check your Internet connection and try again'),})
+      adminforth.alert({variant:'danger', message: t('Network error, please check your Internet connection and try again'),})
       return null;
     }
 
-    adminforth.alert({variant:'danger', message: window.i18n?.global?.t('Something went wrong, please try again later'),})
+    adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
     console.error(`error in callApi ${path}`, e);
   }
 }
