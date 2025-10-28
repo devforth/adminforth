@@ -651,7 +651,10 @@ class AdminForth implements IAdminForth {
     } 
 
     if (Object.keys(newValues).length > 0) {
-      await connector.updateRecord({ resource, recordId, newValues });
+      const { error } = await connector.updateRecord({ resource, recordId, newValues });
+      if ( error ) {
+        return { error };
+      }
     }
     
     // execute hook if needed
