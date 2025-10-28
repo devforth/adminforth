@@ -1,6 +1,6 @@
 # Clone row
 
-Allows to deactivate users accound without deleting it.
+Allows to create a copy of record quickly, by substituting default values to create form
 
 
 ## Instalation
