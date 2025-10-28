@@ -353,6 +353,19 @@ Generated example:
 custom/OrderShowBottomExportButton.vue
 ```
 
+Special position for create/edit:
+- `saveButton` — replaces the default Save button at the top bar.
+
+Example usage via interactive flow:
+```bash
+adminforth component
+# → CRUD Page Injections
+# → (create | edit)
+# → Save button
+```
+
+Your generated component will receive props documented in Page Injections → Create/Edit custom Save button. At minimum, call `props.saveRecord()` on click and respect `props.saving`, `props.isValid`, and `props.disabled`.
+
 ---
 
 #### 🔐 Login Page Injections (`login`)
