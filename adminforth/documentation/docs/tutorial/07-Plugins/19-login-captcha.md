@@ -1,5 +1,7 @@
 # Login Captcha
 
+(this plugin experemental and not yet fully tested)
+
 This plugin provides a captcha for the login page to enhance security.
 
 ## Installation
