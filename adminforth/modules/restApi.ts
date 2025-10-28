@@ -123,7 +123,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, rememberMeDays?: number) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -132,6 +132,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response,
         adminforth: this.adminforth,
         extra,
+        rememberMeDays
       });
       
       if (resp?.body?.redirectTo || resp?.error) {
@@ -197,10 +198,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
             username,
           };
-          await this.processLoginCallbacks(adminUser, toReturn, response, { body, headers, query, cookies, requestUrl });
+
+          const expireInDays = rememberMe ? this.adminforth.config.auth.rememberMeDays || 30 : 1;
+
+
+          await this.processLoginCallbacks(adminUser, toReturn, response, { 
+            body, headers, query, cookies, requestUrl, 
+          }, expireInDays);
 
           if (toReturn.allowedLogin) {
-            const expireInDays = rememberMe && this.adminforth.config.auth.rememberMeDays;
+            
             this.adminforth.auth.setAuthCookie({ 
               expireInDays,
               response, 
@@ -405,10 +412,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.children) {
             menuItem.children.forEach(processItem);
           }
+          if (menuItem.pageLabel) {
+            translateRoutines.push(
+              (async () => {
+                menuItem.pageLabel = await tr(menuItem.pageLabel, `UserMenu.${menuItem.pageLabel}`);
+              })()
+            );
+          }
         }
         newMenu.forEach((menuItem) => {
           processItem(menuItem);
         });
+        if( this.adminforth.config.auth.userMenuSettingsPages) {
+          this.adminforth.config.auth.userMenuSettingsPages.forEach((page) => {
+            processItem(page);
+          });
+        }
         await Promise.all(translateRoutines);
 
         // strip all backendOnly fields or not described in adminForth fields from dbUser
@@ -1334,7 +1353,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 }
               }
             }
-
+            
             const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
             if (error) {
               return { error };
