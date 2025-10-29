@@ -20,116 +20,132 @@
     <div class="py-4 ">
       <ul class="space-y-3 font-medium">
          <li v-for="c in columnsWithFilter" :key="c">
-            <p class="dark:text-gray-400">{{ c.label }}</p>
-            <component
-              v-if="c.components?.filter"
-              :is="getCustomComponent(c.components.filter)"
-              :meta="c?.components?.list?.meta"
-              :column="c"
-              class="w-full"
-              @update:modelValue="(filtersArray) => {
-                filtersStore.filters = filtersStore.filters.filter(f => f.field !== c.name);
+            <div class="flex flex-col">
+              <div class="flex justify-between items-center">
+                <p class="dark:text-gray-400">{{ c.label }}</p>
+                <Tooltip>
+                <button 
+                  class=" flex items-center justify-center w-7 h-7 my-1 hover:border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                  :class="filtersStore.filters.find(f => f.field === c.name) ?? 'opacity-50'"
+                  :disabled="!filtersStore.filters.find(f => f.field === c.name)"
+                  @click="filtersStore.clearFilter(c.name); console.log('Filter setted to empty');"
+                > 
+                  <IconMinusOutline /> 
+                </button>
+                <template #tooltip>
+                  Clear filter
+                </template>
+                </Tooltip> 
+              </div>
+              <component
+                v-if="c.components?.filter"
+                :is="getCustomComponent(c.components.filter)"
+                :meta="c?.components?.list?.meta"
+                :column="c"
+                class="w-full"
+                @update:modelValue="(filtersArray) => {
+                  filtersStore.filters = filtersStore.filters.filter(f => f.field !== c.name);
 
-                for (const f of filtersArray) {
-                  filtersStore.filters.push({ field: c.name, ...f });
-                }
-                console.log('filtersStore.filters', filtersStore.filters);
-                emits('update:filters', [...filtersStore.filters]);
-              }"
-              :modelValue="filtersStore.filters.filter(f => f.field === c.name)"
-            />
-            <Select
-              v-else-if="c.foreignResource"
-              :multiple="c.filterOptions.multiselect"
-              class="w-full"
-              :options="columnOptions[c.name] || []"
-              :searchDisabled="!c.foreignResource.searchableFields"
-              @scroll-near-end="loadMoreOptions(c.name)"
-              @search="(searchTerm) => {
-                if (c.foreignResource.searchableFields && onSearchInput[c.name]) {
-                  onSearchInput[c.name](searchTerm);
-                }
-              }"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
-            >
-              <template #extra-item v-if="columnLoadingState[c.name]?.loading">
-                <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
-                  <Spinner class="w-4 h-4" />
-                  {{ $t('Loading...') }}
-                </div>
-              </template>
-            </Select>
-            <Select
-              :multiple="c.filterOptions.multiselect"
-              class="w-full"
-              v-else-if="c.type === 'boolean'"
-              :options="[
-                { label: $t('Yes'), value: true }, 
-                { label: $t('No'), value: false }, 
-                // if field is not required, undefined might be there, and user might want to filter by it
-                ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
-              ]"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value !== undefined
-                ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value
-                : (c.filterOptions.multiselect ? [] : '')"
-            />
-            
-            <Select
-              :multiple="c.filterOptions.multiselect"
-              class="w-full"
-              v-else-if="c.enum"
-              :options="c.enum"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-              :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
-            />
+                  for (const f of filtersArray) {
+                    filtersStore.filters.push({ field: c.name, ...f });
+                  }
+                  console.log('filtersStore.filters', filtersStore.filters);
+                  emits('update:filters', [...filtersStore.filters]);
+                }"
+                :modelValue="filtersStore.filters.filter(f => f.field === c.name)"
+              />
+              <Select
+                v-else-if="c.foreignResource"
+                :multiple="c.filterOptions.multiselect"
+                class="w-full"
+                :options="columnOptions[c.name] || []"
+                :searchDisabled="!c.foreignResource.searchableFields"
+                @scroll-near-end="loadMoreOptions(c.name)"
+                @search="(searchTerm) => {
+                  if (c.foreignResource.searchableFields && onSearchInput[c.name]) {
+                    onSearchInput[c.name](searchTerm);
+                  }
+                }"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
+              >
+                <template #extra-item v-if="columnLoadingState[c.name]?.loading">
+                  <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+                    <Spinner class="w-4 h-4" />
+                    {{ $t('Loading...') }}
+                  </div>
+                </template>
+              </Select>
+              <Select
+                :multiple="c.filterOptions.multiselect"
+                class="w-full"
+                v-else-if="c.type === 'boolean'"
+                :options="[
+                  { label: $t('Yes'), value: true }, 
+                  { label: $t('No'), value: false }, 
+                  // if field is not required, undefined might be there, and user might want to filter by it
+                  ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
+                ]"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value !== undefined
+                  ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value
+                  : (c.filterOptions.multiselect ? [] : '')"
+              />
+              
+              <Select
+                :multiple="c.filterOptions.multiselect"
+                class="w-full"
+                v-else-if="c.enum"
+                :options="c.enum"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
+              />
 
-            <Input
-              v-else-if="['string', 'text', 'json', 'richtext', 'unknown'].includes(c.type)"
-              type="text"
-              full-width
-              :placeholder="$t('Search')"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq', value: $event || undefined })"
-              :modelValue="getFilterItem({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq' })"
-            />
+              <Input
+                v-else-if="['string', 'text', 'json', 'richtext', 'unknown'].includes(c.type)"
+                type="text"
+                full-width
+                :placeholder="$t('Search')"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq', value: $event || undefined })"
+                :modelValue="getFilterItem({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq' })"
+              />
 
-           <CustomDateRangePicker
-             v-else-if="['datetime', 'date', 'time'].includes(c.type)"
-             :column="c"
-             :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
-             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
-             :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
-             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
-           />
+              <CustomDateRangePicker
+                v-else-if="['datetime', 'date', 'time'].includes(c.type)"
+                :column="c"
+                :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
+                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
+                :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
+                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
+              />
 
-           <CustomRangePicker
-             v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
-             :min="getFilterMinValue(c.name)"
-             :max="getFilterMaxValue(c.name)"
-             :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-             @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
-             :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-             @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
-           />
+              <CustomRangePicker
+                v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
+                :min="getFilterMinValue(c.name)"
+                :max="getFilterMaxValue(c.name)"
+                :valueStart="getFilterItem({ column: c, operator: 'gte' })"
+                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
+                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+              />
 
-           <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
-            <Input
-              type="number"
-              aria-describedby="helper-text-explanation"
-              :placeholder="$t('From')"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
-              :modelValue="getFilterItem({ column: c, operator: 'gte' })"
-            />
-            <Input
-              type="number"
-              aria-describedby="helper-text-explanation"
-              :placeholder="$t('To')"
-              @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
-              :modelValue="getFilterItem({ column: c, operator: 'lte' })"
-            />
-           </div>
-            
+              <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
+                <Input
+                  type="number"
+                  aria-describedby="helper-text-explanation"
+                  :placeholder="$t('From')"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                  :modelValue="getFilterItem({ column: c, operator: 'gte' })"
+                />
+                <Input
+                  type="number"
+                  aria-describedby="helper-text-explanation"
+                  :placeholder="$t('To')"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                  :modelValue="getFilterItem({ column: c, operator: 'lte' })"
+                />
+              </div>
+            </div>
          </li>
       </ul>
    </div>
@@ -162,6 +178,8 @@ import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
 import Spinner from '@/afcl/Spinner.vue';
 import debounce from 'debounce';
+import { Tooltip } from '@/afcl';
+import { IconMinusOutline, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
 
 const filtersStore = useFiltersStore();
 const { t } = useI18n();
