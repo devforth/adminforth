@@ -22,15 +22,15 @@
          <li v-for="c in columnsWithFilter" :key="c">
             <div class="flex flex-col">
               <div class="flex justify-between items-center">
-                <p class="dark:text-gray-400">{{ c.label }}</p>
-                <Tooltip>
+                <p class="dark:text-gray-400 h-7 my-1">{{ c.label }}</p>
+                <Tooltip v-if="filtersStore.filters.find(f => f.field === c.name)">
                 <button 
                   class=" flex items-center justify-center w-7 h-7 my-1 hover:border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                   :class="filtersStore.filters.find(f => f.field === c.name) ?? 'opacity-50'"
                   :disabled="!filtersStore.filters.find(f => f.field === c.name)"
-                  @click="filtersStore.clearFilter(c.name); console.log('Filter setted to empty');"
+                  @click="filtersStore.clearFilter(c.name);"
                 > 
-                  <IconMinusOutline /> 
+                  <IconCloseOutline /> 
                 </button>
                 <template #tooltip>
                   Clear filter
@@ -154,8 +154,8 @@
       <button 
         :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
-        class="flex items-center py-1 px-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="clear">{{ $t('Clear all') }}</button>
+        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="clear"><IconCloseOutline class="ml-3"/> {{ $t('Clear all') }}</button>
 
    </div>
   </div>
@@ -179,7 +179,7 @@ import Select from '@/afcl/Select.vue';
 import Spinner from '@/afcl/Spinner.vue';
 import debounce from 'debounce';
 import { Tooltip } from '@/afcl';
-import { IconMinusOutline, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconCloseOutline } from '@iconify-prerendered/vue-flowbite';
 
 const filtersStore = useFiltersStore();
 const { t } = useI18n();
