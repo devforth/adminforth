@@ -33,19 +33,25 @@
               />
             </a>
           </li>
-          <li v-if="customActions" v-for="action in customActions" :key="action.id">
-            <a href="#" @click.prevent="handleActionClick(action)" class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
-              <div class="flex items-center gap-2">
-                <component 
-                  v-if="action.icon" 
-                  :is="getIcon(action.icon)" 
-                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
-                />
-                {{ action.name }}
-              </div>
-            </a>
+          <li v-for="action in customActions" :key="action.id">
+            <component
+              :is="(action.customComponent && getCustomComponent(action.customComponent)) || CallActionWrapper"
+              :meta="action.customComponent?.meta"
+              @callAction="(payload? : Object) => handleActionClick(action, payload)"
+            >
+              <a href="#" @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+                <div class="flex items-center gap-2">
+                  <component 
+                    v-if="action.icon" 
+                    :is="getIcon(action.icon)" 
+                    class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                  />
+                  {{ action.name }}
+                </div>
+              </a>
+            </component>
           </li>
-          <li v-for="action in bulkActions?.filter((a:AdminForthBulkActionCommon ) => a.showInThreeDotsDropdown)" :key="action.id">
+          <li v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)" :key="action.id">
             <a href="#" @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
@@ -75,8 +81,11 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import type { AdminForthComponentDeclarationFull, AdminForthBulkActionCommon, AdminForthActionInput } from '@/types/Common.js';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance } from 'vue';
+import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthActionInput } from '@/types/Back';
+
 
 const route = useRoute();
 const coreStore = useCoreStore();
@@ -98,13 +107,7 @@ const props = defineProps({
 
 const emit = defineEmits(['startBulkAction']);
 
-function setComponentRef(el: ComponentPublicInstance | null, index: number) {
-  if (el) {
-    threeDotsDropdownItemsRefs.value[index] = el;
-  }
-}
-
-async function handleActionClick(action: AdminForthActionInput) {
+async function handleActionClick(action: AdminForthActionInput, payload: any) {
   adminforth.list.closeThreeDotsDropdown();
   
   const actionId = action.id;
@@ -114,7 +117,8 @@ async function handleActionClick(action: AdminForthActionInput) {
     body: {
       resourceId: route.params.resourceId,
       actionId: actionId,
-      recordId: route.params.primaryKey
+      recordId: route.params.primaryKey,
+      extra: payload || {},
     }
   });
 

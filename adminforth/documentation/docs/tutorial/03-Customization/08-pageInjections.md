@@ -440,6 +440,78 @@ beforeActionButtons: [
 
 ## List table custom
 
+## Create/Edit custom Save button
+
+You can replace the default Save button on the create and edit pages with your own Vue component.
+
+Supported locations:
+- `pageInjections.create.saveButton`
+- `pageInjections.edit.saveButton`
+
+Example configuration:
+
+```ts title="/resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      create: {
+        // String shorthand
+        saveButton: '@@/SaveBordered.vue',
+      },
+      edit: {
+        // Object form (lets you pass meta later, if needed)
+        saveButton: { file: '@@/SaveBordered.vue' },
+      }
+    }
+  }
+}
+```
+
+Minimal example of a custom save button component:
+
+```vue title="/custom/SaveBordered.vue"
+<template>
+  <button
+    class="px-4 py-2 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 disabled:opacity-50"
+    :disabled="props.disabled || props.saving || !props.isValid"
+    @click="props.saveRecord()"
+  >
+    <span v-if="props.saving">{{$t('Saving…')}}</span>
+    <span v-else>{{$t('Save')}}</span>
+  </button>
+  
+</template>
+
+<script setup lang="ts">
+const props = defineProps<{
+  record: any
+  resource: any
+  adminUser: any
+  meta: any
+  saving: boolean
+  validating: boolean
+  isValid: boolean
+  disabled: boolean
+  saveRecord: () => Promise<void>
+}>();
+</script>
+```
+
+Notes:
+- Your component fully replaces the default Save button in the page header.
+- The `saveRecord()` prop triggers the standard AdminForth save flow. Call it on click.
+- `saving`, `validating`, `isValid`, and `disabled` reflect the current form state.
+- If no `saveButton` is provided, the default button is shown.
+
+Scaffolding via CLI: you can generate a ready-to-wire component and auto-update the resource config using the interactive command:
+
+```bash
+adminforth component
+# Choose: CRUD page injections → (create|edit) → Save button
+```
+
 ## Global Injections
 
 You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu

@@ -18,8 +18,25 @@
         {{ $t('Cancel') }}
       </button>
 
+      <!-- Custom Save Button injection -->
+      <component
+        v-if="createSaveButtonInjection"
+        :is="getCustomComponent(createSaveButtonInjection)"
+        :meta="createSaveButtonInjection.meta"
+        :record="record"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+        :saving="saving"
+        :validating="validating"
+        :isValid="isValid"
+        :disabled="saving || (validating && !isValid)"
+        :saveRecord="saveRecord"
+      />
+      
+      <!-- Default Save Button fallback -->
       <button  
-        @click="saveRecord"
+        v-else
+        @click="() => saveRecord()"
         class="af-save-button flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validating && !isValid)"
       > 
@@ -105,6 +122,13 @@ const coreStore = useCoreStore();
 
 const { t } = useI18n();
 
+const createSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
+  const raw: any = coreStore.resourceOptions?.pageInjections?.create?.saveButton as any;
+  if (!raw) return null;
+  const item = Array.isArray(raw) ? raw[0] : raw;
+  return item as AdminForthComponentDeclarationFull;
+});
+
 const initialValues = ref({});
 
 const readonlyColumns = ref([]);
@@ -125,11 +149,27 @@ onMounted(async () => {
     }
     return acc;
   }, {});
+  let userUseMultipleEncoding = true;  //TODO remove this in future versions
   if (route.query.values) {
-    initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent(route.query.values as string)) };
+    try {
+      JSON.parse(decodeURIComponent(route.query.values as string));
+      console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
+    } catch (e) {
+      userUseMultipleEncoding = false;
+      console.warn('You are using an outdated format for the query vales. Please update your links and don`t use multiple URL encoding.');
+    }
+    if (userUseMultipleEncoding) {
+      initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent((route.query.values as string))) };
+    } else {
+      initialValues.value = { ...initialValues.value, ...JSON.parse(atob(route.query.values as string)) };
+    }
   }
   if (route.query.readonlyColumns) {
-    readonlyColumns.value = JSON.parse(decodeURIComponent(route.query.readonlyColumns as string));
+    if (userUseMultipleEncoding) {
+      readonlyColumns.value = JSON.parse(decodeURIComponent((route.query.readonlyColumns as string)));
+    } else {
+      readonlyColumns.value = JSON.parse(atob(route.query.readonlyColumns as string));
+    }
   }
   record.value = initialValues.value;
   loading.value = false;
@@ -137,7 +177,7 @@ onMounted(async () => {
   initThreeDotsDropdown();
 });
 
-async function saveRecord() {
+async function saveRecord(opts?: { confirmationResult?: any }) {
   if (!isValid.value) {
     validating.value = true;
     return;
@@ -151,6 +191,9 @@ async function saveRecord() {
     body: {
       resourceId: route.params.resourceId,
       record: record.value,
+      meta: {
+        ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
+      },
     },
   });
   if (response?.error && response?.error !== 'Operation aborted by hook') {
