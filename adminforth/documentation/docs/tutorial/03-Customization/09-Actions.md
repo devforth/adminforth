@@ -264,3 +264,113 @@ bulkActions: [
   }
 ],
 ```
+
+## Custom Component
+
+If you want to style an action's button/icon without changing its behavior, attach a custom UI wrapper via `customComponent`. 
+The file points to your SFC in the custom folder (alias `@@/`), and `meta` lets you pass lightweight styling options (e.g., border color, radius).
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    actions: [
+      {
+        name: 'Auto submit',
+        icon: 'flowbite:play-solid',
+        // UI wrapper for the built-in action button
+        //diff-add
+        customComponent: {
+          //diff-add
+          file: '@@/ActionBorder.vue',        // SFC path in your custom folder
+          //diff-add
+          meta: { color: '#94a3b8', radius: 10 } // free-form styling params
+          //diff-add
+        },
+        showIn: { list: true, showButton: true, showThreeDotsMenu: true },
+        action: async ({ recordId, adminUser }) => {
+          return { ok: true, successMessage: 'Auto submitted' };
+        }
+      }
+    ]
+  }
+}
+```
+
+Use this minimal wrapper component to add a border/rounding around the default action UI while keeping the action logic intact. 
+Keep the `<slot />` (that's where AdminForth renders the default button) and emit `callAction` (optionally with a payload) to trigger the handler when the wrapper is clicked.
+
+```ts title="./custom/ActionBorder.vue"
+<template>
+  <!-- Keep the slot: AdminForth renders the default action button/icon here -->
+  <!-- Emit `callAction` (optionally with a payload) to trigger the action when the wrapper is clicked -->
+  <div :style="styleObj" @click="emit('callAction', {})">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{ meta?: { color?: string; radius?: number; padding?: number } }>();
+const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+
+const styleObj = computed(() => ({
+  display: 'inline-block',
+  border: `1px solid ${props.meta?.color ?? '#e5e7eb'}`,
+  borderRadius: (props.meta?.radius ?? 8) + 'px',
+  padding: (props.meta?.padding ?? 2) + 'px',
+}));
+</script>
+```
+
+### Pass dynamic values to the action
+
+You can pass arbitrary data from your custom UI wrapper to the backend action by emitting `callAction` with a payload. That payload will be available on the server under the `extra` argument of your action handler.
+
+Frontend examples:
+
+```vue title="./custom/ActionBorder.vue"
+<template>
+  <!-- Two buttons that pass different flags to the action -->
+  <button @click="emit('callAction', { asListed: true })" class="mr-2">Mark as listed</button>
+  <button @click="emit('callAction', { asListed: false })">Mark as unlisted</button>
+
+  <!-- Or keep the default slot button and wrap it: -->
+  <div :style="styleObj" @click="emit('callAction', { asListed: true })">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+</script>
+```
+
+Backend handler: read the payload via `extra`.
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    actions: [
+      {
+        name: 'Toggle listed',
+        icon: 'flowbite:eye-solid',
+        showIn: { list: true, showButton: true, showThreeDotsMenu: true },
+        // The payload from emit('callAction', { asListed: true|false }) arrives here as `extra`
+        action: async ({ resource, recordId, adminUser, extra }) => {
+          const asListed = extra?.asListed === true;
+          // Example update (use your own data layer):
+          await admin.resource('aparts').update(recordId, { listed: asListed });
+          return { ok: true, successMessage: `Set listed=${asListed}` };
+        }
+      }
+    ]
+  }
+}
+```
+
+Notes:
+- If you don’t emit a payload, the default behavior is used by the UI (e.g., in lists the current row context is used). When you do provide a payload, it will be forwarded to the backend as `extra` for your action handler.
+- You can combine default context with your own payload by merging before emitting, for example: `emit('callAction', { ...row, asListed: true })` if your component has access to the row object.

@@ -186,19 +186,33 @@ export default {
     }),
   ],
   options: {
-    allowedActions: {
-      create: async ({
-        adminUser,
-        meta,
-      }: {
-        adminUser: AdminUser;
-        meta: any;
-      }) => {
-        // console.log('create', adminUser, meta);
-        return true;
-      },
-      delete: true,
-    },
+    actions: [
+      {
+        name: 'Auto submit',  // Display name of the action
+        icon: 'flowbite:play-solid',  // Icon to display (using Flowbite icons)
+        
+        // Control who can see/use this action
+        allowed: ({ adminUser, standardAllowedActions }) => {
+          return true;  // Allow everyone
+        },
+        
+        // Handler function when action is triggered
+        action: async ({ recordId, adminUser }) => {
+          console.log("auto submit", recordId, adminUser);
+          return { 
+            ok: true, 
+            successMessage: "Auto submitted" 
+          };
+        },
+
+        // Configure where the action appears
+        showIn: {
+          showButton: true,        // Show as a button
+         // showThreeDotsMenu: true, // Show in the three dots menu
+          list: true,          // Show in the list view
+        }
+      }
+    ],
   },
   columns: [
     {
