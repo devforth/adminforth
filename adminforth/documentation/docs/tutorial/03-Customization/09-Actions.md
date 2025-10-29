@@ -270,28 +270,31 @@ bulkActions: [
 If you want to style an action's button/icon without changing its behavior, attach a custom UI wrapper via `customComponent`. 
 The file points to your SFC in the custom folder (alias `@@/`), and `meta` lets you pass lightweight styling options (e.g., border color, radius).
 
+Below we wrap a “Mark as listed” action (see the original example in [Custom bulk actions](#custom-bulk-actions)).
+
 ```ts title="./resources/apartments.ts"
 {
   resourceId: 'aparts',
   options: {
     actions: [
       {
-        name: 'Auto submit',
-        icon: 'flowbite:play-solid',
+        name: 'Mark as listed',
+        icon: 'flowbite:eye-solid',
         // UI wrapper for the built-in action button
         //diff-add
         customComponent: {
           //diff-add
           file: '@@/ActionBorder.vue',        // SFC path in your custom folder
           //diff-add
-          meta: { color: '#94a3b8', radius: 10 } // free-form styling params
+          meta: { color: '#94a3b8', radius: 10 }
           //diff-add
         },
         showIn: { list: true, showButton: true, showThreeDotsMenu: true },
-        action: async ({ recordId, adminUser }) => {
-          return { ok: true, successMessage: 'Auto submitted' };
+        action: async ({ recordId }) => {
+          await admin.resource('aparts').update(recordId, { listed: 1 });
+          return { ok: true, successMessage: 'Marked as listed' };
         }
-      }
+      },
     ]
   }
 }
@@ -304,7 +307,8 @@ Keep the `<slot />` (that's where AdminForth renders the default button) and emi
 <template>
   <!-- Keep the slot: AdminForth renders the default action button/icon here -->
   <!-- Emit `callAction` (optionally with a payload) to trigger the action when the wrapper is clicked -->
-  <div :style="styleObj" @click="emit('callAction', {})">
+  <!-- Example: provide `meta.extra` to send custom data. In list views we merge with `row` so recordId context is kept. -->
+  <div :style="styleObj" @click="emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })">
     <slot />
   </div>
 </template>
@@ -312,7 +316,14 @@ Keep the `<slot />` (that's where AdminForth renders the default button) and emi
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps<{ meta?: { color?: string; radius?: number; padding?: number } }>();
+const props = defineProps<{
+  // meta can style the wrapper and optionally carry extra payload for the action
+  meta?: { color?: string; radius?: number; padding?: number; extra?: any };
+  // When used in list view, the table passes current row
+  row?: any;
+  // When used in show/edit views, the page passes current record
+  record?: any;
+}>();
 const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
 
 const styleObj = computed(() => ({
@@ -330,14 +341,14 @@ You can pass arbitrary data from your custom UI wrapper to the backend action by
 
 Frontend examples:
 
-```vue title="./custom/ActionBorder.vue"
+```vue title="./custom/ActionToggleListed.vue"
 <template>
   <!-- Two buttons that pass different flags to the action -->
   <button @click="emit('callAction', { asListed: true })" class="mr-2">Mark as listed</button>
   <button @click="emit('callAction', { asListed: false })">Mark as unlisted</button>
 
   <!-- Or keep the default slot button and wrap it: -->
-  <div :style="styleObj" @click="emit('callAction', { asListed: true })">
+  <div @click="emit('callAction', { asListed: true })">
     <slot />
   </div>
 </template>
