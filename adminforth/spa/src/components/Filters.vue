@@ -26,7 +26,6 @@
                 <Tooltip v-if="filtersStore.filters.find(f => f.field === c.name)">
                 <button 
                   class=" flex items-center justify-center w-7 h-7 my-1 hover:border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                  :class="filtersStore.filters.find(f => f.field === c.name) ?? 'opacity-50'"
                   :disabled="!filtersStore.filters.find(f => f.field === c.name)"
                   @click="filtersStore.clearFilter(c.name);"
                 > 
