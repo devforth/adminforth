@@ -107,6 +107,12 @@ const props = defineProps({
 
 const emit = defineEmits(['startBulkAction']);
 
+function setComponentRef(el: ComponentPublicInstance | null, index: number) {
+  if (el) {
+    threeDotsDropdownItemsRefs.value[index] = el;
+  }
+}
+
 async function handleActionClick(action: AdminForthActionInput, payload: any) {
   adminforth.list.closeThreeDotsDropdown();
   
