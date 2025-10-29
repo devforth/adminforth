@@ -189,7 +189,7 @@ async function handleCrudPageInjectionCreation(config, resources) {
     message: 'Where exactly do you want to inject the component?',
     choices: [
       ...(crudType === 'create' || crudType === 'edit'
-        ? [{ name: '💾 Save button', value: 'saveButton' }, new Separator()]
+        ? [{ name: '💾 Save button on create/edit page', value: 'saveButton' }, new Separator()]
         : []),
       { name: '⬆️ Before Breadcrumbs', value: 'beforeBreadcrumbs' },
       { name: '➡️ Before Action Buttons', value: 'beforeActionButtons' },
