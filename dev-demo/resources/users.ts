@@ -20,6 +20,8 @@ import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
 // import AdminForthAdapterTwitchOauth2 from "../../adapters/adminforth-twitch-oauth-adapter";
 import { randomUUID } from "crypto";
+import EmailInvitePlugin from '../../plugins/adminforth-email-invite';
+
 
 declare global {
   namespace NodeJS {
@@ -54,6 +56,16 @@ export default {
 
   recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
+    new EmailInvitePlugin({
+      emailField: 'email',
+      passwordField: 'password',
+      sendFrom: 'noreply@yourapp.com',
+      adapter: new EmailAdapterAwsSes({
+        region: 'us-east-1',
+        accessKeyId:" process.env.AWS_ACCESS_KEY_ID",
+        secretAccessKey: "process.env.AWS_SECRET_ACCESS_KEY",
+      }),
+    }),
     // new ForeignInlineListPlugin({
     //   foreignResourceId: "aparts",
     //   modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
@@ -273,7 +285,7 @@ export default {
       minLength: 8,
       validation: [AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM],
       type: AdminForthDataTypes.STRING,
-      showIn: ["create", "edit"], // to show in create and edit pages
+      showIn: { all: false }, // to show in create and edit pages
       masked: true, // to show stars in input field
     },
     {
@@ -293,20 +305,20 @@ export default {
   hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }: any) => {
-        record.password_hash = await AdminForth.Utils.generatePasswordHash(
-          record.password
-        );
+        // record.password_hash = await AdminForth.Utils.generatePasswordHash(
+        //   record.password
+        // );
         return { ok: true, error: "" };
         // if return 'error': , record will not be saved and error will be proxied
       },
     },
     edit: {
       beforeSave: async ({ record, adminUser, resource }: any) => {
-        if (record.password) {
-          record.password_hash = await AdminForth.Utils.generatePasswordHash(
-            record.password
-          );
-        }
+        // if (record.password) {
+        //   record.password_hash = await AdminForth.Utils.generatePasswordHash(
+        //     record.password
+        //   );
+        // }
         return { ok: true, error: "" };
       },
       // beforeDatasourceRequest: async ({ query, adminUser, resource }) => {
