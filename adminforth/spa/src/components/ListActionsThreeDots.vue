@@ -1,24 +1,24 @@
 <template>
   <div class="relative inline-block">
-  <div
-    ref="triggerRef"
+    <div
+      ref="triggerRef"
       class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-    @click="toggleMenu"
+      @click="toggleMenu"
     >
       <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary" />
     </div>
     <teleport to="body">
       <div
-      v-if="showMenu"
-      ref="menuRef"
-      class="z-50 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
-      :style="menuStyles"
+        v-if="showMenu"
+        ref="menuRef"
+        class="z-50 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
+        :style="menuStyles"
       >
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
           <RouterLink
             v-if="resourceOptions?.allowedActions?.show"
             class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
-            :to="{ 
+            :to="{
               name: 'resource-show', 
               params: { 
                 resourceId: props.resourceId, 
