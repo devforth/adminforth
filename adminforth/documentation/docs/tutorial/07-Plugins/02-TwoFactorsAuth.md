@@ -199,7 +199,7 @@ plugins: [
             //diff-add
             // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
             //diff-add
-            return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
+            return (['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
             //diff-add
           },
         }),
