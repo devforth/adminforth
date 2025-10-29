@@ -1,7 +1,7 @@
 <template>
     
 
-<div class="afcl-toast flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText border-r-4"
+<div class="afcl-toast flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText border-l-4"
     :class="toast.variant == 'info' ? 'border-lightPrimary dark:border-darkPrimary' : toast.variant == 'danger' ? 'border-red-500 dark:border-red-800' : toast.variant == 'warning' ? 'border-orange-500 dark:border-orange-700' : 'border-green-500 dark:border-green-800'"
     role="alert"
 >
