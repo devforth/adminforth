@@ -331,7 +331,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     let error: string | null = null;
      await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
-        if (col.isUnique && !col.virtual && !error) {
+        if (col.isUnique && !col.virtual && !error && Object.prototype.hasOwnProperty.call(recordWithOriginalValues, col.name)) {
           const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name], record);
           if (exists) {
             error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
