@@ -368,9 +368,12 @@ Backend handler: read the payload via `extra`.
       {
         name: 'Toggle listed',
         icon: 'flowbite:eye-solid',
-        showIn: { list: true, showButton: true, showThreeDotsMenu: true },
+        showIn: { list: false, showButton: true, showThreeDotsMenu: true },
         // The payload from emit('callAction', { asListed: true|false }) arrives here as `extra`
-        action: async ({ resource, recordId, adminUser, extra }) => {
+        customComponent: {
+          file: '@@/ActionToggleListed.vue'
+        },
+        action: async ({ recordId, extra }) => {
           const asListed = extra?.asListed === true;
           // Example update (use your own data layer):
           await admin.resource('aparts').update(recordId, { listed: asListed });
