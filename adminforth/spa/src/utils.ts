@@ -481,3 +481,11 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 
   return evaluatePredicate(c.showIf);
 }
+
+export function btoa_function(source: string): string {
+  return btoa(source);
+}
+
+export function atob_function(source: string): string {
+  return atob(source);
+}
