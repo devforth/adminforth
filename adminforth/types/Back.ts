@@ -1337,7 +1337,7 @@ export type AllowedActions = {
  */
 export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
-  moveBaseActionsOutOfThreeDotsMenu?: boolean,
+  baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.

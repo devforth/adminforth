@@ -14,7 +14,7 @@
       class="z-50 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
       :style="menuStyles"
       >
-        <template v-if="resourceOptions.moveBaseActionsOutOfThreeDotsMenu !== true">
+        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
           <RouterLink
             v-if="resourceOptions?.allowedActions?.show"
             class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
@@ -30,7 +30,8 @@
             <IconEyeSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
             Show item
           </RouterLink>
-
+        </template>
+        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('edit'))">
           <RouterLink
             v-if="resourceOptions?.allowedActions?.edit"
             class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
@@ -45,7 +46,8 @@
             <IconPenSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
             Edit item
           </RouterLink>
-
+        </template>
+        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('delete'))">
           <button
             v-if="resourceOptions?.allowedActions?.delete"
             class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
