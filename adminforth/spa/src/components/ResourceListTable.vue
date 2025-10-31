@@ -113,7 +113,7 @@
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
             <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
-              <Tooltip>
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('show')">
                 <RouterLink
                   v-if="resource.options?.allowedActions?.show"
                   :to="{ 
@@ -132,8 +132,7 @@
                   {{ $t('Show item') }}
                 </template>
               </Tooltip>
-
-              <Tooltip>
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('edit')" >
                 <RouterLink
                   v-if="resource.options?.allowedActions?.edit"
                   :to="{ 
@@ -150,8 +149,7 @@
                   {{ $t('Edit item') }}
                 </template>
               </Tooltip>
-
-              <Tooltip>
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('delete')">
                 <button
                   v-if="resource.options?.allowedActions?.delete"
                   @click="deleteRecord(row)"
@@ -163,7 +161,6 @@
                   {{ $t('Delete item') }}
                 </template>
               </Tooltip>
-                
               <template v-if="customActionsInjection">
                 <component 
                   v-for="c in customActionsInjection"
@@ -178,7 +175,7 @@
 
               <template v-if="resource.options?.actions">
                 <Tooltip
-                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)"
                   :key="action.id"
                 >
                     <component
@@ -207,6 +204,16 @@
                   </template>
                 </Tooltip>
               </template>
+              <ListActionsThreeDots
+                v-if="resource.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) || !resource?.options.baseActionsAsQuickIcons ||(resource?.options.baseActionsAsQuickIcons && resource?.options.baseActionsAsQuickIcons.length <= 2)"
+                :resourceOptions="resource?.options"
+                :record="row"
+                :updateRecords="()=>emits('update:records', true)"
+                :deleteRecord="deleteRecord"
+                :resourceId="resource.resourceId"
+                :startCustomAction="startCustomAction"
+                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems"
+              />
             </div>
             
           </td>
@@ -332,6 +339,7 @@ import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
+import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -346,6 +354,7 @@ const props = defineProps<{
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
+  customActionIconsThreeDotsMenuItems?: any[]
 }>();
 
 // emits, update page
