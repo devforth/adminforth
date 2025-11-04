@@ -172,7 +172,7 @@
     }>(), {
       evenHighlights: true,
       pageSize: 5,
-      sortable: true,
+      sortable: false,
     }
   );
 
@@ -206,7 +206,7 @@
   });
 
   watch([() => currentSortField.value, () => currentSortDirection.value], () => {
-    // reset to first page on sort change
+    if (!props.sortable) return;
     if (currentPage.value !== 1) currentPage.value = 1;
     refresh();
     emit('update:sortField', currentSortField.value);
@@ -296,7 +296,7 @@
   }
 
 function isColumnSortable(col:{fieldName:string; sortable?:boolean}) {
-  return !!props.sortable && col.sortable !== false;
+  return props.sortable === true && col.sortable === true;
 }
 
 function onHeaderClick(col:{fieldName:string; sortable?:boolean}) {
@@ -322,12 +322,17 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 
 function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
   if (!props.sortable || !sortField) return data;
-  const get = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
+  // Helper function to get nested properties by path
+  const getByPath = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
   return [...data].sort((a,b) => {
-    let av = get(a, sortField), bv = get(b, sortField);
+    let av = getByPath(a, sortField), bv = getByPath(b, sortField);
+    // Handle null/undefined values
     if (av == null && bv == null) return 0;
+    // Handle null/undefined values
     if (av == null) return 1; if (bv == null) return -1;
+    // Data types
     if (av instanceof Date && bv instanceof Date) return dir === 'asc' ? av.getTime() - bv.getTime() : bv.getTime() - av.getTime();
+    // Strings and numbers
     if (typeof av === 'number' && typeof bv === 'number') return dir === 'asc' ? av - bv : bv - av;
     const cmp = collator.compare(String(av), String(bv));
     return dir === 'asc' ? cmp : -cmp;
