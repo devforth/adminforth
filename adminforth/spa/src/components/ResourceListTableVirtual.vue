@@ -2,7 +2,7 @@
   <!-- table -->
   <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
-    :style="`height: ${containerHeight}px; will-change: transform;`"
+    :style="{ maxHeight: `${containerHeight}px` }"
     @scroll="handleScroll"
     ref="containerRef"
   > 
@@ -14,11 +14,11 @@
             <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class="h-full w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+        <tr class="t-header sticky z-20 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
           <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
@@ -74,7 +74,7 @@
           :column-widths="columnWidths"
         />
         
-        <tr v-else-if="rows.length === 0" class="h-full bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
+        <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
 
             <div id="toast-simple"
