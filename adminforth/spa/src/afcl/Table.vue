@@ -19,12 +19,14 @@
                 <span v-else class="inline-flex items-center">
                   {{ column.label }}
                   <span v-if="isColumnSortable(column)" class="text-lightTableHeadingText dark:text-darkTableHeadingText">
-                    <!-- Unsorted indicator -->
-                    <svg v-if="!isSorted(column)" class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"></path></svg>
-                    <!-- Sorted ascending indicator -->
-                    <svg v-else-if="currentSortDirection === 'asc'" class="w-3 h-3 ms-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"></path></svg>
-                    <!-- Sorted descending indicator (rotated) -->
-                    <svg v-else class="w-3 h-3 ms-1.5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"></path></svg>
+                    <!-- Unsorted -->
+                    <svg v-if="currentSortField !== column.fieldName" class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/></svg>
+
+                    <!-- Sorted ascending -->
+                    <svg v-else-if="currentSortDirection === 'asc'" class="w-3 h-3 ms-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
+
+                    <!-- Sorted descending -->
+                    <svg v-else class="w-3 h-3 ms-1.5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
                   </span>
                 </span>
               </th>
@@ -293,63 +295,42 @@
     }
   }
 
-  function isColumnSortable(column: { fieldName: string; sortable?: boolean }) {
-    return !!props.sortable && column.sortable !== false;
-  }
+function isColumnSortable(col:{fieldName:string; sortable?:boolean}) {
+  return !!props.sortable && col.sortable !== false;
+}
 
-  function isSorted(column: { fieldName: string }) {
-    return currentSortField.value === column.fieldName;
+function onHeaderClick(col:{fieldName:string; sortable?:boolean}) {
+  if (!isColumnSortable(col)) return;
+  if (currentSortField.value !== col.fieldName) {
+    currentSortField.value = col.fieldName;
+    currentSortDirection.value = props.defaultSortDirection ?? 'asc';
+  } else {
+    currentSortDirection.value =
+      currentSortDirection.value === 'asc' ? 'desc' :
+      currentSortField.value ? (currentSortField.value = undefined, props.defaultSortDirection ?? 'asc') :
+      'asc';
   }
+}
 
-  function getAriaSort(column: { fieldName: string; sortable?: boolean }) {
-    if (!isColumnSortable(column)) return undefined;
-    if (!isSorted(column)) return 'none';
-    return currentSortDirection.value === 'asc' ? 'ascending' : 'descending';
-  }
+function getAriaSort(col:{fieldName:string; sortable?:boolean}) {
+  if (!isColumnSortable(col)) return undefined;
+  if (currentSortField.value !== col.fieldName) return 'none';
+  return currentSortDirection.value === 'asc' ? 'ascending' : 'descending';
+}
 
-  function onHeaderClick(column: { fieldName: string; sortable?: boolean }) {
-    if (!isColumnSortable(column)) return;
-    if (currentSortField.value !== column.fieldName) {
-      currentSortField.value = column.fieldName;
-      currentSortDirection.value = props.defaultSortDirection ?? 'asc';
-    } else {
-      if (currentSortDirection.value === 'asc') {
-        currentSortDirection.value = 'desc';
-      } else if (currentSortDirection.value === 'desc') {
-        currentSortField.value = undefined;
-        currentSortDirection.value = props.defaultSortDirection ?? 'asc';
-      } else {
-        currentSortDirection.value = 'asc';
-      }
-    }
-  }
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
-  function getValueByPath(obj: any, path: string | undefined) {
-    if (!path) return undefined;
-    return path.split('.').reduce((acc: any, key: string) => (acc == null ? acc : acc[key]), obj);
-  }
-
-  function compareValues(a: any, b: any) {
-    if (a == null && b == null) return 0;
-    if (a == null) return 1;
-    if (b == null) return -1;
-    if (typeof a === 'number' && typeof b === 'number') return a - b;
-    const aDate = a instanceof Date ? a : undefined;
-    const bDate = b instanceof Date ? b : undefined;
-    if (aDate && bDate) return aDate.getTime() - bDate.getTime();
-    return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
-  }
-
-  function sortArrayData(data: { [key: string]: any }[], sortField?: string, sortDirection: 'asc' | 'desc' = 'asc') {
-    if (!props.sortable || !sortField) return data;
-    const copy = data.slice();
-    copy.sort((rowA, rowB) => {
-      const aVal = getValueByPath(rowA, sortField);
-      const bVal = getValueByPath(rowB, sortField);
-      const cmp = compareValues(aVal, bVal);
-      return sortDirection === 'asc' ? cmp : -cmp;
-    });
-    return copy;
-  }
-
+function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
+  if (!props.sortable || !sortField) return data;
+  const get = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
+  return [...data].sort((a,b) => {
+    let av = get(a, sortField), bv = get(b, sortField);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    if (av instanceof Date && bv instanceof Date) return dir === 'asc' ? av.getTime() - bv.getTime() : bv.getTime() - av.getTime();
+    if (typeof av === 'number' && typeof bv === 'number') return dir === 'asc' ? av - bv : bv - av;
+    const cmp = collator.compare(String(av), String(bv));
+    return dir === 'asc' ? cmp : -cmp;
+  });
+}
 </script>
