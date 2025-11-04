@@ -208,7 +208,7 @@
     if (currentPage.value !== 1) currentPage.value = 1;
     refresh();
     emit('update:sortField', currentSortField.value);
-    emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined as any);
+    emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined);
     emit('sort-change', { field: currentSortField.value, direction: currentSortDirection.value });
   });
 
@@ -269,7 +269,7 @@
         offset: (currentLoadingIndex - 1) * props.pageSize,
         limit: props.pageSize,
         sortField: currentSortField.value,
-        sortDirection: currentSortDirection.value,
+        ...(currentSortField.value ? { sortDirection: currentSortDirection.value } : {}),
       });
       isAtLeastOneLoading.value[currentLoadingIndex] = false;
       if (isAtLeastOneLoading.value.every(v => v === false)) {
