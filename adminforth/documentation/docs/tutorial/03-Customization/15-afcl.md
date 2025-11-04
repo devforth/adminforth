@@ -22,6 +22,57 @@ import { Button } from '@/afcl'
 ```
 
 ```html
+
+### Sorting
+
+Table supports column sorting out of the box.
+
+- Sorting is enabled globally by default. You can disable it entirely with `:sortable="false"`.
+- Per column, sorting can be disabled with `sortable: false` inside the column definition.
+- Clicking a sortable header cycles sorting in a tri‑state order:
+  - none → ascending → descending → none
+  - When it returns to "none", the sorting is cleared.
+
+Basic example (client-side sorting when `data` is an array):
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    // disable sort for a specific column
+    { label: 'Country', fieldName: 'country', sortable: false },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+  :sortable="true"
+  :pageSize="3"
+/>
+```
+
+You can also predefine a default sort:
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="rows"
+  defaultSortField="age"
+  defaultSortDirection="desc"
+/>
+```
+
+Notes:
+- Client-side sorting supports nested field paths using dot-notation, e.g. `user.name`.
+- When a column is not currently sorted, a subtle double-arrow icon is shown; arrows switch up/down for ascending/descending.
+
 <Button @click="doSmth" 
     :loader="false" class="w-full">
   Your button text
@@ -972,6 +1023,59 @@ async function loadPageData(data) {
 </Table>
 ```
 > 👆 The page size is used as the limit for pagination.
+
+### Server-side sorting
+
+When you provide an async function to `data`, the table will pass the current sort along with pagination params.
+
+Signature of the loader receives:
+
+```ts
+type LoaderArgs = {
+  offset: number;
+  limit: number;
+  sortField?: string; // undefined when unsorted
+  sortDirection?: 'asc' | 'desc'; // only when sortField is set
+}
+```
+
+Example using `fetch`:
+
+```ts
+async function loadPageData({ offset, limit, sortField, sortDirection }) {
+  const url = new URL('/api/products', window.location.origin);
+  url.searchParams.set('offset', String(offset));
+  url.searchParams.set('limit', String(limit));
+  if (sortField) url.searchParams.set('sortField', sortField);
+  if (sortField && sortDirection) url.searchParams.set('sortDirection', sortDirection);
+
+  const res = await fetch(url.toString(), { credentials: 'include' });
+  const json = await res.json();
+  return { data: json.data, total: json.total };
+}
+
+<Table
+  :columns="[
+    { label: 'ID', fieldName: 'id' },
+    { label: 'Title', fieldName: 'title' },
+    { label: 'Price', fieldName: 'price' },
+  ]"
+  :data="loadPageData"
+  :pageSize="10"
+/>
+```
+
+Events you can listen to:
+
+```html
+<Table
+  :columns="columns"
+  :data="loadPageData"
+  @update:sortField="(f) => currentSortField = f"
+  @update:sortDirection="(d) => currentSortDirection = d"
+  @sort-change="({ field, direction }) => console.log('sort changed', field, direction)"
+/>
+```
 
 ### Table loading states
 
