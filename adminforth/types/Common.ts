@@ -67,6 +67,11 @@ export type AllowedActionsResolved = {
   [key in AllowedActionsEnum]: boolean
 }
 
+// conditional operators for predicates
+type Value = any;
+type Operators = { $eq: Value } | { $not: Value } | { $gt: Value } | { $gte: Value } | { $lt: Value } | { $lte: Value } | { $in: Value[] } | { $nin: Value[] } | { $includes: Value } | { $nincludes: Value };
+export type Predicate = { $and: Predicate[] } | { $or: Predicate[] } | { [key: string]: Operators | Value };
+
 export interface AdminUser {
   /**
    * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.usersResourceId}
@@ -507,6 +512,11 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          /**
+           * Custom Save button component for Edit page.
+           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
+           */
+          saveButton?: AdminForthComponentDeclaration,
         },
 
         /**
@@ -519,6 +529,11 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          /**
+           * Custom Save button component for Create page.
+           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
+           */
+          saveButton?: AdminForthComponentDeclaration,
         },
       }
     },
@@ -872,6 +887,15 @@ export interface AdminForthResourceColumnInputCommon {
    */
   masked?: boolean,
 
+  /**
+   * Sticky position for column
+   */
+  listSticky?: boolean;
+
+  /**
+   * Show field only if certain conditions are met.
+   */
+  showIf?: Predicate;
 }
 
 export interface AdminForthResourceColumnCommon extends AdminForthResourceColumnInputCommon {

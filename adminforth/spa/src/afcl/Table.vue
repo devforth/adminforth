@@ -237,7 +237,7 @@
         isLoading.value = false;
       }
       dataResult.value = result;
-    } else {
+    } else if (typeof props.data === 'object' && Array.isArray(props.data)) {
       const start = (currentPage.value - 1) * props.pageSize;
       const end = start + props.pageSize;
       dataResult.value = { data: props.data.slice(start, end), total: props.data.length };

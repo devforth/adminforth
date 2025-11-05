@@ -363,7 +363,8 @@ export interface IAdminForth {
   ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }>;
 
   deleteResourceRecord(
@@ -603,6 +604,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
+    rememberMeDays?: number,
 }) => Promise<{
   error?: string, 
   body: {
@@ -610,6 +612,19 @@ export type BeforeLoginConfirmationFunction = (params?: {
     allowedLogin?: boolean,
   }
 }>;
+
+/**
+ * Allow to make extra authorization
+ */
+export type AdminUserAuthorizeFunction = ((params?: { 
+    adminUser: AdminUser,
+    response: IAdminForthHttpResponse,
+    adminforth: IAdminForth,
+    extra?: HttpExtra,
+}) => Promise<{
+  error?: string,
+  allowed?: boolean,
+}>);
 
   
 /**
@@ -848,6 +863,7 @@ export interface AdminForthActionInput {
   }>;
   icon?: string;
   id?: string;
+  customComponent?: AdminForthComponentDeclaration;
 }
 
 export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
@@ -1008,6 +1024,11 @@ export interface AdminForthInputConfig {
        * Each function will resive User object as an argument
        */
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
+
+      /**
+       * Array of functions which will be called before any request to AdminForth API.
+       */
+      adminUserAuthorize?: AdminUserAuthorizeFunction | Array<AdminUserAuthorizeFunction>,
 
       /**
        * Optionally if your users table has a field(column) with full name, you can set it here.

@@ -1,15 +1,13 @@
 <template>
   <div class="min-w-40">
     <div class="cursor-pointer flex items-center justify-between gap-1 block px-4 py-2 text-sm 
-      bg-lightUserMenuSettingsButtonBackground hover:bg-lightUserMenuSettingsButtonBackgroundHover
-      text-lightUserMenuSettingsButtonText hover:text-lightUserMenuSettingsButtonTextHover
-      dark:bg-darkUserMenuSettingsButtonBackground dark:hover:bg-darkUserMenuSettingsButtonBackgroundHover
-      dark:text-darkUserMenuSettingsButtonText dark:hover:text-darkUserMenuSettingsButtonTextHover
+      bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText 
+      hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover 
+      dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover
       w-full select-none "
-      :class="{ 'bg-lightUserMenuSettingsButtonBackgroundExpanded hover:bg-lightUserMenuSettingsButtonBackgroundExpanded dark:bg-darkUserMenuSettingsButtonBackgroundExpanded	hover:dark:bg-darkUserMenuSettingsButtonBackgroundExpanded ': showDropdown }"
       @click="showDropdown = !showDropdown"
     >
-        <span>Settings</span>
+        <span>{{ $t('Settings') }}</span>
         <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-gray-400 opacity-50 transition duration-150 ease-in"
             :class="{ 'transform rotate-180': showDropdown }"
       />
@@ -18,10 +16,9 @@
     <div v-if="showDropdown" >
       
       <router-link class="cursor-pointer flex items-center gap-1 block px-4 py-1 text-sm 
-        bg-lightUserMenuSettingsButtonDropdownItemBackground hover:bg-lightUserMenuSettingsButtonDropdownItemBackgroundHover
-        text-lightUserMenuSettingsButtonDropdownItemText hover:text-lightUserMenuSettingsButtonDropdownItemTextHover
-        dark:bg-darkUserMenuSettingsButtonDropdownItemBackground dark:hover:bg-darkUserMenuSettingsButtonDropdownItemBackgroundHover
-        dark:text-darkUserMenuSettingsButtonDropdownItemText dark:hover:text-darkUserMenuSettingsButtonDropdownItemTextHover
+        bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText 
+        hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover 
+        dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover
         w-full text-select-none pl-5 select-none"
         v-for="option in options"
         :to="getRoute(option)"
@@ -43,9 +40,11 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { getIcon } from '@/utils';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const coreStore = useCoreStore();
+const { t } = useI18n();
 
 const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);

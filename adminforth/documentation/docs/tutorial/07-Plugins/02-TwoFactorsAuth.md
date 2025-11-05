@@ -199,7 +199,7 @@ plugins: [
             //diff-add
             // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
             //diff-add
-            return !(['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
+            return (['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
             //diff-add
           },
         }),
@@ -227,7 +227,7 @@ To do it, first, create frontend custom component which wraps and intercepts cli
   async function onClick() {
     if (props.disabled) return;
   
-    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
     emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
   }
 </script>
@@ -303,6 +303,74 @@ options: {
 }
 ```
 
+## Request 2FA for create/edit (secure save gating)
+
+To protect create and edit operations, collect the result of the 2FA modal on the frontend and send it along with the save payload. The server must verify it before writing changes.
+
+Frontend (custom Save button example):
+
+```vue
+<template>
+  <button :disabled="disabled || saving || !isValid" @click="onClick">Save</button>
+  <!-- The plugin injects TwoFAModal globally, exposing window.adminforthTwoFaModal -->
+</template>
+
+<script setup lang="ts">
+const props = defineProps<{
+  disabled: boolean;
+  saving: boolean;
+  isValid: boolean;
+  // saveRecord accepts optional meta with confirmationResult
+  saveRecord: (opts?: { confirmationResult?: any }) => Promise<void>;
+  meta?: any;
+}>();
+
+async function onClick() {
+  if (props.disabled || props.saving || !props.isValid) return;
+  const modal = (window as any)?.adminforthTwoFaModal;
+  if (modal?.get2FaConfirmationResult) {
+    const confirmationResult = await modal.get2FaConfirmationResult(undefined, props.meta?.twoFaTitle || 'Confirm to save changes');
+    await props.saveRecord({ confirmationResult });
+  } else {
+    const code = window.prompt('Enter your 2FA code to proceed');
+    if (!code) return;
+    await props.saveRecord({ confirmationResult: { mode: 'totp', result: code } });
+  }
+}
+</script>
+```
+
+Backend (resource hook verification):
+
+```ts
+// Inside resource config
+hooks: {
+  edit: {
+    beforeSave: async ({ adminUser, adminforth, extra }) => {
+      const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
+      const confirmationResult = extra?.body?.meta?.confirmationResult;
+      if (!confirmationResult) {
+        return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
+      }
+      const cookies = extra?.cookies;
+      const verifyRes = await t2fa.verify(confirmationResult, {
+        adminUser,
+        userPk: adminUser.pk,
+        cookies,
+      });
+      if (!('ok' in verifyRes) || verifyRes.ok !== true) {
+        return { ok: false, error: verifyRes?.error || 'Two-factor authentication failed' };
+      }
+      return { ok: true };
+    },
+  },
+}
+```
+
+This approach ensures 2FA cannot be bypassed by calling the API directly:
+- The client collects verification via the modal and forwards it under `meta.confirmationResult`.
+- The server validates it in `beforeSave` with access to `extra.cookies` and the `adminUser`.
+
 ## Request 2FA from custom components
 
 Imagine you have some button which does some API call
@@ -360,7 +428,7 @@ import adminforth from '@/adminforth';
 
 async function callAdminAPI() {
   // diff-add
-  const verificationResult = await window.adminforthTwoFaModal.getCode();
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
 
   const res = await callApi({
     path: '/myCriticalAction',
