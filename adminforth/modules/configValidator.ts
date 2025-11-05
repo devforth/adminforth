@@ -25,6 +25,7 @@ import {
   AdminForthComponentDeclaration , 
   AdminForthResourcePages,
   AdminForthDataTypes,
+  Predicate,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -388,13 +389,17 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.name) {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
-  
+
       if (!action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
       }
       
       if (action.action && action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
+      }
+
+      if (action.customComponent) {
+        action.customComponent = this.validateComponent(action.customComponent as any, errors);
       }
   
       // Generate ID if not present
@@ -776,6 +781,53 @@ export default class ConfigValidator implements IConfigValidator {
         return col as AdminForthResourceColumn;
       })
 
+      // Check for multiple sticky columns
+      if (res.columns.filter(c => c.listSticky).length > 1) {
+        errors.push(`Resource "${res.resourceId}" has more than one listSticky column. Only one column can be sticky in the list view.`);
+      }
+
+      const conditionalColumns = res.columns.filter(c => c.showIf);
+      if (conditionalColumns.length) {
+        const checkConditionArrays = (predicate: Predicate, column: AdminForthResourceColumn) => {
+          if ("$and" in predicate && !Array.isArray(predicate.$and)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $and that is not an array`);
+          } else if ("$and" in predicate && Array.isArray(predicate.$and)) {
+        predicate.$and.forEach((item) => checkConditionArrays(item, column));
+          }
+
+          if ("$or" in predicate && !Array.isArray(predicate.$or)) {
+        errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $or that is not an array`);
+          } else if ("$or" in predicate && Array.isArray(predicate.$or)) {
+        predicate.$or.forEach((item) => checkConditionArrays(item, column));
+          }
+      
+          const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
+          if (fieldEntries.length > 0) {
+        fieldEntries.forEach(([field, condition]) => {
+          if (typeof condition !== 'object') {
+            return;
+          }
+          if ("$in" in condition && !Array.isArray(condition.$in)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $in that is not an array`);
+          }
+          if ("$nin" in condition && !Array.isArray(condition.$nin)) {
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $nin that is not an array`);
+          }
+          if ("$includes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $includes on non-array column "${column.name}"`);
+          }
+          if ("$nincludes" in condition && !column.isArray) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $nincludes on non-array column "${column.name}"`);
+          }
+        });
+          }
+        };
+        
+        conditionalColumns.forEach((column) => {
+          checkConditionArrays(column.showIf, column);
+        });
+      }
+
       const options: Partial<AdminForthResource['options']> = {...resInput.options, bulkActions: undefined, allowedActions: undefined};
 
       options.allowedActions = this.validateAndNormalizeAllowedActions(resInput, errors);
@@ -808,22 +860,32 @@ export default class ConfigValidator implements IConfigValidator {
       });
 
       // if pageInjection is a string, make array with one element. Also check file exists
+      // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
+      const allowedInjectionsByPage: Record<string, string[]> = {
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart'],
+        show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
+        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+      };
 
       if (options.pageInjections) {
 
-        Object.entries(options.pageInjections).map(([key, value]) => {
-          if (!possiblePages.includes(key)) {
-            const similar = suggestIfTypo(possiblePages, key);
-            errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${key}", allowed keys are ${possiblePages.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+        Object.entries(options.pageInjections).map(([pageKey, value]) => {
+          if (!possiblePages.includes(pageKey)) {
+            const similar = suggestIfTypo(possiblePages, pageKey);
+            errors.push(`Resource "${res.resourceId}" has invalid pageInjection page "${pageKey}", allowed pages are ${possiblePages.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+            return;
           }
 
-          Object.entries(value).map(([injection, target]) => {
-            if (ConfigValidator.PAGE_INJECTION_KEYS.includes(injection)) {
-              options.pageInjections[key][injection] = this.validateAndListifyInjectionNew(options.pageInjections[key], injection, errors);
+          const allowedForThisPage = allowedInjectionsByPage[pageKey];
+
+          Object.entries(value).map(([injection, _target]) => {
+            if (allowedForThisPage.includes(injection)) {
+              this.validateAndListifyInjection(options.pageInjections[pageKey], injection, errors);
             } else {
-              const similar = suggestIfTypo(ConfigValidator.PAGE_INJECTION_KEYS, injection);
-              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${ConfigValidator.PAGE_INJECTION_KEYS.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
+              const similar = suggestIfTypo(allowedForThisPage, injection);
+              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}" for page "${pageKey}", supported keys are ${allowedForThisPage.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
             }
           });
 

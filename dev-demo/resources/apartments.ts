@@ -139,6 +139,7 @@ export default {
     },
     {
       name: "country",
+      listSticky: true,
       components: {
         list: {
           file: "@/renderers/CountryFlag.vue",
@@ -426,15 +427,15 @@ export default {
         ]
       : []),
     new ImportExportPlugin({}),
-    new TextCompletePlugin({
-      fieldName: "title",
-      expert: {
-        debounceTime: 250,
-      },
-      adapter: new CompletionAdapterOpenAIChatGPT({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-      }),
-    }),
+    // new TextCompletePlugin({
+    //   fieldName: "title",
+    //   expert: {
+    //     debounceTime: 250,
+    //   },
+    //   adapter: new CompletionAdapterOpenAIChatGPT({
+    //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //   }),
+    // }),
     new RichEditorPlugin({
       htmlFieldName: "description",
       completion: {

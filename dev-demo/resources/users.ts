@@ -90,6 +90,7 @@ export default {
         credentialIdFieldName: "credential_id",
         credentialMetaFieldName: "meta",
         credentialUserIdFieldName: "user_id",
+        continueWithButtonsOrder: 5,
         settings: {
           expectedOrigin: "http://localhost:3000",   // important, set it to your backoffice origin (starts from scheme, no slash at the end)
           // relying party config
@@ -118,17 +119,18 @@ export default {
     }),
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
-        new EmailResetPasswordPlugin({
-          emailField: "email",
-          sendFrom: "no-reply@devforth.io",
-          adapter: new EmailAdapterAwsSes({
-            region: "eu-central-1",
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          }),
-          passwordField: "password",
-        })]
-      : []
+      new EmailResetPasswordPlugin({
+        emailField: "email",
+        sendFrom: "no-reply@devforth.io",
+        adapter: new EmailAdapterAwsSes({
+          region: "eu-central-1",
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        }),
+        passwordField: "password",
+        loginPageComponentOrder: 2,
+      })]
+    : []
     ),
     new OpenSignupPlugin({
       emailField: "email",
@@ -137,6 +139,7 @@ export default {
       defaultFieldValues: {
         role: "user",
       },
+      loginPageComponentOrder: 3, 
       // confirmEmails: {
       //   emailConfirmedField: "email_confirmed",
       //   sendFrom: "no-reply@devforth.io",
@@ -183,19 +186,33 @@ export default {
     }),
   ],
   options: {
-    allowedActions: {
-      create: async ({
-        adminUser,
-        meta,
-      }: {
-        adminUser: AdminUser;
-        meta: any;
-      }) => {
-        // console.log('create', adminUser, meta);
-        return true;
-      },
-      delete: true,
-    },
+    actions: [
+      {
+        name: 'Auto submit',  // Display name of the action
+        icon: 'flowbite:play-solid',  // Icon to display (using Flowbite icons)
+        
+        // Control who can see/use this action
+        allowed: ({ adminUser, standardAllowedActions }) => {
+          return true;  // Allow everyone
+        },
+        
+        // Handler function when action is triggered
+        action: async ({ recordId, adminUser }) => {
+          console.log("auto submit", recordId, adminUser);
+          return { 
+            ok: true, 
+            successMessage: "Auto submitted" 
+          };
+        },
+
+        // Configure where the action appears
+        showIn: {
+          showButton: true,        // Show as a button
+         // showThreeDotsMenu: true, // Show in the three dots menu
+          list: true,          // Show in the list view
+        }
+      }
+    ],
   },
   columns: [
     {

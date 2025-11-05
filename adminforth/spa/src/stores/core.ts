@@ -16,6 +16,7 @@ export const useCoreStore = defineStore('core', () => {
   const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
+  const isResourceFetching = ref(false);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -172,6 +173,7 @@ export const useCoreStore = defineStore('core', () => {
       // already fetched
       return;
     }
+    isResourceFetching.value = true;
     resourceColumnsId.value = resourceId;
     resourceColumnsError.value = '';
     const res = await callAdminForthApi({
@@ -188,6 +190,7 @@ export const useCoreStore = defineStore('core', () => {
       resource.value = res.resource;
       resourceOptions.value = res.resource.options;
     }
+    isResourceFetching.value = false;
   }
 
   async function getPublicConfig() {
@@ -198,6 +201,13 @@ export const useCoreStore = defineStore('core', () => {
     config.value = {...config.value, ...res};
   }
 
+  async function getLoginFormConfig() {
+    const res = await callAdminForthApi({
+      path: '/get_login_form_config',
+      method: 'GET',
+    });
+    config.value = {...config.value, ...res};
+  }
 
   const username = computed(() => {
     const usernameField = config.value?.usernameField;
@@ -218,6 +228,7 @@ export const useCoreStore = defineStore('core', () => {
     userFullname,
     getPublicConfig,
     fetchMenuAndResource, 
+    getLoginFormConfig,
     fetchRecord, 
     record, 
     fetchResourceFull, 
@@ -231,5 +242,6 @@ export const useCoreStore = defineStore('core', () => {
     fetchMenuBadges,
     resetAdminUser,
     resetResource,
+    isResourceFetching,
   }
 })

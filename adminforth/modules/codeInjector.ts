@@ -473,6 +473,18 @@ class CodeInjector implements ICodeInjector {
           });
         }
       });
+      resource.options.actions.forEach((action) => {
+        const cc = action.customComponent;
+        if (!cc) return;
+      
+        const file = (typeof cc === 'string') ? cc : cc.file;
+        if (!file) {
+          throw new Error('customComponent.file is missing for action: ' + JSON.stringify({ id: action.id, name: action.name }));
+        }
+        if (!customResourceComponents.includes(file)) {
+          customResourceComponents.push(file);
+        }
+      });
       
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: {file: string}[]) => {

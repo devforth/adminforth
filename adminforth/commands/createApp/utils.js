@@ -236,6 +236,11 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: { appName },
     },
     {
+      src: 'api.ts.hbs',
+      dest: 'api.ts',
+      data: {},
+    },
+    {
       src: '.gitignore.hbs',
       dest: '.gitignore',
       data: {},

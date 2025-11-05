@@ -2,7 +2,7 @@
   <!-- table -->
   <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
-    :style="`height: ${containerHeight}px; will-change: transform;`"
+    :style="{ maxHeight: `${containerHeight}px` }"
     @scroll="handleScroll"
     ref="containerRef"
   > 
@@ -14,12 +14,12 @@
             <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class="h-full w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td scope="col" class="p-4">
+        <tr class="t-header sticky z-20 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+          <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -29,7 +29,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -74,7 +74,7 @@
           :column-widths="columnWidths"
         />
         
-        <tr v-else-if="rows.length === 0" class="h-full bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
+        <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
 
             <div id="toast-simple"
@@ -101,7 +101,7 @@
           :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
           @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
         >
-        <td class="w-4 p-4 cursor-default" @click="(e)=>e.stopPropagation()">
+        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
             @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
@@ -110,7 +110,7 @@
             <span class="sr-only">{{ $t('checkbox') }}</span>
           </Checkbox>
           </td>
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4">
+          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
@@ -182,17 +182,42 @@
                   :resource="coreStore.resource" 
                   :adminUser="coreStore.adminUser"
                   :record="row"
+                  :updateRecords="()=>emits('update:records', true)"
                 />
               </template>
 
-              <template v-if="resource.options?.actions">
-                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
-                  <button
-                    @click="startCustomAction(action.id, row)"
+                            <template v-if="resource.options?.actions">
+                <Tooltip
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
+                  :key="action.id"
+                >
+                  <CallActionWrapper
+                    :disabled="rowActionLoadingStates?.[action.id]"
+                    @callAction="startCustomAction(action.id, row)"
                   >
-                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
-                  </button>
-                  <template v-slot:tooltip>
+                    <component
+                      :is="action.customComponent ? getCustomComponent(action.customComponent) : 'span'"
+                      :meta="action.customComponent?.meta"
+                      :row="row"
+                      :resource="resource"
+                      :adminUser="adminUser"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                    >
+                      <button
+                        type="button"
+                        :disabled="rowActionLoadingStates?.[action.id]"
+                        @click.stop.prevent
+                      >
+                        <component
+                          v-if="action.icon"
+                          :is="getIcon(action.icon)"
+                          class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                        />
+                      </button>
+                    </component>
+                  </CallActionWrapper>
+
+                  <template #tooltip>
                     {{ action.name }}
                   </template>
                 </Tooltip>
@@ -267,7 +292,7 @@
     </div>
 
     <!-- Help text -->
-    <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
+    <span class="ml-4 text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
         <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
         <template v-else-if="resource && totalRows > 0">
           
@@ -732,5 +757,16 @@ input[type="checkbox"][disabled] {
 }
 input[type="checkbox"]:not([disabled]) {
   @apply cursor-pointer;
+}
+td.sticky-column {
+  @apply sticky left-0 z-10;
+  &:not(:first-child) {
+    @apply left-[56px];
+  }
+}
+tr:not(:first-child):hover {
+  td.sticky-column {
+    @apply bg-lightListTableRowHover dark:bg-darkListTableRowHover;
+  }
 }
 </style>

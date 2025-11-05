@@ -12,7 +12,7 @@
     <!-- Dropdown menu -->
     <div 
       id="listThreeDotsDropdown" 
-      class="z-20 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      class="z-30 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -23,7 +23,7 @@
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
               @click="injectedComponentClick(i)">
-              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)" 
+              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
@@ -33,19 +33,25 @@
               />
             </a>
           </li>
-          <li v-if="customActions" v-for="action in customActions" :key="action.id">
-            <a href="#" @click.prevent="handleActionClick(action)" class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
-              <div class="flex items-center gap-2">
-                <component 
-                  v-if="action.icon" 
-                  :is="getIcon(action.icon)" 
-                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
-                />
-                {{ action.name }}
-              </div>
-            </a>
+          <li v-for="action in customActions" :key="action.id">
+            <component
+              :is="(action.customComponent && getCustomComponent(action.customComponent)) || CallActionWrapper"
+              :meta="action.customComponent?.meta"
+              @callAction="(payload? : Object) => handleActionClick(action, payload)"
+            >
+              <a href="#" @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+                <div class="flex items-center gap-2">
+                  <component 
+                    v-if="action.icon" 
+                    :is="getIcon(action.icon)" 
+                    class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                  />
+                  {{ action.name }}
+                </div>
+              </a>
+            </component>
           </li>
-          <li v-for="action in bulkActions?.filter((a:AdminForthBulkActionCommon ) => a.showInThreeDotsDropdown)" :key="action.id">
+          <li v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)" :key="action.id">
             <a href="#" @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
@@ -75,8 +81,11 @@ import { useCoreStore } from '@/stores/core';
 import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import type { AdminForthComponentDeclarationFull, AdminForthBulkActionCommon, AdminForthActionInput } from '@/types/Common.js';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance } from 'vue';
+import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthActionInput } from '@/types/Back';
+
 
 const route = useRoute();
 const coreStore = useCoreStore();
@@ -104,7 +113,7 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
   }
 }
 
-async function handleActionClick(action: AdminForthActionInput) {
+async function handleActionClick(action: AdminForthActionInput, payload: any) {
   adminforth.list.closeThreeDotsDropdown();
   
   const actionId = action.id;
@@ -114,7 +123,8 @@ async function handleActionClick(action: AdminForthActionInput) {
     body: {
       resourceId: route.params.resourceId,
       actionId: actionId,
-      recordId: route.params.primaryKey
+      recordId: route.params.primaryKey,
+      extra: payload || {},
     }
   });
 
