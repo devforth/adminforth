@@ -978,7 +978,7 @@ async function loadPageData(data) {
 Table supports column sorting out of the box.
 
 - By default, columns are NOT sortable. Enable sorting per column with `sortable: true`.
-- Clicking a sortable header cycles sorting in a tri‑state order:
+- Clicking a sortable header cycles sorting in a tri-state order:
   - none → ascending → descending → none
   - When it returns to "none", the sorting is cleared.
 
