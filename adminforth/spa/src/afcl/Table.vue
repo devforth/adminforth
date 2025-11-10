@@ -211,7 +211,12 @@
   });
 
   watch([() => currentSortField.value, () => currentSortDirection.value], () => {
-    refresh();
+    const needsPageReset = currentPage.value !== 1;
+    if (needsPageReset) {
+      currentPage.value = 1;
+    } else {
+      refresh();
+    }
     emit('update:sortField', currentSortField.value);
     emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined);
     const field = currentSortField.value ?? null;
