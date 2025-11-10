@@ -22,57 +22,6 @@ import { Button } from '@/afcl'
 ```
 
 ```html
-
-### Sorting
-
-Table supports column sorting out of the box.
-
-- Sorting is enabled globally by default. You can disable it entirely with `:sortable="false"`.
-- Per column, sorting can be disabled with `sortable: false` inside the column definition.
-- Clicking a sortable header cycles sorting in a tri‑state order:
-  - none → ascending → descending → none
-  - When it returns to "none", the sorting is cleared.
-
-Basic example (client-side sorting when `data` is an array):
-
-```html
-<Table
-  :columns="[
-    { label: 'Name', fieldName: 'name' },
-    { label: 'Age', fieldName: 'age' },
-    // disable sort for a specific column
-    { label: 'Country', fieldName: 'country', sortable: false },
-  ]"
-  :data="[
-    { name: 'John', age: 30, country: 'US' },
-    { name: 'Rick', age: 25, country: 'CA' },
-    { name: 'Alice', age: 35, country: 'BR' },
-    { name: 'Colin', age: 40, country: 'AU' },
-  ]"
-  :sortable="true"
-  :pageSize="3"
-/>
-```
-
-You can also predefine a default sort:
-
-```html
-<Table
-  :columns="[
-    { label: 'Name', fieldName: 'name' },
-    { label: 'Age', fieldName: 'age' },
-    { label: 'Country', fieldName: 'country' },
-  ]"
-  :data="rows"
-  defaultSortField="age"
-  defaultSortDirection="desc"
-/>
-```
-
-Notes:
-- Client-side sorting supports nested field paths using dot-notation, e.g. `user.name`.
-- When a column is not currently sorted, a subtle double-arrow icon is shown; arrows switch up/down for ascending/descending.
-
 <Button @click="doSmth" 
     :loader="false" class="w-full">
   Your button text
@@ -1024,6 +973,89 @@ async function loadPageData(data) {
 ```
 > 👆 The page size is used as the limit for pagination.
 
+### Sorting
+
+Table supports column sorting out of the box.
+
+- By default, columns are NOT sortable. Enable sorting per column with `sortable: true`.
+- Clicking a sortable header cycles sorting in a tri‑state order:
+  - none → ascending → descending → none
+  - When it returns to "none", the sorting is cleared.
+
+Basic example (client-side sorting when `data` is an array):
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name', sortable: true },
+    { label: 'Age', fieldName: 'age', sortable: true },
+    // disable sort for a specific column
+    { label: 'Country', fieldName: 'country', sortable: false },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+  :pageSize="3"
+/>
+```
+
+You can also predefine a default sort:
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name', sortable: true },
+    { label: 'Age', fieldName: 'age', sortable: true },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="rows"
+  defaultSortField="age"
+  defaultSortDirection="desc"
+/>
+```
+
+Notes:
+- Client-side sorting supports nested field paths using dot-notation, e.g. `user.name`.
+- When a column is not currently sorted, a subtle double-arrow icon is shown; arrows switch up/down for ascending/descending.
+
+#### Nested field path sorting
+
+You can sort by nested properties of objects in rows using dot-notation in `fieldName`.
+
+Example:
+
+```html
+<Table
+  :columns="[
+    { label: 'User Name', fieldName: 'user.name', sortable: true },
+    { label: 'User Email', fieldName: 'user.email', sortable: true },
+    { label: 'City', fieldName: 'user.address.city', sortable: true },
+    { label: 'Country', fieldName: 'user.address.country' },
+  ]"
+  :data="[
+    { user: { name: 'Alice', email: 'alice@example.com', address: { city: 'Berlin', country: 'DE' } } },
+    { user: { name: 'Bob', email: 'bob@example.com', address: { city: 'Paris', country: 'FR' } } },
+    { user: { name: 'Carlos', email: 'carlos@example.com', address: { city: 'Madrid', country: 'ES' } } },
+    { user: { name: 'Dana', email: 'dana@example.com', address: { city: 'Rome', country: 'IT' } } },
+    { user: { name: 'Eve', email: 'eve@example.com', address: { city: null, country: 'US' } } },
+  ]"
+  :pageSize="3"
+/>
+```
+
+Behavior details:
+- The path is split on dots and resolved step by step: `user.address.city`.
+- Missing or `null` nested values are pushed to the bottom for ascending order (and top for descending) because `null/undefined` are treated as greater than defined values in asc ordering.
+- Works the same for client-side sorting and for server-side loaders: when using an async loader the same `sortField` (e.g. `user.address.city`) is passed so you can implement equivalent ordering on the backend.
+- Date objects at nested paths are detected and compared chronologically.
+- Numeric comparison is stable for mixed numeric strings via Intl.Collator with numeric option.
+
+Edge cases to consider in your own data:
+- Deeply missing branches like `user.profile.settings.locale` simply result in `undefined` and will follow the null ordering logic above.
+- Arrays are not traversed; if you need array-specific sorting you should pre-normalize data into scalar fields before passing to the table.
+
 ### Server-side sorting
 
 When you provide an async function to `data`, the table will pass the current sort along with pagination params.
@@ -1049,9 +1081,8 @@ async function loadPageData({ offset, limit, sortField, sortDirection }) {
   if (sortField) url.searchParams.set('sortField', sortField);
   if (sortField && sortDirection) url.searchParams.set('sortDirection', sortDirection);
 
-  const res = await fetch(url.toString(), { credentials: 'include' });
-  const json = await res.json();
-  return { data: json.data, total: json.total };
+  const { data, total } = callAdminForthApi('getProducts', {limit, offset, sortField, sortDirection});
+  return { data, total };
 }
 
 <Table
