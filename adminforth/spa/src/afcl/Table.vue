@@ -216,7 +216,7 @@
     emit('update:sortField', currentSortField.value);
     emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined);
     emit('sort-change', { field: currentSortField.value, direction: currentSortDirection.value });
-  });
+  }, { immediate: false });
 
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
