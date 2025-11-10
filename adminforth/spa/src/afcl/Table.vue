@@ -166,13 +166,11 @@
       evenHighlights?: boolean,
       pageSize?: number,
       isLoading?: boolean,
-      sortable?: boolean, // enable/disable sorting globally
       defaultSortField?: string,
       defaultSortDirection?: 'asc' | 'desc',
     }>(), {
       evenHighlights: true,
       pageSize: 5,
-      sortable: false,
     }
   );
 
@@ -189,6 +187,13 @@
   const currentSortDirection = ref<'asc' | 'desc'>(props.defaultSortDirection ?? 'asc');
 
   onMounted(() => {
+    // If defaultSortField points to a non-sortable column, ignore it
+    if (currentSortField.value) {
+      const col = props.columns?.find(c => c.fieldName === currentSortField.value);
+      if (!col || !isColumnSortable(col)) {
+        currentSortField.value = undefined;
+      }
+    }
     refresh();
   });
 
@@ -206,7 +211,6 @@
   });
 
   watch([() => currentSortField.value, () => currentSortDirection.value], () => {
-    if (!props.sortable) return;
     if (currentPage.value !== 1) currentPage.value = 1;
     refresh();
     emit('update:sortField', currentSortField.value);
@@ -296,7 +300,8 @@
   }
 
 function isColumnSortable(col:{fieldName:string; sortable?:boolean}) {
-  return props.sortable === true && col.sortable === true;
+  // Sorting is controlled per column; default is NOT sortable. Enable with `sortable: true`.
+  return col.sortable === true;
 }
 
 function onHeaderClick(col:{fieldName:string; sortable?:boolean}) {
@@ -321,11 +326,11 @@ function getAriaSort(col:{fieldName:string; sortable?:boolean}) {
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
-  if (!props.sortable || !sortField) return data;
+  if (!sortField) return data;
   // Helper function to get nested properties by path
   const getByPath = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
   return [...data].sort((a,b) => {
-    let av = getByPath(a, sortField), bv = getByPath(b, sortField);
+    const av = getByPath(a, sortField), bv = getByPath(b, sortField);
     // Handle null/undefined values
     if (av == null && bv == null) return 0;
     // Handle null/undefined values
