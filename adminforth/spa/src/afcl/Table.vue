@@ -211,11 +211,12 @@
   });
 
   watch([() => currentSortField.value, () => currentSortDirection.value], () => {
-    if (currentPage.value !== 1) currentPage.value = 1;
     refresh();
     emit('update:sortField', currentSortField.value);
     emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined);
-    emit('sort-change', { field: currentSortField.value, direction: currentSortDirection.value });
+    const field = currentSortField.value ?? null;
+    const direction = currentSortField.value ? currentSortDirection.value : null;
+    emit('sort-change', { field, direction });
   }, { immediate: false });
 
   const totalPages = computed(() => {
