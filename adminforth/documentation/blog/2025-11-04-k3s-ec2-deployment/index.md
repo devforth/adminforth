@@ -837,4 +837,4 @@ terraform apply -auto-approve
 
 ### All done!
 
-That's it, your application is deployed on Amazon EC2 and available on the Internet.
+Your application is now deployed on Amazon EC2 and available on the Internet.
