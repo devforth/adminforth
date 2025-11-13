@@ -306,6 +306,8 @@ This file contains a script that builds the Docker image locally. This is done f
 | Initial build time\* | 0m45.445s |
 | Rebuild time (changed index.ts)\* | 0m26.757s |
 
+<sub>\* All tests done from local machine (Intel(R) Core(TM) i7 9760H, Docker Desktop/Ubuntu 32 GB RAM, 300Mbps up/down) up to working state</sub>
+
 Also, `resvpc.tf`
 
 ```hcl title="deploy/terraform/resvpc.tf"
