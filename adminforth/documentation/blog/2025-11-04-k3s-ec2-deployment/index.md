@@ -301,10 +301,10 @@ resource "null_resource" "docker_build_and_push" {
 
 This file contains a script that builds the Docker image locally. This is done for more flexible deployment. When changing the program code, there is no need to manually update the image on EC2 or in the repository. It is updated automatically with each terraform apply. Below is a table showing the time it takes to build this image from scratch and with minimal changes.
 
-| Feature |
-| --- | --- |
-| Initial build time\* |  0m45.445s |
-| Rebuild time (changed `index.ts`)\* | 0m26.757s |
+| Feature                        | Time      |
+| ------------------------------ | --------- |
+| Initial build time\* | 0m45.445s |
+| Rebuild time (changed index.ts)\* | 0m26.757s |
 
 Also, `resvpc.tf`
 
