@@ -1,8 +1,8 @@
 ---
 slug: k3s-ec2-deployment
-title: "IaC Simplified: K3s on EC2 Deployments with Terraform, Docker & Amazon ECR"
+title: "IaC Simplified: K3s on EC2 Deployments with Terraform, Helm & Amazon ECR"
 authors: kirilldorr
-tags: [aws, terraform]
+tags: [aws, terraform, helm, k3s]
 description: "The ultimate step-by-step guide to cost-effective, build-time-efficient, and easy managable EC2 deployments using K3s, Terraform, Docker, and a Amazon ECR registry."
 ---
 
@@ -45,6 +45,15 @@ AWS CLI:
 
 ```bash
 sudo snap install aws-cli --classic
+```
+
+HELM:
+
+```bash
+curl https://baltocdn.com/helm/signing.asc | sudo tee /etc/apt/trusted.gpg.d/helm.asc
+sudo apt-get install apt-transport-https --yes
+echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get install helm
 ```
 
 Also you need Doker Daemon running. We recommend Docker Desktop running. ON WSL2 make sure you have Docker Desktop WSL2 integration enabled.
@@ -93,7 +102,7 @@ sa-dash.yaml
 session-manager-plugin.deb
 .env.secrets.prod
 .terraform.lock.hcl
-compose.yml 
+k3s.yaml
 ```
 
 ## Step 4 - file with secrets for local deploy
@@ -105,14 +114,15 @@ ADMINFORTH_SECRET=<your_secret>
 ```
 
 
-## Step 5 - main terraform file main.tf
+## Step 5 - Terraform folder
 
 First of all install Terraform as described here [terraform installation](https://developer.hashicorp.com/terraform/install#linux).
 
+After this create folder ../deploy/terraform
 
 Create file `main.tf` in `deploy` folder:
 
-```hcl title="deploy/main.tf"
+```hcl title="deploy/terraform/main.tf"
 
 terraform {
   required_providers {
@@ -121,17 +131,19 @@ terraform {
       version = "~> 5.0"
     }
   }
+
 }
- 
+
 locals {
-  aws_region    = "us-west-2"
-  vpc_cidr      = "10.0.0.0/16"
-  subnet_a_cidr = "10.0.10.0/24"
-  subnet_b_cidr = "10.0.11.0/24"
-  az_a          = "us-west-2a"
-  az_b          = "us-west-2b"
-  cluster_name  = "myapp-k3s"
-  app_name      = "<your_app_name>"
+  aws_region           = "us-west-2"
+  vpc_cidr             = "10.0.0.0/16"
+  subnet_a_cidr        = "10.0.10.0/24"
+  subnet_b_cidr        = "10.0.11.0/24"
+  az_a                 = "us-west-2a"
+  az_b                 = "us-west-2b"
+  cluster_name         = "myappk3s"
+  app_name             = <your_app_name>
+  app_source_code_path = "../../"
 
   app_container_port = 3500
   service_port       = 80
@@ -149,6 +161,147 @@ provider "aws" {
   region = local.aws_region
 }
 
+provider "kubernetes" {
+  config_path = "../k3s.yaml"
+}
+
+data "aws_ami" "ubuntu_22_04" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical ubuntu account ID
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+}
+
+resource "aws_instance" "k3s_server" {
+  instance_type = "t3a.small"
+  ami           = data.aws_ami.ubuntu_22_04.id
+
+  iam_instance_profile = aws_iam_instance_profile.k3s_instance_profile.name
+
+  subnet_id                   = aws_subnet.public_a.id
+  vpc_security_group_ids      = [aws_security_group.app_sg.id]
+  associate_public_ip_address = true
+  key_name                    = "k3s-keys"
+
+  tags = {
+    Name = local.cluster_name
+  }
+
+  depends_on = [
+    null_resource.docker_build_and_push
+  ]
+
+  user_data = templatefile("../user_data.sh.tpl", {
+    app_name           = local.app_name
+    aws_region         = local.aws_region
+    admin_secret       = local.admin_secret
+    app_container_port = local.app_container_port
+    service_port       = local.service_port
+    ecr_registry_id    = aws_ecr_repository.app_repo.registry_id
+    ecr_image_full     = "${aws_ecr_repository.app_repo.repository_url}:latest"
+    }
+  )
+
+  # prevent accidental termination of ec2 instance and data loss
+  lifecycle {
+    #create_before_destroy = true       #uncomment in production
+    #prevent_destroy       = true       #uncomment in production
+    ignore_changes = [ami]
+  }
+
+  root_block_device {
+    volume_size = 10 // Size in GB for root partition
+    volume_type = "gp2"
+
+    # Even if the instance is terminated, the volume will not be deleted, delete it manually if needed
+    delete_on_termination = true #change to false in production if data persistence is needed
+  }
+
+}
+
+resource "null_resource" "get_kubeconfig" {
+  depends_on = [aws_instance.k3s_server]
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+      set -e
+      for i in {1..15}; do
+        if nc -z ${aws_instance.k3s_server.public_ip} 22; then
+          break
+        fi
+        sleep 5
+      done
+
+      for i in {1..15}; do
+        scp -q -o StrictHostKeyChecking=no -i ../.keys/k3s-keys.pem \
+          ubuntu@${aws_instance.k3s_server.public_dns}:/home/ubuntu/k3s.yaml ../k3s.yaml && {
+            sleep 5
+            exit 0
+          }
+
+        echo "k3s.yaml not found yet (attempt $i/15), retrying in 10s..."
+        sleep 10
+      done
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
+}
+```
+
+> 👆 Replace `<your_app_name>` with your app name (no spaces, only underscores or letters)
+
+We will also need a file `container.tf`
+
+```hcl title="deploy/terraform/container.tf"
+
+resource "aws_ecr_repository" "app_repo" {
+  name = local.app_name
+
+  image_tag_mutability = "MUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+  force_delete = true
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "null_resource" "docker_build_and_push" {
+
+  depends_on = [aws_ecr_repository.app_repo]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      unset DOCKER_HOST
+      
+      REPO_URL="${aws_ecr_repository.app_repo.repository_url}"
+      ACCOUNT_ID="${data.aws_caller_identity.current.account_id}"
+      REGION="${local.aws_region}"
+      
+      echo "LOG: Logging in to ECR..."
+      aws ecr get-login-password --region $${REGION} | docker login --username AWS --password-stdin $${ACCOUNT_ID}.dkr.ecr.$${REGION}.amazonaws.com
+      
+      echo "LOG: Building Docker image..."
+      docker -H unix:///var/run/docker.sock build --pull -t $${REPO_URL}:latest ${local.app_source_code_path}
+
+      echo "LOG: Pushing image to ECR..."
+      docker -H unix:///var/run/docker.sock push $${REPO_URL}:latest
+
+      echo "LOG: Build and push complete."
+    EOT
+
+    interpreter = ["/bin/bash", "-c"]
+  }
+}
+```
+
+Also, `resvpc.tf`
+
+```hcl title="deploy/terraform/resvpc.tf"
 resource "aws_vpc" "main" {
   cidr_block = local.vpc_cidr
 
@@ -251,216 +404,11 @@ resource "aws_iam_instance_profile" "k3s_instance_profile" {
   name = "k3s-instance-profile"
   role = aws_iam_role.k3s_node_role.name
 }
+```
 
-data "aws_ecr_repository" "app_repo" {
-  name = "myadmin"
-}
+And `outputs.tf`
 
-data "aws_ami" "ubuntu_22_04" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical ubuntu account ID
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-}
-
-resource "aws_instance" "k3s_server" {
-  instance_type = "t3a.small"
-  ami           = data.aws_ami.ubuntu_22_04.id
-
-  iam_instance_profile = aws_iam_instance_profile.k3s_instance_profile.name
-
-  subnet_id                   = aws_subnet.public_a.id
-  vpc_security_group_ids      = [aws_security_group.app_sg.id]
-  associate_public_ip_address = true
-  key_name                    = "k3s-keys"
-
-  tags = {
-    Name = local.cluster_name
-  }
-
-  user_data = <<-EOF
-    #!/bin/bash -e
-    
-    echo "LOG update apt..."
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -y
-    
-    echo "LOG Installing Docker&AWS CLI..."
-    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release awscli
-    
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
-    apt-get update -y
-    apt-get install -y docker-ce docker-ce-cli containerd.io
-    
-    echo "LOG Starting Docker..."
-    systemctl start docker
-    systemctl enable docker
-    usermod -a -G docker ubuntu
-
-    ECR_REGISTRY="${data.aws_ecr_repository.app_repo.registry_id}.dkr.ecr.${local.aws_region}.amazonaws.com"
-
-    echo "LOG Gettong ETC password..."
-    ECR_PASSWORD=""
-    RETRY_COUNT=0
-    MAX_RETRIES=12 
-
-    until [ $RETRY_COUNT -ge $MAX_RETRIES ]; do
-      ECR_PASSWORD=$(aws ecr get-login-password --region ${local.aws_region} 2>/dev/null)
-      if [ -n "$ECR_PASSWORD" ]; then
-        echo "LOG Successfull."
-        break
-      fi
-      RETRY_COUNT=$((RETRY_COUNT+1))
-      echo "LOG Retry (for 5s)..."
-      sleep 5
-    done
-
-    if [ -z "$ECR_PASSWORD" ]; then
-      echo "LOG ERROR: Unable to retrieve ECR password after $MAX_RETRIES attempts."
-      exit 1
-    fi
-
-    echo $ECR_PASSWORD | docker login --username AWS --password-stdin $ECR_REGISTRY
-    
-    if [ $? -ne 0 ]; then
-      echo "LOG ERROR: Docker login to ECR failed."
-      exit 1
-    fi
-    echo "LOG Docker login successful."
-
-    echo "LOG Waiting for Docker socket..."
-    timeout 60 sh -c 'until docker info > /dev/null 2>&1; do echo "LOG Waiting for Docker socket..."; sleep 3; done'
-    
-    if ! docker info > /dev/null 2>&1; then
-      echo "LOG ERROR: Docker socket not available after timeout."
-      exit 1
-    fi
-
-    echo "LOG Turning off ufw..."
-    ufw disable || echo "LOG ufw not installed, skipping disable."
-
-    echo "LOG Retrieving public IP..."
-    PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-    
-    echo "LOG Installing K3s з --tls-san=$${PUBLIC_IP}..."
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker --tls-san $${PUBLIC_IP}" sh -
-
-    echo "LOG Waiting for k3s.yaml to be created..."
-    START_TIME=$(date +%s)
-    until [ -f /etc/rancher/k3s/k3s.yaml ]; do
-      CURRENT_TIME=$(date +%s)
-      if (( CURRENT_TIME - START_TIME > 300 )); then
-        echo "LOG ERROR: Timeout waiting for k3s.yaml."
-        echo "LOG k3s.yaml status check:"
-        systemctl status k3s.service || systemctl status k3s-server.service || echo "LOG Failed to get k3s service status"
-        echo "LOG Last 50 lines of k3s logs:"
-        journalctl -u k3s.service -n 50 --no-pager || journalctl -u k3s-server.service -n 50 --no-pager || echo "LOG Failed to get k3s logs"
-        exit 1
-      fi
-      echo "LOG Waiting for k3s.yaml... (passed $(( CURRENT_TIME - START_TIME )) seconds)"
-      sleep 5
-    done
-    
-    echo "LOG k3s.yaml found."
-    
-    echo "LOG Updating k3s.yaml with public IP..."
-    sed -i "s/127.0.0.1/$${PUBLIC_IP}/g" /etc/rancher/k3s/k3s.yaml
-    
-    echo "LOG Copying k3s.yaml to /home/ubuntu/k3s.yaml..."
-    cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/k3s.yaml
-    chown ubuntu:ubuntu /home/ubuntu/k3s.yaml
-    
-    echo "LOG Creating Kubernetes manifest for our app..."
-    cat <<EOT_APP > /tmp/myapp-manifest.yaml
-    ---
-    apiVersion: v1
-    kind: Namespace
-    metadata:
-      name: ${local.app_name}
-    ---
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: ${local.app_name}-deployment
-      namespace: ${local.app_name}
-    spec:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: ${local.app_name}
-      template:
-        metadata:
-          labels:
-            app: ${local.app_name}
-        spec:
-          containers:
-          - name: ${local.app_name}
-            image: "${data.aws_ecr_repository.app_repo.repository_url}:latest"
-            ports:
-            - containerPort: ${local.app_container_port}
-            env:
-            - name: "ADMINFORTH_SECRET"
-              value: "${local.admin_secret}"
-    ---
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: ${local.app_name}-service
-      namespace: ${local.app_name}
-    spec:
-      type: ClusterIP 
-      selector:
-        app: ${local.app_name}
-      ports:
-      - port: ${local.service_port}
-        targetPort: ${local.app_container_port}
-    ---
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-      name: ${local.app_name}-ingress
-      namespace: ${local.app_name}
-    spec:
-      rules:
-      - http:
-          paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: ${local.app_name}-service
-                port:
-                  number: ${local.service_port}
-    EOT_APP
-
-    echo "LOG Applying Kubernetes manifest..."
-    /usr/local/bin/k3s kubectl apply -f /tmp/myapp-manifest.yaml
-
-    EOF
-
-  # prevent accidental termination of ec2 instance and data loss
-  # if you will need to recreate the instance still (not sure why it can be?), you will need to remove this block manually by next command:
-  # > terraform taint aws_instance.app_instance
-  lifecycle {
-    create_before_destroy = true
-    prevent_destroy       = true
-    ignore_changes        = [ami]
-  }
-
-  root_block_device {
-    volume_size = 20 // Size in GB for root partition
-    volume_type = "gp2"
-
-    # Even if the instance is terminated, the volume will not be deleted, delete it manually if needed
-    delete_on_termination = false
-  }
-}
+```hcl title="deploy/terraform/outputs.tf"
 
 output "app_endpoint" {
   value = "http://${aws_instance.k3s_server.public_dns}"
@@ -470,12 +418,385 @@ output "kubectl_config_command" {
   value = "scp -i .keys/k3s-keys.pem ubuntu@${aws_instance.k3s_server.public_dns}:/home/ubuntu/k3s.yaml ~/.kube/config-k3s && export KUBECONFIG=~/.kube/config-k3s"
 }
 
+output "ssh_connect_command" {
+  value = "ssh -i .keys/k3s-keys.pem ubuntu@${aws_instance.k3s_server.public_dns}"
+}
+
+output "instance_public_ip" {
+  value = aws_instance.k3s_server.public_ip
+}
+
+output "ecr_repository_url" {
+  value = aws_ecr_repository.app_repo.repository_url
+}
+
+resource "null_resource" "output_to_file" {
+  provisioner "local-exec" {
+    command = "terraform output -json > ../terraform_outputs.json"
+  }
+  depends_on = [null_resource.get_kubeconfig]
+}
 ```
 
-> 👆 Replace `<your_app_name>` with your app name (no spaces, only underscores or letters)
+### Step 6 - Helm
 
+**Helm** is a command-line tool and a set of libraries that helps manage applications in Kubernetes.
 
-### Step 6 - Configure AWS Profile
+**Helm Chart (Chart)** is a package containing everything needed to run an application in Kubernetes. It's the equivalent of `apt` or `yum` packages in Linux.
+
+A chart has this structure:
+
+```
+helm_charts/
+├── Chart.yaml        # Metadata about the chart (name, version)
+├── values.yaml       # Default values (configuration)
+└── templates/        # Folder with Kubernetes templates (YAML files)
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── ingress.yaml
+    └── ...
+```
+
+### Step 7 - Provider Helm
+
+Now we need to create .../deploy/helm and .../deploy/helm/helm_charts folders
+
+you need to create a file `Chart.yaml` in it
+
+```yaml title="deploy/helm/helm_charts/Chart.yaml"
+apiVersion: v2
+name: myappk3s
+description: Helm chart for myadmin app
+version: 0.1.0
+appVersion: "1.0.0"
+```
+
+And `values.yaml`
+
+```yaml title="deploy/helm/helm_charts/values.yaml"
+appName: myappk3s
+containerPort: 3500
+servicePort: 80
+adminSecret: "your_secret"
+```
+After this create .../deploy/helm/helm_charts/templates folder
+
+And create files here:
+
+  `deployment.yaml`
+
+```yaml title="deploy/helm/helm_charts/templates/deployment.yaml"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-deployment
+  namespace: {{ .Values.appName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: "{{ .Values.ecrImageFull }}" 
+        ports:
+        - containerPort: {{ .Values.containerPort }}
+        env:
+        - name: "ADMINFORTH_SECRET"
+          value: "{{ .Values.adminSecret }}"
+```
+
+  `ingress.yaml`
+
+```yaml title="deploy/helm/helm_charts/templates/ingress.yaml"
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appName }}-ingress
+  namespace: {{ .Values.appName }}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.appName }}-service
+            port:
+              number: {{ .Values.servicePort }}
+```
+
+And `service.yaml`
+
+```yaml title="deploy/helm/helm_charts/templates/service.yaml"
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-service
+  namespace: {{ .Values.appName }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.appName }}
+  ports:
+  - port: {{ .Values.servicePort }}
+    targetPort: {{ .Values.containerPort }}
+
+```
+### Step 8 - Control Helm
+
+For controlling helm we also use terraform, so we need to create one more folder ../deploy/helm/terraform
+And inside it are the files: `main.tf`, `outputs.tf`, `variables.tf`, `terraform.tfvars`.
+
+```hcl title="deploy/helm/terraform/main.tf"
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.0.0, < 3.0.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 3.0.0"
+    }
+  }
+}
+
+provider "kubernetes" {
+  config_path = "../../k3s.yaml"
+}
+
+provider "helm" {
+  kubernetes = {
+    config_path = "../../k3s.yaml"
+  }
+}
+
+data "local_file" "config_file" {
+  filename = "../../terraform_outputs.json"
+}
+
+locals {
+  config = jsondecode(data.local_file.config_file.content)
+}
+
+resource "kubernetes_namespace" "myappk3s" {
+  metadata {
+    name = "myappk3s"
+
+    labels = {
+      "app.kubernetes.io/managed-by" = "Helm"
+    }
+
+    annotations = {
+      "meta.helm.sh/release-name"      = "myapp"
+      "meta.helm.sh/release-namespace" = "myappk3s"
+    }
+  }
+}
+
+resource "helm_release" "myapp" {
+  name             = "myapp"
+  chart            = "../helm_charts"
+  namespace        = kubernetes_namespace.myappk3s.metadata.0.name
+  create_namespace = false
+
+  set = [
+    {
+      name  = "ecrImageFull"
+      value = local.config.ecr_repository_url.value
+    },
+    {
+      name  = "image.tag"
+      value = "latest"
+    },
+    {
+      name  = "adminSecret"
+      value = var.admin_secret
+    },
+    {
+      name  = "ingress.enabled"
+      value = "true"
+    },
+    {
+      name  = "ingress.hosts[0].host"
+      value = "${local.config.instance_public_ip.value}.nip.io"
+    },
+    {
+      name  = "ingress.hosts[0].paths[0].path"
+      value = "/"
+    },
+    {
+      name  = "ingress.hosts[0].paths[0].pathType"
+      value = "Prefix"
+    },
+    {
+      name  = "appName"
+      value = var.cluster_name
+    }
+  ]
+  depends_on = [kubernetes_namespace.myappk3s]
+}
+```
+
+```hcl title="deploy/helm/terraform/variables.tf"
+variable "admin_secret" {
+  description = "Admin secret for the application"
+  type        = string
+}
+
+variable "cluster_name" {
+  description = "The name of the cluster"
+  type        = string
+}
+
+variable "app_name" {
+  type    = string
+  default = "myapp"
+}
+```
+
+```hcl title="deploy/helm/terraform/outputs.tf"
+data "local_file" "json_file" {
+  filename = "../../terraform_outputs.json"
+}
+
+locals {
+  duplicated_json = jsondecode(data.local_file.json_file.content)
+}
+
+output "ssh_connect_command" {
+  value = local.duplicated_json["ssh_connect_command"]["value"]
+}
+
+output "kubectl_config_command" {
+  value = local.duplicated_json["kubectl_config_command"]["value"]
+}
+
+output "app_endpoint" {
+  value = local.duplicated_json["app_endpoint"]["value"]
+}
+```
+
+```hcl title="deploy/helm/terraform/terraform.tfstate"
+admin_secret = "your_secret"
+cluster_name = "myappk3s"
+app_name     = "myapp"
+```
+
+### step 9 - ES2 settings instantiation
+
+The configuration will be performed using a small bash script.
+
+Fot this step we need to return to ../deploy folder and create `user_data.sh.tpl`
+
+```bash title="deploy/userdata.sh.tpl"
+#!/bin/bash -e
+
+echo "LOG update apt..."
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+
+echo "LOG Installing Docker&AWS CLI..."
+apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release awscli
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io
+
+echo "LOG Starting Docker..."
+systemctl start docker
+systemctl enable docker
+usermod -a -G docker ubuntu
+
+ECR_REGISTRY="${ecr_registry_id}.dkr.ecr.${aws_region}.amazonaws.com"
+
+echo "LOG Gettong ETC password..."
+ECR_PASSWORD=""
+RETRY_COUNT=0
+MAX_RETRIES=12 
+
+until [ $RETRY_COUNT -ge $MAX_RETRIES ]; do
+  
+  ECR_PASSWORD=$(aws ecr get-login-password --region ${aws_region} 2>/dev/null)
+  if [ -n "$ECR_PASSWORD" ]; then
+    echo "LOG Successfull."
+    break
+  fi
+  RETRY_COUNT=$((RETRY_COUNT+1))
+  echo "LOG Retry (for 5s)..."
+  sleep 5
+done
+
+if [ -z "$ECR_PASSWORD" ]; then
+  echo "LOG ERROR: Unable to retrieve ECR password after $MAX_RETRIES attempts."
+  exit 1
+fi
+
+echo $ECR_PASSWORD | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+if [ $? -ne 0 ]; then
+  echo "LOG ERROR: Docker login to ECR failed."
+  exit 1
+fi
+echo "LOG Docker login successful."
+
+echo "LOG Waiting for Docker socket..."
+timeout 60 sh -c 'until docker info > /dev/null 2>&1; do echo "LOG Waiting for Docker socket..."; sleep 3; done'
+
+if ! docker info > /dev/null 2>&1; then
+  echo "LOG ERROR: Docker socket not available after timeout."
+  exit 1
+fi
+
+echo "LOG Turning off ufw..."
+ufw disable || echo "LOG ufw not installed, skipping disable."
+
+echo "LOG Retrieving public IP..."
+PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+
+echo "LOG Installing K3s з --tls-san=$${PUBLIC_IP}..."
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker --tls-san $${PUBLIC_IP}" sh -
+
+echo "LOG Waiting for k3s.yaml to be created..."
+START_TIME=$(date +%s)
+until [ -f /etc/rancher/k3s/k3s.yaml ]; do
+  CURRENT_TIME=$(date +%s)
+  if (( CURRENT_TIME - START_TIME > 300 )); then
+    echo "LOG ERROR: Timeout waiting for k3s.yaml."
+    echo "LOG k3s.yaml status check:"
+    systemctl status k3s.service || systemctl status k3s-server.service || echo "LOG Failed to get k3s service status"
+    echo "LOG Last 50 lines of k3s logs:"
+    journalctl -u k3s.service -n 50 --no-pager || journalctl -u k3s-server.service -n 50 --no-pager || echo "LOG Failed to get k3s logs"
+    exit 1
+  fi
+  echo "LOG Waiting for k3s.yaml... (passed $(( CURRENT_TIME - START_TIME )) seconds)"
+  sleep 5
+done
+
+echo "LOG k3s.yaml found."
+
+echo "LOG Updating k3s.yaml with public IP..."
+sed -i "s/127.0.0.1/$${PUBLIC_IP}/g" /etc/rancher/k3s/k3s.yaml
+
+echo "LOG Copying k3s.yaml to /home/ubuntu/k3s.yaml..."
+cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/k3s.yaml
+chown ubuntu:ubuntu /home/ubuntu/k3s.yaml
+```
+### Step 10 - Configure AWS Profile
 
 Open or create file `~/.aws/credentials` and add (if not already there):
 
@@ -485,17 +806,35 @@ aws_access_key_id = <your_access_key>
 aws_secret_access_key = <your_secret_key>
 ```
 
+### Step 11 - Run deployment
 
-### Step 7.2 - Run deployment
+All deployment-related actions are automated and recorded in the script in `user_data.sh.tpl`, so no additional actions are required. To deploy the application, you only need to enter a few commands listed below and wait a few minutes. After that, you will be able to connect to the web application using the link you will receive in `terraform_output`. Next, if you wish, you can add GitHub Actions. To do this, follow the instructions in [our other post](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/#chellenges-when-you-build-on-ci).
 
-All actions related to deployment are automated and written in the script in `user_data`, so no additional actions are required. To deploy the application, you only need to enter the two commands below and wait a few minutes. After that, you can connect to the web application using the link you will receive in `terraform_output`. Next, if you wish, you can add GitHub Actions. To do this, you can use the instructions in [our other post](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/#chellenges-when-you-build-on-ci).
+  In ../deploy/terraform folder
 
 ```bash 
 terraform init
 ```
 
-Now run deployement:
+```bash
+terraform apply -auto-approve
+```
+
+Wait for terraform complete the creation of all resources and change directory
+
+```bash
+cd ../../helm/terraform
+```
+And repeat the steps in this directory
+
+```bash 
+terraform init
+```
 
 ```bash
 terraform apply -auto-approve
 ```
+
+### All done!
+
+That's it, your application is deployed on Amazon EC2 and available on the Internet.
