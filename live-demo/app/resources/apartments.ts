@@ -248,7 +248,7 @@ export default {
       }
     }),
     new BulkAiFlowPlugin({
-      actionName: 'Process',
+      actionName: 'Process with AI',
       attachFiles: async ({ record }: { record: any }) => {
         if (!record.apartment_image) {
           return [];
