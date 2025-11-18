@@ -14,7 +14,7 @@
 
         <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
           <component
-            :is="getCustomComponent(action.customComponent) || CallActionWrapper"
+            :is="action?.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
             :meta="action.customComponent?.meta"
             @callAction="(payload?) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
