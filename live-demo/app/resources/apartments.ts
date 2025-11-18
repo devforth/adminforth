@@ -9,7 +9,7 @@ import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
 import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai';
-import CloneRow from "@adminforth/CloneRow";
+import CloneRow from "@adminforth/clone-row";
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
