@@ -24,7 +24,6 @@ Next variants are supported:
 * `warning`
 * `info`
 
-// ...existing code...
 ### Making alert responsive
 You can pass buttons in the alert method and receive a response like:
 
