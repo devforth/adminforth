@@ -4,7 +4,7 @@ import AdminForth, {
   AdminForthResourceColumn,
   AdminForthResourceInput,
   AdminUser,
-} from "../../adminforth";
+} from "../../adminforth"; 
 import ForeignInlineListPlugin from "../../plugins/adminforth-foreign-inline-list";
 import OpenSignupPlugin from "../../plugins/adminforth-open-signup";
 import TwoFactorsAuthPlugin from "../../plugins/adminforth-two-factors-auth";
