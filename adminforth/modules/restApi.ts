@@ -123,7 +123,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, rememberMeDays?: number) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: number) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -132,7 +132,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response,
         adminforth: this.adminforth,
         extra,
-        rememberMeDays
+        sessionDuration,
       });
       
       if (resp?.body?.redirectTo || resp?.error) {
