@@ -1,5 +1,5 @@
 <template>
-    <!-- tag form used to reset the input (method .reset() in claer() function) -->
+    <!-- tag form used to reset the input (method .reset() in clear() function) -->
   <form class="flex items-center justify-center w-full"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
@@ -20,7 +20,7 @@
           :id="id"
           type="file"
           class="hidden"
-          :accept="props.extensions.join(',')"
+          :accept="normalizedExtensions.join(',')"
           @change="$event.target && doEmit(($event.target as HTMLInputElement).files!)"
           :multiple="props.multiple || false"
         />
@@ -80,7 +80,7 @@
           </p>
 
           <p class="text-xs text-lightDropzoneText dark:text-darkDropzoneText">
-            {{ props.extensions.join(', ').toUpperCase().replace(/\./g, '') }}
+            {{ normalizedExtensions.join(', ').toUpperCase().replace(/\./g, '') }}
             <template v-if="props.maxSizeBytes">
               (Max size: {{ humanifySize(props.maxSizeBytes) }})
             </template>
@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { humanifySize } from '@/utils';
-import { ref, type Ref } from 'vue';
+import { ref, type Ref, computed } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
 import adminforth from '@/adminforth';
@@ -107,6 +107,13 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue']);
 
 const id = `afcl-dropzone-${Math.random().toString(36).substring(7)}`;
+
+const normalizedExtensions = computed(() => {
+  return props.extensions.map(ext => {
+    const trimmed = ext.trim().toLowerCase();
+    return trimmed.startsWith('.') ? trimmed : `.${trimmed}`;
+  });
+});
 
 const selectedFiles: Ref<{
   name: string,
@@ -131,7 +138,7 @@ function doEmit(filesIn: FileList) {
   
   const multiple = props.multiple || false;
   const files = Array.from(filesIn);
-  const allowedExtensions = props.extensions.map(ext => ext.toLowerCase());
+  const allowedExtensions = normalizedExtensions.value;
   const maxSizeBytes = props.maxSizeBytes;
 
   if (!files.length) return;
