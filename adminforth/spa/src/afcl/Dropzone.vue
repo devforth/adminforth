@@ -149,6 +149,18 @@ function doEmit(filesIn: FileList) {
     const extension = file.name.split('.').pop()?.toLowerCase() || '';
     const size = file.size;
 
+    const isDuplicate = storedFiles.value.some(
+      existingFile => existingFile.name === file.name && existingFile.size === file.size
+    );
+    
+    if (isDuplicate) {
+      adminforth.alert({
+        message: `The file "${file.name}" is already selected.`,
+        variant: 'warning',
+      });
+      return;
+    }
+
     if (!allowedExtensions.includes(`.${extension}`)) {
       adminforth.alert({
         message: `Sorry, the file type .${extension} is not allowed. Please upload a file with one of the following extensions: ${allowedExtensions.join(', ')}`,
