@@ -57,6 +57,7 @@
                 'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
                 'border-b border-lightTableBorder dark:border-darkTableBorder': index !== dataPage.length - 1 || totalPages > 1,
               }"
+              @click="tableRowClick(item)"
             >
               <td class="px-6 py-4" :key="`cell-${index}-${column.fieldName}`"
                 v-for="column in props.columns"
@@ -242,6 +243,7 @@
     'update:sortField',
     'update:sortDirection',
     'sort-change',
+    'clickTableRow'
   ]);
   
   function onPageInput(event: any) {
@@ -348,5 +350,9 @@ function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
     const cmp = collator.compare(String(av), String(bv));
     return dir === 'asc' ? cmp : -cmp;
   });
+}
+
+function tableRowClick(row) {
+  emit("clickTableRow", row)
 }
 </script>
