@@ -522,7 +522,7 @@ class AdminForth implements IAdminForth {
       return { error: err };
     }
 
-    const recordWithVirtualColumns = record;
+    const recordWithVirtualColumns = { ...record };
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
