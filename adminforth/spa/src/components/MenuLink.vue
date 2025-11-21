@@ -33,7 +33,7 @@
     >
       {{ item.label }}
     </div>
-    <span class="absolute right-1 top-1/2 -translate-y-1/2" v-if="item.badge && showExpandedBadge">
+    <span class="absolute flex items-center justify-center right-1 top-1/2 -translate-y-1/2" v-if="item.badge && showExpandedBadge">
       <Tooltip v-if="item.badgeTooltip">
         <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
