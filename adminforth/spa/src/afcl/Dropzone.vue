@@ -131,8 +131,11 @@ watch(() => props.modelValue, (files) => {
       mime: file.type,
     }));
     storedFiles.value = Array.from(files);
+  } else {
+    selectedFiles.value = [];
+    storedFiles.value = [];
   }
-});
+}, { immediate: true });
 
 function doEmit(filesIn: FileList) {
   
