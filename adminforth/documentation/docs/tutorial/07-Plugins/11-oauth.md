@@ -84,7 +84,7 @@ model adminuser {
 2. Run the migration:
 
 ```bash
-npx prisma migrate dev --name add-email-confirmed-to-adminuser
+npm run makemigration -- --name add-email-confirmed-to-adminuser ; npm run migrate:local
 ```
 
 3. Configure the plugin with `emailConfirmedField`:
