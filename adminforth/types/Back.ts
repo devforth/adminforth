@@ -700,6 +700,10 @@ interface AdminForthInputConfigCustomization {
   iconOnlySidebar?: {
     logo?: string,
     enabled?: boolean,
+    /**
+     * Width of expanded sidebar (default: '16.5rem')
+     */
+    expandedSidebarWidth?: string,
   },
 
   /**

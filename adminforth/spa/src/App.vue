@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div>
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       class="fixed h-14 top-0 z-30 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
@@ -82,11 +82,9 @@
     />
 
     <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
-      :class="{
-        'sm:ml-18': isSidebarIconOnly,
-        'sm:ml-[16.5rem]': !isSidebarIconOnly,
-        'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
-        'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
+      :style="{
+        marginLeft: isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
@@ -147,12 +145,10 @@
     @apply opacity-100;
   }
 
-  @media (min-width: 640px) {
-    .sm\:ml-18 {
-      margin-left: 4.5rem;
-    }
-    .sm\:max-w-\[calc\(100\%-4\.5rem\)\] {
-      max-width: calc(100% - 4.5rem);
+  @media (max-width: 640px) {
+    .af-content-wrapper {
+      margin-left: 0 !important;
+      max-width: 100% !important;
     }
   }
 
@@ -199,6 +195,8 @@ const loginRedirectCheckIsReady = ref(false);
 const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'true');
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
 
 const theme = ref('light');
 

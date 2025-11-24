@@ -24,11 +24,11 @@
       }"
       :style="isSidebarIconOnly ? { 
         minWidth: isChild 
-          ? 'calc(16.5rem - 0.75rem*2 - 1.5rem*2 - 1.25rem - 0.75rem)'
-          : 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)',
+          ? `calc(${expandedWidth} - 0.75rem*2 - 1.5rem*2 - 1.25rem - 0.75rem)`
+          : `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`,
         width: isChild 
-          ? 'calc(16.5rem - 0.75rem*2 - 1.5rem*2 - 1.25rem - 0.75rem)'
-          : 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)'
+          ? `calc(${expandedWidth} - 0.75rem*2 - 1.5rem*2 - 1.25rem - 0.75rem)`
+          : `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`
       } : {}"
     >
       {{ item.label }}
@@ -55,9 +55,14 @@
 <script setup lang="ts">  
 import { getIcon } from '@/utils';
 import { Tooltip } from '@/afcl';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useCoreStore } from '@/stores/core';
 
 const props = defineProps(['item', 'isChild', 'isSidebarIconOnly', 'isSidebarHovering']);
+
+const coreStore = useCoreStore();
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
 
 const BADGE_SHOW_DELAY_MS = 200;
 const showExpandedBadge = ref(false);
