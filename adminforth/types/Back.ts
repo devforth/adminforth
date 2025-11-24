@@ -568,6 +568,7 @@ export type AfterCreateSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  recordWithVirtualColumns?: any,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
