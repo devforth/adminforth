@@ -52,7 +52,7 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
+                  <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
@@ -201,6 +201,10 @@ const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'tru
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
 const theme = ref('light');
+
+const userMenuComponents = computed(() => {
+  return coreStore?.config?.globalInjections?.userMenu || [];
+})
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
