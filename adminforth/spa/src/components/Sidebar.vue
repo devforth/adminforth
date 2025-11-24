@@ -13,8 +13,8 @@
      }"
     aria-label="Sidebar"
   >
-    <div class="h-full px-3 pb-20 md:pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder" :class="{'sidebar-scroll':!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
-      <div class="af-logo-title-wrapper flex relative transition-all duration-300 ease-in-out h-8 items-center" :class="{'my-4 ': isSidebarIconOnly && !isSidebarHovering, 'm-4': !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
+    <div class="h-full px-3 pb-20 md:pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder pt-4" :class="{'sidebar-scroll':!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
+      <div class="af-logo-title-wrapper flex relative transition-all duration-300 ease-in-out h-8 items-center" :class="{'mb-4': isSidebarIconOnly && !isSidebarHovering, 'mx-4 mb-4': !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
         <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))) }" />
         <img :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8 me-3" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
         <span 
@@ -196,11 +196,11 @@
   
   .sidebar-collapsed {
     width: 4.5rem; /* Collapsed width (w-18) */
-    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
   
   .sidebar-expanded {
     width: 16.5rem; /* Expanded width (w-64) */
+    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
 
   :deep(.dark) .sidebar-collapsed {
