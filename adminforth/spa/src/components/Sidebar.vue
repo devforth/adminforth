@@ -23,7 +23,7 @@
         >
           {{ coreStore.config?.brandName }}
         </span>
-        <div class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
+        <div v-if="!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)" class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
           <component 
             v-for="c in coreStore?.config?.globalInjections?.sidebarTop || []"
             :is="getCustomComponent(c)"
@@ -106,8 +106,8 @@
                         'opacity-100 ms-3 translate-x-0 flex-1': !isSidebarIconOnly
                       }"
                       :style="isSidebarIconOnly ? { 
-                        minWidth: 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)',
-                        width: 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)'
+                        minWidth: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`,
+                        width: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`
                       } : {}"
                     >{{ item.label }}
 
@@ -188,7 +188,7 @@
 <style lang="scss" scoped>
   /* Sidebar width animations */
   .sidebar-container {
-    width: 16.5rem; /* Default expanded width (w-64) */
+    width: v-bind(expandedWidth); /* Default expanded width (w-64) */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
@@ -199,8 +199,8 @@
   }
   
   .sidebar-expanded {
-    width: 16.5rem; /* Expanded width (w-64) */
-    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
+    width: v-bind(expandedWidth); /* Expanded width (w-64) */
+    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.15);
   }
 
   :deep(.dark) .sidebar-collapsed {
@@ -312,6 +312,8 @@ const smQuery = window.matchMedia('(min-width: 640px)');
 const isMobile = ref(!smQuery.matches);
 const iconOnlySidebarEnabled = computed(() => props.forceIconOnly === true || coreStore.config?.iconOnlySidebar?.enabled !== false);
 const isSidebarIconOnly = ref(false);
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
 
 function handleBreakpointChange(e: MediaQueryListEvent) {
   isMobile.value = !e.matches;

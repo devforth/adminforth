@@ -1110,6 +1110,7 @@ export interface AdminForthConfigForFrontend {
   iconOnlySidebar?: { 
     logo?: string,
     enabled?: boolean,
+    expandedSidebarWidth?: string,
   },
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
