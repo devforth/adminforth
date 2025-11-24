@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="">
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       class="fixed h-14 top-0 z-30 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
@@ -81,7 +81,7 @@
       @sidebarStateChange="handleSidebarStateChange"
     />
 
-    <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
+    <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
       :class="{
         'sm:ml-18': isSidebarIconOnly,
         'sm:ml-[16.5rem]': !isSidebarIconOnly,
