@@ -223,6 +223,11 @@ async function writeTemplateFiles(dirname, cwd, options) {
       condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
     },
     {
+      src:  'prisma.config.ts.hbs',
+      dest: 'prisma.config.ts',
+      data: {},
+    },
+    {
       src: 'package.json.hbs',
       dest: 'package.json',
       data: { 
