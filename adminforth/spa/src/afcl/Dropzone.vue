@@ -46,7 +46,7 @@
 
           <div
             v-else
-            class="flex items-center justify-center  py-1 flex-wrap gap-2 w-full gap-2 mt-1 mb-4 px-4"
+            class="flex items-center justify-center py-1 flex-wrap gap-2 w-full mt-1 mb-4 px-4"
           >
             <template v-for="(file, index) in selectedFiles" :key="index">
               <div
@@ -54,7 +54,12 @@
                       flex items-center gap-1 px-2 py-1 group"
               >
                 <IconFileSolid class="w-4 h-4 flex-shrink-0" />
-                <span class="truncate max-w-[200px]">{{ file.name }}</span>
+                <span
+                  class="truncate max-w-[200px]"
+                  :title="file.name"
+                >
+                  {{ shortenFileName(file.name) }}
+                </span>
                 <span class="text-xs">({{ humanifySize(file.size) }})</span>
                 <button
                   type="button"
@@ -122,6 +127,19 @@ const selectedFiles: Ref<{
 }[]> = ref([]);
 
 const storedFiles: Ref<File[]> = ref([]);
+
+function shortenFileName(name: string, maxLength = 24) {
+  if (name.length <= maxLength) return name;
+
+  const lastDotIndex = name.lastIndexOf('.');
+  const hasExtension = lastDotIndex > 0 && lastDotIndex < name.length - 1;
+  const extension = hasExtension ? name.slice(lastDotIndex + 1) : '';
+  const baseName = hasExtension ? name.slice(0, lastDotIndex) : name;
+
+  const startName = baseName.slice(0, 12);
+  const endName = baseName.split('').reverse().slice(0, 4).reverse().join('');
+  return hasExtension ? `${startName}...${endName}.${extension}` : `${startName}...${endName}`;
+}
 
 watch(() => props.modelValue, (files) => {
   if (files && files.length > 0) {
