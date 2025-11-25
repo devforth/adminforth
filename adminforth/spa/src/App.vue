@@ -52,7 +52,7 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
+                  <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
@@ -81,12 +81,10 @@
       @sidebarStateChange="handleSidebarStateChange"
     />
 
-    <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
-      :class="{
-        'sm:ml-18': isSidebarIconOnly,
-        'sm:ml-[264px]': !isSidebarIconOnly,
-        'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
-        'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
+    <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
+      :style="{
+        marginLeft: isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
@@ -147,12 +145,10 @@
     @apply opacity-100;
   }
 
-  @media (min-width: 640px) {
-    .sm\:ml-18 {
-      margin-left: 4.5rem;
-    }
-    .sm\:max-w-\[calc\(100\%-4\.5rem\)\] {
-      max-width: calc(100% - 4.5rem);
+  @media (max-width: 640px) {
+    .af-content-wrapper {
+      margin-left: 0 !important;
+      max-width: 100% !important;
     }
   }
 
@@ -200,7 +196,14 @@ const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'tru
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
+
 const theme = ref('light');
+
+const userMenuComponents = computed(() => {
+  console.log('🪲🆕 userMenuComponents recomputed', coreStore?.config?.globalInjections?.userMenu);
+  return coreStore?.config?.globalInjections?.userMenu || [];
+})
 
 function hideSidebar(): void {
   sideBarOpen.value = false;

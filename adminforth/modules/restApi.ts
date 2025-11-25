@@ -64,6 +64,11 @@ async function isShown(
   return true;
 }
 
+async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
+  const fillOnCreate = !!col.fillOnCreate;
+  return fillOnCreate;
+}
+
 export async function interpretResource(
   adminUser: AdminUser, 
   resource: AdminForthResource, 
@@ -1190,9 +1195,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate);
+                const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
-                if (!shown || bo) {
+                const filledOnCreate = await isFilledOnCreate(column);
+                if ((!shown && !filledOnCreate) || bo) {
                   return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
                 }
               }
@@ -1451,7 +1457,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_action',
       handler: async ({ body, adminUser, tr }) => {
-        const { resourceId, actionId, recordId } = body;
+        const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
@@ -1482,7 +1488,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra });
         
         return {
           actionId,

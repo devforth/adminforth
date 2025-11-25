@@ -522,6 +522,8 @@ class AdminForth implements IAdminForth {
       return { error: err };
     }
 
+    const recordWithVirtualColumns = { ...record };
+
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
       console.log('🪲 Hook beforeSave', hook);
@@ -563,7 +565,7 @@ class AdminForth implements IAdminForth {
       return { error };
     }
     
-    const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
+    const primaryKey = createdRecord[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave)) {
@@ -574,6 +576,7 @@ class AdminForth implements IAdminForth {
         record: createdRecord, 
         adminUser,
         adminforth: this,
+        recordWithVirtualColumns,
         extra,
       });
 
@@ -651,7 +654,10 @@ class AdminForth implements IAdminForth {
     } 
 
     if (Object.keys(newValues).length > 0) {
-      await connector.updateRecord({ resource, recordId, newValues });
+      const { error } = await connector.updateRecord({ resource, recordId, newValues });
+      if ( error ) {
+        return { error };
+      }
     }
     
     // execute hook if needed

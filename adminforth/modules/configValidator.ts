@@ -389,13 +389,17 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.name) {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
-  
+
       if (!action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
       }
       
       if (action.action && action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
+      }
+
+      if (action.customComponent) {
+        action.customComponent = this.validateComponent(action.customComponent as any, errors);
       }
   
       // Generate ID if not present
@@ -856,22 +860,32 @@ export default class ConfigValidator implements IConfigValidator {
       });
 
       // if pageInjection is a string, make array with one element. Also check file exists
+      // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
+      const allowedInjectionsByPage: Record<string, string[]> = {
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart'],
+        show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
+        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+      };
 
       if (options.pageInjections) {
 
-        Object.entries(options.pageInjections).map(([key, value]) => {
-          if (!possiblePages.includes(key)) {
-            const similar = suggestIfTypo(possiblePages, key);
-            errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${key}", allowed keys are ${possiblePages.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+        Object.entries(options.pageInjections).map(([pageKey, value]) => {
+          if (!possiblePages.includes(pageKey)) {
+            const similar = suggestIfTypo(possiblePages, pageKey);
+            errors.push(`Resource "${res.resourceId}" has invalid pageInjection page "${pageKey}", allowed pages are ${possiblePages.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
+            return;
           }
 
-          Object.entries(value).map(([injection, target]) => {
-            if (ConfigValidator.PAGE_INJECTION_KEYS.includes(injection)) {
-              options.pageInjections[key][injection] = this.validateAndListifyInjectionNew(options.pageInjections[key], injection, errors);
+          const allowedForThisPage = allowedInjectionsByPage[pageKey];
+
+          Object.entries(value).map(([injection, _target]) => {
+            if (allowedForThisPage.includes(injection)) {
+              this.validateAndListifyInjection(options.pageInjections[pageKey], injection, errors);
             } else {
-              const similar = suggestIfTypo(ConfigValidator.PAGE_INJECTION_KEYS, injection);
-              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}", Supported keys are ${ConfigValidator.PAGE_INJECTION_KEYS.join(', ')} ${similar ? `Did you mean "${similar}"?` : ''}`);
+              const similar = suggestIfTypo(allowedForThisPage, injection);
+              errors.push(`Resource "${res.resourceId}" has invalid pageInjection key "${injection}" for page "${pageKey}", supported keys are ${allowedForThisPage.join(', ')}. ${similar ? `Did you mean "${similar}"?` : ''}`);
             }
           });
 

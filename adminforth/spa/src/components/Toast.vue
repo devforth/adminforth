@@ -1,21 +1,21 @@
 <template>
     
 
-<div class="afcl-toast flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText border-r-4"
+<div class="afcl-toast flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText border-l-4"
     :class="toast.variant == 'info' ? 'border-lightPrimary dark:border-darkPrimary' : toast.variant == 'danger' ? 'border-red-500 dark:border-red-800' : toast.variant == 'warning' ? 'border-orange-500 dark:border-orange-700' : 'border-green-500 dark:border-green-800'"
     role="alert"
 >
-    <div v-if="toast.variant == 'info'" class=" inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity rounded-lg dark:bg-darkPrimary dark:!text-blue-100">
+    <div v-if="toast.variant == 'info'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity rounded-lg dark:bg-darkPrimary dark:!text-blue-100">
         <IconInfoCircleSolid class="w-5 h-5" aria-hidden="true" />
     </div>
-    <div v-else-if="toast.variant == 'danger'" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+    <div v-else-if="toast.variant == 'danger'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
         <IconCloseCircleSolid class="w-5 h-5" aria-hidden="true" />
     </div>
-    <div v-else-if="toast.variant == 'warning'"class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
+    <div v-else-if="toast.variant == 'warning'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
         <IconExclamationCircleSolid class="w-5 h-5" aria-hidden="true" />
 
     </div>
-    <div v-else class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
+    <div v-else class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
         <IconCheckCircleSolid class="w-5 h-5" aria-hidden="true" />
     </div>
 
@@ -24,7 +24,7 @@
         <div class="flex flex-col items-center justify-center">
             {{toast.message}}
             <div v-if="toast.buttons" class="flex justify-center mt-2 gap-2">
-                <div v-for="button in toast.buttons" class="rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
+                <div v-for="button in toast.buttons" class="af-toast-button rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
                     <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10">
                         {{ button.label }}
                     </button>

@@ -17,8 +17,25 @@
         {{ $t('Cancel') }}
       </button>
 
+      <!-- Custom Save Button injection -->
+      <component
+        v-if="editSaveButtonInjection"
+        :is="getCustomComponent(editSaveButtonInjection)"
+        :meta="editSaveButtonInjection.meta"
+        :record="editableRecord"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+        :saving="saving"
+        :validating="validating"
+        :isValid="isValid"
+        :disabled="saving || (validating && !isValid)"
+        :saveRecord="saveRecord"
+      />
+      
+      <!-- Default Save Button fallback -->
       <button
-        @click="saveRecord"
+        v-else
+        @click="() => saveRecord()"
         class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validating && !isValid)"
       >
@@ -99,6 +116,13 @@ const saving = ref(false);
 
 const record: Ref<Record<string, any>> = ref({});
 
+const editSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
+  const raw: any = coreStore.resourceOptions?.pageInjections?.edit?.saveButton as any;
+  if (!raw) return null;
+  const item = Array.isArray(raw) ? raw[0] : raw;
+  return item as AdminForthComponentDeclarationFull;
+});
+
 async function onUpdateRecord(newRecord: Record<string, any>) {
   record.value = newRecord;
 }
@@ -141,7 +165,7 @@ onMounted(async () => {
   loading.value = false;
 });
 
-async function saveRecord() {
+async function saveRecord(opts?: { confirmationResult?: any }) {
   if (!isValid.value) {
     validating.value = true;
     return;
@@ -181,6 +205,9 @@ async function saveRecord() {
       resourceId: route.params.resourceId,
       recordId: route.params.primaryKey,
       record: updates,
+      meta: {
+        ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
+      },
     },
   });
   if (resp.error && resp.error !== 'Operation aborted by hook') {
@@ -191,9 +218,9 @@ async function saveRecord() {
       variant: 'success',
       timeout: 400000
     });
+    router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
-  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
 }
 
 </script>

@@ -3,7 +3,7 @@
     <div v-if="!coreStore?.config?.settingPages || coreStore?.config?.settingPages.length === 0">
       <p>{{ $t('No setting pages configured or still loading...') }}</p>
     </div>
-      <VerticalTabs v-else ref="VerticalTabsRef" v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
+      <VerticalTabs v-else ref="VerticalTabsRef" hideTabesWhenSingle v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
       <template v-for="(c,i) in coreStore?.config?.settingPages" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+c.slug]>
         <div class="flex items-center justify-center whitespace-nowrap w-full px-4 gap-2" @click="setURL(c)">
           <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>

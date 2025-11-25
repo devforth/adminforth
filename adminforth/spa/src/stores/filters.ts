@@ -22,6 +22,9 @@ export const useFiltersStore = defineStore('filters', () => {
     const getFilters = () => {
         return filters.value;
     }
+    const clearFilter = (fieldName: string) => {
+        filters.value = filters.value.filter(f => f.field !== fieldName);
+    }
     const clearFilters = () => {
         filters.value = [];
     }
@@ -49,6 +52,7 @@ export const useFiltersStore = defineStore('filters', () => {
         setSort, 
         getSort,
         visibleFiltersCount,
-        shouldFilterBeHidden
+        shouldFilterBeHidden,
+        clearFilter
     }
 })

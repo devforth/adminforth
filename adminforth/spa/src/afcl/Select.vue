@@ -37,7 +37,7 @@
       </div>
     </div>
     <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-[5]': teleportToBody, 'z-[1000]': teleportToTop}"
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-10': teleportToBody, 'z-[1000]': teleportToTop}"
         class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
@@ -52,7 +52,7 @@
           <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
         </div>
         <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
-          {{ options?.length ? $t('No results found') : $t('No items here') }}
+          {{ $t('No results found') }}
         </div>
 
         <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
@@ -148,6 +148,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchDebounceMs: {
+    type: Number,
+    default: 300,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
@@ -165,6 +169,7 @@ const dropdownStyle = ref<{ top?: string; }>({
 
 const selectedItems: Ref<any[]> = ref([]);
 const internalSelect = ref<HTMLElement | null>(null);
+let searchDebounceHandle: ReturnType<typeof setTimeout> | null = null;
 
 function inputInput() {
   if (!props.multiple && selectedItems.value.length) {
@@ -172,7 +177,12 @@ function inputInput() {
     emit('update:modelValue', null);
   }
   if (!props.searchDisabled) {
-    emit('search', search.value);
+    if (searchDebounceHandle) {
+      clearTimeout(searchDebounceHandle);
+    }
+    searchDebounceHandle = setTimeout(() => {
+      emit('search', search.value);
+    }, props.searchDebounceMs);
   }
 }
 
@@ -328,6 +338,10 @@ onUnmounted(() => {
   // Remove scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.removeEventListener('scroll', handleScroll, true);
+  }
+  if (searchDebounceHandle) {
+    clearTimeout(searchDebounceHandle);
+    searchDebounceHandle = null;
   }
 });
 

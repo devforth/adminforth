@@ -177,18 +177,38 @@
               </template>
 
               <template v-if="resource.options?.actions">
-                <Tooltip v-for="action in resource.options.actions.filter(a => a.showIn?.list)" :key="action.id">
-                  <button
-                    @click="startCustomAction(action.id, row)"
-                  >
-                    <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
-                  </button>
-                  <template v-slot:tooltip>
+                <Tooltip
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
+                  :key="action.id"
+                >
+                    <component
+                      :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
+                      :meta="action.customComponent?.meta"
+                      :row="row"
+                      :resource="resource"
+                      :adminUser="adminUser"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                    >
+                      <button
+                        type="button"
+                        :disabled="rowActionLoadingStates?.[action.id]"
+                        @click.stop.prevent
+                      >
+                        <component
+                          v-if="action.icon"
+                          :is="getIcon(action.icon)"
+                          class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                        />
+                      </button>
+                    </component>
+
+                  <template #tooltip>
                     {{ action.name }}
                   </template>
                 </Tooltip>
               </template>
             </div>
+            
           </td>
         </tr>
       </tbody>
@@ -221,15 +241,14 @@
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
-        <div
-          contenteditable="true" 
-          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
+        <input
+          type="text"
+          v-model="pageInput"
+          :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
+          class="af-pagination-input min-w-10 outline-none inline-block py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
-          @input="onPageInput($event)"
           @blur="validatePageInput()"
-        >
-          {{ pageInput }}
-        </div>
+        />
 
         <button
           class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
@@ -577,10 +596,6 @@ async function startCustomAction(actionId: string, row: any) {
   if (data?.error) {
     showErrorTost(data.error);
   }
-}
-
-function onPageInput(event: any) {
-  pageInput.value = event.target.innerText;
 }
 
 function validatePageInput() {

@@ -99,7 +99,7 @@ model apartments {
 Migrate prisma schema:
 
 ```bash
-npx prisma migrate dev --name add-apartment-image
+npm run makemigration -- --name add-apartment-image ; npm run migrate:local
 ```
 
 Add column to `aparts` resource configuration:

@@ -555,7 +555,7 @@ Sometimes you might need to create a link that will open the create form with so
         resourceId: 'aparts',
       },
       query: {
-        values: encodeURIComponent(JSON.stringify({
+        values: atob_function(JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
       },
@@ -569,6 +569,7 @@ Sometimes you might need to create a link that will open the create form with so
 <script setup lang="ts">
 import { LinkButton } from '@afcl';
 import { useCoreStore } from '@/stores/core';
+import { btoa_function } from '@/utils';
 
 const coreStore = useCoreStore();
 </script>
@@ -586,11 +587,11 @@ ALso if you want to disable ability to change such fields (but keep them as read
         resourceId: 'aparts',
       },
       query: {
-        values: encodeURIComponent(JSON.stringify({
+        values: (JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
         //diff-add
-        readonlyColumns: encodeURIComponent(JSON.stringify(['realtor_id'])),
+        readonlyColumns: (JSON.stringify(['realtor_id'])),
       },
     }"
   >

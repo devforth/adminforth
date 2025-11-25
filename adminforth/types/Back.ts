@@ -569,6 +569,7 @@ export type AfterCreateSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  recordWithVirtualColumns?: any,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -700,6 +701,10 @@ interface AdminForthInputConfigCustomization {
   iconOnlySidebar?: {
     logo?: string,
     enabled?: boolean,
+    /**
+     * Width of expanded sidebar (default: '16.5rem')
+     */
+    expandedSidebarWidth?: string,
   },
 
   /**
@@ -864,6 +869,7 @@ export interface AdminForthActionInput {
   }>;
   icon?: string;
   id?: string;
+  customComponent?: AdminForthComponentDeclaration;
 }
 
 export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
