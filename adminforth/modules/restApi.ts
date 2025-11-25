@@ -64,6 +64,11 @@ async function isShown(
   return true;
 }
 
+async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
+  const fillOnCreate = !!col.fillOnCreate;
+  return fillOnCreate;
+}
+
 export async function interpretResource(
   adminUser: AdminUser, 
   resource: AdminForthResource, 
@@ -1190,9 +1195,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate);
+                const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
-                if (!shown || bo) {
+                const filledOnCreate = await isFilledOnCreate(column);
+                if ((!shown && !filledOnCreate) || bo) {
                   return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
                 }
               }
