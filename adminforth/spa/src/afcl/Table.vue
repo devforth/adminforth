@@ -110,15 +110,15 @@
             <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
             1
           </button>
-          <div
-            :contenteditable="!isLoading && !props.isLoading"
+          <input
+            type="text"
+            v-model="pageInput"
+            :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
             class="min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightTablePaginationInputText border border-lightTablePaginationInputBorder bg-lightTablePaginationInputBackground dark:border-darkTablePaginationInputBorder dark:text-darkTablePaginationInputText dark:bg-darkTablePaginationInputBackground z-10"
             @keydown="onPageKeydown($event)"
-            @input="onPageInput($event)"
             @blur="validatePageInput()"
           >
-            {{ pageInput }}
-          </div>
+          </input>
 
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
@@ -245,10 +245,6 @@
     'sort-change',
     'clickTableRow'
   ]);
-  
-  function onPageInput(event: any) {
-    pageInput.value = event.target.innerText;
-  }
 
   function validatePageInput() {
     const newPage = parseInt(pageInput.value) || 1;

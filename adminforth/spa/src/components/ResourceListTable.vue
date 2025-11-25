@@ -241,15 +241,14 @@
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
-        <div
-          contenteditable="true" 
-          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
+        <input
+          type="text"
+          v-model="pageInput"
+          :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
+          class="af-pagination-input min-w-10 outline-none inline-block py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
-          @input="onPageInput($event)"
           @blur="validatePageInput()"
-        >
-          {{ pageInput }}
-        </div>
+        />
 
         <button
           class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
@@ -597,10 +596,6 @@ async function startCustomAction(actionId: string, row: any) {
   if (data?.error) {
     showErrorTost(data.error);
   }
-}
-
-function onPageInput(event: any) {
-  pageInput.value = event.target.innerText;
 }
 
 function validatePageInput() {
