@@ -363,7 +363,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-
+        const settingPages = []
+        for ( const settingPage of this.adminforth.config.auth.userMenuSettingsPages || [] ) {
+          if ( settingPage.isVisible ) {
+            const isVisible = await settingPage.isVisible( adminUser );
+            settingPages.push( { ...settingPage, isVisible } );
+          }
+        }
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -378,7 +384,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
-
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -393,7 +398,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
-          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
+          settingPages: settingPages,
         }
 
         // translate menu labels

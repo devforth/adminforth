@@ -1140,6 +1140,7 @@ export interface AdminForthConfigForFrontend {
     pageLabel: string,
     slug?: string,
     component: string,
+    isVisible?: boolean
   }[],
 }
 
