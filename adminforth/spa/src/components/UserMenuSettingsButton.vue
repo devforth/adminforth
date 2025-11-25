@@ -50,7 +50,7 @@ const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);
 
 const options = computed(() => {
-  return coreStore.config?.settingPages?.map((page) => {
+  return coreStore.config?.settingPages?.filter(page => page.isVisible).map((page) => {
     return {
       pageLabel: page.pageLabel,
       slug: page.slug || null,
