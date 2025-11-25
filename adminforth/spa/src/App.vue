@@ -201,6 +201,7 @@ const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expanded
 const theme = ref('light');
 
 const userMenuComponents = computed(() => {
+  console.log('🪲🆕 userMenuComponents recomputed', coreStore?.config?.globalInjections?.userMenu);
   return coreStore?.config?.globalInjections?.userMenu || [];
 })
 
