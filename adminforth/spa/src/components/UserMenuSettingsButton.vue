@@ -1,5 +1,5 @@
 <template>
-  <div class="min-w-40">
+  <div v-if="options && options.length" class="min-w-40">
     <div class="cursor-pointer flex items-center justify-between gap-1 block px-4 py-2 text-sm 
       bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText 
       hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover 
