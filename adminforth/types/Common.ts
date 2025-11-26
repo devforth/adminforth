@@ -272,8 +272,9 @@ export interface AdminForthComponentDeclarationFull {
      * - 'default': Show both sidebar and header (default behavior)
      * - 'none': Hide both sidebar and header (full custom layout)
      * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     * - 'headerOnly': Show only header (full custom layout)
      */
-    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly',
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly' | 'headerOnly',
     
     [key: string]: any,
   }

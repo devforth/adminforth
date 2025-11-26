@@ -1,7 +1,7 @@
 <template>
   <div>
     <nav 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && headerOnlyLayout"
       class="fixed h-14 top-0 z-30 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
@@ -73,7 +73,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
@@ -183,6 +183,7 @@ initFrontedAPI()
 createHead()
 const sideBarOpen = ref(false);
 const defaultLayout = ref(true);
+const headerOnlyLayout = ref(false);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
@@ -246,6 +247,8 @@ function handleCustomLayout() {
   } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
     defaultLayout.value = true;
     isSidebarIconOnly.value = true;
+  } else if (route.meta?.sidebarAndHeader === 'headerOnly') {
+    headerOnlyLayout.value = true;
   } else {
     defaultLayout.value = true;
   }
