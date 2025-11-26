@@ -12,6 +12,7 @@ import {
   HttpExtra,
   IAdminForthAndOrFilter,
   BackendOnlyInput,
+  Filters,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
@@ -1180,6 +1181,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+              }
+            }
+
             const ctxCreate = {
               adminUser,
               resource,
@@ -1294,6 +1303,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
               return { error: allowedError };
+            }
+
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+              }
             }
 
             const ctxEdit = {
