@@ -15,7 +15,7 @@
       <tbody>
         <!-- table header -->
         <tr class="t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
-          <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
+          <td scope="col" class="list-table-header-cell p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -25,7 +25,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -86,7 +86,7 @@
         <tr @click="onClick($event,row)" 
           v-else v-for="(row, rowI) in rows" :key="`row_${row._primaryKeyValue}`"
           ref="rowRefs"
-          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+          class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
 
           :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
         >
@@ -620,9 +620,10 @@ td.sticky-column {
     @apply left-[56px];
   }
 }
-tr:not(:first-child):hover {
-  td.sticky-column {
+tr.list-table-body-row:not(:first-child):hover {
+  td.sticky-column:not(.list-table-header-cell) {
     @apply bg-lightListTableRowHover dark:bg-darkListTableRowHover;
   }
 }
+
 </style>
