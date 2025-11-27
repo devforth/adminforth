@@ -62,6 +62,7 @@
  
     <ResourceForm 
       v-else-if="coreStore.resource"
+      ref="resourceFormRef"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -93,13 +94,14 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, ref, type Ref } from 'vue';
+import { computed, onMounted, ref, type Ref, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import type { AdminForthResourceColumn } from '@/types/Back';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
@@ -115,6 +117,8 @@ const loading = ref(true);
 const saving = ref(false);
 
 const record: Ref<Record<string, any>> = ref({});
+
+const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
 
 const editSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
   const raw: any = coreStore.resourceOptions?.pageInjections?.edit?.saveButton as any;
@@ -168,6 +172,8 @@ onMounted(async () => {
 async function saveRecord(opts?: { confirmationResult?: any }) {
   if (!isValid.value) {
     validating.value = true;
+    await nextTick();
+    scrollToInvalidField();
     return;
   } else {
     validating.value = false;
@@ -221,6 +227,25 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
     router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
+}
+
+function scrollToInvalidField() {
+  let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
+  for (const column of resourceFormRef.value?.editableColumns || []) {
+    const error = resourceFormRef.value?.columnError(column);
+    if (error) {
+      columnsWithErrors.push({column, error});
+    }
+  }
+  const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
+  adminforth.alert({
+    messageHtml: errorMessage,
+    variant: 'danger'
+  });
+  const firstInvalidElement = document.querySelector('.af-invalid-field-message');
+  if (firstInvalidElement) {
+    firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 </script>

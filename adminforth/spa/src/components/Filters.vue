@@ -18,11 +18,11 @@
     </h5>
    
     <div class="py-4 ">
-      <ul class="space-y-3 font-medium">
+      <ul class="space-y-3 font-medium text-sm">
          <li v-for="c in columnsWithFilter" :key="c">
             <div class="flex flex-col">
               <div class="flex justify-between items-center">
-                <p class="dark:text-gray-400 h-7 my-1">{{ c.label }}</p>
+                <p class="dark:text-gray-400 my-1">{{ c.label }}</p>
                 <Tooltip v-if="filtersStore.filters.find(f => f.field === c.name)">
                 <button 
                   class=" flex items-center justify-center w-7 h-7 my-1 hover:border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"

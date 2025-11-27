@@ -52,7 +52,7 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
+                  <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
@@ -73,7 +73,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
@@ -81,12 +81,10 @@
       @sidebarStateChange="handleSidebarStateChange"
     />
 
-    <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
-      :class="{
-        'sm:ml-18': isSidebarIconOnly,
-        'sm:ml-[264px]': !isSidebarIconOnly,
-        'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
-        'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
+    <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
+      :style="{
+        marginLeft: headerOnlyLayout ? 0 : isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: headerOnlyLayout ? '100%' : isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
@@ -147,12 +145,10 @@
     @apply opacity-100;
   }
 
-  @media (min-width: 640px) {
-    .sm\:ml-18 {
-      margin-left: 4.5rem;
-    }
-    .sm\:max-w-\[calc\(100\%-4\.5rem\)\] {
-      max-width: calc(100% - 4.5rem);
+  @media (max-width: 640px) {
+    .af-content-wrapper {
+      margin-left: 0 !important;
+      max-width: 100% !important;
     }
   }
 
@@ -187,6 +183,7 @@ initFrontedAPI()
 createHead()
 const sideBarOpen = ref(false);
 const defaultLayout = ref(true);
+const headerOnlyLayout = ref(false);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
@@ -200,7 +197,81 @@ const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'tru
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
+
 const theme = ref('light');
+
+const userMenuComponents = computed(() => {
+  console.log('🪲🆕 userMenuComponents recomputed', JSON.parse(JSON.stringify(coreStore?.config?.globalInjections?.userMenu)));
+  return coreStore?.config?.globalInjections?.userMenu || [];
+})
+
+watch(
+  () => coreStore.config?.globalInjections?.userMenu,
+  (newVal, oldVal) => {
+    // Only log when it becomes undefined (you can relax this if needed)
+    if (newVal === undefined) {
+      const err = new Error('🔍 userMenu changed to undefined');
+      console.groupCollapsed(
+        '%c[TRACE] userMenu changed to undefined',
+        'color: red; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.log('Stack trace:');
+      console.log(err.stack);
+      console.groupEnd();
+    } else {
+      // Optional: log ALL changes for debugging
+      console.groupCollapsed(
+        '%c[DEBUG] userMenu changed',
+        'color: orange; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.groupEnd();
+    }
+  },
+  {
+    deep: false,
+    immediate: false,
+  }
+);
+
+watch(() => coreStore.config?.globalInjections, (v) => {
+  console.log("🔧 globalInjections replaced:", v);
+}, { deep: false });
+
+watch(
+  () => coreStore.config?.globalInjections?.userMenu,
+  (newVal, oldVal) => {
+    if (newVal === undefined) {
+      const err = new Error('🔍 userMenu changed to undefined');
+      console.groupCollapsed(
+        '%c[TRACE] userMenu changed to undefined',
+        'color: red; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.log('Stack trace:');
+      console.log(err.stack);
+      console.groupEnd();
+    } else {
+      console.groupCollapsed(
+        '%c[DEBUG] userMenu changed',
+        'color: orange; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.groupEnd();
+    }
+  },
+  { deep: false, immediate: false }
+);
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
@@ -243,6 +314,8 @@ function handleCustomLayout() {
   } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
     defaultLayout.value = true;
     isSidebarIconOnly.value = true;
+  } else if (route.meta?.sidebarAndHeader === 'headerOnly') {
+    headerOnlyLayout.value = true;
   } else {
     defaultLayout.value = true;
   }

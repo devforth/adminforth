@@ -522,7 +522,6 @@ export default {
         meta: any;
         source: ActionCheckSource;
       }): Promise<boolean | string> => {
-        console.log("edit aa check 🔒", meta, source, adminUser);
         return adminUser.dbUser.role === "superadmin";
         // return true;
         // if (source === ActionCheckSource.DisplayButtons) {
@@ -542,7 +541,6 @@ export default {
         return true;
       },
       show: async ({ adminUser, meta, source, adminforth }: any) => {
-        console.log("show aa check 🔒", meta);
         // if (source === 'showRequest' || source === 'editLoadRequest') {
         //   const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
         //   return record.user_id === adminUser.dbUser.id;
