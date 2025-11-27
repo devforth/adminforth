@@ -1,5 +1,5 @@
 <template>
-  <div class="min-w-40">
+  <div v-if="options && options.length" class="min-w-40">
     <div class="cursor-pointer flex items-center justify-between gap-1 block px-4 py-2 text-sm 
       bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText 
       hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover 
@@ -50,7 +50,7 @@ const showDropdown = ref(false);
 const props = defineProps(['meta', 'resource']);
 
 const options = computed(() => {
-  return coreStore.config?.settingPages?.map((page) => {
+  return coreStore.config?.settingPages?.filter(page => page.isVisible).map((page) => {
     return {
       pageLabel: page.pageLabel,
       slug: page.slug || null,

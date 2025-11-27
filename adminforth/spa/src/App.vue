@@ -1,7 +1,7 @@
 <template>
   <div>
     <nav 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && headerOnlyLayout"
       class="fixed h-14 top-0 z-30 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
@@ -73,7 +73,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
@@ -183,6 +183,7 @@ initFrontedAPI()
 createHead()
 const sideBarOpen = ref(false);
 const defaultLayout = ref(true);
+const headerOnlyLayout = ref(false);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
@@ -201,9 +202,76 @@ const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expanded
 const theme = ref('light');
 
 const userMenuComponents = computed(() => {
-  console.log('🪲🆕 userMenuComponents recomputed', coreStore?.config?.globalInjections?.userMenu);
+  console.log('🪲🆕 userMenuComponents recomputed', JSON.parse(JSON.stringify(coreStore?.config?.globalInjections?.userMenu)));
   return coreStore?.config?.globalInjections?.userMenu || [];
 })
+
+watch(
+  () => coreStore.config?.globalInjections?.userMenu,
+  (newVal, oldVal) => {
+    // Only log when it becomes undefined (you can relax this if needed)
+    if (newVal === undefined) {
+      const err = new Error('🔍 userMenu changed to undefined');
+      console.groupCollapsed(
+        '%c[TRACE] userMenu changed to undefined',
+        'color: red; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.log('Stack trace:');
+      console.log(err.stack);
+      console.groupEnd();
+    } else {
+      // Optional: log ALL changes for debugging
+      console.groupCollapsed(
+        '%c[DEBUG] userMenu changed',
+        'color: orange; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.groupEnd();
+    }
+  },
+  {
+    deep: false,
+    immediate: false,
+  }
+);
+
+watch(() => coreStore.config?.globalInjections, (v) => {
+  console.log("🔧 globalInjections replaced:", v);
+}, { deep: false });
+
+watch(
+  () => coreStore.config?.globalInjections?.userMenu,
+  (newVal, oldVal) => {
+    if (newVal === undefined) {
+      const err = new Error('🔍 userMenu changed to undefined');
+      console.groupCollapsed(
+        '%c[TRACE] userMenu changed to undefined',
+        'color: red; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.log('Stack trace:');
+      console.log(err.stack);
+      console.groupEnd();
+    } else {
+      console.groupCollapsed(
+        '%c[DEBUG] userMenu changed',
+        'color: orange; font-weight: bold;'
+      );
+      console.log('old value:', oldVal);
+      console.log('new value:', newVal);
+      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
+      console.groupEnd();
+    }
+  },
+  { deep: false, immediate: false }
+);
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
@@ -246,6 +314,8 @@ function handleCustomLayout() {
   } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
     defaultLayout.value = true;
     isSidebarIconOnly.value = true;
+  } else if (route.meta?.sidebarAndHeader === 'headerOnly') {
+    headerOnlyLayout.value = true;
   } else {
     defaultLayout.value = true;
   }

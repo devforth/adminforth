@@ -1091,7 +1091,8 @@ export interface AdminForthInputConfig {
         icon?: string,
         pageLabel: string,
         slug?: string,
-        component: string
+        component: string,
+        isVisible?: (adminUser: AdminUser) => boolean,
       }[],
     },
 
