@@ -83,8 +83,8 @@
 
     <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
       :style="{
-        marginLeft: isSidebarIconOnly ? '4.5rem' : expandedWidth,
-        maxWidth: isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
+        marginLeft: headerOnlyLayout ? 0 : isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: headerOnlyLayout ? '100%' : isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
