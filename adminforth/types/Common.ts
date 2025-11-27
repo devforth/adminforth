@@ -30,6 +30,21 @@ export enum AdminForthFilterOperators {
   OR = 'or',
 };
 
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: AdminForthFilterOperators;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+} 
+
 export enum AdminForthSortDirections {
   asc = 'asc',
   desc = 'desc',
