@@ -63,7 +63,7 @@ export default {
     }
 ```
 
-You can also specify on which page you want to create or delete groups. If you assign null, the groups will disappear from this page.
+You can also specify on which page you want to create groups.
 
 ```typescript title="./resources/apartments.ts"
 export default {
@@ -89,10 +89,6 @@ export default {
           }
           //diff-add
         ],
-          //diff-add
-        editFieldGroups: null,
-          //diff-add
-        showFieldGroups: null,
       }
     }
 ```

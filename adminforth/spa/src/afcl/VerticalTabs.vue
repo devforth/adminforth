@@ -3,6 +3,7 @@
     <ul class="ps-6 flex-column space-y space-y-4 text-sm font-medium text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0 md:mr-0 mr-6">
       <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
         <a 
+          v-if="!props.hideTabesWhenSingle || tabs.length > 1"
           href="#"
           @click="setActiveTab(tab)"
           class="inline-flex items-center px-4 py-3 rounded-lg w-full"
@@ -26,6 +27,10 @@ import { onMounted, useSlots, ref, type Ref } from 'vue';
   const props = defineProps({
     activeTab: {
       type: String
+    },
+    hideTabesWhenSingle: {
+      type: Boolean,
+      default: false
     }
   });
   const emites = defineEmits([

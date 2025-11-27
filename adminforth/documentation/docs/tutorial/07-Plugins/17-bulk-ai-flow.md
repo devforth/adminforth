@@ -332,3 +332,53 @@ If you want to compare a generated image with an image stored in your storage, y
 After generation, you’ll see a button labeled "old image". Clicking it will open a pop-up where you can compare the generated image with the stored one:
 
 ![alt text](Bulk-vision-4.png)
+
+## Extra data fields
+
+When creating default prompts, you can use Handlebars to pass data from the record into the prompt:
+
+```ts
+  ...
+  fillPlainFields: { 
+    description: 'Create a description based on the apartment name: {{title}}.'
+  },
+  ...
+```
+
+Each record will receive a unique prompt based on its own title.
+
+If you want to add extra data fields for use in your prompt, implement the `provideAdditionalContextForRecord` callback:
+
+```ts
+provideAdditionalContextForRecord({ record, adminUser, resource }) {
+  const extraData: any = {};
+  if (record.country === 'Spain') {
+    // Your logic
+    // e.g. extraData.discount = '10%';
+  } else {
+    // Your logic
+  }
+  return extraData;
+},
+fillPlainFields: { 
+  description: 'Create a description based on the apartment name: {{title}}. Also include the fact that the apartment has a discount of {{extraData.discount}}.'
+},
+```
+
+## Allow users to edit generation prompts
+
+If you want to let users adjust generation prompts for their unique cases, add this to the plugin setup:
+
+```ts
+...
+//diff-add
+askConfirmationBeforeGenerating: true,
+...
+```
+
+The user will now see a popup with a "Start generation" button and an "Edit prompts" button, allowing them to modify the prompt before running it.
+
+![alt text](Bulk-vision-5.png)
+![alt text](Bulk-vision-6.png)
+
+> ☝️ Updated prompts are stored in the user's local storage. Changes are local to that browser and do not affect other users or devices.

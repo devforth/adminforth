@@ -55,7 +55,7 @@
               @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
               :readonly="readonlyColumns?.includes(column.name)"
             />
-            <div v-if="columnError(column) && validating" class="mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnError(column) }}</div>
+            <div v-if="columnError(column) && validating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnError(column) }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>
