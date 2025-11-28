@@ -88,12 +88,25 @@ export const loadFile = (file: string) => {
   }
   let path;
   let baseUrl = '';
-  console.log('loadFile', file, "import.meta.url", import.meta.url);
   if (file.startsWith('@/')) {
-    console.log('loading from @/');
     path = file.replace('@/', '');
     console.log('path', path);
-    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    const modules = import.meta.glob('./**/*');
+    const fileModulePath = `./${path}`;
+    let matchingModulePath = '';
+    for (const modulePath in modules) {
+      console.log('modulePath', modulePath);
+      if (modulePath === fileModulePath) {
+        matchingModulePath = modulePath;
+        break;
+      }
+    }
+    console.log('matchingModulePath', matchingModulePath);
+
+
+
+
+    baseUrl = new URL(fileModulePath ,import.meta.url).href;
     console.log('baseUrl', baseUrl);
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
