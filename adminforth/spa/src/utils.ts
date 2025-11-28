@@ -88,9 +88,13 @@ export const loadFile = (file: string) => {
   }
   let path;
   let baseUrl = '';
+  console.log('loadFile', file, "import.meta.url", import.meta.url);
   if (file.startsWith('@/')) {
+    console.log('loading from @/');
     path = file.replace('@/', '');
+    console.log('path', path);
     baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    console.log('baseUrl', baseUrl);
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
     baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
