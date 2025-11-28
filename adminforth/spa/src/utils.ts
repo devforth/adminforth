@@ -86,24 +86,16 @@ export const loadFile = (file: string) => {
   if (file.startsWith('http')) {
     return file;
   }
-  console.log('Loading file:', file);
   let path;
   let baseUrl = '';
   if (file.startsWith('@/')) {
-    console.log('Loading from @/');
     path = file.replace('@/', '');
-    console.log('Resolved path:', path);
-    baseUrl = new URL(`./${path}`, import.meta.url.split('?')[0]).href;
-    console.log('Base URL:', baseUrl);
+    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   } else if (file.startsWith('@@/')) {
-    console.log('Loading from @@/');
     path = file.replace('@@/', '');
-    console.log('Resolved path:', path);
-    baseUrl = new URL(`./custom/${path}`, import.meta.url.split('?')[0]).href;
-    console.log('Base URL:', baseUrl);
+    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   } else {
-    baseUrl = new URL(`./${file}`, import.meta.url.split('?')[0]).href;
-    console.log('Loading from relative path:', baseUrl);
+    baseUrl = new URL(`./${file}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   }
   return baseUrl;
 }
