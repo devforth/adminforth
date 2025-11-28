@@ -4,13 +4,30 @@
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
           <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText">
             <tr>
-              <th scope="col" class="px-6 py-3" ref="headerRefs" :key="`header-${column.fieldName}`"
+              <th
+                scope="col"
+                class="px-6 py-3"
+                ref="headerRefs"
+                :key="`header-${column.fieldName}`"
                 v-for="column in columns"
+                :aria-sort="getAriaSort(column)"
+                :class="{ 'cursor-pointer select-none afcl-table-header-sortable': isColumnSortable(column) }"
+                @click="onHeaderClick(column)"
               >
                 <slot v-if="$slots[`header:${column.fieldName}`]" :name="`header:${column.fieldName}`" :column="column" />
-                
-                <span v-else>
+
+                <span v-else class="inline-flex items-center">
                   {{ column.label }}
+                  <span v-if="isColumnSortable(column)" class="text-lightTableHeadingText dark:text-darkTableHeadingText">
+                    <!-- Unsorted -->
+                    <svg v-if="currentSortField !== column.fieldName" class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/></svg>
+
+                    <!-- Sorted ascending -->
+                    <svg v-else-if="currentSortDirection === 'asc'" class="w-3 h-3 ms-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
+
+                    <!-- Sorted descending -->
+                    <svg v-else class="w-3 h-3 ms-1.5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
+                  </span>
                 </span>
               </th>
             </tr>
@@ -40,6 +57,7 @@
                 'afcl-table-body odd:bg-lightTableOddBackground odd:dark:bg-darkTableOddBackground even:bg-lightTableEvenBackground even:dark:bg-darkTableEvenBackground': evenHighlights,
                 'border-b border-lightTableBorder dark:border-darkTableBorder': index !== dataPage.length - 1 || totalPages > 1,
               }"
+              @click="tableRowClick(item)"
             >
               <td class="px-6 py-4" :key="`cell-${index}-${column.fieldName}`"
                 v-for="column in props.columns"
@@ -92,15 +110,15 @@
             <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
             1
           </button>
-          <div
-            :contenteditable="!isLoading && !props.isLoading"
+          <input
+            type="text"
+            v-model="pageInput"
+            :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
             class="min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightTablePaginationInputText border border-lightTablePaginationInputBorder bg-lightTablePaginationInputBackground dark:border-darkTablePaginationInputBorder dark:text-darkTablePaginationInputText dark:bg-darkTablePaginationInputBackground z-10"
             @keydown="onPageKeydown($event)"
-            @input="onPageInput($event)"
             @blur="validatePageInput()"
           >
-            {{ pageInput }}
-          </div>
+          </input>
 
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
@@ -141,13 +159,16 @@
       columns: {
         label: string,
         fieldName: string,
+        sortable?: boolean,
       }[],
       data: {
         [key: string]: any,
-      }[] | ((params: { offset: number, limit: number }) => Promise<{data: {[key: string]: any}[], total: number}>),
+      }[] | ((params: { offset: number, limit: number, sortField?: string, sortDirection?: 'asc' | 'desc' }) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
       isLoading?: boolean,
+      defaultSortField?: string,
+      defaultSortDirection?: 'asc' | 'desc',
     }>(), {
       evenHighlights: true,
       pageSize: 5,
@@ -163,8 +184,17 @@
   const isLoading = ref(false);
   const dataResult = ref<{data: {[key: string]: any}[], total: number}>({data: [], total: 0});
   const isAtLeastOneLoading = ref<boolean[]>([false]);
+  const currentSortField = ref<string | undefined>(props.defaultSortField);
+  const currentSortDirection = ref<'asc' | 'desc'>(props.defaultSortDirection ?? 'asc');
 
   onMounted(() => {
+    // If defaultSortField points to a non-sortable column, ignore it
+    if (currentSortField.value) {
+      const col = props.columns?.find(c => c.fieldName === currentSortField.value);
+      if (!col || !isColumnSortable(col)) {
+        currentSortField.value = undefined;
+      }
+    }
     refresh();
   });
 
@@ -181,6 +211,20 @@
     emit('update:tableLoading', isLoading.value || props.isLoading);
   });
 
+  watch([() => currentSortField.value, () => currentSortDirection.value], () => {
+    const needsPageReset = currentPage.value !== 1;
+    if (needsPageReset) {
+      currentPage.value = 1;
+    } else {
+      refresh();
+    }
+    emit('update:sortField', currentSortField.value);
+    emit('update:sortDirection', currentSortField.value ? currentSortDirection.value : undefined);
+    const field = currentSortField.value ?? null;
+    const direction = currentSortField.value ? currentSortDirection.value : null;
+    emit('sort-change', { field, direction });
+  }, { immediate: false });
+
   const totalPages = computed(() => {
     return dataResult.value?.total ? Math.ceil(dataResult.value.total / props.pageSize) : 1;
   });
@@ -196,11 +240,11 @@
 
   const emit = defineEmits([
     'update:tableLoading',
+    'update:sortField',
+    'update:sortDirection',
+    'sort-change',
+    'clickTableRow'
   ]);
-  
-  function onPageInput(event: any) {
-    pageInput.value = event.target.innerText;
-  }
 
   function validatePageInput() {
     const newPage = parseInt(pageInput.value) || 1;
@@ -231,7 +275,12 @@
       isLoading.value = true;
       const currentLoadingIndex = currentPage.value;
       isAtLeastOneLoading.value[currentLoadingIndex] = true;
-      const result = await props.data({ offset: (currentLoadingIndex - 1) * props.pageSize, limit: props.pageSize });
+      const result = await props.data({
+        offset: (currentLoadingIndex - 1) * props.pageSize,
+        limit: props.pageSize,
+        sortField: currentSortField.value,
+        ...(currentSortField.value ? { sortDirection: currentSortDirection.value } : {}),
+      });
       isAtLeastOneLoading.value[currentLoadingIndex] = false;
       if (isAtLeastOneLoading.value.every(v => v === false)) {
         isLoading.value = false;
@@ -240,7 +289,9 @@
     } else if (typeof props.data === 'object' && Array.isArray(props.data)) {
       const start = (currentPage.value - 1) * props.pageSize;
       const end = start + props.pageSize;
-      dataResult.value = { data: props.data.slice(start, end), total: props.data.length };
+      const total = props.data.length;
+      const sorted = sortArrayData(props.data, currentSortField.value, currentSortDirection.value);
+      dataResult.value = { data: sorted.slice(start, end), total };
     }
   }
 
@@ -252,4 +303,52 @@
     }
   }
 
+function isColumnSortable(col:{fieldName:string; sortable?:boolean}) {
+  // Sorting is controlled per column; default is NOT sortable. Enable with `sortable: true`.
+  return col.sortable === true;
+}
+
+function onHeaderClick(col:{fieldName:string; sortable?:boolean}) {
+  if (!isColumnSortable(col)) return;
+  if (currentSortField.value !== col.fieldName) {
+    currentSortField.value = col.fieldName;
+    currentSortDirection.value = props.defaultSortDirection ?? 'asc';
+  } else {
+    currentSortDirection.value =
+      currentSortDirection.value === 'asc' ? 'desc' :
+      currentSortField.value ? (currentSortField.value = undefined, props.defaultSortDirection ?? 'asc') :
+      'asc';
+  }
+}
+
+function getAriaSort(col:{fieldName:string; sortable?:boolean}) {
+  if (!isColumnSortable(col)) return undefined;
+  if (currentSortField.value !== col.fieldName) return 'none';
+  return currentSortDirection.value === 'asc' ? 'ascending' : 'descending';
+}
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
+  if (!sortField) return data;
+  // Helper function to get nested properties by path
+  const getByPath = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
+  return [...data].sort((a,b) => {
+    const av = getByPath(a, sortField), bv = getByPath(b, sortField);
+    // Handle null/undefined values
+    if (av == null && bv == null) return 0;
+    // Handle null/undefined values
+    if (av == null) return 1; if (bv == null) return -1;
+    // Data types
+    if (av instanceof Date && bv instanceof Date) return dir === 'asc' ? av.getTime() - bv.getTime() : bv.getTime() - av.getTime();
+    // Strings and numbers
+    if (typeof av === 'number' && typeof bv === 'number') return dir === 'asc' ? av - bv : bv - av;
+    const cmp = collator.compare(String(av), String(bv));
+    return dir === 'asc' ? cmp : -cmp;
+  });
+}
+
+function tableRowClick(row) {
+  emit("clickTableRow", row)
+}
 </script>
