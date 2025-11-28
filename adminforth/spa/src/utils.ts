@@ -86,33 +86,23 @@ export const loadFile = (file: string) => {
   if (file.startsWith('http')) {
     return file;
   }
+  console.log('file', file);
   let path;
   let baseUrl = '';
   if (file.startsWith('@/')) {
     path = file.replace('@/', '');
     console.log('path', path);
-    const modules = import.meta.glob('./**/*');
     const fileModulePath = `./${path}`;
-    let matchingModulePath = '';
-    for (const modulePath in modules) {
-      console.log('modulePath', modulePath);
-      if (modulePath === fileModulePath) {
-        matchingModulePath = modulePath;
-        break;
-      }
-    }
-    console.log('matchingModulePath', matchingModulePath);
-
-
-
-
+    console.log('imort.meta.url', import.meta.url);
     baseUrl = new URL(fileModulePath ,import.meta.url).href;
     console.log('baseUrl', baseUrl);
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
-    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    const fileModulePath = `./${path}`;
+    baseUrl = new URL(fileModulePath, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   } else {
-    baseUrl = new URL(`./${file}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    const fileModulePath = `./${file}`;
+    baseUrl = new URL(fileModulePath, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   }
   return baseUrl;
 }
