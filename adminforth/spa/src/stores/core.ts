@@ -221,6 +221,12 @@ export const useCoreStore = defineStore('core', () => {
     return userData.value && userFullnameField && userData.value[userFullnameField];
   })
 
+  const isIos = computed(() => {
+    return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+  )});
+
 
   return { 
     config,
@@ -245,5 +251,6 @@ export const useCoreStore = defineStore('core', () => {
     resetAdminUser,
     resetResource,
     isResourceFetching,
+    isIos
   }
 })
