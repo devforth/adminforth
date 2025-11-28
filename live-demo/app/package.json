@@ -33,7 +33,7 @@
     "@adminforth/two-factors-auth": "^1.1.2",
     "@adminforth/upload": "^2.3.6",
     "@prisma/client": "^6.6.0",
-    "adminforth": "^2.4.0-next.325",
+    "adminforth": "^2.13.0-next.5",
     "better-sqlite3": "^10.0.0",
     "express": "^4.19.2"
   },
