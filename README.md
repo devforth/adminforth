@@ -82,6 +82,9 @@ npm run install-plugins
 npm run install-adapters
 
 npm ci
+
+./run_inventory.sh
+
 npm run migrate:local
 npm start
 ```
