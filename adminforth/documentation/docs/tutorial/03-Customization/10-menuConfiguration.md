@@ -23,7 +23,7 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
 ```ts title='./index.ts'
   {
     ...
-    menu: {
+    menu: [
       {
         label: 'Blog',
         icon: 'flowbite:brain-solid',
@@ -46,7 +46,7 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
         icon: 'flowbite:folder-duplicate-outline',
         resourceId: 'adminuser',
       },
-    },
+    ],
     ...
   }
 ```

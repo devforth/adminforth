@@ -253,13 +253,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
-
+    
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
 
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
-        if (filledRecord[col.name] === undefined) {
+        if (filledRecord[col.name] === undefined || (Array.isArray(filledRecord[col.name]) && filledRecord[col.name].length === 0)) {
           filledRecord[col.name] = col.fillOnCreate({
             initialRecord: record, 
             adminUser

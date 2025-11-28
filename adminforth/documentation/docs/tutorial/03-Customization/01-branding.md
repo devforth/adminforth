@@ -142,6 +142,8 @@ const admin = new AdminForth({
   //diff-add
       logo: '@@/logo.svg',  // Optional: Custom logo to display in icon-only mode
   //diff-add
+      expandedSidebarWidth: '18.5rem', // Optional: sets the expanded sidebar width, defaults to 16.5rem
+  //diff-add
     }, 
   },
   ...

@@ -1,21 +1,4 @@
-import type { AdminForthFilterOperators } from "./Common.js";
-
- 
-
-export type FilterParams = {
-    /**
-     * Field of resource to filter
-     */
-    field: string;
-    /**
-     * Operator of filter
-     */
-    operator: AdminForthFilterOperators;
-    /**
-     * Value of filter
-     */
-    value: string | number | boolean ;
-} 
+import type { AdminForthFilterOperators, FilterParams } from "./Common.js";
 
 export interface FrontendAPIInterface {
 

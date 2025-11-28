@@ -377,4 +377,9 @@ watch(() => isValid.value, (value) => {
   emit('update:isValid', value);
 });
 
+defineExpose({
+  columnError,
+  editableColumns,
+})
+
 </script>
