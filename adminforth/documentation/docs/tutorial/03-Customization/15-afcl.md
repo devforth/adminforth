@@ -333,6 +333,26 @@ import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
   </div>
 </div>
 
+## Textarea
+<div class="split-screen" >
+  <div >
+```ts
+import { Textarea } from '@/afcl'
+```
+
+```ts
+    <Textarea
+      v-model="textAreaInput"
+      placeholder="Enter some text..."
+      class="w-64"
+    />
+```
+  </div>
+  <div>
+    ![AFCL Textarea](textarea.png)
+  </div>
+</div>
+
 ## Tooltip
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
