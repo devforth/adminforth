@@ -33,7 +33,7 @@ new AdminForth({
     datesFormat: 'D MMM YY',
     timeFormat: 'HH:mm:ss',
     iconOnlySidebar: {
-      logo: '@/assets/logo.svg',
+      logo: 'https://demo.adminforth.dev/src/assets/logo.svg',
     },
     emptyFieldPlaceholder: '-',
     title: 'My App Admin',  // used to set HTML meta title tag
