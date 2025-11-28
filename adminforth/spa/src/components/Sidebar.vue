@@ -21,7 +21,7 @@
           'justify-center': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))) 
         }"
       >
-        <img 
+        <img
           :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" 
           :alt="`${ coreStore.config?.brandName } Logo`"
           class="af-logo h-8 me-3" 
