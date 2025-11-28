@@ -442,6 +442,7 @@ const props = defineProps<{
   record: any
   resource: any
   meta: any
+  adminUser: any
 }>();
 </script>
 ```
@@ -458,7 +459,7 @@ Component contract:
 
 Notes and tips:
 - Requirements:
-  - Required <tr></tr> structure around </slot>
+  - Required `<tr></tr>` structure around `<slot />`
 
 ## List table beforeActionButtons
 

@@ -377,6 +377,7 @@ const props = defineProps<{
   containerHeight?: number,
   itemHeight?: number,
   bufferSize?: number,
+  tableRowReplaceInjection?: any
 }>();
 
 // emits, update page
