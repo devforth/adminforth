@@ -86,26 +86,20 @@ export const loadFile = (file: string) => {
   if (file.startsWith('http')) {
     return file;
   }
-  console.log('file', file);
   let path;
   let baseUrl = '';
   if (file.startsWith('@/')) {
     path = file.replace('@/', '');
-    console.log('path', path);
-    const fileModulePath = `./${path}`;
-    console.log('imort.meta.url', import.meta.url);
-    baseUrl = new URL(`./${path}` ,import.meta.url).href;
-    console.log('baseUrl', baseUrl);
+    baseUrl = new URL(`./${path}`, import.meta.url).href;
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
-    const fileModulePath = `./${path}`;
-    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    baseUrl = new URL(`./custom/${path}`, import.meta.url).href;
   } else {
-    const fileModulePath = `./${file}`;
-    baseUrl = new URL(`./${file}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    baseUrl = new URL(`./${file}`, import.meta.url).href;
   }
   return baseUrl;
 }
+
 
 export function checkEmptyValues(value: any, viewType: 'show' | 'list' ) {
   const config: CoreConfig | {} | null = useCoreStore().config;
