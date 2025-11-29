@@ -92,7 +92,4 @@ export default defineConfig({
       },
     },
   },
-  optimizeDeps: {
-    exclude: ['@vitejs/plugin-vue']
-  }
 })

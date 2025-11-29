@@ -82,9 +82,9 @@ export default {
       //   // return true;
       //   return adminUser.dbUser.email !== "adminforth";
       // },
-      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-        return adminUser.dbUser.email === "adminforth";
-      },
+      // usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+      //   return adminUser.dbUser.email === "adminforth";
+      // },
       passkeys: {
         credentialResourceID: "passkeys",
         credentialIdFieldName: "credential_id",
