@@ -1,7 +1,7 @@
 <template>
   <div class="relative flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml w-screen h-screen"
     :style="coreStore.config?.loginBackgroundImage && backgroundPosition === 'over' ? {
-      'background-image': 'url(' + backgroundImage + ')',
+      'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
       'background-blend-mode': coreStore.config?.removeBackgroundBlendMode ? 'normal' : 'darken'
@@ -9,7 +9,7 @@
   >
     
     <img v-if="coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
-      :src="backgroundImage"
+      :src="loadFile(coreStore.config?.loginBackgroundImage)"
       class="position-absolute top-0 left-0 h-screen object-cover w-0"
       :class="{
         '1/2': 'md:w-1/2',
@@ -158,7 +158,6 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-const backgroundImage = ref<string>('');
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
@@ -174,9 +173,6 @@ onBeforeMount(() => {
 
 onMounted(async () => {
   coreStore.getLoginFormConfig();
-  if (coreStore.config?.loginBackgroundImage) {
-    backgroundImage.value = await loadFile(coreStore.config?.loginBackgroundImage) as string;
-  }
     if (coreStore.config?.demoCredentials) {
       const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
       username.value = demoUsername;
