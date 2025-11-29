@@ -94,15 +94,15 @@ export const loadFile = (file: string) => {
     console.log('path', path);
     const fileModulePath = `./${path}`;
     console.log('imort.meta.url', import.meta.url);
-    baseUrl = new URL(fileModulePath ,import.meta.url).href;
+    baseUrl = new URL(`./${path}` ,import.meta.url).href;
     console.log('baseUrl', baseUrl);
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
     const fileModulePath = `./${path}`;
-    baseUrl = new URL(fileModulePath, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   } else {
     const fileModulePath = `./${file}`;
-    baseUrl = new URL(fileModulePath, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    baseUrl = new URL(`./${file}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
   }
   return baseUrl;
 }
