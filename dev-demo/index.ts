@@ -131,7 +131,9 @@ export const admin = new AdminForth({
           customLayout: true,
       }}
     }],
-   
+    iconOnlySidebar: {
+      logo: '@/assets/logo.svg',
+    },   
     vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
     brandName: 'New Reality',
     showBrandNameInSidebar: true,

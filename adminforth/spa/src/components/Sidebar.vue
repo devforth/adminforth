@@ -22,13 +22,21 @@
         }"
       >
         <img
-          :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" 
+          :src="imgUrl" 
           :alt="`${ coreStore.config?.brandName } Logo`"
           class="af-logo h-8 me-3" 
           :class="{ 
-            'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)))          }"
+            'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)))
+          }"
         />
-        <img :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
+        <img 
+          :src="iconOnlySidebar" 
+          :alt="`${ coreStore.config?.brandName } Logo`" 
+          class="af-sidebar-icon-only-logo h-8" 
+          :class="{ 
+            'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) 
+          }" 
+        />
         <span 
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
           class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
@@ -319,6 +327,14 @@ const coreStore = useCoreStore();
 //create a ref to store the opened menu items with ts type;
 const opened = ref<(string|number)[]>([]);
 const sidebarAside = ref(null);
+
+const imgUrl = ref<string>('');
+const iconOnlySidebar = ref<string>('');
+
+onMounted(async () => {
+  imgUrl.value = await loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg') as string;
+  iconOnlySidebar.value = await loadFile(coreStore.config?.iconOnlySidebar?.logo || '') as string;
+});
 
 const smQuery = window.matchMedia('(min-width: 640px)');
 const isMobile = ref(!smQuery.matches);
