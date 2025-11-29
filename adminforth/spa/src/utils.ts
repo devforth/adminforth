@@ -82,27 +82,28 @@ export function getIcon(icon: string) {
   return resolveComponent(compName);
 }
 
-export const loadFile = (file: string) => {
+export const loadFile = async (file: string) => {
   if (file.startsWith('http')) {
     return file;
   }
-  console.log('file', file);
   let path;
   let baseUrl = '';
+  const files = import.meta.glob('/**/*', { import: 'default' });
+
   if (file.startsWith('@/')) {
-    path = file.replace('@/', '');
-    console.log('path', path);
-    const fileModulePath = `./${path}`;
-    console.log('imort.meta.url', import.meta.url);
-    baseUrl = new URL(`./${path}` ,import.meta.url).href;
-    console.log('baseUrl', baseUrl);
+    path = file.replace('@/', '/src/');
   } else if (file.startsWith('@@/')) {
-    path = file.replace('@@/', '');
-    const fileModulePath = `./${path}`;
-    baseUrl = new URL(`./${path}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    path = file.replace('@@/', '/src/custom/');
   } else {
-    const fileModulePath = `./${file}`;
-    baseUrl = new URL(`./${file}`, new URL(import.meta.url).origin + new URL(import.meta.url).pathname).href;
+    path = `./${file}`;
+  }
+  
+  const match = files[path];
+  if (!match) {
+    console.error(`File ${file} not found`);
+  } else {
+    const result = await match();
+    baseUrl = typeof result === 'string' ? result : '';
   }
   return baseUrl;
 }
