@@ -546,13 +546,13 @@ First, you need to create a passkeys table in your schema.prisma file:
     //diff-add
   }
 ```
+>☝️Use string data type for credential_id and meta fields
 
 And make migration:
 
 ```bash
 npm run makemigration -- --name add-passkeys ; npm run migrate:local
 ```
-
 
 Next, you need to create a new resource for passkeys:
 
