@@ -74,17 +74,17 @@ export default {
       twoFaSecretFieldName: "secret2fa",
       timeStepWindow: 1, // optional time step window for 2FA
       // optional callback to define which users should be enforced to use 2FA
-      // usersFilterToApply: (adminUser: AdminUser) => {
-      //   if (process.env.NODE_ENV === "development") {
-      //     return false;
-      //   }
-      //   // return true if user should be enforced to use 2FA,
-      //   // return true;
-      //   return adminUser.dbUser.email !== "adminforth";
-      // },
-      // usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-      //   return adminUser.dbUser.email === "adminforth";
-      // },
+      usersFilterToApply: (adminUser: AdminUser) => {
+        if (process.env.NODE_ENV === "development") {
+          return false;
+        }
+        // return true if user should be enforced to use 2FA,
+        // return true;
+        return adminUser.dbUser.email !== "adminforth";
+      },
+      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+        return adminUser.dbUser.email === "adminforth";
+      },
       passkeys: {
         credentialResourceID: "passkeys",
         credentialIdFieldName: "credential_id",
@@ -260,7 +260,7 @@ export default {
     {
       name: "role",
       enum: [
-        // { value: 'superadmin', label: 'Super Admin' },
+        { value: 'superadmin', label: 'Super Admin' },
         { value: "user", label: "User" },
       ],
     },
