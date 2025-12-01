@@ -311,13 +311,17 @@ async function loadMenu() {
 function handleCustomLayout() {
   if (route.meta?.sidebarAndHeader === 'none') {
     defaultLayout.value = false;
+    headerOnlyLayout.value = false;
   } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
     defaultLayout.value = true;
+    headerOnlyLayout.value = false;
     isSidebarIconOnly.value = true;
   } else if (route.meta?.sidebarAndHeader === 'headerOnly') {
+    defaultLayout.value = true;
     headerOnlyLayout.value = true;
   } else {
     defaultLayout.value = true;
+    headerOnlyLayout.value = false;
   }
 }
 
