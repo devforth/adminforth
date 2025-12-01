@@ -1,5 +1,5 @@
 <template>
-  <section class="fixed inset-0 z-[9999] bg-white dark:bg-gray-900 w-screen h-screen flex flex-col items-center pt-20 md:pt-40 overflow-y-auto">
+  <section class="absolute inset-0 flex flex-col items-center justify-center h-screen overflow-hidden">
     <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
         <div class="mx-auto max-w-screen-sm text-center">
             <h1 class="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-blue-600 dark:text-blue-500">404</h1>
@@ -14,5 +14,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { LinkButton } from '@/afcl';
+
 </script>
