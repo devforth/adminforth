@@ -143,9 +143,7 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
-      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
-        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
-        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || null"
+      :tableRowReplaceInjection="coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
@@ -176,9 +174,7 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
-      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
-        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
-        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || null"
+      :tableRowReplaceInjection="coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || null"
     />
 
     <component 

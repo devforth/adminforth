@@ -357,7 +357,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 
@@ -377,7 +377,7 @@ const props = defineProps<{
   containerHeight?: number,
   itemHeight?: number,
   bufferSize?: number,
-  tableRowReplaceInjection?: any
+  tableRowReplaceInjection?: AdminForthComponentDeclaration
 }>();
 
 // emits, update page
