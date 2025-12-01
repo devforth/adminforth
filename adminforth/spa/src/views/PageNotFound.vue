@@ -14,7 +14,5 @@
 </template>
 
 <script setup lang="ts">
-
 import { LinkButton } from '@/afcl';
-
 </script>
