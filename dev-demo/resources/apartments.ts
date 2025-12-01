@@ -23,7 +23,6 @@ import { StorageAdapter } from "../../adminforth";
 
 
 const demoChecker = async ({ record, adminUser, resource }) => {
-  console.log(`Check role: ${adminUser.dbUser.email} have role [${adminUser.dbUser.role}]`); // check role log
   if (adminUser.dbUser.role !== "superadmin") {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" };
   }
@@ -78,7 +77,7 @@ export default {
     list: {
       afterDatasourceResponse: async ({ response }: { response: any }) => {
         response.forEach((r: any) => {
-
+         
         });
         return { ok: true, error: "" };
       },
@@ -93,7 +92,7 @@ export default {
 
         // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
         query.filtersTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id));
-
+       
         return { ok: true };
       },
     },
@@ -102,7 +101,7 @@ export default {
     {
       name: "id",
       label: "Identifier", // if you wish you can redefine label
-      showIn: { filter: true, show: true, list: true, create: false, edit: false }, // show in filter and in show page
+      showIn: {filter: true, show: true, list: true, create: false, edit: false}, // show in filter and in show page
       primaryKey: true,
       // @ts-ignore
       fillOnCreate: ({ initialRecord, adminUser }) =>
@@ -116,7 +115,7 @@ export default {
       name: "title",
       // type: AdminForthDataTypes.JSON,
       required: true,
-      showIn: { list: true, create: true, edit: true, filter: true, show: true }, // the default is full set
+      showIn: {list: true, create: true, edit: true, filter: true, show: true}, // the default is full set
       maxLength: 255, // you can set max length for string fields
       minLength: 3, // you can set min length for string fields
       components: {
@@ -237,7 +236,7 @@ export default {
     },
     {
       name: "price",
-      showIn: { create: true, edit: true, filter: true, show: true },
+      showIn: {create: true, edit: true, filter: true, show: true},
       allowMinMaxQuery: true, // use better experience for filtering e.g. date range, set it only if you have index on this column or if there will be low number of rows
       editingNote: "Price is in USD", // you can appear note on editing or creating page
       editReadonly: true, // you can set field to be readonly on edit page
@@ -269,7 +268,7 @@ export default {
         { value: 4, label: "4 rooms" },
         { value: 5, label: "5 rooms" },
       ],
-      showIn: { filter: true, show: true, create: true, edit: true },
+      showIn: {filter: true, show: true, create: true, edit: true},
     },
     {
       name: "room_sizes",
@@ -283,7 +282,7 @@ export default {
       name: "description",
       sortable: false,
       type: AdminForthDataTypes.TEXT,
-      showIn: { filter: true, show: true, edit: true, create: true },
+      showIn: {filter: true, show: true, edit: true, create: true},
       components: {
         list: "@/renderers/RichText.vue",
         show: "@/renderers/ZeroStylesRichText.vue",
@@ -295,7 +294,7 @@ export default {
     },
     {
       name: 'realtor_id',
-      showIn: { filter: true, show: true, edit: true, list: true, create: true },
+      showIn: {filter: true, show: true, edit: true, list: true, create: true},
       foreignResource: {
         resourceId: 'users',
         hooks: {
@@ -314,7 +313,7 @@ export default {
     },
     {
       name: "user_id",
-      showIn: { filter: true, show: true, edit: true, list: true, create: true },
+      showIn: {filter: true, show: true, edit: true, list: true, create: true},
       foreignResource: {
         resourceId: "users",
         hooks: {
@@ -333,102 +332,99 @@ export default {
   plugins: [
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
-        new UploadPlugin({
-          pathColumnName: "apartment_image",
+          new UploadPlugin({
+            pathColumnName: "apartment_image",
 
-          storageAdapter: new AdminForthAdapterS3Storage({
-            region: "eu-central-1",
-            bucket: "tmpbucket-adminforth",
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            // s3ACL: 'public-read', // ACL which will be set to uploaded file
-
-            
-
-          }),
-          allowedFileExtensions: [
-            "jpg",
-            "jpeg",
-            "png",
-            "gif",
-            "webm",
-            "exe",
-            "webp",
-          ],
-          maxFileSize: 1024 * 1024 * 20, // 5MB
-          // s3ACL: 'public-read', // ACL which will be set to uploaded file
-          filePath: ({ originalFilename, originalExtension, contentType, record }) => {
-            console.log("🔥", JSON.stringify(record));
-            return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
-          },
-          generation: {
-            adapter: new ImageGenerationAdapterOpenAI({
-              openAiApiKey: process.env.OPENAI_API_KEY as string,
+            storageAdapter: new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              // s3ACL: 'public-read', // ACL which will be set to uploaded file
             }),
-
-            attachFiles: async ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
-              // attach apartment source image to generation, image should be public
-              return [
-                await sourcesAdapter.getKeyAsDataURL(record.apartment_source)
-              ];
-
-              // return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+            allowedFileExtensions: [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webm",
+              "exe",
+              "webp",
+            ],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            // s3ACL: 'public-read', // ACL which will be set to uploaded file
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+              console.log("🔥", JSON.stringify(record));
+              return `aparts/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
             },
-            generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
-            countToGenerate: 1,
-            outputSize: '1024x1024',
-            // rateLimit: {
-            //   limit: "2/1m",
-            //   errorMessage:
-            //     "For demo purposes, you can generate only 2 images per minute",
-            // },
-          },
-          preview: {
-            // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-            maxWidth: "200px",
-          },
-        }),
-        new UploadPlugin({
-          pathColumnName: "apartment_source",
+            generation: {
+              adapter: new ImageGenerationAdapterOpenAI({
+                openAiApiKey: process.env.OPENAI_API_KEY as string,
+              }),
+              
+              attachFiles: async ({ record, adminUser }: { record: any; adminUser: AdminUser }) => {
+                // attach apartment source image to generation, image should be public
+                return [
+                  await sourcesAdapter.getKeyAsDataURL(record.apartment_source)
+                ];
+                    
+                // return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_source}`];
+              },
+              generationPrompt: "Add a 10 kittyies to the appartment look, it should be foto-realistic, they should be different colors, sitting all around the appartment",
+              countToGenerate: 1,
+              outputSize: '1024x1024',
+              // rateLimit: {
+              //   limit: "2/1m",
+              //   errorMessage:
+              //     "For demo purposes, you can generate only 2 images per minute",
+              // },
+            },
+            preview: {
+              // Used to display preview (if it is image) in list and show views
+              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+              maxWidth: "200px",
+            },
+          }),
+          new UploadPlugin({
+            pathColumnName: "apartment_source",
+            
+            storageAdapter: (sourcesAdapter = new AdminForthAdapterS3Storage({
+              region: "eu-central-1",
+              bucket: "tmpbucket-adminforth",
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+              s3ACL: 'public-read', // ACL which will be set to uploaded file
+            }), sourcesAdapter),
 
-          storageAdapter: (sourcesAdapter = new AdminForthAdapterS3Storage({
-            region: "eu-central-1",
-            bucket: "tmpbucket-adminforth",
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            s3ACL: 'public-read', // ACL which will be set to uploaded file
-          }), sourcesAdapter),
+            // storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
+            //   fileSystemFolder: "./db/uploads", // folder where files will be stored on disk
+            //   adminServeBaseUrl: "static/source", // the adapter not only stores files, but also serves them for HTTP requests
+            //      // this optional path allows to set the base URL for the files. Should be unique for each adapter if set.
+            //   mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
+            //   signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
+            // }), sourcesAdapter),
 
-          // storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
-          //   fileSystemFolder: "./db/uploads", // folder where files will be stored on disk
-          //   adminServeBaseUrl: "static/source", // the adapter not only stores files, but also serves them for HTTP requests
-          //      // this optional path allows to set the base URL for the files. Should be unique for each adapter if set.
-          //   mode: "public", // public if all files should be accessible from the web, private only if could be accesed by temporary presigned links
-          //   signingSecret: process.env.ADMINFORTH_SECRET, // secret used to generate presigned URLs
-          // }), sourcesAdapter),
-
-          allowedFileExtensions: [
-            "jpg",
-            "jpeg",
-            "png",
-            "gif",
-            "webm",
-            "exe",
-            "webp",
-          ],
-          maxFileSize: 1024 * 1024 * 20, // 5MB
-          filePath: ({ originalFilename, originalExtension, contentType, record }) => {
-            console.log("🔥", JSON.stringify(record));
-            return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
-          },
-          preview: {
-            // Used to display preview (if it is image) in list and show views
-            // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
-            maxWidth: "200px",
-          },
-        }),
-      ]
+            allowedFileExtensions: [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webm",
+              "exe",
+              "webp",
+            ],
+            maxFileSize: 1024 * 1024 * 20, // 5MB
+            filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+              console.log("🔥", JSON.stringify(record));
+              return `aparts2/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`
+            },
+            preview: {
+              // Used to display preview (if it is image) in list and show views
+              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+              maxWidth: "200px",
+            },
+          }),
+        ]
       : []),
     new ImportExportPlugin({}),
     // new TextCompletePlugin({
@@ -454,13 +450,13 @@ export default {
 
       ...(process.env.AWS_ACCESS_KEY_ID
         ? {
-          attachments: {
-            attachmentResource: "description_images",
-            attachmentFieldName: "image_path",
-            attachmentRecordIdFieldName: "record_id",
-            attachmentResourceIdFieldName: "resource_id",
-          },
-        }
+            attachments: {
+              attachmentResource: "description_images",
+              attachmentFieldName: "image_path",
+              attachmentRecordIdFieldName: "record_id",
+              attachmentResourceIdFieldName: "resource_id",
+            },
+          }
         : {}),
     }),
   ],

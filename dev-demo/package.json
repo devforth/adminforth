@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@adminforth/completion-adapter-open-ai-chat-gpt": "^1.0.2",
     "@prisma/client": "^5.22.0",
     "better-sqlite3": "^10.1.0",
     "express": "^4.21.0",
