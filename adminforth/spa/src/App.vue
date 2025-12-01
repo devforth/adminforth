@@ -73,7 +73,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout && coreStore.menu.length > 0"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
@@ -177,7 +177,7 @@ import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
-
+console.log("gfhyryrthrth", JSON.stringify(coreStore, 0, 2)) 
 initFrontedAPI()
 
 createHead()
