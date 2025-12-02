@@ -455,7 +455,15 @@ Component contract:
 - Slots
   - Default slot: the table’s standard row content (cells) will be projected here. Your component can wrap or style it.
 - Output
-  - Render a full `<tr>…</tr>` fragment. For simple decoration, render a single `<td :colspan="columnsCount">` and wrap `<slot />` inside your layout.
+  - Render a full `<tr>…</tr>` fragment. For example, to replace the standard set of cells with a single full‑width cell, render:
+
+```vue
+<tr>
+  <td :colspan="columnsCount">
+    <slot />
+  </td>
+</tr>
+```
 
 Notes and tips:
 - Requirements:
