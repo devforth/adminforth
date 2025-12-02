@@ -182,8 +182,6 @@ initFrontedAPI()
 
 createHead()
 const sideBarOpen = ref(false);
-const defaultLayout = ref(true);
-const headerOnlyLayout = ref(false);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
@@ -196,6 +194,14 @@ const loginRedirectCheckIsReady = ref(false);
 const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'true');
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
+
+const defaultLayout = computed(() => {
+  return route.meta?.sidebarAndHeader !== 'none';
+});
+
+const headerOnlyLayout = computed(() => {
+  return route.meta?.sidebarAndHeader === 'headerOnly';
+});
 
 const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
 
@@ -308,19 +314,6 @@ async function loadMenu() {
   loginRedirectCheckIsReady.value = true;
 }
 
-function handleCustomLayout() {
-  if (route.meta?.sidebarAndHeader === 'none') {
-    defaultLayout.value = false;
-  } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
-    defaultLayout.value = true;
-    isSidebarIconOnly.value = true;
-  } else if (route.meta?.sidebarAndHeader === 'headerOnly') {
-    headerOnlyLayout.value = true;
-  } else {
-    defaultLayout.value = true;
-  }
-}
-
 function humanizeSnake(str: string): string {
   if (!str) {
     return '';
@@ -345,10 +338,11 @@ watch(title, (title) => {
   document.title = title;
 })
 
-watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
-  handleCustomLayout()
-  await new Promise((resolve) => setTimeout(resolve, 0));
- 
+watch(route, () => {
+  // Handle preferIconOnly layout
+  if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
+    isSidebarIconOnly.value = true;
+  }
 });
 
 
@@ -376,7 +370,6 @@ onMounted(async () => {
   loadPublicConfig(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
-  handleCustomLayout();
 
   adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
