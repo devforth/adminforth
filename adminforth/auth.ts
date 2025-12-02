@@ -76,27 +76,19 @@ class AdminForthAuth implements IAdminForthAuth {
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
-  setAuthCookie({ expireInDays, response, username, pk}: {
-    expireInDays?: number,
+  setAuthCookie({ expireInDuration, response, username, pk}: {
+    expireInDuration?: string,
     response: any, 
     username: string, 
     pk: string | null
   }) {
-    console.log("in days", expireInDays);
-    const expiresIn: string = expireInDays ? `${expireInDays}d` : (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
-    console.log("in string", expiresIn);
+    const expiresIn: string = expireInDuration || (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
     // might be h,m,d in string
-
     const expiresInSec = parseTimeToSeconds(expiresIn);
 
-    console.log("expiresInSec", expiresInSec);
-
-    const token = this.issueJWT({ username, pk}, 'auth', expiresIn);
-    console.log("token", token);
+    const token = this.issueJWT({ username, pk}, 'auth', expiresInSec);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
-    console.log("expiresCookieFormat", expiresCookieFormat);
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
-    console.log("brandSlug", brandSlug);
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
   }
 
@@ -131,7 +123,7 @@ class AdminForthAuth implements IAdminForthAuth {
     return cookies.find((cookie) => cookie.key === `adminforth_${brandSlug}_${name}`)?.value || null;
   }
  
-  issueJWT(payload: Object, type: string, expiresIn: string = '24h'): string {
+  issueJWT(payload: Object, type: string, expiresIn: string | number = '24h'): string {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;
     if (!secret) {
