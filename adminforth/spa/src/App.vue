@@ -73,7 +73,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout && coreStore.menu.length > 0"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
