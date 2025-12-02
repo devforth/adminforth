@@ -45,6 +45,11 @@ export default class ConfigValidator implements IConfigValidator {
   }
   
   validateAndListifyInjection(obj, key, errors) {
+    if (key.includes('tableRowReplace')) {
+      if (obj[key].length > 1) {
+        throw new Error(`tableRowReplace injection supports only one element, but received ${obj[key].length}.`);
+      }
+    }
     if (!Array.isArray(obj[key])) {
       // not array
       obj[key] = [obj[key]];

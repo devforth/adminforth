@@ -67,22 +67,7 @@ export async function callAdminForthApi({ path, method, body=undefined, headers=
   }
 }
 
-export function getCustomComponent(input: any) {
-  let file: string | undefined;
-  if (Array.isArray(input)) {
-    input = input?.[0];
-  }
-  if (typeof input === 'string') {
-    file = input;
-  } else if (input && typeof input === 'object') {
-    file = (input as { file?: string }).file;
-  }
-
-  if (!file || typeof file !== 'string') {
-    // Fallback to a neutral element to avoid runtime errors
-    return 'div';
-  }
-
+export function getCustomComponent({ file, meta }: { file: string, meta?: any }) {
   const name = file.replace(/@/g, '').replace(/\./g, '').replace(/\//g, '');
   return resolveComponent(name);
 }
