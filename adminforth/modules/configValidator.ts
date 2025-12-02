@@ -1141,6 +1141,33 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      if (newConfig.auth.rememberMeDays !== undefined) {
+        const rememberMeDays = newConfig.auth.rememberMeDays;
+        if (typeof rememberMeDays !== 'number' || rememberMeDays <= 0) {
+          errors.push(`auth.rememberMeDays must be a positive number`);
+        } else {
+          if (!newConfig.auth.rememberMeDuration) {
+            newConfig.auth.rememberMeDuration = `${rememberMeDays}d`;
+            warnings.push(`⚠️  auth.rememberMeDays is deprecated. Please use auth.rememberMeDuration: "${rememberMeDays}d" instead. Auto-converted for now.`);
+          } else {
+            warnings.push(`⚠️  Both auth.rememberMeDays and auth.rememberMeDuration are set. Using rememberMeDuration. Please remove rememberMeDays.`);
+          }
+        }
+        delete newConfig.auth.rememberMeDays;
+      }
+
+      if (newConfig.auth.rememberMeDuration !== undefined) {
+        const duration = newConfig.auth.rememberMeDuration;
+        if (typeof duration !== 'string') {
+          errors.push(`auth.rememberMeDuration must be a string in format "1s", "1m", "1h", or "1d"`);
+        } else {
+          const match = duration.match(/^(\d+)([smhd])$/);
+          if (!match) {
+            errors.push(`auth.rememberMeDuration must be in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days), got: "${duration}"`);
+          }
+        }
+      }
+
       // normalize beforeLoginConfirmation hooks
       const blc = this.inputConfig.auth.beforeLoginConfirmation;
       if (!Array.isArray(blc)) {

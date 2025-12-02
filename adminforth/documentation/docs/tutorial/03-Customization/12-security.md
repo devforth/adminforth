@@ -11,14 +11,14 @@ You can tweak login cookie expiration time by setting environment `ADMINFORTH_AU
 ADMINFORTH_AUTH_EXPIRESIN=1h
 ```
 
-Also you can set `auth.rememberMeDays` in the config to set how long "remember me" logins will last.
+Also you can set `auth.rememberMeDuration` in the config to set how long "remember me" logins will last.
 For example to set it to 7 days:
 
 ```ts ./index.ts
 new AdminForth({
   ...
   auth: {
-    rememberMeDays: 7
+    rememberMeDuration: '7d' // '7d' for 7 days, '24h' for 24 hours, '30m' for 30 minutes, etc.
   }
 }
 ```

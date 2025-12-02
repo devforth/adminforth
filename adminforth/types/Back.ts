@@ -303,7 +303,7 @@ export interface IAdminForthDataSourceConnectorConstructor {
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
 
-  issueJWT(payload: Object, type: string, expiresIn?: string): string;
+  issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
@@ -311,7 +311,7 @@ export interface IAdminForthAuth {
 
   getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
 
-  setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
+  setAuthCookie({expireInDuration, response, username, pk,}: {expireInDuration?: string, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
 
@@ -331,8 +331,9 @@ export interface IAdminForthRestAPI {
    * @param adminUser - plugin/af pases current adminUser
    * @param toReturn - this is an object which will get status of login process. If at least one callback returns error or redirectTo, login process will be stopped (future callbacks will not be called).
    * @param response - http response object
+   * @param sessionDuration - duration of session in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days)
    */
-  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra): Promise<void>;
+  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string): Promise<void>;
 }
 
 export interface IAdminForth {
@@ -605,7 +606,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
-    rememberMeDays?: number,
+    sessionDuration?: string,
 }) => Promise<{
   error?: string, 
   body: {
@@ -1053,11 +1054,13 @@ export interface AdminForthInputConfig {
       loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
 
       /**
-       * Remember me days for "Remember Me" checkbox on login page.
-       * If not set or set to null/0/undefined, "Remember Me" checkbox will not be displayed.
-       * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
+       * Remember me duration for "Remember Me" checkbox on login page.
+       * If not set or set to null/undefined, "Remember Me" checkbox will not be displayed.
+       * If rememberMeDuration is set, then users who check "Remember Me" will be staying logged in for this amount of time.
+       * Format: "1s" (seconds), "1m" (minutes), "1h" (hours), or "1d" (days).
+       * Example: "30d" for 30 days, "7d" for 7 days, "24h" for 24 hours.
        */
-      rememberMeDays?: number,
+      rememberMeDuration?: string,
 
 
       /**
