@@ -662,8 +662,10 @@ export default class ConfigValidator implements IConfigValidator {
                 errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an column that is not of type string`);
               } else {
                 const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors, warnings);
-                if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
-                  errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                if (typeof polymorphicOnColShowIn.create !== 'function' && typeof polymorphicOnColShowIn.edit !== 'function') {
+                  if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                  }
                 }
               }
             }
