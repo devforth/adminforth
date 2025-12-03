@@ -188,7 +188,7 @@ const apartsCountsByDaysChart = computed(() => {
 });
 
 const listedVsUnlistedPriceByDays = computed(() => {
-  return data.value.listedVsUnlistedPriceByDays?.slice().reverce().map(
+  return data.value.listedVsUnlistedPriceByDays?.slice( ).reverce().map( 
     (item) => ({
       x: dayjs(item.day).format('DD MMM'),
       listedPrice: item.listedPrice.toFixed(2),
