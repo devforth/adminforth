@@ -36,7 +36,20 @@ export async function callApi({path, method, body, headers}: {
     if (r.status == 401 ) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
-      await router.push({ name: 'login' });
+      const currentPath = router.currentRoute.value.path;
+      const homeRoute = router.getRoutes().find(route => route.name === 'home');
+      const homePagePath = (homeRoute?.redirect as string) || '/';
+      let next = '';
+      if (currentPath !== '/login' && currentPath !== homePagePath) {
+        if (Object.keys(router.currentRoute.value.query).length > 0) {
+          next = currentPath + '?' + Object.entries(router.currentRoute.value.query).map(([key, value]) => `${key}=${value}`).join('&');
+        } else {
+          next = currentPath;
+        }
+        await router.push({ name: 'login', query: { next: next } });
+      } else {
+        await router.push({ name: 'login' });
+      }
       return null;
     } 
     return await r.json();
@@ -99,6 +112,7 @@ export const loadFile = (file: string) => {
   }
   return baseUrl;
 }
+
 
 export function checkEmptyValues(value: any, viewType: 'show' | 'list' ) {
   const config: CoreConfig | {} | null = useCoreStore().config;

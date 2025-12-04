@@ -199,6 +199,9 @@ async function login() {
   if (resp.error) {
       error.value = resp.error;
   } else if (resp.redirectTo) {
+    error.value = null;
+    user.authorize();
+    await coreStore.fetchMenuAndResource();
     router.push(resp.redirectTo);
   } else {
     error.value = null;

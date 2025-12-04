@@ -93,14 +93,21 @@
         </tr>
 
         <!-- Visible rows -->
-        <tr @click="onClick($event,row)" 
-          v-for="(row, rowI) in visibleRows" 
-          :key="`row_${row._primaryKeyValue}`"
-          ref="rowRefs"
-          class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-          :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
-          @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
-        >
+        <component
+            v-else
+            v-for="(row, rowI) in visibleRows"
+            :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
+            :key="`row_${row._primaryKeyValue}`"
+            :record="row"
+            :resource="resource"
+            :adminUser="coreStore.adminUser"
+            :meta="tableRowReplaceInjection ? tableRowReplaceInjection.meta : undefined"
+            @click="onClick($event, row)"
+            ref="rowRefs"
+            class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+            :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+            @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
+         >
         <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
@@ -224,7 +231,7 @@
               </template>
             </div>
           </td>
-        </tr>
+        </component>
 
         <!-- Bottom spacer -->
         <tr v-if="totalHeight > 0">
@@ -350,7 +357,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 
@@ -370,6 +377,7 @@ const props = defineProps<{
   containerHeight?: number,
   itemHeight?: number,
   bufferSize?: number,
+  tableRowReplaceInjection?: AdminForthComponentDeclaration
 }>();
 
 // emits, update page

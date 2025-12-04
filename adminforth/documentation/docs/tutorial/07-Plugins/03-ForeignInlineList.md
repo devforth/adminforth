@@ -121,7 +121,7 @@ If you need to add default filters for the foreign resource based on your curren
 >👆It also makes sense to modify the table resource and hide the country field from filters, because this value is hardcoded and equals the country from the record:  
 
 
-```ts
+```ts title="./resources/adminuser.ts"
 
   ...
 
@@ -165,3 +165,26 @@ If you need to add default filters for the foreign resource based on your curren
   ...
   
 ```
+
+
+## Show table from another resource without any filters applied
+
+There might be cases when you want to remove the default filter applied by the plugin and then use the `defaultFilters` callback to apply your own custom filters.
+
+```ts title="./resources/adminuser.ts"
+
+plugins: [
+//diff-add
+  new ForeignInlineListPlugin({
+//diff-add
+    foreignResourceId: 'aparts',
+//diff-add
+    disableForeignListResourceRefColumn: true
+//diff-add
+  }),
+//diff-add
+    ],
+
+```
+
+This setup will show, in the show view for each record, the `aparts` resource without any filters. And you don’t have to modify the `aparts` resource.
