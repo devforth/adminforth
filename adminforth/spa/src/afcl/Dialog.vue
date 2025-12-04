@@ -179,6 +179,7 @@ function close() {
 defineExpose({
   open: open,
   close: close,
+  tryToHideModal: tryToHideModal,
 })
 
 function tryToHideModal() {
