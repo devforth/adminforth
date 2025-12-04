@@ -265,11 +265,11 @@ onMounted(() => {
 
   watch(() => props.modelValue, (value) => {
     updateFromProps();
-  });
+  }, {deep: true});
 
   watch(() => props.options, () => {
     updateFromProps();
-  });
+  }, { deep: true });
 
   addClickListener();
   

@@ -82,9 +82,9 @@ export default {
       //   // return true;
       //   return adminUser.dbUser.email !== "adminforth";
       // },
-      // usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-      //   return adminUser.dbUser.email === "adminforth";
-      // },
+      usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+        return adminUser.dbUser.email === "adminforth";
+      },
       passkeys: {
         credentialResourceID: "passkeys",
         credentialIdFieldName: "credential_id",
@@ -167,7 +167,7 @@ export default {
         new AdminForthAdapterMicrosoftOauth2({
           clientID: process.env.MICROSOFT_CLIENT_ID,
           clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-          useOpenID: true,
+          useOpenIdConnect: true,
         }),
         // new AdminForthAdapterTwitchOauth2({
         //   clientID: process.env.TWITCH_CLIENT_ID,

@@ -396,6 +396,79 @@ cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
 
+## List table row replace injection
+
+`tableRowReplace` lets you fully control how each list table row is rendered. Instead of the default table `<tr>…</tr>` markup, AdminForth will mount your Vue component per record and use its returned DOM to display the row. Use this when you need custom row layouts, extra controls, or conditional styling that goes beyond column-level customization.
+
+Supported forms:
+- Single component: `pageInjections.list.tableRowReplace = '@@/MyRowRenderer.vue'`
+- Object form with meta: `pageInjections.list.tableRowReplace = { file: '@@/MyRowRenderer.vue', meta: { /* optional */ } }`
+- If an array is provided, the first element is used.
+
+Example configuration:
+
+```ts title="/resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        tableRowReplace: {
+          file: '@@/ApartRowRenderer.vue',
+          meta: {
+            // You can pass any meta your component may read
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Minimal component example (decorate default row with a border):
+
+```vue title="/custom/ApartRowRenderer.vue"
+<template>
+  <tr class="border border-gray-200 dark:border-gray-700 rounded-sm">
+    <slot />
+  </tr>
+  
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+const props = defineProps<{
+  record: any
+  resource: any
+  meta: any
+  adminUser: any
+}>();
+</script>
+```
+
+Component contract:
+- Inputs
+  - `record`: the current record object
+  - `resource`: the resource config object
+  - `meta`: the meta object passed in the injection config
+- Slots
+  - Default slot: the table’s standard row content (cells) will be projected here. Your component can wrap or style it.
+- Output
+  - Render a full `<tr>…</tr>` fragment. For example, to replace the standard set of cells with a single full‑width cell, render:
+
+```vue
+<tr>
+  <td :colspan="columnsCount">
+    <slot />
+  </td>
+</tr>
+```
+
+Notes and tips:
+- Requirements:
+  - Required `<tr></tr>` structure around `<slot />`
+
 ## List table beforeActionButtons
 
 `beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
