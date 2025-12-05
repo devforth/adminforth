@@ -19,7 +19,7 @@
       <tbody>
         <!-- table header -->
         <tr class="t-header sticky z-20 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td ref="checkboxHeaderRef" scope="col" class="list-table-header-cell  p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
+          <td scope="col" class="list-table-header-cell  p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -441,7 +441,7 @@ const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
 const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
 const rowHeights = ref<number[]>([]);
 const columnWidths = ref<number[]>([]);
-const checkboxHeaderRef = useTemplateRef<HTMLElement>('checkboxHeaderRef');
+const columnWidth = 48;
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
   if (!newRows) return;
@@ -450,10 +450,7 @@ nextTick(() => {
       rowHeights.value = rowRefs.value.map((el: HTMLElement) => el.offsetHeight);
     }
     if (headerRefs.value) {
-      columnWidths.value = [
-        checkboxHeaderRef.value?.offsetWidth || 48,
-        ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)
-      ];
+      columnWidths.value = [columnWidth, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
     }
   });
 });
