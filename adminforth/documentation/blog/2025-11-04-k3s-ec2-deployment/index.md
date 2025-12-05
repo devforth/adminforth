@@ -727,7 +727,7 @@ aws_access_key_id = <your_access_key>
 aws_secret_access_key = <your_secret_key>
 ```
 
-### Step 11 - Run deployment
+### Step 8 - Run deployment
 
 All deployment-related actions are automated, so no additional actions are required. To deploy the application, you only need to enter a few commands listed below and wait a few minutes. After that, you will be able to connect to the web application using the link you will receive in `terraform_output`. Next, if you wish, you can add GitHub Actions. To do this, follow the instructions in [our other post](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/#chellenges-when-you-build-on-ci).
 
