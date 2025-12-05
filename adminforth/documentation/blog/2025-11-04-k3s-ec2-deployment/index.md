@@ -66,7 +66,7 @@ It is also worth having `kubectl` locally on your machine for more convenient in
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 ```
 
-Last stepis download ansible:
+Last step is download ansible:
 
 ```bash
 sudo add-apt-repository --yes --update ppa:ansible/ansible
