@@ -50,7 +50,7 @@ steps:
     when:
       - event: push
         branch: main
-    image: docker
+    image: docker:26.0
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:

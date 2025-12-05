@@ -30,6 +30,21 @@ export enum AdminForthFilterOperators {
   OR = 'or',
 };
 
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: AdminForthFilterOperators;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+} 
+
 export enum AdminForthSortDirections {
   asc = 'asc',
   desc = 'desc',
@@ -272,8 +287,9 @@ export interface AdminForthComponentDeclarationFull {
      * - 'default': Show both sidebar and header (default behavior)
      * - 'none': Hide both sidebar and header (full custom layout)
      * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     * - 'headerOnly': Show only header (full custom layout)
      */
-    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly',
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly' | 'headerOnly',
     
     [key: string]: any,
   }
@@ -488,6 +504,7 @@ export interface AdminForthResourceInputCommon {
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          tableRowReplace?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -1110,6 +1127,7 @@ export interface AdminForthConfigForFrontend {
   iconOnlySidebar?: { 
     logo?: string,
     enabled?: boolean,
+    expandedSidebarWidth?: string,
   },
   singleTheme?: 'light' | 'dark',
   datesFormat: string,
@@ -1139,6 +1157,7 @@ export interface AdminForthConfigForFrontend {
     pageLabel: string,
     slug?: string,
     component: string,
+    isVisible?: boolean
   }[],
 }
 

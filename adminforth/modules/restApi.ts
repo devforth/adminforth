@@ -12,6 +12,7 @@ import {
   HttpExtra,
   IAdminForthAndOrFilter,
   BackendOnlyInput,
+  Filters,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
@@ -62,6 +63,11 @@ async function isShown(
   if (s[page] !== undefined) return await resolveBoolOrFn(s[page], ctx);
   if (s.all !== undefined) return await resolveBoolOrFn(s.all, ctx);
   return true;
+}
+
+async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
+  const fillOnCreate = !!col.fillOnCreate;
+  return fillOnCreate;
 }
 
 export async function interpretResource(
@@ -358,7 +364,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-
+        const settingPages = []
+        for ( const settingPage of this.adminforth.config.auth.userMenuSettingsPages || [] ) {
+          if ( settingPage.isVisible ) {
+            const isVisible = await settingPage.isVisible( adminUser );
+            settingPages.push( { ...settingPage, isVisible } );
+          }
+        }
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -373,7 +385,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
-
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -388,7 +399,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
-          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
+          settingPages: settingPages,
         }
 
         // translate menu labels
@@ -1170,6 +1181,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+              }
+            }
+
             const ctxCreate = {
               adminUser,
               resource,
@@ -1190,9 +1209,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate);
+                const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
-                if (!shown || bo) {
+                const filledOnCreate = await isFilledOnCreate(column);
+                if ((!shown && !filledOnCreate) || bo) {
                   return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
                 }
               }
@@ -1283,6 +1303,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
               return { error: allowedError };
+            }
+
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+              }
             }
 
             const ctxEdit = {

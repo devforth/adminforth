@@ -13,17 +13,29 @@
      }"
     aria-label="Sidebar"
   >
-    <div class="h-full px-3 pb-20 md:pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder" :class="{'sidebar-scroll':!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
-      <div class="af-logo-title-wrapper flex relative transition-all duration-300 ease-in-out h-8 items-center" :class="{'my-4 ': isSidebarIconOnly && !isSidebarHovering, 'm-4': !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
-        <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-logo h-8 me-3" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))) }" />
-        <img :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8 me-3" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
+    <div class="h-full px-3 pb-20 md:pb-4 bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder pt-4" :class="{'sidebar-scroll':!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)}">
+      <div 
+        class="af-logo-title-wrapper flex relative transition-all duration-300 ease-in-out h-8 items-center" 
+        :class="{
+          'mb-4': isSidebarIconOnly && !isSidebarHovering, 'mx-4 mb-4': !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering),
+          'justify-center': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))) 
+        }"
+      >
+        <img
+          :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" 
+          :alt="`${ coreStore.config?.brandName } Logo`"
+          class="af-logo h-8 me-3" 
+          :class="{ 
+            'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)))          }"
+        />
+        <img :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
         <span 
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
           class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
         >
           {{ coreStore.config?.brandName }}
         </span>
-        <div class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
+        <div v-if="!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)" class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
           <component 
             v-for="c in coreStore?.config?.globalInjections?.sidebarTop || []"
             :is="getCustomComponent(c)"
@@ -106,8 +118,8 @@
                         'opacity-100 ms-3 translate-x-0 flex-1': !isSidebarIconOnly
                       }"
                       :style="isSidebarIconOnly ? { 
-                        minWidth: 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)',
-                        width: 'calc(16.5rem - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)'
+                        minWidth: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`,
+                        width: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`
                       } : {}"
                     >{{ item.label }}
 
@@ -188,7 +200,7 @@
 <style lang="scss" scoped>
   /* Sidebar width animations */
   .sidebar-container {
-    width: 16.5rem; /* Default expanded width (w-64) */
+    width: v-bind(expandedWidth); /* Default expanded width (w-64) */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden; /* Prevent content from showing during animation */
     will-change: width, transform;
@@ -196,11 +208,11 @@
   
   .sidebar-collapsed {
     width: 4.5rem; /* Collapsed width (w-18) */
-    box-shadow: 12px 0px 18px -8px rgba(0, 0, 0, 0.15);
   }
   
   .sidebar-expanded {
-    width: 16.5rem; /* Expanded width (w-64) */
+    width: v-bind(expandedWidth); /* Expanded width (w-64) */
+    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.15);
   }
 
   :deep(.dark) .sidebar-collapsed {
@@ -312,6 +324,8 @@ const smQuery = window.matchMedia('(min-width: 640px)');
 const isMobile = ref(!smQuery.matches);
 const iconOnlySidebarEnabled = computed(() => props.forceIconOnly === true || coreStore.config?.iconOnlySidebar?.enabled !== false);
 const isSidebarIconOnly = ref(false);
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
 
 function handleBreakpointChange(e: MediaQueryListEvent) {
   isMobile.value = !e.matches;
