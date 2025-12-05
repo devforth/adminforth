@@ -1,7 +1,7 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
+  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
     <button 
-      data-dropdown-toggle="listThreeDotsDropdown" 
+      @click="toggleDropdownVisibility"
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
     >
       <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
@@ -11,8 +11,8 @@
 
     <!-- Dropdown menu -->
     <div 
-      id="listThreeDotsDropdown" 
-      class="z-30 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      v-if="showDropdown"
+      class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -71,7 +71,7 @@
           </li>
         </ul>
     </div>
-  </template>
+  </div>
 </template>
 
 
@@ -91,6 +91,7 @@ const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
 const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
+const showDropdown = ref(false);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -176,5 +177,9 @@ async function injectedComponentClick(index: number) {
   if (componentRef && 'click' in componentRef) {
     (componentRef as any).click?.();
   }
+}
+
+function toggleDropdownVisibility() {
+  showDropdown.value = !showDropdown.value;
 }
 </script>
