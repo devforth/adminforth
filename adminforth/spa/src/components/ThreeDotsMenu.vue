@@ -12,8 +12,8 @@
 
     <!-- Dropdown menu -->
     <div 
-      v-if="showDropdown"
       ref="dropdownRef"
+      :class="{'hidden': !showDropdown, 'block': showDropdown }"
       class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
@@ -174,6 +174,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
 function startBulkAction(actionId: string) {
   adminforth.list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
+  showDropdown.value = false;
 }
 
 async function injectedComponentClick(index: number) {
@@ -181,6 +182,7 @@ async function injectedComponentClick(index: number) {
   if (componentRef && 'click' in componentRef) {
     (componentRef as any).click?.();
   }
+  showDropdown.value = false;
 }
 
 function toggleDropdownVisibility() {
