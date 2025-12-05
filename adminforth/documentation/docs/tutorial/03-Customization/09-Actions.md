@@ -204,7 +204,7 @@ import { admin } from '../index';
 //diff-add
               await stmt.run(...selectedIds);
 //diff-add
-              return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
+              return { ok: true, successMessage: `Marked ${selectedIds.length} apartments as listed` };
 //diff-add
             },
 //diff-add

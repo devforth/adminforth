@@ -84,7 +84,7 @@ model adminuser {
 2. Run the migration:
 
 ```bash
-npx prisma migrate dev --name add-email-confirmed-to-adminuser
+npm run makemigration -- --name add-email-confirmed-to-adminuser ; npm run migrate:local
 ```
 
 3. Configure the plugin with `emailConfirmedField`:
@@ -249,7 +249,7 @@ plugins: [
           clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
           keycloakUrl: process.env.KEYCLOAK_URL,
           realm: process.env.KEYCLOAK_REALM,
-          useOpenID: true,
+          useOpenIdConnect: true,
       }),
     ],
   }),
@@ -292,7 +292,7 @@ plugins: [
       new AdminForthAdapterMicrosoftOauth2({
         clientID: process.env.MICROSOFT_CLIENT_ID,
         clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-        useOpenID: true,
+        useOpenIdConnect: true,
       }),
     ],
   }),

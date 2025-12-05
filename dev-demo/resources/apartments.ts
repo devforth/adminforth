@@ -19,6 +19,8 @@ import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapte
 import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForth from "../../adminforth";
+import BulkAiFlowPlugin from "../../plugins/adminforth-bulk-ai-flow/index.js";
+import AdminForthImageVisionAdapterOpenAi from "../../adapters/adminforth-image-vision-adapter-openai/index.js";
 import { StorageAdapter } from "../../adminforth";
 
 
@@ -332,6 +334,29 @@ export default {
   plugins: [
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
+          new BulkAiFlowPlugin({
+            // askConfirmationBeforeGenerating: true,
+            actionName: 'Analyze',
+            attachFiles: async ({ record }: { record: any }) => {
+            if (!record.apartment_image) {
+              return [];
+            }
+              return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_image}`];
+            },
+            visionAdapter: new AdminForthImageVisionAdapterOpenAi(
+              {
+                openAiApiKey:  process.env.OPENAI_API_KEY as string,
+                model: 'gpt-4.1-mini',
+              }
+            ),
+            fillFieldsFromImages: { 
+              'description': 'describe what is in the image, also take into account that price is {{price}}', 
+              'country': 'In which country it can be located?', 
+              'number_of_rooms': 'How many rooms are in the apartment? Just try to guess what is a typical one. If you do not know, just guess',
+              'square_meter': 'Try to guess what is the typical square of the apartment in square meters? If you do not know, just guess',
+              'listed': 'Is the apartment should be listed for sale? If you do not know, just guess, return boolean value',
+            },
+          }),
           new UploadPlugin({
             pathColumnName: "apartment_image",
 
@@ -522,7 +547,6 @@ export default {
         meta: any;
         source: ActionCheckSource;
       }): Promise<boolean | string> => {
-        console.log("edit aa check 🔒", meta, source, adminUser);
         return adminUser.dbUser.role === "superadmin";
         // return true;
         // if (source === ActionCheckSource.DisplayButtons) {
@@ -542,7 +566,6 @@ export default {
         return true;
       },
       show: async ({ adminUser, meta, source, adminforth }: any) => {
-        console.log("show aa check 🔒", meta);
         // if (source === 'showRequest' || source === 'editLoadRequest') {
         //   const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
         //   return record.user_id === adminUser.dbUser.id;

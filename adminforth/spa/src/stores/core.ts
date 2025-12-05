@@ -198,6 +198,7 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_public_config',
       method: 'GET',
     });
+    console.log('📦 getPublicConfig', res);
     config.value = {...config.value, ...res};
   }
 
@@ -206,6 +207,7 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_login_form_config',
       method: 'GET',
     });
+    console.log('📦 getLoginFormConfig', res);
     config.value = {...config.value, ...res};
   }
 
@@ -218,6 +220,12 @@ export const useCoreStore = defineStore('core', () => {
     const userFullnameField = config.value?.userFullnameField;
     return userData.value && userFullnameField && userData.value[userFullnameField];
   })
+
+  const isIos = computed(() => {
+    return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+  )});
 
 
   return { 
@@ -243,5 +251,6 @@ export const useCoreStore = defineStore('core', () => {
     resetAdminUser,
     resetResource,
     isResourceFetching,
+    isIos
   }
 })
