@@ -188,13 +188,17 @@ const apartsCountsByDaysChart = computed(() => {
 });
 
 const listedVsUnlistedPriceByDays = computed(() => {
-  return data.value.listedVsUnlistedPriceByDays?.slice( ).reverce().map( 
-    (item) => ({
-      x: dayjs(item.day).format('DD MMM'),
-      listedPrice: item.listedPrice.toFixed(2),
-      unlistedPrice: item.unlistedPrice.toFixed(2),
-    })
-  );
+  const arr = data.value?.listedVsUnlistedPriceByDays;
+
+  if (!Array.isArray(arr)) return [];
+
+  const reversed = arr.slice().reverse();
+
+  return reversed.map(item => ({
+    x: dayjs(item.day).format('DD MMM'),
+    listedPrice: item.listedPrice.toFixed(2),
+    unlistedPrice: item.unlistedPrice.toFixed(2),
+  }));
 });
 
 const listedVsUnlistedCountByDays = computed(() => {
