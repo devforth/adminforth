@@ -356,7 +356,7 @@ resource "aws_route_table_association" "public_b_assoc" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name   = "app-sg-k3s"
+  name   = "${local.app_name}-SecurityGroup"
   vpc_id = aws_vpc.main.id
 
   dynamic "ingress" {
@@ -378,8 +378,8 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
-resource "aws_iam_role" "k3s_node_role" {
-  name = "k3s-node-role"
+resource "aws_iam_role" "node_role" {
+  name = "${local.app_name}node-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -392,17 +392,17 @@ resource "aws_iam_role" "k3s_node_role" {
 
 resource "aws_iam_role_policy_attachment" "ecr_read_only_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.k3s_node_role.name
+  role       = aws_iam_role.node_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_core_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.k3s_node_role.name
+  role       = aws_iam_role.node_role.name
 }
 
-resource "aws_iam_instance_profile" "k3s_instance_profile" {
-  name = "k3s-instance-profile"
-  role = aws_iam_role.k3s_node_role.name
+resource "aws_iam_instance_profile" "instance_profile" {
+  name = "${local.app_name}-instance-profile"
+  role = aws_iam_role.node_role.name
 }
 ```
 
@@ -445,7 +445,7 @@ you need to create a file `Chart.yaml` in it
 
 ```yaml title="deploy/helm/helm_charts/Chart.yaml"
 apiVersion: v2
-name: myadmin     # <-- replace with the name of your application
+name: myadmin
 description: Helm chart for myadmin app
 version: 0.1.0
 appVersion: "1.0.0"
@@ -454,7 +454,7 @@ appVersion: "1.0.0"
 And `values.yaml`
 
 ```yaml title="deploy/helm/helm_charts/values.yaml"
-appName: myadmin    # <-- replace with the name of your application
+appName: myadmin
 containerPort: 3500
 servicePort: 80
 adminSecret: "your_secret"
@@ -528,7 +528,6 @@ spec:
   ports:
   - port: {{ .Values.servicePort }}
     targetPort: {{ .Values.containerPort }}
-
 ```
 
 The comments in the `values.yaml` and `Chart.yaml` files indicate the names of the variables that need to be replaced. They must correspond to the variables in Ansible, which will be discussed later.
