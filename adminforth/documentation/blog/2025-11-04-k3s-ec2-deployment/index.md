@@ -131,7 +131,7 @@ locals {
   az_b                 = "us-west-2b"
   app_name             = "<your_app_name>"
   app_source_code_path = "../../"
-  ansible_dir          = "/home/kdoropii/myadmin/deploy/ansible/playbooks"
+  ansible_dir          = "../ansible/playbooks"
 
   ingress_ports = [
     { from = 22, to = 22, protocol = "tcp", desc = "SSH" },
@@ -143,7 +143,7 @@ locals {
 
 provider "aws" {
   region = local.aws_region
-  profile = "my_aws"
+  profile = "myaws"
 }
 
 data "aws_ami" "ubuntu_22_04" {
@@ -727,6 +727,14 @@ aws_access_key_id = <your_access_key>
 aws_secret_access_key = <your_secret_key>
 ```
 
+Then use 
+
+```ini
+aws login
+```
+
+And enter your credentials
+aws
 ### Step 8 - Run deployment
 
 All deployment-related actions are automated, so no additional actions are required. To deploy the application, you only need to enter a few commands listed below and wait a few minutes. After that, you will be able to connect to the web application using the link you will receive in `terraform_output`. Next, if you wish, you can add GitHub Actions. To do this, follow the instructions in [our other post](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/#chellenges-when-you-build-on-ci).
