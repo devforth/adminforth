@@ -458,6 +458,7 @@ appName: myadmin    # <-- replace with the name of your application
 containerPort: 3500
 servicePort: 80
 adminSecret: "your_secret"
+ecrImageFull: 735356255780.dkr.ecr.us-west-2.amazonaws.com/myadmink3s:latest ## <-- change to your repo url
 ```
 After this create .../deploy/helm/helm_charts/templates folder
 
@@ -730,11 +731,11 @@ aws_secret_access_key = <your_secret_key>
 Then use 
 
 ```ini
-aws login
+aws configure
 ```
 
-And enter your credentials
-aws
+And configure your AWS credentials
+
 ### Step 8 - Run deployment
 
 All deployment-related actions are automated, so no additional actions are required. To deploy the application, you only need to enter a few commands listed below and wait a few minutes. After that, you will be able to connect to the web application using the link you will receive in `terraform_output`. Next, if you wish, you can add GitHub Actions. To do this, follow the instructions in [our other post](https://adminforth.dev/blog/compose-aws-ec2-ecr-terraform-github-actions/#chellenges-when-you-build-on-ci).
