@@ -157,6 +157,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           LIMIT ?;
           `
         ).all(days);
+        apartsByDays.reverse();
 
         const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
@@ -174,6 +175,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           LIMIT ?;
           `
         ).all(days);
+        listedVsUnlistedByDays.reverse();
 
         const apartsCountsByRooms = await db.prepare(
           `SELECT 
@@ -214,6 +216,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           LIMIT ?;
           `
         ).all(days);
+        listedVsUnlistedPriceByDays.reverse();
           
         const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
           acc: number, { listedPrice }: { listedPrice:number }
