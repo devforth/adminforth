@@ -52,6 +52,5 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 
     return results.every(result => result);
   };
-  console.log('checkShowIf', record.name, ':', evaluatePredicate(c.showIf));
   return evaluatePredicate(c.showIf);
 }
