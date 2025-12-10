@@ -129,9 +129,19 @@ locals {
   subnet_b_cidr        = "10.0.11.0/24"
   az_a                 = "us-west-2a"
   az_b                 = "us-west-2b"
-  app_name             = "<your_app_name>"
+  app_name             = <your_app_name>
   app_source_code_path = "../../"
   ansible_dir          = "../ansible/playbooks"
+  app_files            = fileset(local.app_source_code_path, "**")
+
+  image_tag = sha256(join("", [
+    for f in local.app_files :
+    try(filesha256("${local.app_source_code_path}/${f}"), "")
+    if length(regexall("^deploy/", f)) == 0
+    && length(regexall("^\\.vscode/", f)) == 0
+    && length(regexall("^node_modules/", f)) == 0
+    && length(regexall("^\\.gitignore", f)) == 0
+  ]))
 
   ingress_ports = [
     { from = 22, to = 22, protocol = "tcp", desc = "SSH" },
@@ -142,7 +152,7 @@ locals {
 }
 
 provider "aws" {
-  region = local.aws_region
+  region  = local.aws_region
   profile = "myaws"
 }
 
@@ -182,9 +192,12 @@ resource "aws_instance" "ec2_instance" {
 
   # prevent accidental termination of ec2 instance and data loss
   lifecycle {
-    #create_before_destroy = true       #uncomment in production
+    create_before_destroy = true #uncomment in production
     #prevent_destroy       = true       #uncomment in production
     ignore_changes = [ami]
+    replace_triggered_by = [
+      null_resource.docker_build_and_push
+    ]
   }
 
   root_block_device {
@@ -210,6 +223,12 @@ EOF
 resource "null_resource" "wait_ssh" {
   depends_on = [aws_instance.ec2_instance]
 
+  triggers = (
+    {
+      instance_id = aws_instance.ec2_instance.id
+    }
+  )
+
   provisioner "local-exec" {
     command = <<EOT
     bash -c '
@@ -227,8 +246,13 @@ resource "null_resource" "ansible_provision" {
   depends_on = [
     aws_instance.ec2_instance,
     local_file.ansible_inventory,
-    null_resource.wait_ssh
+    null_resource.wait_ssh,
+    local_file.image_tag
   ]
+
+  triggers = {
+    instance_id = aws_instance.ec2_instance.id
+  }
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
@@ -240,6 +264,7 @@ resource "null_resource" "ansible_provision" {
     EOT
   }
 }
+
 ```
 
 > 👆 Replace `<your_app_name>` with your app name (no spaces, only underscores or letters)
@@ -261,32 +286,42 @@ resource "aws_ecr_repository" "app_repo" {
 data "aws_caller_identity" "current" {}
 
 resource "null_resource" "docker_build_and_push" {
-
   depends_on = [aws_ecr_repository.app_repo]
+
+  triggers = {
+    image_tag = local.image_tag
+  }
 
   provisioner "local-exec" {
     command = <<-EOT
       set -e
       unset DOCKER_HOST
-      
+
       REPO_URL="${aws_ecr_repository.app_repo.repository_url}"
       ACCOUNT_ID="${data.aws_caller_identity.current.account_id}"
       REGION="${local.aws_region}"
-      
+      TAG="${local.image_tag}"
+
       echo "LOG: Logging in to ECR..."
       aws ecr get-login-password --region $${REGION} | docker login --username AWS --password-stdin $${ACCOUNT_ID}.dkr.ecr.$${REGION}.amazonaws.com
       
       echo "LOG: Building Docker image..."
-      docker -H unix:///var/run/docker.sock build --pull -t $${REPO_URL}:latest ${local.app_source_code_path}
+      docker build --pull -t $${REPO_URL}:$${TAG} ${local.app_source_code_path}
 
       echo "LOG: Pushing image to ECR..."
-      docker -H unix:///var/run/docker.sock push $${REPO_URL}:latest
+      docker push $${REPO_URL}:$${TAG}
 
-      echo "LOG: Build and push complete."
+      echo "LOG: Build and push complete. TAG=$${TAG}"
     EOT
 
     interpreter = ["/bin/bash", "-c"]
   }
+}
+
+resource "local_file" "image_tag" {
+  depends_on = [null_resource.docker_build_and_push]
+  content    = local.image_tag
+  filename   = "${path.module}/image_tag.txt"
 }
 ```
 
@@ -445,7 +480,7 @@ you need to create a file `Chart.yaml` in it
 
 ```yaml title="deploy/helm/helm_charts/Chart.yaml"
 apiVersion: v2
-name: myadmin
+name: myadmink3s # SET YOUR APP NAME
 description: Helm chart for myadmin app
 version: 0.1.0
 appVersion: "1.0.0"
@@ -454,11 +489,12 @@ appVersion: "1.0.0"
 And `values.yaml`
 
 ```yaml title="deploy/helm/helm_charts/values.yaml"
-appName: myadmin
+appName: myadmink3s # SET YOUR APP NAME LIKE IN Chart.yaml
+appNameSpace: myadmin # SET YOUR APP NAMESPACE
 containerPort: 3500
 servicePort: 80
 adminSecret: "your_secret"
-ecrImageFull: 735356255780.dkr.ecr.us-west-2.amazonaws.com/myadmink3s:latest ## <-- change to your repo url
+ecrImageFull: ""
 ```
 After this create .../deploy/helm/helm_charts/templates folder
 
@@ -471,7 +507,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.appName }}-deployment
-  namespace: {{ .Values.appName }}
+  namespace: {{ .Values.appNameSpace }}
 spec:
   replicas: 1
   selector:
@@ -499,7 +535,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.appName }}-ingress
-  namespace: {{ .Values.appName }}
+  namespace: {{ .Values.appNameSpace }}
 spec:
   rules:
   - http:
@@ -520,7 +556,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.appName }}-service
-  namespace: {{ .Values.appName }}
+  namespace: {{ .Values.appNameSpace }}
 spec:
   type: ClusterIP
   selector:
@@ -552,31 +588,38 @@ Then the file `playbook.yaml`
     kubeconfig_path: /etc/rancher/k3s/k3s.yaml
     helm_url: https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz
     helm_dest: /usr/local/bin/helm
-    app_name: myadmin
-    app_namespace: myadmin 
+    app_name: myadmink3s    # <-- CHANGE TO YOUR APP NAME LIKE IN main.tf local.app_name
+    app_namespace: myadmin  # <-- CHANGE TO YOUR APP NAMESPACE
+    aws_account_id: "735356255780" # <-- CHANGE TO YOUR AWS ACCOUNT ID
     chart_path: /home/ubuntu/{{app_name}}/helm_charts
 
   tasks:
 
+    - name: Read Docker image tag (local)
+      ansible.builtin.set_fact:
+        image_tag: "{{ lookup('file', '../../terraform/image_tag.txt') }}"
+      delegate_to: localhost
+
     - name: Install unzip
-      apt:
+      ansible.builtin.apt:
         name: unzip
         state: present
         update_cache: true
 
     - name: Download AWS CLI v2
-      get_url:
+      ansible.builtin.get_url:
         url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
         dest: /tmp/awscliv2.zip
+        mode: '0644'
 
     - name: Unzip AWS CLI
-      unarchive:
+      ansible.builtin.unarchive:
         src: /tmp/awscliv2.zip
         dest: /tmp
         remote_src: true
 
     - name: Install AWS CLI
-      command: /tmp/aws/install --update
+      ansible.builtin.command: /tmp/aws/install --update
       args:
         creates: /usr/local/bin/aws
 
@@ -594,18 +637,26 @@ Then the file `playbook.yaml`
           - ca-certificates
         state: present
 
+    - name: Download k3s installation script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /tmp/install_k3s.sh
+        mode: '0700'
+
     - name: Install k3s
-      ansible.builtin.shell: |
-        curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -
+      ansible.builtin.command: /tmp/install_k3s.sh
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
       args:
         creates: /usr/local/bin/k3s
 
     - name: Get ECR token
-      command: aws ecr get-login-password --region us-west-2
+      ansible.builtin.command: aws ecr get-login-password --region us-west-2
       register: ecr_token
+      changed_when: false
 
     - name: Configure K3s registry for ECR
-      copy:
+      ansible.builtin.copy:
         dest: /etc/rancher/k3s/registries.yaml
         content: |
           configs:
@@ -613,6 +664,7 @@ Then the file `playbook.yaml`
               auth:
                 username: AWS
                 password: "{{ ecr_token.stdout }}"
+        mode: '0600'
 
     - name: Restart k3s to apply registry changes
       ansible.builtin.systemd:
@@ -690,29 +742,31 @@ Then the file `playbook.yaml`
 
     - name: Copy Helm chart to server
       ansible.builtin.copy:
-        src: "../../helm/helm_charts"  
-        dest: /home/ubuntu/{{app_name}}
+        src: "../../helm/helm_charts"
+        dest: /home/ubuntu/{{ app_name }}
         owner: ubuntu
         group: ubuntu
         mode: '0755'
         force: true
 
-    - name: Ensure {{app_namespace}} namespace exists
+    - name: Ensure namespace exists - {{ app_namespace }}
       kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
-        name: myadmin
+        name: "{{ app_namespace }}"
         kubeconfig: "{{ kubeconfig_path }}"
 
-    - name: Deploy {{app_name}} stack via Helm
+    - name: Deploy stack via Helm - {{ app_name }}
       kubernetes.core.helm:
-        name: myadmin
-        chart_ref: /home/ubuntu/{{app_name}}/helm_charts
-        release_namespace: "{{app_namespace}}"
+        name: "{{ app_namespace }}"
+        chart_ref: /home/ubuntu/{{ app_name }}/helm_charts
+        release_namespace: "{{ app_namespace }}"
         kubeconfig: "{{ kubeconfig_path }}"
         create_namespace: false
-        values_files: 
-          - /home/ubuntu/{{app_name}}/helm_charts/values.yaml
+        values_files:
+          - /home/ubuntu/{{ app_name }}/helm_charts/values.yaml
+        values:
+          ecrImageFull: "{{ aws_account_id }}.dkr.ecr.us-west-2.amazonaws.com/{{ app_name }}:{{ image_tag }}"
         force: true
         atomic: false
 ```
