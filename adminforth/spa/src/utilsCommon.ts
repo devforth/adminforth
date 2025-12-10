@@ -1,4 +1,4 @@
-import type { AdminForthResourceColumnInputCommon, Predicate } from "./types/Common";
+import type { AdminForthResourceColumnInputCommon, Predicate } from "./types/Common.js";
 
 export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>) {
   if (!c.showIf) return true;
@@ -42,7 +42,7 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
         if ("$nincludes" in condition)
           return (
             Array.isArray(recordValue) &&
-            !recordValue.includes(condition.$nicludes)
+            !recordValue.includes(condition.$nincludes)
           );
 
         return true;
