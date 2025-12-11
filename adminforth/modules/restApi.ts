@@ -323,10 +323,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
+        const userAvatarUrl = await this.adminforth.config.auth.avatarUrl?.(adminUser);
+
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
             pk: userPk,
+            userAvatarUrl: userAvatarUrl || null,
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
