@@ -148,15 +148,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
-        `SELECT * FROM (
-          SELECT 
+        `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             COUNT(*) as count 
           FROM apartments 
           GROUP BY day 
-          ORDER BY day DESC
-          LIMIT ?
-          ) ORDER BY day ASC`
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
 
 
@@ -164,8 +162,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
         // add listed, unlisted, listedPrice, unlistedPrice
         const listedVsUnlistedByDays = await db.prepare(
-        `SELECT * FROM (
-          SELECT 
+          `SELECT 
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed) as listed, 
             COUNT(*) - SUM(listed) as unlisted,
@@ -173,9 +170,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?
-          ) ORDER BY day ASC`
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
 
 
@@ -208,16 +204,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         ).get();
 
         const listedVsUnlistedPriceByDays = await db.prepare(
-        `SELECT * FROM (
-          SELECT 
+        `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed * price) as listedPrice,
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?
-        ) ORDER BY day ASC`
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
 
           
