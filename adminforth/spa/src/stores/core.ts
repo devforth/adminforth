@@ -223,7 +223,7 @@ export const useCoreStore = defineStore('core', () => {
   })
 
   const userAvatarUrl = computed(() => {
-    return userData.value?.avatar_url || null;
+    return userData.value?.userAvatarUrl || null;
   });
 
   const isIos = computed(() => {
