@@ -234,76 +234,8 @@ const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expanded
 const theme = ref('light');
 
 const userMenuComponents = computed(() => {
-  console.log('🪲🆕 userMenuComponents recomputed', JSON.parse(JSON.stringify(coreStore?.config?.globalInjections?.userMenu)));
   return coreStore?.config?.globalInjections?.userMenu || [];
 })
-
-watch(
-  () => coreStore.config?.globalInjections?.userMenu,
-  (newVal, oldVal) => {
-    // Only log when it becomes undefined (you can relax this if needed)
-    if (newVal === undefined) {
-      const err = new Error('🔍 userMenu changed to undefined');
-      console.groupCollapsed(
-        '%c[TRACE] userMenu changed to undefined',
-        'color: red; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.log('Stack trace:');
-      console.log(err.stack);
-      console.groupEnd();
-    } else {
-      // Optional: log ALL changes for debugging
-      console.groupCollapsed(
-        '%c[DEBUG] userMenu changed',
-        'color: orange; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.groupEnd();
-    }
-  },
-  {
-    deep: false,
-    immediate: false,
-  }
-);
-
-watch(() => coreStore.config?.globalInjections, (v) => {
-  console.log("🔧 globalInjections replaced:", v);
-}, { deep: false });
-
-watch(
-  () => coreStore.config?.globalInjections?.userMenu,
-  (newVal, oldVal) => {
-    if (newVal === undefined) {
-      const err = new Error('🔍 userMenu changed to undefined');
-      console.groupCollapsed(
-        '%c[TRACE] userMenu changed to undefined',
-        'color: red; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.log('Stack trace:');
-      console.log(err.stack);
-      console.groupEnd();
-    } else {
-      console.groupCollapsed(
-        '%c[DEBUG] userMenu changed',
-        'color: orange; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.groupEnd();
-    }
-  },
-  { deep: false, immediate: false }
-);
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
