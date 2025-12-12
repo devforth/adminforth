@@ -274,4 +274,4 @@ auth: {
 
 ```
 
-This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with upload adapter
+This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
