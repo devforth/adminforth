@@ -360,6 +360,7 @@ import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
