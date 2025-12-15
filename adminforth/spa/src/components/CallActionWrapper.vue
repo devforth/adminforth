@@ -1,5 +1,5 @@
 <template>
-  <div @click="onClick">
+  <div @click="onClick" class="flex items-center justify-center">
     <slot />
   </div>
 </template>
