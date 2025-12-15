@@ -351,3 +351,42 @@ Links to adapters:
 [GitHub](https://github.com/devforth/adminforth-github-oauth-adapter)
 [Facebook](https://github.com/devforth/adminforth-facebook-oauth-adapter)
 [Keycloak](https://github.com/devforth/adminforth-keycloak-oauth-adapter)
+
+
+## Fill user full name
+
+If you have a fullName field in your users resource, you can add it to the plugin setup:
+
+```ts
+
+plugins: [
+  ...
+
+  new OAuthPlugin({
+
+    ...
+
+    userFullNameField: 'fullName'
+
+    ...
+
+  }),
+]
+
+```
+
+This field will be automatically filled with the name that the provider returns, if this field was empty.
+
+> ☝️Not all providers return full name or even if they do, there is no guarantee that they will be correct
+
+> Google Adapter: returns fullName, but if there is no last name - it will return only first name
+
+>Facebook: returns fullName
+
+>Github: returns name or fullName (depends of what user added in name field)
+
+>Keycloak: returns fullName
+
+>Microsoft: returns fullName
+
+>Twitch: return only users display name

@@ -1052,6 +1052,12 @@ export interface AdminForthInputConfig {
        */
       loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
 
+
+      /**       
+       * Function to return avatar URL for user.
+       */
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
+
       /**
        * Remember me days for "Remember Me" checkbox on login page.
        * If not set or set to null/0/undefined, "Remember Me" checkbox will not be displayed.
