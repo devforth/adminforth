@@ -254,9 +254,9 @@ customization: {
 
 ```
 
-## Avatars
+## User Avatar
 
-If you want your user to have custom avatar you can use avatarUrl:
+If you want your user to have custom avatar you can use avatarUrl function in auth section:
 
 ```ts title='./index.ts'
 
@@ -265,7 +265,7 @@ auth: {
   ...
 
   avatarUrl: async (adminUser)=> { 
-    return `https://${process.env.STORAGE_PROVIDER_PATH}/${adminUser.dbUser.avatar_path}`
+    return ... // absolute URL of avatar for this adminUser
   },
 
   ...
@@ -274,4 +274,4 @@ auth: {
 
 ```
 
-This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
+We recommend to use this feature with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
