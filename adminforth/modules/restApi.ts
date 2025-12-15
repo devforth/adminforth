@@ -15,10 +15,10 @@ import {
   Filters,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, checkShowIf } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
+import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
@@ -323,10 +323,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
+        const userAvatarUrl = await this.adminforth.config.auth.avatarUrl?.(adminUser);
+
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
             pk: userPk,
+            userAvatarUrl: userAvatarUrl || null,
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
@@ -1177,7 +1180,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   record[column.name] === undefined &&
                   column.showIn.create
               ) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                  const isColumnShownWithShowIf = await checkShowIf(column as AdminForthResourceColumnInputCommon, record) ;
+                  if (isColumnShownWithShowIf === true) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
               }
             }
 
@@ -1200,8 +1206,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               if ((column.required as { create?: boolean })?.create) {
                 const shown = await isShown(column, 'create', ctxCreate);
-                if (shown && record[column.name] === undefined) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                const isColumnShownWithShowIf = await checkShowIf(column as AdminForthResourceColumnInputCommon , record) ;
+                if (isColumnShownWithShowIf === true) {
+                  if (shown && record[column.name] === undefined) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
                 }
               }
             }

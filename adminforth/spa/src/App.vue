@@ -24,6 +24,12 @@
             />
 
             <div class="flex items-center ms-3 ">
+              <Tooltip>
+                <IconWifiOff v-if="coreStore.isInternetError" class="blinking-icon w-8 h-8 text-red-500" />
+                <template #tooltip>
+                  {{$t('Internet connection lost')}}
+                </template>
+              </Tooltip>
               <span  
                 v-if="!coreStore.config?.singleTheme"
                 @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
@@ -35,12 +41,17 @@
                   ref="dropdownUserButton"
                   type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">{{ $t('Open user menu') }}</span>
-                  <svg class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <img 
+                      v-if="coreStore.userAvatarUrl"
+                      class="w-8 h-8 rounded-full object-cover" 
+                      :src="coreStore.userAvatarUrl" 
+                      alt="user photo"
+                    />
+                  <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
                   </svg>
                 </button>
               </div>
-
               <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
@@ -129,6 +140,19 @@
 
 <style lang="scss" scoped>
 
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  .blinking-icon {
+    animation: blink 2s ease-in-out infinite;
+  }
+
   .fade-leave-active {
     @apply transition-opacity duration-500;
   }
@@ -163,6 +187,7 @@ import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconWifiOff } from '@iconify-prerendered/vue-humbleicons';
 import AcceptModal from './components/AcceptModal.vue';
 import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -173,6 +198,7 @@ import {useToastStore} from '@/stores/toast';
 import { initFrontedAPI } from '@/adminforth';
 import adminforth from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
+import { Tooltip } from '@/afcl'
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
@@ -208,76 +234,8 @@ const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expanded
 const theme = ref('light');
 
 const userMenuComponents = computed(() => {
-  console.log('🪲🆕 userMenuComponents recomputed', JSON.parse(JSON.stringify(coreStore?.config?.globalInjections?.userMenu)));
   return coreStore?.config?.globalInjections?.userMenu || [];
 })
-
-watch(
-  () => coreStore.config?.globalInjections?.userMenu,
-  (newVal, oldVal) => {
-    // Only log when it becomes undefined (you can relax this if needed)
-    if (newVal === undefined) {
-      const err = new Error('🔍 userMenu changed to undefined');
-      console.groupCollapsed(
-        '%c[TRACE] userMenu changed to undefined',
-        'color: red; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.log('Stack trace:');
-      console.log(err.stack);
-      console.groupEnd();
-    } else {
-      // Optional: log ALL changes for debugging
-      console.groupCollapsed(
-        '%c[DEBUG] userMenu changed',
-        'color: orange; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.groupEnd();
-    }
-  },
-  {
-    deep: false,
-    immediate: false,
-  }
-);
-
-watch(() => coreStore.config?.globalInjections, (v) => {
-  console.log("🔧 globalInjections replaced:", v);
-}, { deep: false });
-
-watch(
-  () => coreStore.config?.globalInjections?.userMenu,
-  (newVal, oldVal) => {
-    if (newVal === undefined) {
-      const err = new Error('🔍 userMenu changed to undefined');
-      console.groupCollapsed(
-        '%c[TRACE] userMenu changed to undefined',
-        'color: red; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.log('Stack trace:');
-      console.log(err.stack);
-      console.groupEnd();
-    } else {
-      console.groupCollapsed(
-        '%c[DEBUG] userMenu changed',
-        'color: orange; font-weight: bold;'
-      );
-      console.log('old value:', oldVal);
-      console.log('new value:', newVal);
-      console.log('coreStore.config.globalInjections:', coreStore.config?.globalInjections);
-      console.groupEnd();
-    }
-  },
-  { deep: false, immediate: false }
-);
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
@@ -374,6 +332,9 @@ onMounted(async () => {
   adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }
+
+  window.addEventListener('online', () => coreStore.isInternetError = false);
+  window.addEventListener('offline', () => coreStore.isInternetError = true);
 })
 
 onBeforeMount(()=>{

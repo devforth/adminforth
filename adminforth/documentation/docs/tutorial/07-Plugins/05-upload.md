@@ -31,7 +31,8 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
         ],
         "AllowedMethods": [
             "HEAD",
-            "PUT"
+            "PUT",
+            "GET"
         ],
         "AllowedOrigins": [
             "http://localhost:3500"

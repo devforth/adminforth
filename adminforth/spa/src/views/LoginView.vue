@@ -145,7 +145,8 @@ const password = ref('');
 
 const route = useRoute();
 const router = useRouter();
-const inProgress = ref(false);
+const inProgress = ref<boolean>(false);
+const isSuccess = ref<boolean>(false);
 const coreStore = useCoreStore();
 const user = useUserStore();
 
@@ -183,7 +184,7 @@ onMounted(async () => {
 
 
 async function login() {
-  if (inProgress.value) {
+  if (inProgress.value || isSuccess.value) {
     return;
   }
   inProgress.value = true;
@@ -200,11 +201,13 @@ async function login() {
       error.value = resp.error;
   } else if (resp.redirectTo) {
     error.value = null;
+    isSuccess.value = true;
     user.authorize();
     await coreStore.fetchMenuAndResource();
     router.push(resp.redirectTo);
   } else {
     error.value = null;
+    isSuccess.value = true;
     await user.finishLogin();
   }
   inProgress.value = false;
