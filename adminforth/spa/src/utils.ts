@@ -71,14 +71,15 @@ export async function callApi({path, method, body, headers, silentError = false}
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
+export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
   path: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: any,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  silentError?: boolean
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
