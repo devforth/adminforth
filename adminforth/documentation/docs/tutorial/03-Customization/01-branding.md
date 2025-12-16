@@ -253,25 +253,3 @@ customization: {
 }
 
 ```
-
-## User Avatar
-
-If you want your user to have custom avatar you can use avatarUrl function in auth section:
-
-```ts title='./index.ts'
-
-auth: {
-
-  ...
-
-  avatarUrl: async (adminUser)=> { 
-    return ... // absolute URL of avatar for this adminUser
-  },
-
-  ...
-
-}
-
-```
-
-We recommend to use this feature with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
