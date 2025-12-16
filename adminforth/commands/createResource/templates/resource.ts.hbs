@@ -15,9 +15,7 @@ export default {
         list: "@/renderers/CompactUUID.vue",
       }{{/if}},
       showIn: {
-        {{#each this.showIn}}
-        {{this}}: true,
-        {{/each}}
+        all:true,
       }
     }{{#unless @last}},{{/unless}}
     {{/each}}
