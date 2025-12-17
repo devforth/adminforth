@@ -113,7 +113,7 @@ export default {
         "exe",
         "webp",
       ],
-      maxFileSize: 1024 * 1024 * 20, // 5MB
+      maxFileSize: 1024 * 1024 * 20, // 20MB
 
 
       filePath: ({ originalFilename, originalExtension, contentType }) =>

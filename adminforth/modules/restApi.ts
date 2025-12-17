@@ -15,7 +15,7 @@ import {
   Filters,
 } from "../types/Back.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, checkShowIf } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
@@ -1171,7 +1171,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { record } = body;
+            const { record, requiredColumnsToSkip } = body;
 
             // todo if showIn.create is function, code below will be buggy (will not detect required fact)
             for (const column of resource.columns) {
@@ -1180,8 +1180,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   record[column.name] === undefined &&
                   column.showIn.create
               ) {
-                  const isColumnShownWithShowIf = await checkShowIf(column as AdminForthResourceColumnInputCommon, record) ;
-                  if (isColumnShownWithShowIf === true) {
+                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                  if (!shouldWeSkipColumn) {
                     return { error: `Column '${column.name}' is required`, ok: false };
                   }
               }
@@ -1206,8 +1206,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               if ((column.required as { create?: boolean })?.create) {
                 const shown = await isShown(column, 'create', ctxCreate);
-                const isColumnShownWithShowIf = await checkShowIf(column as AdminForthResourceColumnInputCommon , record) ;
-                if (isColumnShownWithShowIf === true) {
+                const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                if (!shouldWeSkipColumn) {
                   if (shown && record[column.name] === undefined) {
                     return { error: `Column '${column.name}' is required`, ok: false };
                   }

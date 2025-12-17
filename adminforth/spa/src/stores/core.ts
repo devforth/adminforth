@@ -199,7 +199,6 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_public_config',
       method: 'GET',
     });
-    console.log('📦 getPublicConfig', res);
     config.value = {...config.value, ...res};
   }
 

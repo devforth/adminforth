@@ -1,4 +1,4 @@
-# Menu Configuration
+# Menu & Header
 
 
 ## Icons
@@ -252,4 +252,27 @@ import adminforth from '@/adminforth';
 
 adminforth.menu.refreshMenuBadges()
 ```
+
+## Avatars
+
+If you want your user to have custom avatar you can use avatarUrl:
+
+```ts title='./index.ts'
+
+auth: {
+
+  ...
+
+  avatarUrl: async (adminUser)=> { 
+    return `https://${process.env.STORAGE_PROVIDER_PATH}/${adminUser.dbUser.avatar_path}`
+  },
+
+  ...
+
+}
+
+```
+
+This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
+
 
