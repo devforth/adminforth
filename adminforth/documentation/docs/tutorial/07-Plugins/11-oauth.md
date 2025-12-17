@@ -390,3 +390,98 @@ This field will be automatically filled with the name that the provider returns,
 >Microsoft: returns fullName
 
 >Twitch: return only users display name
+
+
+## Automatically save users avatar
+
+If you want to automatically upload users avatar from the provider, you can use userAvatarField prop.
+
+Example:
+
+First of all you'll need to create avatar field in your database:
+
+Update schema prisma file:
+
+``` title="./schema.prisma"
+
+model adminuser {
+  id            String     @id
+  email         String     @unique
+  password_hash String
+  role          String
+  created_at    DateTime
+  //diff-add
+  avatar        String 
+}
+
+```
+
+And make migration:
+
+```bash
+npm run makemigration -- --name add-avatar-field ; npm run migrate:local
+```
+
+Then add this field to users resource:
+
+```ts title="./resources/adminuser"
+
+...
+
+columns: [
+
+  ...
+    //diff-add
+    {
+      //diff-add
+      name: "avatar",
+      //diff-add
+      type: AdminForthDataTypes.STRING,
+      //diff-add
+      showIn: {
+        //diff-add
+        list: true,
+        //diff-add
+        show: true
+        //diff-add
+      },
+      //diff-add
+    },
+
+  ...
+
+]
+
+...
+
+```
+
+Then update your plugin setup:
+
+```ts title="./resources/adminuser.ts"
+
+...
+
+
+plugins: [
+
+  ...
+
+  new OAuthPlugin({
+    userAvatarField: "avatar",
+
+    ...
+
+  })
+
+  ...
+
+]
+
+...
+
+```
+
+Then you need to setup upload plugin for avatar field like it made here:
+
+[Using plugin for uploading avatar](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
