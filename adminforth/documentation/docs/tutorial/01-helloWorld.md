@@ -32,7 +32,7 @@ nvm use 20
 mkdir af-hello
 cd af-hello
 npm init -y
-npm i adminforth express @types/express typescript tsx @types/node -D
+npm i adminforth express @dotenvx/dotenvx @types/express typescript tsx @types/node -D
 npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
