@@ -1159,6 +1159,18 @@ export default class ConfigValidator implements IConfigValidator {
       } else {
         newConfig.auth.beforeLoginConfirmation = blc;
       }
+
+      // normalize adminUserAuthorize hooks
+      const aua = this.inputConfig.auth.adminUserAuthorize;
+      if (!Array.isArray(aua)) {
+        if (aua) {
+          newConfig.auth.adminUserAuthorize = [aua];
+        } else {
+          newConfig.auth.adminUserAuthorize = [];
+        }
+      } else {
+        newConfig.auth.adminUserAuthorize = aua;
+      }
     }
 
     // check for duplicate resourceIds and show which ones are duplicated

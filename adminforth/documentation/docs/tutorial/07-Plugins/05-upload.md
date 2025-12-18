@@ -31,7 +31,8 @@ Leave all settings unchanged (ACL Disabled, Block all public access - checked)
         ],
         "AllowedMethods": [
             "HEAD",
-            "PUT"
+            "PUT",
+            "GET"
         ],
         "AllowedOrigins": [
             "http://localhost:3500"
@@ -508,3 +509,154 @@ You can set the maximum width for the preview image in the `./resources/apartmen
 
 });
 ```
+
+## Using plugin for uploading avatar
+
+Let's say, that you want to use upload plugin for uploading avatar for each user.
+To do this add avatar column to the user resource:
+
+
+```ts title="./schema.prisma"
+  model adminuser {
+    id            String     @id
+    email         String     @unique
+    password_hash String
+    role          String
+    created_at    DateTime
+    //diff-add
+    avatar        ?String
+  }
+```
+
+Then make migration:
+
+```bash
+  npm run makemigration -- --name add-user-avatar-field ; npm run migrate:local
+```
+
+Add this column to the users resource:
+
+```ts title="./resources/adminuser.ts"
+
+...
+
+columns: [
+  
+  ...
+
+  //diff-add
+  {
+    //diff-add
+    name: "avatar",
+    //diff-add
+    type: AdminForthDataTypes.STRING,
+    //diff-add
+    showIn: ["show", "edit", "create" ],
+    //diff-add
+  },
+
+  ...
+
+]
+
+...
+
+plugins: [
+
+  ...
+
+  //diff-add
+  new UploadPlugin({
+      //diff-add
+    pathColumnName: "avatar",
+      //diff-add
+    storageAdapter: new AdminForthAdapterS3Storage({
+      //diff-add
+      bucket: process.env.AWS_BUCKET_NAME,
+      //diff-add
+      region: process.env.AWS_REGION,
+      //diff-add
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //diff-add
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      //diff-add
+    }),
+    //diff-add
+    allowedFileExtensions: [
+      //diff-add
+      "jpg",
+      //diff-add
+      "jpeg",
+      //diff-add
+      "png",
+      //diff-add
+      "gif",
+      //diff-add
+      "webm",
+      //diff-add
+      "exe",
+      //diff-add
+      "webp",
+      //diff-add
+    ],
+    //diff-add
+    maxFileSize: 1024 * 1024 * 20, // 20MB
+    //diff-add
+    filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+      //diff-add
+      return `aparts/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`
+      //diff-add
+    },
+    //diff-add
+    preview: {
+      //diff-add
+      maxWidth: "200px",
+      //diff-add
+    },
+    //diff-add
+  }),
+
+  ...
+
+]
+
+```
+
+And finally add this callback:
+
+```ts title="./index.ts"
+
+  auth: {
+
+    ...
+    //diff-add
+    avatarUrl: async (adminUser)=>{
+      //diff-add
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      //diff-add
+      if (!plugin) {
+        //diff-add
+        throw new Error('Upload plugin for avatar not found');
+        //diff-add
+      }
+      //diff-add
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        //diff-add
+        return '';
+        //diff-add
+      }
+      //diff-add
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      //diff-add
+      return imageUrl;
+      //diff-add
+    },
+
+
+    ...
+
+  }
+
+```
+
+And now you can easily update avatar for each user
