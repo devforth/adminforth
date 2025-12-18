@@ -332,7 +332,7 @@ export interface IAdminForthRestAPI {
    * @param toReturn - this is an object which will get status of login process. If at least one callback returns error or redirectTo, login process will be stopped (future callbacks will not be called).
    * @param response - http response object
    */
-  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra): Promise<void>;
+  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string,  }, response: any, extra: HttpExtra, rememberMeDays?: number): Promise<void>;
 }
 
 export interface IAdminForth {
@@ -1052,6 +1052,12 @@ export interface AdminForthInputConfig {
        * Any prompt to show users on login. Supports HTML.
        */
       loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
+
+
+      /**       
+       * Function to return avatar URL for user.
+       */
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
 
       /**
        * Remember me days for "Remember Me" checkbox on login page.
