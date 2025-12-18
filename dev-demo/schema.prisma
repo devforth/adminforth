@@ -18,6 +18,9 @@ model users {
     email_confirmed Boolean? @default(false)
     parentUserId    String?
     email_verified  Boolean? @default(false)
+    is_active       Boolean
+    @@index([is_active])
+    avatar          String?
 }
 
 model apartments {
