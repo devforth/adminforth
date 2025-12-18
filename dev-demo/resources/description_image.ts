@@ -58,7 +58,7 @@ export default {
             maxFileSize: 1024 * 1024 * 20, // 5MB
 
 
-            s3Path: ({ originalFilename, originalExtension, contentType }) =>
+            filePath: ({ originalFilename, originalExtension, contentType }) =>
               `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
 
             preview: {
