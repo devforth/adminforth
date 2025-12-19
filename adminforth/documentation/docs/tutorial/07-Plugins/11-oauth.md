@@ -422,9 +422,11 @@ And make migration:
 npm run makemigration -- --name add-avatar-field ; npm run migrate:local
 ```
 
-Then add this field to users resource:
+Then add this field to users resource and install upload plugin:
 
 ```ts title="./resources/adminuser"
+//diff-add
+import UploadPlugin from '@adminforth/upload';
 
 ...
 
@@ -450,6 +452,67 @@ columns: [
 
   ...
 
+],
+
+  ...
+
+plugins: [
+
+  ...
+
+  //diff-add
+  new UploadPlugin({
+      //diff-add
+    pathColumnName: "avatar",
+      //diff-add
+    storageAdapter: new AdminForthAdapterS3Storage({
+      //diff-add
+      bucket: process.env.AWS_BUCKET_NAME,
+      //diff-add
+      region: process.env.AWS_REGION,
+      //diff-add
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //diff-add
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      //diff-add
+    }),
+    //diff-add
+    allowedFileExtensions: [
+      //diff-add
+      "jpg",
+      //diff-add
+      "jpeg",
+      //diff-add
+      "png",
+      //diff-add
+      "gif",
+      //diff-add
+      "webm",
+      //diff-add
+      "exe",
+      //diff-add
+      "webp",
+      //diff-add
+    ],
+    //diff-add
+    maxFileSize: 1024 * 1024 * 20, // 20MB
+    //diff-add
+    filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+      //diff-add
+      return `aparts/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`
+      //diff-add
+    },
+    //diff-add
+    preview: {
+      //diff-add
+      maxWidth: "200px",
+      //diff-add
+    },
+    //diff-add
+  }),
+
+  ...
+
 ]
 
 ...
@@ -468,6 +531,7 @@ plugins: [
   ...
 
   new OAuthPlugin({
+    //diff-add
     userAvatarField: "avatar",
 
     ...
@@ -482,6 +546,39 @@ plugins: [
 
 ```
 
-Then you need to setup upload plugin for avatar field like it made here:
+And finally add this callback:
 
-[Using plugin for uploading avatar](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
+```ts title="./index.ts"
+
+  auth: {
+
+    ...
+    //diff-add
+    avatarUrl: async (adminUser)=>{
+      //diff-add
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      //diff-add
+      if (!plugin) {
+        //diff-add
+        throw new Error('Upload plugin for avatar not found');
+        //diff-add
+      }
+      //diff-add
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        //diff-add
+        return '';
+        //diff-add
+      }
+      //diff-add
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      //diff-add
+      return imageUrl;
+      //diff-add
+    },
+
+
+    ...
+
+  }
+
+```
