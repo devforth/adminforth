@@ -1120,7 +1120,7 @@ export interface AdminForthConfigForFrontend {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
   },
-  rememberMeDays: number,
+  rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
   showBrandLogoInSidebar: boolean,
   brandLogo?: string,
