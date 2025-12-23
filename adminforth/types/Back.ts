@@ -527,6 +527,7 @@ export interface HttpExtra {
   headers: Record<string, string>,
   cookies: Record<string, string>,
   requestUrl: string,
+  meta?: any,
 }
 /**
  * Modify record to change how data is saved to database.
@@ -1052,6 +1053,12 @@ export interface AdminForthInputConfig {
        * Any prompt to show users on login. Supports HTML.
        */
       loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
+
+
+      /**       
+       * Function to return avatar URL for user.
+       */
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
 
       /**
        * Remember me duration for "Remember Me" checkbox on login page.

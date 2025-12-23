@@ -45,6 +45,11 @@ export default class ConfigValidator implements IConfigValidator {
   }
   
   validateAndListifyInjection(obj, key, errors) {
+    if (key.includes('tableRowReplace')) {
+      if (obj[key].length > 1) {
+        throw new Error(`tableRowReplace injection supports only one element, but received ${obj[key].length}.`);
+      }
+    }
     if (!Array.isArray(obj[key])) {
       // not array
       obj[key] = [obj[key]];
@@ -657,8 +662,10 @@ export default class ConfigValidator implements IConfigValidator {
                 errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an column that is not of type string`);
               } else {
                 const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors, warnings);
-                if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
-                  errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                if (typeof polymorphicOnColShowIn.create !== 'function' && typeof polymorphicOnColShowIn.edit !== 'function') {
+                  if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                  }
                 }
               }
             }
@@ -869,7 +876,7 @@ export default class ConfigValidator implements IConfigValidator {
       // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
       const allowedInjectionsByPage: Record<string, string[]> = {
-        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart'],
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart', 'tableRowReplace'],
         show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
         edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
         create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
@@ -1178,6 +1185,18 @@ export default class ConfigValidator implements IConfigValidator {
         }
       } else {
         newConfig.auth.beforeLoginConfirmation = blc;
+      }
+
+      // normalize adminUserAuthorize hooks
+      const aua = this.inputConfig.auth.adminUserAuthorize;
+      if (!Array.isArray(aua)) {
+        if (aua) {
+          newConfig.auth.adminUserAuthorize = [aua];
+        } else {
+          newConfig.auth.adminUserAuthorize = [];
+        }
+      } else {
+        newConfig.auth.adminUserAuthorize = aua;
       }
     }
 
