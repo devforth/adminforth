@@ -15,10 +15,11 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body, headers}: {
+export async function callApi({path, method, body, headers, silentError = false}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
+  silentError?: boolean
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -36,31 +37,49 @@ export async function callApi({path, method, body, headers}: {
     if (r.status == 401 ) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
-      await router.push({ name: 'login' });
-      return null;
+      const currentPath = router.currentRoute.value.path;
+      const homeRoute = router.getRoutes().find(route => route.name === 'home');
+      const homePagePath = (homeRoute?.redirect as string) || '/';
+      let next = '';
+      if (currentPath !== '/login' && currentPath !== homePagePath) {
+        if (Object.keys(router.currentRoute.value.query).length > 0) {
+          next = currentPath + '?' + Object.entries(router.currentRoute.value.query).map(([key, value]) => `${key}=${value}`).join('&');
+        } else {
+          next = currentPath;
+        }
+        await router.push({ name: 'login', query: { next: next } });
+      } else {
+        await router.push({ name: 'login' });
+      }
+      return null;alert
     } 
     return await r.json();
   } catch(e) {
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
-      adminforth.alert({variant:'danger', message: t('Network error, please check your Internet connection and try again'),})
+      if (!silentError) {
+        adminforth.alert({variant:'danger', message: t('Network error, please check your Internet connection and try again'),})
+      }
       return null;
     }
 
-    adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+    if (!silentError) {
+      adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+    }
     console.error(`error in callApi ${path}`, e);
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
+export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
   path: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: any,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  silentError?: boolean
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };

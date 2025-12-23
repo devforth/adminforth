@@ -17,6 +17,7 @@ export const useCoreStore = defineStore('core', () => {
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
   const isResourceFetching = ref(false);
+  const isInternetError = ref(false);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -198,7 +199,6 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_public_config',
       method: 'GET',
     });
-    console.log('📦 getPublicConfig', res);
     config.value = {...config.value, ...res};
   }
 
@@ -221,6 +221,10 @@ export const useCoreStore = defineStore('core', () => {
     return userData.value && userFullnameField && userData.value[userFullnameField];
   })
 
+  const userAvatarUrl = computed(() => {
+    return userData.value?.userAvatarUrl || null;
+  });
+
   const isIos = computed(() => {
     return (
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -234,6 +238,7 @@ export const useCoreStore = defineStore('core', () => {
     menu, 
     username,
     userFullname,
+    userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
     getLoginFormConfig,
@@ -251,6 +256,7 @@ export const useCoreStore = defineStore('core', () => {
     resetAdminUser,
     resetResource,
     isResourceFetching,
-    isIos
+    isIos,
+    isInternetError,
   }
 })

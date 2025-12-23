@@ -759,6 +759,26 @@ function onBeforeClose() {
 }
 ```
 
+### Ask for extra confirmation before close
+
+If you want dialog to ask user for conformation when he tryes to close dialog, you can add: 
+
+```ts
+<Dialog 
+  ref="confirmDialog" 
+  class="w-96"
+  //diff-add
+  :closable="false"
+  //diff-add
+  :askForCloseConfirmation="true"
+  //diff-add
+  closeConfirmationText='Are you sure you want to close this dialog?',
+>
+  <div class="space-y-4">
+    The dialog content goes here.
+  </div>
+</Dialog>
+```
 
 ## Dropzone
 
