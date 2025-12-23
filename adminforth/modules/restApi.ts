@@ -129,7 +129,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, rememberMeDays?: number) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -138,7 +138,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response,
         adminforth: this.adminforth,
         extra,
-        rememberMeDays
+        sessionDuration,
       });
       
       if (resp?.body?.redirectTo || resp?.error) {
@@ -205,17 +205,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             username,
           };
 
-          const expireInDays = rememberMe ? this.adminforth.config.auth.rememberMeDays || 30 : 1;
-
+          const expireInDuration = rememberMe 
+            ? (this.adminforth.config.auth.rememberMeDuration || '30d')
+            : '1d';
+          console.log('expireInDuration', expireInDuration);
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
             body, headers, query, cookies, requestUrl, 
-          }, expireInDays);
+          }, expireInDuration);
 
           if (toReturn.allowedLogin) {
             
             this.adminforth.auth.setAuthCookie({ 
-              expireInDays,
+              expireInDuration,
               response, 
               username, 
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
@@ -289,7 +291,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
             sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
           },
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
@@ -384,7 +386,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
