@@ -76,9 +76,9 @@
                             </Input>
                         </div>
 
-                        <div v-if="coreStore.config.rememberMeDays" 
+                        <div v-if="coreStore.config.rememberMeDuration" 
                             class="flex items-start mb-5"
-                            :title="$t(`Stay logged in for {days} days`, {days: coreStore.config.rememberMeDays})"
+                            :title="$t(`Stay logged in for {days}`, {days: coreStore.config.rememberMeDuration})"
                         >
                           <Checkbox v-model="rememberMeValue" class="mr-2">
                             {{ $t('Remember me') }}

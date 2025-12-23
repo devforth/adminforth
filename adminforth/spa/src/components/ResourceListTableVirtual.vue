@@ -213,7 +213,6 @@
                       <button
                         type="button"
                         :disabled="rowActionLoadingStates?.[action.id]"
-                        @click.stop.prevent
                       >
                         <component
                           v-if="action.icon"
