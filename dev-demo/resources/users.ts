@@ -68,12 +68,12 @@ export default {
     //     resourceConfig.options!.listPageSize = 3;
     //   },
     // }),
-    // new ForeignInlineListPlugin({
-    //   foreignResourceId: "audit_log",
-    // }),
     new ForeignInlineListPlugin({
-      foreignResourceId: "users",
+      foreignResourceId: "audit_log",
     }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: "users",
+    // }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
       timeStepWindow: 1, // optional time step window for 2FA
@@ -279,9 +279,6 @@ export default {
       enforceLowerCase: true,
       type: AdminForthDataTypes.STRING,
       validation: [AdminForth.Utils.EMAIL_VALIDATOR],
-      foreignResource: {
-        resourceId: "audit_log",
-      }
     },
     {
       name: "created_at",
