@@ -94,7 +94,7 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, ref, type Ref, nextTick } from 'vue';
+import { computed, onMounted, ref, type Ref, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
@@ -117,6 +117,10 @@ const loading = ref(true);
 const saving = ref(false);
 
 const record: Ref<Record<string, any>> = ref({});
+
+watch(record, (newVal) => {
+  console.log('Record updated:', newVal);
+}, { deep: true });
 
 const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
 

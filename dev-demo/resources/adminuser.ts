@@ -7,7 +7,7 @@ async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Pr
 }
 
 export default {
-  dataSource: 'maindb',
+  dataSource: 'sqlite',
   table: 'adminuser',
   resourceId: 'adminuser',
   label: 'Admin Users',
