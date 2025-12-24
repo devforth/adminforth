@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  url = env("SQLITE_FILE_URL")
 }
 
 model adminuser {
@@ -12,4 +13,27 @@ model adminuser {
   password_hash String
   role          String
   created_at    DateTime
+}
+
+model cars {
+  id             String @id
+  model          String 
+  price          Float
+  created_at     DateTime @default(now())
+
+  engine_type    String?
+  engine_power   Int?
+  production_year Int?
+
+  description    String? 
+  listed         Boolean @default(false)
+  mileage        Float?
+  color          String?
+  body_type      String?
+
+  photos         String?
+
+  seller_id      String?
+  seller         String?
+
 }

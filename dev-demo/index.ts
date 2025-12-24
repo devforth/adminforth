@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { Filters } from 'adminforth';
 import { initApi } from './api.js';
+import cars_SQLITE_resource from './resources/cars_SL.js';
+
 
 const ADMIN_BASE_URL = '';
 
@@ -31,8 +33,8 @@ export const admin = new AdminForth({
     brandLogo: '@@/assets/logo.svg',
     datesFormat: 'DD MMM',
     timeFormat: 'HH:mm a',
-  showBrandNameInSidebar: true,
-  showBrandLogoInSidebar: true,
+    showBrandNameInSidebar: true,
+    showBrandLogoInSidebar: true,
     emptyFieldPlaceholder: '-',
     styles: {
       colors: {
@@ -49,20 +51,44 @@ export const admin = new AdminForth({
   },
   dataSources: [
     {
-      id: 'maindb',
-      url: `${process.env.DATABASE_URL}`
+      id: 'sqlite',
+      url: `${process.env.SQLITE_URL}`
     },
+    // {
+    //   id: 'mongo',
+    //   url: `${process.env.MONGODB_URL}`
+    // },
+    // {
+    //   id: 'postgres',
+    //   url: `${process.env.POSTGRES_URL}`
+    // },
+    // {
+    //   id: 'mysql',
+    //   url: `${process.env.MYSQL_URL}`
+    // },
+    // {
+    //   id: 'clickhouse',
+    //   url: `${process.env.CLICKHOUSE_URL}`
+    // }
   ],
   resources: [
-    usersResource
+    usersResource,
+    cars_SQLITE_resource
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
+
+
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'adminuser'
-    }
+    },
+    {
+      label: 'Cars (SQLITE)',
+      resourceId: 'cars_sl'
+    },
+    
   ],
 });
 
