@@ -249,7 +249,7 @@ Also, update the resource configuration in `./resources/auditLogs.ts`:
 
 Audit log can also log the client's country if needed.
 
-Also, you need to migrate the `audit_logs` table in `./schema.prisma`:
+First, you need to migrate the `audit_logs` table in `./schema.prisma`:
 
 ```ts title='./schema.prisma'
 model audit_logs {
