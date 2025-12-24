@@ -1102,7 +1102,7 @@ export interface AdminForthInputConfig {
       /**
        * Add custom page to the settings page
        */
-      userMenuSettingsPages: {
+      userMenuSettingsPages?: {
         icon?: string,
         pageLabel: string,
         slug?: string,
