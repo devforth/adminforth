@@ -245,3 +245,71 @@ Also, update the resource configuration in `./resources/auditLogs.ts`:
     ],
   }
 ```
+## Logging client ip country
+
+Audit log can also log the client's country if needed.
+
+Also, you need to migrate the `audit_logs` table in `./schema.prisma`:
+
+```ts title='./schema.prisma'
+model audit_logs {
+  id                String      @id
+  created_at        DateTime  /// timestamp of applied change
+  resource_id       String    /// identifier of resource where change were applied
+  user_id           String    /// identifier of user who made the changes
+  action            String    /// type of change (create, edit, delete)
+  diff              String?   /// delta betwen before/after versions
+  record_id         String?   /// identifier of record that been changed
+  ip_address        String?   /// client ip address
+//diff-add
+  country           String?   /// client country
+
+//diff-add
+  @@index([ip_address])       /// index for fast lookups by IP
+}
+```
+
+And `prisma migrate`:
+
+```bash
+npm run makemigration -- --name add-ip-address-to-audit-logs ; npm run migrate:local
+```
+
+Update the resource configuration in `./resources/auditLogs.ts`:
+
+```ts title='./resources/auditLogs.ts'
+  export default {
+    dataSource: 'maindb', 
+    table: 'audit_logs',
+    columns: [
+      ...
+      { name: 'action', required: false },
+      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        } },
+      { name: 'record_id', required: false },
+      { name: 'ip_address', required: false },
+ //diff-add
+      { name: "country", required: false },
+    ],
+    ...
+    plugins: [
+      new AuditLogPlugin({
+        resourceColumns: {
+          resourceIdColumnName: 'resource_id',
+          resourceActionColumnName: 'action',
+          resourceDataColumnName: 'diff',
+          resourceUserIdColumnName: 'user_id',
+          resourceRecordIdColumnName: 'record_id',
+          resourceCreatedColumnName: 'created_at'
+          resourceIpColumnName: "ip_address",
+//diff-add
+          resourceCountryColumnName: "country",
+        }
+      }),
+    ],
+  }
+```
