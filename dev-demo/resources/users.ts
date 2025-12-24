@@ -20,6 +20,10 @@ import AdminForthAdapterKeycloakOauth2 from "../../adapters/adminforth-keycloak-
 import AdminForthAdapterMicrosoftOauth2 from "../../adapters/adminforth-microsoft-oauth-adapter";
 // import AdminForthAdapterTwitchOauth2 from "../../adapters/adminforth-twitch-oauth-adapter";
 import { randomUUID } from "crypto";
+import UserSoftDelete from "../../plugins/adminforth-user-soft-delete";
+import UploadPlugin from "../../plugins/adminforth-upload";
+import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapter-amazon-s3/index.js";
+import { createHook } from "async_hooks";
 
 declare global {
   namespace NodeJS {
@@ -64,12 +68,12 @@ export default {
     //     resourceConfig.options!.listPageSize = 3;
     //   },
     // }),
-    // new ForeignInlineListPlugin({
-    //   foreignResourceId: "audit_log",
-    // }),
     new ForeignInlineListPlugin({
-      foreignResourceId: "users",
+      foreignResourceId: "audit_log",
     }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: "users",
+    // }),
     new TwoFactorsAuthPlugin({
       twoFaSecretFieldName: "secret2fa",
       timeStepWindow: 1, // optional time step window for 2FA
@@ -117,6 +121,35 @@ export default {
         },
       } 
     }),
+    new UploadPlugin({
+      pathColumnName: "avatar",
+
+      storageAdapter: new AdminForthAdapterS3Storage({
+        region: "eu-central-1",
+        bucket: "tmpbucket-adminforth",
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        // s3ACL: 'public-read', // ACL which will be set to uploaded file
+      }),
+      allowedFileExtensions: [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "webm",
+        "exe",
+        "webp",
+      ],
+      maxFileSize: 1024 * 1024 * 20, // 5MB
+      // s3ACL: 'public-read', // ACL which will be set to uploaded file
+      filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+        console.log("🔥", JSON.stringify(record));
+        return `aparts/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`
+      },
+      preview: {
+        maxWidth: "200px",
+      },
+    }),
     ...(process.env.AWS_ACCESS_KEY_ID
       ? [
       new EmailResetPasswordPlugin({
@@ -151,6 +184,7 @@ export default {
       // },
     }),
     new OAuthPlugin({
+      userAvatarField: "avatar",
       adapters: [
         new AdminForthAdapterGithubOauth2({
           clientID: process.env.GITHUB_CLIENT_ID,
@@ -159,6 +193,7 @@ export default {
         new AdminForthAdapterGoogleOauth2({
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          useOpenIdConnect: false,
         }),
         new AdminForthAdapterFacebookOauth2({
           clientID: process.env.FACEBOOK_CLIENT_ID,
@@ -167,7 +202,7 @@ export default {
         new AdminForthAdapterMicrosoftOauth2({
           clientID: process.env.MICROSOFT_CLIENT_ID,
           clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-          useOpenIdConnect: true,
+          useOpenIdConnect: false,
         }),
         // new AdminForthAdapterTwitchOauth2({
         //   clientID: process.env.TWITCH_CLIENT_ID,
@@ -183,6 +218,16 @@ export default {
       ],
       emailField: 'email',
       emailConfirmedField: 'email_confirmed'
+    }),
+    new UserSoftDelete({
+      activeFieldName: "is_active",
+      //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
+      canDeactivate: async (adminUser: AdminUser) => {
+      if (adminUser.dbUser.role === "superadmin") {
+          return true;
+      }
+      return false;
+      }
     }),
   ],
   options: {
@@ -285,7 +330,28 @@ export default {
       foreignResource: {
         resourceId: "users",
       }
-    }
+    },
+    {
+      name: "is_active",
+      type: AdminForthDataTypes.BOOLEAN,
+      label: "Is Active",
+      fillOnCreate: () => true,
+      filterOptions: {
+          multiselect: false,
+      },
+      showIn: {
+          list: true,
+          filter: true,
+          show: true,
+          create: false,
+          edit: true,
+      },
+    },
+    {
+      name: "avatar",
+      type: AdminForthDataTypes.STRING,
+      showIn: ["show", "edit", "create" ],
+    },
     // {
     //   name: "email_confirmed",
     // },
