@@ -1,6 +1,9 @@
 import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
+import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js';
+import AuditLogPlugin from '../../plugins/adminforth-audit-log/index.js';
 
 export default {
   dataSource: 'sqlite',
@@ -41,7 +44,7 @@ export default {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
       allowMinMaxQuery: true,
-      showIn: { create: false },
+      showIn: { create: false, edit: false },
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
@@ -49,12 +52,7 @@ export default {
       type: AdminForthDataTypes.STRING,
       label: 'Engine Type',
       allowMinMaxQuery: true,
-      enum: [
-        { value: 'gasoline', label: 'Gasoline' },
-        { value: 'diesel', label: 'Diesel' },
-        { value: 'electric', label: 'Electric' },
-        { value: 'hybrid', label: 'Hybrid' },
-      ],
+      enum: ENGINE_TYPES,
     },
     {
       name: 'engine_power',
@@ -93,16 +91,7 @@ export default {
     {
       name: 'body_type',
       label: 'Body Type',
-      enum: [
-        { value: 'sedan', label: 'Sedan' },
-        { value: 'suv', label: 'SUV' },
-        { value: 'hatchback', label: 'Hatchback' },
-        { value: 'coupe', label: 'Coupe' },
-        { value: 'convertible', label: 'Convertible' },
-        { value: 'wagon', label: 'Wagon' },
-        { value: 'van', label: 'Van' },
-        { value: 'truck', label: 'Truck' },
-      ],
+      enum: BODY_TYPES,
     },
     {
       name: 'photos',
@@ -152,5 +141,55 @@ export default {
       show: true,
       filter: true,
     },
+    actions: [
+      {
+        name: 'Approve Listing',
+        icon: 'flowbite:check-outline',
+        action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
+          // console.log('Approve Listing action called with extra:', extra, cookies);
+          // const verificationResult = extra?.verificationResult
+          // if (!verificationResult) {
+          //   return { ok: false, error: 'No verification result provided' };
+          // }
+          // const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+          // const result = await t2fa.verify(verificationResult, {
+          //   adminUser: adminUser,
+          //   userPk: adminUser.pk,
+          //   cookies: cookies
+          // });
+
+
+          // if (!result?.ok) {
+          //   return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+          // }
+          // await adminforth
+          //   .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+          //   .logCustomAction({
+          //     resourceId: 'cars_sl',
+          //     recordId: null,
+          //     actionId: 'visitedDashboard',
+          //     oldData: null,
+          //     data: { dashboard: 'main' },
+          //     user: adminUser,
+          //   });
+
+
+
+          // await adminforth.resource('cars_sl').update(recordId, { listed: true });
+          return { 
+            ok: true, 
+            successMessage: "Listed" 
+          };
+        },
+        showIn: {
+          list: true,
+          showButton: true,
+          showThreeDotsMenu: true,
+        },
+        customComponent: {
+          file: '@@/RequireTwoFaGate.vue'
+        },
+      }
+    ],
   },
 } as AdminForthResourceInput;

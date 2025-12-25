@@ -13,6 +13,8 @@ model adminuser {
   password_hash String
   role          String
   created_at    DateTime
+  secret2fa     String?
+
 }
 
 model cars {
@@ -37,3 +39,23 @@ model cars {
   seller         String?
 
 }
+
+model audit_logs {
+  id                String      @id
+  created_at        DateTime
+  resource_id       String
+  user_id           String
+  action            String
+  diff              String?
+  record_id         String?
+  ip_address        String? 
+}
+
+  model passkeys {
+    id                      String @id
+    credential_id           String  
+    user_id                 String
+    meta                    String
+    @@index([user_id])
+    @@index([credential_id])
+  }

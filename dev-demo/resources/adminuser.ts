@@ -1,6 +1,7 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
+import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -83,7 +84,48 @@ export default {
       type: AdminForthDataTypes.STRING,
       backendOnly: true,
       showIn: { all: false }
-    }
+    },
+    {
+      name: 'secret2fa',
+      showIn: { all: false },
+      backendOnly: true,
+    },
+  ],
+  plugins: [
+      new TwoFactorsAuthPlugin (
+        { 
+          twoFaSecretFieldName: 'secret2fa', 
+          timeStepWindow: 1,
+          usersFilterToApply: (adminUser: AdminUser) => {
+            return adminUser.dbUser.role !== 'superadmin';
+          },
+          usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+            // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
+            return (['adminforth'].includes(adminUser.dbUser.email));
+          },
+          passkeys: {
+            credentialResourceID: "passkeys",
+            credentialIdFieldName: "credential_id",
+            credentialMetaFieldName: "meta",
+            credentialUserIdFieldName: "user_id",
+            settings: {
+              expectedOrigin: "http://localhost:3000",
+              rp: {
+                  name: "New Reality",
+                },
+              user: {
+                nameField: "email",
+                displayNameField: "email",
+              },
+              authenticatorSelection: {
+                authenticatorAttachment: "both",
+                requireResidentKey: true,
+                userVerification: "required",
+              },
+            },
+          } 
+        }
+      ),
   ],
   hooks: {
     create: {
