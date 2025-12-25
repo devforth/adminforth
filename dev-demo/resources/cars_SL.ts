@@ -4,6 +4,9 @@ import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-s
 import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js';
 import AuditLogPlugin from '../../plugins/adminforth-audit-log/index.js';
+import RichEditorPlugin from '../../plugins/adminforth-rich-editor/index.js';
+
+import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 export default {
   dataSource: 'sqlite',
@@ -131,7 +134,30 @@ export default {
         maxShowWidth: "300px",
         previewUrl: ({filePath}) => `/static/source/${filePath}`,
       },
-    })
+    }),
+    new RichEditorPlugin({
+      htmlFieldName: 'description',
+      attachments: {
+        attachmentResource: "cars_description_images",
+        attachmentFieldName: "image_path",
+        attachmentRecordIdFieldName: "record_id",
+        attachmentResourceIdFieldName: "resource_id",
+      },
+      ...(process.env.OPENAI_API_KEY ? {
+        completion: {
+          adapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-4o',
+            expert: {
+              temperature: 0.7
+            }
+          }),
+          expert: {
+            debounceTime: 250,
+          }
+        }
+      } : {}),
+    }),
   ],
   options: {
     listPageSize: 12,
@@ -146,7 +172,6 @@ export default {
         name: 'Approve Listing',
         icon: 'flowbite:check-outline',
         action: async ({ recordId, adminUser, adminforth, extra }) => {
-          console.log('Approve Listing action called with extra:', extra);
           const verificationResult = extra?.verificationResult
           if (!verificationResult) {
             return { ok: false, error: 'No verification result provided' };

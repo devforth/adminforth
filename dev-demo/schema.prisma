@@ -14,7 +14,7 @@ model adminuser {
   role          String
   created_at    DateTime
   secret2fa     String?
-
+  responsible_person String?
 }
 
 model cars {
@@ -58,4 +58,12 @@ model audit_logs {
     meta                    String
     @@index([user_id])
     @@index([credential_id])
+  }
+
+  model cars_description_image {
+    id          String   @id
+    created_at  DateTime
+    resource_id String
+    record_id   String
+    image_path  String
   }

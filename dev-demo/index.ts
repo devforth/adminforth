@@ -9,6 +9,7 @@ import cars_SQLITE_resource from './resources/cars_SL.js';
 import auditLogsResource from "./resources/auditLogs"
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
+import carsDescriptionImage from './resources/cars_description_image.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -77,7 +78,8 @@ export const admin = new AdminForth({
     usersResource,
     auditLogsResource,
     cars_SQLITE_resource,
-    passkeysResource
+    passkeysResource,
+    carsDescriptionImage
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
