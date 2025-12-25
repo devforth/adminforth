@@ -216,24 +216,29 @@ class AdminForth implements IAdminForth {
     let activationLoopCounter = 0;
     while (true) {
       activationLoopCounter++;
-      if (activationLoopCounter > 1000) {
-        throw new Error('Plugin activation loop exceeded 1000 iterations, possible infinite loop (some plugin tries to activate himself in a loop)');
+      if (activationLoopCounter > 10) {
+        throw new Error('Plugin activation loop exceeded 10 iterations, possible infinite loop (some plugin tries to activate himself in a loop)');
       }
-      const allPluginsAreActivated = allPluginInstances.length === this.activatePlugins.length;
+      process.env.HEAVY_DEBUG && console.log(`🔌 Plugin activation loop iteration: ${activationLoopCounter}`);
+      process.env.HEAVY_DEBUG && console.log(`🔌 Activated plugins count: ${this.activatedPlugins.length}/${allPluginInstances.length}`);
+      const allPluginsAreActivated = allPluginInstances.length === this.activatedPlugins.length;
       if (allPluginsAreActivated) {
         break;
       }
-
+    
       const unactivatedPlugins = allPluginInstances.filter(({pi: pluginInstance}) => 
         !this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId)
       );
+
+      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins remaining: ${unactivatedPlugins.length}`);
       
       process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins count: ${unactivatedPlugins.length}`);
 
       unactivatedPlugins.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
-      
+      process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugins in order:`, unactivatedPlugins.map(({pi}) => pi.constructor.name));
       unactivatedPlugins.forEach(
         ({pi: pluginInstance, resource}, index) => {
+          process.env.HEAVY_DEBUG && console.log("Activating plugin:",pluginInstance.constructor.name)
           process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
           pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
           process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
@@ -249,6 +254,7 @@ class AdminForth implements IAdminForth {
           process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
         }
       );
+      process.env.HEAVY_DEBUG && console.log(`🔌activated plugins:`, this.activatedPlugins.map((pi) => pi.constructor.name));
     }
     process.env.HEAVY_DEBUG && console.log('🔌 All plugins activation completed');
   }
