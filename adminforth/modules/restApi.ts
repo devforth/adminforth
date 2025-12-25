@@ -1481,15 +1481,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     })
 
-    // setup endpoints for all plugins
-    this.adminforth.activatedPlugins.forEach((plugin) => {
-      plugin.setupEndpoints(server);
-    });
-
     server.endpoint({
       method: 'POST',
       path: '/start_custom_action',
-      handler: async ({ body, adminUser, tr }) => {
+      handler: async ({ body, adminUser, tr, cookies }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -1521,7 +1516,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra: {...extra, cookies: cookies} });
         
         return {
           actionId,
@@ -1531,5 +1526,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+
+    // setup endpoints for all plugins
+    this.adminforth.activatedPlugins.forEach((plugin) => {
+      plugin.setupEndpoints(server);
+    });
+    
   }
 }
