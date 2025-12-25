@@ -3,6 +3,12 @@ import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForth
 import { randomUUID } from 'crypto';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
+import UploadPlugin from '../../plugins/adminforth-upload/index.js';
+import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-google-oauth-adapter/index.js';
+import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
+import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
+
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -97,49 +103,104 @@ export default {
       foreignResource: {
           resourceId: 'adminuser',
       }
-    }
+    },
+    {
+      name: "avatar",
+      type: AdminForthDataTypes.STRING,
+      showIn: ["show", "edit", "create" ],
+    },
   ],
   plugins: [
-      new TwoFactorsAuthPlugin (
-        { 
-          twoFaSecretFieldName: 'secret2fa', 
-          timeStepWindow: 1,
-          usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-            // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
-            return (['adminforth'].includes(adminUser.dbUser.email));
-          },
-          passkeys: {
-            credentialResourceID: "passkeys",
-            credentialIdFieldName: "credential_id",
-            credentialMetaFieldName: "meta",
-            credentialUserIdFieldName: "user_id",
-            settings: {
-              expectedOrigin: "http://localhost:3000",
-              rp: {
-                  name: "New Reality",
-                },
-              user: {
-                nameField: "email",
-                displayNameField: "email",
-              },
-              authenticatorSelection: {
-                authenticatorAttachment: "both",
-                requireResidentKey: true,
-                userVerification: "required",
-              },
-            },
-          } 
-        }
-      ),
-      new ForeignInlineListPlugin({
-        foreignResourceId: 'cars_sl',
-        modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
-          resourceConfig.options!.listPageSize = 3;
+    new TwoFactorsAuthPlugin (
+      { 
+        twoFaSecretFieldName: 'secret2fa', 
+        timeStepWindow: 1,
+        usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+          // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
+          return (true);
         },
+        passkeys: {
+          credentialResourceID: "passkeys",
+          credentialIdFieldName: "credential_id",
+          credentialMetaFieldName: "meta",
+          credentialUserIdFieldName: "user_id",
+          settings: {
+            expectedOrigin: "http://localhost:3000",
+            rp: {
+                name: "New Reality",
+              },
+            user: {
+              nameField: "email",
+              displayNameField: "email",
+            },
+            authenticatorSelection: {
+              authenticatorAttachment: "both",
+              requireResidentKey: true,
+              userVerification: "required",
+            },
+          },
+        } 
+      }
+    ),
+    new ForeignInlineListPlugin({
+      foreignResourceId: 'cars_sl',
+      modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+        resourceConfig.options!.listPageSize = 3;
+      },
+    }),
+    new ForeignInlineListPlugin({
+      foreignResourceId: 'adminuser',
+    }),
+    new UploadPlugin({
+      pathColumnName: "avatar",
+      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        fileSystemFolder: "./sqlite/user_avatars",
+        adminServeBaseUrl: "static/source",
+        mode: "public",
+        signingSecret: "TOP_SECRET",
       }),
-      new ForeignInlineListPlugin({
-        foreignResourceId: 'adminuser',
-      })
+      allowedFileExtensions: [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "webm",
+        "exe",
+        "webp",
+      ],
+      maxFileSize: 1024 * 1024 * 20, // 20MB
+      filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+        return `${originalFilename}_${Date.now()}.${originalExtension}`
+      },
+      preview: {
+        maxWidth: "200px",
+      },
+    }),
+    new OpenSignupPlugin({
+      emailField: 'email',
+      passwordField: 'password',
+      passwordHashField: 'password_hash',
+      defaultFieldValues: {
+        role: 'user',
+      },
+    }),
+    new OAuthPlugin({
+      userAvatarField: "avatar",
+      adapters: [
+        new AdminForthAdapterGoogleOauth2({
+          clientID: process.env.GOOGLE_CLIENT_ID as string,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+          useOpenIdConnect: false,
+        }),
+      ],
+      emailField: 'email',
+      openSignup: {
+        enabled: true,
+        defaultFieldValues: { // Set default values for new users
+          role: 'user',
+        },
+      },
+    }),
   ],
   hooks: {
     create: {

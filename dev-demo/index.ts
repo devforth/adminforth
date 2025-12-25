@@ -6,10 +6,11 @@ import path from 'path';
 import { Filters } from 'adminforth';
 import { initApi } from './api.js';
 import cars_SQLITE_resource from './resources/cars_SL.js';
-import auditLogsResource from "./resources/auditLogs"
+import auditLogsResource from "./resources/auditLogs.js"
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
+import translations from "./resources/translations.js";
 
 const ADMIN_BASE_URL = '';
 
@@ -27,6 +28,17 @@ export const admin = new AdminForth({
       if (adminforthUserExists) {
         return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
+    },
+    avatarUrl: async (adminUser)=>{
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      if (!plugin) {
+        throw new Error('Upload plugin for avatar not found');
+      }
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        return '';
+      }
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      return imageUrl;
     },
   },
   customization: {
@@ -79,7 +91,8 @@ export const admin = new AdminForth({
     auditLogsResource,
     cars_SQLITE_resource,
     passkeysResource,
-    carsDescriptionImage
+    carsDescriptionImage,
+    translations,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -104,7 +117,13 @@ export const admin = new AdminForth({
       label: 'Audit Logs',
       icon: 'flowbite:search-outline',
       resourceId: 'audit_logs',
-    }
+    },
+    {
+      label: 'Translations',
+      icon: 'material-symbols:translate',
+      resourceId: 'translations',
+    },
+
   ],
 });
 
