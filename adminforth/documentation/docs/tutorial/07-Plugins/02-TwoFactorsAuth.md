@@ -242,7 +242,7 @@ options: {
       name: 'Auto submit',
       icon: 'flowbite:play-solid',
       allowed: () => true,
-      action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
+      action: async ({ recordId, adminUser, adminforth, extra }) => {
         //diff-add
         const verificationResult = extra?.verificationResult
         //diff-add
@@ -260,7 +260,7 @@ options: {
         //diff-add
           userPk: adminUser.pk,
         //diff-add
-          cookies: cookies
+          cookies: extra.cookies
         //diff-add
         });
 
