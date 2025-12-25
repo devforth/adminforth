@@ -6,7 +6,9 @@ import path from 'path';
 import { Filters } from 'adminforth';
 import { initApi } from './api.js';
 import cars_SQLITE_resource from './resources/cars_SL.js';
-
+import auditLogsResource from "./resources/auditLogs"
+import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
+import passkeysResource from './resources/passkeys.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -73,11 +75,23 @@ export const admin = new AdminForth({
   ],
   resources: [
     usersResource,
-    cars_SQLITE_resource
+    auditLogsResource,
+    cars_SQLITE_resource,
+    passkeysResource
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
-
+    {
+      label: 'Cars (SQLITE)',
+      resourceId: 'cars_sl',
+      homepage: true,
+    },
+    {
+    label: 'Af Components',
+    icon: 'flowbite:chart-pie-solid',
+    component: '@@/AfComponents.vue',
+    path: '/af-components',
+    },
 
     {
       label: 'Users',
@@ -85,10 +99,10 @@ export const admin = new AdminForth({
       resourceId: 'adminuser'
     },
     {
-      label: 'Cars (SQLITE)',
-      resourceId: 'cars_sl'
-    },
-    
+      label: 'Audit Logs',
+      icon: 'flowbite:search-outline',
+      resourceId: 'audit_logs',
+    }
   ],
 });
 
@@ -113,6 +127,22 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
         role: 'superadmin',
       });
+    }
+    if (await admin.resource('cars_sl').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_sl').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: (Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: `${Math.floor(Math.random() * 200000)}`,
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
     }
   });
 
