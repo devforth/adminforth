@@ -212,25 +212,44 @@ class AdminForth implements IAdminForth {
       }
     }
     process.env.HEAVY_DEBUG && console.log(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
-    allPluginInstances.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
     
-    allPluginInstances.forEach(
-      ({pi: pluginInstance, resource}, index) => {
-        process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
-        pluginInstance.modifyResourceConfig(this, resource);
-        process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
-        
-        const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
-        if (plugin) {
-          process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
-          
-          throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
-            To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
-        }
-        this.activatedPlugins.push(pluginInstance);
-        process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
+    let activationLoopCounter = 0;
+    while (true) {
+      activationLoopCounter++;
+      if (activationLoopCounter > 1000) {
+        throw new Error('Plugin activation loop exceeded 1000 iterations, possible infinite loop (some plugin tries to activate himself in a loop)');
       }
-    );
+      const allPluginsAreActivated = allPluginInstances.length === this.activatePlugins.length;
+      if (allPluginsAreActivated) {
+        break;
+      }
+
+      const unactivatedPlugins = allPluginInstances.filter(({pi: pluginInstance}) => 
+        !this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId)
+      );
+      
+      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins count: ${unactivatedPlugins.length}`);
+
+      unactivatedPlugins.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
+      
+      unactivatedPlugins.forEach(
+        ({pi: pluginInstance, resource}, index) => {
+          process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+          pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
+          
+          const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
+          if (plugin) {
+            process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
+            
+            throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
+              To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
+          }
+          this.activatedPlugins.push(pluginInstance);
+          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
+        }
+      );
+    }
     process.env.HEAVY_DEBUG && console.log('🔌 All plugins activation completed');
   }
 
