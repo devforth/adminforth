@@ -1,12 +1,21 @@
 import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
-import UploadPlugin from '../../plugins/adminforth-upload/index.js';
-import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
+
+import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js';
 import AuditLogPlugin from '../../plugins/adminforth-audit-log/index.js';
 import RichEditorPlugin from '../../plugins/adminforth-rich-editor/index.js';
+import TextCompletePlugin from '../../plugins/adminforth-text-complete/index.js';
+import importExport from '../../plugins/adminforth-import-export/index.js';
+import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js';
+import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
+
+
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-generation-adapter-openai/index.js';
+import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+
 
 export default {
   dataSource: 'sqlite',
@@ -14,6 +23,14 @@ export default {
   resourceId: 'cars_sl',
   label: 'Cars',
   recordLabel: (r) => `🚘 ${r.model} 🚗`,
+
+  /*********************************************************************************
+   
+
+                                      Columns
+
+
+  *********************************************************************************/
   columns: [
     {
       name: 'id',
@@ -97,6 +114,16 @@ export default {
       enum: BODY_TYPES,
     },
     {
+      name: 'promo_picture',
+      type: AdminForthDataTypes.STRING,
+      label: 'Promo Picture',
+    },
+    {
+      name: 'generated_promo_picture',
+      type: AdminForthDataTypes.STRING,
+      label: 'Generated Promo Picture',
+    },
+    {
       name: 'photos',
       type: AdminForthDataTypes.JSON,
       label: 'Photos',
@@ -118,6 +145,14 @@ export default {
     }
   ],
   plugins: [
+
+  /*********************************************************************************
+   
+
+                                      Plugins
+
+
+  *********************************************************************************/
     new UploadPlugin({
       storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
         fileSystemFolder: "./sqlite/car_images",
@@ -130,6 +165,23 @@ export default {
       maxFileSize: 1024 * 1024 * 20, // 20 MB
       filePath: ({originalFilename, originalExtension, contentType}) => 
             `cars/${originalFilename}.${originalExtension}`,
+      preview: {
+        maxShowWidth: "300px",
+        previewUrl: ({filePath}) => `/static/source/${filePath}`,
+      },
+    }),
+    new UploadPlugin({
+      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        fileSystemFolder: "./sqlite/car_images",
+        adminServeBaseUrl: "static/source",
+        mode: "public",
+        signingSecret: "TOP_SECRET",
+      }),
+      pathColumnName: 'promo_picture',
+      allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+      maxFileSize: 1024 * 1024 * 20, // 20 MB
+      filePath: ({originalFilename, originalExtension, contentType}) => 
+            `cars_promo_images/${originalFilename}.${originalExtension}`,
       preview: {
         maxShowWidth: "300px",
         previewUrl: ({filePath}) => `/static/source/${filePath}`,
@@ -158,7 +210,71 @@ export default {
         }
       } : {}),
     }),
+    new importExport({}),
+    new InlineCreatePlugin({}),
+    new ListInPlaceEditPlugin({
+      columns: ["model", "body_type", "price"],
+    }),
+
+  /*********************************************************************************
+   
+                                      AI Plugins
+
+  *********************************************************************************/
+    ...(process.env.OPENAI_API_KEY ? 
+      [
+        new UploadPlugin({
+          storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+            fileSystemFolder: "./sqlite/car_images",
+            adminServeBaseUrl: "static/source",
+            mode: "public",
+            signingSecret: "TOP_SECRET",
+          }),
+          pathColumnName: 'generated_promo_picture',
+          allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+          maxFileSize: 1024 * 1024 * 20, // 20 MB
+          filePath: ({originalFilename, originalExtension, contentType}) => 
+                `cars_promo_images_generated/${originalFilename}.${originalExtension}`,
+          preview: {
+            maxShowWidth: "300px",
+            previewUrl: ({filePath}) => `/static/source/${filePath}`,
+          },
+          generation: {
+            countToGenerate: 2,  // how much images generate in one shot
+            adapter: new ImageGenerationAdapterOpenAI({
+              openAiApiKey: process.env.OPENAI_API_KEY as string,
+              model: 'gpt-image-1', 
+            }),
+            fieldsForContext: ['description', 'model', 'color', 'body_type', 'engine_type'],
+            outputSize: '1536x1024' // size of generated image   
+          }   
+      }),
+      new TextCompletePlugin({
+        fieldName: 'model',
+        adapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-4o', // default "gpt-4o-mini"
+          expert: {
+              temperature: 0.7 //Model temperature, default 0.7
+          }
+        }),
+      }),
+    ] : []),
   ],
+
+
+
+
+
+
+  /*********************************************************************************
+   
+
+                                      Options
+
+
+  *********************************************************************************/
+
   options: {
     listPageSize: 12,
     allowedActions: {
@@ -172,6 +288,7 @@ export default {
         name: 'Approve Listing',
         icon: 'flowbite:check-outline',
         action: async ({ recordId, adminUser, adminforth, extra }) => {
+          //@ts-ignore
           const verificationResult = extra?.verificationResult
           if (!verificationResult) {
             return { ok: false, error: 'No verification result provided' };
@@ -184,7 +301,7 @@ export default {
           });
 
 
-          if (!result?.ok) {
+          if (!result || 'error' in result) {
             return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
           }
           await adminforth

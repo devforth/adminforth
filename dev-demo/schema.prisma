@@ -15,6 +15,7 @@ model adminuser {
   created_at    DateTime
   secret2fa     String?
   responsible_person String?
+  avatar        String?
 }
 
 model cars {
@@ -37,6 +38,9 @@ model cars {
 
   seller_id      String?
   seller         String?
+
+  promo_picture  String?
+  generated_promo_picture  String?
 
 }
 
@@ -67,3 +71,22 @@ model audit_logs {
     record_id   String
     image_path  String
   }
+
+  model translations {
+    id              String   @id
+    en_string       String
+    created_at      DateTime
+    uk_string       String?  // translation for Ukrainian language
+    ja_string       String?  // translation for Japanese language
+    fr_string       String?  // translation for French language
+    es_string       String?  // translation for Spanish language
+    ptBR_string      String?  // Brazilian Portuguese translation using BCP47 code (pt-BR)
+    category        String
+    source          String?
+    completedLangs   String?
+    
+    // we need both indexes on en_string+category and separately on category
+    @@index([en_string, category])
+    @@index([category])
+    @@index([completedLangs])
+}
