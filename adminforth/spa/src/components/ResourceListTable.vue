@@ -194,7 +194,7 @@
                       :row="row"
                       :resource="resource"
                       :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload)"
                     >
                       <button
                         type="button"
@@ -561,7 +561,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any) {
+async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
   console.log('Starting custom action', actionId, row);
   actionLoadingStates.value[actionId] = true;
 
@@ -571,7 +571,8 @@ async function startCustomAction(actionId: string, row: any) {
     body: {
       resourceId: props.resource?.resourceId,
       actionId: actionId,
-      recordId: row._primaryKeyValue
+      recordId: row._primaryKeyValue,
+      extra: extraData,
     }
   });
   
