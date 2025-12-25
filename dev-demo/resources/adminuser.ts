@@ -1,7 +1,8 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from 'adminforth';
 import { randomUUID } from 'crypto';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
+import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -90,6 +91,13 @@ export default {
       showIn: { all: false },
       backendOnly: true,
     },
+    {
+      name: 'responsible_person',
+      type: AdminForthDataTypes.STRING,
+      foreignResource: {
+          resourceId: 'adminuser',
+      }
+    }
   ],
   plugins: [
       new TwoFactorsAuthPlugin (
@@ -123,6 +131,15 @@ export default {
           } 
         }
       ),
+      new ForeignInlineListPlugin({
+        foreignResourceId: 'cars_sl',
+        modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
+          resourceConfig.options!.listPageSize = 3;
+        },
+      }),
+      new ForeignInlineListPlugin({
+        foreignResourceId: 'adminuser',
+      })
   ],
   hooks: {
     create: {
