@@ -145,37 +145,37 @@ export default {
       {
         name: 'Approve Listing',
         icon: 'flowbite:check-outline',
-        action: async ({ recordId, adminUser, adminforth, extra, cookies }) => {
-          // console.log('Approve Listing action called with extra:', extra, cookies);
-          // const verificationResult = extra?.verificationResult
-          // if (!verificationResult) {
-          //   return { ok: false, error: 'No verification result provided' };
-          // }
-          // const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
-          // const result = await t2fa.verify(verificationResult, {
-          //   adminUser: adminUser,
-          //   userPk: adminUser.pk,
-          //   cookies: cookies
-          // });
+        action: async ({ recordId, adminUser, adminforth, extra }) => {
+          console.log('Approve Listing action called with extra:', extra);
+          const verificationResult = extra?.verificationResult
+          if (!verificationResult) {
+            return { ok: false, error: 'No verification result provided' };
+          }
+          const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+          const result = await t2fa.verify(verificationResult, {
+            adminUser: adminUser,
+            userPk: adminUser.pk as string,
+            cookies: extra.cookies
+          });
 
 
-          // if (!result?.ok) {
-          //   return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
-          // }
-          // await adminforth
-          //   .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
-          //   .logCustomAction({
-          //     resourceId: 'cars_sl',
-          //     recordId: null,
-          //     actionId: 'visitedDashboard',
-          //     oldData: null,
-          //     data: { dashboard: 'main' },
-          //     user: adminUser,
-          //   });
+          if (!result?.ok) {
+            return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+          }
+          await adminforth
+            .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+            .logCustomAction({
+              resourceId: 'cars_sl',
+              recordId: null,
+              actionId: 'visitedDashboard',
+              oldData: null,
+              data: { dashboard: 'main' },
+              user: adminUser,
+            });
 
 
 
-          // await adminforth.resource('cars_sl').update(recordId, { listed: true });
+          await adminforth.resource('cars_sl').update(recordId, { listed: true });
           return { 
             ok: true, 
             successMessage: "Listed" 

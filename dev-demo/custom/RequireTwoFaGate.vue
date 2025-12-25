@@ -1,5 +1,4 @@
 <template>
-  asdasf
   <div class="contents" @click.stop.prevent="onClick">
     <slot />
   </div>
@@ -12,7 +11,8 @@
   async function onClick() {
     if (props.disabled) return;
   //@ts-ignore
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
-    emit('callAction', { verificationResult });
+    const modal = (window as any)?.adminforthTwoFaModal;
+    const verificationResult = await modal.get2FaConfirmationResult();
+    emit('callAction',  { verificationResult } );
   }
 </script>
