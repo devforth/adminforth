@@ -62,3 +62,8 @@ helm:
   label: Helm
   permalink: /helm
   description: The package manager for Kubernetes
+
+ansible:
+  label: Ansible
+  permalink: /ansible
+  description: Ansible is an open-source automation tool used for configuration management, application deployment, and task automation.

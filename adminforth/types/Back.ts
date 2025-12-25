@@ -1066,8 +1066,14 @@ export interface AdminForthInputConfig {
        * If rememberMeDuration is set, then users who check "Remember Me" will be staying logged in for this amount of time.
        * Format: "1s" (seconds), "1m" (minutes), "1h" (hours), or "1d" (days).
        * Example: "30d" for 30 days, "7d" for 7 days, "24h" for 24 hours.
-       */
+       */ 
       rememberMeDuration?: string,
+
+      /**
+       * Old variable for remember me duration. Use rememberMeDuration instead.
+       * @deprecated Use rememberMeDuration instead.
+       */ 
+      rememberMeDays?: number,
 
 
       /**
