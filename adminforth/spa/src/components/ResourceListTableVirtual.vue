@@ -595,7 +595,8 @@ async function startCustomAction(actionId: string, row: any) {
     body: {
       resourceId: props.resource?.resourceId,
       actionId: actionId,
-      recordId: row._primaryKeyValue
+      recordId: row._primaryKeyValue,
+      extra: row
     }
   });
   
