@@ -96,9 +96,6 @@ export default {
         { 
           twoFaSecretFieldName: 'secret2fa', 
           timeStepWindow: 1,
-          usersFilterToApply: (adminUser: AdminUser) => {
-            return adminUser.dbUser.role !== 'superadmin';
-          },
           usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
             // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
             return (['adminforth'].includes(adminUser.dbUser.email));
