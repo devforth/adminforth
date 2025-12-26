@@ -9,13 +9,13 @@ import TextCompletePlugin from '../../plugins/adminforth-text-complete/index.js'
 import importExport from '../../plugins/adminforth-import-export/index.js';
 import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js';
 import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
-
+import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
 
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
-
+import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
 
 export default {
   dataSource: 'sqlite',
@@ -181,7 +181,7 @@ export default {
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 20 MB
       filePath: ({originalFilename, originalExtension, contentType}) => 
-            `cars_promo_images/${originalFilename}.${originalExtension}`,
+            `cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
       preview: {
         maxShowWidth: "300px",
         previewUrl: ({filePath}) => `/static/source/${filePath}`,
@@ -213,7 +213,7 @@ export default {
     new importExport({}),
     new InlineCreatePlugin({}),
     new ListInPlaceEditPlugin({
-      columns: ["model", "body_type", "price"],
+      columns: ["model", "engine_type", "price"],
     }),
 
   /*********************************************************************************
@@ -258,6 +258,40 @@ export default {
               temperature: 0.7 //Model temperature, default 0.7
           }
         }),
+      }),
+      new BulkAiFlowPlugin({
+        actionName: 'Analyze',
+        attachFiles: async ({ record }: { record: any }) => {
+        if (!record.promo_picture) {
+          return [];
+        }
+          console.log('Attaching file for analysis:', `http://localhost:3000/static/source/cars_promo_images/${record.promo_picture}`);
+          return [`http://localhost:3000/static/source/${record.promo_picture}`];
+        },
+        visionAdapter: new AdminForthImageVisionAdapterOpenAi(
+          {
+            openAiApiKey:  process.env.OPENAI_API_KEY as string,
+            model: 'gpt-4.1-mini',
+            convertImageToBase64: true,
+          }
+        ),
+        imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-image-1',
+        }),
+        fillFieldsFromImages: { 
+          color: "Which color is the car in the image?",
+          body_type: "What is the body type of the car in the image?",
+          production_year: "What is the production year of the car in the image?",
+        },
+        // generateImages: {
+        //   generated_promo_picture: {
+        //     prompt: 'Transform this photo into a cartoon-style car picture. Imagine that we are in 90s japan and this car was tuned for the drifting competitions.',
+        //     outputSize: '1024x1024',
+        //     countToGenerate: 2,
+        //     rateLimit: '3/1h'
+        //   },
+        // },
       }),
     ] : []),
   ],
