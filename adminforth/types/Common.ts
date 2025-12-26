@@ -633,6 +633,10 @@ export type FillOnCreateFunction = (params: {
   adminUser: AdminUser,
 }) => any;
 
+export type suggestOnCreateFunction = (params: {
+  adminUser: AdminUser,
+}) => string | number | boolean | object;
+
 /**
  * Column describes one field in the table or collection in database.
  */
@@ -768,7 +772,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.
    */
-  suggestOnCreate?: string | number | boolean | object,
+  suggestOnCreate?: string | number | boolean | object | suggestOnCreateFunction,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
