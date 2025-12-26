@@ -145,7 +145,8 @@ async function onUpdateRecord(newRecord: any) {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string 
+    resourceId: route.params.resourceId as string,
+    forceFetch: true
   });
   initialValues.value = (coreStore.resource?.columns || []).reduce<Record<string, unknown>>((acc, column) => {
     if (column.suggestOnCreate !== undefined) {

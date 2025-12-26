@@ -635,6 +635,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     if (col.foreignResource?.unsetLabel) {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
+                    if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
+                      col.suggestOnCreate = await inCol.suggestOnCreate(adminUser);
+                    }
 
                     return {
                       ...col,
