@@ -18,7 +18,7 @@ import {
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
+import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
@@ -129,7 +129,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: number) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -205,17 +205,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             username,
           };
 
-          const expireInDays = rememberMe ? this.adminforth.config.auth.rememberMeDays || 30 : 1;
-
+          const expireInDuration = rememberMe 
+            ? (this.adminforth.config.auth.rememberMeDuration || '30d')
+            : '1d';
+          console.log('expireInDuration', expireInDuration);
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
             body, headers, query, cookies, requestUrl, 
-          }, expireInDays);
+          }, expireInDuration);
 
           if (toReturn.allowedLogin) {
             
             this.adminforth.auth.setAuthCookie({ 
-              expireInDays,
+              expireInDuration,
               response, 
               username, 
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
@@ -289,7 +291,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
             sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
           },
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
@@ -323,10 +325,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
+        const userAvatarUrl = await this.adminforth.config.auth.avatarUrl?.(adminUser);
+
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
             pk: userPk,
+            userAvatarUrl: userAvatarUrl || null,
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
@@ -381,7 +386,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
@@ -629,6 +634,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     if (col.foreignResource?.unsetLabel) {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
+                    }
+                    if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
+                      col.suggestOnCreate = await inCol.suggestOnCreate(adminUser);
                     }
 
                     return {
@@ -1168,7 +1176,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { record } = body;
+            const { record, requiredColumnsToSkip } = body;
 
             // todo if showIn.create is function, code below will be buggy (will not detect required fact)
             for (const column of resource.columns) {
@@ -1177,7 +1185,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   record[column.name] === undefined &&
                   column.showIn.create
               ) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                  if (!shouldWeSkipColumn) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
               }
             }
 
@@ -1200,8 +1211,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               if ((column.required as { create?: boolean })?.create) {
                 const shown = await isShown(column, 'create', ctxCreate);
-                if (shown && record[column.name] === undefined) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                if (!shouldWeSkipColumn) {
+                  if (shown && record[column.name] === undefined) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
                 }
               }
             }
@@ -1470,15 +1484,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     })
 
-    // setup endpoints for all plugins
-    this.adminforth.activatedPlugins.forEach((plugin) => {
-      plugin.setupEndpoints(server);
-    });
-
     server.endpoint({
       method: 'POST',
       path: '/start_custom_action',
-      handler: async ({ body, adminUser, tr }) => {
+      handler: async ({ body, adminUser, tr, cookies }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -1510,7 +1519,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra: {...extra, cookies: cookies} });
         
         return {
           actionId,
@@ -1520,5 +1529,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+
+    // setup endpoints for all plugins
+    this.adminforth.activatedPlugins.forEach((plugin) => {
+      plugin.setupEndpoints(server);
+    });
+    
   }
 }

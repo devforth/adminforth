@@ -7,7 +7,7 @@ const blockDemoUsers = async ({ record, adminUser, resource }) => {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
-}
+} 
 export default { 
   dataSource: 'maindb', 
   table: 'users',

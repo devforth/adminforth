@@ -333,6 +333,26 @@ import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
   </div>
 </div>
 
+## Textarea
+<div class="split-screen" >
+  <div >
+```ts
+import { Textarea } from '@/afcl'
+```
+
+```ts
+    <Textarea
+      v-model="textAreaInput"
+      placeholder="Enter some text..."
+      class="w-64"
+    />
+```
+  </div>
+  <div>
+    ![AFCL Textarea](textarea.png)
+  </div>
+</div>
+
 ## Tooltip
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
@@ -739,6 +759,26 @@ function onBeforeClose() {
 }
 ```
 
+### Ask for extra confirmation before close
+
+If you want dialog to ask user for conformation when he tryes to close dialog, you can add: 
+
+```ts
+<Dialog 
+  ref="confirmDialog" 
+  class="w-96"
+  //diff-add
+  :closable="false"
+  //diff-add
+  :askForCloseConfirmation="true"
+  //diff-add
+  closeConfirmationText='Are you sure you want to close this dialog?',
+>
+  <div class="space-y-4">
+    The dialog content goes here.
+  </div>
+</Dialog>
+```
 
 ## Dropzone
 

@@ -30,6 +30,21 @@ export enum AdminForthFilterOperators {
   OR = 'or',
 };
 
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: AdminForthFilterOperators;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+} 
+
 export enum AdminForthSortDirections {
   asc = 'asc',
   desc = 'desc',
@@ -489,6 +504,7 @@ export interface AdminForthResourceInputCommon {
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          tableRowReplace?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -616,6 +632,10 @@ export type FillOnCreateFunction = (params: {
   initialRecord: any,
   adminUser: AdminUser,
 }) => any;
+
+export type suggestOnCreateFunction = (params: {
+  adminUser: AdminUser,
+}) => string | number | boolean | object;
 
 /**
  * Column describes one field in the table or collection in database.
@@ -752,7 +772,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.
    */
-  suggestOnCreate?: string | number | boolean | object,
+  suggestOnCreate?: string | number | boolean | object | suggestOnCreateFunction,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
@@ -1104,7 +1124,7 @@ export interface AdminForthConfigForFrontend {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
   },
-  rememberMeDays: number,
+  rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
   showBrandLogoInSidebar: boolean,
   brandLogo?: string,

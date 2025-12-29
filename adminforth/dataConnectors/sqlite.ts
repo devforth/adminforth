@@ -143,6 +143,12 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         } else {
           return value;
         }
+              }
+      else if (field.isArray?.enabled) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        return JSON.stringify(value);
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
@@ -322,7 +328,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
+      // const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
+      const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+      //console.log('\n🟢 [SQLITE INSERT]:', sql);
+      //console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
+      const q = this.client.prepare(sql);
+      if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 SQL Q:', q, 'values:', values);
+        }
       const ret = await q.run(values);
       return ret.lastInsertRowid;
     }

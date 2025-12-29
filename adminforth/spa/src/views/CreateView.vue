@@ -97,7 +97,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -145,7 +145,8 @@ async function onUpdateRecord(newRecord: any) {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string 
+    resourceId: route.params.resourceId as string,
+    forceFetch: true
   });
   initialValues.value = (coreStore.resource?.columns || []).reduce<Record<string, unknown>>((acc, column) => {
     if (column.suggestOnCreate !== undefined) {
@@ -190,6 +191,8 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
   } else {
     validating.value = false;
   }
+  const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
+  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value) === false);  
   saving.value = true;
   const response = await callAdminForthApi({
     method: 'POST',
@@ -197,6 +200,7 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
     body: {
       resourceId: route.params.resourceId,
       record: record.value,
+      requiredColumnsToSkip,
       meta: {
         ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
       },

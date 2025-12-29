@@ -17,7 +17,8 @@ const DEMO_EMAIL  = 'demo@adminfoth.dev';
 const DEMO_PASSWORD = 'demo';
 
 
-export const admin = new AdminForth({
+export const admin = 
+new AdminForth({
   baseUrl : ADMIN_BASE_URL,
   auth: {
     //loginBackgroundImage: '@@/adminforthloginimg.avif',
@@ -31,12 +32,15 @@ export const admin = new AdminForth({
     brandName: 'My Admin',
     datesFormat: 'D MMM YY',
     timeFormat: 'HH:mm:ss',
+    iconOnlySidebar: {
+      logo: '@/assets/logo.svg',
+    },
     emptyFieldPlaceholder: '-',
     title: 'My App Admin',  // used to set HTML meta title tag
     // brandLogo: '@@/logo.svg',
     // favicon: '@@/favicon.png',
     announcementBadge: (adminUser: AdminUser) => {
-      return { 
+      return {
         html: `
 <svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
 <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
@@ -144,15 +148,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
-          `SELECT 
+          `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             COUNT(*) as count 
           FROM apartments 
           GROUP BY day 
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
+
 
         const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
@@ -166,10 +170,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
+
 
         const apartsCountsByRooms = await db.prepare(
           `SELECT 
@@ -177,8 +181,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             COUNT(*) as count 
           FROM apartments 
           GROUP BY number_of_rooms 
-          ORDER BY number_of_rooms;
-          `
+          ORDER BY number_of_rooms;`
         ).all();
 
         const topCountries = await db.prepare(
@@ -188,27 +191,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           FROM apartments 
           GROUP BY country 
           ORDER BY count DESC
-          LIMIT 4;
-          `
+          LIMIT 4;`
         ).all();
 
         const totalSquare = await db.prepare(
           `SELECT 
             SUM(square_meter) as totalSquare 
-          FROM apartments;
-          `
+          FROM apartments;`
         ).get();
 
         const listedVsUnlistedPriceByDays = await db.prepare(
-          `SELECT 
+        `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed * price) as listedPrice,
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
           
         const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((

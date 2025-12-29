@@ -93,14 +93,21 @@
         </tr>
 
         <!-- Visible rows -->
-        <tr @click="onClick($event,row)" 
-          v-for="(row, rowI) in visibleRows" 
-          :key="`row_${row._primaryKeyValue}`"
-          ref="rowRefs"
-          class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-          :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
-          @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
-        >
+        <component
+            v-else
+            v-for="(row, rowI) in visibleRows"
+            :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
+            :key="`row_${row._primaryKeyValue}`"
+            :record="row"
+            :resource="resource"
+            :adminUser="coreStore.adminUser"
+            :meta="tableRowReplaceInjection ? tableRowReplaceInjection.meta : undefined"
+            @click="onClick($event, row)"
+            ref="rowRefs"
+            class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+            :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+            @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
+         >
         <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
@@ -201,12 +208,11 @@
                       :row="row"
                       :resource="resource"
                       :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload )"
                     >
                       <button
                         type="button"
                         :disabled="rowActionLoadingStates?.[action.id]"
-                        @click.stop.prevent
                       >
                         <component
                           v-if="action.icon"
@@ -224,7 +230,7 @@
               </template>
             </div>
           </td>
-        </tr>
+        </component>
 
         <!-- Bottom spacer -->
         <tr v-if="totalHeight > 0">
@@ -350,9 +356,10 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -370,6 +377,7 @@ const props = defineProps<{
   containerHeight?: number,
   itemHeight?: number,
   bufferSize?: number,
+  tableRowReplaceInjection?: AdminForthComponentDeclaration
 }>();
 
 // emits, update page
@@ -578,7 +586,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any) {
+async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -587,7 +595,8 @@ async function startCustomAction(actionId: string, row: any) {
     body: {
       resourceId: props.resource?.resourceId,
       actionId: actionId,
-      recordId: row._primaryKeyValue
+      recordId: row._primaryKeyValue,
+      extra: extraData
     }
   });
   

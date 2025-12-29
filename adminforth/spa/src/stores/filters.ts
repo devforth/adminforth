@@ -14,6 +14,11 @@ export const useFiltersStore = defineStore('filters', () => {
         return sort.value;
     }
     const setFilter = (filter: any) => {
+        const index = filters.value.findIndex(f => f.field === filter.field);
+        if (filters.value[index]) {
+            filters.value[index] = filter;
+            return;
+        }
         filters.value.push(filter);
     }
     const setFilters = (f: any) => {
