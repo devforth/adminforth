@@ -51,7 +51,7 @@ export async function callApi({path, method, body, headers, silentError = false}
       } else {
         await router.push({ name: 'login' });
       }
-      return null;alert
+      return null;
     } 
     return await r.json();
   } catch(e) {
