@@ -154,7 +154,7 @@ export default {
     new UploadPlugin({
       pathColumnName: "avatar",
       storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        fileSystemFolder: "./sqlite/user_avatars",
+        fileSystemFolder: "./images",
         adminServeBaseUrl: "static/source",
         mode: "public",
         signingSecret: "TOP_SECRET",
@@ -170,7 +170,7 @@ export default {
       ],
       maxFileSize: 1024 * 1024 * 20, // 20MB
       filePath: ({ originalFilename, originalExtension, contentType, record }) => {
-        return `${originalFilename}_${Date.now()}.${originalExtension}`
+        return `user_avatars/${originalFilename}_${Date.now()}.${originalExtension}`
       },
       preview: {
         maxWidth: "200px",
