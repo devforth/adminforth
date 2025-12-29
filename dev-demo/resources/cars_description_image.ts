@@ -54,7 +54,7 @@ export default {
 
 
       filePath: ({ originalFilename, originalExtension, contentType }) =>
-        `/sqlite/cars_description_images/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`,
+        `sqlite/cars_description_images/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`,
 
 
     }),
