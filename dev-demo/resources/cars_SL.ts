@@ -1,4 +1,4 @@
-import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from 'adminforth';
 import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
 
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
@@ -155,7 +155,7 @@ export default {
   *********************************************************************************/
     new UploadPlugin({
       storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        fileSystemFolder: "./sqlite/car_images",
+        fileSystemFolder: "./images",
         adminServeBaseUrl: "static/source",
         mode: "public",
         signingSecret: "TOP_SECRET",
@@ -164,7 +164,7 @@ export default {
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 20 MB
       filePath: ({originalFilename, originalExtension, contentType}) => 
-            `cars/${originalFilename}.${originalExtension}`,
+            `./sqlite/car_images/cars/${originalFilename}.${originalExtension}`,
       preview: {
         maxShowWidth: "300px",
         previewUrl: ({filePath}) => `/static/source/${filePath}`,
@@ -172,7 +172,7 @@ export default {
     }),
     new UploadPlugin({
       storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        fileSystemFolder: "./sqlite/car_images",
+        fileSystemFolder: "./images",
         adminServeBaseUrl: "static/source",
         mode: "public",
         signingSecret: "TOP_SECRET",
@@ -181,7 +181,7 @@ export default {
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 20 MB
       filePath: ({originalFilename, originalExtension, contentType}) => 
-            `cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
+            `./sqlite/car_images/cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
       preview: {
         maxShowWidth: "300px",
         previewUrl: ({filePath}) => `/static/source/${filePath}`,
@@ -225,7 +225,7 @@ export default {
       [
         new UploadPlugin({
           storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-            fileSystemFolder: "./sqlite/car_images",
+            fileSystemFolder: "./images",
             adminServeBaseUrl: "static/source",
             mode: "public",
             signingSecret: "TOP_SECRET",
@@ -234,7 +234,7 @@ export default {
           allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
           maxFileSize: 1024 * 1024 * 20, // 20 MB
           filePath: ({originalFilename, originalExtension, contentType}) => 
-                `cars_promo_images_generated/${originalFilename}.${originalExtension}`,
+                `./sqlite/car_images/cars_promo_images_generated/${originalFilename}.${originalExtension}`,
           preview: {
             maxShowWidth: "300px",
             previewUrl: ({filePath}) => `/static/source/${filePath}`,

@@ -1,5 +1,6 @@
 node_modules
 *.sqlite
+.sqlite
 .env
 db
-sqlite/*
+images/*
