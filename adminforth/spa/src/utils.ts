@@ -446,9 +446,13 @@ export function createSearchInputHandlers(
   }, {} as Record<string, (searchTerm: string) => void>);
 }
 
-export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>) {
+export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>, allColumns: AdminForthResourceColumnInputCommon[]) {
   if (!c.showIf) return true;
-
+  for (const col of allColumns) {
+    if (!record[col.name]) {
+      record[col.name] = null;
+    }
+  }
   const evaluatePredicate = (predicate: Predicate): boolean => {
     const results: boolean[] = [];
 
