@@ -5,6 +5,7 @@ import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/inde
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
 import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-google-oauth-adapter/index.js';
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
@@ -153,11 +154,17 @@ export default {
     }),
     new UploadPlugin({
       pathColumnName: "avatar",
-      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        fileSystemFolder: "./images",
-        adminServeBaseUrl: "static/source",
-        mode: "public",
-        signingSecret: "TOP_SECRET",
+      // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+      //   fileSystemFolder: "./images",
+      //   adminServeBaseUrl: "static/source",
+      //   mode: "public",
+      //   signingSecret: "TOP_SECRET",
+      // }),
+      storageAdapter: new AdminForthAdapterS3Storage({
+        bucket: process.env.AWS_BUCKET_NAME as string,
+        region: process.env.AWS_REGION as string,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
       }),
       allowedFileExtensions: [
         "jpg",
