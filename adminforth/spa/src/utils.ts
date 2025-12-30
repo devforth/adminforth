@@ -468,7 +468,7 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
     const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
     if (fieldEntries.length > 0) {
       const fieldResult = fieldEntries.every(([field, condition]) => {
-        const recordValue = record[field];
+        const recordValue = recordCopy[field];
 
         if (condition === undefined) {
           return true;
