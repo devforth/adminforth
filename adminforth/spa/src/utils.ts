@@ -448,9 +448,10 @@ export function createSearchInputHandlers(
 
 export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>, allColumns: AdminForthResourceColumnInputCommon[]) {
   if (!c.showIf) return true;
+  const recordCopy = { ...record };
   for (const col of allColumns) {
-    if (!record[col.name]) {
-      record[col.name] = null;
+    if (!recordCopy[col.name]) {
+      recordCopy[col.name] = null;
     }
   }
   const evaluatePredicate = (predicate: Predicate): boolean => {
