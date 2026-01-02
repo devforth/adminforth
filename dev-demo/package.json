@@ -17,7 +17,9 @@
     "migrate:postgres": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/postgres/schema.postgres.prisma",
 
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
-    "install-adapters": "cd ../adapters && bash install-adapters.sh"
+    "install-adapters": "cd ../adapters && bash install-adapters.sh",
+
+    "setup-dev-demo": "npm run install-plugins && npm run install-adapters && npm install && npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres"
   },
   "author": "",
   "license": "ISC",

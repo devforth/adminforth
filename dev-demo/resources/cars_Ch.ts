@@ -19,7 +19,7 @@ import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapte
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
 
 export default {
-  dataSource: 'clikckhouse',
+  dataSource: 'clickhouse',
   table: 'cars',
   resourceId: 'cars_ch',
   label: 'Cars',
