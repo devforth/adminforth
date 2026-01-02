@@ -6,6 +6,11 @@ import path from 'path';
 import { Filters } from 'adminforth';
 import { initApi } from './api.js';
 import cars_SQLITE_resource from './resources/cars_SL.js';
+import cars_MyS_resource from './resources/cars_MyS.js';
+import cars_PG_resource from './resources/cars_PG.js';
+import cars_Mongo_resource from './resources/cars_mongo.js';
+import cars_Ch_resource from './resources/cars_Ch.js';
+
 import auditLogsResource from "./resources/auditLogs.js"
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
@@ -51,45 +56,57 @@ export const admin = new AdminForth({
     showBrandNameInSidebar: true,
     showBrandLogoInSidebar: true,
     emptyFieldPlaceholder: '-',
-    styles: {
+    styles:{
       colors: {
         light: {
-          primary: '#1a56db',
-          sidebar: { main: '#f9fafb', text: '#213045' },
+          // color for buttons, links, etc.
+          primary: '#16537e',
+          // color for sidebar and text
+          sidebar: {
+            main:'#232323', 
+            text:'white'
+          },
         },
         dark: {
-          primary: '#82ACFF',
-          sidebar: { main: '#1f2937', text: '#9ca3af' },
+          primary: '#8a158d',
+          sidebar: {
+            main:'#8a158d', 
+            text:'white'
+          },
         }
       }
-    },
+    }
   },
   dataSources: [
     {
       id: 'sqlite',
       url: `${process.env.SQLITE_URL}`
     },
-    // {
-    //   id: 'mongo',
-    //   url: `${process.env.MONGODB_URL}`
-    // },
-    // {
-    //   id: 'postgres',
-    //   url: `${process.env.POSTGRES_URL}`
-    // },
-    // {
-    //   id: 'mysql',
-    //   url: `${process.env.MYSQL_URL}`
-    // },
-    // {
-    //   id: 'clickhouse',
-    //   url: `${process.env.CLICKHOUSE_URL}`
-    // }
+    {
+      id: 'mongo',
+      url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
+    },
+    {
+      id: 'postgres',
+      url: 'postgres://demo:demo@localhost:53321/demo',
+    },
+    {
+      id: 'mysql',
+      url: 'mysql://demo:demo@localhost:3307/demo',
+    },
+    {
+      id: 'clickhouse',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
+    }
   ],
   resources: [
     usersResource,
     auditLogsResource,
     cars_SQLITE_resource,
+    // cars_MyS_resource,
+    // cars_PG_resource,
+    cars_Mongo_resource,
+    // cars_Ch_resource,
     passkeysResource,
     carsDescriptionImage,
     translations,
@@ -97,17 +114,48 @@ export const admin = new AdminForth({
   menu: [
     { type: 'heading', label: 'SYSTEM' },
     {
-      label: 'Cars (SQLITE)',
-      resourceId: 'cars_sl',
-      homepage: true,
+      label: 'Af Components',
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/AfComponents.vue',
+      path: '/af-components',
     },
     {
-    label: 'Af Components',
-    icon: 'flowbite:chart-pie-solid',
-    component: '@@/AfComponents.vue',
-    path: '/af-components',
+      type: 'divider'
     },
-
+    {
+      label: 'Cars',
+      icon: 'flowbite:cart-solid',
+      open: true,
+      children: [
+        {
+          label: 'Cars (SQLITE)',
+          resourceId: 'cars_sl',
+          homepage: true,
+        },
+        // {
+        //   label: 'Cars (MySQL)',
+        //   resourceId: 'cars_mysql',
+        // },
+        // {
+        //   label: 'Cars (PostgreSQL)',
+        //   resourceId: 'cars_pg',
+        // },
+        {
+          label: 'Cars (MongoDB)',
+          resourceId: 'cars_mongo',
+        },
+        // {
+        //   label: 'Cars (ClickHouse)',
+        //   resourceId: 'cars_ch',
+        // }
+      ],
+    },
+    {
+      type: 'divider'
+    },
+    {
+      type: 'gap'
+    },
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
@@ -123,7 +171,6 @@ export const admin = new AdminForth({
       icon: 'material-symbols:translate',
       resourceId: 'translations',
     },
-
   ],
 });
 
@@ -153,6 +200,22 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
       for (let i = 0; i < 100; i++) {
         const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
         await admin.resource('cars_sl').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: (Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: `${Math.floor(Math.random() * 200000)}`,
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
+    if (await admin.resource('cars_mongo').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_mongo').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
           price: (Math.random() * 10000).toFixed(2),
