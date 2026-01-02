@@ -315,11 +315,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         const collection = this.client.db().collection(tableName);
         const result = {};
         for (const column of columns) {
-            result[column] = await collection
+            result[column.name] = await collection
                 .aggregate([
-                    { $group: { _id: null, min: { $min: `$${column}` }, max: { $max: `$${column}` } } },
+                    { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
                 ])
-                .toArray();
+                .next(); // here we use .next() to get the first (and only) document from the aggregation result and avoid using toArray();
         }
         return result;
     }
