@@ -124,7 +124,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return Array.from(fieldTypes.entries()).map(([name, types]) => {
             const primaryKey = name === '_id';
         
-            const priority = ['datetime','date','decimal','integer','float','boolean','json','string'];
+            const priority = ['datetime', 'date', 'decimal', 'integer', 'float', 'boolean', 'json', 'string'];
         
             const matched = priority.find(t => types.has(t)) || 'string';
         
@@ -201,34 +201,41 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     setFieldValue(field, value) {
         if (value === undefined) return undefined;
-        if (value === null || value === "") return null;
+        if (value === null) return null;
 
         if (field.type === AdminForthDataTypes.DATETIME) {
+            if (value === "" || value === null) return null;
             return dayjs(value).isValid() ? dayjs(value).toDate() : null;
         }
 
         if (field.type === AdminForthDataTypes.DATE) {
+            if (value === "" || value === null) return null;
             const d = dayjs(value);
             return d.isValid() ? d.startOf("day").toDate() : null;
         }
 
         if (field.type === AdminForthDataTypes.BOOLEAN) {
-            return value === null ? null : !!value;
+            if (value === "" || value === null) return null;
+            return !!value;
         }
 
         if (field.type === AdminForthDataTypes.INTEGER) {
+            if (value === "" || value === null) return null;
             const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
             return Number.isFinite(n) ? Math.trunc(n) : null;
         }
 
         if (field.type === AdminForthDataTypes.FLOAT) {
-        const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
-        return Number.isFinite(n) ? new Double(n) : null;
+            if (value === "" || value === null) return null;
+            const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+            return Number.isFinite(n) ? new Double(n) : null;
         }
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
+            if (value === "" || value === null) return null;
             return Decimal128.fromString(value.toString());
         }
+
         return value;
     }
 
@@ -266,7 +273,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 return { $expr: { [mongoExprOp]: [left, right] } };
             }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
-            if ([AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
+            if (column && [AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
             }
             return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
