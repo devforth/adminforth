@@ -34,7 +34,7 @@ export default {
   *********************************************************************************/
   columns: [
     {
-      name: 'id',
+      name: '_id',
       type: AdminForthDataTypes.STRING,
       label: 'Identifier',
       showIn: {
@@ -58,7 +58,7 @@ export default {
       inputSuffix: 'USD',
       allowMinMaxQuery: true,
       editingNote: 'Price is in USD',
-      type: AdminForthDataTypes.FLOAT,
+      type: AdminForthDataTypes.DECIMAL,
       required: true,
     },
     {
