@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { Decimal128 } from 'bson';
+import { Decimal128, Double } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -122,30 +122,30 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }
       
         return Array.from(fieldTypes.entries()).map(([name, types]) => {
-          const primaryKey = name === '_id';
-      
-          const priority = ['datetime', 'date', 'integer', 'float', 'boolean', 'json', 'decimal',  'string'];
-      
-          const matched = priority.find(t => types.has(t)) || 'string';
-      
-          const typeMap: Record<string, string> = {
-            string: 'STRING',
-            integer: 'INTEGER',
-            float: 'FLOAT',
-            boolean: 'BOOLEAN',
-            datetime: 'DATETIME',
-            date: 'DATE',
-            json: 'JSON',
-            decimal: 'DECIMAL',
-          };
-          return {
-            name,
-            type: typeMap[matched] ?? 'STRING',
-            ...(primaryKey ? { isPrimaryKey: true } : {}),
-            sampleValue: sampleValues.get(name),
-          };
+            const primaryKey = name === '_id';
+        
+            const priority = ['datetime','date','decimal','integer','float','boolean','json','string'];
+        
+            const matched = priority.find(t => types.has(t)) || 'string';
+        
+            const typeMap: Record<string, AdminForthDataTypes> = {
+                string: AdminForthDataTypes.STRING,
+                integer: AdminForthDataTypes.INTEGER,
+                float: AdminForthDataTypes.FLOAT,
+                boolean: AdminForthDataTypes.BOOLEAN,
+                datetime: AdminForthDataTypes.DATETIME,
+                date: AdminForthDataTypes.DATE,
+                json: AdminForthDataTypes.JSON,
+                decimal: AdminForthDataTypes.DECIMAL,
+            };
+            return {
+                name,
+                type: typeMap[matched] ?? AdminForthDataTypes.STRING,
+                ...(primaryKey ? { isPrimaryKey: true } : {}),
+                sampleValue: sampleValues.get(name),
+            };
         });
-      }
+    }
       
     
     async discoverFields(resource) {
@@ -200,19 +200,34 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          return dayjs(value).toDate();
-          
-        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-            return value === null ? null : (value ? true : false);
-        } else if (field.type == AdminForthDataTypes.DECIMAL) {
-            if (value === null || value === undefined) {
-                return null;
-            }
-            return Decimal128.fromString(value?.toString());
+        if (value === undefined) return undefined;
+        if (value === null || value === "") return null;
+
+        if (field.type === AdminForthDataTypes.DATETIME) {
+            return dayjs(value).isValid() ? dayjs(value).toDate() : null;
+        }
+
+        if (field.type === AdminForthDataTypes.DATE) {
+            const d = dayjs(value);
+            return d.isValid() ? d.startOf("day").toDate() : null;
+        }
+
+        if (field.type === AdminForthDataTypes.BOOLEAN) {
+            return value === null ? null : !!value;
+        }
+
+        if (field.type === AdminForthDataTypes.INTEGER) {
+            const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+            return Number.isFinite(n) ? Math.trunc(n) : null;
+        }
+
+        if (field.type === AdminForthDataTypes.FLOAT) {
+        const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+        return Number.isFinite(n) ? new Double(n) : null;
+        }
+
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            return Decimal128.fromString(value.toString());
         }
         return value;
     }
@@ -251,7 +266,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 return { $expr: { [mongoExprOp]: [left, right] } };
             }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
-            if (['integer', 'decimal', 'float'].includes(column.type)) {
+            if ([AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
             }
             return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
@@ -315,9 +330,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         const collection = this.client.db().collection(tableName);
         const result = {};
         for (const column of columns) {
-            result[column] = await collection
+            result[column.name] = await collection
                 .aggregate([
-                    { $group: { _id: null, min: { $min: `$${column}` }, max: { $max: `$${column}` } } },
+                    { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
                 ])
                 .toArray();
         }
@@ -325,12 +340,12 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async createRecordOriginalValues({ resource, record }): Promise<string> {
-        const tableName = resource.table;
-        const collection = this.client.db().collection(tableName);
-        const columns = Object.keys(record);
+        const collection = this.client.db().collection(resource.table);
+        const colsByName = new Map(resource.dataSourceColumns.map((c) => [c.name, c]));
         const newRecord = {};
-        for (const colName of columns) {
-            newRecord[colName] = record[colName];
+        for (const [key, raw] of Object.entries(record)) {
+            const col = colsByName.get(key);
+            newRecord[key] = col ? this.setFieldValue(col, raw) : raw;
         }
         const ret = await collection.insertOne(newRecord);
         return ret.insertedId;
@@ -338,7 +353,13 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const collection = this.client.db().collection(resource.table);
-        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
+        const colsByName = new Map(resource.dataSourceColumns.map((c) => [c.name, c]));
+        const updatedValues = {};
+        for (const [key, raw] of Object.entries(newValues)) {
+            const col = colsByName.get(key);
+            updatedValues[key] = col ? this.setFieldValue(col, raw) : raw;
+        }
+        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: updatedValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
