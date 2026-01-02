@@ -77,14 +77,13 @@ services:
       - mysql
     environment:
       MYSQL_ROOT_PASSWORD: demo
-    command: >
-      bash -c "
+    command: |
+      bash -ec "
       until mysql -h mysql -P 3306 -u root -pdemo -e 'SELECT 1'; do
-        sleep 2;
-      done;
+        sleep 2
+      done
 
-      mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS demo;';
-
+      mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS demo;'
       mysql -h mysql -P 3306 -u root -pdemo -e \"CREATE USER IF NOT EXISTS 'demo'@'%' IDENTIFIED BY 'demo';\"
       mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES ON *.* TO 'demo'@'%';\"
       mysql -h mysql -P 3306 -u root -pdemo -e 'FLUSH PRIVILEGES;'
