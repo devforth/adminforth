@@ -19,7 +19,7 @@
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
     "install-adapters": "cd ../adapters && bash install-adapters.sh",
 
-    "setup-dev-demo": "npm run install-plugins && npm run install-adapters && npm install && npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres"
+    "setup-dev-demo": "cp .env.sample .env && npm run install-plugins && npm run install-adapters && npm install && bash ./run_inventory.sh && npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres"
   },
   "author": "",
   "license": "ISC",
