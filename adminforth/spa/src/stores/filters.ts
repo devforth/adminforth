@@ -15,7 +15,7 @@ export const useFiltersStore = defineStore('filters', () => {
     }
     const setFilter = (filter: any) => {
         const index = filters.value.findIndex(f => f.field === filter.field);
-        if (filters.value[index]) {
+        if (filters.value[index] && filters.value[index].operator === filter.value.operator) {
             filters.value[index] = filter;
             return;
         }
