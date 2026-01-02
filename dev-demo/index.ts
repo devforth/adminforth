@@ -103,7 +103,7 @@ export const admin = new AdminForth({
     usersResource,
     auditLogsResource,
     cars_SQLITE_resource,
-    // cars_MyS_resource,
+    cars_MyS_resource,
     // cars_PG_resource,
     cars_Mongo_resource,
     // cars_Ch_resource,
@@ -132,10 +132,10 @@ export const admin = new AdminForth({
           resourceId: 'cars_sl',
           homepage: true,
         },
-        // {
-        //   label: 'Cars (MySQL)',
-        //   resourceId: 'cars_mysql',
-        // },
+        {
+          label: 'Cars (MySQL)',
+          resourceId: 'cars_mysql',
+        },
         // {
         //   label: 'Cars (PostgreSQL)',
         //   resourceId: 'cars_pg',
