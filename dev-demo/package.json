@@ -13,6 +13,9 @@
     "makemigration:mysql": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./prisma/mysql/schema.mysql.prisma",
     "migrate:mysql": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/mysql/schema.mysql.prisma",
 
+    "makemigration:postgres": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./prisma/postgres/schema.postgres.prisma",
+    "migrate:postgres": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/postgres/schema.postgres.prisma",
+
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
     "install-adapters": "cd ../adapters && bash install-adapters.sh"
   },
