@@ -104,7 +104,7 @@ export const admin = new AdminForth({
     auditLogsResource,
     cars_SQLITE_resource,
     cars_MyS_resource,
-    // cars_PG_resource,
+    cars_PG_resource,
     cars_Mongo_resource,
     // cars_Ch_resource,
     passkeysResource,
@@ -136,10 +136,10 @@ export const admin = new AdminForth({
           label: 'Cars (MySQL)',
           resourceId: 'cars_mysql',
         },
-        // {
-        //   label: 'Cars (PostgreSQL)',
-        //   resourceId: 'cars_pg',
-        // },
+        {
+          label: 'Cars (PostgreSQL)',
+          resourceId: 'cars_pg',
+        },
         {
           label: 'Cars (MongoDB)',
           resourceId: 'cars_mongo',
@@ -216,6 +216,23 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
       for (let i = 0; i < 100; i++) {
         const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
         await admin.resource('cars_mongo').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: (Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: `${Math.floor(Math.random() * 200000)}`,
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
+
+    if (await admin.resource('cars_pg').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_pg').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
           price: (Math.random() * 10000).toFixed(2),
