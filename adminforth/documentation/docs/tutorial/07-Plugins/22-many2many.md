@@ -257,3 +257,7 @@ By default, when you delete a realtor or an apartment, all related rows in the j
   ...
 
 ```
+
+## Making editable fields for the both resources
+
+There might be cases, when you want to make fields editable on both resources. For these cases you can just create second instance of plugin on the second resource and it will allow you to use this plugin from the both resources.

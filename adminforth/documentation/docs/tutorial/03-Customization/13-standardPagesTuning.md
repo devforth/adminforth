@@ -440,8 +440,25 @@ export default {
   ![alt text](<silent refresh.gif>)
 
 
+### Move base actions out of three dots menu
 
+If you want to move base record actions from the three dots menu, you can add `baseActionsAsQuickIcons`:
 
+```ts
+  options: {
+    
+    ...
+    
+    baseActionsAsQuickIcons: ['edit'],
+
+    ...
+
+  }
+```
+
+And `edit` action will be available as quick action:
+
+![alt text](<threeDotsListMenu.png>)
       
 
      
