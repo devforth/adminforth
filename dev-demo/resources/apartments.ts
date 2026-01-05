@@ -19,6 +19,8 @@ import AdminForthAdapterS3Storage from "../../adapters/adminforth-storage-adapte
 import AdminForthAdapterLocal from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForth from "../../adminforth";
+import BulkAiFlowPlugin from "../../plugins/adminforth-bulk-ai-flow/index.js";
+import AdminForthImageVisionAdapterOpenAi from "../../adapters/adminforth-image-vision-adapter-openai/index.js";
 import { StorageAdapter } from "../../adminforth";
 
 
@@ -388,13 +390,13 @@ export default {
           new UploadPlugin({
             pathColumnName: "apartment_source",
             
-            storageAdapter: (sourcesAdapter = new AdminForthAdapterS3Storage({
+            storageAdapter: new AdminForthAdapterS3Storage({
               region: "eu-central-1",
               bucket: "tmpbucket-adminforth",
               accessKeyId: process.env.AWS_ACCESS_KEY_ID,
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
               s3ACL: 'public-read', // ACL which will be set to uploaded file
-            }), sourcesAdapter),
+            }),
 
             // storageAdapter: (sourcesAdapter = new AdminForthStorageAdapterLocalFilesystem({
             //   fileSystemFolder: "./db/uploads", // folder where files will be stored on disk
@@ -420,8 +422,56 @@ export default {
             },
             preview: {
               // Used to display preview (if it is image) in list and show views
-              // previewUrl: ({s3Path}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${s3Path}`,
+              //previewUrl: ({filePath}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`,
               maxWidth: "200px",
+            },
+          }),
+          new BulkAiFlowPlugin({
+            askConfirmationBeforeGenerating: true,
+            actionName: 'Analyze',
+            // attachFiles: async ({ record }: { record: any }) => {
+            // if (!record.apartment_image) {
+            //   return [];
+            // }
+            //   return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.apartment_image}`];
+            // },
+            visionAdapter: new AdminForthImageVisionAdapterOpenAi(
+              {
+                openAiApiKey:  process.env.OPENAI_API_KEY as string,
+                model: 'gpt-4.1-mini',
+              }
+            ),
+            imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
+              openAiApiKey: process.env.OPENAI_API_KEY as string,
+              model: 'gpt-image-1',
+            }),
+            textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+              openAiApiKey: process.env.OPENAI_API_KEY as string,
+              model: 'gpt-4o',
+              expert: {
+                temperature: 0.7
+              }
+            }),
+            fillPlainFields: {
+              'description': 'Provide1234 a detailed and engaging description of the apartment based on its features and location. Highlight its unique selling points and amenities to attract potential buyers.',
+              'listed': 'Based on the apartment features and market trends, should this apartment be listed for sale? Provide a yes or no answer.',
+              'title': 'Create a catchy and appealing title for the apartment listing that highlights its best features and location.',
+            },
+
+            // fillFieldsFromImages: { 
+            //   'description': 'describe what is in the image, also take into account that price is {{price}}', 
+            //   'country': 'In which country it can be located?', 
+            //   'number_of_rooms': 'How many rooms are in the apartment? Just try to guess what is a typical one. If you do not know, just guess',
+            //   'square_meter': 'Try to guess what is the typical square of the apartment in square meters? If you do not know, just guess',
+            //   'listed': 'Is the apartment should be listed for sale? If you do not know, just guess, return boolean value',
+            // },
+            generateImages: {
+              apartment_source: {
+                prompt: 'Transform this photo into a cartoon-style avatar. Maintain the person\'s features but apply cartoon styling. Do not add text or logos.',
+                outputSize: '1024x1024',
+                countToGenerate: 2,
+                rateLimit: '3/1h'
+              },
             },
           }),
         ]
@@ -522,7 +572,6 @@ export default {
         meta: any;
         source: ActionCheckSource;
       }): Promise<boolean | string> => {
-        console.log("edit aa check 🔒", meta, source, adminUser);
         return adminUser.dbUser.role === "superadmin";
         // return true;
         // if (source === ActionCheckSource.DisplayButtons) {
@@ -542,7 +591,6 @@ export default {
         return true;
       },
       show: async ({ adminUser, meta, source, adminforth }: any) => {
-        console.log("show aa check 🔒", meta);
         // if (source === 'showRequest' || source === 'editLoadRequest') {
         //   const record = await adminforth.resource('aparts').get(Filters.EQ('id', meta.pk));
         //   return record.user_id === adminUser.dbUser.id;

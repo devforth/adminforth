@@ -1,7 +1,8 @@
 <template >
-  <template v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
+  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
     <button 
-      data-dropdown-toggle="listThreeDotsDropdown" 
+      ref="buttonTriggerRef"
+      @click="toggleDropdownVisibility"
       class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
     >
       <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
@@ -11,8 +12,9 @@
 
     <!-- Dropdown menu -->
     <div 
-      id="listThreeDotsDropdown" 
-      class="z-30 hidden bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      ref="dropdownRef"
+      :class="{'hidden': !showDropdown, 'block': showDropdown }"
+      class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -71,7 +73,7 @@
           </li>
         </ul>
     </div>
-  </template>
+  </div>
 </template>
 
 
@@ -82,7 +84,7 @@ import adminforth from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
-import { ref, type ComponentPublicInstance } from 'vue';
+import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
 import type { AdminForthActionInput } from '@/types/Back';
 
@@ -91,6 +93,9 @@ const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
 const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
+const showDropdown = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
+const buttonTriggerRef = ref<HTMLElement | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -106,6 +111,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['startBulkAction']);
+
+function setComponentRef(el: ComponentPublicInstance | null, index: number) {
+  if (el) {
+    threeDotsDropdownItemsRefs.value[index] = el;
+  }
+}
 
 async function handleActionClick(action: AdminForthActionInput, payload: any) {
   adminforth.list.closeThreeDotsDropdown();
@@ -163,6 +174,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
 function startBulkAction(actionId: string) {
   adminforth.list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
+  showDropdown.value = false;
 }
 
 async function injectedComponentClick(index: number) {
@@ -170,5 +182,27 @@ async function injectedComponentClick(index: number) {
   if (componentRef && 'click' in componentRef) {
     (componentRef as any).click?.();
   }
+  showDropdown.value = false;
 }
+
+function toggleDropdownVisibility() {
+  showDropdown.value = !showDropdown.value;
+}
+
+function handleClickOutside(e: MouseEvent) {
+  if (!dropdownRef.value) return
+
+  if (!dropdownRef.value.contains(e.target as Node) && !buttonTriggerRef.value?.contains(e.target as Node)) {
+    showDropdown.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside)
+})
+
 </script>

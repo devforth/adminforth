@@ -14,7 +14,7 @@ export interface OAuth2Adapter {
    * @param redirect_uri - The redirect URI used in the authentication request
    * @returns A promise that resolves to an object containing the email address of the authenticated user
    */
-  getTokenFromCode(code: string, redirect_uri: string): Promise<{ email: string }>;
+  getTokenFromCode(code: string, redirect_uri: string): Promise<{ email: string, fullName?: string, profilePictureUrl?: string }>;
 
   /**
    * This method should return text (content) of SVG icon which will be used in the UI.

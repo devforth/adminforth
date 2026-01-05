@@ -52,3 +52,18 @@ authentication:
   label: Auth
   permalink: /auth
   description: Authentication is the process of verifying the identity of a user or system. Authentication is a critical component of security in software applications and systems.
+
+k3s:
+  label: k3s
+  permalink: /k3s
+  description: k3s is a lightweight version of k8s (kubernetes) that is also used for container orchestration but uses fewer resources.
+
+helm:
+  label: Helm
+  permalink: /helm
+  description: The package manager for Kubernetes
+
+ansible:
+  label: Ansible
+  permalink: /ansible
+  description: Ansible is an open-source automation tool used for configuration management, application deployment, and task automation.

@@ -400,6 +400,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
         const primaryKey = this.getPrimaryKey(resource);
         const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders}) RETURNING "${primaryKey}"`;
+    //   console.log('\n🔵 [PG INSERT]:', q);
+    //   console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', values);
         }

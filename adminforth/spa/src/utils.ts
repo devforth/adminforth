@@ -15,10 +15,11 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body, headers}: {
+export async function callApi({path, method, body, headers, silentError = false}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
+  silentError?: boolean
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -36,7 +37,20 @@ export async function callApi({path, method, body, headers}: {
     if (r.status == 401 ) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
-      await router.push({ name: 'login' });
+      const currentPath = router.currentRoute.value.path;
+      const homeRoute = router.getRoutes().find(route => route.name === 'home');
+      const homePagePath = (homeRoute?.redirect as string) || '/';
+      let next = '';
+      if (currentPath !== '/login' && currentPath !== homePagePath) {
+        if (Object.keys(router.currentRoute.value.query).length > 0) {
+          next = currentPath + '?' + Object.entries(router.currentRoute.value.query).map(([key, value]) => `${key}=${value}`).join('&');
+        } else {
+          next = currentPath;
+        }
+        await router.push({ name: 'login', query: { next: next } });
+      } else {
+        await router.push({ name: 'login' });
+      }
       return null;
     } 
     return await r.json();
@@ -44,23 +58,28 @@ export async function callApi({path, method, body, headers}: {
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
-      adminforth.alert({variant:'danger', message: t('Network error, please check your Internet connection and try again'),})
+      if (!silentError) {
+        adminforth.alert({variant:'danger', message: t('Network error, please check your Internet connection and try again'),})
+      }
       return null;
     }
 
-    adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+    if (!silentError) {
+      adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+    }
     console.error(`error in callApi ${path}`, e);
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined }: {
+export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
   path: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   body?: any,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  silentError?: boolean
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
@@ -99,6 +118,7 @@ export const loadFile = (file: string) => {
   }
   return baseUrl;
 }
+
 
 export function checkEmptyValues(value: any, viewType: 'show' | 'list' ) {
   const config: CoreConfig | {} | null = useCoreStore().config;
@@ -426,9 +446,14 @@ export function createSearchInputHandlers(
   }, {} as Record<string, (searchTerm: string) => void>);
 }
 
-export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>) {
+export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>, allColumns: AdminForthResourceColumnInputCommon[]) {
   if (!c.showIf) return true;
-
+  const recordCopy = { ...record };
+  for (const col of allColumns) {
+    if (!recordCopy[col.name]) {
+      recordCopy[col.name] = null;
+    }
+  }
   const evaluatePredicate = (predicate: Predicate): boolean => {
     const results: boolean[] = [];
 
@@ -443,7 +468,7 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
     const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
     if (fieldEntries.length > 0) {
       const fieldResult = fieldEntries.every(([field, condition]) => {
-        const recordValue = record[field];
+        const recordValue = recordCopy[field];
 
         if (condition === undefined) {
           return true;
@@ -480,4 +505,12 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
   };
 
   return evaluatePredicate(c.showIf);
+}
+
+export function btoa_function(source: string): string {
+  return btoa(source);
+}
+
+export function atob_function(source: string): string {
+  return atob(source);
 }

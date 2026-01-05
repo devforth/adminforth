@@ -67,6 +67,7 @@
     
     <ResourceForm 
       v-else
+      ref="resourceFormRef"
       :record="record"
       :resource="coreStore.resource!"
       @update:record="onUpdateRecord"
@@ -96,9 +97,9 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
@@ -106,6 +107,7 @@ import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import type { AdminForthResourceColumn } from '@/types/Back';
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -121,6 +123,8 @@ const record = ref({});
 const coreStore = useCoreStore();
 
 const { t } = useI18n();
+
+const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
 
 const createSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
   const raw: any = coreStore.resourceOptions?.pageInjections?.create?.saveButton as any;
@@ -141,7 +145,8 @@ async function onUpdateRecord(newRecord: any) {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string 
+    resourceId: route.params.resourceId as string,
+    forceFetch: true
   });
   initialValues.value = (coreStore.resource?.columns || []).reduce<Record<string, unknown>>((acc, column) => {
     if (column.suggestOnCreate !== undefined) {
@@ -180,10 +185,14 @@ onMounted(async () => {
 async function saveRecord(opts?: { confirmationResult?: any }) {
   if (!isValid.value) {
     validating.value = true;
+    await nextTick();
+    scrollToInvalidField();
     return;
   } else {
     validating.value = false;
   }
+  const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
+  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
   const response = await callAdminForthApi({
     method: 'POST',
@@ -191,6 +200,7 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
     body: {
       resourceId: route.params.resourceId,
       record: record.value,
+      requiredColumnsToSkip,
       meta: {
         ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
       },
@@ -217,5 +227,23 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
   }
 }
 
+function scrollToInvalidField() {
+  let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
+  for (const column of resourceFormRef.value?.editableColumns || []) {
+    const error = resourceFormRef.value?.columnError(column);
+    if (error) {
+      columnsWithErrors.push({column, error});
+    }
+  }
+  const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
+  adminforth.alert({
+    messageHtml: errorMessage,
+    variant: 'danger'
+  });
+  const firstInvalidElement = document.querySelector('.af-invalid-field-message');
+  if (firstInvalidElement) {
+    firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
 
 </script>
