@@ -2,7 +2,7 @@
   <!-- table -->
   <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
-    :style="`height: ${containerHeight}px; will-change: transform;`"
+    :style="{ maxHeight: `${containerHeight}px` }"
     @scroll="handleScroll"
     ref="containerRef"
   > 
@@ -14,12 +14,12 @@
             <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class="h-full w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-10 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td scope="col" class="p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
+        <tr class="t-header sticky z-20 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
+          <td scope="col" class="list-table-header-cell  p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -29,7 +29,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell  px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -74,7 +74,7 @@
           :column-widths="columnWidths"
         />
         
-        <tr v-else-if="rows.length === 0" class="h-full bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
+        <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
 
             <div id="toast-simple"
@@ -93,14 +93,21 @@
         </tr>
 
         <!-- Visible rows -->
-        <tr @click="onClick($event,row)" 
-          v-for="(row, rowI) in visibleRows" 
-          :key="`row_${row._primaryKeyValue}`"
-          ref="rowRefs"
-          class="bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-          :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
-          @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
-        >
+        <component
+            v-else
+            v-for="(row, rowI) in visibleRows"
+            :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
+            :key="`row_${row._primaryKeyValue}`"
+            :record="row"
+            :resource="resource"
+            :adminUser="coreStore.adminUser"
+            :meta="tableRowReplaceInjection ? tableRowReplaceInjection.meta : undefined"
+            @click="onClick($event, row)"
+            ref="rowRefs"
+            class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+            :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+            @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
+         >
         <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
@@ -197,12 +204,11 @@
                       :row="row"
                       :resource="resource"
                       :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload )"
                     >
                       <button
                         type="button"
                         :disabled="rowActionLoadingStates?.[action.id]"
-                        @click.stop.prevent
                       >
                         <component
                           v-if="action.icon"
@@ -230,7 +236,7 @@
               />
             </div>
           </td>
-        </tr>
+        </component>
 
         <!-- Bottom spacer -->
         <tr v-if="totalHeight > 0">
@@ -268,15 +274,15 @@
           <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
           1
         </button>
-        <div
-          contenteditable="true" 
+        <input
+          type="text"
+          v-model="pageInput"
+          :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
           class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
-          @input="onPageInput($event)"
           @blur="validatePageInput()"
         >
-          {{ pageInput }}
-        </div>
+        </input>
 
         <button
           class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
@@ -356,10 +362,11 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
 import adminforth from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -378,6 +385,7 @@ const props = defineProps<{
   itemHeight?: number,
   bufferSize?: number,
   customActionIconsThreeDotsMenuItems?: any[]
+  tableRowReplaceInjection?: AdminForthComponentDeclaration
 }>();
 
 // emits, update page
@@ -586,7 +594,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any) {
+async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -595,7 +603,8 @@ async function startCustomAction(actionId: string, row: any) {
     body: {
       resourceId: props.resource?.resourceId,
       actionId: actionId,
-      recordId: row._primaryKeyValue
+      recordId: row._primaryKeyValue,
+      extra: extraData
     }
   });
   
@@ -631,9 +640,6 @@ async function startCustomAction(actionId: string, row: any) {
   }
 }
 
-function onPageInput(event: any) {
-  pageInput.value = event.target.innerText;
-}
 
 function validatePageInput() {
   const newPage = parseInt(pageInput.value) || 1;
@@ -772,8 +778,8 @@ td.sticky-column {
     @apply left-[56px];
   }
 }
-tr:not(:first-child):hover {
-  td.sticky-column {
+tr.list-table-body-row:not(:first-child):hover {
+  td.sticky-column:not(.list-table-header-cell) {
     @apply bg-lightListTableRowHover dark:bg-darkListTableRowHover;
   }
 }

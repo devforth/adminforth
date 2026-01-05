@@ -24,6 +24,12 @@
             />
 
             <div class="flex items-center ms-3 ">
+              <Tooltip>
+                <IconWifiOff v-if="coreStore.isInternetError" class="blinking-icon w-8 h-8 text-red-500" />
+                <template #tooltip>
+                  {{$t('Internet connection lost')}}
+                </template>
+              </Tooltip>
               <span  
                 v-if="!coreStore.config?.singleTheme"
                 @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
@@ -35,12 +41,17 @@
                   ref="dropdownUserButton"
                   type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">{{ $t('Open user menu') }}</span>
-                  <svg class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <img 
+                      v-if="coreStore.userAvatarUrl"
+                      class="w-8 h-8 rounded-full object-cover" 
+                      :src="coreStore.userAvatarUrl" 
+                      alt="user photo"
+                    />
+                  <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
                   </svg>
                 </button>
               </div>
-
               <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
@@ -52,7 +63,7 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
+                  <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
@@ -73,7 +84,7 @@
     </nav>
 
     <Sidebar 
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout && coreStore.menu.length > 0"
       :sideBarOpen="sideBarOpen"
       :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
       @hideSidebar="hideSidebar"
@@ -81,12 +92,10 @@
       @sidebarStateChange="handleSidebarStateChange"
     />
 
-    <div class="transition-all duration-300 ease-in-out max-w-[100vw]" 
-      :class="{
-        'sm:ml-18': isSidebarIconOnly,
-        'sm:ml-[264px]': !isSidebarIconOnly,
-        'sm:max-w-[calc(100%-4.5rem)]': isSidebarIconOnly,
-        'sm:max-w-[calc(100%-16rem)]': !isSidebarIconOnly
+    <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
+      :style="{
+        marginLeft: headerOnlyLayout ? 0 : isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: headerOnlyLayout ? '100%' : isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
@@ -131,6 +140,19 @@
 
 <style lang="scss" scoped>
 
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  .blinking-icon {
+    animation: blink 2s ease-in-out infinite;
+  }
+
   .fade-leave-active {
     @apply transition-opacity duration-500;
   }
@@ -147,12 +169,10 @@
     @apply opacity-100;
   }
 
-  @media (min-width: 640px) {
-    .sm\:ml-18 {
-      margin-left: 4.5rem;
-    }
-    .sm\:max-w-\[calc\(100\%-4\.5rem\)\] {
-      max-width: calc(100% - 4.5rem);
+  @media (max-width: 640px) {
+    .af-content-wrapper {
+      margin-left: 0 !important;
+      max-width: 100% !important;
     }
   }
 
@@ -167,6 +187,7 @@ import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconWifiOff } from '@iconify-prerendered/vue-humbleicons';
 import AcceptModal from './components/AcceptModal.vue';
 import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -177,6 +198,7 @@ import {useToastStore} from '@/stores/toast';
 import { initFrontedAPI } from '@/adminforth';
 import adminforth from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
+import { Tooltip } from '@/afcl'
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
@@ -186,7 +208,6 @@ initFrontedAPI()
 
 createHead()
 const sideBarOpen = ref(false);
-const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
@@ -200,7 +221,21 @@ const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'tru
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
+const defaultLayout = computed(() => {
+  return route.meta?.sidebarAndHeader !== 'none';
+});
+
+const headerOnlyLayout = computed(() => {
+  return route.meta?.sidebarAndHeader === 'headerOnly';
+});
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
+
 const theme = ref('light');
+
+const userMenuComponents = computed(() => {
+  return coreStore?.config?.globalInjections?.userMenu || [];
+})
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
@@ -237,17 +272,6 @@ async function loadMenu() {
   loginRedirectCheckIsReady.value = true;
 }
 
-function handleCustomLayout() {
-  if (route.meta?.sidebarAndHeader === 'none') {
-    defaultLayout.value = false;
-  } else if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
-    defaultLayout.value = true;
-    isSidebarIconOnly.value = true;
-  } else {
-    defaultLayout.value = true;
-  }
-}
-
 function humanizeSnake(str: string): string {
   if (!str) {
     return '';
@@ -272,10 +296,11 @@ watch(title, (title) => {
   document.title = title;
 })
 
-watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
-  handleCustomLayout()
-  await new Promise((resolve) => setTimeout(resolve, 0));
- 
+watch(route, () => {
+  // Handle preferIconOnly layout
+  if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
+    isSidebarIconOnly.value = true;
+  }
 });
 
 
@@ -303,11 +328,13 @@ onMounted(async () => {
   loadPublicConfig(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
-  handleCustomLayout();
 
   adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }
+
+  window.addEventListener('online', () => coreStore.isInternetError = false);
+  window.addEventListener('offline', () => coreStore.isInternetError = true);
 })
 
 onBeforeMount(()=>{

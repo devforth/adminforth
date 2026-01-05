@@ -253,13 +253,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
-
+    
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
 
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
-        if (filledRecord[col.name] === undefined) {
+        if (filledRecord[col.name] === undefined || (Array.isArray(filledRecord[col.name]) && filledRecord[col.name].length === 0)) {
           filledRecord[col.name] = col.fillOnCreate({
             initialRecord: record, 
             adminUser
@@ -331,7 +331,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     let error: string | null = null;
      await Promise.all(
       resource.dataSourceColumns.map(async (col) => {
-        if (col.isUnique && !col.virtual && !error) {
+        if (col.isUnique && !col.virtual && !error && Object.prototype.hasOwnProperty.call(recordWithOriginalValues, col.name)) {
           const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name], record);
           if (exists) {
             error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;

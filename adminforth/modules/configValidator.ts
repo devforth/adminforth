@@ -45,6 +45,11 @@ export default class ConfigValidator implements IConfigValidator {
   }
   
   validateAndListifyInjection(obj, key, errors) {
+    if (key.includes('tableRowReplace')) {
+      if (obj[key].length > 1) {
+        throw new Error(`tableRowReplace injection supports only one element, but received ${obj[key].length}.`);
+      }
+    }
     if (!Array.isArray(obj[key])) {
       // not array
       obj[key] = [obj[key]];
@@ -572,7 +577,7 @@ export default class ConfigValidator implements IConfigValidator {
         }
 
         // check suggestOnCreate types
-        if (inCol.suggestOnCreate !== undefined) {
+        if (inCol.suggestOnCreate !== undefined && typeof inCol.suggestOnCreate !== 'function') {
           if (!col.showIn.create) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate is present, while column is hidden on create page`);
           }
@@ -659,8 +664,10 @@ export default class ConfigValidator implements IConfigValidator {
                 errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an column that is not of type string`);
               } else {
                 const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors, warnings);
-                if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
-                  errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                if (typeof polymorphicOnColShowIn.create !== 'function' && typeof polymorphicOnColShowIn.edit !== 'function') {
+                  if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
+                    errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
+                  }
                 }
               }
             }
@@ -809,17 +816,23 @@ export default class ConfigValidator implements IConfigValidator {
           if (typeof condition !== 'object') {
             return;
           }
+          const relatedColumn = res.columns.find((c) => c.name === field);
+          if (!relatedColumn) {
+            const similar = suggestIfTypo(res.columns.map((c) => c.name), field);
+            errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf on unknown column "${field}". ${similar ? `Did you mean "${similar}"?` : ''}`);
+            return;
+          }
           if ("$in" in condition && !Array.isArray(condition.$in)) {
             errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $in that is not an array`);
           }
           if ("$nin" in condition && !Array.isArray(condition.$nin)) {
             errors.push(`Resource "${res.resourceId}" column "${column.name}" has showIf with $nin that is not an array`);
           }
-          if ("$includes" in condition && !column.isArray) {
-            errors.push(`Resource "${res.resourceId}" has showIf with $includes on non-array column "${column.name}"`);
+          if ("$includes" in condition && !relatedColumn.isArray?.enabled) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $includes on non-array column "${relatedColumn.name}"`);
           }
-          if ("$nincludes" in condition && !column.isArray) {
-            errors.push(`Resource "${res.resourceId}" has showIf with $nincludes on non-array column "${column.name}"`);
+          if ("$nincludes" in condition && !relatedColumn.isArray?.enabled) {
+            errors.push(`Resource "${res.resourceId}" has showIf with $nincludes on non-array column "${relatedColumn.name}"`);
           }
         });
           }
@@ -865,7 +878,7 @@ export default class ConfigValidator implements IConfigValidator {
       // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
       const allowedInjectionsByPage: Record<string, string[]> = {
-        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart'],
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart', 'tableRowReplace'],
         show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
         edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
         create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
@@ -1137,6 +1150,33 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      if (newConfig.auth.rememberMeDays !== undefined) {
+        const rememberMeDays = newConfig.auth.rememberMeDays;
+        if (typeof rememberMeDays !== 'number' || rememberMeDays <= 0) {
+          errors.push(`auth.rememberMeDays must be a positive number`);
+        } else {
+          if (!newConfig.auth.rememberMeDuration) {
+            newConfig.auth.rememberMeDuration = `${rememberMeDays}d`;
+            warnings.push(`⚠️  auth.rememberMeDays is deprecated. Please use auth.rememberMeDuration: "${rememberMeDays}d" instead. Auto-converted for now.`);
+          } else {
+            warnings.push(`⚠️  Both auth.rememberMeDays and auth.rememberMeDuration are set. Using rememberMeDuration. Please remove rememberMeDays.`);
+          }
+        }
+        delete newConfig.auth.rememberMeDays;
+      }
+
+      if (newConfig.auth.rememberMeDuration !== undefined) {
+        const duration = newConfig.auth.rememberMeDuration;
+        if (typeof duration !== 'string') {
+          errors.push(`auth.rememberMeDuration must be a string in format "1s", "1m", "1h", or "1d"`);
+        } else {
+          const match = duration.match(/^(\d+)([smhd])$/);
+          if (!match) {
+            errors.push(`auth.rememberMeDuration must be in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days), got: "${duration}"`);
+          }
+        }
+      }
+
       // normalize beforeLoginConfirmation hooks
       const blc = this.inputConfig.auth.beforeLoginConfirmation;
       if (!Array.isArray(blc)) {
@@ -1147,6 +1187,18 @@ export default class ConfigValidator implements IConfigValidator {
         }
       } else {
         newConfig.auth.beforeLoginConfirmation = blc;
+      }
+
+      // normalize adminUserAuthorize hooks
+      const aua = this.inputConfig.auth.adminUserAuthorize;
+      if (!Array.isArray(aua)) {
+        if (aua) {
+          newConfig.auth.adminUserAuthorize = [aua];
+        } else {
+          newConfig.auth.adminUserAuthorize = [];
+        }
+      } else {
+        newConfig.auth.adminUserAuthorize = aua;
       }
     }
 

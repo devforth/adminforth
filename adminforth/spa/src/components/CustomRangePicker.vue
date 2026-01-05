@@ -4,26 +4,19 @@
       :min="minFormatted"
       :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
-      class="bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      class="flex-1 bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
       :placeholder="$t('From')"
       v-model="start"
     >
-
+    <p>_</p>
     <input
       :min="minFormatted"
       :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
-      class="bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      class="flex-1 bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
       :placeholder="$t('To')"
       v-model="end"
     >
-
-    <button
-      v-if="isChanged"
-      type="button"
-      class="flex items-center p-0.5 ml-auto px-3 text-sm font-medium text-lightRangePickerButtonText focus:outline-none bg-lightRangePickerButtonBackground rounded border border-lightRangePickerButtonBorder hover:bg-lightRangePickerButtonBackgroundHover hover:text-lightRangePickerButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightRangePickerFocusRing dark:focus:ring-darkRangePickerFocusRing dark:bg-darkRangePickerButtonBackground dark:text-darkRangePickerButtonText dark:border-darkRangePickerButtonBorder dark:hover:text-darkRangePickerButtonTextHover dark:hover:bg-darkRangePickerButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
-      @click="clear">Clear
-    </button>
 
     <div v-if="min && max" class="w-full px-2.5">
       <vue-slider
@@ -111,12 +104,6 @@ watch(end, () => {
 watch([minFormatted,maxFormatted], () => {
   setSliderValues(minFormatted.value, maxFormatted.value)
 })
-
-const clear = () => {
-  start.value = ''
-  end.value = ''
-  setSliderValues('', '')
-}
 
 function setSliderValues(start: any, end: any) {
   sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];

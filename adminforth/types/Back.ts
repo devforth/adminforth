@@ -303,7 +303,7 @@ export interface IAdminForthDataSourceConnectorConstructor {
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
 
-  issueJWT(payload: Object, type: string, expiresIn?: string): string;
+  issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
@@ -311,7 +311,7 @@ export interface IAdminForthAuth {
 
   getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
 
-  setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
+  setAuthCookie({expireInDuration, response, username, pk,}: {expireInDuration?: string, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
 
@@ -331,8 +331,9 @@ export interface IAdminForthRestAPI {
    * @param adminUser - plugin/af pases current adminUser
    * @param toReturn - this is an object which will get status of login process. If at least one callback returns error or redirectTo, login process will be stopped (future callbacks will not be called).
    * @param response - http response object
+   * @param sessionDuration - duration of session in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days)
    */
-  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra): Promise<void>;
+  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string): Promise<void>;
 }
 
 export interface IAdminForth {
@@ -454,7 +455,7 @@ export interface IAdminForthPlugin {
    * @param adminforth Instance of IAdminForth
    * @param resourceConfig Resource configuration object which will be modified by plugin
    */
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: IAdminForthPlugin, resource: AdminForthResource}[]): void;
   componentPath(componentFile: string): string;
 
   /**
@@ -526,6 +527,7 @@ export interface HttpExtra {
   headers: Record<string, string>,
   cookies: Record<string, string>,
   requestUrl: string,
+  meta?: any,
 }
 /**
  * Modify record to change how data is saved to database.
@@ -568,6 +570,7 @@ export type AfterCreateSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  recordWithVirtualColumns?: any,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -604,7 +607,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
-    rememberMeDays?: number,
+    sessionDuration?: string,
 }) => Promise<{
   error?: string, 
   body: {
@@ -699,6 +702,10 @@ interface AdminForthInputConfigCustomization {
   iconOnlySidebar?: {
     logo?: string,
     enabled?: boolean,
+    /**
+     * Width of expanded sidebar (default: '16.5rem')
+     */
+    expandedSidebarWidth?: string,
   },
 
   /**
@@ -1048,11 +1055,25 @@ export interface AdminForthInputConfig {
        */
       loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
 
-      /**
-       * Remember me days for "Remember Me" checkbox on login page.
-       * If not set or set to null/0/undefined, "Remember Me" checkbox will not be displayed.
-       * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
+
+      /**       
+       * Function to return avatar URL for user.
        */
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
+
+      /**
+       * Remember me duration for "Remember Me" checkbox on login page.
+       * If not set or set to null/undefined, "Remember Me" checkbox will not be displayed.
+       * If rememberMeDuration is set, then users who check "Remember Me" will be staying logged in for this amount of time.
+       * Format: "1s" (seconds), "1m" (minutes), "1h" (hours), or "1d" (days).
+       * Example: "30d" for 30 days, "7d" for 7 days, "24h" for 24 hours.
+       */ 
+      rememberMeDuration?: string,
+
+      /**
+       * Old variable for remember me duration. Use rememberMeDuration instead.
+       * @deprecated Use rememberMeDuration instead.
+       */ 
       rememberMeDays?: number,
 
 
@@ -1086,7 +1107,8 @@ export interface AdminForthInputConfig {
         icon?: string,
         pageLabel: string,
         slug?: string,
-        component: string
+        component: string,
+        isVisible?: (adminUser: AdminUser) => boolean,
       }[],
     },
 

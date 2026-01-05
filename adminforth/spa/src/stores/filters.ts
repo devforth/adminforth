@@ -14,6 +14,11 @@ export const useFiltersStore = defineStore('filters', () => {
         return sort.value;
     }
     const setFilter = (filter: any) => {
+        const index = filters.value.findIndex(f => f.field === filter.field);
+        if (filters.value[index] && filters.value[index].operator === filter.value.operator) {
+            filters.value[index] = filter;
+            return;
+        }
         filters.value.push(filter);
     }
     const setFilters = (f: any) => {
@@ -21,6 +26,9 @@ export const useFiltersStore = defineStore('filters', () => {
     }
     const getFilters = () => {
         return filters.value;
+    }
+    const clearFilter = (fieldName: string) => {
+        filters.value = filters.value.filter(f => f.field !== fieldName);
     }
     const clearFilters = () => {
         filters.value = [];
@@ -49,6 +57,7 @@ export const useFiltersStore = defineStore('filters', () => {
         setSort, 
         getSort,
         visibleFiltersCount,
-        shouldFilterBeHidden
+        shouldFilterBeHidden,
+        clearFilter
     }
 })

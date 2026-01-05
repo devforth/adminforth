@@ -17,6 +17,7 @@ export const useCoreStore = defineStore('core', () => {
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
   const isResourceFetching = ref(false);
+  const isInternetError = ref(false);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -168,8 +169,8 @@ export const useCoreStore = defineStore('core', () => {
 
   }
 
-  async function fetchResourceFull({ resourceId }: { resourceId: string }) {
-    if (resourceColumnsId.value === resourceId && resource.value) {
+  async function fetchResourceFull({ resourceId, forceFetch }: { resourceId: string, forceFetch?: boolean }) {
+    if (resourceColumnsId.value === resourceId && resource.value && !forceFetch) {
       // already fetched
       return;
     }
@@ -206,6 +207,7 @@ export const useCoreStore = defineStore('core', () => {
       path: '/get_login_form_config',
       method: 'GET',
     });
+    console.log('📦 getLoginFormConfig', res);
     config.value = {...config.value, ...res};
   }
 
@@ -219,6 +221,16 @@ export const useCoreStore = defineStore('core', () => {
     return userData.value && userFullnameField && userData.value[userFullnameField];
   })
 
+  const userAvatarUrl = computed(() => {
+    return userData.value?.userAvatarUrl || null;
+  });
+
+  const isIos = computed(() => {
+    return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+  )});
+
 
   return { 
     config,
@@ -226,6 +238,7 @@ export const useCoreStore = defineStore('core', () => {
     menu, 
     username,
     userFullname,
+    userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
     getLoginFormConfig,
@@ -243,5 +256,7 @@ export const useCoreStore = defineStore('core', () => {
     resetAdminUser,
     resetResource,
     isResourceFetching,
+    isIos,
+    isInternetError,
   }
 })

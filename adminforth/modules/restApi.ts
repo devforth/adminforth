@@ -12,12 +12,13 @@ import {
   HttpExtra,
   IAdminForthAndOrFilter,
   BackendOnlyInput,
+  Filters,
 } from "../types/Back.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceCommon, AdminForthResourcePages,
+import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
@@ -62,6 +63,11 @@ async function isShown(
   if (s[page] !== undefined) return await resolveBoolOrFn(s[page], ctx);
   if (s.all !== undefined) return await resolveBoolOrFn(s.all, ctx);
   return true;
+}
+
+async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
+  const fillOnCreate = !!col.fillOnCreate;
+  return fillOnCreate;
 }
 
 export async function interpretResource(
@@ -123,7 +129,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
-  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, rememberMeDays?: number) {
+  async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
@@ -132,7 +138,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response,
         adminforth: this.adminforth,
         extra,
-        rememberMeDays
+        sessionDuration,
       });
       
       if (resp?.body?.redirectTo || resp?.error) {
@@ -199,17 +205,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             username,
           };
 
-          const expireInDays = rememberMe ? this.adminforth.config.auth.rememberMeDays || 30 : 1;
-
+          const expireInDuration = rememberMe 
+            ? (this.adminforth.config.auth.rememberMeDuration || '30d')
+            : '1d';
+          console.log('expireInDuration', expireInDuration);
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
             body, headers, query, cookies, requestUrl, 
-          }, expireInDays);
+          }, expireInDuration);
 
           if (toReturn.allowedLogin) {
             
             this.adminforth.auth.setAuthCookie({ 
-              expireInDays,
+              expireInDuration,
               response, 
               username, 
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
@@ -283,7 +291,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
             sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
           },
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
@@ -317,10 +325,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
+        const userAvatarUrl = await this.adminforth.config.auth.avatarUrl?.(adminUser);
+
         const userData = {
             [this.adminforth.config.auth.usernameField]: username,
             [this.adminforth.config.auth.userFullNameField]: userFullName,
             pk: userPk,
+            userAvatarUrl: userAvatarUrl || null,
         };
         const checkIsMenuItemVisible = (menuItem) => {
           if (typeof menuItem.visible === 'function') {
@@ -358,7 +369,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const announcementBadge: AnnouncementBadgeResponse = this.adminforth.config.customization.announcementBadge?.(adminUser);
         
-
+        const settingPages = []
+        for ( const settingPage of this.adminforth.config.auth.userMenuSettingsPages || [] ) {
+          if ( settingPage.isVisible ) {
+            const isVisible = await settingPage.isVisible( adminUser );
+            settingPages.push( { ...settingPage, isVisible } );
+          }
+        }
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -369,11 +386,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           title: this.adminforth.config.customization?.title,
           demoCredentials: this.adminforth.config.auth.demoCredentials,
           loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDays: this.adminforth.config.auth.rememberMeDays,
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         }
-
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -388,7 +404,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           announcementBadge,
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
-          settingPages: this.adminforth.config.auth.userMenuSettingsPages,
+          settingPages: settingPages,
         }
 
         // translate menu labels
@@ -618,6 +634,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     if (col.foreignResource?.unsetLabel) {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
+                    }
+                    if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
+                      col.suggestOnCreate = await inCol.suggestOnCreate(adminUser);
                     }
 
                     return {
@@ -1157,7 +1176,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { record } = body;
+            const { record, requiredColumnsToSkip } = body;
 
             // todo if showIn.create is function, code below will be buggy (will not detect required fact)
             for (const column of resource.columns) {
@@ -1166,7 +1185,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   record[column.name] === undefined &&
                   column.showIn.create
               ) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                  if (!shouldWeSkipColumn) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
+              }
+            }
+
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
               }
             }
 
@@ -1181,8 +1211,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               if ((column.required as { create?: boolean })?.create) {
                 const shown = await isShown(column, 'create', ctxCreate);
-                if (shown && record[column.name] === undefined) {
-                  return { error: `Column '${column.name}' is required`, ok: false };
+                const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
+                if (!shouldWeSkipColumn) {
+                  if (shown && record[column.name] === undefined) {
+                    return { error: `Column '${column.name}' is required`, ok: false };
+                  }
                 }
               }
             }
@@ -1190,9 +1223,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const column of resource.columns) {
               const fieldName = column.name;
               if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate);
+                const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
-                if (!shown || bo) {
+                const filledOnCreate = await isFilledOnCreate(column);
+                if ((!shown && !filledOnCreate) || bo) {
                   return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
                 }
               }
@@ -1283,6 +1317,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
             if (!allowed) {
               return { error: allowedError };
+            }
+
+            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+            if (record[primaryKeyColumn.name] !== undefined) {
+              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+              if (existingRecord) {
+                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+              }
             }
 
             const ctxEdit = {
@@ -1442,15 +1484,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     })
 
-    // setup endpoints for all plugins
-    this.adminforth.activatedPlugins.forEach((plugin) => {
-      plugin.setupEndpoints(server);
-    });
-
     server.endpoint({
       method: 'POST',
       path: '/start_custom_action',
-      handler: async ({ body, adminUser, tr }) => {
+      handler: async ({ body, adminUser, tr, cookies }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -1482,7 +1519,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra });
+        const response = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, extra: {...extra, cookies: cookies} });
         
         return {
           actionId,
@@ -1492,5 +1529,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+
+    // setup endpoints for all plugins
+    this.adminforth.activatedPlugins.forEach((plugin) => {
+      plugin.setupEndpoints(server);
+    });
+    
   }
 }

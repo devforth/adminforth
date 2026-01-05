@@ -322,7 +322,7 @@ async function searchOptions(columnName: string, searchTerm: string) {
 
 
 const editableColumns = computed(() => {
-  return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value) : true));
+  return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value, props.resource.columns) : true));
 });
 
 const isValid = computed(() => {
@@ -376,5 +376,10 @@ provide('loadMoreOptions', loadMoreOptions);
 watch(() => isValid.value, (value) => {
   emit('update:isValid', value);
 });
+
+defineExpose({
+  columnError,
+  editableColumns,
+})
 
 </script>

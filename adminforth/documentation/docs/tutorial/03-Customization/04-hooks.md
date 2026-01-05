@@ -137,7 +137,7 @@ For example we can prevent the user to see Apartments created by other users. Su
         }
 
         // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
-        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id).
+        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id)
        
         return { ok: true };
       },
@@ -189,20 +189,28 @@ Let's limit it:
 ```ts title='./resources/apartments.ts'
 {
   ...
-  hooks: {
-    dropdownList: {
-      beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
-        if (adminUser.dbUser.role !== "superadmin") {
-          query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
-        };
-        return {
-          "ok": true,
-        };
-      }
+
+  foreignResource: { 
+    
+    ...
+
+    hooks: {
+      dropdownList: {
+        beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
+          if (adminUser.dbUser.role !== "superadmin") {
+            query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
+          };
+          return {
+            "ok": true,
+          };
+        }
+      },
     },
-  },
+  }
 }
 ```
+
+> ☝️☝️☝️ This hooks should be written only inside column. If you'll add it in resource hooks - it won't work
 
 In our case we limit the dropdown list to show only the current user, however you can use same sample to list only objects who are related to the current user in case if you will have relation configurations which require to show related objects which belongs to the current user.
 

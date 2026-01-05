@@ -143,7 +143,7 @@ model adminuser {
 Run the migration:
 
 ```bash
-npx prisma migrate dev --name add-email-confirmed
+npm run makemigration -- --name add-email-confirmed ; npm run migrate:local
 ```
 
 Then update your resource configuration:

@@ -86,6 +86,18 @@ export const admin = new AdminForth({
         return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
     },
+    
+    avatarUrl: async (adminUser)=>{
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      if (!plugin) {
+        throw new Error('Upload plugin for avatar not found');
+      }
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        return '';
+      }
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      return imageUrl;
+    },
 
     rememberMeDays: 30,
     beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {

@@ -148,6 +148,9 @@
         : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
           ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
           : []"
+      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
+        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
+        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
@@ -183,6 +186,9 @@
         : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
           ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
           : []"
+      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
+        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
+        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
     />
 
     <component 
