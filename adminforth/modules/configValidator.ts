@@ -413,13 +413,13 @@ export default class ConfigValidator implements IConfigValidator {
       }
       if (!action.showIn) {
         action.showIn = {
-          listQuickIcon: true,
+          list: true,
           listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
-        action.showIn.listQuickIcon = action.showIn.listQuickIcon ?? true;
+        action.showIn.list = action.showIn.list ?? true;
         action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;

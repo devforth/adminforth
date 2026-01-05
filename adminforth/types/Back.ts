@@ -847,7 +847,7 @@ interface AdminForthInputConfigCustomization {
 export interface AdminForthActionInput {
   name: string;
   showIn?: {
-      listQuickIcon?: boolean,
+      list?: boolean,
       listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
