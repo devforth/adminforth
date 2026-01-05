@@ -1,5 +1,3 @@
-
-
 services:
 
   clickhouse:
@@ -54,6 +52,7 @@ services:
       MYSQL_PASSWORD: demo
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./prisma/mysql/mysql-init:/docker-entrypoint-initdb.d
 
   keycloak:
       image: quay.io/keycloak/keycloak:latest
@@ -72,6 +71,23 @@ services:
         - pg
       volumes:
         - keycloak-data:/opt/keycloak/data
+  init-db:
+    image: mysql
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: demo
+    command: |
+      bash -ec "
+      until mysql -h mysql -P 3306 -u root -pdemo -e 'SELECT 1'; do
+        sleep 2
+      done
+
+      mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS demo;'
+      mysql -h mysql -P 3306 -u root -pdemo -e \"CREATE USER IF NOT EXISTS 'demo'@'%' IDENTIFIED BY 'demo';\"
+      mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES ON *.* TO 'demo'@'%';\"
+      mysql -h mysql -P 3306 -u root -pdemo -e 'FLUSH PRIVILEGES;'
+      "
 
 
 volumes:
