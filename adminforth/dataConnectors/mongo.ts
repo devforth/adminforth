@@ -9,6 +9,12 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
 };
+function normalizeMongoValue(v: any) {
+  if (v == null) return v;
+  if (v instanceof Decimal128) return v.toString();
+  if (typeof v === "object" && v.$numberDecimal) return String(v.$numberDecimal);
+  return v;
+}
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -208,27 +214,14 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(value).isValid() ? dayjs(value).toDate() : null;
         }
 
-        if (field.type === AdminForthDataTypes.DATE) {
-            if (value === "" || value === null) return null;
-            const d = dayjs(value);
-            return d.isValid() ? d.startOf("day").toDate() : null;
-        }
-
-        if (field.type === AdminForthDataTypes.BOOLEAN) {
-            if (value === "" || value === null) return null;
-            return !!value;
-        }
-
         if (field.type === AdminForthDataTypes.INTEGER) {
             if (value === "" || value === null) return null;
-            const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
-            return Number.isFinite(n) ? Math.trunc(n) : null;
+            return Number.isFinite(value) ? Math.trunc(value) : null;
         }
 
         if (field.type === AdminForthDataTypes.FLOAT) {
             if (value === "" || value === null) return null;
-            const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
-            return Number.isFinite(n) ? new Double(n) : null;
+            return Number.isFinite(value) ? new Double(value) : null;
         }
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
@@ -335,24 +328,31 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const collection = this.client.db().collection(tableName);
-        const result = {};
+        const result: Record<string, { min: any; max: any }> = {};
+
         for (const column of columns) {
-            result[column.name] = await collection
-                .aggregate([
-                    { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
-                ])
-                .toArray();
+            const [doc] = await collection
+            .aggregate([
+                { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
+                { $project: { _id: 0, min: 1, max: 1 } },
+            ])
+            .toArray();
+
+            result[column.name] = {
+            min: normalizeMongoValue(doc?.min),
+            max: normalizeMongoValue(doc?.max),
+            };
         }
         return result;
     }
 
     async createRecordOriginalValues({ resource, record }): Promise<string> {
-        const collection = this.client.db().collection(resource.table);
-        const colsByName = new Map(resource.dataSourceColumns.map((c) => [c.name, c]));
+        const tableName = resource.table;
+        const collection = this.client.db().collection(tableName);
+        const columns = Object.keys(record);
         const newRecord = {};
-        for (const [key, raw] of Object.entries(record)) {
-            const col = colsByName.get(key);
-            newRecord[key] = col ? this.setFieldValue(col, raw) : raw;
+        for (const colName of columns) {
+            newRecord[colName] = record[colName];
         }
         const ret = await collection.insertOne(newRecord);
         return ret.insertedId;
@@ -360,13 +360,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
         const collection = this.client.db().collection(resource.table);
-        const colsByName = new Map(resource.dataSourceColumns.map((c) => [c.name, c]));
-        const updatedValues = {};
-        for (const [key, raw] of Object.entries(newValues)) {
-            const col = colsByName.get(key);
-            updatedValues[key] = col ? this.setFieldValue(col, raw) : raw;
-        }
-        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: updatedValues });
+        await collection.updateOne({ [this.getPrimaryKey(resource)]: recordId }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
