@@ -207,7 +207,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -223,7 +223,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -240,7 +240,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -257,7 +257,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -274,7 +274,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
