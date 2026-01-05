@@ -148,15 +148,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
-          `SELECT 
+          `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             COUNT(*) as count 
           FROM apartments 
           GROUP BY day 
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
+
 
         const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
 
@@ -170,10 +170,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
+
 
         const apartsCountsByRooms = await db.prepare(
           `SELECT 
@@ -181,8 +181,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             COUNT(*) as count 
           FROM apartments 
           GROUP BY number_of_rooms 
-          ORDER BY number_of_rooms;
-          `
+          ORDER BY number_of_rooms;`
         ).all();
 
         const topCountries = await db.prepare(
@@ -192,27 +191,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           FROM apartments 
           GROUP BY country 
           ORDER BY count DESC
-          LIMIT 4;
-          `
+          LIMIT 4;`
         ).all();
 
         const totalSquare = await db.prepare(
           `SELECT 
             SUM(square_meter) as totalSquare 
-          FROM apartments;
-          `
+          FROM apartments;`
         ).get();
 
         const listedVsUnlistedPriceByDays = await db.prepare(
-          `SELECT 
+        `SELECT
             strftime('%Y-%m-%d', created_at) as day, 
             SUM(listed * price) as listedPrice,
             SUM((1 - listed) * price) as unlistedPrice
           FROM apartments
           GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
+          ORDER BY day ASC
+          LIMIT ?;`
         ).all(days);
           
         const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
