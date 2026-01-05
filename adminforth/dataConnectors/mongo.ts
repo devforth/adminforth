@@ -10,11 +10,21 @@ const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
 };
 function normalizeMongoValue(v: any) {
-  if (v == null) return v;
-  if (v instanceof Decimal128) return v.toString();
-  if (v instanceof Double) return v.valueOf();
-  if (typeof v === "object" && v.$numberDecimal) return String(v.$numberDecimal);
-  if (typeof v === "object" && v.$numberDouble) return Number(v.$numberDouble);
+  if (v == null) {
+    return v;
+  }
+  if (v instanceof Decimal128) {
+    return v.toString();
+  }
+  if (v instanceof Double) {
+    return v.valueOf();
+  }
+  if (typeof v === "object" && v.$numberDecimal) {
+    return String(v.$numberDecimal);
+  }
+  if (typeof v === "object" && v.$numberDouble) {
+    return Number(v.$numberDouble);
+  }
   return v;
 }
 
@@ -212,22 +222,30 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         if (value === null) return null;
 
         if (field.type === AdminForthDataTypes.DATETIME) {
-            if (value === "" || value === null) return null;
+            if (value === "" || value === null) {
+                return null;
+            }
             return dayjs(value).isValid() ? dayjs(value).toDate() : null;
         }
 
         if (field.type === AdminForthDataTypes.INTEGER) {
-            if (value === "" || value === null) return null;
+            if (value === "" || value === null) {
+                return null;
+            }
             return Number.isFinite(value) ? Math.trunc(value) : null;
         }
 
         if (field.type === AdminForthDataTypes.FLOAT) {
-            if (value === "" || value === null) return null;
+            if (value === "" || value === null) {
+                return null;
+            }
             return Number.isFinite(value) ? value : null;
         }
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
-            if (value === "" || value === null) return null;
+            if (value === "" || value === null) {
+                return null;
+            }
             return value.toString();
         }
 

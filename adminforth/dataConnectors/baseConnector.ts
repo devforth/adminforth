@@ -223,7 +223,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   validateAndSetFieldValue(field: AdminForthResourceColumn, value: any): any {
     // Int
     if (field.type === AdminForthDataTypes.INTEGER) {
-      if (value === "" || value === null) return this.setFieldValue(field, null); 
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
       if (!Number.isFinite(value)) {
         throw new Error(`Value is not an integer. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
@@ -232,7 +234,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // Float
     if (field.type === AdminForthDataTypes.FLOAT) {
-      if (value === "" || value === null) return this.setFieldValue(field, null);
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
 
       if (typeof value !== "number" || !Number.isFinite(value)) {
         throw new Error(
@@ -245,11 +249,17 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // Decimal
     if (field.type === AdminForthDataTypes.DECIMAL) {
-      if (value === "" || value === null) return this.setFieldValue(field, null);
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
       if (typeof value === "string") {
         const string = value.trim();
-        if (!string) return this.setFieldValue(field, null);
-        if (Number.isFinite(Number(string))) return this.setFieldValue(field, string);
+        if (!string) {
+          return this.setFieldValue(field, null);
+        }
+        if (Number.isFinite(Number(string))) {
+          return this.setFieldValue(field, string);
+        }
         throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
 
@@ -261,7 +271,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // DateTime
     if (field.type === AdminForthDataTypes.DATETIME) {
-      if (value === "" || value === null) return this.setFieldValue(field, null);
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
       if (!dayjs(value).isValid()) {
         throw new Error(`Value is not a valid datetime. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
@@ -272,7 +284,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // Boolean
     if (field.type === AdminForthDataTypes.BOOLEAN) {
-      if (value === "" || value === null) return this.setFieldValue(field, null);
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
       if (typeof value !== 'boolean') {
         throw new Error(`Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
@@ -283,7 +297,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // String
     if (field.type === AdminForthDataTypes.STRING) {
-      if (value === "" || value === null) return this.setFieldValue(field, null);
+      if (value === "" || value === null){
+        return this.setFieldValue(field, null);
+      }
     }
     return this.setFieldValue(field, value);
   }
