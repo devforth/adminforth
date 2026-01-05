@@ -9,6 +9,7 @@ import {
 import { suggestIfTypo } from "../modules/utils.js";
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
 import { randomUUID } from "crypto";
+import dayjs from "dayjs";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -164,9 +165,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
             return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
           }
         }
-        filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
+        filters.value = filters.value.map((val: any) => this.validateAndSetFieldValue(fieldObj, val));
       } else {
-        filtersAsSingle.value = this.setFieldValue(fieldObj, filtersAsSingle.value);
+        filtersAsSingle.value = this.validateAndSetFieldValue(fieldObj, filtersAsSingle.value);
       }
     } else if (filtersAsSingle.insecureRawSQL || filtersAsSingle.insecureRawNoSQL) {
       // if "insecureRawSQL" filter is insecure sql string
@@ -219,6 +220,90 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
+  validateAndSetFieldValue(field: AdminForthResourceColumn, value: any): any {
+    // Int
+    if (field.type === AdminForthDataTypes.INTEGER) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!Number.isFinite(value)) {
+        throw new Error(`Value is not an integer. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Float
+    if (field.type === AdminForthDataTypes.FLOAT) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          `Value is not a float. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`
+        );
+      }
+
+      return this.setFieldValue(field, value);
+    }
+
+    // Decimal
+    if (field.type === AdminForthDataTypes.DECIMAL) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (typeof value === "string") {
+        const string = value.trim();
+        if (!string) {
+          return this.setFieldValue(field, null);
+        }
+        if (Number.isFinite(Number(string))) {
+          return this.setFieldValue(field, string);
+        }
+        throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+
+      throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`);
+    }
+
+    // Date
+
+
+    // DateTime
+    if (field.type === AdminForthDataTypes.DATETIME) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!dayjs(value).isValid()) {
+        throw new Error(`Value is not a valid datetime. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Time
+
+    // Boolean
+    if (field.type === AdminForthDataTypes.BOOLEAN) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (typeof value !== 'boolean') {
+        throw new Error(`Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+    
+    // JSON
+
+    // String
+    if (field.type === AdminForthDataTypes.STRING) {
+      if (value === "" || value === null){
+        return this.setFieldValue(field, null);
+      }
+    }
+    return this.setFieldValue(field, value);
+  }
+
   getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource; columns: AdminForthResourceColumn[]; }): Promise<{ [key: string]: { min: any; max: any; }; }> {
     throw new Error('Method not implemented.');
   }
@@ -268,7 +353,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       if (filledRecord[col.name] !== undefined) {
         // no sense to set value if it is not defined
-        recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+        recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, filledRecord[col.name]);
       }
     }
 
@@ -325,7 +410,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           Update record received field '${field}' (with value ${newValues[field]}), but such column not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}
         `);
       }
-      recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
+      recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, newValues[col.name]);
     }
     const record = await this.getRecordByPrimaryKey(resource, recordId);
     let error: string | null = null;
