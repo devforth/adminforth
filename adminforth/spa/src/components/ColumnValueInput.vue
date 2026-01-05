@@ -86,7 +86,20 @@
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <Input
-      v-else-if="['decimal', 'float'].includes(type || column.type)"
+      v-else-if="(type || column.type) === 'decimal'"
+      ref="input"
+      type="number"
+      inputmode="decimal"
+      class="w-40"
+      placeholder="0.0"
+      :fullWidth="true"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
+      :modelValue="String(value)"
+      @update:modelValue="$emit('update:modelValue', String($event))"
+    />
+    <Input
+      v-else-if="(type || column.type) === 'float'"
       ref="input"
       type="number"
       step="0.1"
