@@ -211,7 +211,7 @@
                 </Tooltip>
               </template>
               <ListActionsThreeDots
-                v-if="resource.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) || !resource?.options.baseActionsAsQuickIcons ||(resource?.options.baseActionsAsQuickIcons && resource?.options.baseActionsAsQuickIcons.length <= 2)"
+                v-if="showListActionsThreeDots"
                 :resourceOptions="resource?.options"
                 :record="row"
                 :updateRecords="()=>emits('update:records', true)"
@@ -378,6 +378,12 @@ const pageInput = ref('1');
 const page = ref(1);
 const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 
+const showListActionsThreeDots = computed(() => {
+  return  props.resource?.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) // show if any action is set to show in three dots menu
+    || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) // or if there are custom action icons for three dots menu
+    || !props.resource?.options.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
+    || (props.resource?.options.baseActionsAsQuickIcons && props.resource?.options.baseActionsAsQuickIcons.length < 3) // if there all 3 base actions are shown as quick icons - hide three dots icon
+})
 
 const from = computed(() => ((page.value || 1) - 1) * props.pageSize + 1);
 const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.totalRows));
