@@ -224,62 +224,36 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     // Int
     if (field.type === AdminForthDataTypes.INTEGER) {
       if (value === "" || value === null) return this.setFieldValue(field, null); 
-      if (!Number.isFinite(value) || Math.trunc(value) !== value) {
+      if (!Number.isFinite(value)) {
         throw new Error(`Value is not an integer. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
-      return this.setFieldValue(field, Math.trunc(value));
+      return this.setFieldValue(field, value);
     }
 
     // Float
     if (field.type === AdminForthDataTypes.FLOAT) {
       if (value === "" || value === null) return this.setFieldValue(field, null);
-      let number: any;
-      if (typeof value === "number") {
-        number = value;
-      } else if (typeof value === "object") {
-        number = (value as any).valueOf();
-      } else {
-        number = NaN;
-      }
 
-      if (typeof number !== "number" || !Number.isFinite(number)) {
+      if (typeof value !== "number" || !Number.isFinite(value)) {
         throw new Error(
           `Value is not a float. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`
         );
       }
 
-      return this.setFieldValue(field, number);
+      return this.setFieldValue(field, value);
     }
 
     // Decimal
     if (field.type === AdminForthDataTypes.DECIMAL) {
       if (value === "" || value === null) return this.setFieldValue(field, null);
-
-      if (typeof value === "number") {
-        if (!Number.isFinite(value)) {
-          throw new Error(`Value is not a decimal. Field ${field.name} got: ${value} (number)`);
-        }
-        return this.setFieldValue(field, value);
-      }
-
       if (typeof value === "string") {
         const string = value.trim();
         if (!string) return this.setFieldValue(field, null);
         if (Number.isFinite(Number(string))) return this.setFieldValue(field, string);
-        throw new Error(`Value is not a decimal. Field ${field.name} got: ${value} (string)`);
+        throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
 
-      if (typeof value === "object") {
-        if (typeof value.toString !== "function") {
-          throw new Error(`Decimal object has no toString(). Field ${field.name} got: ${String(value)}`);
-        }
-        const string = value.toString().trim();
-        if (!string) return this.setFieldValue(field, null);
-        if (Number.isFinite(Number(string))) return this.setFieldValue(field, string);
-        throw new Error(`Value is not a decimal. Field ${field.name} got: ${string} (object->string)`);
-      }
-
-      throw new Error(`Value is not a decimal. Field ${field.name} got: ${String(value)} (${typeof value})`);
+      throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`);
     }
 
     // Date

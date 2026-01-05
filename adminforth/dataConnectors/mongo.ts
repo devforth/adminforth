@@ -223,12 +223,12 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         if (field.type === AdminForthDataTypes.FLOAT) {
             if (value === "" || value === null) return null;
-            return Number.isFinite(value) ? new Double(value) : null;
+            return Number.isFinite(value) ? value : null;
         }
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
             if (value === "" || value === null) return null;
-            return Decimal128.fromString(value.toString());
+            return value.toString();
         }
 
         return value;
