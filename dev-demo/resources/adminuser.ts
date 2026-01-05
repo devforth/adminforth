@@ -144,14 +144,11 @@ export default {
       }
     ),
     new ForeignInlineListPlugin({
-      foreignResourceId: 'cars_sl',
-      modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
-        resourceConfig.options!.listPageSize = 3;
-      },
+      foreignResourceId: 'cars_sl'
     }),
-    new ForeignInlineListPlugin({
-      foreignResourceId: 'adminuser',
-    }),
+    // new ForeignInlineListPlugin({
+    //   foreignResourceId: 'adminuser',
+    // }),
     new UploadPlugin({
       pathColumnName: "avatar",
       // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({

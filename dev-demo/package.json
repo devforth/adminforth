@@ -9,16 +9,12 @@
     "start": "npm run _env:dev -- tsx watch index.ts",
     "makemigration:sqlite": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./prisma/sqlite/schema.prisma",
     "migrate:sqlite": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/sqlite/schema.prisma",
-
     "makemigration:mysql": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./prisma/mysql/schema.mysql.prisma",
     "migrate:mysql": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/mysql/schema.mysql.prisma",
-
     "makemigration:postgres": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./prisma/postgres/schema.postgres.prisma",
     "migrate:postgres": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./prisma/postgres/schema.postgres.prisma",
-
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
     "install-adapters": "cd ../adapters && bash install-adapters.sh",
-
     "setup-dev-demo": "cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && bash ./run_inventory.sh && npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres"
   },
   "author": "",
@@ -26,6 +22,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "better-sqlite3": "^10.1.0",
+    "clickhouse-migrations": "^1.1.1",
     "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
