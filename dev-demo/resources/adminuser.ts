@@ -1,5 +1,5 @@
-import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from 'adminforth';
+import AdminForth, { AdminForthDataTypes } from '../../adminforth/index.js';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from '../../adminforth/index.js';
 import { randomUUID } from 'crypto';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';

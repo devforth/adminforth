@@ -1,5 +1,5 @@
 
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
 import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
 import { v1 as uuid } from "uuid";
 

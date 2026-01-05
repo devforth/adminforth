@@ -1,6 +1,6 @@
 
 import AuditLogPlugin from "../../plugins/adminforth-audit-log/index.js";
-import { AdminForthDataTypes } from "adminforth";
+import { AdminForthDataTypes } from "../../adminforth/index.js";
 import { randomUUID } from "crypto";
 
 export default {

@@ -1,4 +1,4 @@
-import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from 'adminforth';
+import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../adminforth/index.js';
 import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
 
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
