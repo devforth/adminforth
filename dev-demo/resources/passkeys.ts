@@ -1,4 +1,4 @@
-  import { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+  import { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
   import { randomUUID } from "crypto";
 
   export default {
