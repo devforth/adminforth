@@ -28,7 +28,7 @@
 
           >
             <IconEyeSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            Show item
+            {{ $t('Show item') }}
           </RouterLink>
         </template>
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('edit'))">
@@ -44,7 +44,7 @@
             }"
           >
             <IconPenSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            Edit item
+            {{ $t('Edit item') }}
           </RouterLink>
         </template>
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('delete'))">
@@ -54,13 +54,26 @@
             @click="deleteRecord(record)"
           >
             <IconTrashBinSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            Delete item
+            {{ $t('Delete item') }}
           </button>
         </template>
         <div v-for="action in (resourceOptions.actions ?? []).filter(a => a.showIn?.listThreeDotsMenu)" :key="action.id" >
             <button class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300" @click="() => { startCustomAction(action.id, record); showMenu = false; }">
-                <component v-if="action.icon" :is="getIcon(action.icon)" class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"></component>
-                {{ action.name }}
+              <component
+                :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
+                :meta="action.customComponent?.meta"
+                :row="record"
+                :resource="resource"
+                :adminUser="adminUser"
+                @callAction="(payload? : Object) => startCustomAction(action.id, record, payload)"
+              >
+                <component
+                  v-if="action.icon"
+                  :is="getIcon(action.icon)"
+                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                />
+                {{ $t(action.name) }}
+              </component>               
             </button>
         </div>
         <template v-if="customActionIconsThreeDotsMenuItems">
@@ -89,6 +102,8 @@ import {
 import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue';
 import { getIcon, getCustomComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
+import CallActionWrapper from '@/components/CallActionWrapper.vue'
+
 const coreStore = useCoreStore();
 const showMenu = ref(false);
 const triggerRef = ref<HTMLElement | null>(null);
