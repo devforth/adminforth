@@ -26,7 +26,7 @@
 
     "migrate:all": "npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse",
     
-    "setup-dev-demo": "npm run build-adminforth && npm link adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && bash ./run_inventory.sh"
+    "setup-dev-demo": "npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
