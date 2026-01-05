@@ -1,20 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": ".", // This should point to your project root
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        // "node_modules/adminforth/dist/spa/src/*"
-        "../../adminforth/spa/src/*"
-      ],
-      "*": [
-        // "node_modules/adminforth/dist/spa/node_modules/*"
-        "../../adminforth/spa/node_modules/*"
-      ],
-      "@@/*": [
-        // "node_modules/adminforth/dist/spa/src/*"
-        "."
-      ]
+      "@/*": ["../node_modules/adminforth/dist/spa/src/*"],
+      "@@/*": ["./*"]
     }
-  },
-
+  }
 }

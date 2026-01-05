@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource mysql_db {
+  provider = "postgres"
+  url = "postgres://demo:demo@localhost:53321/demo"
+}
+
+model cars {
+  id             String @id
+  model          String 
+  price          Decimal @mysql_db.Decimal(18, 2)
+  created_at     DateTime @default(now())
+
+  engine_type    String?
+  engine_power   Int?
+  production_year Int?
+
+  description    String? 
+  listed         Boolean @default(false)
+  mileage        Float?
+  color          String?
+  body_type      String?
+
+  photos         String?
+
+  seller_id      String?
+  seller         String?
+
+  promo_picture  String?
+  generated_promo_picture  String?
+
+}
