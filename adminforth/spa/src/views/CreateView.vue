@@ -192,7 +192,7 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
     validating.value = false;
   }
   const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
-  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value) === false);  
+  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
   const response = await callAdminForthApi({
     method: 'POST',
