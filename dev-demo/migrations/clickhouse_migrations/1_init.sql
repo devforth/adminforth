@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS cars (
   id String,
 
   model String,
-  price Float64,
+  price Decimal(18, 2),
 
   created_at DateTime DEFAULT now(),
 

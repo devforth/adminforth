@@ -1,9 +1,9 @@
 import express from 'express';
-import AdminForth from 'adminforth';
+import AdminForth, {  Filters } from '../adminforth/index.js';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { Filters } from 'adminforth';
+import { Decimal } from 'decimal.js';
 import { initApi } from './api.js';
 import cars_SQLITE_resource from './resources/cars_SL.js';
 import cars_MyS_resource from './resources/cars_MyS.js';
@@ -202,12 +202,12 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         await admin.resource('cars_sl').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
-          price: (Math.random() * 10000).toFixed(2),
+          price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -218,12 +218,12 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         await admin.resource('cars_mongo').create({
           _id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
-          price: (Math.random() * 10000).toFixed(2),
+          price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -235,12 +235,12 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         await admin.resource('cars_mysql').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
-          price: (Math.random() * 10000).toFixed(2),
+          price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -252,12 +252,12 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         await admin.resource('cars_pg').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
-          price: (Math.random() * 10000).toFixed(2),
+          price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
@@ -269,12 +269,12 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
         await admin.resource('cars_ch').create({
           id: `${i}`,
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
-          price: (Math.random() * 10000).toFixed(2),
+          price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
           engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
           production_year: Math.floor(Math.random() * 31) + 1990,
           listed: i % 2 == 0,
-          mileage: `${Math.floor(Math.random() * 200000)}`,
+          mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
         });
       };
