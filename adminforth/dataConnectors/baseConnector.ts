@@ -265,7 +265,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       if (!dayjs(value).isValid()) {
         throw new Error(`Value is not a valid datetime. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
-      return this.setFieldValue(field, dayjs(value).toISOString());
+      return this.setFieldValue(field, value);
     }
 
     // Time
