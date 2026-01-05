@@ -12,7 +12,9 @@ const escapeRegex = (value) => {
 function normalizeMongoValue(v: any) {
   if (v == null) return v;
   if (v instanceof Decimal128) return v.toString();
+  if (v instanceof Double) return v.valueOf();
   if (typeof v === "object" && v.$numberDecimal) return String(v.$numberDecimal);
+  if (typeof v === "object" && v.$numberDouble) return Number(v.$numberDouble);
   return v;
 }
 

@@ -236,7 +236,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       let number: any;
       if (typeof value === "number") {
         number = value;
-      } else if (typeof value === "object" && value !== null) {
+      } else if (typeof value === "object") {
         number = (value as any).valueOf();
       } else {
         number = NaN;
@@ -269,7 +269,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         throw new Error(`Value is not a decimal. Field ${field.name} got: ${value} (string)`);
       }
 
-      if (typeof value === "object" && value) {
+      if (typeof value === "object") {
         if (typeof value.toString !== "function") {
           throw new Error(`Decimal object has no toString(). Field ${field.name} got: ${String(value)}`);
         }
