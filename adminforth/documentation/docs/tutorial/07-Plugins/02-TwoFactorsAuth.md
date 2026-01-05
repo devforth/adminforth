@@ -2,13 +2,23 @@
 
 The Two-Factor Authentication Plugin provides an additional layer of security to the application by requiring users to provide a second form of authentication in addition to their password. This plugin supports  authenticator apps.
 
+Plugin supports next 2FA methods:
+- TOTP (Time-based One-Time Password) via authenticator apps (Google Authenticator, Authy, Microsoft Authenticator, etc)
+- Upgrade to Passkeys (WebAuthn) alongside TOTP (with TOTP as alternative method)
+
+Also it supports both:
+
+- Multi-Factor Authentication (MFA): asking for 2FA on every login (or single WebAuthn passkey login)
+- Step-Up MFA: asking for 2FA again on critical operations (custom actions, secure save etc)
+
+
 ## Installation
 
 ``` bash
 npm i @adminforth/two-factors-auth --save
 ```
 
-Plugin is already installed into adminforth, to import:
+To import:
 
 ```ts title="/adminuser.ts"
 import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
@@ -78,8 +88,7 @@ Thats it! Two-Factor Authentication is now enabled:
 
 ## Disabling Two-Factor Authentication locally
 
-If it is not convenient to enter the code every time you log in during local development, you can disable Two-Factor Authentication
-for the dev environment using `usersFilterToApply` option.
+If it is not convenient to enter the code every time during local development, you can disable Two-Factor Authentication for the dev environment using `usersFilterToApply` option:
 
 ```ts title='./index.ts'
 
@@ -104,6 +113,8 @@ for the dev environment using `usersFilterToApply` option.
     ],
 ```
 
+> Note: you can enable it temporarey while testing two-factor authentication flow locally and then disable.
+
 ## Select which users should use Two-Factor Authentication
 
 By default plugin enforces Two-Factor Authentication for all users.
@@ -117,6 +128,10 @@ If you wish to enforce 2FA only for specific users, you can again use `usersFilt
   },
 ```
 
+Other users (for whom this function returns false) will not be even suggested to setup 2FA and it will be not requested for them, nor on login, nor on step-up MFA requests (such requests will be automatically passed for them without any popups)
+
+### Control 2FA per-user via DB field
+
 You can even add a boolean column to the user table to store whether the user should use 2FA or not:
 
 In `schema.prisma`:
@@ -129,7 +144,7 @@ model adminuser {
   role          String
   password_hash String
   secret2fa     String?
-//diff-add
+  //diff-add
   use2fa        Boolean?  @default(false)
 }
 ```
@@ -184,30 +199,35 @@ Then in `adminuser.ts`:
 
 ## Allow Specific Users to Skip Two-Factor Authentication Setup
 
-By default, all users are required to setup Two-Factor Authentication if it is enabled.
+By default, all users are required to setup Two-Factor Authentication if it is enabled (enforced).
 
-If you want to allow specific users to **skip** the 2FA setup, you can use the `usersFilterToAllowSkipSetup` option:
+If you want to allow specific users to **skip** the 2FA setup (but still suggest it as optional possibility), you can use the `usersFilterToAllowSkipSetup` option:
 
 ```ts title='./adminuser.ts'
 ...
 plugins: [
-        new TwoFactorsAuthPlugin ({
-          twoFaSecretFieldName: 'secret2fa',
-          ...
-        //diff-add
-          usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-            //diff-add
-            // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
-            //diff-add
-            return (['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
-            //diff-add
-          },
-        }),
+  new TwoFactorsAuthPlugin ({
+    twoFaSecretFieldName: 'secret2fa',
+    ...
+  //diff-add
+    usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
+      //diff-add
+      // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
+      //diff-add
+      return (['adminforth', 'adminguest'].includes(adminUser.dbUser.email));
+      //diff-add
+    },
+  }),
 ],
 ...
 ```
 
-## Request 2FA on custom Actions
+So such users will have suggestion to setup 2FA, but will be able to skip it with "Skip for now" button.
+
+
+## Step-Up MFA (Two-Factor re-authentication on critical operations)
+
+### Request 2FA on custom Actions
 
 You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
@@ -225,15 +245,18 @@ To do it, first, create frontend custom component which wraps and intercepts cli
   const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
 
   async function onClick() {
-    if (props.disabled) return;
+    if (props.disabled) {
+      return;
+    }
   
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+
     emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
   }
 </script>
 ```
 
-Now we need to use verification result  which we got from user on frontend, inside of backend action handler and verify that it is valid (and not expired):
+Now we need to use verification result which we got from user on frontend, inside of backend action handler and verify that it is valid (and not expired):
 
 ```ts title='/adminuser.ts'
 options: {
@@ -303,7 +326,7 @@ options: {
 }
 ```
 
-## Request 2FA for create/edit (secure save gating)
+### Request 2FA for create/edit (secure save gating)
 
 To protect create and edit operations, collect the result of the 2FA modal on the frontend and send it along with the save payload. The server must verify it before writing changes.
 
@@ -371,7 +394,7 @@ This approach ensures 2FA cannot be bypassed by calling the API directly:
 - The client collects verification via the modal and forwards it under `meta.confirmationResult`.
 - The server validates it in `beforeSave` with access to `extra.cookies` and the `adminUser`.
 
-## Request 2FA from custom components
+### Request 2FA from custom components
 
 Imagine you have some button which does some API call
 
@@ -451,7 +474,7 @@ async function callAdminAPI() {
 
 ```
 
-And oin API call we need to verify it:
+And on API call we need to verify it:
 
 
 ```ts
@@ -506,6 +529,30 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
 );
 ```
 
+### Step-Up Authentication Grace Period
+
+> 💡** Note ** this feature is now in development and might be not yet available.
+
+By default, step-up authentication is required every time the user performs a critical operation.
+
+While it might be nessesary for high-security applications, it can be inconvenient for users who perform multiple critical actions in a short period. To fix the issue (by lowering security a bit), you can enable grace period between step-up authentication requests:
+
+
+```ts title='./adminuser.ts'
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+      ...
+      //diff-add
+      stepUpMfaGracePeriodSeconds: 300, // 5 minutes grace period
+      ...
+    }),
+```
+
+This configuration still remembers user browser fingerprint and IP address, and if at least one of them changes, it will ask for 2FA again, ignoring grace period. 
+
+
+Any popups asking for 2FA would be automatically resolved during grace period without user interaction if both browser fingerprint and IP address are the same as during last successful 2FA and time since last 2FA is less than grace period.
+
 
 ## Custom label prefix in authenticator app
 
@@ -522,7 +569,7 @@ If you want to have custom label prefix for some reason:
   ],
 ```
 
-## Passkeys setup
+## Passkeys setup (WebAuthn) alongside TOTP
 
 If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
 
