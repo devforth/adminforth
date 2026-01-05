@@ -575,7 +575,7 @@ export default class ConfigValidator implements IConfigValidator {
         }
 
         // check suggestOnCreate types
-        if (inCol.suggestOnCreate !== undefined) {
+        if (inCol.suggestOnCreate !== undefined && typeof inCol.suggestOnCreate !== 'function') {
           if (!col.showIn.create) {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" suggestOnCreate is present, while column is hidden on create page`);
           }

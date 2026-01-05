@@ -524,7 +524,7 @@ To do this add avatar column to the user resource:
     role          String
     created_at    DateTime
     //diff-add
-    avatar        ?String
+    avatar        String?
   }
 ```
 
