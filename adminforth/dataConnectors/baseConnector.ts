@@ -233,10 +233,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     // Float
     if (field.type === AdminForthDataTypes.FLOAT) {
       if (value === "" || value === null) return this.setFieldValue(field, null);
-      const number =
-        typeof value === "number"
-          ? value
-          : (typeof value === "object" && value !== null ? (value as any).valueOf() : NaN);
+      let number: any;
+      if (typeof value === "number") {
+        number = value;
+      } else if (typeof value === "object" && value !== null) {
+        number = (value as any).valueOf();
+      } else {
+        number = NaN;
+      }
 
       if (typeof number !== "number" || !Number.isFinite(number)) {
         throw new Error(

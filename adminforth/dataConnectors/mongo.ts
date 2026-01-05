@@ -266,7 +266,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 return { $expr: { [mongoExprOp]: [left, right] } };
             }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
-            if (column && [AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
+            if ([AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
             }
             return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
