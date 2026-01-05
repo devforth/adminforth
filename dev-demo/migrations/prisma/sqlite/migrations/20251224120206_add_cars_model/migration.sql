@@ -2,7 +2,7 @@
 CREATE TABLE "cars" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "model" TEXT NOT NULL,
-    "price" REAL NOT NULL,
+    "price" DECIMAL(18,2) NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "engine_type" TEXT,
     "engine_power" INTEGER,

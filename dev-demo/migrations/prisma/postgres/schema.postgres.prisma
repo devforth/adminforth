@@ -10,7 +10,7 @@ datasource mysql_db {
 model cars {
   id             String @id
   model          String 
-  price          Float
+  price          Decimal @mysql_db.Decimal(18, 2)
   created_at     DateTime @default(now())
 
   engine_type    String?
