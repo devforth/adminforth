@@ -119,7 +119,7 @@
       :adminUser="coreStore.adminUser"
     />
     <ResourceListTableVirtual
-      v-if="isVirtualScrollEnabled"
+      v-if="isVirtualScrollEnabled && !coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -143,6 +143,11 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
@@ -152,7 +157,7 @@
     />
 
     <ResourceListTable
-      v-else
+      v-else-if="!coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -176,6 +181,11 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"

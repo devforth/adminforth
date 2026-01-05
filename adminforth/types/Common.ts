@@ -503,6 +503,7 @@ export interface AdminForthResourceInputCommon {
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           tableRowReplace?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
