@@ -469,6 +469,26 @@ Notes and tips:
 - Requirements:
   - Required `<tr></tr>` structure around `<slot />`
 
+## List table three dots menu injection
+
+`customActionIconsThreeDotsMenuItems` allows to inject component inside three dots menu for each recod in list table.
+
+```ts
+  options: {
+    pageInjections: {
+      list: {
+        customActionIconsThreeDotsMenuItems: {
+          file: '@@/ApartRowRenderer.vue',
+          meta: {
+            // You can pass any meta your component may read
+          }
+        }
+      }
+    }
+  }
+```
+
+
 ## List table beforeActionButtons
 
 `beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
