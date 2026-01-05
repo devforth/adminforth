@@ -455,7 +455,7 @@ export interface IAdminForthPlugin {
    * @param adminforth Instance of IAdminForth
    * @param resourceConfig Resource configuration object which will be modified by plugin
    */
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: IAdminForthPlugin, resource: AdminForthResource}[]): void;
   componentPath(componentFile: string): string;
 
   /**
@@ -1102,7 +1102,7 @@ export interface AdminForthInputConfig {
       /**
        * Add custom page to the settings page
        */
-      userMenuSettingsPages: {
+      userMenuSettingsPages?: {
         icon?: string,
         pageLabel: string,
         slug?: string,

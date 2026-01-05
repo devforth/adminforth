@@ -169,8 +169,8 @@ export const useCoreStore = defineStore('core', () => {
 
   }
 
-  async function fetchResourceFull({ resourceId }: { resourceId: string }) {
-    if (resourceColumnsId.value === resourceId && resource.value) {
+  async function fetchResourceFull({ resourceId, forceFetch }: { resourceId: string, forceFetch?: boolean }) {
+    if (resourceColumnsId.value === resourceId && resource.value && !forceFetch) {
       // already fetched
       return;
     }
