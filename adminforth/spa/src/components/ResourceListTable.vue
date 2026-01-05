@@ -331,13 +331,10 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 import { getIcon } from '@/utils';
 import {
-  IconInboxOutline,
-} from '@iconify-prerendered/vue-flowbite';
-
-import {
   IconEyeSolid,
   IconPenSolid,
   IconTrashBinSolid,
+  IconInboxOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
