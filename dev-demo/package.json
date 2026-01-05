@@ -7,25 +7,17 @@
   "scripts": {
     "_env:dev": "dotenvx run -f .env.local -f .env --overload --",
     "start": "npm run _env:dev -- tsx watch index.ts",
-
     "makemigration:sqlite": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./migrations/prisma/sqlite/schema.prisma",
     "migrate:sqlite": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./migrations/prisma/sqlite/schema.prisma",
-
     "makemigration:mysql": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./migrations/prisma/mysql/schema.mysql.prisma",
     "migrate:mysql": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./migrations/prisma/mysql/schema.mysql.prisma",
-
     "makemigration:postgres": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./migrations/prisma/postgres/schema.postgres.prisma",
     "migrate:postgres": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./migrations/prisma/postgres/schema.postgres.prisma",
-
     "migrate:clickhouse": "npx clickhouse-migrations migrate --host=http://localhost:8124/demo --user=demo --password=demo --db=demo --migrations-home=./migrations/clickhouse_migrations",
-
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
     "install-adapters": "cd ../adapters && bash install-adapters.sh",
-
     "build-adminforth": "cd ../adminforth && npm ci && npm run build && npm link",
-
     "migrate:all": "npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse",
-    
     "setup-dev-demo": "npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./run_inventory.sh"
   },
   "author": "",
@@ -34,6 +26,7 @@
     "@prisma/client": "^5.22.0",
     "better-sqlite3": "^10.1.0",
     "clickhouse-migrations": "^1.1.1",
+    "decimal.js": "^10.6.0",
     "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
