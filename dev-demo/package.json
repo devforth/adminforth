@@ -22,9 +22,11 @@
     "install-plugins": "cd ../plugins && bash install-plugins.sh",
     "install-adapters": "cd ../adapters && bash install-adapters.sh",
 
-    "build-adminforth": "cd ../ && npm ci && npm run build ",
+    "build-adminforth": "cd ../adminforth && npm ci && npm run build ",
+
+    "migrate:all": "npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse",
     
-    "setup-dev-demo": "npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && bash ./run_inventory.sh && npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse"
+    "setup-dev-demo": "npm run build-adminforth && npm link adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && bash ./run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
