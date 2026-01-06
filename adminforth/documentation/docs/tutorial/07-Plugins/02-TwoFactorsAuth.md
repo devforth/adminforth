@@ -328,40 +328,43 @@ options: {
 
 ### Request 2FA for create/edit (secure save gating)
 
-To protect create and edit operations, collect the result of the 2FA modal on the frontend and send it along with the save payload. The server must verify it before writing changes.
+To protect create and edit operations, use a Save Interceptor injected on the page to gate the save with 2FA, and forward the result to the backend for verification. This avoids wrapping the Save button and works with the default UI.
 
-Frontend (custom Save button example):
+Frontend (Save Interceptor component injected via pageInjections):
 
-```vue
-<template>
-  <button :disabled="disabled || saving || !isValid" @click="onClick">Save</button>
-  <!-- The plugin injects TwoFAModal globally, exposing window.adminforthTwoFaModal -->
-</template>
+```vue title='/custom/SaveInterceptor.vue'
+<script setup>
+import { useAdminforth } from '@/adminforth';
 
-<script setup lang="ts">
-const props = defineProps<{
-  disabled: boolean;
-  saving: boolean;
-  isValid: boolean;
-  // saveRecord accepts optional meta with confirmationResult
-  saveRecord: (opts?: { confirmationResult?: any }) => Promise<void>;
-  meta?: any;
-}>();
+const { registerSaveInterceptor } = useAdminforth();
 
-async function onClick() {
-  if (props.disabled || props.saving || !props.isValid) return;
+registerSaveInterceptor(async ({ action, values, resource }) => {
+  // action is 'create' or 'edit'
   const modal = (window as any)?.adminforthTwoFaModal;
   if (modal?.get2FaConfirmationResult) {
-    const confirmationResult = await modal.get2FaConfirmationResult(undefined, props.meta?.twoFaTitle || 'Confirm to save changes');
-    await props.saveRecord({ confirmationResult });
-  } else {
-    const code = window.prompt('Enter your 2FA code to proceed');
-    if (!code) return;
-    await props.saveRecord({ confirmationResult: { mode: 'totp', result: code } });
+    const confirmationResult = await modal.get2FaConfirmationResult(undefined, 'Confirm to save changes');
+    if (!confirmationResult) return { ok: false, error: '2FA cancelled' };
+    // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
+    return { ok: true, extra: { confirmationResult } };
+  }
+  return { ok: false, error: '2FA code is required' };
+});
+</script>
+
+<template></template>
+```
+
+Resource injection (edit/create):
+
+```ts
+options: {
+  pageInjections: {
+    edit: { bottom: [{ file: '@@/SaveInterceptor.vue' }] },
+    create: { bottom: [{ file: '@@/SaveInterceptor.vue' }] },
   }
 }
-</script>
 ```
+> Note: You can use all injection, not only bottom
 
 Backend (resource hook verification):
 
@@ -372,17 +375,37 @@ hooks: {
     beforeSave: async ({ adminUser, adminforth, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
       const confirmationResult = extra?.body?.meta?.confirmationResult;
+
       if (!confirmationResult) {
         return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
       }
-      const cookies = extra?.cookies;
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
-        cookies,
+        cookies: extra?.cookies,
       });
-      if (!('ok' in verifyRes) || verifyRes.ok !== true) {
-        return { ok: false, error: verifyRes?.error || 'Two-factor authentication failed' };
+      if (!verifyRes || 'error' in verifyRes) {
+        return { ok: false, error: verifyRes?.error || '2FA verification failed' };
+      }
+      return { ok: true };
+    },
+  },
+  create: {
+    beforeSave: async ({ adminUser, adminforth, extra }) => {
+      const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
+      const confirmationResult = extra?.body?.meta?.confirmationResult;
+
+      if (!confirmationResult) {
+        return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
+      }
+
+      const verifyRes = await t2fa.verify(confirmationResult, {
+        adminUser,
+        userPk: adminUser.pk,
+        cookies: extra?.cookies,
+      });
+      if (!verifyRes || 'error' in verifyRes) {
+        return { ok: false, error: verifyRes?.error || '2FA verification failed' };
       }
       return { ok: true };
     },
@@ -391,7 +414,7 @@ hooks: {
 ```
 
 This approach ensures 2FA cannot be bypassed by calling the API directly:
-- The client collects verification via the modal and forwards it under `meta.confirmationResult`.
+- The client collects verification via the Save Interceptor and forwards it under `meta.confirmationResult`.
 - The server validates it in `beforeSave` with access to `extra.cookies` and the `adminUser`.
 
 ### Request 2FA from custom components
