@@ -327,14 +327,6 @@ export default {
 
 
   *********************************************************************************/
-  hooks: {
-    edit: {
-      beforeSave: async ({ adminUser, adminforth, extra }) => verifyTwoFa({ adminUser, adminforth, extra }),
-    },
-    create: {
-      beforeSave: async ({ adminUser, adminforth, extra }) => verifyTwoFa({ adminUser, adminforth, extra }),
-    },
-  },
   options: {
     listPageSize: 12,
     allowedActions: {
@@ -342,20 +334,6 @@ export default {
       delete: true,
       show: true,
       filter: true,
-    },
-    pageInjections: {
-      edit: {
-        bottom: [
-          { file: '@@/SaveInterceptor.vue' },
-          { file: '@@/SaveInterceptorExtra.vue' },
-        ],
-      },
-      create: {
-        bottom: [
-          { file: '@@/SaveInterceptor.vue' },
-          { file: '@@/SaveInterceptorExtra.vue' },
-        ],
-      },
     },
     actions: [
       {
@@ -409,21 +387,3 @@ export default {
     ],
   },
 } as AdminForthResourceInput;
-
-async function verifyTwoFa({ adminUser, adminforth, extra }: { adminUser: any, adminforth: any, extra: any }) {
-  const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
-  const confirmationResult = extra?.body?.meta?.confirmationResult;
-
-  if (!confirmationResult) {
-    return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
-  }
-  const verifyRes = await t2fa.verify(confirmationResult, {
-    adminUser,
-    userPk: adminUser.pk,
-    cookies: extra?.cookies,
-  });
-  if (!verifyRes || 'error' in verifyRes) {
-    return { ok: false, error: verifyRes?.error || '2FA verification failed' };
-  }
-  return { ok: true };
-}

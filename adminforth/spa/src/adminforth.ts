@@ -98,7 +98,7 @@ class FrontendAPI implements FrontendAPIInterface {
     this.saveInterceptors[rid].push(handler);
   }
 
-  async runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: any }>{
+  async runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }> {
     const list = this.saveInterceptors[params.resourceId] || [];
     const aggregatedExtra: Record<string, any> = {};
     for (const fn of list) {
@@ -227,7 +227,7 @@ export function initFrontedAPI() {
 export function useAdminforth() {
   const api = frontendAPI as FrontendAPI;
   return {
-    registerSaveInterceptor: (handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => Promise<{ ok: boolean; error?: string | null; }>, resourceId?: string) => api.registerSaveInterceptor(handler, resourceId),
+    registerSaveInterceptor: (handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>) => api.registerSaveInterceptor(handler),
     runSaveInterceptors: (params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => api.runSaveInterceptors(params),
     clearSaveInterceptors: (resourceId?: string) => api.clearSaveInterceptors(resourceId),
     api,

@@ -176,7 +176,7 @@ async function saveRecord() {
     if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
     return;
   }
-  const interceptorConfirmationResult = interceptorsResult?.extra?.confirmationResult;
+  const interceptorConfirmationResult = interceptorsResult.extra?.confirmationResult;
   const updates: Record<string, any> = {};
   for (const key in record.value) {
     let columnIsUpdated = false;

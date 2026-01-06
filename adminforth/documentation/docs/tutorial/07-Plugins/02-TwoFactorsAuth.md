@@ -343,11 +343,13 @@ registerSaveInterceptor(async ({ action, values, resource }) => {
   const modal = (window as any)?.adminforthTwoFaModal;
   if (modal?.get2FaConfirmationResult) {
     const confirmationResult = await modal.get2FaConfirmationResult(undefined, 'Confirm to save changes');
-    if (!confirmationResult) return { ok: false, error: '2FA cancelled' };
+    if (!confirmationResult) {
+      return { ok: false, error: 'Two-factor authentication cancelled' };
+    }
     // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
     return { ok: true, extra: { confirmationResult } };
   }
-  return { ok: false, error: '2FA code is required' };
+  return { ok: false, error: 'Two-factor authentication code is required' };
 });
 </script>
 
@@ -364,7 +366,7 @@ options: {
   }
 }
 ```
-> Note: You can use all injection, not only bottom
+> Note: You can use all injections, not only bottom
 
 Backend (resource hook verification):
 
@@ -374,18 +376,22 @@ hooks: {
   edit: {
     beforeSave: async ({ adminUser, adminforth, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
-      const confirmationResult = extra?.body?.meta?.confirmationResult;
+      if (!t2fa) {
+        return { ok: false, error: 'TwoFactorsAuthPlugin is not configured' };
+      }
 
+      const confirmationResult = extra?.body?.meta?.confirmationResult;
       if (!confirmationResult) {
         return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
       }
+
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
         cookies: extra?.cookies,
       });
       if (!verifyRes || 'error' in verifyRes) {
-        return { ok: false, error: verifyRes?.error || '2FA verification failed' };
+        return { ok: false, error: verifyRes?.error || 'Two-factor verification failed' };
       }
       return { ok: true };
     },
@@ -393,8 +399,11 @@ hooks: {
   create: {
     beforeSave: async ({ adminUser, adminforth, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
-      const confirmationResult = extra?.body?.meta?.confirmationResult;
+      if (!t2fa) {
+        return { ok: false, error: 'TwoFactorsAuthPlugin is not configured' };
+      }
 
+      const confirmationResult = extra?.body?.meta?.confirmationResult;
       if (!confirmationResult) {
         return { ok: false, error: 'Two-factor authentication confirmation result is missing' };
       }
@@ -405,7 +414,7 @@ hooks: {
         cookies: extra?.cookies,
       });
       if (!verifyRes || 'error' in verifyRes) {
-        return { ok: false, error: verifyRes?.error || '2FA verification failed' };
+        return { ok: false, error: verifyRes?.error || 'Two-factor verification failed' };
       }
       return { ok: true };
     },
