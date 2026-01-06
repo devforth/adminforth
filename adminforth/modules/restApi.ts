@@ -1448,7 +1448,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body, adminUser, tr }) => {
+        handler: async ({ body, adminUser, tr, response }) => {
             const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
@@ -1473,13 +1473,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
               }
             }
-            const response = await action.action({selectedIds: recordIds, adminUser, resource, tr});
+            const bulkActionResponse = await action.action({selectedIds: recordIds, adminUser, resource, response, tr});
             
             return {
               actionId,
               recordIds,
               resourceId,
-              ...response
+              ...bulkActionResponse
             }
         }
     })
