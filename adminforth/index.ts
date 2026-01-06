@@ -20,6 +20,7 @@ import {
   HttpExtra,
   BeforeCreateSaveFunction,
   AdminForthInputConfig,
+  IAdminForthHttpResponse,
 } from './types/Back.js';
 
 import {
@@ -538,8 +539,8 @@ class AdminForth implements IAdminForth {
   }
 
   async createResourceRecord(
-    { resource, record, adminUser, extra }: 
-    { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
+    { resource, record, adminUser, extra, response }: 
+    { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra, response: IAdminForthHttpResponse }
   ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }> {
 
     const err = this.validateRecordValues(resource, record, 'create');
@@ -557,6 +558,7 @@ class AdminForth implements IAdminForth {
         record, 
         adminUser,
         adminforth: this,
+        response, 
         extra,
       });
       if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId))) {
@@ -602,6 +604,7 @@ class AdminForth implements IAdminForth {
         adminUser,
         adminforth: this,
         recordWithVirtualColumns,
+        response,
         extra,
       });
 
@@ -621,9 +624,9 @@ class AdminForth implements IAdminForth {
    * record is partial record with only changed fields
    */
   async updateResourceRecord(
-    { resource, recordId, record, oldRecord, adminUser, extra, updates }:
-    | { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
-    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
+    { resource, recordId, record, oldRecord, adminUser, response, extra, updates }:
+    | { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }> {
     const dataToUse = updates || record;
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
@@ -651,6 +654,7 @@ class AdminForth implements IAdminForth {
         oldRecord,
         adminUser,
         adminforth: this,
+        response,
         extra,
       });
       if (!resp || typeof resp.ok !== 'boolean') {
@@ -695,6 +699,7 @@ class AdminForth implements IAdminForth {
         oldRecord,
         recordId,
         adminforth: this,
+        response,
         extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
@@ -709,8 +714,8 @@ class AdminForth implements IAdminForth {
   }
 
   async deleteResourceRecord(
-    { resource, recordId, adminUser, record, extra }:
-    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, extra?: HttpExtra }
+    { resource, recordId, adminUser, record, response, extra }:
+    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, response: IAdminForthHttpResponse, extra?: HttpExtra }
   ): Promise<{ error?: string }> {
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
@@ -720,6 +725,7 @@ class AdminForth implements IAdminForth {
         adminUser,
         recordId,
         adminforth: this,
+        response,
         extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
@@ -742,6 +748,7 @@ class AdminForth implements IAdminForth {
         adminUser,
         recordId,
         adminforth: this,
+        response,
         extra,
       });
       if (!resp || (!resp.ok && !resp.error)) {
