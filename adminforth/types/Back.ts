@@ -862,6 +862,7 @@ export interface AdminForthActionInput {
       resource: AdminForthResource;
       recordId: string;
       adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
       extra?: HttpExtra;
       tr: Function;
   }) => Promise<{
