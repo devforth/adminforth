@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { Decimal128 } from 'bson';
+import { Decimal128, Double } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -9,6 +9,24 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
 };
+function normalizeMongoValue(v: any) {
+  if (v == null) {
+    return v;
+  }
+  if (v instanceof Decimal128) {
+    return v.toString();
+  }
+  if (v instanceof Double) {
+    return v.valueOf();
+  }
+  if (typeof v === "object" && v.$numberDecimal) {
+    return String(v.$numberDecimal);
+  }
+  if (typeof v === "object" && v.$numberDouble) {
+    return Number(v.$numberDouble);
+  }
+  return v;
+}
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -122,30 +140,30 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         }
       
         return Array.from(fieldTypes.entries()).map(([name, types]) => {
-          const primaryKey = name === '_id';
-      
-          const priority = ['datetime', 'date', 'integer', 'float', 'boolean', 'json', 'decimal',  'string'];
-      
-          const matched = priority.find(t => types.has(t)) || 'string';
-      
-          const typeMap: Record<string, string> = {
-            string: 'STRING',
-            integer: 'INTEGER',
-            float: 'FLOAT',
-            boolean: 'BOOLEAN',
-            datetime: 'DATETIME',
-            date: 'DATE',
-            json: 'JSON',
-            decimal: 'DECIMAL',
-          };
-          return {
-            name,
-            type: typeMap[matched] ?? 'STRING',
-            ...(primaryKey ? { isPrimaryKey: true } : {}),
-            sampleValue: sampleValues.get(name),
-          };
+            const primaryKey = name === '_id';
+        
+            const priority = ['datetime', 'date', 'decimal', 'integer', 'float', 'boolean', 'json', 'string'];
+        
+            const matched = priority.find(t => types.has(t)) || 'string';
+        
+            const typeMap: Record<string, AdminForthDataTypes> = {
+                string: AdminForthDataTypes.STRING,
+                integer: AdminForthDataTypes.INTEGER,
+                float: AdminForthDataTypes.FLOAT,
+                boolean: AdminForthDataTypes.BOOLEAN,
+                datetime: AdminForthDataTypes.DATETIME,
+                date: AdminForthDataTypes.DATE,
+                json: AdminForthDataTypes.JSON,
+                decimal: AdminForthDataTypes.DECIMAL,
+            };
+            return {
+                name,
+                type: typeMap[matched] ?? AdminForthDataTypes.STRING,
+                ...(primaryKey ? { isPrimaryKey: true } : {}),
+                sampleValue: sampleValues.get(name),
+            };
         });
-      }
+    }
       
     
     async discoverFields(resource) {
@@ -200,20 +218,37 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          return dayjs(value).toDate();
-          
-        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-            return value === null ? null : (value ? true : false);
-        } else if (field.type == AdminForthDataTypes.DECIMAL) {
-            if (value === null || value === undefined) {
+        if (value === undefined) return undefined;
+        if (value === null) return null;
+
+        if (field.type === AdminForthDataTypes.DATETIME) {
+            if (value === "" || value === null) {
                 return null;
             }
-            return Decimal128.fromString(value?.toString());
+            return dayjs(value).isValid() ? dayjs(value).toDate() : null;
         }
+
+        if (field.type === AdminForthDataTypes.INTEGER) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return Number.isFinite(value) ? Math.trunc(value) : null;
+        }
+
+        if (field.type === AdminForthDataTypes.FLOAT) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return Number.isFinite(value) ? value : null;
+        }
+
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return value.toString();
+        }
+
         return value;
     }
 
@@ -251,7 +286,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 return { $expr: { [mongoExprOp]: [left, right] } };
             }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
-            if (['integer', 'decimal', 'float'].includes(column.type)) {
+            if ([AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
             }
             return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
@@ -313,13 +348,20 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const collection = this.client.db().collection(tableName);
-        const result = {};
+        const result: Record<string, { min: any; max: any }> = {};
+
         for (const column of columns) {
-            result[column] = await collection
-                .aggregate([
-                    { $group: { _id: null, min: { $min: `$${column}` }, max: { $max: `$${column}` } } },
-                ])
-                .toArray();
+            const [doc] = await collection
+            .aggregate([
+                { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
+                { $project: { _id: 0, min: 1, max: 1 } },
+            ])
+            .toArray();
+
+            result[column.name] = {
+            min: normalizeMongoValue(doc?.min),
+            max: normalizeMongoValue(doc?.max),
+            };
         }
         return result;
     }
