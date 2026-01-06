@@ -249,7 +249,7 @@ export default class ConfigValidator implements IConfigValidator {
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-      action: async ({ selectedIds, adminUser }) => {
+      action: async ({ selectedIds, adminUser, response }) => {
         const connector = this.adminforth.connectors[res.dataSource];
 
         // for now if at least one error, stop and return error
@@ -267,6 +267,7 @@ export default class ConfigValidator implements IConfigValidator {
                     resource: res as AdminForthResource, 
                     record, 
                     adminUser,
+                    response,
                     adminforth: this.adminforth
                   }); 
                   if (!error && resp.error) {
@@ -290,6 +291,7 @@ export default class ConfigValidator implements IConfigValidator {
                     record, 
                     adminUser,
                     recordId: recordId,
+                    response,
                     adminforth: this.adminforth,
                   }); 
                 }
