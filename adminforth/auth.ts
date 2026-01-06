@@ -65,9 +65,8 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['client-ip'] || 
        headersLower['client-address'] || 
        headersLower['client'] || 
-       headersLower['x-host'] || 
-       headersLower['host'] || 
-       'unknown';
+       headersLower['x-host'] ||
+       null;
     }
   }
 
