@@ -848,6 +848,7 @@ export interface AdminForthActionInput {
   name: string;
   showIn?: {
       list?: boolean,
+      listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
   };
@@ -861,6 +862,7 @@ export interface AdminForthActionInput {
       resource: AdminForthResource;
       recordId: string;
       adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
       extra?: HttpExtra;
       tr: Function;
   }) => Promise<{
@@ -1358,6 +1360,7 @@ export type AllowedActions = {
  */
 export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
+  baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.

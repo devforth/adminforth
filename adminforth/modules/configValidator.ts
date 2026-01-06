@@ -37,7 +37,7 @@ export default class ConfigValidator implements IConfigValidator {
 
   private static readonly LOGIN_INJECTION_KEYS = ['underInputs', 'underLoginButton', 'panelHeader'];
   private static readonly GLOBAL_INJECTION_KEYS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
-  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
+  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems'];
 
   constructor(private adminforth: IAdminForth, private inputConfig: AdminForthInputConfig) {
     this.adminforth = adminforth;
@@ -414,11 +414,13 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.showIn) {
         action.showIn = {
           list: true,
+          listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
         action.showIn.list = action.showIn.list ?? true;
+        action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
@@ -876,7 +878,7 @@ export default class ConfigValidator implements IConfigValidator {
       // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
       const allowedInjectionsByPage: Record<string, string[]> = {
-        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart', 'tableRowReplace'],
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems', 'tableBodyStart', 'tableRowReplace'],
         show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
         edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
         create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
