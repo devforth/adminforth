@@ -186,7 +186,7 @@ async function saveRecord() {
     if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
     return;
   }
-  const interceptorConfirmationResult = interceptorsResult?.extra?.confirmationResult;
+  const interceptorConfirmationResult = interceptorsResult.extra?.confirmationResult;
   const response = await callAdminForthApi({
     method: 'POST',
     path: `/create_record`,
