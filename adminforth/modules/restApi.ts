@@ -1162,7 +1162,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/create_record',
-        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
@@ -1276,14 +1276,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            const response = await this.adminforth.createResourceRecord({ resource, record, adminUser, extra: { body, query, headers, cookies, requestUrl } });
-            if (response.error) {
-              return { error: response.error, ok: false, newRecordId: response.newRecordId };
+            const createRecordResponse = await this.adminforth.createResourceRecord({ resource, record, adminUser, response, extra: { body, query, headers, cookies, requestUrl } });
+            if (createRecordResponse.error) {
+              return { error: createRecordResponse.error, ok: false, newRecordId: createRecordResponse.newRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
             return {
-              newRecordId: response.createdRecord[connector.getPrimaryKey(resource)],
+              newRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
               ok: true
             }
         }
@@ -1291,7 +1291,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/update_record',
-        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
@@ -1396,7 +1396,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
             
-            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, extra: { body, query, headers, cookies, requestUrl} });
+            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, response, extra: { body, query, headers, cookies, requestUrl} });
             if (error) {
               return { error };
             }
@@ -1409,7 +1409,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/delete_record',
-        handler: async ({ body, adminUser, query, headers, cookies, requestUrl }) => {
+        handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
@@ -1435,7 +1435,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'], extra: { body, query, headers, cookies, requestUrl } });
+            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'], response, extra: { body, query, headers, cookies, requestUrl } });
             if (deleteError) {
               return { error: deleteError };
             }
