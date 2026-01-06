@@ -1487,7 +1487,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/start_custom_action',
-      handler: async ({ body, adminUser, tr, cookies, response }) => {
+      handler: async ({ body, adminUser, tr, cookies, response, headers }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
@@ -1519,7 +1519,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             redirectUrl: action.url
           }
         }
-        const actionResponse = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, response, extra: {...extra, cookies: cookies} });
+
+        const actionResponse = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, response, extra: {...extra, cookies: cookies, headers: headers} });
         
         return {
           actionId,
