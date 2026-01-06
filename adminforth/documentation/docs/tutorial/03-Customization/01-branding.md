@@ -54,6 +54,18 @@ showBrandNameInSidebar: false,
 
 `brandName` will still be used in the other places e.g. login form.
 
+## Removing brand logo from sidebar
+
+If you want to hide the logo image in the sidebar while keeping the brand name text (or vice versa), disable the logo with:
+
+```ts title='./index.ts'
+brandName: 'My App',
+//diff-add
+showBrandLogoInSidebar: false,
+```
+
+By default, the logo is shown when available. This flag controls the sidebar logo only and does not affect the login page.
+
 ## Theming
 
 AdminForth uses TailwindCSS for styling. You are able to customize the look of the application by changing the TailwindCSS configuration.
@@ -94,6 +106,49 @@ const admin = new AdminForth({
 Here is how it looks:
 ![AdminForth Themes](image-10.png)
 
+## Single theme
+
+If you want to enforce a consistent theme and disable the theme switcher, you can configure AdminForth to use only one theme variant. 
+
+```ts title='./index.ts'
+
+const admin = new AdminForth({
+  ...
+  customization: {
+  //diff-add
+    singleTheme: "light",
+    styles: {
+      ...
+      }
+    } 
+  },
+  ...
+});
+```
+
+## Icon only sidebar 
+
+AdminForth supports a collapsible sidebar that can be toggled between a full-width view (showing labels) and an icon-only view (showing only icons).
+
+```ts title='./index.ts'
+
+const admin = new AdminForth({
+  ...
+  customization: {
+  //diff-add
+    iconOnlySidebar: {
+  //diff-add
+      enabled: true,  // Optional: Enable the collapsible icon-only sidebar feature
+  //diff-add
+      logo: '@@/logo.svg',  // Optional: Custom logo to display in icon-only mode
+  //diff-add
+      expandedSidebarWidth: '18.5rem', // Optional: sets the expanded sidebar width, defaults to 16.5rem
+  //diff-add
+    }, 
+  },
+  ...
+});
+```
 
 ## Square vs rounded buttons?
 
@@ -150,3 +205,51 @@ auth: {
 
 - `over` - image will be over the whole login page with cover mode
 - `1/2`(default), `3/4`, `2/5`, `3/5` etc. - image will be in the left side of the login page with cover mode
+
+### Disabling background blend mode
+
+When using `loginBackgroundPosition: 'over'`, AdminForth applies a background blend mode by default to ensure text readability over the background image. If you want to disable this blend mode and display the background image without any overlay effects, you can add:
+
+```ts title='./index.ts'
+auth: {
+  ...
+  loginBackgroundImage: '@@/photo-1516501312919-d0cb0b7b60b8.jpeg',
+  loginBackgroundPosition: 'over',
+//diff-add
+  removeBackgroundBlendMode: true,
+}
+
+```
+
+## Custom items in html head
+
+If you want to add custom elements to the HTML head, you can define them in the configuration:
+
+```ts title='./index.ts'
+customization: {
+  customHeadItems: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://example.com/custom.css'
+      }
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        src: 'https://example.com/custom.js',
+        defer: true
+      }
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'theme-color',
+        content: ' #000000'
+      }
+    }
+  ]
+}
+
+```

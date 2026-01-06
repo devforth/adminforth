@@ -31,7 +31,8 @@ Here's how to add a custom action:
 
         // Configure where the action appears
         showIn: {
-          list: true,              // Show in list view
+          list: false,             // Show in list view
+          listThreeDotsMenu: true, // Show in three dots menu in list view
           showButton: true,        // Show as a button
           showThreeDotsMenu: true, // Show in three-dots menu
         }
@@ -49,6 +50,7 @@ Here's how to add a custom action:
 - `action`: Handler function that executes when action is triggered
 - `showIn`: Controls where the action appears
   - `list`: whether to show in list view
+  - `listThreeDotsMenu`: whether to show in three dots menu in the list view
   - `showButton`: whether to show as a button on show view
   - `showThreeDotsMenu`: when to show in the three-dots menu of show view
 
@@ -85,7 +87,7 @@ Return:
 - A string with an error message to explain why access was denied
 
 Here is how it looks:
-![alt text](<Custom bulk actions.png>)
+![alt text](<Single record actions.png>)
 
 
 You might want to allow only certain users to perform your custom bulk action. 
@@ -95,6 +97,10 @@ To implement this limitation use `allowed`:
 If you want to prohibit the use of bulk action for user, you can do it this way:
 
 ```ts title="./resources/apartments.ts"
+import { admin } from '../index';
+
+....
+
 bulkActions: [
   {
     label: 'Mark as listed',
@@ -129,6 +135,7 @@ Instead of defining an `action` handler, you can specify a `url` that the user w
   url: '/resource/aparts',  // URL to redirect to
   showIn: {
     list: true,
+    listThreeDotsMenu: false,
     showButton: true,
     showThreeDotsMenu: true,
   } 
@@ -200,7 +207,7 @@ import { admin } from '../index';
 //diff-add
               await stmt.run(...selectedIds);
 //diff-add
-              return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
+              return { ok: true, successMessage: `Marked ${selectedIds.length} apartments as listed` };
 //diff-add
             },
 //diff-add
@@ -260,3 +267,127 @@ bulkActions: [
   }
 ],
 ```
+
+## Custom Component
+
+If you want to style an action's button/icon without changing its behavior, attach a custom UI wrapper via `customComponent`. 
+The file points to your SFC in the custom folder (alias `@@/`), and `meta` lets you pass lightweight styling options (e.g., border color, radius).
+
+Below we wrap a “Mark as listed” action (see the original example in [Custom bulk actions](#custom-bulk-actions)).
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    actions: [
+      {
+        name: 'Mark as listed',
+        icon: 'flowbite:eye-solid',
+        // UI wrapper for the built-in action button
+        //diff-add
+        customComponent: {
+          //diff-add
+          file: '@@/ActionBorder.vue',        // SFC path in your custom folder
+          //diff-add
+          meta: { color: '#94a3b8', radius: 10 }
+          //diff-add
+        },
+        showIn: { list: false, listThreeDotsMenu: true, showButton: true, showThreeDotsMenu: true },
+        action: async ({ recordId }) => {
+          await admin.resource('aparts').update(recordId, { listed: 1 });
+          return { ok: true, successMessage: 'Marked as listed' };
+        }
+      },
+    ]
+  }
+}
+```
+
+Use this minimal wrapper component to add a border/rounding around the default action UI while keeping the action logic intact. 
+Keep the `<slot />` (that's where AdminForth renders the default button) and emit `callAction` (optionally with a payload) to trigger the handler when the wrapper is clicked.
+
+```ts title="./custom/ActionBorder.vue"
+<template>
+  <!-- Keep the slot: AdminForth renders the default action button/icon here -->
+  <!-- Emit `callAction` (optionally with a payload) to trigger the action when the wrapper is clicked -->
+  <!-- Example: provide `meta.extra` to send custom data. In list views we merge with `row` so recordId context is kept. -->
+  <div :style="styleObj" @click="emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{
+  // meta can style the wrapper and optionally carry extra payload for the action
+  meta?: { color?: string; radius?: number; padding?: number; extra?: any };
+  // When used in list view, the table passes current row
+  row?: any;
+  // When used in show/edit views, the page passes current record
+  record?: any;
+}>();
+const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+
+const styleObj = computed(() => ({
+  display: 'inline-block',
+  border: `1px solid ${props.meta?.color ?? '#e5e7eb'}`,
+  borderRadius: (props.meta?.radius ?? 8) + 'px',
+  padding: (props.meta?.padding ?? 2) + 'px',
+}));
+</script>
+```
+
+### Pass dynamic values to the action
+
+You can pass arbitrary data from your custom UI wrapper to the backend action by emitting `callAction` with a payload. That payload will be available on the server under the `extra` argument of your action handler.
+
+Frontend examples:
+
+```vue title="./custom/ActionToggleListed.vue"
+<template>
+  <!-- Two buttons that pass different flags to the action -->
+  <button @click="emit('callAction', { asListed: true })" class="mr-2">Mark as listed</button>
+  <button @click="emit('callAction', { asListed: false })">Mark as unlisted</button>
+
+  <!-- Or keep the default slot button and wrap it: -->
+  <div @click="emit('callAction', { asListed: true })">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
+</script>
+```
+
+Backend handler: read the payload via `extra`.
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    actions: [
+      {
+        name: 'Toggle listed',
+        icon: 'flowbite:eye-solid',
+        showIn: { list: false, listThreeDotsMenu: false, showButton: true, showThreeDotsMenu: true },
+        // The payload from emit('callAction', { asListed: true|false }) arrives here as `extra`
+        customComponent: {
+          file: '@@/ActionToggleListed.vue'
+        },
+        action: async ({ recordId, extra }) => {
+          const asListed = extra?.asListed === true;
+          // Example update (use your own data layer):
+          await admin.resource('aparts').update(recordId, { listed: asListed });
+          return { ok: true, successMessage: `Set listed=${asListed}` };
+        }
+      }
+    ]
+  }
+}
+```
+
+Notes:
+- If you don’t emit a payload, the default behavior is used by the UI (e.g., in lists the current row context is used). When you do provide a payload, it will be forwarded to the backend as `extra` for your action handler.
+- You can combine default context with your own payload by merging before emitting, for example: `emit('callAction', { ...row, asListed: true })` if your component has access to the row object.

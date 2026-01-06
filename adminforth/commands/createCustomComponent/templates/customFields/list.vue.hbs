@@ -1,0 +1,24 @@
+<template>
+    <div
+        class="text-red-500"
+    >\{{ record[props.column.name] }}</div>
+</template> 
+
+<script setup lang="ts">
+
+    import type {
+        AdminForthResourceColumnCommon,
+        AdminForthResourceCommon,
+        AdminUser,
+    } from "@/types/Common";
+
+    const props = defineProps<{
+        column: AdminForthResourceColumnCommon;
+        record: any;
+        meta: any;
+        resource: AdminForthResourceCommon;
+        adminUser: AdminUser;
+    }>();
+
+</script>
+

@@ -16,6 +16,8 @@ export const useCoreStore = defineStore('core', () => {
   const record: Ref<any | null> = ref({});
   const resource: Ref<AdminForthResourceCommon | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
+  const isResourceFetching = ref(false);
+  const isInternetError = ref(false);
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -86,7 +88,9 @@ export const useCoreStore = defineStore('core', () => {
   }
   async function subscribeToMenuBadges() {
     const processItem = (mi: AdminForthConfigMenuItem) => {
-      if (mi.badge) {
+
+      // console.log('🔔 subscribeToMenuBadges', mi.badge, JSON.stringify(mi));
+      if (mi.badge !== undefined) {
         websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
           mi.badge = badge;
         });
@@ -116,7 +120,7 @@ export const useCoreStore = defineStore('core', () => {
         item.badge = badge;
       }
     });
-
+    websocket.unsubscribeAll();
     subscribeToMenuBadges();
 
   }
@@ -165,11 +169,12 @@ export const useCoreStore = defineStore('core', () => {
 
   }
 
-  async function fetchResourceFull({ resourceId }: { resourceId: string }) {
-    if (resourceColumnsId.value === resourceId && resource.value) {
+  async function fetchResourceFull({ resourceId, forceFetch }: { resourceId: string, forceFetch?: boolean }) {
+    if (resourceColumnsId.value === resourceId && resource.value && !forceFetch) {
       // already fetched
       return;
     }
+    isResourceFetching.value = true;
     resourceColumnsId.value = resourceId;
     resourceColumnsError.value = '';
     const res = await callAdminForthApi({
@@ -186,6 +191,7 @@ export const useCoreStore = defineStore('core', () => {
       resource.value = res.resource;
       resourceOptions.value = res.resource.options;
     }
+    isResourceFetching.value = false;
   }
 
   async function getPublicConfig() {
@@ -196,6 +202,14 @@ export const useCoreStore = defineStore('core', () => {
     config.value = {...config.value, ...res};
   }
 
+  async function getLoginFormConfig() {
+    const res = await callAdminForthApi({
+      path: '/get_login_form_config',
+      method: 'GET',
+    });
+    console.log('📦 getLoginFormConfig', res);
+    config.value = {...config.value, ...res};
+  }
 
   const username = computed(() => {
     const usernameField = config.value?.usernameField;
@@ -207,6 +221,16 @@ export const useCoreStore = defineStore('core', () => {
     return userData.value && userFullnameField && userData.value[userFullnameField];
   })
 
+  const userAvatarUrl = computed(() => {
+    return userData.value?.userAvatarUrl || null;
+  });
+
+  const isIos = computed(() => {
+    return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+  )});
+
 
   return { 
     config,
@@ -214,8 +238,10 @@ export const useCoreStore = defineStore('core', () => {
     menu, 
     username,
     userFullname,
+    userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
+    getLoginFormConfig,
     fetchRecord, 
     record, 
     fetchResourceFull, 
@@ -229,5 +255,8 @@ export const useCoreStore = defineStore('core', () => {
     fetchMenuBadges,
     resetAdminUser,
     resetResource,
+    isResourceFetching,
+    isIos,
+    isInternetError,
   }
 })

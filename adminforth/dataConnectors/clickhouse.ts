@@ -30,7 +30,60 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       // }
     });
   }
-
+  async getAllTables(): Promise<Array<string>> {
+    const res = await this.client.query({
+        query: `
+            SELECT name
+            FROM system.tables
+            WHERE database = '${this.dbName}'
+        `,
+        format: 'JSON',
+    });
+    const jsonResult = await res.json();
+    return jsonResult.data.map((row: any) => row.name);
+  }
+  
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
+    const res = await this.client.query({
+      query: `
+        SELECT name
+        FROM system.columns
+        WHERE database = '${this.dbName}' AND table = {table:String}
+      `,
+      format: 'JSON',
+      query_params: {
+        table: tableName,
+      },
+    });
+  
+    const jsonResult = await res.json();
+    const orderByField = ['updated_at', 'created_at', 'id'].find(f =>
+      jsonResult.data.some((col: any) => col.name === f)
+    );
+  
+    let sampleRow = {};
+    if (orderByField) {
+      const sampleRes = await this.client.query({
+        query: `SELECT * FROM ${this.dbName}.${tableName} ORDER BY ${orderByField} DESC LIMIT 1`,
+        format: 'JSON',
+      });
+      const sampleJson = await sampleRes.json();
+      sampleRow = sampleJson.data?.[0] ?? {};
+    } else {
+      const sampleRes = await this.client.query({
+        query: `SELECT * FROM ${this.dbName}.${tableName} LIMIT 1`,
+        format: 'JSON',
+      });
+      const sampleJson = await sampleRes.json();
+      sampleRow = sampleJson.data?.[0] ?? {};
+    }
+  
+    return jsonResult.data.map((col: any) => ({
+      name: col.name,
+      sampleValue: sampleRow[col.name],
+    }));
+  }
+  
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
 
@@ -79,7 +132,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           field._underlineType = baseType;
           field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
-          field.primaryKey = row.pk == 1;
+          field.primaryKey = row.is_in_primary_key == 1;
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
@@ -107,7 +160,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         }
         return dayjs(value).toISOString().split('T')[0];
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return !!value;
+        return value === null ? null : !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
           try {
@@ -138,7 +191,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return iso;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return value ? 1 : 0;
+        return  value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
@@ -173,13 +226,43 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
   
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
+        // Field-to-field comparison support
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          const left = (filter as IAdminForthSingleFilter).field;
+          const right = (filter as IAdminForthSingleFilter).rightField;
+          const operator = this.OperatorsMap[filter.operator];
+          return `${left} ${operator} ${right}`;
+        }
         // filter is a Single filter
         let field = (filter as IAdminForthSingleFilter).field;
         const column = resource.dataSourceColumns.find((col) => col.name == field);
         let placeholder = `{f$?:${column._underlineType}}`;
         let operator = this.OperatorsMap[filter.operator];
+
+        if (column._underlineType.startsWith('Decimal')) {
+          field = `toDecimal64(${field}, 8)`;
+          placeholder = `toDecimal64({f$?:String}, 8)`;
+        }
+
+        if ((filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) && column._underlineType == 'UUID') {
+          placeholder = '{f$?:String}';
+          field = `toString(${field})`;
+        }
         if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           placeholder = `(${filter.value.map((_, j) => `{p$?:${column._underlineType}}`).join(', ')})`;
+        } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+          operator = 'IS';
+          placeholder = 'NULL';
+        } else if (filter.operator == AdminForthFilterOperators.NE) {
+          if (filter.value === null) {
+            operator = 'IS NOT';
+            placeholder = 'NULL';
+          } else {
+            // for not equal, we need to add a null check
+            // because nullish field will not match != value
+            placeholder = `${placeholder} OR ${field} IS NULL)`;
+            field = `(${field}`;
+          }
         }
 
         return `${field} ${operator} ${placeholder}`;
@@ -204,11 +287,21 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          // No params for field-to-field comparisons
+          return [];
+        }
         // filter is a Single filter
         if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           return [{ 'p': filter.value }];
+        } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+          // there is no param for IS NULL filter
+          return [];
+        } else if (filter.operator == AdminForthFilterOperators.NE && filter.value === null) {
+          // there is no param for IS NOT NULL filter
+          return [];
         } else {
           return [{ 'f': (filter as IAdminForthSingleFilter).value }];
         }

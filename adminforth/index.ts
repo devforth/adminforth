@@ -6,8 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, getClientIp } from './modules/utils.js';
-
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -39,10 +38,10 @@ import SocketBroker from './modules/socketBroker.js';
 // exports
 export * from './types/Back.js';
 export * from './types/Common.js';
-export * from './types/Adapters.js';
+export * from './types/adapters/index.js';
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, getClientIp };
+export { suggestIfTypo, RateLimiter, RAMLock, getClientIp };
 
 
 class AdminForth implements IAdminForth {
@@ -125,26 +124,62 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor started');
+    
+    if (global.adminforth) {
+      throw new Error('AdminForth instance already created in this process. '+
+        'If you want to use multiple instances, consider using different process for each instance');
+    }
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating CodeInjector...');
     this.codeInjector = new CodeInjector(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 CodeInjector created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating ConfigValidator...');
     this.configValidator = new ConfigValidator(this, config);
+    process.env.HEAVY_DEBUG && console.log('🔧 ConfigValidator created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthRestAPI created');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 SocketBroker created');
+    
     this.activatedPlugins = [];
     
+    process.env.HEAVY_DEBUG && console.log('🔧 Validating config...');
     this.configValidator.validateConfig();
+    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+    
+    process.env.HEAVY_DEBUG && console.log('🔧 Activating plugins...');
     this.activatePlugins();
+    process.env.HEAVY_DEBUG && console.log('🔧 Plugins activated');
 
+    process.env.HEAVY_DEBUG && console.log('🔧 Validating after plugin activation...');
+    this.configValidator.validateAfterPluginsActivation();
+    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating ExpressServer...');
     this.express = new ExpressServer(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 ExpressServer created');
+    
     // this.fastify = new FastifyServer(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthAuth...');
     this.auth = new AdminForthAuth(this);
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthAuth created');
+    
     this.connectors = {};
     this.statuses = {
       dbDiscover: 'running',
     };
 
-   
-
-    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} starting up`)
+    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    process.env.HEAVY_DEBUG && console.log('🔧 About to set global.adminforth...');
+    global.adminforth = this;
+    process.env.HEAVY_DEBUG && console.log('🔧 global.adminforth set successfully');
+    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor completed');
   }
 
   formatAdminForth() {
@@ -170,24 +205,58 @@ class AdminForth implements IAdminForth {
     process.env.HEAVY_DEBUG && console.log('🔌🔌🔌 Activating plugins');
     const allPluginInstances = [];
     for (let resource of this.config.resources) {
+      process.env.HEAVY_DEBUG && console.log(`🔌 Checking plugins for resource: ${resource.resourceId}`);
       for (let pluginInstance of resource.plugins || []) {
+        process.env.HEAVY_DEBUG && console.log(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
         allPluginInstances.push({pi: pluginInstance, resource});
       }
     }
-    allPluginInstances.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
-    allPluginInstances.forEach(
-      ({pi: pluginInstance, resource}) => {
-        pluginInstance.modifyResourceConfig(this, resource);
-        const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
-        if (plugin) {
-          process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
-          
-          throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
-            To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
-        }
-        this.activatedPlugins.push(pluginInstance);
+    process.env.HEAVY_DEBUG && console.log(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
+    
+    let activationLoopCounter = 0;
+    while (true) {
+      activationLoopCounter++;
+      if (activationLoopCounter > 10) {
+        throw new Error('Plugin activation loop exceeded 10 iterations, possible infinite loop (some plugin tries to activate himself in a loop)');
       }
-    );
+      process.env.HEAVY_DEBUG && console.log(`🔌 Plugin activation loop iteration: ${activationLoopCounter}`);
+      process.env.HEAVY_DEBUG && console.log(`🔌 Activated plugins count: ${this.activatedPlugins.length}/${allPluginInstances.length}`);
+      const allPluginsAreActivated = allPluginInstances.length === this.activatedPlugins.length;
+      if (allPluginsAreActivated) {
+        break;
+      }
+    
+      const unactivatedPlugins = allPluginInstances.filter(({pi: pluginInstance}) => 
+        !this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId)
+      );
+
+      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins remaining: ${unactivatedPlugins.length}`);
+      
+      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins count: ${unactivatedPlugins.length}`);
+
+      unactivatedPlugins.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
+      process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugins in order:`, unactivatedPlugins.map(({pi}) => pi.constructor.name));
+      unactivatedPlugins.forEach(
+        ({pi: pluginInstance, resource}, index) => {
+          process.env.HEAVY_DEBUG && console.log("Activating plugin:",pluginInstance.constructor.name)
+          process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+          pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
+          
+          const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
+          if (plugin) {
+            process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
+            
+            throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
+              To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
+          }
+          this.activatedPlugins.push(pluginInstance);
+          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
+        }
+      );
+      process.env.HEAVY_DEBUG && console.log(`🔌activated plugins:`, this.activatedPlugins.map((pi) => pi.constructor.name));
+    }
+    process.env.HEAVY_DEBUG && console.log('🔌 All plugins activation completed');
   }
 
   getPluginsByClassName<T>(className: string): T[] {
@@ -232,9 +301,15 @@ class AdminForth implements IAdminForth {
     });
   }
 
-  validateRecordValues(resource: AdminForthResource, record: any): any {
+  validateRecordValues(resource: AdminForthResource, record: any,  mode: 'create' | 'edit'): any {
     // check if record with validation is valid
     for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
+      const required = typeof column.required === 'object'
+      ? column.required[mode]
+      : true;
+
+      if (!required && !record[column.name]) continue;
+
       let error = null;
       if (column.isArray?.enabled) {
         error = record[column.name].reduce((err, item) => {
@@ -269,10 +344,10 @@ class AdminForth implements IAdminForth {
           return error;
         }
       } else {
-        if (column.minValue !== undefined && record[column.name] < column.minValue) {
+        if (column.minValue !== undefined && record[column.name] && record[column.name] < column.minValue) {
           return `Value in "${column.name}" must be greater than ${column.minValue}`;
         }
-        if (column.maxValue !== undefined && record[column.name] > column.maxValue) {
+        if (column.maxValue !== undefined && record[column.name] && record[column.name] > column.maxValue) {
           return `Value in "${column.name}" must be less than ${column.maxValue}`;
         }
       }
@@ -329,6 +404,9 @@ class AdminForth implements IAdminForth {
       }
       if (fieldTypes === null) {
         console.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        if (process.env.NODE_ENV === 'production') {
+          process.exit(1); 
+        }
         return;
       }
       if (!res.columns) {
@@ -364,6 +442,66 @@ class AdminForth implements IAdminForth {
 
     // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
+
+  async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
+    const results: { [dataSourceId: string]: string[] } = {};
+  
+    // console.log('Connectors to process:', Object.keys(this.connectors));
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = {...this.connectorClasses};
+    }
+    
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllTables === 'function') {
+          try {
+            const tables = await connector.getAllTables();
+            results[dataSourceId] = tables;
+          } catch (err) {
+            console.error(`Error getting tables for dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+
+  async getAllColumnsInTable(
+    tableName: string
+  ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean; isUUID?: boolean; }> }> {
+    const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean;  isUUID?: boolean; }> } = {};
+  
+    if (!this.config.databaseConnectors) {
+      this.config.databaseConnectors = { ...this.connectorClasses };
+    }
+  
+    await Promise.all(
+      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+        if (typeof connector.getAllColumnsInTable === 'function') {
+          try {
+            const columns = await connector.getAllColumnsInTable(tableName);
+            results[dataSourceId] = columns.map(column => ({
+              ...column,
+              isUUID: isProbablyUUIDColumn(column),
+            }));
+          } catch (err) {
+            console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
+            results[dataSourceId] = [];
+          }
+        } else {
+          results[dataSourceId] = [];
+        }
+      })
+    );
+  
+    return results;
+  }
+  
 
   async bundleNow({ hotReload=false }) {
     await this.codeInjector.bundleNow({ hotReload });
@@ -402,12 +540,14 @@ class AdminForth implements IAdminForth {
   async createResourceRecord(
     { resource, record, adminUser, extra }: 
     { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }> {
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }> {
 
-    const err = this.validateRecordValues(resource, record);
+    const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
     }
+
+    const recordWithVirtualColumns = { ...record };
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
@@ -419,8 +559,18 @@ class AdminForth implements IAdminForth {
         adminforth: this,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId))) {
+        throw new Error(
+          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any }.\n` +
+          `Note: Return { ok: false, error: null, newRecordId } to stop creation and redirect to an existing record.`
+        );
+      }
+      if (resp.ok === false && !resp.error) {
+        const { error, ok, newRecordId } = resp;
+        return {
+          error: error ?? 'Operation aborted by hook',
+          newRecordId: newRecordId
+        };
       }
       if (resp.error) {
         return { error: resp.error };
@@ -440,7 +590,7 @@ class AdminForth implements IAdminForth {
       return { error };
     }
     
-    const primaryKey = record[resource.columns.find((col) => col.primaryKey).name];
+    const primaryKey = createdRecord[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave)) {
@@ -451,6 +601,7 @@ class AdminForth implements IAdminForth {
         record: createdRecord, 
         adminUser,
         adminforth: this,
+        recordWithVirtualColumns,
         extra,
       });
 
@@ -470,19 +621,24 @@ class AdminForth implements IAdminForth {
    * record is partial record with only changed fields
    */
   async updateResourceRecord(
-    { resource, recordId, record, oldRecord, adminUser, extra }:
-    { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
+    { resource, recordId, record, oldRecord, adminUser, extra, updates }:
+    | { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }> {
-
-    const err = this.validateRecordValues(resource, record);
+    const dataToUse = updates || record;
+    const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };
     }
 
+    if (record) {
+      console.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
+    }
+
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
-      if (column.name in record)
-        delete record[column.name];
+      if (column.name in dataToUse)
+        delete dataToUse[column.name];
     }
 
     // execute hook if needed
@@ -490,15 +646,18 @@ class AdminForth implements IAdminForth {
       const resp = await hook({
         recordId,
         resource,
-        record,
-        updates: record,
+        record: dataToUse,
+        updates: dataToUse,
         oldRecord,
         adminUser,
         adminforth: this,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
+      if (!resp || typeof resp.ok !== 'boolean') {
+        throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+      }
+      if (resp.ok === false && !resp.error) {
+        return { error: resp.error ?? 'Operation aborted by hook' };
       }
       if (resp.error) {
         return { error: resp.error };
@@ -508,27 +667,30 @@ class AdminForth implements IAdminForth {
     const newValues = {};
     const connector = this.connectors[resource.dataSource];
 
-    for (const recordField in record) {
-      if (record[recordField] !== oldRecord[recordField]) {
+    for (const recordField in dataToUse) {
+      if (dataToUse[recordField] !== oldRecord[recordField]) {
         // leave only changed fields to reduce data transfer/modifications in db
         const column = resource.columns.find((col) => col.name === recordField);
         if (!column || !column.virtual) {
           // exclude virtual columns
-          newValues[recordField] = record[recordField];
+          newValues[recordField] = dataToUse[recordField];
         }
       }
     } 
 
     if (Object.keys(newValues).length > 0) {
-      await connector.updateRecord({ resource, recordId, newValues });
+      const { error } = await connector.updateRecord({ resource, recordId, newValues });
+      if ( error ) {
+        return { error };
+      }
     }
     
     // execute hook if needed
     for (const hook of listify(resource.hooks?.edit?.afterSave)) {
       const resp = await hook({ 
         resource, 
-        record,
-        updates: record,
+        record: dataToUse,
+        updates: dataToUse,
         adminUser, 
         oldRecord,
         recordId,

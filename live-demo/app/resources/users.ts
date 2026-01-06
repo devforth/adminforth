@@ -1,5 +1,4 @@
-import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput } from 'adminforth';
-import importExport from '@adminforth/import-export';
+import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 
@@ -8,7 +7,7 @@ const blockDemoUsers = async ({ record, adminUser, resource }) => {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
-}
+} 
 export default { 
   dataSource: 'maindb', 
   table: 'users',
@@ -16,13 +15,11 @@ export default {
   label: 'Users',  
   recordLabel: (r) => `👤 ${r.email}`,
   plugins: [
-    new importExport({}),
     new ForeignInlineListPlugin({
       foreignResourceId: 'aparts',
       modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
         // hide column 'square_meter' from both 'list' and 'filter'
         const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
-        resourceConfig.options!.listPageSize = 1;
         // feel free to console.log and edit resourceConfig as you need
       },
     }),

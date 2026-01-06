@@ -1,8 +1,8 @@
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
 
-import type { AdminUser } from  'adminforth';
-
-async function canModifyUsers({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
 
@@ -14,8 +14,8 @@ export default {
   recordLabel: (r) => `👤 ${r.email}`,
   options: {
     allowedActions: {
-      edit: canModifyUsers,
-      delete: canModifyUsers,
+      edit: allowedForSuperAdmin,
+      delete: allowedForSuperAdmin,
     },
   },
   columns: [
@@ -23,7 +23,7 @@ export default {
       name: 'id',
       primaryKey: true,
       type: AdminForthDataTypes.STRING,
-      fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
+      fillOnCreate: ({ initialRecord, adminUser }) => randomUUID(),
       showIn: {
         edit: false,
         create: false,
@@ -93,8 +93,11 @@ export default {
       }
     },
     edit: {
-      beforeSave: async ({ updates, adminUser, resource }: { updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+      beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
         console.log('Updating user', updates);
+        if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+          return { ok: false, error: 'You cannot change your own role' };
+        }
         if (updates.password) {
           updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
         }

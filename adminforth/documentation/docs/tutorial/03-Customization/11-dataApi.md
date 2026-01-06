@@ -25,7 +25,7 @@ const admin = new AdminForth({
 });
 
 // get the resource object
-await admin.resource('adminuser').get([Filters.EQ('id', '1234')]);
+await admin.resource('adminuser').get(Filters.EQ('id', '1234'));
 ```
 
 Here we will show you how to use the Data API with simple examples.
@@ -37,7 +37,7 @@ Signature:
 
 ```ts
 .get(
-  filters: [],
+  filters: <AdminForthFilterObject>,
 ): Promise<any>
 ```
 
@@ -62,7 +62,8 @@ Get user with name 'John' and role not 'SuperAdmin'
 
 ```ts
 const user = await admin.resource('adminuser').get(
-  [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
+  Filters.EQ('name', 'John'), 
+  Filters.NEQ('role', 'SuperAdmin')
 );
 ```
 
@@ -73,7 +74,7 @@ Signature:
 
 ```ts
 .list(
-  filters: [],
+  filters: <AdminForthFilterObject>,
   limit: number | null
   offset: number | null
   sort: []
@@ -112,15 +113,48 @@ Get all users that have gmail address AND the ones created not in 2024
 
 ```ts
 const users = await admin.resource('adminuser').list(
-  Filters.AND([
+  Filters.AND(
     Filters.LIKE('email', '@gmail.com'),
-    Filters.OR([
+    Filters.OR(
       Filters.LT('createdAt', '2024-01-01T00:00:00.000Z'),
       Filters.GTE('createdAt', '2025-01-01T00:00:00.000Z'),
-    ]),
-  ])
+    ),
+  )
 );
 ```
+
+## Using a raw SQL in queries.
+
+Rarely you might want to add ciondition for some exotic SQL but still want to keep the rest of API.
+Technically it happened that AdminForth allows you to do this also
+
+```js
+const minUgcAge = 18;
+const usersWithNoUgcAccess = await admin.resource('adminuser').list(
+  [
+    Filters.NEQ('role', 'Admin'), 
+    {
+       insecureRawSQL: `(user_meta->>'age') < ${sqlstring.escape(minUgcAge)}`
+    }
+
+  ], 15, 0, Sorts.DESC('createdAt')
+);
+
+This will produce next SQL query:
+```
+
+```
+SELECT *
+FROM "adminuser"
+WHERE "role" != 'Admin'
+  AND (user_meta->>'age') < 18
+ORDER BY "createdAt" DESC
+LIMIT 15 OFFSET 0;
+
+```
+
+
+Finds users with age less then 18 from meta field which should be a JSONB field in Postgress.
 
 ## Create a new item in database
 
@@ -150,8 +184,8 @@ Signature:
 
 ```ts
 .count(
-  filters: [],
-): Promise<number>
+  filters: <AdminForthFilterObject>,
+): Promise<any>
 ```
 
 Returns number of items in database which match the filters.
@@ -159,7 +193,7 @@ Returns number of items in database which match the filters.
 Count number of schools with rating above 4:
 
 ```ts
-const schoolsCount = await admin.resource('schools').count([Filters.GT('rating', 4)]);
+const schoolsCount = await admin.resource('schools').count(Filters.GT('rating', 4));
 ```
 
 Create data for daily report with number of users signed up daily for last 7 days:

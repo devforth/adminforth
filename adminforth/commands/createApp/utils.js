@@ -7,8 +7,34 @@ import path from 'path';
 import { Listr } from 'listr2'
 import { fileURLToPath } from 'url';
 import {ConnectionString} from 'connection-string';
-import {execa} from 'execa';
+import { exec } from 'child_process';
+
 import Handlebars from 'handlebars';
+import { promisify } from 'util';
+import { getVersion } from '../cli.js';
+
+const execAsync = promisify(exec);
+
+function detectAdminforthVersion() {
+  try {
+    const version =  getVersion();
+
+    if (typeof version !== 'string') {
+      throw new Error('Invalid version format');
+    }
+
+    if (version.includes('next')) {
+      return 'next';
+    }
+    return 'latest';
+  } catch (err) {
+    console.warn('⚠️ Could not detect AdminForth version, defaulting to "latest".');
+    return 'latest';
+  }
+}
+
+const adminforthVersion = detectAdminforthVersion();
+
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -96,7 +122,21 @@ function generateDbUrlForPrisma(connectionString) {
   return connectionString.toString();
 }
 
-function initialChecks() {
+function generateDbUrlForPrismaProd(connectionString) {
+  if (connectionString.protocol.startsWith('sqlite'))
+    return `file:/code/db/${connectionString.host}`;
+  if (connectionString.protocol.startsWith('mongodb'))
+    return null;
+  return connectionString.toString();
+}
+
+function generateDbUrlForAfProd(connectionString) {
+  if (connectionString.protocol.startsWith('sqlite'))
+    return `sqlite:////code/db/${connectionString.host}`;
+  return connectionString.toString();
+}
+
+function initialChecks(options) {
   return [
     {
       title: '👀 Checking Node.js version...',
@@ -104,24 +144,32 @@ function initialChecks() {
     },
     {
       title: '👀 Validating current working directory...',
-      task: () => checkForExistingPackageJson()
+      task: () => checkForExistingPackageJson(options)
     }
   ]
 }
 
-function checkForExistingPackageJson() {
-  if (fs.existsSync(path.join(process.cwd(), 'package.json'))) {
+function checkForExistingPackageJson(options) {
+  const projectDir = path.join(process.cwd(), options.appName);
+  if (fs.existsSync(projectDir)) {
     throw new Error(
-      `A package.json already exists in this directory.\n` +
-      `Please remove it or use an empty directory.`
+      `Directory "${options.appName}" already exists.\n` +
+      `Please remove it or use a different name.`
     );
   }
 }
 
 async function scaffoldProject(ctx, options, cwd) {
+  const projectDir = path.join(cwd, options.appName);
+  await fse.ensureDir(projectDir);
+
   const connectionString = parseConnectionString(options.db);
+  const connectionStringProd = generateDbUrlForAfProd(connectionString);
+
   const provider = detectDbProvider(connectionString.protocol);
   const prismaDbUrl = generateDbUrlForPrisma(connectionString);
+  const prismaDbUrlProd = generateDbUrlForPrismaProd(connectionString);
+
 
   ctx.skipPrismaSetup = !prismaDbUrl;
   const appName = options.appName;
@@ -130,9 +178,9 @@ async function scaffoldProject(ctx, options, cwd) {
   const dirname = path.dirname(filename);
 
   // Prepare directories
-  ctx.customDir = path.join(cwd, 'custom');
+  ctx.customDir = path.join(projectDir, 'custom');
   await fse.ensureDir(ctx.customDir);
-  await fse.ensureDir(path.join(cwd, 'resources'));
+  await fse.ensureDir(path.join(projectDir, 'resources'));
 
   // Copy static assets to `custom/assets`
   const sourceAssetsDir = path.join(dirname, 'assets');
@@ -141,17 +189,25 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
   // Write templated files
-  writeTemplateFiles(dirname, cwd, {
+  await writeTemplateFiles(dirname, projectDir, {
     dbUrl: connectionString.toString(),
+    dbUrlProd: connectionStringProd,
     prismaDbUrl,
+    prismaDbUrlProd,
     appName,
     provider,
+    nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
+    sqliteFile: connectionString.protocol.startsWith('sqlite') ? connectionString.host : null,
   });
 
+  return projectDir;  // Return the new directory path
 }
 
 async function writeTemplateFiles(dirname, cwd, options) {
-  const { dbUrl, prismaDbUrl, appName, provider } = options;
+  const { 
+    dbUrl, prismaDbUrl, appName, provider, nodeMajor,
+    dbUrlProd, prismaDbUrlProd, sqliteFile
+   } = options;
 
   // Build a list of files to generate
   const templateTasks = [
@@ -167,14 +223,27 @@ async function writeTemplateFiles(dirname, cwd, options) {
       condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
     },
     {
+      src:  'prisma.config.ts.hbs',
+      dest: 'prisma.config.ts',
+      data: {},
+    },
+    {
       src: 'package.json.hbs',
       dest: 'package.json',
-      data: { appName },
+      data: { 
+        appName,
+        adminforthVersion: adminforthVersion,
+       },
     },
     {
       src: 'index.ts.hbs',
       dest: 'index.ts',
       data: { appName },
+    },
+    {
+      src: 'api.ts.hbs',
+      dest: 'api.ts',
+      data: {},
     },
     {
       src: '.gitignore.hbs',
@@ -187,9 +256,14 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: { dbUrl, prismaDbUrl },
     },
     {
+      src: '.env.prod.hbs',
+      dest: '.env.prod',
+      data: { prismaDbUrlProd, dbUrlProd },
+    },
+    {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl },
+      data: { dbUrl, prismaDbUrl, appName, sqliteFile },
     },
     {
       // We'll write .env using the same content as .env.sample
@@ -213,6 +287,18 @@ async function writeTemplateFiles(dirname, cwd, options) {
       dest: 'custom/tsconfig.json',
       data: {},
     },
+    {
+      src: 'Dockerfile.hbs',
+      dest: 'Dockerfile',
+      data: { nodeMajor },
+    },
+    {
+      src: '.dockerignore.hbs',
+      dest: '.dockerignore',
+      data: {
+        sqliteFile,
+      },
+    }
   ];
 
   for (const task of templateTasks) {
@@ -223,34 +309,49 @@ async function writeTemplateFiles(dirname, cwd, options) {
     // fse.ensureDirSync(path.dirname(destPath));
 
     if (task.empty) {
-      fs.writeFileSync(destPath, '');
+      await fs.promises.writeFile(destPath, '');
     } else {
       const templatePath = path.join(dirname, 'templates', task.src);
       const compiled = renderHBSTemplate(templatePath, task.data);
-      fs.writeFileSync(destPath, compiled);
+      await fs.promises.writeFile(destPath, compiled);
     }
   }
 }
 
 async function installDependencies(ctx, cwd) {
-  const customDir = ctx.customDir;
+  const isWindows = process.platform === 'win32';
 
-  await Promise.all([
-    await execa('npm', ['install', '--no-package-lock'], { cwd }),
-    await execa('npm', ['install'], { cwd: customDir }),
-  ]);
+  const nodeBinary = process.execPath; 
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
+  const customDir = ctx.customDir;
+  if (isWindows) {
+    const res = await Promise.all([
+      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  } else {
+    const res = await Promise.all([
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  }
+  // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
 
-function generateFinalInstructions(skipPrismaSetup) {
+function generateFinalInstructions(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
   if (!skipPrismaSetup)
     instruction += `
+  ${chalk.dim('// Go to the project directory')}
+  ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
+
+    instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
-  ${chalk.cyan('$ npm run makemigration -- --name init')}\n`;
+  ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
-  ${chalk.cyan('$ npm start')}\n
+  ${chalk.dim('$')}${chalk.cyan(' npm run dev')}\n
 `;
 
   instruction += '😉 Happy coding!';
@@ -272,33 +373,35 @@ export function prepareWorkflow(options) {
       title: '🔍 Initial checks...',
       task: (_, task) =>
         task.newListr(
-          initialChecks(),
+          initialChecks(options),
           { concurrent: true },
         )
     },
     {
       title: '🚀 Scaffolding your project...',
-      task: async (ctx) => scaffoldProject(ctx, options, cwd)
+      task: async (ctx) => {
+        ctx.projectDir = await scaffoldProject(ctx, options, cwd);
+      }
     },
     {
       title: '📦 Installing dependencies...',
-      task: async (ctx) => installDependencies(ctx, cwd)
+      task: async (ctx) => installDependencies(ctx, ctx.projectDir)
     },
     {
       title: '📝 Preparing final instructions...',
       task: (ctx) => {
-        console.log(chalk.green(`✅ Successfully created your new Adminforth project!\n`));
-        console.log(generateFinalInstructions(ctx.skipPrismaSetup));
+        console.log(chalk.green(`✅ Successfully created your new Adminforth project in ${ctx.projectDir}!\n`));
+        console.log(generateFinalInstructions(ctx.skipPrismaSetup, options));
         console.log('\n\n');
+      }
     }
-  }],
+  ],
   {
     rendererOptions: {collapseSubtasks: false},
     concurrent: false,
     exitOnError: true,
     collectErrors: true,
-  }
-);
+  });
 
   return tasks;
 }

@@ -4,26 +4,19 @@
       :min="minFormatted"
       :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      class="flex-1 bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
       :placeholder="$t('From')"
       v-model="start"
     >
-
+    <p>_</p>
     <input
       :min="minFormatted"
       :max="maxFormatted"
       type="number" aria-describedby="helper-text-explanation"
-      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      class="flex-1 bg-lightRangePickerInputBackground border border-lightRangePickerInputBorder text-lightRangePickerInputText placeholder-lightRangePickerInputPlaceholder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkRangePickerInputBackground dark:border-darkRangePickerInputBorder dark:placeholder-darkRangePickerInputPlaceholder dark:text-darkRangePickerInputText dark:focus:ring-blue-500 dark:focus:border-blue-500"
       :placeholder="$t('To')"
       v-model="end"
     >
-
-    <button
-      v-if="isChanged"
-      type="button"
-      class="flex items-center p-0.5 ml-auto px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      @click="clear">Clear
-    </button>
 
     <div v-if="min && max" class="w-full px-2.5">
       <vue-slider
@@ -57,15 +50,15 @@ const props = defineProps({
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
-const minFormatted = computed(() => Math.floor(props.min));
-const maxFormatted = computed(() => Math.ceil(props.max));
+const minFormatted = computed(() => Math.floor(<number>props.min));
+const maxFormatted = computed(() => Math.ceil(<number>props.max));
 
 const isChanged = computed(() => {
   return start.value && start.value !== minFormatted.value || end.value && end.value !== maxFormatted.value;
 });
 
-const start = ref(props.valueStart);
-const end = ref(props.valueEnd);
+const start = ref<string | number>(props.valueStart);
+const end = ref<string | number>(props.valueEnd);
 
 const sliderValue = ref([minFormatted.value, maxFormatted.value]);
 
@@ -112,13 +105,7 @@ watch([minFormatted,maxFormatted], () => {
   setSliderValues(minFormatted.value, maxFormatted.value)
 })
 
-const clear = () => {
-  start.value = ''
-  end.value = ''
-  setSliderValues('', '')
-}
-
-function setSliderValues(start, end) {
+function setSliderValues(start: any, end: any) {
   sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
 }
 </script>
@@ -153,4 +140,33 @@ function setSliderValues(start, end) {
       @apply bg-lightPrimaryOpacity;
     }
 }
+
+.dark .custom-slider {
+  &:deep(.vue-slider-rail) {
+    background-color: rgb(55 65 81); // gray-700
+  }
+
+  &:deep(.vue-slider-dot-handle) {
+    @apply bg-darkPrimary;
+    border: none;
+    box-shadow: none;
+  }
+
+  &:deep(.vue-slider-dot-handle:hover) {
+    @apply bg-darkPrimary;
+    filter: brightness(1.1);
+    border: none;
+    box-shadow: none;
+  }
+
+  &:deep(.vue-slider-process) {
+    @apply bg-darkPrimaryOpacity;
+  }
+
+  &:deep(.vue-slider-process:hover) {
+    filter: brightness(1.1);
+    @apply bg-darkPrimaryOpacity;
+  }
+}
+
 </style>

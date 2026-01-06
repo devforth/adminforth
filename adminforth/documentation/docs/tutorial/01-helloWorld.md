@@ -122,7 +122,7 @@ model Post {
 Create database using `prisma migrate`:
 
 ```bash
-npm run makemigration --name init
+npm run makemigration --name init ; npm run migrate:local
 ```
 
 ## Setting up AdminForth
@@ -131,7 +131,8 @@ Create `index.ts` file in root directory with following content:
 
 ```ts title="./index.ts"
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, AdminUser, Filters } from 'adminforth';
+import AdminForth, { AdminForthDataTypes, Filters } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
 
 export const admin = new AdminForth({
   baseUrl: '',
@@ -208,6 +209,26 @@ export const admin = new AdminForth({
         },
         { name: 'passwordHash', backendOnly: true, showIn: { all: false } }
       ],
+      hooks: {
+        create: {
+          beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+            return { ok: true };
+          }
+        },
+        edit: {
+          beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+            console.log('Updating user', updates);
+            if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+              return { ok: false, error: 'You cannot change your own role' };
+            }
+            if (updates.password) {
+              updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
+            }
+            return { ok: true }
+          },
+        },
+      }
     },
     {
       table: 'post',
@@ -299,14 +320,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const port = 3500;
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' });
-  console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    console.log('Bundling AdminForth SPA done.');
+  });
 
   // serve after you added all api
   admin.express.serve(app)
 
   admin.discoverDatabases().then(async () => {
-    if (!await admin.resource('adminuser').get([Filters.EQ('email', 'adminforth')])) {
+    if (await admin.resource('adminuser').count() === 0) {
       await admin.resource('adminuser').create({
         email: 'adminforth',
         passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),

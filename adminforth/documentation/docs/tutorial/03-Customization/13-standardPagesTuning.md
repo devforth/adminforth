@@ -63,7 +63,7 @@ export default {
     }
 ```
 
-You can also specify on which page you want to create or delete groups. If you assign null, the groups will disappear from this page.
+You can also specify on which page you want to create groups.
 
 ```typescript title="./resources/apartments.ts"
 export default {
@@ -89,10 +89,6 @@ export default {
           }
           //diff-add
         ],
-          //diff-add
-        editFieldGroups: null,
-          //diff-add
-        showFieldGroups: null,
       }
     }
 ```
@@ -120,6 +116,190 @@ export default {
 }
 ```
 
+### Sticky column
+
+
+You can make a column sticky in the list view by setting `listSticky` to `true`. This keeps the column visible when horizontally scrolling through the table, which is particularly useful for important columns like titles or IDs that should always remain in view.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+  {
+    name: "title",
+//diff-add
+    listSticky: true,
+    ...
+  },
+  ...
+  ]
+}
+```
+
+>⚠️ Please note that sticky columns can only be applied to one column per resource.
+
+### Conditional display
+You can conditionally display columns in forms and views based on the values of other fields in the current record using the `showIf` property. This enables dynamic layouts that automatically adapt to user input, creating more intuitive and context-aware interfaces.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  columns: [
+    {
+      name: 'apartment_type',
+      enum: [
+        { value: 'studio', label: 'Studio' },
+        { value: 'apartment', label: 'Apartment' },
+        { value: 'penthouse', label: 'Penthouse' }
+      ]
+    },
+    {
+      name: 'number_of_rooms',
+      type: AdminForthDataTypes.INTEGER,
+//diff-add
+      showIf: { apartment_type: { $not: 'studio' } }
+    },
+    {
+      name: 'has_balcony',
+      type: AdminForthDataTypes.BOOLEAN,
+//diff-add
+      showIf: { apartment_type: 'penthouse' }
+    }
+  ]
+}
+```
+
+#### Logical Operators
+
+Use `$and` and `$or` operators to create complex conditional logic:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'premium_features',
+      type: AdminForthDataTypes.JSON,
+//diff-add
+      showIf: {
+//diff-add
+        $and: [
+//diff-add
+          { price: { $gte: 500000 } },
+//diff-add
+          { apartment_type: { $in: ['penthouse', 'apartment'] } }
+//diff-add
+        ]
+//diff-add
+      }
+    },
+    {
+      name: 'discount_reason',
+      type: AdminForthDataTypes.STRING,
+//diff-add
+      showIf: {
+//diff-add
+        $or: [
+//diff-add
+          { price: { $lt: 100000 } },
+//diff-add
+          { listed: false }
+//diff-add
+        ]
+//diff-add
+      }
+    }
+  ]
+}
+```
+
+#### Comparison Operators
+
+Use various comparison operators for numeric and string fields:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'luxury_amenities',
+//diff-add
+      showIf: { square_meter: { $gt: 100 } }
+    },
+    {
+      name: 'budget_options',
+//diff-add
+      showIf: { price: { $lte: 200000 } }
+    },
+    {
+      name: 'special_offers',
+//diff-add
+      showIf: { country: { $nin: ['US', 'GB'] } }
+    }
+  ]
+}
+```
+
+#### Array Operators
+
+For fields that contain arrays, use array-specific operators:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  columns: [
+    {
+      name: 'pet_policy',
+//diff-add
+      showIf: { amenities: { $includes: 'pet_friendly' } }
+    },
+    {
+      name: 'security_deposit',
+//diff-add
+      showIf: { features: { $nincludes: 'furnished' } }
+    }
+  ]
+}
+```
+
+#### Available Operators
+
+The following operators are available for use in `showIf` conditions:
+
+**Equality Operators:**
+- `$eq` - Equal to (default if no operator specified)
+  - `{ price: { $eq: 100000 } }` or `{ price: 100000 }`
+- `$not` - Not equal to
+  - `{ apartment_type: { $not: 'studio' } }`
+
+**Comparison Operators:**
+- `$gt` - Greater than
+  - `{ square_meter: { $gt: 100 } }`
+- `$gte` - Greater than or equal to
+  - `{ price: { $gte: 500000 } }`
+- `$lt` - Less than
+  - `{ price: { $lt: 100000 } }`
+- `$lte` - Less than or equal to
+  - `{ price: { $lte: 200000 } }`
+
+**Array Operators:**
+- `$in` - Value is in array
+  - `{ apartment_type: { $in: ['penthouse', 'apartment'] } }`
+- `$nin` - Value is not in array
+  - `{ country: { $nin: ['US', 'GB'] } }`
+- `$includes` - Array includes value
+  - `{ amenities: { $includes: 'pet_friendly' } }`
+- `$nincludes` - Array does not include value
+  - `{ features: { $nincludes: 'furnished' } }`
+
+**Logical Operators:**
+- `$and` - Logical AND operation
+  - `{ $and: [{ price: { $gte: 500000 } }, { listed: true }] }`
+- `$or` - Logical OR operation
+  - `{ $or: [{ price: { $lt: 100000 } }, { listed: false }] }`
+
+> ⚠️ **Warning**: When using `showIf` with complex conditions, ensure that:
+> - `$and` and `$or` operators contain arrays of conditions
+> - `$in` and `$nin` operators contain arrays of values
+> - `$includes` and `$nincludes` operators are only used on columns marked as arrays (`isArray: { enabled: true }`)
 ### Page size 
 
 use `options.listPageSize` to define how many records will be shown on the page
@@ -131,6 +311,36 @@ export default {
         ...
 //diff-add
         listPageSize: 10,
+      }
+    }
+  ]
+```
+
+### Virtual scroll
+
+Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table. The default value is false. Enable this option if you need to display a large number of records on a single page.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+//diff-add
+        listVirtualScrollEnabled: true,
+      }
+    }
+  ]
+```
+Additionally, you can configure `options.listBufferSize` to specify the number of rows to buffer for virtual scrolling. The default value is 30 rows.
+
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+        listVirtualScrollEnabled: true,
+//diff-add
+        listBufferSize: 20,
       }
     }
   ]
@@ -164,7 +374,7 @@ To open a custom page, return URL to the custom page (can start with https://, o
 //diff-add
         listTableClickUrl: async (record, adminUser) => {
 //diff-add
-          return `https://google.com/search?q=${record.name}`;
+          return `https://google.com/search?q=${record.title}`;
 //diff-add
         }
       }
@@ -230,8 +440,25 @@ export default {
   ![alt text](<silent refresh.gif>)
 
 
+### Move base actions out of three dots menu
 
+If you want to move base record actions from the three dots menu, you can add `baseActionsAsQuickIcons`:
 
+```ts
+  options: {
+    
+    ...
+    
+    baseActionsAsQuickIcons: ['edit'],
+
+    ...
+
+  }
+```
+
+And `edit` action will be available as quick action:
+
+![alt text](<threeDotsListMenu.png>)
       
 
      
@@ -341,7 +568,7 @@ Sometimes you might need to create a link that will open the create form with so
         resourceId: 'aparts',
       },
       query: {
-        values: encodeURIComponent(JSON.stringify({
+        values: atob_function(JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
       },
@@ -355,11 +582,36 @@ Sometimes you might need to create a link that will open the create form with so
 <script setup lang="ts">
 import { LinkButton } from '@afcl';
 import { useCoreStore } from '@/stores/core';
+import { btoa_function } from '@/utils';
 
 const coreStore = useCoreStore();
 </script>
 ```
 
+ALso if you want to disable ability to change such fields (but keep them as readonly) you can add `readonlyColumns` to the link:
+
+```html title="./resources/Dashboard.vue
+<template>
+  ...
+  <LinkButton
+    :to="{
+      name: 'resource-create',
+      params: {
+        resourceId: 'aparts',
+      },
+      query: {
+        values: (JSON.stringify({
+          realtor_id: coreStore?.adminUser.dbUser.id 
+        })),
+        //diff-add
+        readonlyColumns: (JSON.stringify(['realtor_id'])),
+      },
+    }"
+  >
+    {{$t('Create new apartment')}}
+  </LinkButton>
+  ...
+```
 
 ## Editing
 
@@ -510,7 +762,7 @@ export default {
 
 Doing so, will result in UI displaying each item of the array as a separate input corresponding to `isArray.itemType` on create and edit pages.
 
-`itemType` value can be any of `AdminForthDataTypes` except `JSON` and `RICHTEXT`.
+`itemType` value can be any of `AdminForthDataTypes` except `JSON` and `TEXT`.
 
 By default it is forbidden to store duplicate values in an array column. To change that you can add `allowDuplicateItems: true` to `isArray`, like so:
 
@@ -578,6 +830,31 @@ export default {
             resourceId: 'adminuser',
 //diff-add
             unsetLabel: 'No realtor',
+          },
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+### Searchable fields 
+
+Enable search in filter dropdown by specifying which fields to search:
+
+```typescript title="./resources/apartments.ts"
+export default {
+      name: 'apartments',
+      columns: [
+        ...
+        {
+          name: "realtor_id",
+          foreignResource: {
+            resourceId: 'adminuser',
+//diff-add
+            searchableFields: ["id", "email"], 
+//diff-add
+            searchIsCaseSensitive: true, // default false
           },
         },
       ],

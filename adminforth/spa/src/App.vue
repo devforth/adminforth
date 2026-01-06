@@ -2,9 +2,9 @@
   <div>
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
-      class="fixed h-14 top-0 z-20 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
+      class="fixed h-14 top-0 z-30 w-full border-b shadow-sm bg-lightNavbar shadow-headerShadow dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
-      <div class="px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
+      <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
           <div class="flex items-center justify-start rtl:justify-end">
             <button @click="sideBarOpen = !sideBarOpen"
               type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
@@ -24,8 +24,15 @@
             />
 
             <div class="flex items-center ms-3 ">
-              <span               
-                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-lightHtml dark:text-darkSidebarTextHover dark:hover:bg-darkHtml dark:hover:text-darkSidebarTextActive" role="menuitem">
+              <Tooltip>
+                <IconWifiOff v-if="coreStore.isInternetError" class="blinking-icon w-8 h-8 text-red-500" />
+                <template #tooltip>
+                  {{$t('Internet connection lost')}}
+                </template>
+              </Tooltip>
+              <span  
+                v-if="!coreStore.config?.singleTheme"
+                @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
                 <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
                 <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
               </span>
@@ -34,13 +41,18 @@
                   ref="dropdownUserButton"
                   type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
                   <span class="sr-only">{{ $t('Open user menu') }}</span>
-                  <svg class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <img 
+                      v-if="coreStore.userAvatarUrl"
+                      class="w-8 h-8 rounded-full object-cover" 
+                      :src="coreStore.userAvatarUrl" 
+                      alt="user photo"
+                    />
+                  <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
                   </svg>
                 </button>
               </div>
-
-              <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:shadow-black dark:bg-darkSidebar dark:divide-darkSidebarDevider dark:shadow-black" id="dropdown-user">
+              <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
                 <div class="px-4 py-3" role="none">
                   <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                     {{ coreStore.userFullname }}
@@ -51,15 +63,18 @@
                 </div>
 
                 <ul class="py-1" role="none">
-                  <li v-for="c in coreStore?.config?.globalInjections?.userMenu || []" >
+                  <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
                     <component 
                       :is="getCustomComponent(c)"
                       :meta="c.meta"
                       :adminUser="coreStore.adminUser"
                     />
                   </li>
+                  <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
+                    <UserMenuSettingsButton />
+                  </li>
                   <li>
-                    <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black hover:bg-html dark:text-darkSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextActive w-full" role="menuitem">{{ $t('Sign out') }}</button>
+                    <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover w-full" role="menuitem">{{ $t('Sign out') }}</button>
                   </li>
                 </ul>
               </div>
@@ -68,114 +83,20 @@
       </div>
     </nav>
 
-    <aside 
-      ref="sidebarAside"
-      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
-      id="logo-lightSidebar" class="fixed border-none top-0 left-0 z-30 w-64 h-screen  transition-transform bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder  sm:translate-x-0 dark:bg-darkSidebar dark:border-darkSidebarBorder"
-      :class="{ '-translate-x-full': !sideBarOpen, 'transform-none': sideBarOpen }"
-      aria-label="Sidebar"
-    >
-      <div class="h-full px-3 pb-4 overflow-y-auto bg-lightSidebar dark:bg-darkSidebar border-r border-lightSidebarBorder dark:border-darkSidebarBorder">
-        <div class="flex ms-2 m-4">
-          <img :src="loadFile(coreStore.config?.brandLogo || '@/assets/logo.svg')" :alt="`${ coreStore.config?.brandName } Logo`" class="h-8 me-3"  />
-          <span 
-            v-if="coreStore.config?.showBrandNameInSidebar"
-            class="self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
-          >
-            {{ coreStore.config?.brandName }}
-          </span>
-        </div>
+    <Sidebar 
+      v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout && !headerOnlyLayout && coreStore.menu.length > 0"
+      :sideBarOpen="sideBarOpen"
+      :forceIconOnly="route.meta?.sidebarAndHeader === 'preferIconOnly'"
+      @hideSidebar="hideSidebar"
+      @loadMenu="loadMenu"
+      @sidebarStateChange="handleSidebarStateChange"
+    />
 
-        <ul class="space-y-2 font-medium">
-          <template v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-            <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
-            <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
-            <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
-            ">{{ item.label }}</div>
-            <li v-else-if="item.children" class="  ">
-              <button @click="clickOnMenuItem(i)" type="button" class="flex items-center w-full p-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
-                  :aria-controls="`dropdown-example${i}`"
-                  :data-collapse-toggle="`dropdown-example${i}`"
-              >
-
-                <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
-
-                <span class="text-ellipsis overflow-hidden flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
-
-                  <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-                    fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
-                    <Tooltip v-if="item.badgeTooltip">
-                      {{ item.badge }}
-                      <template #tooltip>
-                        {{ item.badgeTooltip }}
-                      </template>
-                    </Tooltip>
-                    <template v-else>
-                      {{ item.badge }}
-                    </template> 
-                  </span>
-                </span>
-
-                <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-                </svg>
-              </button>
-
-              <ul :id="`dropdown-example${i}`" role="none" class="pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
-                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                  <li>
-                      <MenuLink :item="child" isChild="true" @click="hideSidebar"/>
-                    </li>
-                </template>
-            </ul>
-        </li>
-        <li v-else>
-          <MenuLink :item="item" @click="hideSidebar"/>
-        </li>
-        </template>
-      </ul>
-
-
-        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-          fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
-          v-if="ctaBadge"
-        >
-          <div class="flex items-center mb-3" :class="!ctaBadge.title ? 'float-right' : ''">
-            <!-- <span class="bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity  text-sm font-semibold me-2 px-2.5 py-0.5 rounded "
-              v-if="ctaBadge.title"
-            > -->
-            <span>
-              {{ctaBadge.title}}
-            </span>
-            <button type="button" 
-              class="ms-auto -mx-1.5 -my-1.5 bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity inline-flex justify-center items-center w-6 h-6  rounded-lg  p-1 hover:brightness-110" 
-              
-              data-dismiss-target="#dropdown-cta" aria-label="Close"
-              v-if="ctaBadge?.closable" @click="closeCTA"
-            >
-              <span class="sr-only">Close</span>
-              <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-              </svg>
-            </button>
-          </div>
-          <p class="mb-3 text-sm " v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
-          <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
-            {{ ctaBadge.text }}  
-          </p>
-          <!-- <a class="text-sm text-lightPrimary underline font-medium hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" href="#">Turn new navigation off</a> -->
-        </div>
-
-        <component 
-          v-for="c in coreStore?.config?.globalInjections?.sidebar || []"
-          :is="getCustomComponent(c)"
-          :meta="c.meta"
-          :adminUser="coreStore.adminUser"
-        />
-      </div>
-    </aside>
-
-    <div class="sm:ml-64 max-w-[100vw] sm:max-w-[calc(100%-16rem)]" 
+    <div class="af-content-wrapper transition-all duration-300 ease-in-out max-w-[100vw]" 
+      :style="{
+        marginLeft: headerOnlyLayout ? 0 : isSidebarIconOnly ? '4.5rem' : expandedWidth,
+        maxWidth: headerOnlyLayout ? '100%' : isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
+      }"
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout">
       <div class="p-0 dark:border-gray-700 mt-14">
         <RouterView/>     
@@ -193,7 +114,7 @@
       </div>
     </div>
     <AcceptModal />
-    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-50">
+    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-[100]">
       <transition-group
         name="fade"
         tag="div"
@@ -219,6 +140,19 @@
 
 <style lang="scss" scoped>
 
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  .blinking-icon {
+    animation: blink 2s ease-in-out infinite;
+  }
+
   .fade-leave-active {
     @apply transition-opacity duration-500;
   }
@@ -235,30 +169,36 @@
     @apply opacity-100;
   }
 
+  @media (max-width: 640px) {
+    .af-content-wrapper {
+      margin-left: 0 !important;
+      max-width: 100% !important;
+    }
+  }
+
+
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, onBeforeMount, nextTick, type Ref } from 'vue';
+import { computed, onMounted, ref, watch, onBeforeMount } from 'vue';
 import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconWifiOff } from '@iconify-prerendered/vue-humbleicons';
 import AcceptModal from './components/AcceptModal.vue';
-import MenuLink from './components/MenuLink.vue';
+import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getIcon, verySimpleHash } from '@/utils';
 import { createHead } from 'unhead'
-import { loadFile } from '@/utils';
+import { getCustomComponent } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
-import { getCustomComponent } from '@/utils';
-import type { AdminForthConfigMenuItem, AnnouncementBadgeResponse } from './types/Common';
-import { Tooltip } from '@/afcl';
 import { initFrontedAPI } from '@/adminforth';
 import adminforth from '@/adminforth';
-
+import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
+import { Tooltip } from '@/afcl'
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
@@ -268,40 +208,49 @@ initFrontedAPI()
 
 createHead()
 const sideBarOpen = ref(false);
-const defaultLayout = ref(true);
 const route = useRoute();
 const router = useRouter();
-//create a ref to store the opened menu items with ts type;
-const opened = ref<string[]>([]);
 const publicConfigLoaded = ref(false);
 const dropdownUserButton = ref(null);
 
-const sidebarAside = ref(null);
 
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
 
+const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'true');
+
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
+const defaultLayout = computed(() => {
+  return route.meta?.sidebarAndHeader !== 'none';
+});
+
+const headerOnlyLayout = computed(() => {
+  return route.meta?.sidebarAndHeader === 'headerOnly';
+});
+
+const expandedWidth = computed(() => coreStore.config?.iconOnlySidebar?.expandedSidebarWidth || '16.5rem');
+
 const theme = ref('light');
+
+const userMenuComponents = computed(() => {
+  return coreStore?.config?.globalInjections?.userMenu || [];
+})
 
 function hideSidebar(): void {
   sideBarOpen.value = false;
 }
+
+function handleSidebarStateChange(state: { isSidebarIconOnly: boolean }) {
+  isSidebarIconOnly.value = state.isSidebarIconOnly;
+}
+
 
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
   coreStore.toggleTheme();
 }
 
-function clickOnMenuItem(label: string) {
-  if (opened.value.includes(label)) {
-    opened.value = opened.value.filter((item) => item !== label);
-  } else {
-    opened.value.push(label);
-  }
- 
-}
 
 async function logout() {
   userStore.unauthorize();
@@ -316,19 +265,11 @@ async function initRouter() {
 
 async function loadMenu() {
   await initRouter();
-  if (!route.meta.customLayout) {
+  if (route.meta.sidebarAndHeader !== 'none') {
     // for custom layouts we don't need to fetch menu
     await coreStore.fetchMenuAndResource();
   }
   loginRedirectCheckIsReady.value = true;
-}
-
-function handleCustomLayout() {
-  if (route.meta?.customLayout) {
-    defaultLayout.value = false;
-  } else {
-    defaultLayout.value = true;
-  }
 }
 
 function humanizeSnake(str: string): string {
@@ -355,19 +296,13 @@ watch(title, (title) => {
   document.title = title;
 })
 
-watch([route, () => coreStore.resourceById, () => coreStore.config], async () => {
-  handleCustomLayout()
-  await new Promise((resolve) => setTimeout(resolve, 0));
- 
+watch(route, () => {
+  // Handle preferIconOnly layout
+  if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
+    isSidebarIconOnly.value = true;
+  }
 });
 
-watch(()=>coreStore.menu, () => {
-    coreStore.menu.forEach((item, i) => {
-    if (item.open) {
-      opened.value.push(i);
-    };
-  });
-})
 
 watch(dropdownUserButton, (dropdownUserButton) => {
   if (dropdownUserButton) {
@@ -386,11 +321,6 @@ async function loadPublicConfig() {
   publicConfigLoaded.value = true;
 }
 
-watch(sidebarAside, (sidebarAside) => {
-  if (sidebarAside) {
-    coreStore.fetchMenuBadges();
-  }
-})
 
 // initialize components based on data attribute selectors
 onMounted(async () => {
@@ -398,11 +328,13 @@ onMounted(async () => {
   loadPublicConfig(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
-  handleCustomLayout();
 
   adminforth.menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }
+
+  window.addEventListener('online', () => coreStore.isInternetError = false);
+  window.addEventListener('offline', () => coreStore.isInternetError = true);
 })
 
 onBeforeMount(()=>{
@@ -410,26 +342,12 @@ onBeforeMount(()=>{
   document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
 
-
-const ctaBadge: Ref<(AnnouncementBadgeResponse & { hash: string; }) | null> = computed(() => {
-  const badge = coreStore.config?.announcementBadge;
-  if (!badge) {
-    return null;
+watch(() => coreStore.config?.singleTheme, (singleTheme) => {
+  if (singleTheme) {
+    theme.value = singleTheme;
+    window.localStorage.setItem('af__theme', singleTheme);
+    document.documentElement.classList.toggle('dark', theme.value === 'dark');
   }
-  const hash = badge.closable ? verySimpleHash(JSON.stringify(badge)) : '';
-  if (badge.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
-    return null;
-  }
-  return {...badge, hash};
-});
-
-function closeCTA() {
-  if (!ctaBadge.value) {
-    return;
-  }
-  const hash = ctaBadge.value.hash;
-  window.localStorage.setItem(`ctaBadge-${hash}`, '1');
-}
-
+}, { immediate: true })
 
 </script>

@@ -1,10 +1,10 @@
 <template>
-  <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800 relative w-screen h-screen"
+  <div class="relative flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml w-screen h-screen"
     :style="coreStore.config?.loginBackgroundImage && backgroundPosition === 'over' ? {
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
       'background-position': 'center',
-      'background-blend-mode': 'darken'
+      'background-blend-mode': coreStore.config?.removeBackgroundBlendMode ? 'normal' : 'darken'
     }: {}"
   >
     
@@ -23,49 +23,62 @@
 
     <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" 
-      class="overflow-y-auto flex flex-grow
+      class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-black" >
+            <div class="af-login-popup af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
                 <!-- Modal header -->
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+
+                    <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
+                      <component 
+                        v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
+                        :key="index"
+                        :is="getCustomComponent(c)"
+                        :meta="c.meta"
+                      />
+                    </template>
+                    <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
                       {{ $t('Sign in to') }} {{ coreStore.config?.brandName }}
                     </h3>
                 </div>
                 <!-- Modal body -->
-                <div class="p-4 md:p-5">
+                <div class="af-login-modal-body p-4 md:p-5">
                     <form class="space-y-4" @submit.prevent>
                         <div>
-                            <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
-                            <input 
+                            <label for="username" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
+                            <Input 
+                              v-model="username"
                               autocomplete="username"  
                               type="username" 
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="passwordInput.focus()"
-                              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
+                              class="w-full"
+                              placeholder="name@company.com" required />
                         </div>
-                        <div class="relative">
-                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('Your password') }}</label>
-                            <input 
+                        <div class="">
+                            <label for="password" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your password') }}</label>
+                            <Input 
+                              v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
-                              oninput="setCustomValidity('')"
                               @keydown.enter="login"
-                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
-                            <button type="button" @click="showPw = !showPw" class="absolute top-12 right-3 -translate-y-1/2 text-gray-400 dark:text-gray-300">
-                              <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
-                              <IconEyeSlashSolid class="w-5 h-5" v-else />
-                            </button>
+                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
+                              <template #rightIcon>
+                                <button type="button" @click="showPw = !showPw" class="text-lightLoginViewSubTextColor dark:text-darkLoginViewSubTextColor">
+                                  <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
+                                  <IconEyeSlashSolid class="w-5 h-5" v-else />
+                                </button>
+                              </template>
+                            </Input>
                         </div>
 
-                        <div v-if="coreStore.config.rememberMeDays" 
+                        <div v-if="coreStore.config.rememberMeDuration" 
                             class="flex items-start mb-5"
-                            :title="$t(`Stay logged in for {days} days`, {days: coreStore.config.rememberMeDays})"
+                            :title="$t(`Stay logged in for {days}`, {days: coreStore.config.rememberMeDuration})"
                         >
                           <Checkbox v-model="rememberMeValue" class="mr-2">
                             {{ $t('Remember me') }}
@@ -77,20 +90,11 @@
                           v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
                           :is="getCustomComponent(c)"
                           :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
                         />
-
-                        <div v-if="error" class="flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                          <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                          </svg>
-                          <span class="sr-only">{{ $t('Info') }}</span>
-                          <div>
-                            {{ error }}
-                          </div>
-                        </div>
-
+                        
                         <div v-if="coreStore.config?.loginPromptHTML"
-                          class="flex items-center p-4 mb-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-400" role="alert"
+                          class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
                         >
                           <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
@@ -98,13 +102,19 @@
                           <span class="sr-only">{{ $t('Info') }}</span>
                           <div v-html="coreStore.config?.loginPromptHTML"></div>
                         </div>
-                        <Button @click="login" :loader="inProgress" :disabled="inProgress" class="w-full">
+                        <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton" class="w-full">
                           {{ $t('Login to your account') }}
                         </Button>
+                        <component 
+                          v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          :is="getCustomComponent(c)"
+                          :meta="c.meta"
+                          @update:disableLoginButton="setDisableLoginButton($event)"
+                        />
                     </form>
-
                 </div>
             </div>
+            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-9" />
         </div>
     </div> 
 
@@ -112,7 +122,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 
 import { getCustomComponent } from '@/utils';
 import { onBeforeMount, onMounted, ref, computed } from 'vue';
@@ -121,29 +131,34 @@ import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import { Button, Checkbox } from '@/afcl';
+import { Button, Checkbox, Input } from '@/afcl';
 import { useI18n } from 'vue-i18n';
+import ErrorMessage from '@/components/ErrorMessage.vue';
 
 const { t } = useI18n();
 
 const passwordInput = ref(null);
 const usernameInput = ref(null);
 const rememberMeValue= ref(false);
+const username = ref('');
+const password = ref('');
 
 const route = useRoute();
 const router = useRouter();
-const inProgress = ref(false);
-
+const inProgress = ref<boolean>(false);
+const isSuccess = ref<boolean>(false);
 const coreStore = useCoreStore();
 const user = useUserStore();
 
 const showPw = ref(false);
 
 const error = ref(null);
+const disableLoginButton = ref(false);
 
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
+
 
 onBeforeMount(() => {
   if (localStorage.getItem('isAuthorized') === 'true') {
@@ -158,30 +173,18 @@ onBeforeMount(() => {
 })
 
 onMounted(async () => {
+  coreStore.getLoginFormConfig();
     if (coreStore.config?.demoCredentials) {
-      const [username, password] = coreStore.config.demoCredentials.split(':');
-      usernameInput.value.value = username;
-      passwordInput.value.value = password;
+      const [demoUsername, demoPassword] = coreStore.config.demoCredentials.split(':');
+      username.value = demoUsername;
+      password.value = demoPassword;
     }
     usernameInput.value.focus();
 });
 
 
 async function login() {
-  
-  const username = usernameInput.value.value;
-  const password = passwordInput.value.value;
-
-  if (!username) {
-    usernameInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-  if (!password) {
-    passwordInput.value.setCustomValidity(t('Please fill out this field.'));
-    return;
-  }
-
-  if (inProgress.value) {
+  if (inProgress.value || isSuccess.value) {
     return;
   }
   inProgress.value = true;
@@ -189,22 +192,30 @@ async function login() {
     path: '/login',
     method: 'POST',
     body: {
-      username,
-      password,
+      username: username.value,
+      password: password.value,
       rememberMe: rememberMeValue.value,
     }
   });
   if (resp.error) {
       error.value = resp.error;
   } else if (resp.redirectTo) {
+    error.value = null;
+    isSuccess.value = true;
+    user.authorize();
+    await coreStore.fetchMenuAndResource();
     router.push(resp.redirectTo);
   } else {
     error.value = null;
+    isSuccess.value = true;
     await user.finishLogin();
   }
   inProgress.value = false;
 
 }
 
+function setDisableLoginButton(value: boolean) {
+  disableLoginButton.value = value;
+}
 
 </script>

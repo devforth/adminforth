@@ -7,7 +7,9 @@ import {
 
 
 import { suggestIfTypo } from "../modules/utils.js";
-import { AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { randomUUID } from "crypto";
+import dayjs from "dayjs";
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -100,16 +102,25 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }, { ok: true, error: '' });
     }
 
-    if ((filters as IAdminForthSingleFilter).field) {
+    const filtersAsSingle = filters as IAdminForthSingleFilter;
+    if (filtersAsSingle.field) {
       // if "field" is present, filter must be Single
       if (!filters.operator) {
         return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).value === undefined) {
+      // Either compare with value or with rightField (field-to-field). If rightField is set, value must be undefined.
+      const comparingWithRightField = filtersAsSingle.rightField !== undefined && filtersAsSingle.rightField !== null;
+      if (!comparingWithRightField && filtersAsSingle.value === undefined) {
         return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+      if (comparingWithRightField && filtersAsSingle.value !== undefined) {
+        return { ok: false, error: `Specify either "value" or "rightField", not both: ${JSON.stringify(filters)}` };
+      }
+      if (filtersAsSingle.insecureRawSQL) {
         return { ok: false, error: `Field "insecureRawSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
+      }
+      if (filtersAsSingle.insecureRawNoSQL) {
+        return { ok: false, error: `Field "insecureRawNoSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
       }
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
@@ -117,31 +128,61 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       AdminForthFilterOperators.NIN].includes(filters.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
-      const fieldObj = resource.dataSourceColumns.find((col) => col.name == (filters as IAdminForthSingleFilter).field);
+      const fieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field);
       if (!fieldObj) {
-        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), (filters as IAdminForthSingleFilter).field);
-        throw new Error(`Field '${(filters as IAdminForthSingleFilter).field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.field);
+        
+        let isPolymorphicTarget = false;
+        if (global.adminforth?.config?.resources) {
+          isPolymorphicTarget = global.adminforth.config.resources.some(res => 
+            res.dataSourceColumns.some(col => 
+              col.foreignResource?.polymorphicResources?.some(pr => 
+                pr.resourceId === resource.resourceId
+              )
+            )
+          );
+        }
+        if (isPolymorphicTarget) {
+          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          return { ok: true, error: '' };
+        } else {
+          throw new Error(`Field '${filtersAsSingle.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        }
       }
       // value normalization
-      if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
+      if (comparingWithRightField) {
+        // ensure rightField exists in resource
+        const rightFieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.rightField);
+        if (!rightFieldObj) {
+          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.rightField as string);
+          throw new Error(`Field '${filtersAsSingle.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+        }
+        // No value conversion needed for field-to-field comparison here
+      } else if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
         if (!Array.isArray(filters.value)) {
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
         }
         if (filters.value.length === 0) {
-          // nonsense
-          return { ok: false, error: `Filter has IN operator but empty value: ${JSON.stringify(filters)}` };
+          // nonsense, and some databases might not accept IN []
+          const colType = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field)?.type;
+          if (colType === AdminForthDataTypes.STRING || colType === AdminForthDataTypes.TEXT) {
+            filters.value = [randomUUID()];
+            return { ok: true,  error: `` };
+          } else {
+            return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
+          }
         }
-        filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
+        filters.value = filters.value.map((val: any) => this.validateAndSetFieldValue(fieldObj, val));
       } else {
-        (filters as IAdminForthSingleFilter).value = this.setFieldValue(fieldObj, (filters as IAdminForthSingleFilter).value);
+        filtersAsSingle.value = this.validateAndSetFieldValue(fieldObj, filtersAsSingle.value);
       }
-    } else if ((filters as IAdminForthSingleFilter).insecureRawSQL) {
+    } else if (filtersAsSingle.insecureRawSQL || filtersAsSingle.insecureRawNoSQL) {
       // if "insecureRawSQL" filter is insecure sql string
-      if ((filters as IAdminForthSingleFilter).operator) {
-        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      if (filtersAsSingle.operator) {
+        return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
-      if ((filters as IAdminForthSingleFilter).value !== undefined) {
-        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL": ${JSON.stringify(filters)}` };
+      if (filtersAsSingle.value !== undefined) {
+        return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
     } else if ((filters as IAdminForthAndOrFilter).subFilters) {
       // if "subFilters" is present, filter must be AndOr
@@ -186,6 +227,90 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
+  validateAndSetFieldValue(field: AdminForthResourceColumn, value: any): any {
+    // Int
+    if (field.type === AdminForthDataTypes.INTEGER) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!Number.isFinite(value)) {
+        throw new Error(`Value is not an integer. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Float
+    if (field.type === AdminForthDataTypes.FLOAT) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          `Value is not a float. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`
+        );
+      }
+
+      return this.setFieldValue(field, value);
+    }
+
+    // Decimal
+    if (field.type === AdminForthDataTypes.DECIMAL) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (typeof value === "string") {
+        const string = value.trim();
+        if (!string) {
+          return this.setFieldValue(field, null);
+        }
+        if (Number.isFinite(Number(string))) {
+          return this.setFieldValue(field, string);
+        }
+        throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+
+      throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`);
+    }
+
+    // Date
+
+
+    // DateTime
+    if (field.type === AdminForthDataTypes.DATETIME) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!dayjs(value).isValid()) {
+        throw new Error(`Value is not a valid datetime. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Time
+
+    // Boolean
+    if (field.type === AdminForthDataTypes.BOOLEAN) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (typeof value !== 'boolean') {
+        throw new Error(`Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+    
+    // JSON
+
+    // String
+    if (field.type === AdminForthDataTypes.STRING) {
+      if (value === "" || value === null){
+        return this.setFieldValue(field, null);
+      }
+    }
+    return this.setFieldValue(field, value);
+  }
+
   getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource; columns: AdminForthResourceColumn[]; }): Promise<{ [key: string]: { min: any; max: any; }; }> {
     throw new Error('Method not implemented.');
   }
@@ -194,17 +319,18 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any) {
+  async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any, record?: any): Promise<boolean> {
     process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+
+    const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
       resource,
-      filters: {
-        operator: AdminForthFilterOperators.AND,
-        subFilters: [{
-          field: column.name,
-          operator: AdminForthFilterOperators.EQ,
-          value: this.setFieldValue(column, value),
-        }],
+      filters: { 
+        operator: AdminForthFilterOperators.AND, 
+        subFilters: [
+          { field: column.name, operator: AdminForthFilterOperators.EQ, value: this.setFieldValue(column, value) },
+          ...(record ? [{ field: primaryKeyField, operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE, value: record[primaryKeyField] }] : [])
+        ]
       },
       limit: 1,
       sort: [],
@@ -219,13 +345,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource; record: any; adminUser: any;
   }): Promise<{ error?: string; ok: boolean; createdRecord?: any; }> {
     // transform value using setFieldValue and call createRecordOriginalValues
-
+    
     const filledRecord = {...record};
     const recordWithOriginalValues = {...record};
 
     for (const col of resource.dataSourceColumns) {
       if (col.fillOnCreate) {
-        if (filledRecord[col.name] === undefined) {
+        if (filledRecord[col.name] === undefined || (Array.isArray(filledRecord[col.name]) && filledRecord[col.name].length === 0)) {
           filledRecord[col.name] = col.fillOnCreate({
             initialRecord: record, 
             adminUser
@@ -234,7 +360,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       if (filledRecord[col.name] !== undefined) {
         // no sense to set value if it is not defined
-        recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+        recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, filledRecord[col.name]);
       }
     }
 
@@ -280,7 +406,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   async updateRecord({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<{ error?: string; ok: boolean; }> {
     // transform value using setFieldValue and call updateRecordOriginalValues
     const recordWithOriginalValues = {...newValues};
-
+    
     for (const field of Object.keys(newValues)) {
       const col = resource.dataSourceColumns.find((col) => col.name == field);
       // todo instead of throwing error, we can just not use setFieldValue here, and pass original value to updateRecordOriginalValues
@@ -291,8 +417,25 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           Update record received field '${field}' (with value ${newValues[field]}), but such column not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}
         `);
       }
-      recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
+      recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, newValues[col.name]);
     }
+    const record = await this.getRecordByPrimaryKey(resource, recordId);
+    let error: string | null = null;
+     await Promise.all(
+      resource.dataSourceColumns.map(async (col) => {
+        if (col.isUnique && !col.virtual && !error && Object.prototype.hasOwnProperty.call(recordWithOriginalValues, col.name)) {
+          const exists = await this.checkUnique(resource, col, recordWithOriginalValues[col.name], record);
+          if (exists) {
+            error = `Record with ${col.name} ${recordWithOriginalValues[col.name]} already exists`;
+          }
+        }
+      })
+    );
+    if (error) {
+      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      return { error, ok: false };
+    }
+
 
     process.env.HEAVY_DEBUG && console.log(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
@@ -359,6 +502,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         }
         return newRecord;
     });
+  }
+  async getAllTables(): Promise<string[]> {
+    throw new Error('getAllTables() must be implemented in subclass');
+  }
+
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
+    throw new Error('getAllColumnsInTable() must be implemented in subclass');
   }
 
     

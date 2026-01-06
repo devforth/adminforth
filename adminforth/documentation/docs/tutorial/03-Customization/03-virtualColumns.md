@@ -67,8 +67,6 @@ columns: [
       resource: AdminForthResourceCommon;
       adminUser: AdminUser
   }>();
-
-###
     
    function getFlagEmojiFromIso(iso) {
       return iso?.toUpperCase()?.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
@@ -88,6 +86,7 @@ One way to do it is to actually add a real column to a table and then fill it ev
 For this purpose following changes will be required for apartments config:
 
 ```ts title='./resources/apartments.ts'
+import { Filters } from "adminforth";
 ...
 resourceId: 'aparts',
 ...
@@ -99,11 +98,11 @@ hooks: {
         // replace apartment_type filter with complex one
         if (filter.field === 'apartment_type') {
           if (filter.value === 'luxury') {
-            return Filters.OR([Filters.GTE('square_meter', 80), Filters.GTE('price', 100000)]);
+            return Filters.OR(Filters.GTE('square_meter', 80), Filters.GTE('price', 100000));
           }
 
           // filter for "base" apartment as default
-          return Filters.AND([Filters.LT('square_meter', 80), Filters.LT('price', 100000)]);
+          return Filters.AND(Filters.LT('square_meter', 80), Filters.LT('price', 100000));
         }
 
         return filter;
@@ -143,10 +142,10 @@ This way, when admin selects, for example, "Luxury" option for "Apartment Type" 
 
 ### Custom SQL queries with `insecureRawSQL`
 
-Rarely the sec of Filters supported by AdminForth is not enough for your needs.
+Rarely the set of Filters supported by AdminForth is not enough for your needs.
 In this case you can use `insecureRawSQL` to write your own part of where clause.
 
-However the vital concern that the SQL passed to DB as is, so if you substitute any user inputs it will not be escaped and can lead to SQL injection. To miticate the issue we recommend using `sqlstring` package which will escape the inputs for you.
+However the vital concern that the SQL passed to DB as is, so if you substitute any user inputs it will not be escaped and can lead to SQL injection. To mitigate the issue we recommend using `sqlstring` package which will escape the inputs for you.
 
 ```bash
 npm i sqlstring
@@ -164,7 +163,7 @@ import sqlstring from 'sqlstring';
       if (filter.field === 'some_json_b_field') {
         return {
           // check if some_json_b_field->'$.some_field' is equal to filter.value
-          insecureRawSQL: `some_json_b_field->'$.some_field' = ${sqlstring.escape(filter.value)}`,
+          insecureRawSQL: `some_json_b_field->>'$.some_field' = ${sqlstring.escape(filter.value)}`,
         }
       }
 
@@ -175,6 +174,48 @@ import sqlstring from 'sqlstring';
 ```
 
 This example will allow to search for some nested field in JSONB column, however you can use any SQL query here.
+
+
+### Custom Mongo queries with `insecureRawNoSQL`
+
+For MongoDB data sources, you can inject a raw Mongo filter object via `insecureRawNoSQL`. This is useful when the built-in filters are not enough or you need dot-notation and operators not covered by AdminForth helpers.
+
+Important: The object you provide is sent directly to MongoDB. Validate and sanitize any user inputs to prevent abuse of operators like `$where`, `$regex`, etc.
+
+Example — filter by nested field using dot-notation:
+
+```ts title='./resources/apartments.ts'
+...
+hooks: {
+  list: {
+    beforeDatasourceRequest: async ({ query, body }: { query: any, body: any }) => {
+      // Add raw Mongo filter: meta.is_active must equal body.is_active
+      query.filters.push({
+        insecureRawNoSQL: { 'meta.is_active': body.is_active },
+      });
+      return { ok: true, error: '' };
+    },
+  },
+},
+```
+
+You can combine it with other AdminForth filters using AND/OR:
+
+```ts
+import { Filters } from 'adminforth';
+
+query.filters = [
+  Filters.AND(
+    { insecureRawNoSQL: { 'meta.is_active': true } },
+    Filters.EQ('status', 'active'),
+  )
+];
+```
+
+Notes:
+- `insecureRawNoSQL` is Mongo-only. For SQL databases, use `insecureRawSQL`.
+- If both `field`/`operator`/`value` and `insecureRawNoSQL` are present in one filter object, validation will fail.
+- `insecureRawSQL` is ignored by the Mongo connector.
 
 
 
@@ -236,21 +277,4 @@ Hook still has access to the virtual field `updates.password`, and we use built-
 After hook is executed, `updates.password` will be removed from the record since it is virtual, so password itself will not be saved to the database.
 
 
-### Backend-only fields
-
-Another important point is that `hashed_password` field should never be passed to frontend due to security reasons.
-
-To do it we have 2 options:
-
-1) Do not list `password_hash` in the `columns` array of the resource. If AdminForth knows nothing about field
-it will never pass this field to frontend.
-2) Define `password_hash` in columns way but set `backendOnly`. The scond option is more explicit and should be preferrred
-
-```ts
-{
-  name: 'password_hash',
-  type: AdminForthDataTypes.STRING,
-  showIn: { all: false },
-  backendOnly: true,  // will never go to frontend
-}
-```
+  

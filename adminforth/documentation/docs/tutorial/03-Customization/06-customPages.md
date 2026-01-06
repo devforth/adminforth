@@ -306,11 +306,14 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 ```ts title="/index.ts"
 
+import type { IAdminUserExpressRequest } from 'adminforth';
+import express from 'express';
+
 ....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
   admin.express.authorize(
-    async (req, res) => {
+    async (req:IAdminUserExpressRequest, res: express.Response) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
@@ -403,7 +406,7 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 );
 
 // serve after you added all api
-admin.express.serve(app, express)
+admin.express.serve(app)
 admin.discoverDatabases();
 
 ```
@@ -438,7 +441,8 @@ new AdminForth({
           file: '@@/pages/TwoFactorsSetup.vue',
           meta: { 
             title: 'Setup 2FA',  // meta title for this page
-            customLayout: true  // don't include default layout like menu/header
+              //diff-add
+            sidebarAndHeader: 'none'  // Layout options: 'none' (no sidebar/header), 'default' (full layout), 'preferIconOnly' (collapsed sidebar)
           }
         }
       }
@@ -446,6 +450,11 @@ new AdminForth({
   }
 })
 ```
+
+> 💡 **Layout Options Explained:**
+> - `'none'`: Renders the page without AdminForth's default sidebar and header layout - perfect for standalone pages like setup wizards, or public (logged-out) pages (Terms-of-Service/PP/Contact form etc)
+> - `'default'`: Uses the full AdminForth layout with sidebar and header - ideal for pages that should feel integrated with the admin panel
+> - `'preferIconOnly'`: Uses the default layout but starts with a collapsed sidebar (even if icon-only sidebar is disabled in your configuration) - great for pages that need more screen space or already have some navigation
 
 This will register custom page with path `/setup2fa` and will not include it in the menu. 
 
@@ -457,9 +466,21 @@ You can navigate user to this page using any router link, e.g.:
 </template>
 ```
 
+Add to your `<script setup>` section:
+
 ```ts
 import { Link } from '@/afcl';
 ```
+
+If you set `sidebarAndHeader: 'none'` in the `meta` object, it will not include default layout like sidebar and header, so you can create your own layout for this page. 
+
+### Disable redirects to login page (Public pages)
+
+Any route which has sidebar and header (e.g. default CRUD pages or menu item with `component`) uses internal AdminForth REST API to fetch menu items and user information, so it passes authentication check and if authentication cookie is not provided or has expired JWT user gets redirected to the login page.
+
+In case if you set `sidebarAndHeader: 'none'`, it will not call these APIs so user will not be automatically redirected to the login page in case of expired or not-provided authentication cookie. That feature allows you to implement public pages without authentication, e.g. Terms of Service, Privacy Policy and many others. In case if you need to check if user is logged in just call any custom API which has `admin.express.authorize` middleware. Obviously for public pages if they use any APIs you should create API endpoint WITHOUT `admin.express.authorize` middleware.
+
+> Please note that AdminForth uses classic SPA Vue app, so even public pages will be rendered by JavaScript in the browser and not on the server side. If your public page should be indexed by search engines, you should use some SSR framework like Nuxt.js to create such pages. At the same time public pages can still be usefull if you don't focus on old-fashioned search engines (modern search engines can index SPA pages as well) or if indexing is not important for such pages at all (e.g. Terms of Service, Privacy Policy, Contact Us and many others).
 
 ### Passing meta attributes to the page
 
@@ -476,7 +497,7 @@ You can add custom meta attributes to the page by passing `meta` object to the p
           file: '@@/pages/TwoFactorsSetup.vue',
           meta: { 
             title: 'Setup 2FA',  // meta title for this page
-            customLayout: true,  // don't include default layout like menu/header
+            sidebarAndHeader: 'none',   // don't include default layout like menu/header
     //diff-add
             myAttribute: 'a1'
           }
@@ -494,3 +515,55 @@ const route = useRoute();
 
 console.log(route.meta.myAttribute);  // a1
 ```
+
+## Settings View 
+
+If you want to add a Settings section to your project:
+
+```ts title='./index.ts' 
+export const admin = new AdminForth({
+  baseUrl : ADMIN_BASE_URL,
+  auth: {
+    //diff-add
+    userMenuSettingsPages: [
+      //diff-add
+      {
+        //diff-add
+        pageLabel: 'Profile settings',
+        //diff-add
+        component: '@@/ProfileSettings.vue',
+        //diff-add
+        // Specify a slug if you want a custom URL path.
+        //diff-add
+        // For example, without a slug, the URL will be:
+        //diff-add
+        //   example.com/settings/profile-settings
+        //diff-add
+        // With a custom slug, you could have:
+        //diff-add
+        //   example.com/settings/users-settings
+        //diff-add
+        slug: "users-settings",
+        //diff-add
+        icon:"flowbite:user-solid"
+        //diff-add
+      },
+      //diff-add
+      {
+        //diff-add
+        pageLabel: 'Security',
+        //diff-add
+        component: "@@/MySecrets.vue",
+        //diff-add
+        icon: "flowbite:lock-solid"
+        //diff-add
+      }
+      //diff-add
+    ],
+  }
+});
+```
+
+After this, you will have a custom Settings section in the users menu:
+
+![alt text](SettingsView-1.png)

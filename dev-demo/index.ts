@@ -1,142 +1,61 @@
-import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminUser, Filters } from '../adminforth/index.js';
+import AdminForth, {  Filters } from '../adminforth/index.js';
+import usersResource from "./resources/adminuser.js";
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { Decimal } from 'decimal.js';
+import { initApi } from './api.js';
+import cars_SQLITE_resource from './resources/cars_SL.js';
+import cars_MyS_resource from './resources/cars_MyS.js';
+import cars_PG_resource from './resources/cars_PG.js';
+import cars_Mongo_resource from './resources/cars_mongo.js';
+import cars_Ch_resource from './resources/cars_Ch.js';
 
-import AuditLogPlugin from '../plugins/adminforth-audit-log/index.js';
-import clicksResource from './resources/clicks.js';
-import apartmentsResource from './resources/apartments.js';
-import apartmentBuyersResource from './resources/apartment_buyers.js';
-import auditLogResource from './resources/audit_log.js';
-import descriptionImageResource from './resources/description_image.js';
-import usersResource from './resources/users.js';
-// import gameResource from './resources/game.js';
-// import gamesUsersResource from './resources/games_users.js';
-// import gamesResource from './resources/games.js';
-import translationsResource from './resources/translation.js';
-import clinicsResource from './resources/clinics.js';
-import providersResource from './resources/providers.js';
-import apiKeysResource from './resources/api_keys.js';
-import CompletionAdapterOpenAIChatGPT from '../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
-import pkg from 'pg';
-const { Client } = pkg;
+import auditLogsResource from "./resources/auditLogs.js"
+import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
+import passkeysResource from './resources/passkeys.js';
+import carsDescriptionImage from './resources/cars_description_image.js';
+import translations from "./resources/translations.js";
 
-// const ADMIN_BASE_URL = '/portal';
 const ADMIN_BASE_URL = '';
 
-// create test1.db 
-const dbPath = 'db.sqlite';
-const db = betterSqlite3(dbPath)
-
-async function seedDatabase() {
-
-  const adapter = new CompletionAdapterOpenAIChatGPT({
-    openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-4o-mini',
-    expert: {
-      // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
-      temperature: 0.5,
-    },
-  });
-
-  if (await admin.resource('aparts').count() > 0) {
-    return
-  }
-  for (let i = 0; i <= 100; i++) {
-    const country = `${['US', 'DE', 'FR', 'GB', 'NL', 'IT', 'ES', 'DK', 'PL', 'UA'][Math.floor(Math.random() * 10)]}`;
-    const resp = await adapter.complete(`Generate some example apartment name (like AirBNB style) in some city of ${country}. Answer in JSON format { "title": "<generated title>" }. Do not talk to me, return JSON only.`);
-    const json = JSON.parse(resp.content?.replace(/```json\n/, '').replace(/\n```/, ''));
-    await admin.resource('aparts').create({
-      id: `${i}`,
-      title: json.title,
-      square_meter: (Math.random() * 100).toFixed(1),
-      price: (Math.random() * 10000).toFixed(2),
-      number_of_rooms: Math.floor(Math.random() * 4) + 1,
-      description: 'Next gen apartments',
-      created_at: (new Date(Date.now() - Math.random() * 60 * 60 * 24 * 14 * 1000)).toISOString(),
-      listed: (Math.random() > 0.5),
-      country,
-    });
-  };
-};
-
-
 export const admin = new AdminForth({
-  baseUrl : ADMIN_BASE_URL,
+  baseUrl: ADMIN_BASE_URL,
   auth: {
-    usersResourceId: 'users',  // resource for getting user
+    usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
-    userFullNameField: 'fullName', // optional
+    rememberMeDuration: '30d', 
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    loginBackgroundPosition: '1/2', // over, 3/4, 2/5, 3/5 (tailwind grid)
-    demoCredentials: "adminforth:adminforth",  // never use it for production
-    loginPromptHTML: "Use email <b>adminforth</b> and password <b>adminforth</b> to login",
-    // loginBackgroundImage: '@@/pho.jpg',
-    rememberMeDays: 30,
-    beforeLoginConfirmation: [async ({adminUser, adminforth, extra}) => {
-      adminforth.resource('users').update(adminUser.dbUser.id, { last_login_ip: adminforth.auth.getClientIp(extra.headers) });
-    }],
-    websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
-      if (!adminUser) {
-        // don't allow anonymous users to subscribe
-        return false;
+    loginBackgroundPosition: '1/2',
+    loginPromptHTML: async () => { 
+      const adminforthUserExists = await admin.resource("adminuser").count(Filters.EQ('email', 'adminforth')) > 0;
+      if (adminforthUserExists) {
+        return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
-      const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
-      console.log(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
-      if (subject === 'property-cost') {
-        return param === adminUser.dbUser.id;
-      }
-      return false;
     },
-    websocketSubscribed: async (topic, adminUser) => {
-      const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
-      if (adminUser) {
-        console.log(`Websocket user ${adminUser.username} subscribed to topic ${subject} with param ${param}`);
-      } else {
-        console.log(`Unauthenticated user subscribed to topic ${subject} with param ${param}`);
+    avatarUrl: async (adminUser)=>{
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      if (!plugin) {
+        throw new Error('Upload plugin for avatar not found');
       }
-      if (subject === 'property-cost') {
-        const userId = param;
-        const totalCost = (await admin.resource('aparts').list(Filters.EQ('user_id', userId))).map((r) => r.price).reduce((a, b) => a + b, 0);
-        admin.websocket.publish(topic, { type: 'message', totalCost });
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        return '';
       }
-    }
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      return imageUrl;
+    },
   },
   customization: {
-    customComponentsDir: './custom',
-    globalInjections: {
-      userMenu: '@@/login2.vue',
-      // header: '@@/PropertyCost.vue',
-    },
-    customPages:[{
-      path : '/login2',
-      component: {
-        file:'@@/login2.vue',
-        meta: {
-          customLayout: true,
-      }}
-    }],
-   
-    vueUsesFile: '@@/vueUses.ts',  // @@ is alias to custom directory,
-    brandName: 'New Reality',
-    showBrandNameInSidebar: true,
-    // datesFormat: 'D MMM YY',
-    // timeFormat: 'HH:mm:ss',
+    brandName: "dev-demo",
+    title: "dev-demo",
+    favicon: '@@/assets/favicon.png',
+    brandLogo: '@@/assets/logo.svg',
     datesFormat: 'DD MMM',
-    timeFormat: 'hh:mm a',
-
-    // title: 'Devforth Admin',
-    // brandLogo: '@@/df.svg',
+    timeFormat: 'HH:mm a',
+    showBrandNameInSidebar: true,
+    showBrandLogoInSidebar: true,
     emptyFieldPlaceholder: '-',
-    // styles:{
-    //   colors: {
-    //     light: {
-    //       primary: '#425BB8',
-    //       sidebar: {main:'#1c2a5b', text:'white'},
-    //     },
-    //   }
-    // },
-
     styles:{
       colors: {
         light: {
@@ -156,364 +75,213 @@ export const admin = new AdminForth({
           },
         }
       }
-    },
-
-    announcementBadge: (adminUser: AdminUser) => {
-      return { 
-        html: `
-<svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
-<a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
-        closable: true,
-        title: 'Support us for free',
-      }
-    },
-
-    // loginPageInjections: {
-    //   underInputs: '@@/login2.vue',
-    // }
-    
-    loginPageInjections: {
-      underInputs: '@@/CustomLoginFooter.vue',
-    },
-   },
- 
-
-
+    }
+  },
   dataSources: [
     {
-      id: 'maindb',
-      url: `sqlite://${dbPath}`
+      id: 'sqlite',
+      url: `${process.env.SQLITE_URL}`
     },
     {
-      id: 'pg',
-      url: 'postgres://demo:demo@localhost:53321/demo',
-    },
-    {
-      id: 'db3',
+      id: 'mongo',
       url: 'mongodb://127.0.0.1:27028/demo?retryWrites=true&w=majority&authSource=admin',
     },
     {
-      id: 'ch',
-      url: 'clickhouse://demo:demo@localhost:8125/demo',
+      id: 'postgres',
+      url: 'postgres://demo:demo@localhost:53321/demo',
     },
     {
       id: 'mysql',
       url: 'mysql://demo:demo@localhost:3307/demo',
     },
+    {
+      id: 'clickhouse',
+      url: 'clickhouse://demo:demo@localhost:8124/demo',
+    }
   ],
   resources: [
-    clicksResource,
-    auditLogResource,
-    apartmentsResource,
-    apartmentBuyersResource,
     usersResource,
-    descriptionImageResource,
-    clinicsResource,
-    providersResource,
-    apiKeysResource,
-    // gamesResource,
-    // gamesUsersResource,
-    // gameResource,
-    translationsResource,
+    auditLogsResource,
+    cars_SQLITE_resource,
+    cars_MyS_resource,
+    cars_PG_resource,
+    cars_Mongo_resource,
+    cars_Ch_resource,
+    passkeysResource,
+    carsDescriptionImage,
+    translations,
   ],
   menu: [
+    { type: 'heading', label: 'SYSTEM' },
     {
-      label: 'Dashboard',
+      label: 'Af Components',
       icon: 'flowbite:chart-pie-solid',
-      component: '@@/Dash.vue',
-      path: '/dashboard',
-      // homepage: true,
-      isStaticRoute:false,
-      // meta:{
-      //   title: 'Dashboard',
-      // }
-    },
-    {
-      label: 'Core',
-      icon: 'flowbite:brain-solid', //from here https://icon-sets.iconify.design/flowbite/
-      open: true,
-      children: [
-        {
-          label: 'Apartments',
-          icon: 'flowbite:home-solid',
-          resourceId: 'aparts',
-          badge: async (adminUser) => {
-            return '10'
-          }
-        },
-        {
-          label: 'Potential Buyers',
-          icon: 'flowbite:user-solid',
-          resourceId: 'apartment_buyers',
-        },
-        {
-          label: 'Description Images',
-          resourceId: 'description_images',
-          icon: 'flowbite:image-solid',
-
-        },
-
-        // {
-        //   label: 'Games',
-        //   icon: 'flowbite:caret-right-solid',
-        //   resourceId: 'game',
-        // },
-        // {
-        //   label: 'Games Users',
-        //   icon: 'flowbite:user-solid',
-        //   resourceId: 'games_users',
-        //   visible:(user) => {
-        //     return user.dbUser.role === 'superadmin'
-        //   }
-        // },
-        // {
-        //   label: 'Casino Games',
-        //   icon: 'flowbite:caret-right-solid',
-        //   resourceId: 'game',
-        // },
-
-        {
-          label: 'Clinics',
-          icon: 'flowbite:building-solid',
-          resourceId: 'clinics',
-        },
-        {
-          label: 'Providers',
-          icon: 'flowbite:user-solid',
-          resourceId: 'providers',
-        },
-        {
-          label: 'API Keys',
-          icon: 'flowbite:search-outline',
-          resourceId: 'api_keys',
-        },
-        {
-          label: 'Clicks',
-          icon: 'flowbite:search-outline',
-          resourceId: 'clicks',
-        },
-        {
-          label: 'Translations',
-          icon: 'material-symbols:translate',
-          resourceId: 'translations',
-        }
-      ]
-    },
-    {
-      type: 'gap'
+      component: '@@/AfComponents.vue',
+      path: '/af-components',
     },
     {
       type: 'divider'
     },
     {
-      type: 'heading',
-      label: 'SYSTEM',
+      label: 'Cars',
+      icon: 'flowbite:cart-solid',
+      open: true,
+      children: [
+        {
+          label: 'Cars (SQLITE)',
+          resourceId: 'cars_sl',
+          homepage: true,
+        },
+        {
+          label: 'Cars (MySQL)',
+          resourceId: 'cars_mysql',
+        },
+        {
+          label: 'Cars (PostgreSQL)',
+          resourceId: 'cars_pg',
+        },
+        {
+          label: 'Cars (MongoDB)',
+          resourceId: 'cars_mongo',
+        },
+        {
+          label: 'Cars (ClickHouse)',
+          resourceId: 'cars_ch',
+        }
+      ],
+    },
+    {
+      type: 'divider'
+    },
+    {
+      type: 'gap'
     },
     {
       label: 'Users',
       icon: 'flowbite:user-solid',
-      resourceId: 'users',
-      // visible:(user) => {
-      //   return user.dbUser.role === 'superadmin'
-      // }
+      resourceId: 'adminuser'
     },
     {
-      label: 'Logs',
+      label: 'Audit Logs',
       icon: 'flowbite:search-outline',
-      resourceId: 'audit_log',
+      resourceId: 'audit_logs',
+    },
+    {
+      label: 'Translations',
+      icon: 'material-symbols:translate',
+      resourceId: 'translations',
     },
   ],
-})
+});
 
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  const app = express();
+  app.use(express.json());
 
-const app = express()
-app.use(express.json());
-const port = process.env.PORT || 3000;
+  initApi(app, admin);
 
-(async () => {
-    console.log('🅿️  Bundling AdminForth...');
-    // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-    await admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development'});
-    console.log('Bundling AdminForth done. For faster serving consider calling bundleNow() from a build script.');
-})();
-
-
-// add api before .serve
-app.get(
-  '/api/testtest/', 
-  admin.express.authorize(
-    async (req: express.Request, res: express.Response, next: express.NextFunction) => { 
-        res.json({ ok: true, data: [1,2,3], adminUser: req.adminUser });
-    }
-  )
-)
-
-app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
-  admin.express.authorize(
-    admin.express.translatable(
-      async (req: any, res: express.Response) => {
-        const days = req.body.days || 7;
-        const apartsByDays = await db.prepare(
-          `SELECT 
-            strftime('%Y-%m-%d', created_at) as day, 
-            COUNT(*) as count 
-          FROM apartments 
-          GROUP BY day 
-          ORDER BY day DESC
-          LIMIT ?;
-          `
-        ).all(days);
-
-        const totalAparts = apartsByDays.reduce((acc: number, { count }: { count:number }) => acc + count, 0);
-
-        // add listed, unlisted, listedPrice, unlistedPrice
-        const listedVsUnlistedByDays = await db.prepare(
-          `SELECT 
-            strftime('%Y-%m-%d', created_at) as day, 
-            SUM(listed) as listed, 
-            COUNT(*) - SUM(listed) as unlisted,
-            SUM(listed * price) as listedPrice,
-            SUM((1 - listed) * price) as unlistedPrice
-          FROM apartments
-          GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
-        ).all(days);
-
-        const apartsCountsByRooms = await db.prepare(
-          `SELECT 
-            number_of_rooms, 
-            COUNT(*) as count 
-          FROM apartments 
-          GROUP BY number_of_rooms 
-          ORDER BY number_of_rooms;
-          `
-        ).all();
-
-        const topCountries = await db.prepare(
-          `SELECT 
-            country, 
-            COUNT(*) as count 
-          FROM apartments 
-          GROUP BY country 
-          ORDER BY count DESC
-          LIMIT 4;
-          `
-        ).all();
-
-        const totalSquare = await db.prepare(
-          `SELECT 
-            SUM(square_meter) as totalSquare 
-          FROM apartments;
-          `
-        ).get();
-
-        const listedVsUnlistedPriceByDays = await db.prepare(
-          `SELECT 
-            strftime('%Y-%m-%d', created_at) as day, 
-            SUM(listed * price) as listedPrice,
-            SUM((1 - listed) * price) as unlistedPrice
-          FROM apartments
-          GROUP BY day
-          ORDER BY day DESC
-          LIMIT ?;
-          `
-        ).all(days);
-          
-        const totalListedPrice = Math.round(listedVsUnlistedByDays.reduce((
-          acc: number, { listedPrice }: { listedPrice:number }
-        ) => acc + listedPrice, 0));
-        const totalUnlistedPrice = Math.round(listedVsUnlistedByDays.reduce((
-          acc: number, { unlistedPrice }: { unlistedPrice:number } 
-        ) => acc + unlistedPrice, 0));
-
-        const apartsCount = 10;
-        res.json({ 
-          apartsByDays,
-          totalApartsString: await req.tr('{count} apartment | {count} apartments', 'test', {count: apartsCount}, apartsCount),
-          totalAparts: apartsCount,
-          listedVsUnlistedByDays,
-          apartsCountsByRooms,
-          topCountries,
-          totalSquareMeters: totalSquare.totalSquare,
-          totalListedPrice,
-          totalUnlistedPrice,
-          listedVsUnlistedPriceByDays,
-
-          languages: await admin.getPluginByClassName<I18nPlugin>('I18nPlugin').languagesList(),
-          trExample: await req.tr('Hello there2', 'test'),
-        });
-      }
-    )
-  )
-);
-
-app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
-  admin.express.authorize(
-    async (req, res) => {
-      const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
-        `SELECT 
-          number_of_rooms, 
-          COUNT(*) as count 
-        FROM apartments 
-        GROUP BY number_of_rooms
-        ORDER BY number_of_rooms;
-        `
-      ).all()
-      
-
-      const totalAparts = roomPercentages.reduce((acc, { count }) => acc + count, 0);
-
-      res.json(
-        roomPercentages.map(
-          ({ number_of_rooms, count }) => ({
-            amount: Math.round(count / totalAparts * 100),
-            label: `${number_of_rooms} rooms`,
-          })
-        )
-      );
-    }
-  )
-);
-
-
-// serve after you added all api
-admin.express.serve(app);
-
-
-(async function () {
-  const c = new Client({
-      connectionString: 'postgres://demo:demo@localhost:53321/demo',
+  const port = 3000;
+  
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    console.log('Bundling AdminForth SPA done.');
   });
-  await c.connect();
-  await c.query(
-    `CREATE TABLE IF NOT EXISTS clinics (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL
-    );`
-  );
-})();
 
-admin.discoverDatabases().then(async () => {
-  console.log('🅿️  Database discovered');
+  admin.express.serve(app);
 
-  if (!await admin.resource('users').get([Filters.EQ('email', 'adminforth')])) {
-    await admin.resource('users').create({
-      email: 'adminforth',
-      password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
-      role: 'superadmin',
-    });
-  }
-  await seedDatabase();
+  admin.discoverDatabases().then(async () => {
+    if (await admin.resource('adminuser').count() === 0) {
+      await admin.resource('adminuser').create({
+        email: 'adminforth',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+    if (await admin.resource('cars_sl').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_sl').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: Decimal(Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: Math.floor(Math.random() * 200000),
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
+    if (await admin.resource('cars_mongo').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_mongo').create({
+          _id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: Decimal(Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: Math.floor(Math.random() * 200000),
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
 
-  // create table clinics in postgress,
- // id               Int               @id @db.SmallInt @default(autoincrement()) 
- // name            String            @db.VarChar(255)
+    if (await admin.resource('cars_mysql').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_mysql').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: Decimal(Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: Math.floor(Math.random() * 200000),
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
 
-});
+    if (await admin.resource('cars_pg').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_pg').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: Decimal(Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: Math.floor(Math.random() * 200000),
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
 
-admin.express.listen(port, () => {
-  // word adminforth should be colored (blue) in the console and bold
-  console.log(`\n\n ${admin.formatAdminForth()} available at http://localhost:${port}${ADMIN_BASE_URL}\n\n`)
-});
+    if (await admin.resource('cars_ch').count() === 0) {
+      for (let i = 0; i < 100; i++) {
+        const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
+        await admin.resource('cars_ch').create({
+          id: `${i}`,
+          model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
+          price: Decimal(Math.random() * 10000).toFixed(2),
+          engine_type: engine_type,
+          engine_power: engine_type === 'electric' ? null : Math.floor(Math.random() * 400) + 100,
+          production_year: Math.floor(Math.random() * 31) + 1990,
+          listed: i % 2 == 0,
+          mileage: Math.floor(Math.random() * 200000),
+          body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+        });
+      };
+    }
+  });
+
+  admin.express.listen(port, () => {
+    console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`);
+  });
+}

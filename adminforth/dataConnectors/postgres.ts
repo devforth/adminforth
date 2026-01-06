@@ -45,6 +45,26 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         [AdminForthSortDirections.desc]: 'DESC',
     };
 
+    async getAllTables(): Promise<Array<string>> {
+        const res = await this.client.query(`
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
+        `);
+        return res.rows.map(row => row.table_name);
+    }
+    
+    async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
+        const res = await this.client.query(`
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = $1 AND table_schema = 'public';
+        `, [tableName]);
+        const sampleRowRes = await this.client.query(`SELECT * FROM ${tableName} ORDER BY ctid DESC LIMIT 1`);
+        const sampleRow = sampleRowRes.rows[0] ?? {};
+        return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
+      }
+      
     async discoverFields(resource) {
 
         const tableName = resource.table;
@@ -77,57 +97,62 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         rows.forEach((row) => {
             const field: any = {};
             const baseType = row.type.toLowerCase();
-            if (baseType == 'int') {
+            const isPgArray = baseType.endsWith('[]');
+            const normalizedBaseType = isPgArray ? baseType.slice(0, -2) : baseType;
+            if (normalizedBaseType == 'int') {
                 field.type = AdminForthDataTypes.INTEGER;
                 field._underlineType = 'int';
 
-            } else if (baseType.includes('float') || baseType.includes('double')) {
+            } else if (normalizedBaseType.includes('float') || normalizedBaseType.includes('double')) {
                 field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'float';
 
-            } else if (baseType.includes('bool')) {
+            } else if (normalizedBaseType.includes('bool')) {
                 field.type = AdminForthDataTypes.BOOLEAN;
                 field._underlineType = 'bool';
 
-            } else if (baseType == 'uuid') {
+            } else if (normalizedBaseType == 'uuid') {
                 field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'uuid';
 
-            } else if (baseType.includes('character varying')) {
+            } else if (normalizedBaseType.includes('character varying')) {
                 field.type = AdminForthDataTypes.STRING;
                 field._underlineType = 'varchar';
-                const length = baseType.match(/\d+/);
+                const length = normalizedBaseType.match(/\d+/);
                 field.maxLength = length ? parseInt(length[0]) : null;
 
-            } else if (baseType == 'text') {
+            } else if (normalizedBaseType == 'text') {
                 field.type = AdminForthDataTypes.TEXT;
                 field._underlineType = 'text';
 
-            } else if (baseType.includes('decimal(') || baseType.includes('numeric(')) {
+            } else if (normalizedBaseType.includes('decimal(') || normalizedBaseType.includes('numeric(')) {
                 field.type = AdminForthDataTypes.DECIMAL;
                 field._underlineType = 'decimal';
-                const [precision, scale] = baseType.match(/\d+/g);
+                const [precision, scale] = normalizedBaseType.match(/\d+/g);
                 field.precision = parseInt(precision);
                 field.scale = parseInt(scale);
 
-            } else if (baseType == 'real') {
+            } else if (normalizedBaseType == 'real') {
                 field.type = AdminForthDataTypes.FLOAT;
                 field._underlineType = 'real';
 
-            } else if (baseType == 'date') {
+            } else if (normalizedBaseType == 'date') {
                 field.type = AdminForthDataTypes.DATE;
                 field._underlineType = 'timestamp';
 
-            } else if (baseType.includes('date') || baseType.includes('time')) {
+            } else if (normalizedBaseType.includes('date') || normalizedBaseType.includes('time')) {
                 field.type = AdminForthDataTypes.DATETIME;
                 field._underlineType = 'timestamp';
-            } else if (baseType == 'json' || baseType == 'jsonb') {
+            } else if (normalizedBaseType == 'json' || normalizedBaseType == 'jsonb') {
                 field.type = AdminForthDataTypes.JSON;
                 field._underlineType = 'json';
             } else {
                 field.type = 'unknown'
             }
             field._baseTypeDebug = baseType;
+            if (isPgArray) {
+                field._isPgArray = true;
+            }
             field.primaryKey = row.pk == 1;
             field.default = row.dflt_value;
             field.required = row.notnull && !row.dflt_value;
@@ -156,6 +181,10 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             }
             return dayjs(value).toISOString().split('T')[0];
         }
+
+        if (field.type == AdminForthDataTypes.BOOLEAN) {
+            return value === null ? null : !!value;
+        } 
 
         if (field.type == AdminForthDataTypes.JSON) {
             if (typeof value == 'string') {
@@ -187,11 +216,22 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else if (field._underlineType == 'varchar') {
                 return dayjs(value).toISOString();
             }
+        } else if (field.isArray?.enabled) {
+            if (value === null || value === undefined) {
+                return null;
+            }
+            if (field._isPgArray) {
+                return value;
+            }
+            if (field._underlineType == 'json') {
+                return JSON.stringify(value);
+            }
+            return JSON.stringify(value);
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-            return value ? 1 : 0;
+            return value === null ? null : (value ? 1 : 0);
         } else if (field.type == AdminForthDataTypes.JSON) {
             if (field._underlineType == 'json') {
-                return value;
+                return typeof value === 'string' || value === null ? value : JSON.stringify(value);
             } else {
                 return JSON.stringify(value);
             }
@@ -201,6 +241,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
         if ((filter as IAdminForthSingleFilter).field) {
+            // Field-to-field comparison support
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                const left = `"${(filter as IAdminForthSingleFilter).field}"`;
+                const right = `"${(filter as IAdminForthSingleFilter).rightField}"`;
+                const operator = this.OperatorsMap[filter.operator];
+                return `${left} ${operator} ${right}`;
+            }
             let placeholder = '$?';
             let field = (filter as IAdminForthSingleFilter).field;
             const fieldData = resource.dataSourceColumns.find((col) => col.name == field);
@@ -213,6 +260,9 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 (filter.operator == AdminForthFilterOperators.ILIKE || filter.operator == AdminForthFilterOperators.LIKE)
             ) {
                 field = `cast("${field}" as text)`
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                operator = 'IS';
+                placeholder = 'NULL';
             } else {
                 field = `"${field}"`
             }
@@ -238,11 +288,17 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
         if ((filter as IAdminForthSingleFilter).field) {
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                // No params for field-to-field comparisons
+                return [];
+            }
             // filter is a Single filter
             if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
                 return [`%${filter.value}%`];
             } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 return filter.value;
+            } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+                return [];
             } else {
                 return [(filter as IAdminForthSingleFilter).value];
             }
@@ -344,6 +400,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
         const primaryKey = this.getPrimaryKey(resource);
         const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders}) RETURNING "${primaryKey}"`;
+    //   console.log('\n🔵 [PG INSERT]:', q);
+    //   console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
         if (process.env.HEAVY_DEBUG_QUERY) {
             console.log('🪲📜 PG Q:', q, 'values:', values);
         }

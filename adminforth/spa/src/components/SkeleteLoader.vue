@@ -12,7 +12,7 @@
                 : '']"
         >
             <div role="status" class="max-w-sm animate-pulse">
-                <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+                <div class="h-2 bg-lightSkeletonBackgroundColor rounded-full dark:bg-darkSkeletonBackgroundColor max-w-[360px]"></div>
             </div>
         </td>
     </tr>
@@ -26,8 +26,8 @@ const props = withDefaults(defineProps<{
     rowHeights?: number[];
     columnWidths?: number[];
 }>(), {
-    rowHeights: [],
-    columnWidths: [],
+    rowHeights: () => [],
+    columnWidths: () => [],
 });
 
 </script>

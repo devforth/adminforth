@@ -39,6 +39,38 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     [AdminForthSortDirections.desc]: 'DESC',
   };
 
+  async getAllTables(): Promise<Array<string>> {
+    const [rows] = await this.client.query(
+        `
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';
+        `
+    );
+    return rows.map((row: any) => row.TABLE_NAME);
+  }
+
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
+    const [columns] = await this.client.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = ? AND table_schema = DATABASE()`,
+      [tableName]
+    );
+  
+    const columnNames = columns.map((c: any) => c.COLUMN_NAME);
+    const orderByField = ['updated_at', 'created_at', 'id'].find(f => columnNames.includes(f));
+  
+    let [rows] = orderByField
+      ? await this.client.query(`SELECT * FROM \`${tableName}\` ORDER BY \`${orderByField}\` DESC LIMIT 1`)
+      : await this.client.query(`SELECT * FROM \`${tableName}\` LIMIT 1`);
+  
+    const sampleRow = rows[0] || {};
+  
+    return columns.map((col: any) => ({
+      name: col.COLUMN_NAME,
+      sampleValue: sampleRow[col.COLUMN_NAME],
+    }));
+  }
+
   async discoverFields(resource) {
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     const fieldTypes = {};
@@ -130,7 +162,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } else if (field.type == AdminForthDataTypes.TIME) {
       return value || null;
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return !!value;
+      return value === null ? null : !!value;
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (typeof value === 'string') {
         try {
@@ -158,7 +190,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       }
       return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-      return value ? 1 : 0;
+      return value === null ? null : (value ? 1 : 0);
     } else if (field.type == AdminForthDataTypes.JSON) {
       if (field._underlineType === 'json') {
         return value;
@@ -172,6 +204,13 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
   getFilterString(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
     if ((filter as IAdminForthSingleFilter).field) {
+      // Field-to-field comparison support
+      if ((filter as IAdminForthSingleFilter).rightField) {
+        const left = (filter as IAdminForthSingleFilter).field;
+        const right = (filter as IAdminForthSingleFilter).rightField;
+        const operator = this.OperatorsMap[filter.operator];
+        return `${left} ${operator} ${right}`;
+      }
       // filter is a Single filter
       let placeholder = '?';
       let field = (filter as IAdminForthSingleFilter).field;
@@ -192,6 +231,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
           placeholder = `${placeholder} OR ${field} IS NULL)`;
           field = `(${field}`;
         }
+      } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
+        operator = 'IS';
+        placeholder = 'NULL';
       }
       return `${field} ${operator} ${placeholder}`;
     }
@@ -214,11 +256,19 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   }
   getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
     if ((filter as IAdminForthSingleFilter).field) {
+      if ((filter as IAdminForthSingleFilter).rightField) {
+        // No params for field-to-field comparisons
+        return [];
+      }
       // filter is a Single filter
       if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
         return [`%${filter.value}%`];
       } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         return filter.value;
+      } else if (filter.operator == AdminForthFilterOperators.EQ && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.NE && (filter as IAdminForthSingleFilter).value === null) {
+        return [];
       } else {
         return [(filter as IAdminForthSingleFilter).value];
       }

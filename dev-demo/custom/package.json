@@ -1,19 +1,12 @@
 {
   "name": "custom",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "highcharts-vue": "^2.0.1",
-    "vue-suggestion-input": "^0.0.12"
-  },
-  "dependencies": {
-    "@iconify-prerendered/vue-mdi": "^0.25.1718880438"
-  }
+  "description": ""
 }

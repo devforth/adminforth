@@ -37,6 +37,17 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
         :options="{
           chart: {
             height: 250,
+            events: {
+              dataPointSelection: function (event, chartContext, config) {
+                if (config.selectedDataPoints[0].length) {
+                  const selectedRoomsCount = data[config.dataPointIndex].rooms;
+                  adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+                } else {
+                  // clear filter
+                  adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
+                }
+              }
+            }
           },
           dataLabels: {
             enabled: true,
@@ -98,9 +109,14 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 Also we have to add an Api to get percentages:
 
 ```ts title="./index.ts"
+import type { IAdminUserExpressRequest } from 'adminforth';
+import express from 'express';
+
+....
+
   app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
     admin.express.authorize(
-      async (req, res) => {
+      async (req: IAdminUserExpressRequest, res: express.Response) => {
         const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             number_of_rooms, 
@@ -141,9 +157,9 @@ Here is how it looks:
 
 You can also inject custom components to the login page. 
 
-`loginPageInjections.underInputs` allows to add one or more panels under the login form inputs:
+`loginPageInjections.underInputs` and `loginPageInjections.panelHeader` allows to add one or more panels under or over the login form inputs:
 
-![login Page Injections underInputs](<Group 2 (1).png>)
+![login Page Injections underInputs](<loginPageInjection.png>)
 
 For example:
 
@@ -172,11 +188,43 @@ Now create file `CustomLoginFooter.vue` in the `custom` folder of your project:
 </template>
 ```
 
+Also you can add `panelHeader`
+
+```ts title="/index.ts"
+
+new AdminForth({
+  ...
+  customization: {
+    loginPageInjections: {
+      underInputs: '@@/CustomLoginFooter.vue',
+//diff-add
+      panelHeader: '@@/CustomLoginHeader.vue',
+    }
+    ...
+  }
+
+  ...
+})
+```
+
+Now create file `CustomLoginHeader.vue` in the `custom` folder of your project:
+
+```html title="./custom/CustomLoginHeader.vue"
+<template>
+    <div class="flex items-center justify-center gap-2">
+        <div class="text-2xl text-black dark:text-white font-bold">
+          AdminForth
+        </div>
+    </div>
+</template>
+```
+
+
 
 ## List view page injections shrinking: thin enough to shrink?
 
 
-When none of `bottom`, `beforeBreadcrumbs`, `afterBreadcrumbs`, injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
+When none of `bottom`, `beforeBreadcrumbs`, `beforeActionButtons`, `afterBreadcrumbs` injections are set in list table, the table tries to shrink into viewport for better UX. In other words, in this default mode it moves scroll from body to the table itself:
 
 ![alt text](<Group 15.png>)
 
@@ -240,7 +288,7 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 ```html title="./custom/CheckReadingTime.vue"
 <template>
   <div class="text-gray-500 text-sm">
-    <div @click="checkReadingTime" class="cursor-pointer flex gap-2 items-center">
+    <div class="cursor-pointer flex gap-2 items-center">
       Check reading time
     </div>
   </div>
@@ -249,6 +297,10 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 <script setup>
 import { getReadingTime} from "text-analyzer";
 import adminforth from '@/adminforth';
+
+defineExpose({
+  click,
+});
 
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
@@ -261,6 +313,11 @@ function checkReadingTime() {
   }
   adminforth.list.closeThreeDotsDropdown();
 }
+
+function click() {
+  checkReadingTime();
+}
+
 </script>
 ```
 
@@ -275,6 +332,7 @@ npm i text-analyzer
 
 > ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
+>☝️ Please note that the injected component might have an exposed click function as well as a defined click function, which executes the click on component logic.
 
 ## List table custom action icons
 
@@ -338,6 +396,215 @@ cd custom
 npm i @iconify-prerendered/vue-mdi
 ```
 
+## List table row replace injection
+
+`tableRowReplace` lets you fully control how each list table row is rendered. Instead of the default table `<tr>…</tr>` markup, AdminForth will mount your Vue component per record and use its returned DOM to display the row. Use this when you need custom row layouts, extra controls, or conditional styling that goes beyond column-level customization.
+
+Supported forms:
+- Single component: `pageInjections.list.tableRowReplace = '@@/MyRowRenderer.vue'`
+- Object form with meta: `pageInjections.list.tableRowReplace = { file: '@@/MyRowRenderer.vue', meta: { /* optional */ } }`
+- If an array is provided, the first element is used.
+
+Example configuration:
+
+```ts title="/resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        tableRowReplace: {
+          file: '@@/ApartRowRenderer.vue',
+          meta: {
+            // You can pass any meta your component may read
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Minimal component example (decorate default row with a border):
+
+```vue title="/custom/ApartRowRenderer.vue"
+<template>
+  <tr class="border border-gray-200 dark:border-gray-700 rounded-sm">
+    <slot />
+  </tr>
+  
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+const props = defineProps<{
+  record: any
+  resource: any
+  meta: any
+  adminUser: any
+}>();
+</script>
+```
+
+Component contract:
+- Inputs
+  - `record`: the current record object
+  - `resource`: the resource config object
+  - `meta`: the meta object passed in the injection config
+- Slots
+  - Default slot: the table’s standard row content (cells) will be projected here. Your component can wrap or style it.
+- Output
+  - Render a full `<tr>…</tr>` fragment. For example, to replace the standard set of cells with a single full‑width cell, render:
+
+```vue
+<tr>
+  <td :colspan="columnsCount">
+    <slot />
+  </td>
+</tr>
+```
+
+Notes and tips:
+- Requirements:
+  - Required `<tr></tr>` structure around `<slot />`
+
+## List table three dots menu injection
+
+`customActionIconsThreeDotsMenuItems` allows to inject component inside three dots menu for each recod in list table.
+
+```ts
+  options: {
+    pageInjections: {
+      list: {
+        customActionIconsThreeDotsMenuItems: {
+          file: '@@/ApartRowRenderer.vue',
+          meta: {
+            // You can pass any meta your component may read
+          }
+        }
+      }
+    }
+  }
+```
+
+
+## List table beforeActionButtons
+
+`beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
+
+![alt text](<Group 5.png>)
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        beforeActionButtons: {
+          file: '@@/UniversalQuickSearch.vue',
+          meta: {
+            thinEnoughToShrinkTable: true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Multiple components:
+
+```ts
+beforeActionButtons: [
+  {
+    file: '@@/UniversalQuickSearch.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  },
+  {
+    file: '@@/RecordsSummary.vue',
+    meta: { thinEnoughToShrinkTable: true }
+  }
+]
+```
+
+> ☝️ Keep these components visually light; wide or tall content should use `afterBreadcrumbs` or `bottom` instead.
+
+## List table custom
+
+## Create/Edit custom Save button
+
+You can replace the default Save button on the create and edit pages with your own Vue component.
+
+Supported locations:
+- `pageInjections.create.saveButton`
+- `pageInjections.edit.saveButton`
+
+Example configuration:
+
+```ts title="/resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      create: {
+        // String shorthand
+        saveButton: '@@/SaveBordered.vue',
+      },
+      edit: {
+        // Object form (lets you pass meta later, if needed)
+        saveButton: { file: '@@/SaveBordered.vue' },
+      }
+    }
+  }
+}
+```
+
+Minimal example of a custom save button component:
+
+```vue title="/custom/SaveBordered.vue"
+<template>
+  <button
+    class="px-4 py-2 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 disabled:opacity-50"
+    :disabled="props.disabled || props.saving || !props.isValid"
+    @click="props.saveRecord()"
+  >
+    <span v-if="props.saving">{{$t('Saving…')}}</span>
+    <span v-else>{{$t('Save')}}</span>
+  </button>
+  
+</template>
+
+<script setup lang="ts">
+const props = defineProps<{
+  record: any
+  resource: any
+  adminUser: any
+  meta: any
+  saving: boolean
+  validating: boolean
+  isValid: boolean
+  disabled: boolean
+  saveRecord: () => Promise<void>
+}>();
+</script>
+```
+
+Notes:
+- Your component fully replaces the default Save button in the page header.
+- The `saveRecord()` prop triggers the standard AdminForth save flow. Call it on click.
+- `saving`, `validating`, `isValid`, and `disabled` reflect the current form state.
+- If no `saveButton` is provided, the default button is shown.
+
+Scaffolding via CLI: you can generate a ready-to-wire component and auto-update the resource config using the interactive command:
+
+```bash
+adminforth component
+# Choose: CRUD page injections → (create|edit) → Save button
+```
+
 ## Global Injections
 
 You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu
@@ -389,6 +656,7 @@ Also there are:
 
 * `config.customization.globalInjections.header`
 * `config.customization.globalInjections.sidebar`
+* `config.customization.globalInjections.sidebarTop` — renders inline at the very top of the sidebar, on the same row with the logo/brand name. If the logo is hidden via `showBrandLogoInSidebar: false`, this area expands to the whole row width.
 * `config.customization.globalInjections.everyPageBottom`
 
 Unlike `userMenu`, `header` and `sidebar` injections, `everyPageBottom` will be added to the bottom of every page even when user is not logged in.
@@ -432,4 +700,92 @@ onMounted(() => {
   });
 });
 </script>
+```
+
+## Sidebar Top Injection
+
+You can place compact controls on the very top line of the sidebar, next to the logo/brand name:
+
+```ts title="/index.ts"
+new AdminForth({
+  ...
+  customization: {
+    globalInjections: {
+      sidebarTop: [
+        '@@/QuickSwitch.vue',
+      ],
+    }
+  }
+})
+```
+
+If you hide the logo with `showBrandLogoInSidebar: false`, components injected via `sidebarTop` will take the whole line width.
+
+## Injection order
+
+Most of injections accept an array of components. By defult the order of components is the same as in the array. You can use standard array methods e.g. `push`, `unshift`, `splice` to put item in desired place.
+
+However, if you want to control the order of injections dynamically, which is very handly for plugins, you can use `meta.afOrder` property in the injection instantiation. The higher the number, the earlier the component will be rendered. For example
+
+```ts title="/index.ts"
+{
+  ...
+  customization: {
+    globalInjections: {
+      userMenu: [
+        {
+          file: '@@/CustomUserMenuItem.vue',
+          meta: { afOrder: 10 }
+        },
+        {
+          file: '@@/AnotherCustomUserMenuItem.vue',
+          meta: { afOrder: 20 }
+        },
+        {
+          file: '@@/LastCustomUserMenuItem.vue',
+          meta: { afOrder: 5 }
+        },
+      ]
+    }
+  }
+  ...
+}
+```
+
+## Order of components inserted by plugins
+
+For plugins, the plugin developers encouraged to use `meta.afOrder` to control the order of injections and allow to pass it from plugin options.
+
+For example "OAuth2 plugin", when registers a login button component for login page injection, uses `meta.afOrder` and sets it equal to 'YYY' passed in plugin options:
+
+```ts title="/index.ts"
+// plugin CODE
+adminforth.config.customization.loginPageInjections.underLoginButton.push({
+    file: '@@/..vue',
+    meta: {
+      afOrder: this.pluginOptions.YYY || 0
+    }
+ })
+```
+
+So you can just pass `YYY` option to the plugin to control the order of the injection.
+
+## Custom scripts in head
+
+If you want to inject tags in your html head:
+
+```ts title='./index.ts'
+
+customization: {
+  ...
+  customHeadItems: [
+    {
+      tagName: 'script',
+      attributes: { async: 'true', defer: 'true' },
+      innerCode: "console.log('Hello from HTML head')"
+    }
+  ],
+...
+}
+
 ```

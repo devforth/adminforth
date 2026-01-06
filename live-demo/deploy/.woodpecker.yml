@@ -9,14 +9,12 @@ steps:
   init-secrets:
     when:
       - event: push
-    image: infisical/cli
+    image: infisical/cli:0.42.3
     environment:
       INFISICAL_TOKEN:
         from_secret: VAULT_TOKEN
     commands:
       - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
-    secrets:
-      - VAULT_TOKEN
 
   release:
     image: node:20
@@ -30,32 +28,49 @@ steps:
       - npm audit signatures
       - npx semantic-release
 
-  slack-on-failure:
+  slack-on-success:
     when:
       - event: push
-        status: [failure, success]
-      - event: push
+        status: success
     image: curlimages/curl
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
-      - cd live-demo/deploy && /bin/sh buildSlackNotify.sh
+      - cd live-demo/deploy && /bin/sh buildSlackNotify.sh success
 
+  slack-on-failure:
+    when:
+      - event: push
+        status: failure
+    image: curlimages/curl
+    commands:
+      - export $(cat /woodpecker/deploy.vault.env | xargs)
+      - cd live-demo/deploy && /bin/sh buildSlackNotify.sh failure
 
   build-live-demo:
     when:
       - event: push
-    image: docker
+        branch: main
+    image: docker:26.0
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - cd live-demo/deploy && /bin/sh build.sh
-    secrets:
-      - VAULT_MAIN_CA_PEM_KEY
-      - VAULT_MAIN_KEY_PEM_KEY
-      - VAULT_MAIN_CERT_PEM_KEY
-      - VAULT_AF_SECRET
-      - VAULT_HARBOR_KEY
-      - VAULT_OPENAI_API_KEY
-      - VAULT_AWS_ACCESS_KEY_ID
-      - VAULT_AWS_SECRET_ACCESS_KEY
-      - VAULT_ADMIN_PASSWORD
+    environment:
+      VAULT_MAIN_CA_PEM_KEY:
+        from_secret: VAULT_MAIN_CA_PEM_KEY
+      VAULT_MAIN_KEY_PEM_KEY:
+        from_secret: VAULT_MAIN_KEY_PEM_KEY
+      VAULT_MAIN_CERT_PEM_KEY:
+        from_secret: VAULT_MAIN_CERT_PEM_KEY
+      VAULT_AF_SECRET:
+        from_secret: VAULT_AF_SECRET
+      VAULT_HARBOR_KEY:
+        from_secret: VAULT_HARBOR_KEY
+      VAULT_OPENAI_API_KEY:
+        from_secret: VAULT_OPENAI_API_KEY
+      VAULT_AWS_ACCESS_KEY_ID:
+        from_secret: VAULT_AWS_ACCESS_KEY_ID
+      VAULT_AWS_SECRET_ACCESS_KEY:
+        from_secret: VAULT_AWS_SECRET_ACCESS_KEY
+      VAULT_ADMIN_PASSWORD:
+        from_secret: VAULT_ADMIN_PASSWORD

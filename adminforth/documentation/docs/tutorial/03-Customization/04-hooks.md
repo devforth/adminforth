@@ -40,7 +40,7 @@ If multiple hooks are defined (e.g. plugin might add own hook to `list.beforeDat
 
 When user opens edit page, AdminForth makes a request to the backend to get the initial data for the form.
 
-![Initial data for edit page flow](initial_edit_data_flow.png)
+![Initial data for edit page flow](get_resource_data.png)
 
 Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
 
@@ -135,16 +135,10 @@ For example we can prevent the user to see Apartments created by other users. Su
         if (adminUser.dbUser.role === "superadmin") {
           return { ok: true };
         }
-        if (!query.filters || query.filters.length === 0) {
-          query.filters = [];
-        }
-        // skip existing realtor_id filter if it comes from UI Filters (right panel)
-        query.filters = query.filters.filter((filter: any) => filter.field !== "realtor_id");
-        query.filters.push({
-          field: "realtor_id",
-          value: adminUser.dbUser.id,
-          operator: "eq",
-        });
+
+        // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
+        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id)
+       
         return { ok: true };
       },
     },
@@ -195,20 +189,28 @@ Let's limit it:
 ```ts title='./resources/apartments.ts'
 {
   ...
-  hooks: {
-    dropdownList: {
-      beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
-        if (adminUser.dbUser.role !== "superadmin") {
-          query.filters = [{field: "id", value: adminUser.dbUser.id, operator: "eq"}];
-        };
-        return {
-          "ok": true,
-        };
-      }
+
+  foreignResource: { 
+    
+    ...
+
+    hooks: {
+      dropdownList: {
+        beforeDatasourceRequest: async ({ adminUser, query }: { adminUser: AdminUser, query: any }) => {
+          if (adminUser.dbUser.role !== "superadmin") {
+            query.filtersTools.replaceOrAddTopFilter(Filters.EQ("id", adminUser.dbUser.id));
+          };
+          return {
+            "ok": true,
+          };
+        }
+      },
     },
-  },
+  }
 }
 ```
+
+> ☝️☝️☝️ This hooks should be written only inside column. If you'll add it in resource hooks - it won't work
 
 In our case we limit the dropdown list to show only the current user, however you can use same sample to list only objects who are related to the current user in case if you will have relation configurations which require to show related objects which belongs to the current user.
 

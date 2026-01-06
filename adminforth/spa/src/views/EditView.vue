@@ -3,7 +3,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -12,14 +12,31 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="$router.back()"
-        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-gray-900  rounded-default focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
 
+      <!-- Custom Save Button injection -->
+      <component
+        v-if="editSaveButtonInjection"
+        :is="getCustomComponent(editSaveButtonInjection)"
+        :meta="editSaveButtonInjection.meta"
+        :record="editableRecord"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+        :saving="saving"
+        :validating="validating"
+        :isValid="isValid"
+        :disabled="saving || (validating && !isValid)"
+        :saveRecord="saveRecord"
+      />
+      
+      <!-- Default Save Button fallback -->
       <button
-        @click="saveRecord"
-        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-red-600 focus:outline-none bg-white rounded border border-gray-300 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-red-500 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 disabled:opacity-50"
+        v-else
+        @click="() => saveRecord()"
+        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validating && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
@@ -27,7 +44,7 @@
       </button>
 
       <ThreeDotsMenu 
-        :threeDotsDropdownItems="coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems"
+        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems as [])"
       ></ThreeDotsMenu>
 
     </BreadcrumbsWithButtons>
@@ -35,16 +52,17 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
     <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
-
+ 
     <ResourceForm 
-      v-else
+      v-else-if="coreStore.resource"
+      ref="resourceFormRef"
       :record="editableRecord"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -58,7 +76,7 @@
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
       :is="getCustomComponent(c)"
-      :meta="c.meta"
+      :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -76,12 +94,16 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, type Ref, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import adminforth from '@/adminforth';
+import { useI18n } from 'vue-i18n';
+import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import type { AdminForthResourceColumn } from '@/types/Back';
 
+const { t } = useI18n();
 const coreStore = useCoreStore();
 
 const isValid = ref(false);
@@ -94,9 +116,22 @@ const loading = ref(true);
 
 const saving = ref(false);
 
-const record = ref({});
+const record: Ref<Record<string, any>> = ref({});
 
-async function onUpdateRecord(newRecord) {
+watch(record, (newVal) => {
+  console.log('Record updated:', newVal);
+}, { deep: true });
+
+const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
+
+const editSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
+  const raw: any = coreStore.resourceOptions?.pageInjections?.edit?.saveButton as any;
+  if (!raw) return null;
+  const item = Array.isArray(raw) ? raw[0] : raw;
+  return item as AdminForthComponentDeclarationFull;
+});
+
+async function onUpdateRecord(newRecord: Record<string, any>) {
   record.value = newRecord;
 }
 
@@ -108,7 +143,7 @@ const editableRecord = computed(() => {
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
       if (column.isArray?.enabled) {
-        newRecord[column.name] = newRecord[column.name]?.map(fr => fr.pk);
+        newRecord[column.name] = newRecord[column.name]?.map((fr: { pk: any }) => fr.pk);
       } else {
         newRecord[column.name] = newRecord[column.name]?.pk;
       }
@@ -121,33 +156,49 @@ onMounted(async () => {
   loading.value = true;
 
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId
+    resourceId: route.params.resourceId as string 
   });
   initThreeDotsDropdown();
 
   await coreStore.fetchRecord({
-    resourceId: route.params.resourceId, 
-    primaryKey: route.params.primaryKey,
+    resourceId: route.params.resourceId as string,
+    primaryKey: route.params.primaryKey as string,
     source: 'edit',
   });
-  checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+
+  if (coreStore.resourceOptions) {
+    checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
+  }
+
   loading.value = false;
 });
 
-async function saveRecord() {
+async function saveRecord(opts?: { confirmationResult?: any }) {
   if (!isValid.value) {
     validating.value = true;
+    await nextTick();
+    scrollToInvalidField();
     return;
   } else {
     validating.value = false;
   }
 
   saving.value = true;
-  const updates = {};
+  const updates: Record<string, any> = {};
   for (const key in record.value) {
-    let columnIsUpdated = record.value[key] !== coreStore.record[key];
+    let columnIsUpdated = false;
 
-    const column = coreStore.resource.columns.find((c) => c.name === key);
+    if (typeof record.value[key] !== typeof coreStore.record[key]) {
+      columnIsUpdated = true;
+    } else if (typeof record.value[key] === 'object') {
+      columnIsUpdated = JSON.stringify(record.value[key]) !== JSON.stringify(coreStore.record[key]);
+    } else {
+      columnIsUpdated = record.value[key] !== coreStore.record[key];
+    }
+
+    if (!coreStore.resource) return;
+      const column = coreStore.resource.columns.find((c) => c.name === key);
+
     if (column?.foreignResource) {
       columnIsUpdated = record.value[key] !== coreStore.record[key]?.pk;
     }
@@ -164,19 +215,41 @@ async function saveRecord() {
       resourceId: route.params.resourceId,
       recordId: route.params.primaryKey,
       record: updates,
+      meta: {
+        ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
+      },
     },
   });
-  if (resp.error) {
+  if (resp.error && resp.error !== 'Operation aborted by hook') {
     showErrorTost(resp.error);
   } else {
     adminforth.alert({
-      message: 'Record updated successfully',
+      message: t('Record updated successfully'),
       variant: 'success',
       timeout: 400000
     });
+    router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
-  router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
+}
+
+function scrollToInvalidField() {
+  let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
+  for (const column of resourceFormRef.value?.editableColumns || []) {
+    const error = resourceFormRef.value?.columnError(column);
+    if (error) {
+      columnsWithErrors.push({column, error});
+    }
+  }
+  const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
+  adminforth.alert({
+    messageHtml: errorMessage,
+    variant: 'danger'
+  });
+  const firstInvalidElement = document.querySelector('.af-invalid-field-message');
+  if (firstInvalidElement) {
+    firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 </script>

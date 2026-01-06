@@ -1,0 +1,38 @@
+<template>
+  <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+    <button
+      type="button"
+      @click="handleClick"
+      class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+    >
+      \{{ $t('Example') }} 
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
+
+const { t } = useI18n();
+
+const props = defineProps<{
+  record: any
+  resource: AdminForthResourceCommon
+  adminUser: AdminUser
+  meta?: any
+}>();
+
+onMounted(() => {
+  // Logic on mount if needed
+});
+
+function handleClick() {
+  adminforth.alert({
+    message: t('Confirmed'),
+    variant: 'success',
+  });
+}
+</script>

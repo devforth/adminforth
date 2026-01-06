@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, Request } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
@@ -8,12 +8,12 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
   type AdminForthResourceColumnCommon,
-  AdminForthResourceInputCommon,
-  AdminForthComponentDeclarationFull,
-  AdminForthConfigMenuItem,
-  AnnouncementBadgeResponse,
+  type AdminForthResourceInputCommon,
+  type AdminForthComponentDeclarationFull,
+  type AdminForthConfigMenuItem,
+  type AnnouncementBadgeResponse,
   AdminForthResourcePages,
-  AdminForthResourceColumnInputCommon,
+  type AdminForthResourceColumnInputCommon,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -22,12 +22,13 @@ export interface ICodeInjector {
   devServerPort: number;
 
   getServeDir(): string;
-
+  registerCustomComponent(filePath: string): void;
   spaTmpPath(): string;
 }
 
 export interface IConfigValidator {
   validateConfig(): void;
+  validateAfterPluginsActivation(): void;
   postProcessAfterDiscover(resource: AdminForthResource): void;
 }
 
@@ -92,19 +93,36 @@ export interface IExpressHttpServer extends IHttpServer {
    * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
    * @param callable : Function which will be called if user is authorized.
    * 
-   * Example:
    * 
+   * @example
    * ```ts
-   * expressApp.get('/myApi', authorize((req, res) => \{
+   * expressApp.get('/myApi', authorize((req, res) => {
    *  console.log('User is authorized', req.adminUser);
-   *  res.json(\{ message: 'Hello World' \});
-   * \}));
-   * ``
+   *  res.json({ message: 'Hello World' });
+   * }));
+   * ```
    * 
-   */
+   */  
   authorize(callable: Function): void;
 }
 
+export interface ITranslateFunction {
+  (
+    msg: string,
+    category: string,
+    params: any,
+    pluralizationNumber?: number
+  ): Promise<string>;
+}
+
+// Omit <Request, 'param'> is used to remove 'param' method from Request type for correct docs generation
+export interface IAdminUserExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
+  adminUser: AdminUser;
+}
+
+export interface ITranslateExpressRequest extends Omit<Request, 'protocol' | 'param' | 'unshift'> {
+  tr: ITranslateFunction;
+}
 
 export interface IAdminForthSingleFilter {
   field?: string;
@@ -113,7 +131,9 @@ export interface IAdminForthSingleFilter {
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
   | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
   value?: any;
+  rightField?: string;
   insecureRawSQL?: string;
+  insecureRawNoSQL?: any;
 }
 export interface IAdminForthAndOrFilter {
   operator: AdminForthFilterOperators.AND | AdminForthFilterOperators.OR;
@@ -135,6 +155,15 @@ export interface IAdminForthDataSourceConnector {
    */
   setupClient(url: string): Promise<void>;
   
+  /**
+   * Function to get all tables from database.
+   */
+  getAllTables(): Promise<Array<string>>;
+
+  /**
+   * Function to get all columns in table.
+   */
+  getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>>;
   /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.
@@ -274,11 +303,15 @@ export interface IAdminForthDataSourceConnectorConstructor {
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
 
-  issueJWT(payload: Object, type: string, expiresIn?: string): string;
+  issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
-  setAuthCookie({expireInDays, response, username, pk,}: {expireInDays?: number, response: any, username: string, pk: string}): void;
+  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expiry: number, expirySeconds: number, httpOnly: boolean}}): void;
+
+  getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
+
+  setAuthCookie({expireInDuration, response, username, pk,}: {expireInDuration?: string, response: any, username: string, pk: string}): void;
   
   removeAuthCookie(response: any): void;
 
@@ -298,8 +331,9 @@ export interface IAdminForthRestAPI {
    * @param adminUser - plugin/af pases current adminUser
    * @param toReturn - this is an object which will get status of login process. If at least one callback returns error or redirectTo, login process will be stopped (future callbacks will not be called).
    * @param response - http response object
+   * @param sessionDuration - duration of session in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days)
    */
-  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra): Promise<void>;
+  processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin: boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string): Promise<void>;
 }
 
 export interface IAdminForth {
@@ -327,10 +361,11 @@ export interface IAdminForth {
 
   createResourceRecord(
     params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any }>;
+  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra }
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }>;
 
   deleteResourceRecord(
@@ -370,6 +405,27 @@ export interface IAdminForth {
    */
   setupEndpoints(server: IHttpServer): void;
 
+  /**
+   * This method can be used when you want to get some plugin instances by class name.
+   * Should be used for plugins which might have multiple instances with the same class name.
+   * @param className - name of class which is used to identify plugin instance
+   */
+  getPluginsByClassName<T>(className: string): T[];
+
+  /**
+   * This method can be used when you want to get some plugin instance by class name.
+   * Should be called only if you are sure there is only one plugin instance with this class name.
+   * If several instances are found, this method will drop error.
+   * @param className - name of class which is used to identify plugin instance
+   * 
+   * Example:
+   * 
+   * ```ts
+   * const i18nPlugin = adminforth.getPluginByClassName\<I18nPlugin\>('I18nPlugin');
+   * ```
+   * 
+   */
+  getPluginByClassName<T>(className: string): T;
 }
 
 
@@ -399,7 +455,7 @@ export interface IAdminForthPlugin {
    * @param adminforth Instance of IAdminForth
    * @param resourceConfig Resource configuration object which will be modified by plugin
    */
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: IAdminForthPlugin, resource: AdminForthResource}[]): void;
   componentPath(componentFile: string): string;
 
   /**
@@ -444,7 +500,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -471,6 +527,7 @@ export interface HttpExtra {
   headers: Record<string, string>,
   cookies: Record<string, string>,
   requestUrl: string,
+  meta?: any,
 }
 /**
  * Modify record to change how data is saved to database.
@@ -495,7 +552,7 @@ export type BeforeEditSaveFunction = (params: {
   oldRecord: any,
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null}>;
 
 
 
@@ -505,7 +562,7 @@ export type BeforeCreateSaveFunction = (params: {
   record: any, 
   adminforth: IAdminForth,
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string}>;
+}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
 
 export type AfterCreateSaveFunction = (params: {
   resource: AdminForthResource, 
@@ -513,6 +570,7 @@ export type AfterCreateSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  recordWithVirtualColumns?: any,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -549,6 +607,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     response: IAdminForthHttpResponse,
     adminforth: IAdminForth,
     extra?: HttpExtra,
+    sessionDuration?: string,
 }) => Promise<{
   error?: string, 
   body: {
@@ -556,6 +615,19 @@ export type BeforeLoginConfirmationFunction = (params?: {
     allowedLogin?: boolean,
   }
 }>;
+
+/**
+ * Allow to make extra authorization
+ */
+export type AdminUserAuthorizeFunction = ((params?: { 
+    adminUser: AdminUser,
+    response: IAdminForthHttpResponse,
+    adminforth: IAdminForth,
+    extra?: HttpExtra,
+}) => Promise<{
+  error?: string,
+  allowed?: boolean,
+}>);
 
   
 /**
@@ -590,10 +662,21 @@ interface AdminForthInputConfigCustomization {
   brandName?: string,
 
   /**
+   * Whether to use single theme for the app
+   */
+  singleTheme?: 'light' | 'dark',
+
+  /**
    * Whether to show brand name in sidebar
    * default is true
    */
   showBrandNameInSidebar?: boolean,
+
+  /**
+   * Whether to show brand logo in sidebar
+   * default is true
+   */
+  showBrandLogoInSidebar?: boolean,
 
   /**
    * Path to your app logo
@@ -607,6 +690,23 @@ interface AdminForthInputConfigCustomization {
    * 
    */
   brandLogo?: string,
+
+
+  /**
+   * Path to your app logo for icon only sidebar
+   * 
+   * Example:
+   * Place file `logo.svg` to `./custom` folder and set this option:
+   * 
+   */
+  iconOnlySidebar?: {
+    logo?: string,
+    enabled?: boolean,
+    /**
+     * Width of expanded sidebar (default: '16.5rem')
+     */
+    expandedSidebarWidth?: string,
+  },
 
   /**
    * Path to your app favicon
@@ -717,6 +817,8 @@ interface AdminForthInputConfigCustomization {
    */
   loginPageInjections?: {
     underInputs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    panelHeader?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
 
   /**
@@ -726,14 +828,27 @@ interface AdminForthInputConfigCustomization {
     userMenu?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     header?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     sidebar?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    sidebarTop?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
     everyPageBottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
   }
+
+  /**
+  * Allows adding custom elements (e.g., &lt;link&gt;, &lt;script&gt;, &lt;meta&gt;) to the &lt;head&gt; of the HTML document.
+  * Each item must include a tag name and a set of attributes.
+  */
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+    innerCode?: string;
+  }[];
+
 }
 
 export interface AdminForthActionInput {
   name: string;
   showIn?: {
       list?: boolean,
+      listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
   };
@@ -747,6 +862,7 @@ export interface AdminForthActionInput {
       resource: AdminForthResource;
       recordId: string;
       adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
       extra?: HttpExtra;
       tr: Function;
   }) => Promise<{
@@ -756,6 +872,7 @@ export interface AdminForthActionInput {
   }>;
   icon?: string;
   id?: string;
+  customComponent?: AdminForthComponentDeclaration;
 }
 
 export interface AdminForthResourceInput extends Omit<NonNullable<AdminForthResourceInputCommon>, 'columns' | 'hooks' | 'options'> {
@@ -905,10 +1022,22 @@ export interface AdminForthInputConfig {
       loginBackgroundPosition?: 'over' | '1/2' | '1/3' | '2/3' | '3/4' | '2/5' | '3/5',
 
       /**
+       * If true, background blend mode will be removed from login background image when position is 'over'
+       * 
+       * Default: false
+       */
+      removeBackgroundBlendMode?: boolean,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
+
+      /**
+       * Array of functions which will be called before any request to AdminForth API.
+       */
+      adminUserAuthorize?: AdminUserAuthorizeFunction | Array<AdminUserAuthorizeFunction>,
 
       /**
        * Optionally if your users table has a field(column) with full name, you can set it here.
@@ -925,13 +1054,27 @@ export interface AdminForthInputConfig {
       /**
        * Any prompt to show users on login. Supports HTML.
        */
-      loginPromptHTML?: string,
+      loginPromptHTML?: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined 
+
+
+      /**       
+       * Function to return avatar URL for user.
+       */
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
 
       /**
-       * Remember me days for "Remember Me" checkbox on login page.
-       * If not set or set to null/0/undefined, "Remember Me" checkbox will not be displayed.
-       * If rememberMeDays is set, then users who check "Remember Me" will be staying logged in for this amount of days.
-       */
+       * Remember me duration for "Remember Me" checkbox on login page.
+       * If not set or set to null/undefined, "Remember Me" checkbox will not be displayed.
+       * If rememberMeDuration is set, then users who check "Remember Me" will be staying logged in for this amount of time.
+       * Format: "1s" (seconds), "1m" (minutes), "1h" (hours), or "1d" (days).
+       * Example: "30d" for 30 days, "7d" for 7 days, "24h" for 24 hours.
+       */ 
+      rememberMeDuration?: string,
+
+      /**
+       * Old variable for remember me duration. Use rememberMeDuration instead.
+       * @deprecated Use rememberMeDuration instead.
+       */ 
       rememberMeDays?: number,
 
 
@@ -957,6 +1100,17 @@ export interface AdminForthInputConfig {
        * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
        */
       clientIpHeader?: string,
+
+      /**
+       * Add custom page to the settings page
+       */
+      userMenuSettingsPages?: {
+        icon?: string,
+        pageLabel: string,
+        slug?: string,
+        component: string,
+        isVisible?: (adminUser: AdminUser) => boolean,
+      }[],
     },
 
      /**
@@ -1024,14 +1178,24 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
+    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
   globalInjections: {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
   },
+
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+    innerCode?: string;
+  }[];
+  
 }
 
 export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customization' | 'resources'> {
@@ -1079,11 +1243,46 @@ export class Filters {
   static LIKE(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.LIKE, value };
   }
-  static AND(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
-    return { operator: AdminForthFilterOperators.AND, subFilters };
+  static ILIKE(field: string, value: any): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.ILIKE, value };
   }
-  static OR(subFilters: Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): IAdminForthAndOrFilter {
-    return { operator: AdminForthFilterOperators.OR, subFilters };
+  static GT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GT, rightField };
+  }
+  static GTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.GTE, rightField };
+  }
+  static LT_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LT, rightField };
+  }
+  static LTE_FIELD(leftField: string, rightField: string): IAdminForthSingleFilter {
+    return { field: leftField, operator: AdminForthFilterOperators.LTE, rightField };
+  }
+  static AND(
+    ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
+  ): IAdminForthAndOrFilter {
+    const subFilters =
+      args.length === 1 && Array.isArray(args[0])
+        ? args[0]
+        : args as Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>;
+  
+    return {
+      operator: AdminForthFilterOperators.AND,
+      subFilters,
+    };
+  }
+  static OR(
+    ...args: (IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>)[]
+  ): IAdminForthAndOrFilter {
+    const subFilters =
+      args.length === 1 && Array.isArray(args[0])
+        ? args[0]
+        : args as Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>;
+  
+    return {
+      operator: AdminForthFilterOperators.OR,
+      subFilters,
+    };
   }
 }
 
@@ -1103,7 +1302,7 @@ export interface IOperationalResource {
 
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
-  count: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined) => Promise<number>;
+  count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
@@ -1161,6 +1360,7 @@ export type AllowedActions = {
  */
 export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
+  baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
@@ -1266,9 +1466,13 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
     },
     create?: {
       /**
+       * Should return `ok: true` to continue saving pipeline and allow creating record in database, and `ok: false` to interrupt pipeline and prevent record creation.
+       * If you need to show error on UI, set `error: \<error message\>` in response.
+       * 
        * Typical use-cases:
-       * - Validate record before saving to database and interrupt execution if validation failed (`allowedActions.create` should be preferred in most cases)
-       * - fill-in adminUser as creator of record
+       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
+       * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
        */
       beforeSave?: Array<BeforeCreateSaveFunction>,
@@ -1419,15 +1623,27 @@ export type ShowInInput = ShowInModernInput | ShowInLegacyInput;
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue
 }
+export type BackendOnlyInput =
+  | boolean
+  | ((p: {
+      adminUser: AdminUser;
+      resource: AdminForthResource;
+      meta: any;
+      source: ActionCheckSource;
+      adminforth: IAdminForth;
+    }) => boolean | Promise<boolean>);
 
-export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn'> {
+
+export interface AdminForthResourceColumnInput extends Omit<AdminForthResourceColumnInputCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowInInput,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
-export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn'> {
+export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnCommon, 'showIn' | 'backendOnly'> {
   showIn?: ShowIn,
   foreignResource?: AdminForthForeignResource,
+  backendOnly?: BackendOnlyInput;
 }
 
 export interface IWebSocketClient {

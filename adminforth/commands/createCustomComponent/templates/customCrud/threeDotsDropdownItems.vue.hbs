@@ -1,0 +1,44 @@
+<template>
+  <div class="flex flex-col p-4 space-y-2">
+    <button
+      v-for="item in menuItems"
+      :key="item.label"
+      @click="item.action"
+    >
+      \{{ item.label }}
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import adminforth from '@/adminforth';
+import { onMounted } from 'vue';
+import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
+
+const { t } = useI18n();
+
+const props = defineProps<{
+  record: any
+  resource: AdminForthResourceCommon
+  adminUser: AdminUser
+  meta?: any
+}>();
+
+const menuItems = [
+  {
+    label: 'Show Success Alert',
+    action: () => {
+      adminforth.alert({
+        message: t('Success Alert'),
+        variant: 'success',
+      });
+    },
+  }
+];
+
+onMounted(() => {
+  // Logic on mount if needed
+});
+
+</script>

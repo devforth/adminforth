@@ -1,0 +1,26 @@
+import { AdminForthResourceInput, AdminForthDataTypes } from "adminforth";
+
+export default {
+  dataSource: "{{dataSource}}",
+  table: "{{table}}",
+  resourceId: "{{resourceId}}",
+  label: "{{label}}",
+  columns: [
+    {{#each columns}}
+    {
+      name: "{{this.name}}"{{#if this.type}},
+      type: AdminForthDataTypes.{{this.type}}{{/if}}{{#if this.isPrimaryKey}},
+      primaryKey: true{{/if}}{{#if this.isUUID}},
+      components: {
+        list: "@/renderers/CompactUUID.vue",
+      }{{/if}},
+      showIn: {
+        all:true,
+      }
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  options: {
+    listPageSize: 10,
+  },
+} as AdminForthResourceInput;

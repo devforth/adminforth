@@ -3,6 +3,8 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import crypto from 'crypto';
+import AdminForth, { AdminForthConfig, AdminForthResourceColumnInputCommon, Predicate } from '../index.js';
+import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
 // @ts-ignore-next-line
 
 
@@ -158,6 +160,15 @@ const csscolors = {
 }
 
 
+export async function getLoginPromptHTML(loginPrompt: string | Function) {
+  if(typeof loginPrompt === 'function') {
+    loginPrompt = await loginPrompt();
+    if (!loginPrompt) {
+      return null;
+    }
+  }
+  return loginPrompt;
+}
 
 export function guessLabelFromName(name) {
   if (name.includes('_')) {
@@ -173,8 +184,11 @@ export function guessLabelFromName(name) {
 export const currentFileDir = (metaUrl) => {
   const __filename = fileURLToPath(metaUrl);
   let __dirname = path.dirname(__filename);
-  if (__dirname.endsWith('/dist/modules')) {
-    // in prod build we are in dist also, so make another back jump to go true sorces
+  
+  // Check for dist/modules in both Unix and Windows path formats
+  const normalizedDir = __dirname.replace(/\\/g, '/');
+  if (normalizedDir.endsWith('/dist/modules')) {
+    // in prod build we are in dist also, so make another back jump to go to sources
     __dirname = path.join(__dirname, '..');
   }
   return __dirname;
@@ -368,91 +382,100 @@ export function md5hash(str:string) {
 }
 
 export class RateLimiter {
-  static counterData = {};
+  // constructor, accepts string like 10/10m, or 20/10s, or 30/1d
 
-  /**
-   * Very dirty version of ratelimiter for demo purposes (should not be considered as production ready)
-   * Will be used as RateLimiter.checkRateLimit('key', '5/24h', clientIp)
-   * Stores counter in this class, in RAM, resets limits on app restart.
-   * Also it creates setTimeout for every call, so is not optimal for high load.
-   * @param key - key to store rate limit for
-   * @param limit - limit in format '5/24h' - 5 requests per 24 hours
-   * @param clientIp 
-   */
-  static checkRateLimit(key: string, limit: string, clientIp: string) {
 
-    if (!limit) {
-      throw new Error('Rate limit is not set');
+  rateLimiter: RateLimiterAbstract;
+
+
+  durStringToSeconds(rate: string): number {
+    if (!rate) {
+      throw new Error('Rate duration is required');
     }
 
-    if (!key) {
-      throw new Error('Rate limit key is not set');
+
+    const period = rate.slice(-1);
+    const duration = parseInt(rate.slice(0, -1));
+    if (period === 's') {
+      return duration;
+    } else if (period === 'm') {
+      return duration * 60;
+    } else if (period === 'h') {
+      return duration * 60 * 60;
+    } else if (period === 'd') {
+      return duration * 60 * 60 * 24;
     }
-
-    if (!clientIp) {
-      throw new Error('Client IP is not set');
-    }
-
-    if (!limit.includes('/')) {
-      throw new Error('Rate limit should be in format count/period, like 5/24h');
-    }
-
-    // parse limit
-    const [count, period] = limit.split('/');
-    const [preiodAmount, periodType] = /(\d+)(\w+)/.exec(period).slice(1);
-    const preiodAmountNumber = parseInt(preiodAmount);
-
-    // get current time
-    const whenClear = new Date();
-    if (periodType === 'h') {
-      whenClear.setHours(whenClear.getHours() + preiodAmountNumber);
-    } else if (periodType === 'd') {
-      whenClear.setDate(whenClear.getDate() + preiodAmountNumber);
-    } else if (periodType === 'm') {
-      whenClear.setMinutes(whenClear.getMinutes() + preiodAmountNumber);
-    } else if (periodType === 'y') {
-      whenClear.setFullYear(whenClear.getFullYear() + preiodAmountNumber);
-    } else if (periodType === 's') {
-      whenClear.setSeconds(whenClear.getSeconds() + preiodAmountNumber);
-    } else {
-      throw new Error(`Unsupported period type for rate limiting: ${periodType}`);
-    }
-
-  
-    // get current counter
-    const counter = this.counterData[key] && this.counterData[key][clientIp] || 0;
-    if (counter >= count) {
-      return { error: true };
-    }
-    RateLimiter.incrementCounter(key, clientIp);
-    setTimeout(() => {
-      RateLimiter.decrementCounter(key, clientIp);
-    }, whenClear.getTime() - Date.now());
-
-    return { error: false };
-
+    throw new Error(`Invalid rate duration period: ${period}`);
   }
 
-  static incrementCounter(key: string, ip: string) {
-    if (!RateLimiter.counterData[key]) {
-      RateLimiter.counterData[key] = {};
-    }
-    if (!RateLimiter.counterData[key][ip]) {
-      RateLimiter.counterData[key][ip] = 0;
-    }
-    RateLimiter.counterData[key][ip]++;
+
+  constructor(rate: string) {
+    const [points, duration] = rate.split('/');
+    const durationSeconds = this.durStringToSeconds(duration);
+    const opts = {
+      points: parseInt(points),
+      duration: durationSeconds, // Per second
+    };
+    this.rateLimiter = new RateLimiterMemory(opts);
   }
 
-  static decrementCounter(key: string, ip: string) {
-    if (!RateLimiter.counterData[key]) {
-      RateLimiter.counterData[key] = {};
-    }
-    if (!RateLimiter.counterData[key][ip]) {
-      RateLimiter.counterData[key][ip] = 0;
-    }
-    if (RateLimiter.counterData[key][ip] > 0) {
-      RateLimiter.counterData[key][ip]--;
+
+  async consume(key: string) {
+    try {
+      await this.rateLimiter.consume(key);
+      return true;
+    } catch (rejRes) {
+      return false;
     }
   }
 
+}
+
+export class RAMLock {
+  private locks: Map<string, { locked: boolean; queue: Function[] }>;
+
+  constructor() {
+    this.locks = new Map();
+  }
+
+  _getLock(key) {
+    if (!this.locks.has(key)) {
+      this.locks.set(key, { locked: false, queue: [] });
+    }
+    return this.locks.get(key);
+  }
+
+  async run(key, fn) {
+    const lock = this._getLock(key);
+    while (lock.locked) {
+      await new Promise(resolve => lock.queue.push(resolve));
+    }
+    lock.locked = true;
+    try {
+      return await fn();
+    } finally {
+      lock.locked = false;
+      if (lock.queue.length > 0) {
+        const next = lock.queue.shift();
+        next();
+      }
+    }
+  }
+}
+
+export function isProbablyUUIDColumn(column: { name: string; type?: string; sampleValue?: any }): boolean {
+  if (column.type?.toLowerCase() === 'uuid') return true;
+  if (typeof column.sampleValue === 'string') {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(column.sampleValue);
+  }
+
+  return false;
+}
+
+export function slugifyString(str: string): string {
+  return str
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-_]/g, '-');
 }

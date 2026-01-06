@@ -1,6 +1,6 @@
 <template>
-  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`" class="p-4 flex" 
-    :class="limitHeightToPage ? 'h-[calc(100vh-3.5rem)]': undefined"
+  <div :key="`${$route?.params.resourceId}---${$route?.params.primaryKey}`" class="af-resource-parent p-4 flex" 
+    :class="limitHeightToPage ? 'h-[calc(100dvh-3.5rem)]': undefined"
   >
     <RouterView/>
   </div>
@@ -33,7 +33,7 @@ const limitHeightToPage = computed(() => {
   }
   const listPageInjects = coreStore.resource.options.pageInjections.list;
   
-  for (const pi of [listPageInjects.beforeBreadcrumbs, listPageInjects.afterBreadcrumbs, listPageInjects.bottom]) {
+  for (const pi of [listPageInjects.beforeBreadcrumbs, listPageInjects.beforeActionButtons, listPageInjects.afterBreadcrumbs, listPageInjects.bottom]) {
     if (pi) {
       for (const piItem of pi) {
         if (!piItem.meta?.thinEnoughToShrinkTable) {

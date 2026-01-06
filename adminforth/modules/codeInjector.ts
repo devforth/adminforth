@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 
@@ -16,7 +16,11 @@ let TMP_DIR;
 try {
   TMP_DIR = os.tmpdir();
 } catch (e) {
-  TMP_DIR = '/tmp'; //maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
+  if (process.platform === 'win32') {
+    TMP_DIR = process.env.TEMP || process.env.TMP || 'C:\\Windows\\Temp';
+  } else {
+    TMP_DIR = '/tmp';
+  }//maybe we can consider to use node_modules/.cache/adminforth here instead of tmp
 }
 
 function stripAnsiCodes(str) {
@@ -81,6 +85,11 @@ class CodeInjector implements ICodeInjector {
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
   }
 
+  registerCustomComponent(filePath: string): void {
+    const componentName = getComponentNameFromPath(filePath);
+    this.allComponentNames[filePath] = componentName;
+  }
+
   cleanup() {
     console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
@@ -106,24 +115,53 @@ class CodeInjector implements ICodeInjector {
   //   console.log(`Command ${command} output:`, out, err);
   // }
 
-  async runNpmShell({command, cwd}) {
+  async runNpmShell({command, cwd, envOverrides = {}}: {
+    command: string,
+    cwd: string,
+    envOverrides?: { [key: string]: string }
+  }) {
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    const npmPath = path.join(path.dirname(nodeBinary), 'npm'); // Path to the npm executable
+    // On Windows, npm is npm.cmd, on Unix systems it's npm
+    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
       ...process.env,
+      ...envOverrides,
     };
 
     console.log(`⚙️ exec: npm ${command}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
     process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
-    const { stdout: out, stderr: err } = await execAsync(`${nodeBinary} ${npmPath} ${command}`, {
+    
+    // On Windows, execute npm.cmd directly; on Unix, use node + npm
+    let execCommand: string;
+    if (process.platform === 'win32') {
+      // Quote path if it contains spaces
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNpmPath} ${command}`;
+    } else {
+      // Quote paths that contain spaces (for Unix systems)
+      const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
+      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
+    }
+    
+    const execOptions: any = {
       cwd,
       env,
-    });
+    };
+    
+    // On Windows, use shell to execute .cmd files
+    if (process.platform === 'win32') {
+      execOptions.shell = true;
+    }
+    
+    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
     process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
 
-    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
+    // process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
     if (err) {
       process.env.HEAVY_DEBUG && console.error(`🪲npm ${command} errors/warnings:`, err);
     }
@@ -210,8 +248,15 @@ class CodeInjector implements ICodeInjector {
       }
     }));
   }
-
+  async migrateLegacyCustomLayout(oldMeta) {
+    if (oldMeta.customLayout === true) {
+      oldMeta.sidebarAndHeader = "none";
+    }
+    return oldMeta;
+  }
   async prepareSources() {
+    // collects all files and folders into SPA_TMP_DIR
+
     // check spa tmp folder exists and create if not
     try {
       await fs.promises.access(this.spaTmpPath(), fs.constants.F_OK);
@@ -275,23 +320,34 @@ class CodeInjector implements ICodeInjector {
     };
     const registerCustomPages = (config) => {
       if (config.customization.customPages) {
-        config.customization.customPages.forEach((page) => {
+        config.customization.customPages.forEach(async (page) => {
+          const newMeta = await this.migrateLegacyCustomLayout(page?.component?.meta || {});
           routes += `{
             path: '${page.path}',
             name: '${page.path}',
             component: () => import('${page?.component?.file || page.component}'),
             meta: ${
                 JSON.stringify({
-                  ...(page?.component?.meta || {}),
+                  ...newMeta,
                   title: page.meta?.title || page.path.replace('/', '')
                 })
             }
           },`})
     }}
+    const registerSettingPages = ( settingPage ) => {
+      if (!settingPage) {
+        return;
+      }
+      for (const page of settingPage) {
+        if (page.icon) {
+          icons.push(page.icon);
+        }
+      }
+    }
 
     registerCustomPages(this.adminforth.config);
     collectAssetsFromMenu(this.adminforth.config.menu);
-
+    registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
     if (process.env.HEAVY_DEBUG) {
@@ -310,8 +366,8 @@ class CodeInjector implements ICodeInjector {
     await fsExtra.copy(spaDir, this.spaTmpPath(), {
       filter: (src) => {
         // /adminforth/* used for local development and /dist/* used for production
-        const filterPasses = !src.includes('/adminforth/spa/node_modules') && !src.includes('/adminforth/spa/dist') 
-                          && !src.includes('/dist/spa/node_modules') && !src.includes('/dist/spa/dist');
+        const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
+                          && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
         if (process.env.HEAVY_DEBUG && !filterPasses) {
           console.log('🪲⚙️ fsExtra.copy filtered out', src);
         }
@@ -349,8 +405,8 @@ class CodeInjector implements ICodeInjector {
       await fsExtra.copy(src, to, {
         recursive: true,
         dereference: true,
-        // exclue if node_modules comes after /custom/ in path
-        filter: (src) => !src.includes('/custom/node_modules'),
+        // exclude if node_modules comes after /custom/ in path
+        filter: (src) => !src.includes(path.join('custom', 'node_modules')),
       });
     }
 
@@ -417,6 +473,18 @@ class CodeInjector implements ICodeInjector {
           });
         }
       });
+      resource.options.actions.forEach((action) => {
+        const cc = action.customComponent;
+        if (!cc) return;
+      
+        const file = (typeof cc === 'string') ? cc : cc.file;
+        if (!file) {
+          throw new Error('customComponent.file is missing for action: ' + JSON.stringify({ id: action.id, name: action.name }));
+        }
+        if (!customResourceComponents.includes(file)) {
+          customResourceComponents.push(file);
+        }
+      });
       
       (Object.values(resource.options?.pageInjections || {})).forEach((injection) => {
         Object.values(injection).forEach((filePathes: {file: string}[]) => {
@@ -435,6 +503,12 @@ class CodeInjector implements ICodeInjector {
       Object.values(this.adminforth.config.customization.loginPageInjections).forEach((injection) => {
         checkInjections(injection);
       });
+    }
+
+    if (this.adminforth.config.auth.userMenuSettingsPages) {
+      for (const settingPage of this.adminforth.config.auth.userMenuSettingsPages) {
+        checkInjections([{ file: settingPage.component }]);
+      }
     }
 
 
@@ -510,8 +584,23 @@ class CodeInjector implements ICodeInjector {
           ||
        `/assets/favicon.png`
     );
-    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
+    // inject heads to index.html
+    const headItems = this.adminforth.config.customization?.customHeadItems;
+    if(headItems){
+      const renderedHead = headItems.map(({ tagName, attributes, innerCode }) => {
+      const attrs = Object.entries(attributes)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(' ');
+      const isVoid = ['base', 'link', 'meta'].includes(tagName);
+      return isVoid
+        ? `<${tagName} ${attrs}>`
+        : `<${tagName} ${attrs}> ${innerCode} </${tagName}>`;
+      }).join('\n    ');
+
+      indexHtmlContent = indexHtmlContent.replace("    <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->", `${renderedHead}` );
+    }
+    await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
     let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
@@ -588,10 +677,12 @@ class CodeInjector implements ICodeInjector {
       }
     } catch (e) {
       // ignore
-      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install');
+      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install', e);
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath()});
+    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    }}); 
 
     const allPacks = [
       ...iconPackageNames,
@@ -610,7 +701,12 @@ class CodeInjector implements ICodeInjector {
 
     if (allPacks.length) {
       const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({command: npmInstallCommand, cwd: this.spaTmpPath()});
+      await this.runNpmShell({
+        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+        envOverrides: { 
+          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+        }
+      });
     }
 
     await fs.promises.writeFile(hashPath, fullHash);
@@ -653,7 +749,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (file) => {
         process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
-        await this.updatePartials({ filesUpdated: [file.replace(spaPath + '/', '')] });
+        await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
       }
     )
     watcher.on('fallback', notifyWatcherIssue);
@@ -710,7 +806,7 @@ class CodeInjector implements ICodeInjector {
       'change',
       async (fileOrDir) => {
         // copy one file
-        const relativeFilename = fileOrDir.replace(customComponentsDir + '/', '');
+        const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
         if (process.env.HEAVY_DEBUG) {
           console.log(`🔎 fileOrDir ${fileOrDir} changed`);
           console.log(`🔎 relativeFilename ${relativeFilename}`);
@@ -734,6 +830,42 @@ class CodeInjector implements ICodeInjector {
     this.allWatchers.push(watcher);
   }
 
+  async tryReadFile(filePath: string) {
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      return content;
+    } catch (e) {
+      // file does not exist
+      process.env.HEAVY_DEBUG && console.log(`🪲File ${filePath} does not exist, returning null`);
+      return null;
+    }
+  }
+
+  async computeSourcesHash(folderPath: string = this.spaTmpPath(), allFiles: string[] = []) {
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+    const hashes = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(folderPath, file.name);
+
+        // 🚫 Skip big files or files which might be dynamic
+        if (file.name === 'node_modules' || file.name === 'dist' ||
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
+          return '';
+        }
+
+        allFiles.push(filePath);
+        
+        if (file.isDirectory()) {
+          return this.computeSourcesHash(filePath, allFiles);
+        } else {
+          const content = await fs.promises.readFile(filePath, 'utf-8');
+          return md5hash(content);
+        }
+      })
+    );
+    return md5hash(hashes.join(''));
+  }
+
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
@@ -754,44 +886,86 @@ class CodeInjector implements ICodeInjector {
     }
 
     const cwd = this.spaTmpPath();
-
-
-    await this.runNpmShell({command: 'run i18n:extract', cwd});
-
-    // probably add option to build with tsh check (plain 'build')
     const serveDir = this.getServeDir();
-    // remove serveDir if exists
-    try {
-      await fs.promises.rm(serveDir, { recursive: true });
-    } catch (e) {
-      // ignore
+
+    const allFiles = [];
+    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
+    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(
+      allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
+    
+    const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
+    const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
+
+    const skipBuild = buildHash === sourcesHash;
+    const skipExtract = messagesHash === sourcesHash;
+
+    if (process.env.HEAVY_DEBUG) {
+      console.log(`🪲 SPA build hash: ${buildHash}`);
+      console.log(`🪲 SPA messages hash: ${messagesHash}`);
+      console.log(`🪲 SPA sources hash: ${sourcesHash}`);
     }
-    await fs.promises.mkdir(serveDir, { recursive: true });
-  
-    // copy i18n messages to serve dir
-    await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+
+    if (!skipBuild) {
+      // remove serveDir if exists
+      try {
+        await fs.promises.rm(serveDir, { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+      await fs.promises.mkdir(serveDir, { recursive: true });
+    }
+
+    if (!skipExtract) {
+      await this.runNpmShell({command: 'run i18n:extract', cwd});
+      
+      // create serveDir if not exists
+      await fs.promises.mkdir(serveDir, { recursive: true });
+
+      // copy i18n messages to serve dir
+      await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+
+      // save hash
+      await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
+    } else {
+      console.log(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
+    }
 
     if (!hotReload) {
-      await this.runNpmShell({command: 'run build-only', cwd});
+      if (!skipBuild) {
+        
+        // TODO probably add option to build with tsh check (plain 'build')
+        await this.runNpmShell({command: 'run build-only', cwd});
+        
+        // coy dist to serveDir
+        await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
 
-      // coy dist to serveDir
-      await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
+        // save hash
+        await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
+      } else {
+        console.log(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
+      }
     } else {
 
       const command = 'run dev';
       console.log(`⚙️ spawn: npm ${command}...`);
-      const nodeBinary = process.execPath; 
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
+        console.log('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
+      }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
       };
 
-      const devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], {
-        cwd,
-        env,
-      });
+      const nodeBinary = process.execPath;
+      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      
+      let devServer;
+      if (process.platform === 'win32') {
+        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+      } else {
+        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
+      }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
           // TODO: maybe better use our string "App port: 5174. HMR port: 5274", it is more reliable because vue might change their output

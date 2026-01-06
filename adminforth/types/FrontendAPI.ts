@@ -1,21 +1,4 @@
-import type { AdminForthFilterOperators } from "./Common.js";
-
- 
-
-export type FilterParams = {
-    /**
-     * Field of resource to filter
-     */
-    field: string;
-    /**
-     * Operator of filter
-     */
-    operator: AdminForthFilterOperators;
-    /**
-     * Value of filter
-     */
-    value: string | number | boolean ;
-} 
+import type { AdminForthFilterOperators, FilterParams } from "./Common.js";
 
 export interface FrontendAPIInterface {
 
@@ -55,7 +38,7 @@ export interface FrontendAPIInterface {
      * 
      * @param params - The parameters of the alert
      */
-    alert(params:AlertParams): void;
+    alert(params:AlertParams): void | Promise<string> | string;
 
 
     list: {
@@ -82,26 +65,39 @@ export interface FrontendAPIInterface {
          */
         closeThreeDotsDropdown(): void;
 
-
         /**
-         * Set a filter in the list
-         * Works only when user located on the list page.
+         * Set a filter in the list.
+         * Works only when user located on the list page. If filter already exists, it will be replaced with the new one.
          * Can be used to set filter from charts or other components in pageInjections.
+         * 
+         * Filters are automatically marked as hidden (won't count in badge) if:
+         * - Column has showIn.filter: false
          * 
          * Example:
          * 
          * ```ts
          * import adminforth from '@/adminforth'
          * 
+         * // Regular filter (will show in badge if column.showIn.filter !== false)
          * adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * 
+         * // Hidden filter (won't show in badge if column.showIn.filter === false)
+         * adminforth.list.setFilter({field: 'internal_status', operator: 'eq', value: 'active'})
          * ```
+         * 
+         * Please note that you can set/update filter even for fields which have showIn.filter=false in resource configuration.
+         * Also you can set filter for virtual columns. For example Universal search plugin calls updateFilter for virtual column which has showIn.filter=false (because we dont want to show this column in filter dropdown, plugin renders its own filter UI)
          * 
          * @param filter - The filter to set
          */
         setFilter(filter: FilterParams): void;
 
         /**
+         * DEPRECATED: does the same as setFilter, kept for backward compatibility
          * Update a filter in the list
+         * 
+         * Filters visibility in badge is automatically determined by column configuration:
+         * - Hidden if column has showIn.filter: false
          * 
          * Example:
          * 
@@ -119,6 +115,14 @@ export interface FrontendAPIInterface {
          * Clear all filters from the list
          */
         clearFilters(): void;
+    }
+
+    show: {
+        /**
+         * Full refresh the current record on the show page. Loader may be shown during fetching.
+         * Fire-and-forget; you don't need to await it.
+         */
+        refresh(): void;
     }
 
     menu: {
@@ -171,7 +175,12 @@ export type AlertParams = {
      * Default is 10 seconds;
      */
     timeout?: number | 'unlimited';
-    
+
+    /**
+     * Optional buttons to display in the alert
+     */
+    buttons?: {value: any, label: string}[];
+
 }
 
 

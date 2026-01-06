@@ -11,11 +11,11 @@ Today LLM is already a must tool to speed-up writing, brainstorming, or generati
 
 Here is how it looks in action:
 
-![alt text](../../docs/tutorial/05-Plugins/demoChatGpt.gif)
+![alt text](../../docs/tutorial/07-Plugins/demoChatGpt.gif)
 
 <!-- truncate -->
 
-## Simple controls
+# Simple controls
 
 To control plugin we use our open-source [vue-suggestion-input](https://github.com/devforth/vue-suggestion-input).
 It allows to:

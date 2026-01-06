@@ -1,4 +1,3 @@
-
 /**
  * Types that are common for both frontend side (SPA) and backend side (server).
  */
@@ -14,7 +13,6 @@ export enum AdminForthDataTypes {
   TIME = 'time',
   TEXT = 'text',
   JSON = 'json',
-  RICHTEXT = 'richtext',
 }
 
 export enum AdminForthFilterOperators {
@@ -31,6 +29,21 @@ export enum AdminForthFilterOperators {
   AND = 'and',
   OR = 'or',
 };
+
+export type FilterParams = {
+    /**
+     * Field of resource to filter
+     */
+    field: string;
+    /**
+     * Operator of filter
+     */
+    operator: AdminForthFilterOperators;
+    /**
+     * Value of filter
+     */
+    value: string | number | boolean ;
+} 
 
 export enum AdminForthSortDirections {
   asc = 'asc',
@@ -69,6 +82,11 @@ export type AllowedActionsResolved = {
   [key in AllowedActionsEnum]: boolean
 }
 
+// conditional operators for predicates
+type Value = any;
+type Operators = { $eq: Value } | { $not: Value } | { $gt: Value } | { $gte: Value } | { $lt: Value } | { $lte: Value } | { $in: Value[] } | { $nin: Value[] } | { $includes: Value } | { $nincludes: Value };
+export type Predicate = { $and: Predicate[] } | { $or: Predicate[] } | { [key: string]: Operators | Value };
+
 export interface AdminUser {
   /**
    * primaryKey field value of user in table which is defined by {@link AdminForthConfig.auth.usersResourceId}
@@ -96,12 +114,14 @@ export interface AdminForthBulkActionCommon {
   label: string,
 
   /**
-   * Bulk Action button state 'danger'|success|'active',
-   *  * 'danger' - red button
-   *  * 'success' - green button
-   *  * 'active' - blue button
+   * Add custom class
    **/ 
-  state?: 'danger' | 'success' | 'active';
+  buttonCustomCssClass?: string;
+
+  /** 
+   * Optional small badge for button which will be displayed in the list view
+   */
+  badge?: string,
 
   /**
    * Icon for action button which will be displayed in the list view
@@ -118,6 +138,10 @@ export interface AdminForthBulkActionCommon {
    */
   successMessage?: string,
 
+  /**
+   * Show in three dots dropdown menu in list view.
+   */
+  showInThreeDotsDropdown?: boolean,
 }
 
 export interface AdminForthFieldComponents {
@@ -183,6 +207,12 @@ export interface AdminForthFieldComponents {
    * emptiness emit is optional and required for complex cases. For example for virtual columns where initial value is not set.
    */
   list?: AdminForthComponentDeclaration,
+
+  /**
+   * Filter component is used to redefine input field in filter view.
+   * Component accepts next properties: [record, column, resource, adminUser].
+   */
+  filter?: AdminForthComponentDeclaration,
 }
 
 
@@ -251,10 +281,29 @@ export interface AdminForthComponentDeclarationFull {
    * </script>
    * 
    */
-  meta?: any,
+  meta?: {
+    /**
+     * Controls sidebar and header visibility for custom pages
+     * - 'default': Show both sidebar and header (default behavior)
+     * - 'none': Hide both sidebar and header (full custom layout)
+     * - 'preferIconOnly': Show header but prefer icon-only sidebar
+     * - 'headerOnly': Show only header (full custom layout)
+     */
+    sidebarAndHeader?: 'default' | 'none' | 'preferIconOnly' | 'headerOnly',
+    
+    [key: string]: any,
+  }
 }
+import { type AdminForthActionInput } from './Back.js' 
+export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
+
+export type FieldGroup = {
+  groupName: string;
+  columns: string[];
+  noTitle?: boolean;
+};
 
 /**
  * Resource describes one table or collection in database.
@@ -337,6 +386,11 @@ export interface AdminForthResourceInputCommon {
         direction: AdminForthSortDirections | string,
       }
 
+      /*
+       * Custom actions list. Actions available in show, edit and create views. 
+       */
+      actions?: AdminForthActionInput[],
+      
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
@@ -364,31 +418,25 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Allows to make groups of columns in show, create and edit resource pages.
        */
-      fieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      createFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      editFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
-      showFieldGroups?: {
-        groupName: string;
-        columns: string[];
-        noTitle?: boolean;
-      }[];
+      fieldGroups?: FieldGroup[];
+      createFieldGroups?: FieldGroup[];
+      editFieldGroups?: FieldGroup[];
+      showFieldGroups?: FieldGroup[];
 
       /** 
        * Page size for list view
        */
       listPageSize?: number,
+      
+      /**
+       * Whether to use virtual scroll in list view.
+       */
+      listVirtualScrollEnabled?: boolean,
+
+      /**
+       * Buffer size for virtual scroll in list view.
+       */
+      listBufferSize?: number,
 
       /**
        * Callback to define what happens when user clicks on record in list view.
@@ -451,10 +499,13 @@ export interface AdminForthResourceInputCommon {
         list?: {
           beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeActionButtons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          tableRowReplace?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
         },
 
         /**
@@ -479,6 +530,11 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          /**
+           * Custom Save button component for Edit page.
+           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
+           */
+          saveButton?: AdminForthComponentDeclaration,
         },
 
         /**
@@ -491,6 +547,11 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          /**
+           * Custom Save button component for Create page.
+           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
+           */
+          saveButton?: AdminForthComponentDeclaration,
         },
       }
     },
@@ -564,12 +625,18 @@ export interface AdminForthForeignResourceCommon {
   polymorphicResources?: Array<AdminForthPolymorphicForeignResource>,
   polymorphicOn?: string,
   unsetLabel?: string,
+  searchableFields?: string | string[],
+  searchIsCaseSensitive?: boolean,
 }
 
 export type FillOnCreateFunction = (params: {
   initialRecord: any,
   adminUser: AdminUser,
 }) => any;
+
+export type suggestOnCreateFunction = (params: {
+  adminUser: AdminUser,
+}) => string | number | boolean | object;
 
 /**
  * Column describes one field in the table or collection in database.
@@ -706,7 +773,7 @@ export interface AdminForthResourceColumnInputCommon {
   /**
    * Single value that will be substituted in create form. User can change it before saving the record.
    */
-  suggestOnCreate?: string | number | boolean | object,
+  suggestOnCreate?: string | number | boolean | object | suggestOnCreateFunction,
 
   /**
    * Whether AdminForth will request user to enter unique value during creating or editing record.
@@ -790,9 +857,6 @@ export interface AdminForthResourceColumnInputCommon {
    */
   minLength?: number,
 
-  min?: number,
-  max?: number,
-
   /**
    * Minimum value that can be entered in this field.
    */
@@ -813,6 +877,10 @@ export interface AdminForthResourceColumnInputCommon {
    */
   foreignResource?: AdminForthForeignResourceCommon,
 
+  /**
+   * Whether to allow this column to be sortable in list view.
+   * If true, AdminForth will add sorting buttons to the column header in list view and clicking on it will change sorting state of the column.
+   */
   sortable?: boolean,
 
   
@@ -841,6 +909,15 @@ export interface AdminForthResourceColumnInputCommon {
    */
   masked?: boolean,
 
+  /**
+   * Sticky position for column
+   */
+  listSticky?: boolean;
+
+  /**
+   * Show field only if certain conditions are met.
+   */
+  showIf?: Predicate;
 }
 
 export interface AdminForthResourceColumnCommon extends AdminForthResourceColumnInputCommon {
@@ -854,6 +931,15 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /**
+   * Minimal value stored in this field.
+   */
+  min?: number,
+
+  /**
+   * Maximum value stored in this field.
+   */
+  max?: number,
 }
 
 export enum AdminForthMenuTypes {
@@ -1031,15 +1117,24 @@ export interface AdminForthConfigForFrontend {
   usernameFieldName: string,
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
+  removeBackgroundBlendMode: boolean,
   title?: string,
   demoCredentials?: string,
-  loginPromptHTML?: string,
+  loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
+    panelHeader: Array<AdminForthComponentDeclaration>,
   },
-  rememberMeDays: number,
+  rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
+  showBrandLogoInSidebar: boolean,
   brandLogo?: string,
+  iconOnlySidebar?: { 
+    logo?: string,
+    enabled?: boolean,
+    expandedSidebarWidth?: string,
+  },
+  singleTheme?: 'light' | 'dark',
   datesFormat: string,
   timeFormat: string,
   auth: any,
@@ -1054,8 +1149,21 @@ export interface AdminForthConfigForFrontend {
     userMenu: Array<AdminForthComponentDeclarationFull>,
     header: Array<AdminForthComponentDeclarationFull>,
     sidebar: Array<AdminForthComponentDeclarationFull>,
+    sidebarTop: Array<AdminForthComponentDeclarationFull>,
     everyPageBottom: Array<AdminForthComponentDeclarationFull>,
-  }
+  },
+  customHeadItems?: {
+    tagName: string;
+    attributes: Record<string, string | boolean>;
+    innerCode?: string;
+  }[],
+  settingPages?:{
+    icon?: string,
+    pageLabel: string,
+    slug?: string,
+    component: string,
+    isVisible?: boolean
+  }[],
 }
 
 export interface GetBaseConfigResponse {

@@ -1,54 +1,103 @@
 <template>
-  <div class="flex items-center justify-center w-full"
+    <!-- tag form used to reset the input (method .reset() in clear() function) -->
+  <form class="flex items-center justify-center w-full"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
-    @drop.prevent="dragging = false; doEmit($event.dataTransfer.files)"
+    @drop.prevent="dragging = false; doEmit(($event.dataTransfer as DataTransfer).files)"
   >
-      <label :id="id" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer dark:hover:bg-gray-800 
-        hover:bg-gray-100  dark:hover:border-gray-500 dark:hover:bg-gray-600"
+      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer
+        hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
         :class="{
-          'border-blue-600 dark:border-blue-400': dragging,
-          'border-gray-300 dark:border-gray-600': !dragging,
-          'bg-blue-50 dark:bg-blue-800': dragging,
-          'bg-gray-50 dark:bg-gray-800': !dragging,
+          'border-lightDropzoneBorderDragging dark:border-darkDropzoneBorderDragging': dragging,
+          'border-lightDropzoneBorder dark:border-darkDropzoneBorder': !dragging,
+          'bg-lightDropzoneBackgroundDragging dark:bg-darkDropzoneBackgroundDragging': dragging,
+          'bg-lightDropzoneBackground dark:bg-darkDropzoneBackground': !dragging,
+          'min-h-32 h-full': props.multiple,
+          'h-32': !props.multiple,
         }"
       >
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-              
-            
-              <svg v-if="!selectedFiles.length" class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-              </svg>
-              <div v-else class="flex items-center justify-center w-full mt-1 mb-4">
-                <template v-for="file in selectedFiles">
-                  <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <IconFileSolid class="w-5 h-5" />
-                    {{ file.name }} ({{ humanifySize(file.size) }})
-                  </p>
-                </template>
+        <input
+          :id="id"
+          type="file"
+          class="hidden"
+          :accept="normalizedExtensions.join(',')"
+          @change="$event.target && doEmit(($event.target as HTMLInputElement).files!)"
+          :multiple="props.multiple || false"
+        />
 
+        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+          <svg
+            v-if="!selectedFiles.length"
+            class="w-8 h-8 mb-4 text-lightDropzoneIcon dark:text-darkDropzoneIcon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 16"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 
+                5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 
+                0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+            />
+          </svg>
+
+          <div
+            v-else
+            class="flex items-center justify-center py-1 flex-wrap gap-2 w-full mt-1 mb-4 px-4"
+          >
+            <template v-for="(file, index) in selectedFiles" :key="index">
+              <div
+                class="text-sm text-lightDropzoneIcon dark:text-darkDropzoneIcon  bg-lightDropzoneBackgroundHover dark:bg-darkDropzoneBackgroundHover rounded-md 
+                      flex items-center gap-1 px-2 py-1 group"
+              >
+                <IconFileSolid class="w-4 h-4 flex-shrink-0" />
+                <span
+                  class="truncate max-w-[200px]"
+                  :title="file.name"
+                >
+                  {{ shortenFileName(file.name) }}
+                </span>
+                <span class="text-xs">({{ humanifySize(file.size) }})</span>
+                <button
+                  type="button"
+                  @click.prevent.stop="removeFile(index)"
+                  class="text-lightDropzoneIcon dark:text-darkDropzoneIcon hover:text-red-600 dark:hover:text-red-400 
+                        opacity-70 hover:opacity-100 transition-all"
+                  :title="$t('Remove file')"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-
-              <p v-if="!selectedFiles.length" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">{{ $t('Click to upload') }}</span> {{ $t('or drag and drop') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ props.extensions.join(', ').toUpperCase().replace(/\./g, '') }}
-                <template v-if="props.maxSizeBytes">
-                 (Max size: {{ humanifySize(props.maxSizeBytes) }})
-                </template>
-              </p>
+            </template>
           </div>
-          <input :id="id" type="file" class="hidden" 
-            :accept="props.extensions.join(', ')"
-            @change="doEmit($event.target.files)"
-            :multiple="props.multiple || false"
-          />
+
+          <p
+            v-if="!selectedFiles.length"
+            class="mb-2 text-sm text-lightDropzoneText dark:text-darkDropzoneText"
+          >
+            <span class="font-semibold">{{ $t('Click to upload') }}</span>
+            {{ $t('or drag and drop') }}
+          </p>
+
+          <p class="text-xs text-lightDropzoneText dark:text-darkDropzoneText">
+            {{ normalizedExtensions.join(', ').toUpperCase().replace(/\./g, '') }}
+            <template v-if="props.maxSizeBytes">
+              (Max size: {{ humanifySize(props.maxSizeBytes) }})
+            </template>
+          </p>
+        </div>
       </label>
-  </div> 
+    </form>
 </template>
 
 <script setup lang="ts">
 import { humanifySize } from '@/utils';
-import { ref, type Ref } from 'vue';
+import { ref, type Ref, computed } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
 import adminforth from '@/adminforth';
@@ -64,25 +113,53 @@ const emit = defineEmits(['update:modelValue']);
 
 const id = `afcl-dropzone-${Math.random().toString(36).substring(7)}`;
 
+const normalizedExtensions = computed(() => {
+  return props.extensions.map(ext => {
+    const trimmed = ext.trim().toLowerCase();
+    return trimmed.startsWith('.') ? trimmed : `.${trimmed}`;
+  });
+});
+
 const selectedFiles: Ref<{
   name: string,
   size: number,
   mime: string,
 }[]> = ref([]);
 
+const storedFiles: Ref<File[]> = ref([]);
+
+function shortenFileName(name: string, maxLength = 24) {
+  if (name.length <= maxLength) return name;
+
+  const lastDotIndex = name.lastIndexOf('.');
+  const hasExtension = lastDotIndex > 0 && lastDotIndex < name.length - 1;
+  const extension = hasExtension ? name.slice(lastDotIndex + 1) : '';
+  const baseName = hasExtension ? name.slice(0, lastDotIndex) : name;
+
+  const startName = baseName.slice(0, 12);
+  const endName = baseName.split('').reverse().slice(0, 4).reverse().join('');
+  return hasExtension ? `${startName}...${endName}.${extension}` : `${startName}...${endName}`;
+}
+
 watch(() => props.modelValue, (files) => {
-  selectedFiles.value = Array.from(files).map(file => ({
-    name: file.name,
-    size: file.size,
-    mime: file.type,
-  }));
-});
+  if (files && files.length > 0) {
+    selectedFiles.value = Array.from(files).map(file => ({
+      name: file.name,
+      size: file.size,
+      mime: file.type,
+    }));
+    storedFiles.value = Array.from(files);
+  } else {
+    selectedFiles.value = [];
+    storedFiles.value = [];
+  }
+}, { immediate: true });
 
 function doEmit(filesIn: FileList) {
   
   const multiple = props.multiple || false;
   const files = Array.from(filesIn);
-  const allowedExtensions = props.extensions.map(ext => ext.toLowerCase());
+  const allowedExtensions = normalizedExtensions.value;
   const maxSizeBytes = props.maxSizeBytes;
 
   if (!files.length) return;
@@ -92,6 +169,18 @@ function doEmit(filesIn: FileList) {
   files.forEach(file => {
     const extension = file.name.split('.').pop()?.toLowerCase() || '';
     const size = file.size;
+
+    const isDuplicate = storedFiles.value.some(
+      existingFile => existingFile.name === file.name && existingFile.size === file.size
+    );
+    
+    if (isDuplicate) {
+      adminforth.alert({
+        message: `The file "${file.name}" is already selected.`,
+        variant: 'warning',
+      });
+      return;
+    }
 
     if (!allowedExtensions.includes(`.${extension}`)) {
       adminforth.alert({
@@ -107,22 +196,43 @@ function doEmit(filesIn: FileList) {
       });
       return;
     }
-
+    
     validFiles.push(file);
   });
 
   if (!multiple) {
-    validFiles.splice(1);
+    storedFiles.value = validFiles.slice(0, 1);
+  } else {
+    storedFiles.value = [...storedFiles.value, ...validFiles];
   }
-  selectedFiles.value = validFiles.map(file => ({
+  
+  selectedFiles.value = storedFiles.value.map(file => ({
     name: file.name,
     size: file.size,
     mime: file.type,
   }));
 
-  emit('update:modelValue', validFiles);
+  emit('update:modelValue', storedFiles.value);
+
 }
 
 const dragging = ref(false);
 
+function removeFile(index: number) {
+  storedFiles.value = storedFiles.value.filter((_, i) => i !== index);
+  selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index);
+  emit('update:modelValue', storedFiles.value);
+}
+
+function clear() {
+  selectedFiles.value = [];
+  storedFiles.value = [];
+  emit('update:modelValue', []);
+  const form = document.getElementById(id)?.closest('form');
+  form?.reset();
+}
+
+defineExpose({
+    clear,
+});
 </script>

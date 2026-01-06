@@ -24,6 +24,39 @@ Next variants are supported:
 * `warning`
 * `info`
 
+### Making alert responsive
+You can pass buttons in the alert method and receive a response like:
+
+```ts
+adminforth.alert({
+    message: 'Do you want to receive news?', 
+    variant: 'info', 
+    buttons: [
+        { value: "yes", label: "Yes" }, 
+        { value: "no", label: "No" }
+    ],
+    timeout: 'unlimited'
+}).then((value) => {
+    switch (value) {
+        case "yes":
+            console.log('User selected "Yes"');
+            break;
+        case "no":
+            console.log('User selected "No"');
+            break;
+        default:
+            console.log("User closed alert");
+            break;
+    }
+});
+
+```
+
+Here's how the alert looks now:
+
+![alt text](<Alerts and confirmations3.png>)
+
+
 ## Confirmations
 
 To show a confirmation dialog use `adminforth.confirm` method:

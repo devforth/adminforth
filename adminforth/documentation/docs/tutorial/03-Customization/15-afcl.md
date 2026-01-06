@@ -41,6 +41,68 @@ import { Button } from '@/afcl'
 
 loader prop would show loader when it's true.
 
+## Button Group
+### With active button
+<div class="split-screen" >
+
+```ts
+import { IconGridSolid, IconUserCircleSolid } from '@iconify-prerendered/vue-flowbite';
+import { ButtonGroup } from '@/afcl'
+
+const activeButton = ref('')
+
+    ...
+
+<ButtonGroup v-model="activeButton">  
+  <template #button:Profile>
+    <div class="flex px-4 py-2">
+      <IconUserCircleSolid class="w-5 h-5 me-2"/>
+      Profile
+    </div>
+  </template>
+  <template #button:Dashboard>
+    <div class="flex px-4 py-2">
+      <IconGridSolid class="w-5 h-5 me-2"/>
+      Board
+    </div>
+  </template>
+</ButtonGroup>
+```
+
+![AFCL Button-group](ButtonGroup1.png)
+
+</div>
+
+### With solid color
+
+<div class="split-screen" >
+
+```ts
+  import { ButtonGroup } from '@/afcl'
+  import { IconPlusOutline, IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+
+    ...
+
+    <ButtonGroup :solidColor="true">
+        <template #button:Profile>
+            <div class="flex px-4 py-2" @click="console.log("Add passkey got clicked")">
+                <IconPlusOutline class="w-5 h-5 me-2"/>
+                <p>Add Local Passkey</p>
+            </div>
+        </template>
+        <template #button:Dropdown>
+            <div id="dropdown-button" class="flex px-2 py-2" @click="console.log("Dropdown got clicked")">
+                <IconCaretDownSolid class="w-5 h-5"/>
+            </div>
+        </template>
+    </ButtonGroup>
+
+```
+
+![AFCL Button-group](ButtonGroup2.png)
+
+</div>
+
 
 ## Link
 
@@ -240,12 +302,56 @@ import { Input } from '@/afcl'
   </template>
 </Input>
 ```
+
   </div>
   <div>
     ![AFCL Input](image-46.png)
   </div>
 </div>
 
+
+<div class="split-screen" >
+  <div >
+```js
+import { Input } from '@/afcl'
+import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
+```
+
+
+```html
+<Input type="text" class="w-full">
+  <template #rightIcon>
+    <IconSearchOutline class="w-5 h-5 text-gray-400"/>
+  </template>
+</Input>
+```
+
+
+  </div>
+  <div>
+    ![AFCL Input](inputRightIcon.png)
+  </div>
+</div>
+
+## Textarea
+<div class="split-screen" >
+  <div >
+```ts
+import { Textarea } from '@/afcl'
+```
+
+```ts
+    <Textarea
+      v-model="textAreaInput"
+      placeholder="Enter some text..."
+      class="w-64"
+    />
+```
+  </div>
+  <div>
+    ![AFCL Textarea](textarea.png)
+  </div>
+</div>
 
 ## Tooltip
   
@@ -337,6 +443,79 @@ const enable = ref(false)
   ![AFCL Checkbox](image-62.png)
   </div>
 </div>
+
+## Card 
+
+### Custom card
+If you need custom card, you can make it without 
+<div class="split-screen">
+```ts
+<Card>
+  <p class="font-semibold text-gray-600 text-xl dark:text-gray-300">Total Profit</p>
+  <p class="text-green-500 font-bold mt-2">$100,000</p>
+</Card>
+```
+
+
+![AFCL Checkbox](Card3.png)
+
+</div>
+
+### Standart card
+<div class="split-screen">
+
+```ts
+import { Card } from '@/afcl'
+
+  ...
+
+  <Card
+    title="This is a large card"
+    description="Description text for large card. This is a large card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="md"
+    title="This is a medium card"
+    description="Description text for medium card. This is a medium card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+
+  <Card
+    size="sm"
+    title="This is a small card"
+    description="Description text for small card. This is a small card. Very nice card. Big one. You can put here any content you want."
+  >
+  </Card>
+```
+![AFCL Checkbox](Card2.png)
+
+</div>
+
+## Toggle
+
+<div class="split-screen" >
+  <div >
+
+```ts
+import Toggle from '@/afcl/Toggle.vue';
+```
+
+
+```html
+  <Toggle 
+    :disabled="false" 
+    @update:modelValue="toggleSwitchHandler"> 
+    <p>Click me</p> 
+  </Toggle>
+```
+  </div>
+  <div>
+  ![AFCL Checkbox](image-94.png)
+  </div>
+</div>
+
 
 ## Dialog (Pop-up)
 
@@ -519,9 +698,19 @@ Default behavior of the Dialog component will allow user to close it by just cli
   </div>
 </div>
 
-### Dialog open and close
+### Programatically open or close dialog
 
-You can open and close dialog by calling `open` and `close` methods.
+If you want to control dialog programmatically, you can use `ref` to get a reference to the dialog component. 
+
+```html
+<Dialog ref="confirmDialog" class="w-96">
+  <div class="space-y-4">
+    The dialog content goes here.
+  </div>
+</Dialog>
+```
+
+Now you can open and close dialog by calling `open` and `close` methods.
 
 ```ts
 
@@ -534,6 +723,61 @@ const openDialog = () => {
 const closeDialog = () => {
   confirmDialog.value.close();
 }
+```
+
+### Before open/close dialog handlers
+If you want to run custom logic before the dialog opens or closes by passing callback props:
+
+```ts
+<Dialog 
+  class="w-96" 
+  :beforeCloseFunction="onBeforeOpen" 
+  :beforeOpenFunction="onBeforeClose"
+>
+  <template #trigger>
+    <Button>Dialog Toggle</Button>
+  </template>
+
+  <div class="space-y-4">
+    <p>This is the first paragraph of dialog content.</p>
+    <p>And this is the second paragraph.</p>
+  </div>
+</Dialog>
+```
+Now you can pass before open/close functions:
+```ts
+const counter = ref(0);
+
+function onBeforeOpen() {
+  counter.value++;
+  console.log(`custom open function called ${counter.value}`);
+}
+
+function onBeforeClose() {
+  counter.value++;
+  console.log(`custom close function called ${counter.value}`);
+}
+```
+
+### Ask for extra confirmation before close
+
+If you want dialog to ask user for conformation when he tryes to close dialog, you can add: 
+
+```ts
+<Dialog 
+  ref="confirmDialog" 
+  class="w-96"
+  //diff-add
+  :closable="false"
+  //diff-add
+  :askForCloseConfirmation="true"
+  //diff-add
+  closeConfirmationText='Are you sure you want to close this dialog?',
+>
+  <div class="space-y-4">
+    The dialog content goes here.
+  </div>
+</Dialog>
 ```
 
 ## Dropzone
@@ -703,7 +947,7 @@ const isoFlagToEmoji = (iso) => iso.toUpperCase().replace(/./g, char => String.f
 
 
 
-## Pagination
+### Pagination
 
 Table provides front-end side pagination. You can set `pageSize` (default is 10) to set how many rows to show per page.
 If there is less then `pageSize` rows, pagination will not be shown.
@@ -735,6 +979,212 @@ If there is less then `pageSize` rows, pagination will not be shown.
   </div>
 </div>
 
+### Server-side pagination
+
+To load pages dynamically, simply pass async callback to data:
+
+```ts
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 3 // should return total amount of records in database
+  }
+}
+
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+//diff-remove
+  :data="[...] 
+//diff-add
+  :data="loadPageData"
+
+  :pageSize="3"> 
+</Table>
+```
+> 👆 The page size is used as the limit for pagination.
+
+### Sorting
+
+Table supports column sorting out of the box.
+
+- By default, columns are NOT sortable. Enable sorting per column with `sortable: true`.
+- Clicking a sortable header cycles sorting in a tri-state order:
+  - none → ascending → descending → none
+  - When it returns to "none", the sorting is cleared.
+
+Basic example (client-side sorting when `data` is an array):
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name', sortable: true },
+    { label: 'Age', fieldName: 'age', sortable: true },
+    // disable sort for a specific column
+    { label: 'Country', fieldName: 'country', sortable: false },
+  ]"
+  :data="[
+    { name: 'John', age: 30, country: 'US' },
+    { name: 'Rick', age: 25, country: 'CA' },
+    { name: 'Alice', age: 35, country: 'BR' },
+    { name: 'Colin', age: 40, country: 'AU' },
+  ]"
+  :pageSize="3"
+/>
+```
+
+You can also predefine a default sort:
+
+```html
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name', sortable: true },
+    { label: 'Age', fieldName: 'age', sortable: true },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="rows"
+  defaultSortField="age"
+  defaultSortDirection="desc"
+/>
+```
+
+Notes:
+- Client-side sorting supports nested field paths using dot-notation, e.g. `user.name`.
+- When a column is not currently sorted, a subtle double-arrow icon is shown; arrows switch up/down for ascending/descending.
+
+#### Nested field path sorting
+
+You can sort by nested properties of objects in rows using dot-notation in `fieldName`.
+
+Example:
+
+```html
+<Table
+  :columns="[
+    { label: 'User Name', fieldName: 'user.name', sortable: true },
+    { label: 'User Email', fieldName: 'user.email', sortable: true },
+    { label: 'City', fieldName: 'user.address.city', sortable: true },
+    { label: 'Country', fieldName: 'user.address.country' },
+  ]"
+  :data="[
+    { user: { name: 'Alice', email: 'alice@example.com', address: { city: 'Berlin', country: 'DE' } } },
+    { user: { name: 'Bob', email: 'bob@example.com', address: { city: 'Paris', country: 'FR' } } },
+    { user: { name: 'Carlos', email: 'carlos@example.com', address: { city: 'Madrid', country: 'ES' } } },
+    { user: { name: 'Dana', email: 'dana@example.com', address: { city: 'Rome', country: 'IT' } } },
+    { user: { name: 'Eve', email: 'eve@example.com', address: { city: null, country: 'US' } } },
+  ]"
+  :pageSize="3"
+/>
+```
+
+Behavior details:
+- The path is split on dots and resolved step by step: `user.address.city`.
+- Missing or `null` nested values are pushed to the bottom for ascending order (and top for descending) because `null/undefined` are treated as greater than defined values in asc ordering.
+- Works the same for client-side sorting and for server-side loaders: when using an async loader the same `sortField` (e.g. `user.address.city`) is passed so you can implement equivalent ordering on the backend.
+- Date objects at nested paths are detected and compared chronologically.
+- Numeric comparison is stable for mixed numeric strings via Intl.Collator with numeric option.
+
+Edge cases to consider in your own data:
+- Deeply missing branches like `user.profile.settings.locale` simply result in `undefined` and will follow the null ordering logic above.
+- Arrays are not traversed; if you need array-specific sorting you should pre-normalize data into scalar fields before passing to the table.
+
+### Server-side sorting
+
+When you provide an async function to `data`, the table will pass the current sort along with pagination params.
+
+Signature of the loader receives:
+
+```ts
+type LoaderArgs = {
+  offset: number;
+  limit: number;
+  sortField?: string; // undefined when unsorted
+  sortDirection?: 'asc' | 'desc'; // only when sortField is set
+}
+```
+
+Example using `fetch`:
+
+```ts
+async function loadPageData({ offset, limit, sortField, sortDirection }) {
+  const url = new URL('/api/products', window.location.origin);
+  url.searchParams.set('offset', String(offset));
+  url.searchParams.set('limit', String(limit));
+  if (sortField) url.searchParams.set('sortField', sortField);
+  if (sortField && sortDirection) url.searchParams.set('sortDirection', sortDirection);
+
+  const { data, total } = callAdminForthApi('getProducts', {limit, offset, sortField, sortDirection});
+  return { data, total };
+}
+
+<Table
+  :columns="[
+    { label: 'ID', fieldName: 'id' },
+    { label: 'Title', fieldName: 'title' },
+    { label: 'Price', fieldName: 'price' },
+  ]"
+  :data="loadPageData"
+  :pageSize="10"
+/>
+```
+
+Events you can listen to:
+
+```html
+<Table
+  :columns="columns"
+  :data="loadPageData"
+  @update:sortField="(f) => currentSortField = f"
+  @update:sortDirection="(d) => currentSortDirection = d"
+  @sort-change="({ field, direction }) => console.log('sort changed', field, direction)"
+/>
+```
+
+### Table loading states
+
+For tables where you load data externally and pass them to `data` prop as array (including case with front-end pagination) you might want to show skeleton loaders in table externaly using `isLoading` props.
+
+For tables with server-side paganation which use async function in data prop you can listen for `@update:tableLoading` to get table internal loading state, in other words this event will let you know when server side function started and finished execution, so you might use it e.g. to disable some external filter buttons and so on.
+
+<div class="split-screen">
+
+```ts
+import { Table, Button } from "@/afcl"
+const isTableLoading = ref(false);
+const tableState = ref("loading");
+
+  ...
+
+  <Table
+    :columns="[
+      { label: 'Name', fieldName: 'name' },
+      { label: 'Age', fieldName: 'age' },
+      { label: 'Country', fieldName: 'country' },
+    ]"
+    :data="loadPageData" 
+    //diff-add
+    :isLoading="isTableLoading"
+    :pageSize="3"
+    //diff-add
+    @update:tableLoading="(loading) => loading === true ? tableState = 'loading' : tableState = 'loaded'"
+  >
+  </Table>
+
+  <p> Table state: {{ tableState }} </p>
+
+  <Button @click="isTableLoading.value=!isTableLoading.value"> Toggle loading state</Button>
+```
+  ![AFCL Table](TableLoading.png)
+
+</div>
 
 ## ProgressBar
 
@@ -850,6 +1300,22 @@ Spinner component is used to display a loading state for a component.
   ![Spinner](image-86.png)
   </div>
 </div>
+
+## Country Flag
+
+The Country Flag component displays national flags using ISO 3166-1 alpha-2 country codes.
+
+<div class="split-screen" >
+  <div>
+  ```html
+  <CountryFlag countryCode="ua" />
+  ```
+  </div>
+  <div>
+  ![Country Flag](image-92.png)
+  </div>
+</div>
+
 
 ## Bar Chart
 
@@ -986,6 +1452,7 @@ any of native settings to `options` prop. Here we will only show some basics.
         }
 //diff-add
       }
+//diff-add
     }
   }"
 />
@@ -1443,7 +1910,7 @@ import { PieChart } from '@/afcl'
 //diff-add
           offset: -10, // Moves labels closer to or further from the slices
 //diff-add
-          minAngleToShowLabel: 10, // Ensures that small slices don’t show labels
+          minAngleToShowLabel: 10, // Ensures that small slices don't show labels
 //diff-add
         },
 //diff-add
@@ -1675,6 +2142,65 @@ import { MixedChart } from '@/afcl'
   </div>
 </div>
 
+## Json Viewer
+
+```ts
+import { JsonViewer } from '@/afcl'
+```
+
+### Basic
+
+<div class="split-screen" >
+
+  <div>
+  ```html
+      <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
+  ```
+</div>
+  <div>
+    ![JSON Viewer](image-93.png)
+  </div>
+</div>
+
+## Date picker
+
+```ts
+import { DatePicker } from '@/afcl';
+const datePickerValue = ref()
+```
+
+### Basic
+<div class="split-screen" >
+
+<div>
+```html
+<DatePicker
+  v-model:datePickerValue="datePickerValue"
+  :column="{ type: 'datetime' }"
+  label="Pick start"
+/>
+```
+</div>
+  <div>
+    ![Date Picker](image-95.png)
+  </div>
+</div>
 
 
 

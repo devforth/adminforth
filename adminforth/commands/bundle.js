@@ -1,28 +1,22 @@
-import fs from "fs";
-import { getInstance } from "./utils.js";
+import { callTsProxy, findAdminInstance } from "./callTsProxy.js";
+
 
 async function bundle() {
-  const currentDirectory = process.cwd();
-  const files = fs.readdirSync(currentDirectory);
-  let instanceFound = false;
+  console.log("Bundling admin SPA...");
+  const instance = await findAdminInstance();
+    
 
-  for (const file of files) {
-    if (file.endsWith(".js") || file.endsWith(".ts")) {
-      try {
-        const instance = await getInstance(file, currentDirectory);
-        if (instance) {
-          await instance.bundleNow({ hotReload: false });
-          instanceFound = true;
-          break;
-        }
-      } catch (error) {
-        console.error(`Error: Could not bundle '${file}'`, error);
+  try {
+    await callTsProxy(`
+      import { admin } from './${instance.file}.js';
+
+      export async function exec() {
+        return await admin.bundleNow({ hotReload: false });
       }
-    }
-  }
-  if (!instanceFound) {
-    console.error("Error: No valid instance found to bundle.");
-    return;
+    `);
+
+  } catch (e) {
+    console.log(`Running budndle failed`, e);
   }
 }
 

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
-import { Decimal128, ObjectId } from 'bson';
+import { Decimal128, Double, ObjectId } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 
@@ -9,6 +9,24 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
 };
+function normalizeMongoValue(v: any) {
+  if (v == null) {
+    return v;
+  }
+  if (v instanceof Decimal128) {
+    return v.toString();
+  }
+  if (v instanceof Double) {
+    return v.valueOf();
+  }
+  if (typeof v === "object" && v.$numberDecimal) {
+    return String(v.$numberDecimal);
+  }
+  if (typeof v === "object" && v.$numberDouble) {
+    return Number(v.$numberDouble);
+  }
+  return v;
+}
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -46,7 +64,108 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         [AdminForthSortDirections.asc]: 1,
         [AdminForthSortDirections.desc]: -1,
     };
+    async getAllTables(): Promise<Array<string>>{
+        const db = this.client.db();
+    
+        const collections = await db.listCollections().toArray();
+    
+        return collections.map(col => col.name);
+    }
 
+    async getAllColumnsInTable(collectionName: string): Promise<Array<{ name: string; type: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
+
+        const sampleDocs = await this.client.db().collection(collectionName).find({}).sort({ _id: -1 }).limit(100).toArray();
+      
+        const fieldTypes = new Map<string, Set<string>>();
+        const sampleValues = new Map<string, any>();
+
+        function detectType(value: any): string {
+          if (value === null || value === undefined) return 'string';
+          if (typeof value === 'string') return 'string';
+          if (typeof value === 'boolean') return 'boolean';
+          if (typeof value === 'number') {
+            return Number.isInteger(value) ? 'integer' : 'float';
+          }
+          if (value instanceof Date) return 'datetime';
+          if (value && typeof value === 'object' && ('$numberDecimal' in value || value._bsontype === 'Decimal128')) return 'decimal';
+          if (typeof value === 'object') return 'json';
+          return 'string';
+        }
+      
+        function addType(name: string, type: string) {
+          if (!fieldTypes.has(name)) {
+            fieldTypes.set(name, new Set());
+          }
+          fieldTypes.get(name)!.add(type);
+        }
+      
+        function flattenObject(obj: any, prefix = '') {
+          Object.entries(obj).forEach(([key, value]) => {
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+
+            if (!fieldTypes.has(fullKey)) {
+              fieldTypes.set(fullKey, new Set());
+              sampleValues.set(fullKey, value);
+            }
+      
+            if (value instanceof Buffer) {
+              addType(fullKey, 'json');
+              return;
+            }
+            if (
+                value &&
+                typeof value === 'object' &&
+                ('$numberDecimal' in value || (value as any)._bsontype === 'Decimal128')
+              ) {
+              addType(fullKey, 'decimal');
+              return;
+            }
+      
+            if (
+              value && 
+              typeof value === 'object' && 
+              !Array.isArray(value) && 
+              !(value instanceof Date)
+            ) {
+              addType(fullKey, 'json');
+              return
+            }
+        
+            addType(fullKey, detectType(value));
+          });
+        }
+      
+        for (const doc of sampleDocs) {
+          flattenObject(doc);
+        }
+      
+        return Array.from(fieldTypes.entries()).map(([name, types]) => {
+            const primaryKey = name === '_id';
+        
+            const priority = ['datetime', 'date', 'decimal', 'integer', 'float', 'boolean', 'json', 'string'];
+        
+            const matched = priority.find(t => types.has(t)) || 'string';
+        
+            const typeMap: Record<string, AdminForthDataTypes> = {
+                string: AdminForthDataTypes.STRING,
+                integer: AdminForthDataTypes.INTEGER,
+                float: AdminForthDataTypes.FLOAT,
+                boolean: AdminForthDataTypes.BOOLEAN,
+                datetime: AdminForthDataTypes.DATETIME,
+                date: AdminForthDataTypes.DATE,
+                json: AdminForthDataTypes.JSON,
+                decimal: AdminForthDataTypes.DECIMAL,
+            };
+            return {
+                name,
+                type: typeMap[matched] ?? AdminForthDataTypes.STRING,
+                ...(primaryKey ? { isPrimaryKey: true } : {}),
+                sampleValue: sampleValues.get(name),
+            };
+        });
+    }
+      
+    
     async discoverFields(resource) {
         return resource.columns.filter((col) => !col.virtual).reduce((acc, col) => {
             if (!col.type) {
@@ -78,8 +197,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return dayjs(Date.parse(value)).toISOString().split('T')[0];
 
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return !!value;
+          return value === null ? null : !!value;
         } else if (field.type == AdminForthDataTypes.DECIMAL) {
+            if (value === null || value === undefined) {
+                return null;
+            }
             return value?.toString();
         } else if (field.name === '_id' && !field.fillOnCreate) {
             // value is supposed to be an ObjectId or string representing it
@@ -93,22 +215,38 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
 
     setFieldValue(field, value) {
-        if (field.type == AdminForthDataTypes.DATETIME) {
-          if (!value) {
-            return null;
-          }
-          if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).unix();
-          } else if (field._underlineType == 'varchar') {
-            // value is iso string now, convert to unix timestamp
-            return dayjs(value).toISOString();
-          }
-        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value ? true : false;
-        } else if (field.type == AdminForthDataTypes.DECIMAL) {
-            return Decimal128.fromString(value?.toString());
-        } else if (field.name === '_id' && !field.fillOnCreate) {
+        if (value === undefined) return undefined;
+        if (value === null) return null;
+
+        if (field.type === AdminForthDataTypes.DATETIME) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return dayjs(value).isValid() ? dayjs(value).toDate() : null;
+        }
+
+        if (field.type === AdminForthDataTypes.INTEGER) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return Number.isFinite(value) ? Math.trunc(value) : null;
+        }
+
+        if (field.type === AdminForthDataTypes.FLOAT) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return Number.isFinite(value) ? value : null;
+        }
+
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            if (value === "" || value === null) {
+                return null;
+            }
+            return value.toString();
+        }
+
+        if (field.name === '_id' && !field.fillOnCreate) {
             // value is supposed to be an ObjectId
             if (!ObjectId.isValid(value)) {
                 return null;
@@ -124,13 +262,45 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             // unsupported type for ObjectId
             return null;
         }
+
         return value;
     }
 
     getFilterQuery(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any {
+        // accept raw NoSQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawNoSQL !== undefined) {
+            return (filter as IAdminForthSingleFilter).insecureRawNoSQL;
+        }
+
+        // explicitly ignore raw SQL filters for MongoDB
+        if ((filter as IAdminForthSingleFilter).insecureRawSQL !== undefined) {
+            console.warn('⚠️  Ignoring insecureRawSQL filter for MongoDB:', (filter as IAdminForthSingleFilter).insecureRawSQL);
+            return {};
+        }
+
         if ((filter as IAdminForthSingleFilter).field) {
+            // Field-to-field comparisons via $expr
+            if ((filter as IAdminForthSingleFilter).rightField) {
+                const left = `$${(filter as IAdminForthSingleFilter).field}`;
+                const right = `$${(filter as IAdminForthSingleFilter).rightField}`;
+                const op = (filter as IAdminForthSingleFilter).operator;
+                const exprOpMap = {
+                    [AdminForthFilterOperators.GT]: '$gt',
+                    [AdminForthFilterOperators.GTE]: '$gte',
+                    [AdminForthFilterOperators.LT]: '$lt',
+                    [AdminForthFilterOperators.LTE]: '$lte',
+                    [AdminForthFilterOperators.EQ]: '$eq',
+                    [AdminForthFilterOperators.NE]: '$ne',
+                } as const;
+                const mongoExprOp = exprOpMap[op];
+                if (!mongoExprOp) {
+                    // For unsupported ops with rightField, return empty condition
+                    return {};
+                }
+                return { $expr: { [mongoExprOp]: [left, right] } };
+            }
             const column = resource.dataSourceColumns.find((col) => col.name === (filter as IAdminForthSingleFilter).field);
-            if (['integer', 'decimal', 'float'].includes(column.type)) {
+            if ([AdminForthDataTypes.INTEGER, AdminForthDataTypes.DECIMAL, AdminForthDataTypes.FLOAT].includes(column.type)) {
                 return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator](+(filter as IAdminForthSingleFilter).value) };
             }
             return { [(filter as IAdminForthSingleFilter).field]: this.OperatorsMap[filter.operator]((filter as IAdminForthSingleFilter).value) };
@@ -138,7 +308,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // filter is a AndOr filter
         return this.OperatorsMap[filter.operator]((filter as IAdminForthAndOrFilter).subFilters
-            // mongodb should ignore raw sql
+            // mongodb should ignore raw SQL, but allow raw NoSQL
             .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
             .map((f) => this.getFilterQuery(resource, f)));
     }
@@ -192,13 +362,20 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
         const tableName = resource.table;
         const collection = this.client.db().collection(tableName);
-        const result = {};
+        const result: Record<string, { min: any; max: any }> = {};
+
         for (const column of columns) {
-            result[column] = await collection
-                .aggregate([
-                    { $group: { _id: null, min: { $min: `$${column}` }, max: { $max: `$${column}` } } },
-                ])
-                .toArray();
+            const [doc] = await collection
+            .aggregate([
+                { $group: { _id: null, min: { $min: `$${column.name}` }, max: { $max: `$${column.name}` } } },
+                { $project: { _id: 0, min: 1, max: 1 } },
+            ])
+            .toArray();
+
+            result[column.name] = {
+            min: normalizeMongoValue(doc?.min),
+            max: normalizeMongoValue(doc?.max),
+            };
         }
         return result;
     }

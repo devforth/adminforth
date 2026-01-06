@@ -9,11 +9,36 @@ export const toPascalCase = (str) => {
     .join("");
 };
 
+export const toCapitalizedSentence = (str) => {
+  const words = str
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .split(' ');
+
+  if (words.length === 0) return '';
+
+  return [words[0][0].toUpperCase() + words[0].slice(1), ...words.slice(1)].join(' ');
+};
+
+export const toTitleCase = (str) => {
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export const mapToTypeScriptType = (adminType) => {
   switch (adminType) {
     case "string":
     case "text":
-    case "richtext":
     case "datetime":
     case "date":
     case "time":

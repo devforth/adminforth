@@ -9,6 +9,33 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
   async setupClient(url: string): Promise<void> {
     this.client = betterSqlite3(url.replace('sqlite://', ''));
   }
+  async getAllTables(): Promise<Array<string>> {
+    const stmt = this.client.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';`
+    );
+    const rows = stmt.all();
+    return rows.map((row) => row.name);
+  }
+  async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; sampleValue?: any }>> {
+    const stmt = this.client.prepare(`PRAGMA table_info(${tableName});`);
+    const columns = stmt.all();
+  
+    const orderByField = columns.find(c => ['created_at', 'id'].includes(c.name))?.name;
+  
+    let sampleRow = {};
+    if (orderByField) {
+      const rowStmt = this.client.prepare(`SELECT * FROM ${tableName} ORDER BY ${orderByField} DESC LIMIT 1`);
+      sampleRow = rowStmt.get() || {};
+    } else {
+      const rowStmt = this.client.prepare(`SELECT * FROM ${tableName} LIMIT 1`);
+      sampleRow = rowStmt.get() || {};
+    }
+  
+    return columns.map(col => ({
+      name: col.name || '',
+      sampleValue: sampleRow[col.name],
+    }));
+  }
 
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
         const tableName = resource.table;
@@ -18,7 +45,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         rows.forEach((row) => {
           const field: any = {};
           const baseType = row.type.toLowerCase();
-          if (baseType == 'int') {
+          if (baseType == 'int' || baseType == 'integer') {
             field.type = AdminForthDataTypes.INTEGER;
             field._underlineType = 'int';
           } else if (baseType.includes('varchar(')) {
@@ -35,6 +62,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
+          } else if (baseType === 'decimal') {
+            field.type = AdminForthDataTypes.DECIMAL;
+            field._underlineType = 'decimal';
+            field.precision = 10;
+            field.scale = 2;
           } else if (baseType == 'real') {
             field.type = AdminForthDataTypes.FLOAT; //8-byte IEEE floating point number. It
             field._underlineType = 'real';
@@ -81,7 +113,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         return dayjs(value).toISOString().split('T')[0];
 
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return !!value;
+        return value === null ? null : !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
         if (field._underlineType == 'text' || field._underlineType == 'varchar') {
           try {
@@ -111,8 +143,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         } else {
           return value;
         }
+              }
+      else if (field.isArray?.enabled) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        return JSON.stringify(value);
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return value ? 1 : 0;
+        return value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
         if (field._underlineType == 'text' || field._underlineType == 'varchar') {
@@ -147,6 +185,13 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
   
     getFilterString(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
+        // Field-to-field comparison support
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          const left = (filter as IAdminForthSingleFilter).field;
+          const right = (filter as IAdminForthSingleFilter).rightField;
+          const operator = this.OperatorsMap[filter.operator];
+          return `${left} ${operator} ${right}`;
+        }
         // filter is a Single filter
         let placeholder = '?';
         let field = (filter as IAdminForthSingleFilter).field;
@@ -190,6 +235,10 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }
     getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
+        if ((filter as IAdminForthSingleFilter).rightField) {
+          // No params for field-to-field comparisons
+          return [];
+        }
         // filter is a Single filter
         if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [`%${filter.value}%`];
@@ -258,7 +307,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
       }
       const totalStmt = this.client.prepare(q);
-      return totalStmt.get([...filterValues])['COUNT(*)'];
+      return +totalStmt.get([...filterValues])['COUNT(*)'];
     }
 
     async getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }> {
@@ -279,7 +328,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
+      // const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
+      const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+      //console.log('\n🟢 [SQLITE INSERT]:', sql);
+      //console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
+      const q = this.client.prepare(sql);
+      if (process.env.HEAVY_DEBUG_QUERY) {
+            console.log('🪲📜 SQL Q:', q, 'values:', values);
+        }
       const ret = await q.run(values);
       return ret.lastInsertRowid;
     }

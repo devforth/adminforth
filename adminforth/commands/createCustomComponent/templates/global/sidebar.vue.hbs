@@ -1,0 +1,17 @@
+<template>
+  <div class="display-flex justify-center text-lightSidebarIcons text-center dark:text-darkSidebarIcons">
+    Sidebar Text
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+
+const props = defineProps<{
+  reason: String
+}>();
+
+onMounted(() => {
+  // Logic on mount if needed
+});
+</script>

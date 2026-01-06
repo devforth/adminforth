@@ -110,7 +110,7 @@
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
-            chart: { type: 'donut' },
+            chart: { type: 'donut', height: 250 },
             plotOptions: {
               pie: {
                 donut: {
@@ -233,7 +233,7 @@ onMounted(async () => {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
     adminforth.alert({
-      message: t(`Error fetching data: {message}`, { message: error.message }),
+      message: (t(`Error fetching data: {message}`), { message: error.message }),
       variant: 'danger',
     });
   }

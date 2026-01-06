@@ -1,0 +1,17 @@
+<template>
+  <div class="flex items-center justify-center text-gray-900 dark:text-gray-400 p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+    Page Bottom Text
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+
+const props = defineProps<{
+  reason: String
+}>();
+
+onMounted(() => {
+  // Logic on mount if needed
+});
+</script>
