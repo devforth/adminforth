@@ -18,7 +18,7 @@ import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-s
 import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
 
-export default function carsResourseTemplate(resourceId: string, dataSource: string) {
+export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
     dataSource: dataSource,
     table: 'cars',
@@ -35,7 +35,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
     *********************************************************************************/
     columns: [
       {
-        name: 'id',
+        name: pkFileldName,
         type: AdminForthDataTypes.STRING,
         label: 'Identifier',
         showIn: {
