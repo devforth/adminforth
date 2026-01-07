@@ -4,6 +4,9 @@ import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAnd
 import AdminForthBaseConnector from './baseConnector.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 
+const UUID36 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const HEX32  = /^[0-9a-f]{32}$/i;
+
 function idToString(v: any) {
   if (v == null) return null;
   if (typeof v === "string" || typeof v === "number" || typeof v === "bigint") return String(v);
@@ -16,8 +19,8 @@ function idToString(v: any) {
     if ("$uuid" in s) {
         return String(s.$uuid);
     }
-    return String(v);
   }
+  return String(v);
 }
 
 const extractSimplePkEq = (filters: IAdminForthAndOrFilter, pk: string): string | null => {
@@ -57,7 +60,13 @@ function normalizeMongoValue(v: any) {
 }
 
 class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
-
+    private pkCandidates(pkValue: any): any[] {
+        if (pkValue == null || typeof pkValue !== "string") return [pkValue];
+        const candidates: any[] = [pkValue];
+        try { candidates.push(new UUID(pkValue)); } catch(err) { console.error(`Failed to create UUID from ${pkValue}: ${err.message}`); }
+        try { candidates.push(new ObjectId(pkValue)); } catch(err) { console.error(`Failed to create ObjectId from ${pkValue}: ${err.message}`); }
+        return candidates;
+    }
     async setupClient(url): Promise<void> {
         this.client = new MongoClient(url);
         (async () => {
@@ -323,18 +332,19 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             if (res.length) {
                 return res;
             }
-            try {
+            if (UUID36.test(pkValue)) {
                 res = await collection.find({ [pk]: new UUID(pkValue) }).limit(1).toArray();
-                if (res.length) {
-                    return res;
-                }
-            } catch {}
-            try {
+            }
+            if (res.length) {
+                return res;
+            }
+            if (HEX32.test(pkValue)) {
                 res = await collection.find({ [pk]: new ObjectId(pkValue) }).limit(1).toArray();
-                if (res.length) {
-                    return res;
-                }
-            } catch {}
+            }
+            if (res.length) {
+                return res;
+            }
+
             return [];
         }
 
@@ -399,18 +409,23 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
-    const collection = this.client.db().collection(resource.table);
-    const pk = this.getPrimaryKey(resource);
-    const rows = await this.getDataWithOriginalTypes({resource, limit: 1, offset: 0, sort: [], filters: Filters.AND(Filters.EQ(pk, recordId))});
-    await collection.updateOne({ [pk]: rows[0][pk] || recordId }, { $set: newValues });
+        const collection = this.client.db().collection(resource.table);
+        const pk = this.getPrimaryKey(resource);
+        for (const id of this.pkCandidates(recordId)) {
+            const res = await collection.updateOne({ [pk]: id }, { $set: newValues });
+            if (res.matchedCount > 0) return;
+        }
+        throw new Error(`Record with id ${recordId} not found in resource ${resource.name}`);
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
         const collection = this.client.db().collection(resource.table);
         const pk = this.getPrimaryKey(resource);
-        const rows = await this.getDataWithOriginalTypes({resource, limit: 1, offset: 0, sort: [], filters: Filters.AND(Filters.EQ(pk, recordId))});
-        const res = await collection.deleteOne({ [pk]: rows[0][pk] });
-        return res.deletedCount > 0;
+        for (const id of this.pkCandidates(recordId)) {
+            const res = await collection.deleteOne({ [pk]: id });
+            if (res.deletedCount > 0) return true;
+        }
+        return false;
     }
 
     async close() {

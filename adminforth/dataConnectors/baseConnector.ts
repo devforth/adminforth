@@ -486,11 +486,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any> {
     return this.getRecordByPrimaryKeyWithOriginalTypes(resource, recordId).then((record) => {
-        const newRecord = {};
-        for (const col of resource.dataSourceColumns) {
-            newRecord[col.name] = this.getFieldValue(col, record[col.name]);
-        }
-        return newRecord;
+      if (!record) {
+        return null;
+      }
+      const newRecord = {};
+      for (const col of resource.dataSourceColumns) {
+          newRecord[col.name] = this.getFieldValue(col, record[col.name]);
+      }
+      return newRecord;
     });
   }
   async getAllTables(): Promise<string[]> {
