@@ -1,10 +1,38 @@
 import dayjs from 'dayjs';
-import { MongoClient } from 'mongodb';
-import { Decimal128, Double, ObjectId } from 'bson';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
+import { MongoClient, BSON, ObjectId, Decimal128, Double, UUID } from 'mongodb';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, Filters } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
-
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
+
+function idToString(v: any) {
+  if (v == null) return null;
+  if (typeof v === "string" || typeof v === "number" || typeof v === "bigint") return String(v);
+
+  const s = BSON.EJSON.serialize(v);
+  if (s && typeof s === "object") {
+    if ("$oid" in s) {
+        return String(s.$oid);
+    }
+    if ("$uuid" in s) {
+        return String(s.$uuid);
+    }
+    return String(v);
+  }
+}
+
+const extractSimplePkEq = (filters: IAdminForthAndOrFilter, pk: string): string | null => {
+  if (!filters?.subFilters?.length) return null;
+  if (filters.operator !== AdminForthFilterOperators.AND) return null;
+  if (filters.subFilters.length !== 1) return null;
+
+  const f: any = filters.subFilters[0];
+  if (!f?.field) return null;
+  if (f.field !== pk) return null;
+  if (f.operator !== AdminForthFilterOperators.EQ) return null;
+  if (typeof f.value !== "string") return null;
+
+  return f.value;
+}
 
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
@@ -184,85 +212,44 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     getFieldValue(field, value) {
-        if (field.type == AdminForthDataTypes.DATETIME) {
-            if (!value) {
-                return null;
-            }
-            return dayjs(Date.parse(value)).toISOString();
-
-        } else if (field.type == AdminForthDataTypes.DATE) {
-            if (!value) {
-                return null;
-            }
-            return dayjs(Date.parse(value)).toISOString().split('T')[0];
-
-        } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-          return value === null ? null : !!value;
-        } else if (field.type == AdminForthDataTypes.DECIMAL) {
-            if (value === null || value === undefined) {
-                return null;
-            }
-            return value?.toString();
-        } else if (field.name === '_id' && !field.fillOnCreate) {
-            // value is supposed to be an ObjectId or string representing it
-            if (typeof value === 'object') {
-                return value?.toString();
-            }
+        if (field.type === AdminForthDataTypes.DATETIME) {
+            return value ? dayjs(Date.parse(value)).toISOString() : null;
         }
-
+        if (field.type === AdminForthDataTypes.DATE) {
+            return value ? dayjs(Date.parse(value)).toISOString().split("T")[0] : null;
+        }
+        if (field.type === AdminForthDataTypes.BOOLEAN) {
+            return value === null ? null : !!value;
+        }
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            return value === null || value === undefined ? null : value.toString();
+        }
+        if (field.name === '_id') {
+            return idToString(value);
+        }
         return value;
     }
 
 
     setFieldValue(field, value) {
-        if (value === undefined) return undefined;
-        if (value === null) return null;
-
-        if (field.type === AdminForthDataTypes.DATETIME) {
-            if (value === "" || value === null) {
-                return null;
-            }
-            return dayjs(value).isValid() ? dayjs(value).toDate() : null;
+        if (value === undefined) {
+            return undefined;
         }
-
-        if (field.type === AdminForthDataTypes.INTEGER) {
-            if (value === "" || value === null) {
-                return null;
-            }
-            return Number.isFinite(value) ? Math.trunc(value) : null;
-        }
-
-        if (field.type === AdminForthDataTypes.FLOAT) {
-            if (value === "" || value === null) {
-                return null;
-            }
-            return Number.isFinite(value) ? value : null;
-        }
-
-        if (field.type === AdminForthDataTypes.DECIMAL) {
-            if (value === "" || value === null) {
-                return null;
-            }
-            return value.toString();
-        }
-
-        if (field.name === '_id' && !field.fillOnCreate) {
-            // value is supposed to be an ObjectId
-            if (!ObjectId.isValid(value)) {
-                return null;
-            }
-            if (typeof value === 'string' || typeof value === 'number') {
-                // if string or number - turn it into ObjectId
-                return new ObjectId(value);
-            } else if (typeof value === 'object') {
-                // assume it is a correct ObjectId
-                return value;
-            }
-
-            // unsupported type for ObjectId
+        if (value === null || value === '') {
             return null;
         }
-
+        if (field.type === AdminForthDataTypes.DATETIME) {
+            return dayjs(value).isValid() ? dayjs(value).toDate() : null;
+        }
+        if (field.type === AdminForthDataTypes.INTEGER) {
+            return Number.isFinite(value) ? Math.trunc(value) : null;
+        }
+        if (field.type === AdminForthDataTypes.FLOAT) {
+            return Number.isFinite(value) ? value : null;
+        }
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            return value.toString();
+        }
         return value;
     }
 
@@ -313,34 +300,53 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             .map((f) => this.getFilterQuery(resource, f)));
     }
     
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
-        { 
-            resource: AdminForthResource, 
-            limit: number, 
-            offset: number, 
-            sort: { field: string, direction: AdminForthSortDirections }[], 
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: 
+        {
+            resource: AdminForthResource,
+            limit: number,
+            offset: number,
+            sort: { field: string, direction: AdminForthSortDirections }[],
             filters: IAdminForthAndOrFilter,
         }
     ): Promise<any[]> {
 
         // const columns = resource.dataSourceColumns.filter(c=> !c.virtual).map((col) => col.name).join(', ');
         const tableName = resource.table;
-
-
         const collection = this.client.db().collection(tableName);
+
+
+        const pk = this.getPrimaryKey(resource);
+        const pkValue = extractSimplePkEq(filters, pk);
+
+        if (pkValue !== null) {
+            let res = await collection.find({ [pk]: pkValue }).limit(1).toArray();
+            if (res.length) {
+                return res;
+            }
+            try {
+                res = await collection.find({ [pk]: new UUID(pkValue) }).limit(1).toArray();
+                if (res.length) {
+                    return res;
+                }
+            } catch {}
+            try {
+                res = await collection.find({ [pk]: new ObjectId(pkValue) }).limit(1).toArray();
+                if (res.length) {
+                    return res;
+                }
+            } catch {}
+            return [];
+        }
+
         const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
 
-        const sortArray: any[] = sort.map((s) => {
-            return [s.field, this.SortDirectionsMap[s.direction]];
-        });
+        const sortArray: any[] = sort.map((s) => [s.field, this.SortDirectionsMap[s.direction]]);
 
-        const result = await collection.find(query)
+        return await collection.find(query)
             .sort(sortArray)
             .skip(offset)
             .limit(limit)
             .toArray();
-
-        return result
     }
 
     async getCount({ resource, filters }: { 
@@ -393,15 +399,17 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
 
     async updateRecordOriginalValues({ resource, recordId, newValues }) {
-        const collection = this.client.db().collection(resource.table);
-        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
-        await collection.updateOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) }, { $set: newValues });
+    const collection = this.client.db().collection(resource.table);
+    const pk = this.getPrimaryKey(resource);
+    const rows = await this.getDataWithOriginalTypes({resource, limit: 1, offset: 0, sort: [], filters: Filters.AND(Filters.EQ(pk, recordId))});
+    await collection.updateOne({ [pk]: rows[0][pk] || recordId }, { $set: newValues });
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
         const collection = this.client.db().collection(resource.table);
-        const primaryKeyColumn = resource.dataSourceColumns.find((col) => col.name === this.getPrimaryKey(resource));
-        const res = await collection.deleteOne({ [primaryKeyColumn.name]: this.setFieldValue(primaryKeyColumn, recordId) });
+        const pk = this.getPrimaryKey(resource);
+        const rows = await this.getDataWithOriginalTypes({resource, limit: 1, offset: 0, sort: [], filters: Filters.AND(Filters.EQ(pk, recordId))});
+        const res = await collection.deleteOne({ [pk]: rows[0][pk] });
         return res.deletedCount > 0;
     }
 
