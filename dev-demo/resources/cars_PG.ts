@@ -1,4 +1,4 @@
 import carsResourseTemplate from "./carsResourseTemplate.js";
 
 
-export default carsResourseTemplate("cars_pg", "postgres");
+export default carsResourseTemplate("cars_pg", "postgres", "id");
