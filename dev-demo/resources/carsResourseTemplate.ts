@@ -17,7 +17,6 @@ import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-genera
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
-import { ObjectId, UUID } from 'bson';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
@@ -45,7 +44,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           create: false,
         },
         primaryKey: true,
-        fillOnCreate: () => crypto.randomUUID(),
+        fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),
       },
       {
         name: 'model',
@@ -60,7 +59,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         inputSuffix: 'USD',
         allowMinMaxQuery: true,
         editingNote: 'Price is in USD',
-        type: AdminForthDataTypes.DECIMAL,
+        type: AdminForthDataTypes.FLOAT,
         required: true,
       },
       {

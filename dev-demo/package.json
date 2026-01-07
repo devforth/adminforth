@@ -24,7 +24,6 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "adminforth": "^2.17.0-next.17",
     "better-sqlite3": "^10.1.0",
     "clickhouse-migrations": "^1.1.1",
     "decimal.js": "^10.6.0",
