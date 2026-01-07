@@ -1,7 +1,8 @@
 import { 
   AdminForthResource, IAdminForthDataSourceConnectorBase, 
   AdminForthResourceColumn, 
-  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter 
+  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter, 
+  Filters
 } from "../types/Back.js";
 
 
@@ -39,7 +40,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       limit: 1,
       offset: 0,
       sort: [],
-      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }]},
+      filters: Filters.AND(Filters.EQ(this.getPrimaryKey(resource), id))
     });
     return data.length > 0 ? data[0] : null;
   }
@@ -47,14 +48,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
     if (!filter) {
       // if no filter, return empty "and" filter
-      return { operator: AdminForthFilterOperators.AND, subFilters: [] };
+      return Filters.AND();
     }
     if (typeof filter !== 'object') {
       throw new Error(`Filter should be an array or an object`);
     }
     if (Array.isArray(filter)) {
       // if filter is an array, combine them using "and" operator
-      return { operator: AdminForthFilterOperators.AND, subFilters: filter };
+      return Filters.AND(...filter);
     }
     if ((filter as IAdminForthAndOrFilter).subFilters) {
       // if filter is already AndOr filter - return as is
@@ -62,7 +63,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
 
     // by default, assume filter is Single filter, turn it into AndOr filter
-    return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
+    return Filters.AND(filter);
   }
 
   validateAndNormalizeFilters(filters: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, resource: AdminForthResource): { ok: boolean, error: string } {
@@ -82,12 +83,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
           // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
           if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
-            filters[fIndex] = {
-              operator: AdminForthFilterOperators.OR,
-              subFilters: f.value.map((v: any) => {
-                return { field: column.name, operator: AdminForthFilterOperators.LIKE, value: v };
-              }),
-            };
+            filters[fIndex] = Filters.OR(
+              ...f.value.map((v: any) => {
+                return Filters.LIKE(column.name, v);
+              })
+            );
           }
         }
 
@@ -318,13 +318,10 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
       resource,
-      filters: { 
-        operator: AdminForthFilterOperators.AND, 
-        subFilters: [
-          { field: column.name, operator: AdminForthFilterOperators.EQ, value },
-          ...(record ? [{ field: primaryKeyField, operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE, value: record[primaryKeyField] }] : [])
-        ]
-      },
+      filters: Filters.AND(
+        Filters.EQ(column.name, value),
+        ...(record ? [Filters.NEQ(primaryKeyField, record[primaryKeyField])] : [])
+      ),
       limit: 1,
       sort: [],
       offset: 0,
@@ -489,11 +486,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any> {
     return this.getRecordByPrimaryKeyWithOriginalTypes(resource, recordId).then((record) => {
-        const newRecord = {};
-        for (const col of resource.dataSourceColumns) {
-            newRecord[col.name] = this.getFieldValue(col, record[col.name]);
-        }
-        return newRecord;
+      if (!record) {
+        return null;
+      }
+      const newRecord = {};
+      for (const col of resource.dataSourceColumns) {
+          newRecord[col.name] = this.getFieldValue(col, record[col.name]);
+      }
+      return newRecord;
     });
   }
   async getAllTables(): Promise<string[]> {
