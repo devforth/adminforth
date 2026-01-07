@@ -1,4 +1,4 @@
 import carsResourseTemplate from "./carsResourseTemplate.js";
 
 
-export default carsResourseTemplate("cars_mysql", "mysql");
+export default carsResourseTemplate("cars_mysql", "mysql", "id");
