@@ -59,7 +59,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         inputSuffix: 'USD',
         allowMinMaxQuery: true,
         editingNote: 'Price is in USD',
-        type: AdminForthDataTypes.FLOAT,
+        type: AdminForthDataTypes.DECIMAL,
         required: true,
       },
       {
@@ -73,12 +73,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         name: 'engine_type',
         type: AdminForthDataTypes.STRING,
         label: 'Engine Type',
-        allowMinMaxQuery: true,
         enum: ENGINE_TYPES,
       },
       {
         name: 'engine_power',
-        allowMinMaxQuery: true,
         type: AdminForthDataTypes.INTEGER,
         inputSuffix: 'HP',
         showIf: { engine_type: { $not: 'electric' } },
@@ -87,6 +85,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       {
         name: 'production_year',
         type: AdminForthDataTypes.INTEGER,
+        allowMinMaxQuery: true,
         minValue: 1900,
         maxValue: new Date().getFullYear(),
       },
@@ -341,7 +340,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         {
           name: 'Approve Listing',
           icon: 'flowbite:check-outline',
-          action: async ({ recordId, adminUser, adminforth, extra }) => {
+          action: async ({ recordId, adminUser, adminforth, extra, response }) => {
             //@ts-ignore
             const verificationResult = extra?.verificationResult
             if (!verificationResult) {
@@ -351,7 +350,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             const result = await t2fa.verify(verificationResult, {
               adminUser: adminUser,
               userPk: adminUser.pk as string,
-              cookies: extra.cookies
+              cookies: extra.cookies,
+              response: response,
+              extra: extra,
             });
 
 
