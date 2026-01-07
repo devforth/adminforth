@@ -42,8 +42,6 @@ Then:
 
 ```bash
 npm run makemigration -- --name add-2fa-secret ; npm run migrate:local
-
-
 ```
 
 And add it to `adminuser.ts`
@@ -265,7 +263,7 @@ options: {
       name: 'Auto submit',
       icon: 'flowbite:play-solid',
       allowed: () => true,
-      action: async ({ recordId, adminUser, adminforth, extra }) => {
+      action: async ({ recordId, adminUser, adminforth, response, extra }) => {
         //diff-add
         const verificationResult = extra?.verificationResult
         //diff-add
@@ -283,7 +281,11 @@ options: {
         //diff-add
           userPk: adminUser.pk,
         //diff-add
-          cookies: extra.cookies
+          cookies: extra.cookies,
+        //diff-add
+          response: response,
+        //diff-add
+          extra: extra,
         //diff-add
         });
 
@@ -332,7 +334,7 @@ To protect create and edit operations, collect the result of the 2FA modal on th
 
 Frontend (custom Save button example):
 
-```vue
+```ts
 <template>
   <button :disabled="disabled || saving || !isValid" @click="onClick">Save</button>
   <!-- The plugin injects TwoFAModal globally, exposing window.adminforthTwoFaModal -->
@@ -369,7 +371,7 @@ Backend (resource hook verification):
 // Inside resource config
 hooks: {
   edit: {
-    beforeSave: async ({ adminUser, adminforth, extra }) => {
+    beforeSave: async ({ adminUser, adminforth, response, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
       const confirmationResult = extra?.body?.meta?.confirmationResult;
       if (!confirmationResult) {
@@ -380,6 +382,8 @@ hooks: {
         adminUser,
         userPk: adminUser.pk,
         cookies,
+        response, 
+        extra
       });
       if (!('ok' in verifyRes) || verifyRes.ok !== true) {
         return { ok: false, error: verifyRes?.error || 'Two-factor authentication failed' };
@@ -495,8 +499,12 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
       // diff-add
         userPk: adminUser.pk,
       // diff-add
-        cookies: cookies
-      // diff-add
+        cookies: cookies,
+      //diff-add
+        response: res, 
+      //diff-add
+        extra: {...req.headers},
+      //diff-add
       });
       // diff-add
       if (!('ok' in verifyRes)) {
@@ -530,8 +538,6 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
 ```
 
 ### Step-Up Authentication Grace Period
-
-> 💡** Note ** this feature is now in development and might be not yet available.
 
 By default, step-up authentication is required every time the user performs a critical operation.
 
