@@ -129,7 +129,7 @@
             />
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
+            <div class="flex text-lightPrimary dark:text-darkPrimary items-center gap-2">
               <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('show')">
                 <RouterLink
                   v-if="resource.options?.allowedActions?.show"
@@ -208,12 +208,13 @@
                     >
                       <button
                         type="button"
+                        class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                         :disabled="rowActionLoadingStates?.[action.id]"
                       >
                         <component
                           v-if="action.icon"
                           :is="getIcon(action.icon)"
-                          class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
                         />
                       </button>
                     </component>
