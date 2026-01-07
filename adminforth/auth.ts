@@ -97,7 +97,7 @@ class AdminForthAuth implements IAdminForthAuth {
   }
 
   setCustomCookie({ response, payload }: {
-    response: any, payload: { name: string, value: string, expiry: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
+    response: any, payload: { name: string, value: string, expiry?: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
   }) {
     const {name, value, expiry, httpOnly, expirySeconds } = payload;
 
