@@ -45,33 +45,17 @@ class AdminForthAuth implements IAdminForthAuth {
 
   getClientIp(headers: object) {
     const clientIpHeader = this.adminforth.config.auth.clientIpHeader;
-    console.log('👊🏿👊🏿👊🏿get client Ip method called 👊🏿👊🏿👊🏿')
+
     const headersLower = Object.keys(headers).reduce((acc, key) => {
       acc[key.toLowerCase()] = headers[key];
-      console.log(`Header: ${key.toLowerCase()} = ${headers[key]}`);
-      console.log("Returning acc:", acc);
       return acc;
     }, {});
     if (clientIpHeader) {
-      console.log(`Using custom client IP header: ${clientIpHeader}`);
       return headersLower[clientIpHeader.toLowerCase()] || 'unknown';
     } else {
       // first try common headers which can't bee spoofed, in other words
       // most common to nginx/traefik/apache
       // then fallback to less secure headers
-      console.log('Using default client IP header detection');
-      console.log("returning:", headersLower['x-forwarded-for']?.split(',').shift().trim() ||
-       headersLower['x-real-ip'] || 
-       headersLower['x-client-ip'] || 
-       headersLower['x-cluster-client-ip'] || 
-       headersLower['forwarded'] || 
-       headersLower['remote-addr'] || 
-       headersLower['client-ip'] || 
-       headersLower['client-address'] || 
-       headersLower['client'] || 
-       headersLower['x-host'] ||
-       null);
-       
       return headersLower['x-forwarded-for']?.split(',').shift().trim() ||
        headersLower['x-real-ip'] || 
        headersLower['x-client-ip'] || 
