@@ -38,6 +38,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         [AdminForthFilterOperators.NIN]: 'NOT IN',
         [AdminForthFilterOperators.AND]: 'AND',
         [AdminForthFilterOperators.OR]: 'OR',
+        [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+        [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
     };
 
     SortDirectionsMap = {
@@ -252,7 +254,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             let field = (filter as IAdminForthSingleFilter).field;
             const fieldData = resource.dataSourceColumns.find((col) => col.name == field);
             let operator = this.OperatorsMap[filter.operator];
-            if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+            
+            // Handle IS_EMPTY and IS_NOT_EMPTY operators
+            if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+                return `"${field}" ${operator}`;
+            } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 placeholder = `(${filter.value.map(() => placeholder).join(', ')})`;
             }
 
@@ -293,7 +299,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return [];
             }
             // filter is a Single filter
-            if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+            
+            // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+            if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+                return [];
+            } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
                 return [`%${filter.value}%`];
             } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 return filter.value;

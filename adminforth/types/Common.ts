@@ -28,6 +28,8 @@ export enum AdminForthFilterOperators {
   NIN = 'nin',
   AND = 'and',
   OR = 'or',
+  IS_EMPTY = 'isEmpty',
+  IS_NOT_EMPTY = 'isNotEmpty',
 };
 
 export type FilterParams = {

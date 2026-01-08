@@ -103,7 +103,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       // Either compare with value or with rightField (field-to-field). If rightField is set, value must be undefined.
       const comparingWithRightField = filtersAsSingle.rightField !== undefined && filtersAsSingle.rightField !== null;
-      if (!comparingWithRightField && filtersAsSingle.value === undefined) {
+      const isEmptyOperator = filters.operator === AdminForthFilterOperators.IS_EMPTY || filters.operator === AdminForthFilterOperators.IS_NOT_EMPTY;
+      
+      if (!comparingWithRightField && !isEmptyOperator && filtersAsSingle.value === undefined) {
         return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
       }
       if (comparingWithRightField && filtersAsSingle.value !== undefined) {
@@ -118,7 +120,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
       AdminForthFilterOperators.LIKE, AdminForthFilterOperators.ILIKE, AdminForthFilterOperators.IN,
-      AdminForthFilterOperators.NIN].includes(filters.operator)) {
+      AdminForthFilterOperators.NIN, AdminForthFilterOperators.IS_EMPTY, AdminForthFilterOperators.IS_NOT_EMPTY].includes(filters.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
       const fieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field);
@@ -151,6 +153,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           throw new Error(`Field '${filtersAsSingle.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // No value conversion needed for field-to-field comparison here
+      } else if (isEmptyOperator) {
+        // IS_EMPTY and IS_NOT_EMPTY don't need value normalization
+        // Set value to null if not already set
+        if (filtersAsSingle.value === undefined) {
+          filtersAsSingle.value = null;
+        }
       } else if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
         if (!Array.isArray(filters.value)) {
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
