@@ -349,6 +349,9 @@ registerSaveInterceptor(async ({ action, values, resource }) => {
     // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
     return { ok: true, extra: { confirmationResult } };
   }
+  else {
+    throw new Error('No Two-Factor Authentication modal found, please ensure you have latest version of @adminforth/two-factors-auth installed and instantiated on resource');
+  }
   return { ok: false, error: 'Two-factor authentication code is required' };
 });
 </script>
