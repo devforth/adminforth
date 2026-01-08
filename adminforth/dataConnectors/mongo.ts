@@ -58,6 +58,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         [AdminForthFilterOperators.NIN]: (value) => ({ $nin: value }),
         [AdminForthFilterOperators.AND]: (value) => ({ $and: value }),
         [AdminForthFilterOperators.OR]: (value) => ({ $or: value }),
+        [AdminForthFilterOperators.IS_EMPTY]: () => null,
+        [AdminForthFilterOperators.IS_NOT_EMPTY]: () => ({ $ne: null }),
     };
 
     SortDirectionsMap = {
