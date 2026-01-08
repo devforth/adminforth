@@ -532,11 +532,6 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          /**
-           * Custom Save button component for Edit page.
-           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
-           */
-          saveButton?: AdminForthComponentDeclaration,
         },
 
         /**
@@ -549,11 +544,6 @@ export interface AdminForthResourceInputCommon {
           afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
           threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          /**
-           * Custom Save button component for Create page.
-           * Accepts props: [record, resource, adminUser, meta, saving, validating, isValid, disabled, saveRecord]
-           */
-          saveButton?: AdminForthComponentDeclaration,
         },
       }
     },
