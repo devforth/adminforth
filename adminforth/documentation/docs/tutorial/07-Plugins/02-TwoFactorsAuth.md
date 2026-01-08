@@ -576,7 +576,9 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
 
 By default, step-up authentication is required every time the user performs a critical operation.
 
-While it might be nessesary for high-security applications, it can be inconvenient for users who perform multiple critical actions in a short period. To fix the issue (by lowering security a bit), you can enable grace period between step-up authentication requests:
+Most of critical operation should not be often and should be carefully prefiltered. For example small money transfers should be confirmed without 2FA request (you implement it in logics), while big ones e.g. > threshold should require 2FA every time.
+
+If it is still inconvenient for admins who perform multiple critical actions in a short period to confirm 2FA often. To reduce the issue (by lowering security level), you can enable grace period between step-up authentication requests:
 
 
 ```ts title='./adminuser.ts'
@@ -593,6 +595,15 @@ This configuration still remembers user browser fingerprint and IP address, and 
 
 
 Any popups asking for 2FA would be automatically resolved during grace period without user interaction if both browser fingerprint and IP address are the same as during last successful 2FA and time since last 2FA is less than grace period.
+
+> 💡** Note ** We strongly do not recommend using this feature because it increases blast radius for MitB, Cookie parsing/decoding Stealer malwares and Remote Browser Control (device controlling attacks). None of these attacks are fixed compleately by 2FA when you are not using grace period, but using grace period makes these attacks easier to perform.
+> Instead we recommend to reducing number of critical operations requiring 2FA by carefully prefiltering them.
+
+> For example when user upgraded to Webauthn (Passkey) and uses Passkey to confirm operation, any of device-controlling attacks has blast radius of single operation only, because Passkey is used per one operation and cannot be reused later without a new user guesture, but when grace period is used, attacker might wait for user to confirm operation once and then perform multiple operations during grace period without 2FA.
+
+> 💡** Interesting fact **: for those of your admins who use TOTP, even without grace period, device controlling attacks have blast radius of multiple operations, because TOTP code can be reused multiple times during its validity period (30 seconds). 
+> This plugin, even when Webauthn is activated, still allows users to confirm any action with TOTP (mainly  to prevent "Lost account" scenarios), but at moment of victim device controlling attack, the negative TOTP's impact will happen only in case if admin enters TOTP code, so if admin uses Passkey at exact operation blast radius is limited to single operation only.
+
 
 
 ## Custom label prefix in authenticator app
