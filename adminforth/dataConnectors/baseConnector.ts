@@ -252,6 +252,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       if (value === "" || value === null) {
         return this.setFieldValue(field, null);
       }
+      // Accept string
       if (typeof value === "string") {
         const string = value.trim();
         if (!string) {
@@ -261,6 +262,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           return this.setFieldValue(field, string);
         }
         throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      // Accept Decimal-like objects (e.g., decimal.js) by using toString()
+      if (value && typeof value === "object" && typeof (value as any).toString === "function") {
+        const s = (value as any).toString();
+        if (typeof s === "string" && s.trim() !== "" && Number.isFinite(Number(s))) {
+          return this.setFieldValue(field, s);
+        }
       }
 
       throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`);
