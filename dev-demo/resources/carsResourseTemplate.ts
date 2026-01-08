@@ -156,18 +156,18 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
 
     *********************************************************************************/
       new UploadPlugin({
-        // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        //   fileSystemFolder: "./images",
-        //   adminServeBaseUrl: "static/source",
-        //   mode: "public",
-        //   signingSecret: "TOP_SECRET",
-        // }),
-        storageAdapter: new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+          fileSystemFolder: "./images",
+          adminServeBaseUrl: "static/source",
+          mode: "public",
+          signingSecret: "TOP_SECRET",
         }),
+        // storageAdapter: new AdminForthAdapterS3Storage({
+        //   bucket: process.env.AWS_BUCKET_NAME as string,
+        //   region: process.env.AWS_REGION as string,
+        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        // }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -179,18 +179,18 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         },
       }),
       new UploadPlugin({
-        // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-        //   fileSystemFolder: "./images",
-        //   adminServeBaseUrl: "static/source",
-        //   mode: "public",
-        //   signingSecret: "TOP_SECRET",
-        // }),
-        storageAdapter: new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+          fileSystemFolder: "./images",
+          adminServeBaseUrl: "static/source",
+          mode: "public",
+          signingSecret: "TOP_SECRET",
         }),
+        // storageAdapter: new AdminForthAdapterS3Storage({
+        //   bucket: process.env.AWS_BUCKET_NAME as string,
+        //   region: process.env.AWS_REGION as string,
+        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        // }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -238,18 +238,18 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       ...(process.env.OPENAI_API_KEY ? 
         [
           new UploadPlugin({
-            // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-            //   fileSystemFolder: "./images",
-            //   adminServeBaseUrl: "static/source",
-            //   mode: "public",
-            //   signingSecret: "TOP_SECRET",
-            // }),
-            storageAdapter: new AdminForthAdapterS3Storage({
-              bucket: process.env.AWS_BUCKET_NAME as string,
-              region: process.env.AWS_REGION as string,
-              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+              fileSystemFolder: "./images",
+              adminServeBaseUrl: "static/source",
+              mode: "public",
+              signingSecret: "TOP_SECRET",
             }),
+            // storageAdapter: new AdminForthAdapterS3Storage({
+            //   bucket: process.env.AWS_BUCKET_NAME as string,
+            //   region: process.env.AWS_REGION as string,
+            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            // }),
             pathColumnName: 'generated_promo_picture',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
             maxFileSize: 1024 * 1024 * 20, // 20 MB
