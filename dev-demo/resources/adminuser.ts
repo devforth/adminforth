@@ -43,13 +43,6 @@ export default {
       required: true,
       isUnique: true,
       type: AdminForthDataTypes.STRING,
-      validation: [
-        // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object
-        {
-          regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-          message: 'Email is not valid, must be in format example@test.com'
-        },
-      ]
     },
     {
       name: 'created_at',
@@ -82,10 +75,6 @@ export default {
       masked: true, // to show stars in input field
 
       minLength: 8,
-      validation: [
-        // request to have at least 1 digit, 1 upper case, 1 lower case
-        AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
-      ],
     },
     {
       name: 'password_hash',
@@ -116,6 +105,7 @@ export default {
       { 
         twoFaSecretFieldName: 'secret2fa', 
         timeStepWindow: 1,
+        stepUpMfaGracePeriodSeconds: 300,
         usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
           // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
           return (true);
@@ -146,23 +136,23 @@ export default {
     new ForeignInlineListPlugin({
       foreignResourceId: 'cars_sl'
     }),
-    // new ForeignInlineListPlugin({
-    //   foreignResourceId: 'adminuser',
-    // }),
+    new ForeignInlineListPlugin({
+      foreignResourceId: 'adminuser',
+    }),
     new UploadPlugin({
       pathColumnName: "avatar",
-      // storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-      //   fileSystemFolder: "./images",
-      //   adminServeBaseUrl: "static/source",
-      //   mode: "public",
-      //   signingSecret: "TOP_SECRET",
-      // }),
-      storageAdapter: new AdminForthAdapterS3Storage({
-        bucket: process.env.AWS_BUCKET_NAME as string,
-        region: process.env.AWS_REGION as string,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        fileSystemFolder: "./images",
+        adminServeBaseUrl: "static/source",
+        mode: "public",
+        signingSecret: "TOP_SECRET",
       }),
+      // storageAdapter: new AdminForthAdapterS3Storage({
+      //   bucket: process.env.AWS_BUCKET_NAME as string,
+      //   region: process.env.AWS_REGION as string,
+      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      // }),
       allowedFileExtensions: [
         "jpg",
         "jpeg",
