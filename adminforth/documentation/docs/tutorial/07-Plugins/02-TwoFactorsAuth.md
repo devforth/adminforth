@@ -366,7 +366,7 @@ options: {
   }
 }
 ```
-> Note: You can use all injections, not only bottom
+Note: You can use any injection which executes JS on a page where Save bottom is rendered, not only bottom
 
 Backend (resource hook verification):
 
