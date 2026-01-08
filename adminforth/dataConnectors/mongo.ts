@@ -5,7 +5,7 @@ import AdminForthBaseConnector from './baseConnector.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 
 const UUID36 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const HEX32  = /^[0-9a-f]{32}$/i;
+const HEX24  = /^[0-9a-f]{24}$/i;   // 24-hex (Mongo ObjectId)
 
 function idToString(v: any) {
   if (v == null) return null;
@@ -23,23 +23,17 @@ function idToString(v: any) {
   return String(v);
 }
 
-const extractSimplePkEq = (filters: IAdminForthAndOrFilter, pk: string): string | null => {
-  if (!filters?.subFilters?.length) return null;
-  if (filters.operator !== AdminForthFilterOperators.AND) return null;
-  if (filters.subFilters.length !== 1) return null;
-
-  const f: any = filters.subFilters[0];
-  if (!f?.field) return null;
-  if (f.field !== pk) return null;
-  if (f.operator !== AdminForthFilterOperators.EQ) return null;
-  if (typeof f.value !== "string") return null;
-
-  return f.value;
-}
+const extractSimplePkEq = (f: any, pk: string): string | null => {
+  while (f?.subFilters?.length === 1) f = f.subFilters[0];
+  return (f?.operator === AdminForthFilterOperators.EQ && f?.field === pk && f.value != null && typeof f.value !== "object")
+    ? String(f.value)
+    : null;
+};
 
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escapes special characters
 };
+
 function normalizeMongoValue(v: any) {
   if (v == null) {
     return v;
@@ -338,7 +332,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             if (res.length) {
                 return res;
             }
-            if (HEX32.test(pkValue)) {
+            if (HEX24.test(pkValue)) {
                 res = await collection.find({ [pk]: new ObjectId(pkValue) }).limit(1).toArray();
             }
             if (res.length) {

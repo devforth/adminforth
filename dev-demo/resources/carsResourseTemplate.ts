@@ -59,7 +59,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         inputSuffix: 'USD',
         allowMinMaxQuery: true,
         editingNote: 'Price is in USD',
-        type: AdminForthDataTypes.FLOAT,
+        type: AdminForthDataTypes.DECIMAL,
         required: true,
       },
       {

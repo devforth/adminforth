@@ -10,7 +10,7 @@ import cars_MyS_resource from './resources/cars_MyS.js';
 import cars_PG_resource from './resources/cars_PG.js';
 import cars_Mongo_resource from './resources/cars_mongo.js';
 import cars_Ch_resource from './resources/cars_Ch.js';
-
+import { ObjectId } from 'mongodb';
 import auditLogsResource from "./resources/auditLogs.js"
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
@@ -216,7 +216,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
       for (let i = 0; i < 100; i++) {
         const engine_type = ENGINE_TYPES[Math.floor(Math.random() * ENGINE_TYPES.length)].value;
         await admin.resource('cars_mongo').create({
-          _id: `${i}`,
+          _id: new ObjectId(),
           model: `${FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]} ${FICTIONAL_CAR_MODELS_BY_BRAND[FICTIONAL_CAR_BRANDS[Math.floor(Math.random() * FICTIONAL_CAR_BRANDS.length)]][Math.floor(Math.random() * 4)]}`,
           price: Decimal(Math.random() * 10000).toFixed(2),
           engine_type: engine_type,
