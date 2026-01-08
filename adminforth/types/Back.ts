@@ -129,7 +129,7 @@ export interface IAdminForthSingleFilter {
   operator?: AdminForthFilterOperators.EQ | AdminForthFilterOperators.NE
   | AdminForthFilterOperators.GT | AdminForthFilterOperators.LT | AdminForthFilterOperators.GTE
   | AdminForthFilterOperators.LTE | AdminForthFilterOperators.LIKE | AdminForthFilterOperators.ILIKE
-  | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN;
+  | AdminForthFilterOperators.IN | AdminForthFilterOperators.NIN | AdminForthFilterOperators.IS_EMPTY | AdminForthFilterOperators.IS_NOT_EMPTY;
   value?: any;
   rightField?: string;
   insecureRawSQL?: string;
@@ -1283,6 +1283,14 @@ export class Filters {
       operator: AdminForthFilterOperators.OR,
       subFilters,
     };
+  }
+
+  static IS_EMPTY(field: string): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.IS_EMPTY, value: null };
+  }
+
+  static IS_NOT_EMPTY(field: string): IAdminForthSingleFilter {
+    return { field, operator: AdminForthFilterOperators.IS_NOT_EMPTY, value: null };
   }
 }
 

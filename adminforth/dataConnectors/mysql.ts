@@ -32,6 +32,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     [AdminForthFilterOperators.NIN]: 'NOT IN',
     [AdminForthFilterOperators.AND]: 'AND',
     [AdminForthFilterOperators.OR]: 'OR',
+    [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+    [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
   };
 
   SortDirectionsMap = {
@@ -215,7 +217,11 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       let placeholder = '?';
       let field = (filter as IAdminForthSingleFilter).field;
       let operator = this.OperatorsMap[filter.operator];
-      if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+      
+      // Handle IS_EMPTY and IS_NOT_EMPTY operators
+      if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+        return `${field} ${operator}`;
+      } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         placeholder = `(${(filter as IAdminForthSingleFilter).value.map(() => '?').join(', ')})`;
       } else if (filter.operator == AdminForthFilterOperators.ILIKE) {
         placeholder = `LOWER(?)`;
@@ -261,7 +267,11 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return [];
       }
       // filter is a Single filter
-      if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+      
+      // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+      if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
         return [`%${filter.value}%`];
       } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         return filter.value;
