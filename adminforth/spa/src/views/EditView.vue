@@ -87,7 +87,7 @@ import type { AdminForthResourceColumn } from '@/types/Back';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
-const { runSaveInterceptors } = useAdminforth();
+const { api } = useAdminforth();
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -129,8 +129,7 @@ const editableRecord = computed(() => {
 })
 
 onBeforeMount(() => {
-  const { clearSaveInterceptors } = useAdminforth();
-  clearSaveInterceptors(route.params.resourceId as string);
+  api.clearSaveInterceptors(route.params.resourceId as string);
 });
 
 onMounted(async () => {
@@ -165,7 +164,7 @@ async function saveRecord() {
   }
 
   saving.value = true;
-  const interceptorsResult = await runSaveInterceptors({
+  const interceptorsResult = await api.runSaveInterceptors({
     action: 'edit',
     values: record.value,
     resource: coreStore.resource,

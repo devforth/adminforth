@@ -103,7 +103,7 @@ const router = useRouter();
 const record = ref({});
 
 const coreStore = useCoreStore();
-const { runSaveInterceptors } = useAdminforth();
+const { api } = useAdminforth();
 
 const { t } = useI18n();
 
@@ -119,8 +119,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 onBeforeMount(() => {
-  const { clearSaveInterceptors } = useAdminforth();
-  clearSaveInterceptors(route.params.resourceId as string);
+  api.clearSaveInterceptors(route.params.resourceId as string);
 });
 
 onMounted(async () => {
@@ -175,7 +174,7 @@ async function saveRecord() {
   const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
   const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
-  const interceptorsResult = await runSaveInterceptors({
+  const interceptorsResult = await api.runSaveInterceptors({
     action: 'create',
     values: record.value,
     resource: coreStore.resource,
@@ -186,7 +185,7 @@ async function saveRecord() {
     if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
     return;
   }
-  const interceptorConfirmationResult = interceptorsResult.extra?.confirmationResult;
+  const interceptorConfirmationResult = (interceptorsResult.extra as Record<string, any>)?.confirmationResult;
   const response = await callAdminForthApi({
     method: 'POST',
     path: `/create_record`,
