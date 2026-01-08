@@ -19,6 +19,7 @@ export default {
     { name: 'action', required: false },
     { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
     { name: 'record_id', required: false },
+    { name: 'ip_address', required: false },
   ],
   options: {
     allowedActions: {
@@ -37,7 +38,8 @@ export default {
             resourceDataColumnName: 'diff',
             resourceUserIdColumnName: 'user_id',
             resourceRecordIdColumnName: 'record_id',
-            resourceCreatedColumnName: 'created_at'
+            resourceCreatedColumnName: 'created_at',
+            resourceIpColumnName: "ip_address",
         }
     }),
   ],
