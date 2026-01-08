@@ -217,6 +217,8 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthFilterOperators.NIN]: 'NOT IN',
       [AdminForthFilterOperators.AND]: 'AND',
       [AdminForthFilterOperators.OR]: 'OR',
+      [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+      [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
     };
 
     SortDirectionsMap = {
@@ -238,6 +240,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         const column = resource.dataSourceColumns.find((col) => col.name == field);
         let placeholder = `{f$?:${column._underlineType}}`;
         let operator = this.OperatorsMap[filter.operator];
+
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return `${field} ${operator}`;
+        }
 
         if (column._underlineType.startsWith('Decimal')) {
           field = `toDecimal64(${field}, 8)`;
@@ -292,7 +299,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return [];
         }
         // filter is a Single filter
-        if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+        
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return [];
+        } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           return [{ 'p': filter.value }];
