@@ -8,7 +8,6 @@ registerSaveInterceptor(async ({ action, values, resource }) => {
   const modal = window?.adminforthTwoFaModal;
   if (modal?.get2FaConfirmationResult) {
     const confirmationResult = await modal.get2FaConfirmationResult(
-      undefined,
       'Confirm to save changes'
     );
     return { ok: true, extra: { confirmationResult } };

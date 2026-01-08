@@ -342,7 +342,7 @@ registerSaveInterceptor(async ({ action, values, resource }) => {
   // action is 'create' or 'edit'
   const modal = (window as any)?.adminforthTwoFaModal;
   if (modal?.get2FaConfirmationResult) {
-    const confirmationResult = await modal.get2FaConfirmationResult(undefined, 'Confirm to save changes');
+    const confirmationResult = await modal.get2FaConfirmationResult('Confirm to save changes');
     if (!confirmationResult) {
       return { ok: false, error: 'Two-factor authentication cancelled' };
     }
