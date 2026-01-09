@@ -292,8 +292,22 @@ Update the resource configuration in `./resources/auditLogs.ts`:
         } },
       { name: 'record_id', required: false },
       { name: 'ip_address', required: false },
- //diff-add
-      { name: "country", required: false },
+       //diff-add
+      { 
+        //diff-add
+        name: "country",
+        //diff-add
+        required: false,
+        //diff-add
+        components: {
+        //diff-add
+          list: '@/renderers/CountryFlag.vue'
+        //diff-add
+          show: '@/renderers/CountryFlag.vue'
+        //diff-add
+        }, 
+         //diff-add
+      },
     ],
     ...
     plugins: [
@@ -312,4 +326,27 @@ Update the resource configuration in `./resources/auditLogs.ts`:
       }),
     ],
   }
+```
+
+### Providing Country Headers
+
+If your deployed app has header with user country in ISO 3166-1 alpha-2 format, you can specify this header, so country will be taken from it: 
+
+```ts
+plugins: [
+      new AuditLogPlugin({
+        //diff-add
+        isoCountryCodeRequestHeader: 'CF-IPCountry',
+        resourceColumns: {
+          resourceIdColumnName: 'resource_id',
+          resourceActionColumnName: 'action',
+          resourceDataColumnName: 'diff',
+          resourceUserIdColumnName: 'user_id',
+          resourceRecordIdColumnName: 'record_id',
+          resourceCreatedColumnName: 'created_at'
+          resourceIpColumnName: "ip_address",
+          resourceCountryColumnName: "country",
+        }
+      }),
+    ],
 ```
