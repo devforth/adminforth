@@ -133,7 +133,7 @@ class CodeInjector implements ICodeInjector {
     };
 
     afLogger.trace(`⚙️ exec: npm ${command}`);
-    afLogger.trace(`🪲 npm ${command} cwd:`, cwd);
+    afLogger.trace(`🪲 npm ${command} cwd: ${cwd}`);
     afLogger.trace(`npm ${command} done in`);
     
     // On Windows, execute npm.cmd directly; on Unix, use node + npm
@@ -163,7 +163,7 @@ class CodeInjector implements ICodeInjector {
     afLogger.trace(`npm ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲npm ${command} errors/warnings:`, err);
+      afLogger.trace(`🪲npm ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -243,7 +243,7 @@ class CodeInjector implements ICodeInjector {
         dereference: true, // needed to dereference types
         // preserveTimestamps: true, // needed to not invalidate any caches
       });
-      afLogger.trace('🪲⚙️ fsExtra.copy copy single file', src, dest);
+      afLogger.trace(`🪲⚙️ fsExtra.copy copy single file, ${src}, ${dest}`);
     }));
   }
   async migrateLegacyCustomLayout(oldMeta) {
@@ -365,7 +365,7 @@ class CodeInjector implements ICodeInjector {
         const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
                           && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
         if (!filterPasses) {
-          afLogger.trace('🪲⚙️ fsExtra.copy filtered out', src);
+          afLogger.trace(`🪲⚙️ fsExtra.copy filtered out, ${src}`);
         }
 
         return filterPasses
@@ -643,7 +643,7 @@ class CodeInjector implements ICodeInjector {
 
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
-      afLogger.trace('🔧 Checking packages for plugin', plugin.constructor.name, plugin.customFolderPath);
+      afLogger.trace(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
       const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
@@ -671,7 +671,7 @@ class CodeInjector implements ICodeInjector {
       }
     } catch (e) {
       // ignore
-      afLogger.trace('🪲Hash file does not exist, proceeding with npm ci/install', e);
+      afLogger.trace(`🪲Hash file does not exist, proceeding with npm ci/install, ${e}`);
     }
 
     await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
@@ -724,7 +724,7 @@ class CodeInjector implements ICodeInjector {
     };
     await collectDirectories(spaPath);
 
-    afLogger.trace('🪲🔎 Watch for:', directories.join(','));
+    afLogger.trace(`🪲🔎 Watch for: ${directories.join(',')}`);
 
     const watcher = filewatcher({ debounce: 30 });
     directories.forEach((dir) => {
@@ -794,7 +794,7 @@ class CodeInjector implements ICodeInjector {
       watcher.add(file);
     });
 
-    afLogger.trace('🪲🔎 Watch for:', directories.join(','));
+    afLogger.trace(`🪲🔎 Watch for: ${directories.join(',')}`);
     
     watcher.on(
       'change',
@@ -882,8 +882,8 @@ class CodeInjector implements ICodeInjector {
 
     const allFiles = [];
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
-    afLogger.trace('🪲🪲 allFiles:', JSON.stringify(
-      allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
+    afLogger.trace(`🪲🪲 allFiles:, ${JSON.stringify(
+      allFiles.sort((a,b) => a.localeCompare(b)), null, 1)}`);
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
@@ -963,7 +963,7 @@ class CodeInjector implements ICodeInjector {
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           
-          afLogger.trace('🪲 devServer stdout ➜ (port detect):', s);
+          afLogger.trace(`🪲 devServer stdout ➜ (port detect): ${s}`);
           const portMatch = s.match(/.+?http:\/\/.+?:(\d+).+?/m);
           if (portMatch) {
             this.devServerPort = parseInt(portMatch[1]);

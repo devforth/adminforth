@@ -330,7 +330,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }
 
   async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any, record?: any): Promise<boolean> {
-    afLogger.trace('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+    afLogger.trace(`☝️🪲🪲🪲🪲 checkUnique||| ${column.name}, ${value}`);
 
     const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
@@ -386,11 +386,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      afLogger.trace('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
-    afLogger.trace('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
+    afLogger.trace(`🪲🆕 creating record, ${JSON.stringify(recordWithOriginalValues)}`);
     let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
     if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
       // some data sources always return some value for pk, even if it is was not auto generated
@@ -442,7 +442,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      afLogger.trace('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
