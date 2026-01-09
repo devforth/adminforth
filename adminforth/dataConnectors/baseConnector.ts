@@ -81,7 +81,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
         if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
           const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
-          // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
           if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
             filters[fIndex] = {
               operator: AdminForthFilterOperators.OR,

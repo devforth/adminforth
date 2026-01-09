@@ -43,7 +43,7 @@ export function callTsProxy(tsCode, silent=false) {
           const parsed = JSON.parse(stdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
-              console.log(...log);
+              afLogger.log(...log);
             });
           }
 
@@ -131,4 +131,4 @@ export async function findAdminInstance() {
 //   function exec() {
 //     return admin.doX();
 //   }
-// `).then(console.log).catch(console.error);
+// `).then(afLogger.info).catch(afLogger.error);

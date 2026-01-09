@@ -176,7 +176,7 @@ class AdminForth implements IAdminForth {
       dbDiscover: 'running',
     };
 
-    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    console.info(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
     afLogger.trace('🔧 About to set global.adminforth...');
     global.adminforth = this;
     afLogger.trace('🔧 global.adminforth set successfully');
@@ -441,13 +441,11 @@ class AdminForth implements IAdminForth {
       this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
     });
 
-    // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
     const results: { [dataSourceId: string]: string[] } = {};
   
-    // console.log('Connectors to process:', Object.keys(this.connectors));
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
     }
@@ -463,7 +461,6 @@ class AdminForth implements IAdminForth {
             results[dataSourceId] = [];
           }
         } else {
-          // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
           results[dataSourceId] = [];
         }
       })
@@ -552,7 +549,7 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
-      console.log('🪲 Hook beforeSave', hook);
+      console.debug('🪲 Hook beforeSave', hook);
       const resp = await hook({ 
         resource, 
         record, 

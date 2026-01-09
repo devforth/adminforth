@@ -12,6 +12,7 @@ import { exec } from 'child_process';
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { getVersion } from '../cli.js';
+import { afLogger } from '../modules/logger.js';
 
 const execAsync = promisify(exec);
 
@@ -335,7 +336,6 @@ async function installDependencies(ctx, cwd) {
       await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
-  // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
 
 function generateFinalInstructions(skipPrismaSetup, options) {
@@ -390,9 +390,9 @@ export function prepareWorkflow(options) {
     {
       title: '📝 Preparing final instructions...',
       task: (ctx) => {
-        console.log(chalk.green(`✅ Successfully created your new Adminforth project in ${ctx.projectDir}!\n`));
-        console.log(generateFinalInstructions(ctx.skipPrismaSetup, options));
-        console.log('\n\n');
+        afLogger.info(chalk.green(`✅ Successfully created your new Adminforth project in ${ctx.projectDir}!\n`));
+        afLogger.info(generateFinalInstructions(ctx.skipPrismaSetup, options));
+        afLogger.info('\n\n');
       }
     }
   ],

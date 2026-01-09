@@ -2,14 +2,16 @@ import fs from 'fs';
 import path from 'path';
 
 import { execSync } from 'child_process'; 
+import { afLogger } from '../modules/logger.js';
+
 const spaPath = path.join(import.meta.dirname, 'dist', 'spa');
 
 
 if (fs.existsSync(spaPath)){ 
-    console.log('Installing SPA dependencies...');
+    afLogger.info('Installing SPA dependencies...');
     execSync('npm ci', { cwd: spaPath, stdio: 'inherit' });
-    console.log('Installed spa dependencies');
+    afLogger.info('Installed spa dependencies');
 } else {
-    console.log('SPA dependencies not found');
-    console.log('current directory', import.meta.dirname);
+    afLogger.warn('SPA dependencies not found');
+    afLogger.info('current directory', import.meta.dirname);
 }
