@@ -3,7 +3,7 @@ import { writeFile, unlink } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { pathToFileURL } from 'url';
 import path from 'path';
-import { afLogger } from './modules/logger.js';
+import { afLogger } from '../modules/logger.js';
 
 (async () => {
   const chunks: Buffer[] = [];
