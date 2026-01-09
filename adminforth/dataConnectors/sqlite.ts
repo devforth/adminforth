@@ -335,10 +335,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      // const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
       const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-      //console.log('\n🟢 [SQLITE INSERT]:', sql);
-      //console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
       const q = this.client.prepare(sql);
       dbLogger.trace(`🪲📜 SQLITE Q: ${sql}, values: ${JSON.stringify(values)}`);
       const ret = await q.run(values);

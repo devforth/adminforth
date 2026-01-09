@@ -3,7 +3,7 @@ import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IA
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
-import { dbLogger } from '../modules/logger.js';
+import { afLogger, dbLogger } from '../modules/logger.js';
 
 const { Client } = pkg;
 
@@ -17,7 +17,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         try {
             await this.client.connect();
             this.client.on('error', async (err) => {
-                console.log('Postgres error: ', err.message, err.stack)
+                afLogger.error(`Postgres error: ${err.message} ${err.stack}`);
                 this.client.end();
                 await new Promise((resolve) => { setTimeout(resolve, 1000) });
                 this.setupClient(url);
@@ -406,8 +406,6 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
         const primaryKey = this.getPrimaryKey(resource);
         const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders}) RETURNING "${primaryKey}"`;
-    //   console.log('\n🔵 [PG INSERT]:', q);
-    //   console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
         dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify(values)}`);
         const ret = await this.client.query(q, values);
         return ret.rows[0][primaryKey];

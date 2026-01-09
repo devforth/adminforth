@@ -4,6 +4,7 @@ import path from 'path';
 import chalk from 'chalk';
 import Handlebars from 'handlebars';
 import { fileURLToPath } from 'url';
+import { afLogger } from '../modules/logger.js';
 
 async function renderHBSTemplate(templatePath, data) {
   try {
@@ -31,7 +32,7 @@ async function generateVueContent(fieldType, { resource, column }) {
     ? path.join(__dirname, 'templates', 'customFields', `${fieldType}.vue.hbs`)
     : path.join(__dirname, 'templates', 'customCrud', `${fieldType}.vue.hbs`);
 
-  console.log(chalk.dim(`Using template: ${templatePath}`));
+  afLogger.info(chalk.dim(`Using template: ${templatePath}`));
 
   const context = {
     componentName,
@@ -61,24 +62,24 @@ export async function generateComponentFile(componentFileName, fieldType, contex
   const customDirPath = path.resolve(projectRoot, customDirRelative);
   const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
   if (fsSync.existsSync(absoluteComponentPath)) {
-    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    afLogger.warn(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
     return {"alreadyExists": true, "path": absoluteComponentPath}
   }
   try {
     await fs.mkdir(customDirPath, { recursive: true });
-    console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+    afLogger.info(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
 
     const fileContent = await generateVueContent(fieldType, context);
 
     await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
-    console.log(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
+    afLogger.info(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
 
     return {"alreadyExists": false, "path": absoluteComponentPath}
 
   } catch (error) {
-    console.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
+    afLogger.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
     if (!error.message.includes('template')) {
-       console.error(error);
+       afLogger.error(error);
     }
     throw error;
   }
@@ -91,22 +92,22 @@ export async function generateCrudInjectionComponent(componentFileName, crudType
   const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
 
   if (fsSync.existsSync(absoluteComponentPath)) {
-    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    afLogger.warn(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
     return { alreadyExists: true, path: absoluteComponentPath };
   }
 
   try {
     await fs.mkdir(customDirPath, { recursive: true });
-    console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+    afLogger.warn(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
 
     const fileContent = await generateVueContent(crudType, context);
 
     await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
-    console.log(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
+    afLogger.info(chalk.green(`✅ Generated component file: ${absoluteComponentPath}`));
 
     return { alreadyExists: false, path: absoluteComponentPath };
   } catch (error) {
-    console.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
+    afLogger.error(chalk.red(`❌ Error creating component file at ${absoluteComponentPath}:`));
     throw error;
   }
 }
@@ -118,13 +119,13 @@ export async function generateLoginOrGlobalComponentFile(componentFileName, inje
   const absoluteComponentPath = path.resolve(customDirPath, componentFileName);
 
   if (fsSync.existsSync(absoluteComponentPath)) {
-    console.log(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
+    afLogger.warn(chalk.yellow(`⚠️ Component file already exists: ${absoluteComponentPath}`));
     return { alreadyExists: true, path: absoluteComponentPath };
   }
 
   try {
     await fs.mkdir(customDirPath, { recursive: true });
-    console.log(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+    afLogger.warn(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
@@ -138,11 +139,11 @@ export async function generateLoginOrGlobalComponentFile(componentFileName, inje
     const fileContent = await renderHBSTemplate(templatePath, context);
 
     await fs.writeFile(absoluteComponentPath, fileContent, 'utf-8');
-    console.log(chalk.green(`✅ Generated login injection component: ${absoluteComponentPath}`));
+    afLogger.info(chalk.green(`✅ Generated login injection component: ${absoluteComponentPath}`));
 
     return { alreadyExists: false, path: absoluteComponentPath };
   } catch (error) {
-    console.error(chalk.red(`❌ Error creating login component at ${absoluteComponentPath}`));
+    afLogger.error(chalk.red(`❌ Error creating login component at ${absoluteComponentPath}`));
     throw error;
   }
 }

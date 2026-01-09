@@ -1,8 +1,9 @@
 import { callTsProxy, findAdminInstance } from "./callTsProxy.js";
+import { afLogger } from '../modules/logger.js';
 
 
 async function bundle() {
-  console.log("Bundling admin SPA...");
+  afLogger.info("Bundling admin SPA...");
   const instance = await findAdminInstance();
     
 
@@ -16,7 +17,7 @@ async function bundle() {
     `);
 
   } catch (e) {
-    console.log(`Running budndle failed`, e);
+    afLogger.error(`Running bundle failed`, e);
   }
 }
 
