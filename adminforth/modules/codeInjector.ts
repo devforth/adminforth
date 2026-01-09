@@ -9,6 +9,7 @@ import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
+import { afLogger } from '../modules/logger.js';
 
 
 let TMP_DIR;
@@ -131,9 +132,9 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    console.log(`⚙️ exec: npm ${command}`);
-    process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} cwd:`, cwd);
-    process.env.HEAVY_DEBUG && console.time(`npm ${command} done in`);
+    afLogger.trace(`⚙️ exec: npm ${command}`);
+    afLogger.trace(`🪲 npm ${command} cwd:`, cwd);
+    afLogger.trace(`npm ${command} done in`);
     
     // On Windows, execute npm.cmd directly; on Unix, use node + npm
     let execCommand: string;
@@ -159,11 +160,10 @@ class CodeInjector implements ICodeInjector {
     }
     
     const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
-    process.env.HEAVY_DEBUG && console.timeEnd(`npm ${command} done in`);
+    afLogger.trace(`npm ${command} done in`);
 
-    // process.env.HEAVY_DEBUG && console.log(`🪲 npm ${command} output:`, out);
     if (err) {
-      process.env.HEAVY_DEBUG && console.error(`🪲npm ${command} errors/warnings:`, err);
+      afLogger.trace(`🪲npm ${command} errors/warnings:`, err);
     }
   }
 
@@ -243,9 +243,7 @@ class CodeInjector implements ICodeInjector {
         dereference: true, // needed to dereference types
         // preserveTimestamps: true, // needed to not invalidate any caches
       });
-      if (process.env.HEAVY_DEBUG) {
-        console.log('🪲⚙️ fsExtra.copy copy single file', src, dest);
-      }
+      afLogger.trace('🪲⚙️ fsExtra.copy copy single file', src, dest);
     }));
   }
   async migrateLegacyCustomLayout(oldMeta) {
@@ -350,9 +348,7 @@ class CodeInjector implements ICodeInjector {
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
-    if (process.env.HEAVY_DEBUG) {
-      console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
-    }
+    afLogger.trace(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
 
     // try to rm <spa tmp path>/src/types directory 
     try {
@@ -368,8 +364,8 @@ class CodeInjector implements ICodeInjector {
         // /adminforth/* used for local development and /dist/* used for production
         const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
                           && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
-        if (process.env.HEAVY_DEBUG && !filterPasses) {
-          console.log('🪲⚙️ fsExtra.copy filtered out', src);
+        if (!filterPasses) {
+          afLogger.trace('🪲⚙️ fsExtra.copy filtered out', src);
         }
 
         return filterPasses
@@ -398,9 +394,7 @@ class CodeInjector implements ICodeInjector {
 
     for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
       const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
-      if (process.env.HEAVY_DEBUG) {
-        console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);
-      }
+      afLogger.trace(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);  
 
       await fsExtra.copy(src, to, {
         recursive: true,
@@ -649,7 +643,7 @@ class CodeInjector implements ICodeInjector {
 
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
-      process.env.HEAVY_DEBUG && console.log('🔧 Checking packages for plugin', plugin.constructor.name, plugin.customFolderPath);
+      afLogger.trace('🔧 Checking packages for plugin', plugin.constructor.name, plugin.customFolderPath);
       const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
@@ -670,14 +664,14 @@ class CodeInjector implements ICodeInjector {
     try {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       if (existingHash === fullHash) {
-        process.env.HEAVY_DEBUG && console.log(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
+        afLogger.trace(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        process.env.HEAVY_DEBUG && console.log(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
+        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
       }
     } catch (e) {
       // ignore
-      process.env.HEAVY_DEBUG && console.log('🪲Hash file does not exist, proceeding with npm ci/install', e);
+      afLogger.trace('🪲Hash file does not exist, proceeding with npm ci/install', e);
     }
 
     await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
@@ -730,7 +724,7 @@ class CodeInjector implements ICodeInjector {
     };
     await collectDirectories(spaPath);
 
-    process.env.HEAVY_DEBUG && console.log('🪲🔎 Watch for:', directories.join(','));
+    afLogger.trace('🪲🔎 Watch for:', directories.join(','));
 
     const watcher = filewatcher({ debounce: 30 });
     directories.forEach((dir) => {
@@ -739,7 +733,7 @@ class CodeInjector implements ICodeInjector {
       files.forEach((file) => {
         const fullPath = path.join(dir, file);
         if (fs.lstatSync(fullPath).isFile()) {
-          process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${fullPath}`);
+          afLogger.trace(`🪲🔎 Watch for file ${fullPath}`);
           watcher.add(fullPath);
         }
       })
@@ -748,7 +742,7 @@ class CodeInjector implements ICodeInjector {
     watcher.on(
       'change',
       async (file) => {
-        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
+        afLogger.trace(`🐛 File ${file} changed (SPA), preparing sources...`);
         await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
       }
     )
@@ -764,7 +758,7 @@ class CodeInjector implements ICodeInjector {
     try {
       await fs.promises.access(customComponentsDir, fs.constants.F_OK);
     } catch (e) {
-      process.env.HEAVY_DEBUG && console.log(`🪲Custom components dir ${customComponentsDir} does not exist, skipping watching`);
+      afLogger.trace(`🪲Custom components dir ${customComponentsDir} does not exist, skipping watching`);
       return;
     }
 
@@ -796,27 +790,25 @@ class CodeInjector implements ICodeInjector {
 
     const watcher = filewatcher({ debounce: 30 });
     files.forEach((file) => {
-      process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${file}`);
+      afLogger.trace(`🪲🔎 Watch for file ${file}`);
       watcher.add(file);
     });
 
-    process.env.HEAVY_DEBUG && console.log('🪲🔎 Watch for:', directories.join(','));
+    afLogger.trace('🪲🔎 Watch for:', directories.join(','));
     
     watcher.on(
       'change',
       async (fileOrDir) => {
         // copy one file
         const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
-        if (process.env.HEAVY_DEBUG) {
-          console.log(`🔎 fileOrDir ${fileOrDir} changed`);
-          console.log(`🔎 relativeFilename ${relativeFilename}`);
-          console.log(`🔎 customComponentsDir ${customComponentsDir}`);
-          console.log(`🔎 destination ${destination}`);
-        }
+        afLogger.trace(`🔎 fileOrDir ${fileOrDir} changed`);
+        afLogger.trace(`🔎 relativeFilename ${relativeFilename}`);
+        afLogger.trace(`🔎 customComponentsDir ${customComponentsDir}`);
+        afLogger.trace(`🔎 destination ${destination}`);
         const isFile = fs.lstatSync(fileOrDir).isFile();
         if (isFile) {
           const destPath = path.join(this.spaTmpPath(), 'src', 'custom', destination, relativeFilename);
-          process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
+          afLogger.trace(`🔎 Copying file ${fileOrDir} to ${destPath}`);
           await fsExtra.copy(fileOrDir, destPath);
           return;
         } else {
@@ -836,7 +828,7 @@ class CodeInjector implements ICodeInjector {
       return content;
     } catch (e) {
       // file does not exist
-      process.env.HEAVY_DEBUG && console.log(`🪲File ${filePath} does not exist, returning null`);
+      afLogger.trace(`🪲File ${filePath} does not exist, returning null`);
       return null;
     }
   }
@@ -890,7 +882,7 @@ class CodeInjector implements ICodeInjector {
 
     const allFiles = [];
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
-    process.env.VERY_HEAVY_DEBUG && console.log('🪲🪲 allFiles:', JSON.stringify(
+    afLogger.trace('🪲🪲 allFiles:', JSON.stringify(
       allFiles.sort((a,b) => a.localeCompare(b)), null, 1))
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
@@ -899,11 +891,9 @@ class CodeInjector implements ICodeInjector {
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
-    if (process.env.HEAVY_DEBUG) {
-      console.log(`🪲 SPA build hash: ${buildHash}`);
-      console.log(`🪲 SPA messages hash: ${messagesHash}`);
-      console.log(`🪲 SPA sources hash: ${sourcesHash}`);
-    }
+    afLogger.trace(`🪲 SPA build hash: ${buildHash}`);
+    afLogger.trace(`🪲 SPA messages hash: ${messagesHash}`);
+    afLogger.trace(`🪲 SPA sources hash: ${sourcesHash}`);
 
     if (!skipBuild) {
       // remove serveDir if exists
@@ -973,19 +963,19 @@ class CodeInjector implements ICodeInjector {
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           
-          process.env.HEAVY_DEBUG && console.log('🪲 devServer stdout ➜ (port detect):', s);
+          afLogger.trace('🪲 devServer stdout ➜ (port detect):', s);
           const portMatch = s.match(/.+?http:\/\/.+?:(\d+).+?/m);
           if (portMatch) {
             this.devServerPort = parseInt(portMatch[1]);
           }
         } else {
-          process.env.HEAVY_DEBUG && console.log(`[AdminForth SPA]:`);
-          process.env.HEAVY_DEBUG && process.stdout.write(data);
+          afLogger.trace(`[AdminForth SPA]:`);
+          afLogger.trace(data.toString());
         }
       });
       devServer.stderr.on('data', (data) => {
         console.error(`[AdminForth SPA ERROR]:`);
-        process.stdout.write(data);
+        afLogger.trace(data.toString());
       });
 
     }

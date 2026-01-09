@@ -10,6 +10,7 @@ import { AdminUser } from '../types/Common.js';
 import http from 'http';
 import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
+import { afLogger } from '../modules/logger.js';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -119,7 +120,7 @@ class ExpressServer implements IExpressHttpServer {
         }
       }
       this.expressApp.get(`${slashedPrefix}assets/*`, handler);
-      process.env.HEAVY_DEBUG && console.log('®️ Registering SPA serve handler', `${slashedPrefix}assets/*`);
+      afLogger.trace(`®️ Registering SPA serve handler', ${slashedPrefix}assets/*`);
       this.expressApp.get(`${prefix}*`, handler);
      
 
@@ -330,7 +331,7 @@ class ExpressServer implements IExpressHttpServer {
         message: undefined,
 
         setHeader(name, value) {
-          process.env.HEAVY_DEBUG && console.log(' 🪲Setting header', name, value);
+          afLogger.trace(`🪲Setting header, ${name}, ${value}`);
           this.headers.push([name, value]);
         },
         
@@ -376,7 +377,7 @@ class ExpressServer implements IExpressHttpServer {
       res.json(output);
     }
 
-    process.env.HEAVY_DEBUG && console.log(`👂 Adding endpoint ${method} ${fullPath}`);
+    afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
     this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
   }
 
