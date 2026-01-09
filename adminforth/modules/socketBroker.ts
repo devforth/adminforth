@@ -126,17 +126,17 @@ export default class SocketBroker implements IWebSocketBroker {
 
   async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<void> {
     if (!this.topics[topic]) {
-      afLogger.trace('No clients subscribed to topic', topic);
+      afLogger.trace(`No clients subscribed to topic ${topic}`);
       return;
     }
     for (const client of this.topics[topic]) {
       if (filterUsers) {
         if (! (await filterUsers(client.adminUser)) ) {
-          afLogger.trace('Client not authorized to receive message', topic, client.adminUser);
+          afLogger.trace(`Client not authorized to receive message ${topic} ${client.adminUser}`);
           continue;
         }
       }
-      afLogger.trace('Sending data to socket', topic, data);
+      afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
       client.send(JSON.stringify({ type: 'message', topic, data }));
     }
   }
