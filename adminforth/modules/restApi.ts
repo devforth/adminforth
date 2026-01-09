@@ -15,6 +15,8 @@ import {
   Filters,
 } from "../types/Back.js";
 
+import { logger, afLogger, dbLogger } from "./logger.js";
+
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
@@ -77,9 +79,7 @@ export async function interpretResource(
   source: ActionCheckSource, 
   adminforth: IAdminForth
 ): Promise<{allowedActions: AllowedActionsResolved}> {
-  if (process.env.HEAVY_DEBUG) {
-    console.log('🪲Interpreting resource', resource.resourceId, source, 'adminUser', adminUser);
-  }
+  afLogger.trace(`🪲Interpreting resource, ${resource.resourceId}, ${source}, 'adminUser', ${adminUser}`);
   const allowedActions = {} as AllowedActionsResolved;
 
   // we need to compute only allowed actions for this source:
@@ -1046,13 +1046,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const availableSearchFields = searchableFields.filter((fieldName) => {
                   const fieldExists = targetResource.columns.some(col => col.name === fieldName);
                   if (!fieldExists) {
-                    process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                    afLogger.trace(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
                   }
                   return fieldExists;
                 });
 
                 if (availableSearchFields.length === 0) {
-                  process.env.HEAVY_DEBUG && console.log(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                  afLogger.trace(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
                   resolve({ items: [] });
                   return;
                 }
