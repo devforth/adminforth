@@ -35,6 +35,7 @@ import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
+export { logger } from './modules/logger.js';
 
 // exports
 export * from './types/Back.js';
@@ -176,7 +177,7 @@ class AdminForth implements IAdminForth {
       dbDiscover: 'running',
     };
 
-    console.info(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    afLogger.info(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
     afLogger.trace('🔧 About to set global.adminforth...');
     global.adminforth = this;
     afLogger.trace('🔧 global.adminforth set successfully');

@@ -16,6 +16,7 @@ import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
+import { logger } from 'adminforth';
 
 const ADMIN_BASE_URL = '';
 
@@ -183,7 +184,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const port = 3000;
   
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
-    console.log('Bundling AdminForth SPA done.');
+    logger.info('Bundling AdminForth SPA done.');
   });
 
   admin.express.serve(app);
@@ -282,6 +283,6 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   });
 
   admin.express.listen(port, () => {
-    console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`);
+    logger.info(`⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`);
   });
 }

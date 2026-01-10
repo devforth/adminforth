@@ -114,7 +114,6 @@ class ExpressServer implements IExpressHttpServer {
           }
           await proxyTo(`http://localhost:${this.adminforth.codeInjector.devServerPort}${req.url}`, res);
         } catch (e) {
-          // console.log('Failed to proxy', e);
           res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
           return;
         }
@@ -173,7 +172,7 @@ class ExpressServer implements IExpressHttpServer {
 
     this.server = http.createServer(this.expressApp);
     const wss = new WebSocketServer({ server: this.server, path: `${base}/afws` });
-    console.log(`${this.adminforth.formatAdminForth()} 🌐 WebSocket server started`);
+    afLogger.info(`${this.adminforth.formatAdminForth()} 🌐 WebSocket server started`);
     // Handle WebSocket connections
     wss.on('connection', async (ws, req) => {
       try {

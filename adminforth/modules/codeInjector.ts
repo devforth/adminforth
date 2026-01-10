@@ -65,9 +65,9 @@ function hashify(obj) {
 }
 
 function notifyWatcherIssue(limit) {
-  console.log('Ran out of file handles after watching %s files.', limit);
-  console.log('Falling back to polling which uses more CPU.');
-  console.log('Run ulimit -n 10000 to increase the limit for open files.');
+  afLogger.info('Ran out of file handles after watching %s files.', limit);
+  afLogger.info('Falling back to polling which uses more CPU.');
+  afLogger.info('Run ulimit -n 10000 to increase the limit for open files.');
 }
 
 class CodeInjector implements ICodeInjector {
@@ -92,7 +92,7 @@ class CodeInjector implements ICodeInjector {
   }
 
   cleanup() {
-    console.log('Cleaning up...');
+    afLogger.info('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
       watcher.removeAll();
     });
@@ -107,14 +107,6 @@ class CodeInjector implements ICodeInjector {
       }));
 
   }
-
-  // async runShell({ command }) {
-  //   console.log(`⚙️ Running shell ${command}...`);
-  //   console.time(`${command} done in`);
-  //   const { stdout: out, stderr: err } = await execAsync(command);
-  //   console.timeEnd(`${command} done in`);
-  //   console.log(`Command ${command} output:`, out, err);
-  // }
 
   async runNpmShell({command, cwd, envOverrides = {}}: {
     command: string,
@@ -511,7 +503,6 @@ class CodeInjector implements ICodeInjector {
       this.allComponentNames[filePath] = componentName;
     });
 
-    // console.log('🔧 Injecting code into Vue sources...', this.allComponentNames);
     
     let customComponentsImports = '';
     for (const [targetPath, component] of Object.entries(this.allComponentNames)) {
@@ -859,7 +850,7 @@ class CodeInjector implements ICodeInjector {
   }
 
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
-    console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
+    afLogger.info(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources();
@@ -917,7 +908,7 @@ class CodeInjector implements ICodeInjector {
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
     } else {
-      console.log(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
+      afLogger.info(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
     }
 
     if (!hotReload) {
@@ -932,14 +923,14 @@ class CodeInjector implements ICodeInjector {
         // save hash
         await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
       } else {
-        console.log(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
+        afLogger.info(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
       }
     } else {
 
       const command = 'run dev';
-      console.log(`⚙️ spawn: npm ${command}...`);
+      afLogger.info(`⚙️ spawn: npm ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
-        console.log('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
+        afLogger.info('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
       }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
