@@ -1,5 +1,5 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser, logger } from 'adminforth';
 import { randomUUID } from 'crypto';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
@@ -94,7 +94,7 @@ export default {
     },
     edit: {
       beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        console.log('Updating user', updates);
+        logger.info('Updating user', updates);
         if (oldRecord.id === adminUser.dbUser.id && updates.role) {
           return { ok: false, error: 'You cannot change your own role' };
         }

@@ -15,7 +15,7 @@ import {
   Filters,
 } from "../types/Back.js";
 
-import { logger, afLogger, dbLogger } from "./logger.js";
+import { afLogger } from "./logger.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
 
@@ -176,7 +176,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             showIn: Object.values(AdminForthResourcePages).reduce((acc, page) => { return { ...acc, [page]: false } }, {} as ShowInResolved),
             type: AdminForthDataTypes.STRING,
           });
-          console.log('Adding passwordHashField to userResource', userResource)
+          afLogger.info(`Adding passwordHashField to userResource, ${userResource}`);
         }
 
         const userRecord = (
@@ -208,7 +208,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const expireInDuration = rememberMe 
             ? (this.adminforth.config.auth.rememberMeDuration || '30d')
             : '1d';
-          console.log('expireInDuration', expireInDuration);
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
             body, headers, query, cookies, requestUrl, 

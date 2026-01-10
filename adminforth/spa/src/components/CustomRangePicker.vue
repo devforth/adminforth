@@ -89,12 +89,10 @@ function updateEndFromProps() {
 }
 
 watch(start, () => {
-  console.log('⚡ emit', start.value)
   emit('update:valueStart', start.value)
 })
 
 watch(end, () => {
-  console.log('⚡ emit', end.value)
   emit('update:valueEnd', end.value);
 })
 
