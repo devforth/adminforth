@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import dotenv from "dotenv";
+import { afLogger } from './modules/logger.js';
 
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
@@ -20,7 +21,7 @@ export function callTsProxy(tsCode, silent=false) {
     dotenv.config({ path: envPath, override: true });
   }
 
-  process.env.HEAVY_DEBUG && console.log("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
+  afLogger.trace("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
   return new Promise((resolve, reject) => {
     const child = spawn("tsx", [path.join(currentFileFolder, "proxy.ts")], {
       env: process.env,
@@ -42,7 +43,7 @@ export function callTsProxy(tsCode, silent=false) {
           const parsed = JSON.parse(stdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
-              console.log(...log);
+              afLogger.log(...log);
             });
           }
 
@@ -59,14 +60,14 @@ export function callTsProxy(tsCode, silent=false) {
       }
     });
 
-    process.env.HEAVY_DEBUG && console.log("🪲 Writing to tsproxy stdin...\n'''", tsCode, "'''");
+    afLogger.trace("🪲 Writing to tsproxy stdin...\n'''", tsCode, "'''");
     child.stdin.write(tsCode);
     child.stdin.end();
   });
 }
 
 export async function findAdminInstance() {
-  process.env.HEAVY_DEBUG && console.log("🌐 Finding admin instance...");
+  afLogger.trace("🌐 Finding admin instance...");
   const currentDirectory = process.cwd();
 
   let files = fs.readdirSync(currentDirectory);
@@ -83,7 +84,7 @@ export async function findAdminInstance() {
   for (const file of files) {
     if (file.endsWith(".ts")) {
       const fileNoTs = file.replace(/\.ts$/, "");
-      process.env.HEAVY_DEBUG && console.log(`🪲 Trying bundleing ${file}...`);
+      afLogger.trace(`🪲 Trying bundleing ${file}...`);
       try {
         const res = await callTsProxy(`
           import { admin } from './${fileNoTs}.js';
@@ -104,7 +105,7 @@ export async function findAdminInstance() {
           console.error(chalk.red(`Error running ${file}:`, e));
           process.exit(1);
         }
-        process.env.HEAVY_DEBUG && console.log(`🪲 File ${file} failed`, e);
+        afLogger.trace(`🪲 File ${file} failed`, e);
       }
     }
   }
@@ -130,4 +131,4 @@ export async function findAdminInstance() {
 //   function exec() {
 //     return admin.doX();
 //   }
-// `).then(console.log).catch(console.error);
+// `).then(afLogger.info).catch(afLogger.error);

@@ -3,6 +3,7 @@ import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAnd
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
+import { dbLogger } from '../modules/logger.js';
 
 class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -287,9 +288,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const stmt = this.client.prepare(q);
       const d = [...filterValues, limit, offset];
 
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', d);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(d)}`);
       const rows = await stmt.all(d);
 
       return rows.map((row) => {
@@ -313,9 +312,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const where = this.whereClause(filters);
       const filterValues = this.getFilterParams(filters);
       const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(filterValues)}`);
       const totalStmt = this.client.prepare(q);
       return +totalStmt.get([...filterValues])['COUNT(*)'];
     }
@@ -338,14 +335,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      // const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
       const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-      //console.log('\n🟢 [SQLITE INSERT]:', sql);
-      //console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
       const q = this.client.prepare(sql);
-      if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 SQL Q:', q, 'values:', values);
-        }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${sql}, values: ${JSON.stringify(values)}`);
       const ret = await q.run(values);
       return ret.lastInsertRowid;
     }
@@ -354,9 +346,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
       const values = [...Object.values(newValues), recordId];
       const q = `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', values);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(values)}`);
       const query = this.client.prepare(q);
       await query.run(values);
     }

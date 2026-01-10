@@ -34,6 +34,8 @@ import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
+import { afLogger } from './modules/logger.js';
+export { logger } from './modules/logger.js';
 
 // exports
 export * from './types/Back.js';
@@ -124,62 +126,62 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
-    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor started');
+    afLogger.trace('🔧 AdminForth constructor started');
     
     if (global.adminforth) {
       throw new Error('AdminForth instance already created in this process. '+
         'If you want to use multiple instances, consider using different process for each instance');
     }
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating CodeInjector...');
+    afLogger.trace('🔧 Creating CodeInjector...');
     this.codeInjector = new CodeInjector(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 CodeInjector created');
+    afLogger.trace('🔧 CodeInjector created');
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating ConfigValidator...');
+    afLogger.trace('🔧 Creating ConfigValidator...');
     this.configValidator = new ConfigValidator(this, config);
-    process.env.HEAVY_DEBUG && console.log('🔧 ConfigValidator created');
+    afLogger.trace('🔧 ConfigValidator created');
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthRestAPI...');
+    afLogger.trace('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthRestAPI created');
+    afLogger.trace('🔧 AdminForthRestAPI created');
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating SocketBroker...');
+    afLogger.trace('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 SocketBroker created');
+    afLogger.trace('🔧 SocketBroker created');
     
     this.activatedPlugins = [];
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Validating config...');
+    afLogger.trace('🔧 Validating config...');
     this.configValidator.validateConfig();
-    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+    afLogger.trace('🔧 Config validated');
     
-    process.env.HEAVY_DEBUG && console.log('🔧 Activating plugins...');
+    afLogger.trace('🔧 Activating plugins...');
     this.activatePlugins();
-    process.env.HEAVY_DEBUG && console.log('🔧 Plugins activated');
+    afLogger.trace('🔧 Plugins activated');
 
-    process.env.HEAVY_DEBUG && console.log('🔧 Validating after plugin activation...');
+    afLogger.trace('🔧 Validating after plugin activation...');
     this.configValidator.validateAfterPluginsActivation();
-    process.env.HEAVY_DEBUG && console.log('🔧 Config validated');
+    afLogger.trace('🔧 Config validated');
 
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating ExpressServer...');
+    afLogger.trace('🔧 Creating ExpressServer...');
     this.express = new ExpressServer(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 ExpressServer created');
+    afLogger.trace('🔧 ExpressServer created');
     
     // this.fastify = new FastifyServer(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 Creating AdminForthAuth...');
+    afLogger.trace('🔧 Creating AdminForthAuth...');
     this.auth = new AdminForthAuth(this);
-    process.env.HEAVY_DEBUG && console.log('🔧 AdminForthAuth created');
+    afLogger.trace('🔧 AdminForthAuth created');
     
     this.connectors = {};
     this.statuses = {
       dbDiscover: 'running',
     };
 
-    console.log(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
-    process.env.HEAVY_DEBUG && console.log('🔧 About to set global.adminforth...');
+    afLogger.info(`${this.formatAdminForth()} v${ADMINFORTH_VERSION} initializing...`);
+    afLogger.trace('🔧 About to set global.adminforth...');
     global.adminforth = this;
-    process.env.HEAVY_DEBUG && console.log('🔧 global.adminforth set successfully');
-    process.env.HEAVY_DEBUG && console.log('🔧 AdminForth constructor completed');
+    afLogger.trace('🔧 global.adminforth set successfully');
+    afLogger.trace('🔧 AdminForth constructor completed');
   }
 
   formatAdminForth() {
@@ -202,16 +204,16 @@ class AdminForth implements IAdminForth {
   }
 
   activatePlugins() {
-    process.env.HEAVY_DEBUG && console.log('🔌🔌🔌 Activating plugins');
+    afLogger.trace('🔌🔌🔌 Activating plugins');
     const allPluginInstances = [];
     for (let resource of this.config.resources) {
-      process.env.HEAVY_DEBUG && console.log(`🔌 Checking plugins for resource: ${resource.resourceId}`);
+      afLogger.trace(`🔌 Checking plugins for resource: ${resource.resourceId}`);
       for (let pluginInstance of resource.plugins || []) {
-        process.env.HEAVY_DEBUG && console.log(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+        afLogger.trace(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
         allPluginInstances.push({pi: pluginInstance, resource});
       }
     }
-    process.env.HEAVY_DEBUG && console.log(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
+    afLogger.trace(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
     
     let activationLoopCounter = 0;
     while (true) {
@@ -219,8 +221,8 @@ class AdminForth implements IAdminForth {
       if (activationLoopCounter > 10) {
         throw new Error('Plugin activation loop exceeded 10 iterations, possible infinite loop (some plugin tries to activate himself in a loop)');
       }
-      process.env.HEAVY_DEBUG && console.log(`🔌 Plugin activation loop iteration: ${activationLoopCounter}`);
-      process.env.HEAVY_DEBUG && console.log(`🔌 Activated plugins count: ${this.activatedPlugins.length}/${allPluginInstances.length}`);
+      afLogger.trace(`🔌 Plugin activation loop iteration: ${activationLoopCounter}`);
+      afLogger.trace(`🔌 Activated plugins count: ${this.activatedPlugins.length}/${allPluginInstances.length}`);
       const allPluginsAreActivated = allPluginInstances.length === this.activatedPlugins.length;
       if (allPluginsAreActivated) {
         break;
@@ -230,33 +232,33 @@ class AdminForth implements IAdminForth {
         !this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId)
       );
 
-      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins remaining: ${unactivatedPlugins.length}`);
+      afLogger.trace(`🔌 Unactivated plugins remaining: ${unactivatedPlugins.length}`);
       
-      process.env.HEAVY_DEBUG && console.log(`🔌 Unactivated plugins count: ${unactivatedPlugins.length}`);
+      afLogger.trace(`🔌 Unactivated plugins count: ${unactivatedPlugins.length}`);
 
       unactivatedPlugins.sort(({pi: a}, {pi: b}) => a.activationOrder - b.activationOrder);
-      process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugins in order:`, unactivatedPlugins.map(({pi}) => pi.constructor.name));
+      afLogger.trace(`🔌 Activating plugins in order: ${unactivatedPlugins.map(({pi}) => pi.constructor.name)}`);
       unactivatedPlugins.forEach(
         ({pi: pluginInstance, resource}, index) => {
-          process.env.HEAVY_DEBUG && console.log("Activating plugin:",pluginInstance.constructor.name)
-          process.env.HEAVY_DEBUG && console.log(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+          afLogger.trace(`Activating plugin: ${pluginInstance.constructor.name}`);
+          afLogger.trace(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
           pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
-          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
+          afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
           
           const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
           if (plugin) {
-            process.env.HEAVY_DEBUG && console.log(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
+            afLogger.trace(`Current plugin pluginInstance.pluginInstanceId ${pluginInstance.pluginInstanceId}`);
             
             throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
               To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
           }
           this.activatedPlugins.push(pluginInstance);
-          process.env.HEAVY_DEBUG && console.log(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
+          afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
         }
       );
-      process.env.HEAVY_DEBUG && console.log(`🔌activated plugins:`, this.activatedPlugins.map((pi) => pi.constructor.name));
+      afLogger.trace(`🔌activated plugins: ${this.activatedPlugins.map((pi) => pi.constructor.name)}`);
     }
-    process.env.HEAVY_DEBUG && console.log('🔌 All plugins activation completed');
+    afLogger.trace('🔌 All plugins activation completed');
   }
 
   getPluginsByClassName<T>(className: string): T[] {
@@ -440,13 +442,11 @@ class AdminForth implements IAdminForth {
       this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
     });
 
-    // console.log('⚙️⚙️⚙️ Database discovery done', JSON.stringify(this.config.resources, null, 2));
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
     const results: { [dataSourceId: string]: string[] } = {};
   
-    // console.log('Connectors to process:', Object.keys(this.connectors));
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
     }
@@ -462,7 +462,6 @@ class AdminForth implements IAdminForth {
             results[dataSourceId] = [];
           }
         } else {
-          // console.log(`Connector ${dataSourceId} does not have getAllTables method`);
           results[dataSourceId] = [];
         }
       })
@@ -551,7 +550,7 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
-      console.log('🪲 Hook beforeSave', hook);
+      console.debug('🪲 Hook beforeSave', hook);
       const resp = await hook({ 
         resource, 
         record, 
@@ -584,7 +583,7 @@ class AdminForth implements IAdminForth {
       }
     }
     const connector = this.connectors[resource.dataSource];
-    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record createResourceRecord', record);
+    afLogger.trace(`🪲🆕 creating record createResourceRecord, record: ${JSON.stringify(record)}`);
     const { error, createdRecord } = await connector.createRecord({ resource, record, adminUser });
     if ( error ) {
       return { error };
@@ -594,7 +593,7 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave)) {
-      process.env.HEAVY_DEBUG && console.log('🪲 Hook afterSave', hook);
+      afLogger.trace(`🪲 Hook afterSave ${hook}`);
       const resp = await hook({ 
         recordId: primaryKey, 
         resource, 

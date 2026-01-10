@@ -134,7 +134,6 @@ onMounted(() => {
 })
 
 watch(start, () => {
-  //console.log('⚡ emit', start.value)
   emit('update:valueStart', start.value)
 })
 

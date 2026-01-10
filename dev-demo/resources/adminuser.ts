@@ -1,4 +1,4 @@
-import AdminForth, { AdminForthDataTypes } from '../../adminforth/index.js';
+import AdminForth, { AdminForthDataTypes, logger } from '../../adminforth/index.js';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from '../../adminforth/index.js';
 import { randomUUID } from 'crypto';
 import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
@@ -205,7 +205,7 @@ export default {
     },
     edit: {
       beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        console.log('Updating user', updates);
+        logger.info('Updating user', updates);
         if (oldRecord.id === adminUser.dbUser.id && updates.role) {
           return { ok: false, error: 'You cannot change your own role' };
         }

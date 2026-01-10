@@ -4,6 +4,7 @@ import path from 'path';
 import { loadAdminForthConfig } from './configLoader.js'; // Helper to load config
 import { generateComponentFile, generateLoginOrGlobalComponentFile, generateCrudInjectionComponent } from './fileGenerator.js'; // Helper to create the .vue file
 import { updateResourceConfig, injectLoginComponent, injectGlobalComponent, updateCrudInjectionConfig } from './configUpdater.js'; // Helper to modify resource .ts file
+import { afLogger } from '../modules/logger.js';
 
 function sanitizeLabel(input){
   return input
@@ -14,7 +15,7 @@ function sanitizeLabel(input){
 }
 
 export default async function createComponent(args) {
-  console.log('This command will help you to generate boilerplate for component.\n');
+  afLogger.info('This command will help you to generate boilerplate for component.\n');
 
   const config = await loadAdminForthConfig();
   const resources = config.resources; 

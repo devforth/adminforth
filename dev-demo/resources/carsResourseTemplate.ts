@@ -17,6 +17,8 @@ import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-genera
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
+import { logger } from 'adminforth'
+import { afLogger } from '../../adminforth/modules/logger.js';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
@@ -285,7 +287,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           if (!record.promo_picture) {
             return [];
           }
-            console.log('Attaching file for analysis:', `http://localhost:3000/static/source/cars_promo_images/${record.promo_picture}`);
+            afLogger.info(`Attaching file for analysis: http://localhost:3000/static/source/cars_promo_images/${record.promo_picture}`);
             return [`http://localhost:3000/static/source/${record.promo_picture}`];
           },
           visionAdapter: new AdminForthImageVisionAdapterOpenAi(
@@ -341,6 +343,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           name: 'Approve Listing',
           icon: 'flowbite:check-outline',
           action: async ({ recordId, adminUser, adminforth, extra, response }) => {
+            logger.info(`Admin User is approving listing for record ${recordId} in resource ${resourceId}`);
             //@ts-ignore
             const verificationResult = extra?.verificationResult
             if (!verificationResult) {

@@ -22,7 +22,7 @@ Here's how to add a custom action:
         
         // Handler function when action is triggered
         action: async ({ recordId, adminUser }) => {
-          console.log("auto submit", recordId, adminUser);
+          logger.info("auto submit", recordId, adminUser);
           return { 
             ok: true, 
             successMessage: "Auto submitted" 
