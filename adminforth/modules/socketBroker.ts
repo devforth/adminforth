@@ -73,7 +73,7 @@ export default class SocketBroker implements IWebSocketBroker {
               try {
                 authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
               } catch (e) {
-                afLogger.error('Error in websocketTopicAuth, assuming connection not allowed', e);
+                afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
               }
               if (!authResult) {
                 client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
@@ -94,7 +94,7 @@ export default class SocketBroker implements IWebSocketBroker {
               try {
                 await this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
               } catch (e) {
-                afLogger.error(`Error in websocketSubscribed for topic ${data.topic}`, e);
+                afLogger.error(`Error in websocketSubscribed for topic ${data.topic}, ${e}`);
               }
             })(); // run in background
           }

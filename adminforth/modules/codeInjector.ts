@@ -930,7 +930,7 @@ class CodeInjector implements ICodeInjector {
       const command = 'run dev';
       afLogger.info(`⚙️ spawn: npm ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
-        afLogger.info('⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH:', process.env.VITE_ADMINFORTH_PUBLIC_PATH, 'has no effect');
+        afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
