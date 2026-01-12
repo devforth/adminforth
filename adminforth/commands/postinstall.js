@@ -13,5 +13,5 @@ if (fs.existsSync(spaPath)){
     afLogger.info('Installed spa dependencies');
 } else {
     afLogger.warn('SPA dependencies not found');
-    afLogger.info('current directory', import.meta.dirname);
+    afLogger.warn(`current directory: ${import.meta.dirname}`);
 }

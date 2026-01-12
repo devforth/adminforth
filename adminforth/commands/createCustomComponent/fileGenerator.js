@@ -125,7 +125,7 @@ export async function generateLoginOrGlobalComponentFile(componentFileName, inje
 
   try {
     await fs.mkdir(customDirPath, { recursive: true });
-    afLogger.warn(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
+    afLogger.info(chalk.dim(`Ensured custom directory exists: ${customDirPath}`));
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);

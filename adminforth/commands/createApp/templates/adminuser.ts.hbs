@@ -1,5 +1,6 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput, AdminForthResource, AdminUser, logger } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import { logger } from 'adminforth';
 import { randomUUID } from 'crypto';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {

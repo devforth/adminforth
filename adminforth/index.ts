@@ -550,7 +550,7 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.beforeSave)) {
-      console.debug('🪲 Hook beforeSave', hook);
+      afLogger.debug(`🪲 Hook beforeSave ${hook}`);
       const resp = await hook({ 
         resource, 
         record, 
