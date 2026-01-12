@@ -4,7 +4,7 @@ import path from 'path';
 import chalk from 'chalk';
 import Handlebars from 'handlebars';
 import { fileURLToPath } from 'url';
-import { afLogger } from '../modules/logger.js';
+import { afLogger } from '../../modules/logger.js';
 
 async function renderHBSTemplate(templatePath, data) {
   try {

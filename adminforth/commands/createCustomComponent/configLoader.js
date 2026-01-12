@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import jiti from 'jiti';
 import dotenv, { config } from "dotenv";
-import { afLogger } from '../modules/logger.js';
+import { afLogger } from '../../modules/logger.js';
 
 dotenv.config({ path: '.env.local', override: true });
 dotenv.config({ path: '.env', override: true });

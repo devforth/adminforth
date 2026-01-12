@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import dotenv from "dotenv";
-import { afLogger } from './modules/logger.js';
+import { afLogger } from '../modules/logger.js';
 
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
