@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import dotenv from "dotenv";
-import { afLogger } from '../modules/logger.js';
 
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
@@ -21,7 +20,7 @@ export function callTsProxy(tsCode, silent=false) {
     dotenv.config({ path: envPath, override: true });
   }
 
-  afLogger.trace("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
+  process.env.HEAVY_DEBUG && console.log("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
   return new Promise((resolve, reject) => {
     const child = spawn("tsx", [path.join(currentFileFolder, "proxy.ts")], {
       env: process.env,
@@ -43,7 +42,7 @@ export function callTsProxy(tsCode, silent=false) {
           const parsed = JSON.parse(stdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
-              afLogger.info(...log);
+              console.log(...log);
             });
           }
 
@@ -55,19 +54,19 @@ export function callTsProxy(tsCode, silent=false) {
           reject(new Error("Invalid JSON from tsproxy: " + stdout));
         }
       } else {
-        afLogger.error(`tsproxy exited with non-0, this should never happen, stdout: ${stdout}, stderr: ${stderr}`);
+        console.error(`tsproxy exited with non-0, this should never happen, stdout: ${stdout}, stderr: ${stderr}`);
         reject(new Error(stderr));
       }
     });
 
-    afLogger.trace("🪲 Writing to tsproxy stdin...\n'''", tsCode, "'''");
+    process.env.HEAVY_DEBUG && console.log("🪲 Writing to tsproxy stdin...\n'''", tsCode, "'''");
     child.stdin.write(tsCode);
     child.stdin.end();
   });
 }
 
 export async function findAdminInstance() {
-  afLogger.trace("🌐 Finding admin instance...");
+  process.env.HEAVY_DEBUG && console.log("🌐 Finding admin instance...");
   const currentDirectory = process.cwd();
 
   let files = fs.readdirSync(currentDirectory);
@@ -84,7 +83,7 @@ export async function findAdminInstance() {
   for (const file of files) {
     if (file.endsWith(".ts")) {
       const fileNoTs = file.replace(/\.ts$/, "");
-      afLogger.trace(`🪲 Trying bundleing ${file}...`);
+      process.env.HEAVY_DEBUG && console.log(`🪲 Trying bundleing ${file}...`);
       try {
         const res = await callTsProxy(`
           import { admin } from './${fileNoTs}.js';
@@ -102,10 +101,10 @@ export async function findAdminInstance() {
         // and show the error so user can fix it
         const fileContent = fs.readFileSync(file, "utf-8");
         if (fileContent.includes("export const admin")) {
-          afLogger.error(`Error running ${file}: ${e}`);
+          console.error(chalk.red(`Error running ${file}:`, e));
           process.exit(1);
         }
-        afLogger.trace(`🪲 File ${file} failed`, e);
+        process.env.HEAVY_DEBUG && console.log(`🪲 File ${file} failed`, e);
       }
     }
   }
@@ -131,4 +130,4 @@ export async function findAdminInstance() {
 //   function exec() {
 //     return admin.doX();
 //   }
-// `).then(afLogger.info).catch(afLogger.error);
+// `).then(console.log).catch(console.error);

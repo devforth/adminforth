@@ -3,7 +3,6 @@ import path from 'path';
 import chalk from 'chalk';
 import recast from 'recast'; // Import recast
 import * as typescriptParser from 'recast/parsers/typescript.js'; // Import the parser using ESM and include the .js extension
-import { afLogger } from '../../modules/logger.js';
 
 const b = recast.types.builders; // Like t.* in babel/types
 const n = recast.types.namedTypes; // Like t.is* in babel/types
@@ -12,7 +11,7 @@ const n = recast.types.namedTypes; // Like t.is* in babel/types
 async function findResourceFilePath(resourceId) {
     const projectRoot = process.cwd();
     const resourcesDir = path.resolve(projectRoot, 'resources');
-    afLogger.info(chalk.dim(`Scanning for resource files in: ${resourcesDir}`));
+    console.log(chalk.dim(`Scanning for resource files in: ${resourcesDir}`));
 
     let tsFiles = [];
     try {
@@ -30,7 +29,7 @@ async function findResourceFilePath(resourceId) {
 
     for (const file of tsFiles) {
         const filePath = path.resolve(resourcesDir, file);
-        afLogger.info(chalk.dim(`Attempting to process file: ${file}`));
+        console.log(chalk.dim(`Attempting to process file: ${file}`));
         try {
             const content = await fs.readFile(filePath, 'utf-8');
             const ast = recast.parse(content, {
@@ -80,7 +79,7 @@ async function findResourceFilePath(resourceId) {
                         );
                         if (resourceIdProp) {
                             foundResourceId = resourceIdProp.value.value; // Get the string value
-                            afLogger.info(chalk.dim(`  Extracted resourceId '${foundResourceId}' from ${file}`));
+                            console.log(chalk.dim(`  Extracted resourceId '${foundResourceId}' from ${file}`));
                             this.abort(); // Stop traversal for this file once found
                         }
                     }
@@ -88,17 +87,17 @@ async function findResourceFilePath(resourceId) {
                 }
             });
 
-            afLogger.info(chalk.dim(`  Finished processing ${file}. Found resourceId: ${foundResourceId || 'null'}`));
+            console.log(chalk.dim(`  Finished processing ${file}. Found resourceId: ${foundResourceId || 'null'}`));
 
             if (foundResourceId === resourceId) {
-                afLogger.info(chalk.dim(`  Match found! Returning path: ${filePath}`));
+                console.log(chalk.dim(`  Match found! Returning path: ${filePath}`));
                 return filePath;
             }
         } catch (parseError) {
             if (parseError.message.includes('require is not defined')) {
-                 afLogger.error(chalk.red(`❌ Internal Error: Failed to load Recast parser in ESM context for ${file}.`));
+                 console.error(chalk.red(`❌ Internal Error: Failed to load Recast parser in ESM context for ${file}.`));
              } else {
-                afLogger.warn(chalk.yellow(`⚠️ Warning: Could not process file ${file}. Skipping. Error: ${parseError.message}`));
+                console.warn(chalk.yellow(`⚠️ Warning: Could not process file ${file}. Skipping. Error: ${parseError.message}`));
              }
         }
     }
@@ -109,15 +108,15 @@ async function findResourceFilePath(resourceId) {
 
 export async function updateResourceConfig(resourceId, columnName, fieldType, componentPathForConfig) {
     const filePath = await findResourceFilePath(resourceId);
-    afLogger.info(chalk.dim(`Attempting to update resource config: ${filePath}`));
+    console.log(chalk.dim(`Attempting to update resource config: ${filePath}`));
 
     let content;
     let injectionLine = null;
     try {
         content = await fs.readFile(filePath, 'utf-8');
     } catch (error) {
-        afLogger.error(chalk.red(`❌ Error reading resource file: ${filePath}`));
-        afLogger.error(error);
+        console.error(chalk.red(`❌ Error reading resource file: ${filePath}`));
+        console.error(error);
         throw new Error(`Could not read resource file ${filePath}.`);
     }
 
@@ -199,10 +198,10 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
 
                     const nameIndex = targetColumn.properties.findIndex(p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === 'name');
                     targetColumn.properties.splice(nameIndex !== -1 ? nameIndex + 1 : targetColumn.properties.length, 0, componentsProperty);
-                    afLogger.info(chalk.dim(`Added 'components' object to column '${columnName}'.`));
+                    console.log(chalk.dim(`Added 'components' object to column '${columnName}'.`));
 
                 } else if (!n.ObjectExpression.check(componentsProperty.value)) {
-                    afLogger.warn(chalk.yellow(`Warning: 'components' property in column '${columnName}' is not an object. Skipping update.`));
+                    console.warn(chalk.yellow(`Warning: 'components' property in column '${columnName}' is not an object. Skipping update.`));
                     return false;
                 }
 
@@ -216,7 +215,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
                 if (fieldTypeProperty) {
                     injectionLine = fieldTypeProperty.loc?.start.line ?? null;
                     fieldTypeProperty.value = newComponentValue;
-                    afLogger.info(chalk.dim(`Updated '${fieldType}' component path in column '${columnName}'.`));
+                    console.log(chalk.dim(`Updated '${fieldType}' component path in column '${columnName}'.`));
                 } else {
                     fieldTypeProperty = b.objectProperty(b.identifier(fieldType), newComponentValue);
                     componentsObject.properties.push(fieldTypeProperty);
@@ -224,7 +223,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
                         n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === fieldType
                     );
                     injectionLine = fieldTypeProperty.loc?.start.line ?? null;
-                    afLogger.info(chalk.dim(`Added '${fieldType}' component path to column '${columnName}'.`));
+                    console.log(chalk.dim(`Added '${fieldType}' component path to column '${columnName}'.`));
                 }
 
                 updateApplied = true;
@@ -240,7 +239,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
         const outputCode = recast.print(ast).code;
 
         await fs.writeFile(filePath, outputCode, 'utf-8');
-        afLogger.info(
+        console.log(
           chalk.green(
             `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
             (injectionLine !== null ? `:${injectionLine}` : '')
@@ -256,7 +255,7 @@ export async function updateResourceConfig(resourceId, columnName, fieldType, co
 
 
 export async function injectLoginComponent(indexFilePath, componentPath, injectionType) {
-    afLogger.info(chalk.dim(`Reading file: ${indexFilePath}`));
+    console.log(chalk.dim(`Reading file: ${indexFilePath}`));
     const content = await fs.readFile(indexFilePath, 'utf-8');
     const ast = recast.parse(content, {
       parser: typescriptParser,
@@ -284,7 +283,7 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
               const newObj = b.objectExpression([]);
               prop = b.objectProperty(b.identifier(name), newObj);
               obj.properties.push(prop);
-              afLogger.info(chalk.dim(`Added missing '${name}' property.`));
+              console.log(chalk.dim(`Added missing '${name}' property.`));
             }
             return prop.value;
           };
@@ -311,9 +310,9 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
                   b.stringLiteral(currentVal.value),
                   b.stringLiteral(componentPath),
                 ]);
-                afLogger.info(chalk.dim(`Converted '${targetProperty}' to array with existing + new path.`));
+                console.log(chalk.dim(`Converted '${targetProperty}' to array with existing + new path.`));
               } else {
-                afLogger.info(chalk.dim(`Component path already present as string. Skipping.`));
+                console.log(chalk.dim(`Component path already present as string. Skipping.`));
               }
             } else if (n.ArrayExpression.check(currentVal)) {
               const exists = currentVal.elements.some(
@@ -321,12 +320,12 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
               );
               if (!exists) {
                 currentVal.elements.push(b.stringLiteral(componentPath));
-                afLogger.info(chalk.dim(`Appended new component path to existing '${targetProperty}' array.`));
+                console.log(chalk.dim(`Appended new component path to existing '${targetProperty}' array.`));
               } else {
-                afLogger.info(chalk.dim(`Component path already present in array. Skipping.`));
+                console.log(chalk.dim(`Component path already present in array. Skipping.`));
               }
             } else {
-              afLogger.warn(chalk.yellow(`⚠️ '${targetProperty}' is not a string or array. Skipping.`));
+              console.warn(chalk.yellow(`⚠️ '${targetProperty}' is not a string or array. Skipping.`));
               return false;
             }
           } else {
@@ -336,11 +335,11 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
             );
             
             if (newProperty.loc) {
-              afLogger.info(chalk.dim(`Adding '${targetProperty}' at line: ${newProperty.loc.start.line}`));
+              console.log(chalk.dim(`Adding '${targetProperty}' at line: ${newProperty.loc.start.line}`));
             }
             
             loginPageInjections.properties.push(newProperty);
-            afLogger.info(chalk.dim(`Added '${targetProperty}': ${componentPath}`));
+            console.log(chalk.dim(`Added '${targetProperty}': ${componentPath}`));
           }
   
           updated = true;
@@ -356,7 +355,7 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
   
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    afLogger.info(
+    console.log(
       chalk.green(
         `✅ Successfully updated login ${targetProperty} injection in: ${indexFilePath}` +
         (injectionLine !== null ? `:${injectionLine}` : '')
@@ -366,7 +365,7 @@ export async function injectLoginComponent(indexFilePath, componentPath, injecti
 
 
 export async function injectGlobalComponent(indexFilePath, injectionType, componentPath) {
-    afLogger.info(chalk.dim(`Reading file: ${indexFilePath}`));
+    console.log(chalk.dim(`Reading file: ${indexFilePath}`));
     const content = await fs.readFile(indexFilePath, 'utf-8');
     const ast = recast.parse(content, {
         parser: typescriptParser,
@@ -374,7 +373,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
     let updated = false;
     let injectionLine = null;
-    afLogger.info(JSON.stringify(injectionType));
+    console.log(JSON.stringify(injectionType));
     recast.visit(ast, {
         visitNewExpression(path) {
             if (
@@ -393,7 +392,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                     const customizationObj = b.objectExpression([]);
                     customizationProp = b.objectProperty(b.identifier('customization'), customizationObj);
                     configObject.properties.push(customizationProp);
-                    afLogger.info(chalk.dim(`Added missing 'customization' property.`));
+                    console.log(chalk.dim(`Added missing 'customization' property.`));
                 }
                 
                 const customizationValue = customizationProp.value;
@@ -407,12 +406,12 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                     const injectionsObj = b.objectExpression([]);
                     globalInjections = b.objectProperty(b.identifier('globalInjections'), injectionsObj);
                     customizationValue.properties.push(globalInjections);
-                    afLogger.info(chalk.dim(`Added missing 'globalInjections'.`));
+                    console.log(chalk.dim(`Added missing 'globalInjections'.`));
                 }
 
                 const injectionsValue = globalInjections.value;
                 if (!n.ObjectExpression.check(injectionsValue)) return false;
-                afLogger.info(JSON.stringify(injectionType));
+                console.log(JSON.stringify(injectionType));
                 let injectionProp = injectionsValue.properties.find(
                     p => n.ObjectProperty.check(p) && n.Identifier.check(p.key) && p.key.name === injectionType
                 );
@@ -421,13 +420,13 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                     injectionLine = injectionProp.loc?.start.line ?? null;
                     if (n.ArrayExpression.check(currentValue)) {
                       currentValue.elements.push(b.stringLiteral(componentPath));
-                      afLogger.info(chalk.dim(`Added '${componentPath}' to existing array in '${injectionType}'`));
+                      console.log(chalk.dim(`Added '${componentPath}' to existing array in '${injectionType}'`));
                     } else if (n.StringLiteral.check(currentValue)) {
                       injectionProp.value = b.arrayExpression([
                         b.stringLiteral(currentValue.value),
                         b.stringLiteral(componentPath)
                       ]);
-                      afLogger.info(chalk.dim(`Converted '${injectionType}' from string to array and added '${componentPath}'`));
+                      console.log(chalk.dim(`Converted '${injectionType}' from string to array and added '${componentPath}'`));
                     } else {
                       throw new Error(`Unsupported value type for '${injectionType}'. Must be string or array.`);
                     }
@@ -438,7 +437,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
                         b.arrayExpression([b.stringLiteral(componentPath)])
                       )
                     );
-                    afLogger.info(chalk.dim(`Added new array for '${injectionType}' with '${componentPath}'`));
+                    console.log(chalk.dim(`Added new array for '${injectionType}' with '${componentPath}'`));
                   }
           
                   updated = true;
@@ -454,7 +453,7 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
     const outputCode = recast.print(ast).code;
     await fs.writeFile(indexFilePath, outputCode, 'utf-8');
-    afLogger.info(
+    console.log(
       chalk.green(
         `✅ Successfully updated CRUD injection in resource file: ${indexFilePath}` +
         (injectionLine !== null ? `:${injectionLine}` : '')
@@ -464,14 +463,14 @@ export async function injectGlobalComponent(indexFilePath, injectionType, compon
 
 export async function updateCrudInjectionConfig(resourceId, crudType, injectionPosition, componentPathForConfig, isThin) {
     const filePath = await findResourceFilePath(resourceId);
-    afLogger.info(chalk.dim(`Attempting to update resource CRUD injection: ${filePath}`));
+    console.log(chalk.dim(`Attempting to update resource CRUD injection: ${filePath}`));
   
     let content;
     let injectionLine = null;
     try {
       content = await fs.readFile(filePath, 'utf-8');
     } catch (error) {
-      afLogger.error(chalk.red(`❌ Error reading resource file: ${filePath}`));
+      console.error(chalk.red(`❌ Error reading resource file: ${filePath}`));
       throw new Error(`Could not read resource file ${filePath}.`);
     }
   
@@ -565,21 +564,21 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
           if (injectionProp) {
             if (n.ArrayExpression.check(injectionProp.value)) {
               injectionProp.value.elements.push(newInjectionObject);
-              afLogger.info(chalk.dim(`Appended new injection to array at '${injectionPosition}' for '${crudType}'.`));
+              console.log(chalk.dim(`Appended new injection to array at '${injectionPosition}' for '${crudType}'.`));
             }
             else if (n.ObjectExpression.check(injectionProp.value)) {
               injectionProp.value = b.arrayExpression([injectionProp.value, newInjectionObject]);
-              afLogger.info(chalk.dim(`Converted to array and added new injection at '${injectionPosition}' for '${crudType}'.`));
+              console.log(chalk.dim(`Converted to array and added new injection at '${injectionPosition}' for '${crudType}'.`));
             }
             else {
               injectionProp.value = b.arrayExpression([newInjectionObject]);
-              afLogger.warn(chalk.yellow(`⚠️ Replaced invalid injection at '${injectionPosition}' with array.`));
+              console.log(chalk.yellow(`⚠️ Replaced invalid injection at '${injectionPosition}' with array.`));
             }
           } else {
             crudValue.properties.push(
               b.objectProperty(b.identifier(injectionPosition), b.arrayExpression([newInjectionObject]))
             );
-            afLogger.info(chalk.dim(`Added new array of injections at '${injectionPosition}' for '${crudType}'.`));
+            console.log(chalk.dim(`Added new array of injections at '${injectionPosition}' for '${crudType}'.`));
           }
   
           updateApplied = true;
@@ -594,7 +593,7 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
   
       const outputCode = recast.print(ast).code;
       await fs.writeFile(filePath, outputCode, 'utf-8');
-      afLogger.info(
+      console.log(
         chalk.green(
           `✅ Successfully updated CRUD injection in resource file: ${filePath}` +
           (injectionLine !== null ? `:${injectionLine}` : '')
@@ -602,7 +601,7 @@ export async function updateCrudInjectionConfig(resourceId, crudType, injectionP
       );
   
     } catch (error) {
-      afLogger.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
+      console.error(chalk.red(`❌ Error processing resource file: ${filePath}`));
       throw new Error(`Failed to inject CRUD component in ${path.basename(filePath)}: ${error.message}`);
     }
   }
