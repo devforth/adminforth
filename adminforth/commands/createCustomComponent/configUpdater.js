@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import recast from 'recast'; // Import recast
 import * as typescriptParser from 'recast/parsers/typescript.js'; // Import the parser using ESM and include the .js extension
-import { afLogger } from '../modules/logger.js';
+import { afLogger } from '../../modules/logger.js';
 
 const b = recast.types.builders; // Like t.* in babel/types
 const n = recast.types.namedTypes; // Like t.is* in babel/types

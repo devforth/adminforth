@@ -4,7 +4,7 @@ import path from 'path';
 import { loadAdminForthConfig } from './configLoader.js'; // Helper to load config
 import { generateComponentFile, generateLoginOrGlobalComponentFile, generateCrudInjectionComponent } from './fileGenerator.js'; // Helper to create the .vue file
 import { updateResourceConfig, injectLoginComponent, injectGlobalComponent, updateCrudInjectionConfig } from './configUpdater.js'; // Helper to modify resource .ts file
-import { afLogger } from '../modules/logger.js';
+import { afLogger } from '../../modules/logger.js';
 
 function sanitizeLabel(input){
   return input

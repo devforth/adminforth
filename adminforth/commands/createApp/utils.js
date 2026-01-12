@@ -12,7 +12,7 @@ import { exec } from 'child_process';
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { getVersion } from '../cli.js';
-import { afLogger } from '../modules/logger.js';
+import { afLogger } from '../../modules/logger.js';
 
 const execAsync = promisify(exec);
 
