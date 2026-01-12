@@ -384,7 +384,7 @@ class AdminForth implements IAdminForth {
       try {
         await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
       } catch (e) {
-        console.error(`Error while connecting to datasource '${dataSourceId}':`, e);
+        afLogger.error(`Error while connecting to datasource '${dataSourceId}': ${e}`);
       }
     }));
 
@@ -399,13 +399,13 @@ class AdminForth implements IAdminForth {
       try {
         fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
       } catch (e) {
-        console.error(`Error discovering fields for resource '${res.table}' (In resource '${res.resourceId}')`, e);
+        afLogger.error(`Error discovering fields for resource '${res.table}' (In resource '${res.resourceId}') ${e}`);
       }
       if (fieldTypes !== null && !Object.keys(fieldTypes).length) {
         throw new Error(`Table '${res.table}' (In resource '${res.resourceId}') has no fields or does not exist`);
       }
       if (fieldTypes === null) {
-        console.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
+        afLogger.error(`⛔ DataSource ${res.dataSource} was not able to perform field discovery. It will not work properly`);
         if (process.env.NODE_ENV === 'production') {
           process.exit(1); 
         }
@@ -458,7 +458,7 @@ class AdminForth implements IAdminForth {
             const tables = await connector.getAllTables();
             results[dataSourceId] = tables;
           } catch (err) {
-            console.error(`Error getting tables for dataSource ${dataSourceId}:`, err);
+            afLogger.error(`Error getting tables for dataSource ${dataSourceId}: ${err}`);
             results[dataSourceId] = [];
           }
         } else {
@@ -489,7 +489,7 @@ class AdminForth implements IAdminForth {
               isUUID: isProbablyUUIDColumn(column),
             }));
           } catch (err) {
-            console.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}:`, err);
+            afLogger.error(`Error getting columns for table ${tableName} in dataSource ${dataSourceId}: ${err}`);
             results[dataSourceId] = [];
           }
         } else {
@@ -631,7 +631,7 @@ class AdminForth implements IAdminForth {
     }
 
     if (record) {
-      console.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
+      afLogger.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
     }
 
     // remove editReadonly columns from record

@@ -3,7 +3,7 @@ import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAnd
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
-import { dbLogger } from '../modules/logger.js';
+import { dbLogger, afLogger } from '../modules/logger.js';
 
 class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -123,7 +123,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
@@ -157,7 +157,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         if (field._underlineType == 'text' || field._underlineType == 'varchar') {
           return JSON.stringify(value);
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 

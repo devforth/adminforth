@@ -55,7 +55,7 @@ export function callTsProxy(tsCode, silent=false) {
           reject(new Error("Invalid JSON from tsproxy: " + stdout));
         }
       } else {
-        console.error(`tsproxy exited with non-0, this should never happen, stdout: ${stdout}, stderr: ${stderr}`);
+        afLogger.error(`tsproxy exited with non-0, this should never happen, stdout: ${stdout}, stderr: ${stderr}`);
         reject(new Error(stderr));
       }
     });
@@ -102,7 +102,7 @@ export async function findAdminInstance() {
         // and show the error so user can fix it
         const fileContent = fs.readFileSync(file, "utf-8");
         if (fileContent.includes("export const admin")) {
-          console.error(chalk.red(`Error running ${file}:`, e));
+          afLogger.error(`Error running ${file}: ${e}`);
           process.exit(1);
         }
         afLogger.trace(`🪲 File ${file} failed`, e);
