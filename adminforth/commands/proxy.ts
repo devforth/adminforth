@@ -3,7 +3,6 @@ import { writeFile, unlink } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { pathToFileURL } from 'url';
 import path from 'path';
-import { afLogger } from '../modules/logger.js';
 
 (async () => {
   const chunks: Buffer[] = [];
@@ -24,8 +23,8 @@ import { afLogger } from '../modules/logger.js';
     capturedLogs.push(args);
   }
 
-  afLogger.trace(`🪲 TMP proxy file: ${tmpFile}`);
-  afLogger.trace(`🪲 Current working directory: ${process.cwd()}`);
+  process.env.HEAVY_DEBUG && console.log(`🪲 TMP proxy file: ${tmpFile}`);
+  process.env.HEAVY_DEBUG && console.log(`🪲 Current working directory: ${process.cwd()}`);
   
   try {
     // Save code to a temp file

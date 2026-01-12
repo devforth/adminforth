@@ -1,7 +1,6 @@
 import path from "path";
 import { execSync } from "child_process";
 import fs from "fs";
-import { afLogger } from '../modules/logger.js';
 
 export const toPascalCase = (str) => {
   return str
@@ -132,7 +131,7 @@ export async function getInstance(file, currentDirectory) {
   let filePath = initialFilePath;
 
   if (file.endsWith(".ts")) {
-    afLogger.info(`Compiling TypeScript file: ${file}`);
+    console.log(`Compiling TypeScript file: ${file}`);
     try {
       execSync(
         `./node_modules/.bin/tsc ${filePath} --module ESNext --outDir ./dist`,
@@ -141,7 +140,7 @@ export async function getInstance(file, currentDirectory) {
         }
       );
     } catch (error) {
-      afLogger.error(`Error: Could not compile TypeScript file '${file}'`);
+      //console.log(`Error: Could not compile TypeScript file '${file}'`);
     }
     const distDir = path.join(currentDirectory, "dist");
     processJsFilesInDir(distDir);

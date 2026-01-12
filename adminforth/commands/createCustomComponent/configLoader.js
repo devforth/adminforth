@@ -3,7 +3,6 @@ import path from 'path';
 import chalk from 'chalk';
 import jiti from 'jiti';
 import dotenv, { config } from "dotenv";
-import { afLogger } from '../../modules/logger.js';
 
 dotenv.config({ path: '.env.local', override: true });
 dotenv.config({ path: '.env', override: true });
@@ -60,12 +59,12 @@ export async function loadAdminForthConfig() {
      }
 
 
-    afLogger.info(chalk.dim(`Loaded configuration from ${configPath}`));
+    console.log(chalk.dim(`Loaded configuration from ${configPath}`));
     return config;
 
   } catch (error) {
-    afLogger.error(chalk.red(`\nError loading or parsing configuration file: ${configPath},  error: ${error}`));
-    afLogger.error(error);
+    console.error(chalk.red(`\nError loading or parsing configuration file: ${configPath},  error: ${error}`));
+    console.error(error);
     process.exit(1);
   }
 }
