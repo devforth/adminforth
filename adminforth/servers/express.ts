@@ -313,7 +313,7 @@ class ExpressServer implements IExpressHttpServer {
         try {
           body = JSON.parse(body);
         } catch (e) {
-          afLogger.error('Failed to parse body', e);
+          afLogger.error(`Failed to parse body, ${e}`);
           res.status(400).send('Invalid JSON body');
         }
       }
