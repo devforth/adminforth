@@ -43,7 +43,7 @@ export function callTsProxy(tsCode, silent=false) {
           const parsed = JSON.parse(stdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
-              afLogger.log(...log);
+              afLogger.info(...log);
             });
           }
 
