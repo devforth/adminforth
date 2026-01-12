@@ -262,7 +262,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // explicitly ignore raw SQL filters for MongoDB
         if ((filter as IAdminForthSingleFilter).insecureRawSQL !== undefined) {
-            console.warn('⚠️  Ignoring insecureRawSQL filter for MongoDB:', (filter as IAdminForthSingleFilter).insecureRawSQL);
+            afLogger.warn(`⚠️  Ignoring insecureRawSQL filter for MongoDB:, ${(filter as IAdminForthSingleFilter).insecureRawSQL}`);
             return {};
         }
 

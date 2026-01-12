@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
 
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
+import { afLogger } from '../modules/logger.js';
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
   
@@ -95,7 +96,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           });
           rows = await q.json();
         } catch (e) {
-          console.error(` 🛑Error connecting to datasource URL ${this.url}:`, e);
+          afLogger.error(` 🛑Error connecting to datasource URL ${this.url}: ${e}`);
           return null;
         }
 
@@ -169,7 +170,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
               return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          console.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
         }
       }
       return value;
@@ -197,7 +198,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
           return JSON.stringify(value);
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 

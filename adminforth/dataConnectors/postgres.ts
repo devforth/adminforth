@@ -23,7 +23,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 this.setupClient(url);
             });
         } catch (e) {
-            console.error(`Failed to connect to Postgres ${e}`);
+            afLogger.error(`Failed to connect to Postgres ${e}`);
         }
     }
 
@@ -200,8 +200,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else if (typeof value == 'object') {
                 return value;
             } else {
-                console.error('JSON field value is not string or object, but has type:', typeof value);
-                console.error('Field:', field);
+                afLogger.error(`JSON field value is not string or object, but has type: ${typeof value}`);
+                afLogger.error(`Field:, ${field}`);
                 return {}
             }
         }

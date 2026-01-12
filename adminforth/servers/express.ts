@@ -200,7 +200,7 @@ class ExpressServer implements IExpressHttpServer {
           })
         );
       } catch (e) {
-        console.error('Failed to handle WS connection', e);
+        afLogger.error(`Failed to handle WS connection ${e}`);
         
       }
     });
@@ -244,7 +244,7 @@ class ExpressServer implements IExpressHttpServer {
       // check if multiple adminforth_jwt providerd and show warning
       const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
       if (jwts.length > 1) {
-        console.error('Multiple adminforth_jwt cookies provided');
+        afLogger.error('Multiple adminforth_jwt cookies provided');
       }
 
       const jwt = jwts[0]?.value;
@@ -260,7 +260,7 @@ class ExpressServer implements IExpressHttpServer {
         // this might happen if e.g. database intialization in progress.
         // so we can't answer with 401 (would logout user)
         // reproduced during usage of listRowsAutoRefreshSeconds
-        console.error(e.stack);
+        afLogger.error(e.stack);
         res.status(500).send('Failed to verify JWT token - something went wrong');
         return;
       }
@@ -313,7 +313,7 @@ class ExpressServer implements IExpressHttpServer {
         try {
           body = JSON.parse(body);
         } catch (e) {
-          console.error('Failed to parse body', e);
+          afLogger.error('Failed to parse body', e);
           res.status(400).send('Invalid JSON body');
         }
       }
@@ -355,9 +355,9 @@ class ExpressServer implements IExpressHttpServer {
       try {
         output = await handler(input);
       } catch (e) {
-        console.error('Error in handler', e);
+        afLogger.error(`Error in handler ${e}`);
         // print full stack trace 
-        console.error(e.stack);
+        afLogger.error(e.stack);
         res.status(500).send('Internal server error');
         return;
       }

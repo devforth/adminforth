@@ -3,7 +3,7 @@ import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IA
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
-import { dbLogger } from '../modules/logger.js';
+import { dbLogger, afLogger } from '../modules/logger.js';
 
 class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -16,7 +16,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         queueLimit: 0
       });
     } catch (e) {
-      console.error(`Failed to connect to MySQL: ${e}`);
+      afLogger.error(`Failed to connect to MySQL: ${e}`);
     }
   }
 
@@ -176,8 +176,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       } else if (typeof value === 'object') {
         return value;
       } else {
-        console.error('JSON field value is not string or object, but has type:',  typeof value);
-        console.error('Field:', field);
+        afLogger.error(`JSON field value is not string or object, but has type: ${typeof value}`);
+        afLogger.error(`Field:, ${field}`);
         return {}
       }
     }

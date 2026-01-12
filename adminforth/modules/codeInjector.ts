@@ -965,8 +965,8 @@ class CodeInjector implements ICodeInjector {
         }
       });
       devServer.stderr.on('data', (data) => {
-        console.error(`[AdminForth SPA ERROR]:`);
-        afLogger.trace(data.toString());
+        afLogger.error(`[AdminForth SPA ERROR]:`);
+        afLogger.error(data.toString());
       });
 
     }
