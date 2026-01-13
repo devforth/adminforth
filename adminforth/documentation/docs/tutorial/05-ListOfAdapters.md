@@ -152,6 +152,15 @@ Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered compl
 
 ---
 
+### Google Gemini Completion Adapter
+
+```
+npm i @adminforth/completion-adapter-google-gemini
+```
+
+Integrates AdminForth with Google Gemini models to provide AI-powered completion and conversational features.
+
+
 ## 🔎 Image Analysis
 
 [🔗ImageVisionAdapter source class](https://github.com/devforth/adminforth/blob/1efdc19e3bb7a5fc3b19106704e4ae8bb7c73276/adminforth/types/adapters/ImageVisionAdapter.ts#L1)
