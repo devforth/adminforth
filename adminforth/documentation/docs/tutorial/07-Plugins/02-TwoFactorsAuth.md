@@ -445,7 +445,6 @@ Imagine you have some button which does some API call
 
 <script setup lang="ts">
 import { callApi } from '@/utils';
-import adminforth from '@/adminforth';
 
 async function callAdminAPI() {
   const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
@@ -486,7 +485,9 @@ You might want to protect this call with a second factor also. To do it, we need
 
 <script setup lang="ts">
 import { callApi } from '@/utils';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert } = useAdminforth();
 
 async function callAdminAPI() {
   // diff-add
@@ -505,7 +506,7 @@ async function callAdminAPI() {
   // diff-add
   if (!res?.ok) {
   // diff-add
-    adminforth.alert({ message: res.error, variant: 'danger' });
+    alert({ message: res.error, variant: 'danger' });
   // diff-add
   }
 }

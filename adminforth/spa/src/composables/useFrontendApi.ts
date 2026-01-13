@@ -1,17 +1,21 @@
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
 
 export function showSuccesTost(message: string) {
-  adminforth.alert({ message, variant: 'success' });  
+  const { alert } = useAdminforth();
+  alert({ message, variant: 'success' });  
   return message;
 }
 
 export function showWarningTost(message: string) {
-  adminforth.alert({ message, variant: 'warning' });  
+  const { alert } = useAdminforth();
+  alert({ message, variant: 'warning' });  
   return message;
 }
 
 export function showErrorTost(message: string, timeout?: number) {
-  adminforth.alert({ message, variant: 'danger', timeout: timeout || 30});  
+  const { alert } = useAdminforth();
+  alert({ message, variant: 'danger', timeout: timeout || 30});  
   return message;
 }
 

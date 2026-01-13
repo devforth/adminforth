@@ -86,7 +86,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-import adminforth, { useAdminforth } from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
@@ -103,7 +103,7 @@ const router = useRouter();
 const record = ref({});
 
 const coreStore = useCoreStore();
-const { api } = useAdminforth();
+const { clearSaveInterceptors, runSaveInterceptors, alert } = useAdminforth();
 
 const { t } = useI18n();
 
@@ -119,7 +119,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 onBeforeMount(() => {
-  api.clearSaveInterceptors(route.params.resourceId as string);
+  clearSaveInterceptors(route.params.resourceId as string);
 });
 
 onMounted(async () => {
@@ -174,7 +174,7 @@ async function saveRecord() {
   const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
   const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
-  const interceptorsResult = await api.runSaveInterceptors({
+  const interceptorsResult = await runSaveInterceptors({
     action: 'create',
     values: record.value,
     resource: coreStore.resource,
@@ -212,7 +212,7 @@ async function saveRecord() {
         primaryKey: response.newRecordId
       } 
     });
-    adminforth.alert({
+    alert({
       message: t('Record created successfully!'),
       variant: 'success'
     });
@@ -228,7 +228,7 @@ function scrollToInvalidField() {
     }
   }
   const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
-  adminforth.alert({
+  alert({
     messageHtml: errorMessage,
     variant: 'danger'
   });
