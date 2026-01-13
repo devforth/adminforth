@@ -468,6 +468,13 @@ export interface IAdminForthPlugin {
   instanceUniqueRepresentation(pluginOptions: any) : string;
 
 
+  /**   
+   * If this method returns true, AdminForth will allow only one instance of plugin per whole app
+   * (only for case when we are creating copy of resource and activating plugins)
+   * If false, multiple instances of plugin can be installed on different resources.
+   */
+  shouldHaveSingleInstancePerWholeApp(): boolean;
+
   /**
    * Optional method which will be called after AdminForth discovers all resources and their columns.
    * Can be used to validate types of columns, check if some columns are missing, etc.
