@@ -473,7 +473,7 @@ export interface IAdminForthPlugin {
    * (only for case when we are creating copy of resource and activating plugins)
    * If false, multiple instances of plugin can be installed on different resources.
    */
-  shouldHaveSingleInstancePerWholeApp(): boolean;
+  shouldHaveSingleInstancePerWholeApp?(): boolean;
 
   /**
    * Optional method which will be called after AdminForth discovers all resources and their columns.
