@@ -36,6 +36,10 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     return 'non-uniquely-identified';
   }
 
+  shouldHaveSingleInstancePerWholeApp(): boolean {
+    return true;
+  }
+
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: AdminForthPlugin, resource: AdminForthResource}[]) {
     this.resourceConfig = resourceConfig;
     const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
