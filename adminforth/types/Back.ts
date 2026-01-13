@@ -1,7 +1,7 @@
 import type { Express, Request } from 'express';
 import type { Writable } from 'stream';
 
-import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, 
+import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
   type AdminForthResourceCommon, 
   type AdminUser, type AllowedActionsResolved, 
@@ -12,7 +12,6 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
   type AdminForthConfigMenuItem,
   type AnnouncementBadgeResponse,
-  AdminForthResourcePages,
   type AdminForthResourceColumnInputCommon,
 } from './Common.js';
 
