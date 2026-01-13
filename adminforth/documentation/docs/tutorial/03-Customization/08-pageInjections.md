@@ -72,11 +72,12 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
   import { onMounted, ref, Ref, computed } from 'vue';
   import { PieChart } from '@/afcl';
   import { callApi } from '@/utils';
-  import adminforth from '@/adminforth';
+  import { useAdminforth } from '@/adminforth';
   
   
   const data: Ref<any[]> = ref([]);
 
+  const { alert } = useAdminforth(); 
 
   const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
   const rooms = computed(() => {
@@ -93,7 +94,7 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
     try {
     data.value = await callApi({ path: '/api/aparts-by-room-percentages', method: 'GET' });
     } catch (error) {
-      adminforth.alert({
+      alert({
         message: `Error fetching data: ${error.message}`,
         variant: 'danger',
         timeout: 'unlimited'
@@ -296,22 +297,24 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 
 <script setup>
 import { getReadingTime} from "text-analyzer";
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 defineExpose({
   click,
 });
 
+const { alert, list } = useAdminforth();
+
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
   if (text) {
     const readingTime = getReadingTime(text);
-    adminforth.alert({
+    alert({
       message: `Reading time: ${readingTime.minutes} minutes`,
       variant: 'success',
     });
   }
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
 }
 
 function click() {
@@ -330,7 +333,7 @@ npm i text-analyzer
 ```
 
 
-> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
 >☝️ Please note that the injected component might have an exposed click function as well as a defined click function, which executes the click on component logic.
 
@@ -541,7 +544,7 @@ You have opportunity to inject custom components to the global layout. For examp
 
 ![alt text](<Group 6.png>)
 
-use `adminforth.closeUserMenuDropdown();` to close the dropdown after the item is clicked.
+use `closeUserMenuDropdown();` to close the dropdown after the item is clicked.
 
 ```ts title="/index.ts"
 {
@@ -567,14 +570,16 @@ Now create file `CustomUserMenuItem.vue` in the `custom` folder of your project:
 </template>
 
 <script setup>
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert, closeUserMenuDropdown } = useAdminforth()
 
 function openCustomPage() {
-  adminforth.alert({
+  alert({
     message: 'Custom page is opened',
     variant: 'success',
   });
-  adminforth.closeUserMenuDropdown();
+  closeUserMenuDropdown();
 }
 </script>
 ```
@@ -620,9 +625,12 @@ Now create file `AnyPageWelcome.vue` in the `custom` folder of your project:
 
 <script setup>
 import { onMounted } from 'vue';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert } = useAdminforth();
+
 onMounted(() => {
-  adminforth.alert({
+  alert({
     message: 'Welcome!',
     variant: 'success',
   });

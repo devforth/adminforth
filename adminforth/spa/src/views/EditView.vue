@@ -80,14 +80,14 @@ import { computed, onMounted, onBeforeMount, ref, type Ref, nextTick, watch } fr
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-import adminforth, { useAdminforth } from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
-const { api } = useAdminforth();
+const { clearSaveInterceptors, runSaveInterceptors, alert } = useAdminforth();
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -129,7 +129,7 @@ const editableRecord = computed(() => {
 })
 
 onBeforeMount(() => {
-  api.clearSaveInterceptors(route.params.resourceId as string);
+  clearSaveInterceptors(route.params.resourceId as string);
 });
 
 onMounted(async () => {
@@ -164,7 +164,7 @@ async function saveRecord() {
   }
 
   saving.value = true;
-  const interceptorsResult = await api.runSaveInterceptors({
+  const interceptorsResult = await runSaveInterceptors({
     action: 'edit',
     values: record.value,
     resource: coreStore.resource,
@@ -215,7 +215,7 @@ async function saveRecord() {
   if (resp.error && resp.error !== 'Operation aborted by hook') {
     showErrorTost(resp.error);
   } else {
-    adminforth.alert({
+    alert({
       message: t('Record updated successfully'),
       variant: 'success',
       timeout: 400000
@@ -234,7 +234,7 @@ function scrollToInvalidField() {
     }
   }
   const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
-  adminforth.alert({
+  alert({
     messageHtml: errorMessage,
     variant: 'danger'
   });
