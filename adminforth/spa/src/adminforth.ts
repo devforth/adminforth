@@ -228,7 +228,14 @@ export function useAdminforth() {
   const api = frontendAPI as FrontendAPI;
   return {
     registerSaveInterceptor: (handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>) => api.registerSaveInterceptor(handler),
-    api,
+    alert: (params: AlertParams) => api.alert(params),
+    confirm: (params: ConfirmParams) => api.confirm(params),
+    list: api.list,
+    show: api.show,
+    menu: api.menu,
+    closeUserMenuDropdown: () => api.closeUserMenuDropdown(),
+    runSaveInterceptors: (params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => api.runSaveInterceptors(params),
+    clearSaveInterceptors: (resourceId?: string) => api.clearSaveInterceptors(resourceId),
   };
 }
 

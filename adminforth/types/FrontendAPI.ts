@@ -136,6 +136,18 @@ export interface FrontendAPIInterface {
      * Close the user menu dropdown
      */
     closeUserMenuDropdown(): void;
+
+    /**
+     * Run save interceptors for a specific resource or all resources if no resourceId is provided
+     */
+    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }>;
+
+    /**
+     * Clear save interceptors for a specific resource or all resources if no resourceId is provided
+     * 
+     * @param resourceId - The resource ID to clear interceptors for
+     */
+    clearSaveInterceptors(resourceId?: string): void;
 }
 
 export type ConfirmParams = {
