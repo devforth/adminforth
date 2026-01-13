@@ -2,10 +2,12 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
+
+const { alert } = useAdminforth();
 
 export const useCoreStore = defineStore('core', () => {
   const resourceById: Ref<Record<string, ResourceVeryShort>> = ref({});
@@ -157,7 +159,7 @@ export const useCoreStore = defineStore('core', () => {
     });
 
     if (respData.error) {
-      adminforth.alert({
+      alert({
         message: respData.error,
         variant: 'danger',
         timeout: 30,
