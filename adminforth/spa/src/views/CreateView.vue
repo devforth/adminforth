@@ -103,7 +103,7 @@ const router = useRouter();
 const record = ref({});
 
 const coreStore = useCoreStore();
-const { api } = useAdminforth();
+const { clearSaveInterceptors, runSaveInterceptors } = useAdminforth();
 
 const { t } = useI18n();
 
@@ -119,7 +119,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 onBeforeMount(() => {
-  api.clearSaveInterceptors(route.params.resourceId as string);
+  clearSaveInterceptors(route.params.resourceId as string);
 });
 
 onMounted(async () => {
@@ -174,7 +174,7 @@ async function saveRecord() {
   const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
   const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
-  const interceptorsResult = await api.runSaveInterceptors({
+  const interceptorsResult = await runSaveInterceptors({
     action: 'create',
     values: record.value,
     resource: coreStore.resource,
