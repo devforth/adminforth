@@ -12,11 +12,13 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import adminforth from '@/adminforth';
+import { useAdminforth} from '@/adminforth';
 import { onMounted } from 'vue';
 import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
 
 const { t } = useI18n();
+
+const { alert } = useAdminforth();
 
 const props = defineProps<{
   record: any
@@ -29,7 +31,7 @@ const menuItems = [
   {
     label: 'Show Success Alert',
     action: () => {
-      adminforth.alert({
+      alert({
         message: t('Success Alert'),
         variant: 'success',
       });

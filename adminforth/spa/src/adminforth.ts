@@ -24,7 +24,7 @@ class FrontendAPI implements FrontendAPIInterface {
   public list: {
     refresh(): Promise<{ error? : string }>;
     silentRefresh(): Promise<{ error? : string }>;
-    silentRefreshRow(): Promise<{ error? : string }>;
+    silentRefreshRow(pk: any): Promise<{ error? : string }>;
     closeThreeDotsDropdown(): Promise<{ error? : string }>;
     closeUserMenuDropdown: () => void;
     setFilter: (filter: FilterParams) => void;
