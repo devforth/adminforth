@@ -225,7 +225,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
-import adminforth, { useAdminforth } from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 const filtersShow = ref(false);
 const { confirm, alert, list } = useAdminforth();

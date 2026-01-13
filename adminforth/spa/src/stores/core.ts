@@ -7,9 +7,8 @@ import { useAdminforth } from '@/adminforth';
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
-const { alert } = useAdminforth();
-
 export const useCoreStore = defineStore('core', () => {
+  const { alert } = useAdminforth();
   const resourceById: Ref<Record<string, ResourceVeryShort>> = ref({});
   const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem('af__theme') as ('light'|'dark') || 'light');
 
