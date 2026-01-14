@@ -359,16 +359,16 @@ export interface IAdminForth {
   tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
   createResourceRecord(
-    params: { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra }
+    params: { resource: AdminForthResource, record: any, response: IAdminForthHttpResponse, adminUser: AdminUser, extra?: HttpExtra }
   ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates?: never }
-    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, extra?: HttpExtra, updates: any }
+    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates?: never }
+    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates: any }
   ): Promise<{ error?: string }>;
 
   deleteResourceRecord(
-    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any, extra?: HttpExtra }
+    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any, response: IAdminForthHttpResponse, extra?: HttpExtra }
   ): Promise<{ error?: string }>;
 
   auth: IAdminForthAuth;
@@ -545,6 +545,7 @@ export type BeforeDeleteSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -557,6 +558,7 @@ export type BeforeEditSaveFunction = (params: {
   record: any, // legacy, 'updates' should be used instead
   oldRecord: any,
   adminforth: IAdminForth,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null}>;
 
@@ -567,6 +569,7 @@ export type BeforeCreateSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
 
@@ -577,6 +580,7 @@ export type AfterCreateSaveFunction = (params: {
   record: any, 
   adminforth: IAdminForth,
   recordWithVirtualColumns?: any,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -590,6 +594,7 @@ export type AfterDeleteSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -602,6 +607,7 @@ export type AfterEditSaveFunction = (params: {
   record: any, // legacy, 'updates' should be used instead 
   oldRecord: any,
   adminforth: IAdminForth,
+  response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -1543,8 +1549,8 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, tr: (key: string, category?: string, params?: any) => string
+  action: ({ resource, selectedIds, adminUser, response, tr }: { 
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: (key: string, category?: string, params?: any) => string
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
