@@ -13,9 +13,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { AdminForthResourceCommon, AdminUser } from "@/types/Common";
 
+const { alert } = useAdminforth();
 const { t } = useI18n();
 
 const props = defineProps<{
@@ -30,7 +31,7 @@ onMounted(() => {
 });
 
 function handleClick() {
-  adminforth.alert({
+  alert({
     message: t('Confirmed'),
     variant: 'success',
   });

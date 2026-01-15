@@ -17,25 +17,7 @@
       >
         {{ $t('Cancel') }}
       </button>
-
-      <!-- Custom Save Button injection -->
-      <component
-        v-if="createSaveButtonInjection"
-        :is="getCustomComponent(createSaveButtonInjection)"
-        :meta="createSaveButtonInjection.meta"
-        :record="record"
-        :resource="coreStore.resource"
-        :adminUser="coreStore.adminUser"
-        :saving="saving"
-        :validating="validating"
-        :isValid="isValid"
-        :disabled="saving || (validating && !isValid)"
-        :saveRecord="saveRecord"
-      />
-      
-      <!-- Default Save Button fallback -->
       <button  
-        v-else
         @click="() => saveRecord()"
         class="af-save-button flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validating && !isValid)"
@@ -99,12 +81,12 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref, watch, nextTick } from 'vue';
+import { onMounted, onBeforeMount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
@@ -121,17 +103,11 @@ const router = useRouter();
 const record = ref({});
 
 const coreStore = useCoreStore();
+const { clearSaveInterceptors, runSaveInterceptors, alert } = useAdminforth();
 
 const { t } = useI18n();
 
 const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
-
-const createSaveButtonInjection = computed<AdminForthComponentDeclarationFull | null>(() => {
-  const raw: any = coreStore.resourceOptions?.pageInjections?.create?.saveButton as any;
-  if (!raw) return null;
-  const item = Array.isArray(raw) ? raw[0] : raw;
-  return item as AdminForthComponentDeclarationFull;
-});
 
 const initialValues = ref({});
 
@@ -141,6 +117,10 @@ const readonlyColumns = ref([]);
 async function onUpdateRecord(newRecord: any) {
   record.value = newRecord;
 }
+
+onBeforeMount(() => {
+  clearSaveInterceptors(route.params.resourceId as string);
+});
 
 onMounted(async () => {
   loading.value = true;
@@ -182,7 +162,7 @@ onMounted(async () => {
   initThreeDotsDropdown();
 });
 
-async function saveRecord(opts?: { confirmationResult?: any }) {
+async function saveRecord() {
   if (!isValid.value) {
     validating.value = true;
     await nextTick();
@@ -194,6 +174,18 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
   const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
   const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
   saving.value = true;
+  const interceptorsResult = await runSaveInterceptors({
+    action: 'create',
+    values: record.value,
+    resource: coreStore.resource,
+    resourceId: route.params.resourceId as string,
+  });
+  if (!interceptorsResult.ok) {
+    saving.value = false;
+    if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
+    return;
+  }
+  const interceptorConfirmationResult = (interceptorsResult.extra as Record<string, any>)?.confirmationResult;
   const response = await callAdminForthApi({
     method: 'POST',
     path: `/create_record`,
@@ -202,7 +194,7 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
       record: record.value,
       requiredColumnsToSkip,
       meta: {
-        ...(opts?.confirmationResult ? { confirmationResult: opts.confirmationResult } : {}),
+        ...(interceptorConfirmationResult ? { confirmationResult: interceptorConfirmationResult } : {}),
       },
     },
   });
@@ -220,7 +212,7 @@ async function saveRecord(opts?: { confirmationResult?: any }) {
         primaryKey: response.newRecordId
       } 
     });
-    adminforth.alert({
+    alert({
       message: t('Record created successfully!'),
       variant: 'success'
     });
@@ -236,7 +228,7 @@ function scrollToInvalidField() {
     }
   }
   const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
-  adminforth.alert({
+  alert({
     messageHtml: errorMessage,
     variant: 'danger'
   });

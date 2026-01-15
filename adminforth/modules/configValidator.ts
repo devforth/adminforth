@@ -250,7 +250,7 @@ export default class ConfigValidator implements IConfigValidator {
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-      action: async ({ selectedIds, adminUser }) => {
+      action: async ({ selectedIds, adminUser, response }) => {
         const connector = this.adminforth.connectors[res.dataSource];
 
         // for now if at least one error, stop and return error
@@ -268,6 +268,7 @@ export default class ConfigValidator implements IConfigValidator {
                     resource: res as AdminForthResource, 
                     record, 
                     adminUser,
+                    response,
                     adminforth: this.adminforth
                   }); 
                   if (!error && resp.error) {
@@ -291,6 +292,7 @@ export default class ConfigValidator implements IConfigValidator {
                     record, 
                     adminUser,
                     recordId: recordId,
+                    response,
                     adminforth: this.adminforth,
                   }); 
                 }
@@ -881,8 +883,8 @@ export default class ConfigValidator implements IConfigValidator {
       const allowedInjectionsByPage: Record<string, string[]> = {
         list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems', 'tableBodyStart', 'tableRowReplace'],
         show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
-        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
-        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
+        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
       };
 
       if (options.pageInjections) {
