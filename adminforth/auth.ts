@@ -51,18 +51,15 @@ class AdminForthAuth implements IAdminForthAuth {
       acc[key.toLowerCase()] = headers[key];
       return acc;
     }, {});
+
+    let ip: string | null = null;
     if (clientIpHeader) {
-      const ip = headersLower[clientIpHeader.toLowerCase()];
-      const isIpPrivate = is_ip_private(ip)
-      if (isIpPrivate) {
-        return null;
-      }
-      return ip || 'unknown';
+      ip = headersLower[clientIpHeader.toLowerCase()];
     } else {
       // first try common headers which can't bee spoofed, in other words
       // most common to nginx/traefik/apache
       // then fallback to less secure headers
-      const ip = headersLower['x-forwarded-for']?.split(',').shift().trim() ||
+      ip = headersLower['x-forwarded-for']?.split(',').shift().trim() ||
        headersLower['x-real-ip'] || 
        headersLower['x-client-ip'] || 
        headersLower['x-cluster-client-ip'] || 
@@ -73,12 +70,12 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['client'] || 
        headersLower['x-host'] ||
        null;
-      const isIpPrivate = is_ip_private(ip)
-      if (isIpPrivate) {
-        return null;
-      }
-      return ip;
     }
+    const isIpPrivate = is_ip_private(ip)
+    if (isIpPrivate) {
+      return null;
+    }
+    return ip;
   }
 
   removeAuthCookie(response) {
