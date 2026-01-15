@@ -271,13 +271,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         }
         throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
       }
-      // Accept number
-      if (typeof value === "number") {
-        if (Number.isFinite(value)) {
-          return this.setFieldValue(field, value.toString());
-        }
-        throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
-      }
       // Accept Decimal-like objects (e.g., decimal.js) by using toString()
       if (value && typeof value === "object" && typeof (value as any).toString === "function") {
         const s = (value as any).toString();
