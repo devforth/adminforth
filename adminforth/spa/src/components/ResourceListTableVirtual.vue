@@ -364,13 +364,14 @@ import {
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
+const { alert, confirm } = useAdminforth();
 const props = defineProps<{
   page: number,
   resource: AdminForthResourceCommon | null,
@@ -570,7 +571,7 @@ async function onClick(e: any,row: any) {
 }
 
 async function deleteRecord(row: any) {
-  const data = await adminforth.confirm({
+  const data = await confirm({
     message: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
     no: t('Cancel'),
@@ -635,7 +636,7 @@ async function startCustomAction(actionId: string, row: any, extraData: Record<s
     emits('update:records', true);
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });

@@ -27,6 +27,10 @@ export default class {{pluginName}} extends AdminForthPlugin {
     return `single`;
   }
 
+  shouldHaveSingleInstancePerWholeApp(): boolean {
+    return false;
+  }
+
   setupEndpoints(server: IHttpServer) {
     server.endpoint({
       method: 'POST',
