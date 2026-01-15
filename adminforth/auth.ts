@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import AdminForth from './index.js';
 import { IAdminForthAuth } from './types/Back.js';
 import { afLogger } from './modules/logger.js';
+import is_ip_private from 'private-ip'
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -44,20 +45,22 @@ class AdminForthAuth implements IAdminForthAuth {
     this.adminforth = adminforth;
   }
 
-  getClientIp(headers: object) {
+getClientIp(headers: object) {
     const clientIpHeader = this.adminforth.config.auth.clientIpHeader;
 
     const headersLower = Object.keys(headers).reduce((acc, key) => {
       acc[key.toLowerCase()] = headers[key];
       return acc;
     }, {});
+
+    let ip: string | null = null;
     if (clientIpHeader) {
-      return headersLower[clientIpHeader.toLowerCase()] || 'unknown';
+      ip = headersLower[clientIpHeader.toLowerCase()];
     } else {
       // first try common headers which can't bee spoofed, in other words
       // most common to nginx/traefik/apache
       // then fallback to less secure headers
-      return headersLower['x-forwarded-for']?.split(',').shift().trim() ||
+      ip = headersLower['x-forwarded-for']?.split(',').shift().trim() ||
        headersLower['x-real-ip'] || 
        headersLower['x-client-ip'] || 
        headersLower['x-cluster-client-ip'] || 
@@ -69,6 +72,11 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['x-host'] ||
        null;
     }
+    const isIpPrivate = is_ip_private(ip)
+    if (isIpPrivate) {
+      return null;
+    }
+    return ip;
   }
 
   removeAuthCookie(response) {
