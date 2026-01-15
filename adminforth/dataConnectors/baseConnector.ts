@@ -10,6 +10,7 @@ import { suggestIfTypo } from "../modules/utils.js";
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
+import { afLogger } from '../modules/logger.js';
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -17,7 +18,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   client: any;
 
   get db() {
-    console.warn('.db is deprecated, use .client instead');
+    afLogger.warn('.db is deprecated, use .client instead');
     return this.client;
   }
 
@@ -80,7 +81,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
         if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
           const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
-          // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
           if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
             filters[fIndex] = {
               operator: AdminForthFilterOperators.OR,
@@ -138,7 +138,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           );
         }
         if (isPolymorphicTarget) {
-          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          afLogger.trace(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
           return { ok: true, error: '' };
         } else {
           throw new Error(`Field '${filtersAsSingle.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
@@ -329,7 +329,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }
 
   async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any, record?: any): Promise<boolean> {
-    process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+    afLogger.trace(`☝️🪲🪲🪲🪲 checkUnique||| ${column.name}, ${value}`);
 
     const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
@@ -385,11 +385,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
-    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
+    afLogger.trace(`🪲🆕 creating record, ${JSON.stringify(recordWithOriginalValues)}`);
     let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
     if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
       // some data sources always return some value for pk, even if it is was not auto generated
@@ -441,12 +441,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
 
-    process.env.HEAVY_DEBUG && console.log(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
+    afLogger.trace(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
     await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
 

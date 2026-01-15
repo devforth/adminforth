@@ -212,7 +212,7 @@ Open `index.ts` file in root directory and update it with the following content:
 
 ```ts title="./index.ts"
 import express from 'express';
-import AdminForth, { Filters, Sorts } from 'adminforth';
+import AdminForth, { Filters, Sorts, logger } from 'adminforth';
 import userResource from './resources/adminuser.js';
 import postResource from './resources/posts.js';
 import contentImageResource from './resources/content-image.js';
@@ -287,7 +287,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const port = 3500;
 
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
-    console.log('Bundling AdminForth SPA done.');
+    logger.info('Bundling AdminForth SPA done.');
   });
 
   // api to server recent posts
@@ -343,7 +343,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 
   admin.express.listen(port, () => {
-    console.log(`\n⚡ AdminForth is available at http://localhost:${port}/admin\n`)
+    logger.info(`\n⚡ AdminForth is available at http://localhost:${port}/admin\n`)
   });
 }
 ```

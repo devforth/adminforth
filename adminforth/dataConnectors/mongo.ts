@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 import { Decimal128, Double } from 'bson';
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
-
+import { afLogger } from '../modules/logger.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 
 const escapeRegex = (value) => {
@@ -36,11 +36,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             try {
                 await this.client.connect();
                 this.client.on('error', (err) => {
-                    console.log('Mongo error: ', err.message)
+                    afLogger.error(`Mongo error: ${err.message}`);
                 });
-                console.log('Connected to Mongo');
+                afLogger.info('Connected to Mongo');
             } catch (e) {
-                console.error(`Failed to connect to Mongo: ${e}`);
+                afLogger.error(`Failed to connect to Mongo: ${e}`);
             }
         })();
     }
@@ -262,7 +262,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         // explicitly ignore raw SQL filters for MongoDB
         if ((filter as IAdminForthSingleFilter).insecureRawSQL !== undefined) {
-            console.warn('⚠️  Ignoring insecureRawSQL filter for MongoDB:', (filter as IAdminForthSingleFilter).insecureRawSQL);
+            afLogger.warn(`⚠️  Ignoring insecureRawSQL filter for MongoDB:, ${(filter as IAdminForthSingleFilter).insecureRawSQL}`);
             return {};
         }
 
