@@ -1,5 +1,6 @@
 import { IAdminForth, IWebSocketBroker, IWebSocketClient } from "../types/Back.js";
 import { AdminUser } from "../types/Common.js";
+import { afLogger } from '../modules/logger.js';
 
 export default class SocketBroker implements IWebSocketBroker {
   clients: IWebSocketClient[] = [];
@@ -72,7 +73,7 @@ export default class SocketBroker implements IWebSocketBroker {
               try {
                 authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
               } catch (e) {
-                console.error('Error in websocketTopicAuth, assuming connection not allowed', e);
+                afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
               }
               if (!authResult) {
                 client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
@@ -93,7 +94,7 @@ export default class SocketBroker implements IWebSocketBroker {
               try {
                 await this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
               } catch (e) {
-                console.error(`Error in websocketSubscribed for topic ${data.topic}`, e);
+                afLogger.error(`Error in websocketSubscribed for topic ${data.topic}, ${e}`);
               }
             })(); // run in background
           }
@@ -125,18 +126,17 @@ export default class SocketBroker implements IWebSocketBroker {
 
   async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<void> {
     if (!this.topics[topic]) {
-      process.env.HEAVY_DEBUG && console.log('No clients subscribed to topic', topic);
+      afLogger.trace(`No clients subscribed to topic ${topic}`);
       return;
     }
     for (const client of this.topics[topic]) {
       if (filterUsers) {
         if (! (await filterUsers(client.adminUser)) ) {
-          process.env.HEAVY_DEBUG && console.log('Client not authorized to receive message', topic, client.adminUser);
+          afLogger.trace(`Client not authorized to receive message ${topic} ${client.adminUser}`);
           continue;
         }
       }
-      process.env.HEAVY_DEBUG && console.log('Sending data to soket', topic, data);
-
+      afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
       client.send(JSON.stringify({ type: 'message', topic, data }));
     }
   }

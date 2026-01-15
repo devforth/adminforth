@@ -31,6 +31,7 @@ To Setup SES, you need to have an AWS account and SES service enabled. You can f
 ```typescript title="./resources/adminuser.ts"
 import EmailInvitePlugin from '@adminforth/email-invite';
 import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
+import { logger } from 'adminforth'
 
 export default {
   dataSource: 'maindb',
@@ -77,7 +78,7 @@ export default {
     },
     edit: {
       beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        console.log('Updating user', updates);
+        logger.info('Updating user', updates);
         if (oldRecord.id === adminUser.dbUser.id && updates.role) {
           return { ok: false, error: 'You cannot change your own role' };
         }

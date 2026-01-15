@@ -29,6 +29,7 @@ import {
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
+import { afLogger } from "./logger.js";
 
 
 export default class ConfigValidator implements IConfigValidator {
@@ -1213,7 +1214,7 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (warnings.length > 0) {
-      console.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
+      afLogger.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
     }
 
     //add ids for onSelectedAllActions for each resource
