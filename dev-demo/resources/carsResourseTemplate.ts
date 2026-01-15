@@ -13,6 +13,7 @@ import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
 
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterGoogleGemini from '../../adapters/adminforth-completion-adapter-google-gemini/index.js';
 import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
@@ -96,6 +97,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         type: AdminForthDataTypes.TEXT,
         sortable: false,
         showIn: { list: false },
+        components: {
+          show: "@/renderers/RichText.vue",
+          list: "@/renderers/RichText.vue",
+        },
       },
       {
         name: 'listed',
@@ -158,49 +163,37 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
 
     *********************************************************************************/
       new UploadPlugin({
-        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-          fileSystemFolder: "./images",
-          adminServeBaseUrl: "static/source",
-          mode: "public",
-          signingSecret: "TOP_SECRET",
+        storageAdapter: new AdminForthAdapterS3Storage({
+          bucket: process.env.AWS_BUCKET_NAME as string,
+          region: process.env.AWS_REGION as string,
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: 'public-read',
         }),
-        // storageAdapter: new AdminForthAdapterS3Storage({
-        //   bucket: process.env.AWS_BUCKET_NAME as string,
-        //   region: process.env.AWS_REGION as string,
-        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-        // }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
         filePath: ({originalFilename, originalExtension, contentType}) => 
-              `sqlite/car_images/cars/${originalFilename}.${originalExtension}`,
+              `${dataSource}/car_images/cars/${originalFilename}_${Date.now()}.${originalExtension}`,
         preview: {
           maxShowWidth: "300px",
-          previewUrl: ({filePath}) => `/static/source/${filePath}`,
         },
       }),
       new UploadPlugin({
-        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-          fileSystemFolder: "./images",
-          adminServeBaseUrl: "static/source",
-          mode: "public",
-          signingSecret: "TOP_SECRET",
+        storageAdapter: new AdminForthAdapterS3Storage({
+          bucket: process.env.AWS_BUCKET_NAME as string,
+          region: process.env.AWS_REGION as string,
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: 'public-read',
         }),
-        // storageAdapter: new AdminForthAdapterS3Storage({
-        //   bucket: process.env.AWS_BUCKET_NAME as string,
-        //   region: process.env.AWS_REGION as string,
-        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-        // }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
         filePath: ({originalFilename, originalExtension, contentType}) => 
-              `sqlite/car_images/cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
+              `${dataSource}/car_images/cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
         preview: {
           maxShowWidth: "300px",
-          previewUrl: ({filePath}) => `/static/source/${filePath}`,
         },
       }),
       new RichEditorPlugin({
@@ -240,79 +233,95 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       ...(process.env.OPENAI_API_KEY ? 
         [
           new UploadPlugin({
-            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
-              fileSystemFolder: "./images",
-              adminServeBaseUrl: "static/source",
-              mode: "public",
-              signingSecret: "TOP_SECRET",
+            storageAdapter: new AdminForthAdapterS3Storage({
+              bucket: process.env.AWS_BUCKET_NAME as string,
+              region: process.env.AWS_REGION as string,
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              s3ACL: 'public-read',
             }),
-            // storageAdapter: new AdminForthAdapterS3Storage({
-            //   bucket: process.env.AWS_BUCKET_NAME as string,
-            //   region: process.env.AWS_REGION as string,
-            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            // }),
             pathColumnName: 'generated_promo_picture',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
             maxFileSize: 1024 * 1024 * 20, // 20 MB
             filePath: ({originalFilename, originalExtension, contentType}) => 
-                  `sqlite/car_images/cars_promo_images_generated/${originalFilename}.${originalExtension}`,
+                  `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
-              previewUrl: ({filePath}) => `/static/source/${filePath}`,
             },
             generation: {
-              countToGenerate: 2,  // how much images generate in one shot
+              countToGenerate: 2,
               adapter: new ImageGenerationAdapterOpenAI({
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
                 model: 'gpt-image-1', 
               }),
               fieldsForContext: ['description', 'model', 'color', 'body_type', 'engine_type'],
-              outputSize: '1536x1024' // size of generated image   
+              outputSize: '1536x1024'
             }   
         }),
         new TextCompletePlugin({
           fieldName: 'model',
           adapter: new CompletionAdapterOpenAIChatGPT({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-4o', // default "gpt-4o-mini"
+            model: 'gpt-4o',
             expert: {
-                temperature: 0.7 //Model temperature, default 0.7
+                temperature: 0.7
             }
           }),
         }),
         new BulkAiFlowPlugin({
-          actionName: 'Analyze',
-          attachFiles: async ({ record }: { record: any }) => {
-          if (!record.promo_picture) {
-            return [];
-          }
-            afLogger.info(`Attaching file for analysis: http://localhost:3000/static/source/cars_promo_images/${record.promo_picture}`);
-            return [`http://localhost:3000/static/source/${record.promo_picture}`];
-          },
-          visionAdapter: new AdminForthImageVisionAdapterOpenAi(
-            {
-              openAiApiKey:  process.env.OPENAI_API_KEY as string,
-              model: 'gpt-4.1-mini',
+          actionName: 'Generate description and Price',
+          askConfirmationBeforeGenerating: true,
+            textCompleteAdapter: new CompletionAdapterGoogleGemini({
+              geminiApiKey: process.env.GEMINI_API_KEY as string,
+              expert: {
+                temperature: 0.7
+              }
+            }),
+            fillPlainFields: {
+              description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}.",
+              price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD."
             }
-          ),
+        }),
+        new BulkAiFlowPlugin({
+          actionName: 'Analyze image',
+          askConfirmationBeforeGenerating: true,
+          visionAdapter: new AdminForthImageVisionAdapterOpenAi({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-4.1-mini',
+          }),
+          fillFieldsFromImages: {
+            body_type: "What is the body type of the car shown in the image?",
+            color: "What is the color of the car shown in the image?",
+            mileage: "Estimate the mileage of the car shown in the image in kilometers.",
+          },
+          attachFiles: async ({ record }) => {
+            if (!record.promo_picture) {
+              return [];
+            }
+            return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+          },
+        }),
+        new BulkAiFlowPlugin({
+          actionName: 'Generate promo image',
+          askConfirmationBeforeGenerating: true,
           imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-image-1',
           }),
-          fillFieldsFromImages: { 
-            color: "Which color is the car in the image?",
-            body_type: "What is the body type of the car in the image?",
-            production_year: "What is the production year of the car in the image?",
+          generateImages: {
+            generated_promo_picture: {
+              countToGenerate: 1,
+              outputSize: '1536x1024',
+              prompt: "Create a high-quality promotional image for a {{color}} car shown on attached image. Generated image should be in anime style",
+            }
           },
-          // generateImages: {
-          //   generated_promo_picture: {
-          //     prompt: 'Transform this photo into a cartoon-style car picture. Imagine that we are in 90s japan and this car was tuned for the drifting competitions.',
-          //     outputSize: '1024x1024',
-          //     countToGenerate: 2,
-          //     rateLimit: '3/1h'
-          //   },
-          // },
+          
+          attachFiles: async ({ record }) => {
+            if (!record.promo_picture) {
+              return [];
+            }
+            return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+          },
         }),
       ] : []),
     ],
