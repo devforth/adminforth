@@ -347,6 +347,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         show: true,
         filter: true,
       },
+      listTableClickUrl: async (record, adminUser, resource) => {
+        return `/resource/${resource.resourceId}/edit/${record[pkFileldName]}`;
+      },
       actions: [
         {
           name: 'Approve Listing',

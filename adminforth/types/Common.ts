@@ -296,7 +296,7 @@ export interface AdminForthComponentDeclarationFull {
     [key: string]: any,
   }
 }
-import { type AdminForthActionInput } from './Back.js' 
+import { type AdminForthActionInput, type AdminForthResource } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
@@ -447,7 +447,7 @@ export interface AdminForthResourceInputCommon {
        * If you wish to open page in new tab, add `target=_blank` get param to returned URL, example:
        * 
        * ```ts
-       * listTableClickUrl: async (record, adminUser) => {
+       * listTableClickUrl: async (record, adminUser, resource) => {
        *   return `https://google.com/search?q=${record.name}&target=_blank`;
        * }
        * ```
@@ -457,7 +457,7 @@ export interface AdminForthResourceInputCommon {
        * Example:
        * 
        * ```ts
-       * listTableClickUrl: async (record, adminUser) => {
+       * listTableClickUrl: async (record, adminUser, resource) => {
        *   return null;
        * }
        * ```
@@ -466,7 +466,7 @@ export interface AdminForthResourceInputCommon {
        * @param adminUser - user who clicked
        * @returns 
        */
-      listTableClickUrl?: (record: any, adminUser: AdminUser) => Promise<string | null>,
+      listTableClickUrl?: (record: any, adminUser: AdminUser, resource: AdminForthResource) => Promise<string | null>,
 
       /**
        * Whether to refresh existing list rows automatically every N seconds.
