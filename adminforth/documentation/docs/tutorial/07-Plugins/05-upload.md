@@ -335,7 +335,7 @@ new UploadPlugin({
   //diff-add
     }),
 //diff-add
-    fieldsForContext: ['title'],
+    generationPrompt: "Generate image for apartment with title {{title}} and description {{description}}",
 //diff-add
     outputSize: '1536x1024' // size of generated image
 
