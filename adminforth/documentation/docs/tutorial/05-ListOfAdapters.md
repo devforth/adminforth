@@ -150,6 +150,20 @@ npm i @adminforth/completion-adapter-open-ai-chat-gpt
 
 Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
 
+```ts
+import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+
+new CompletionAdapterOpenAIChatGPT({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-4o',
+  expert: {
+    temperature: 0.7
+  }
+}),
+
+```
+You can specify any gpt model you need. Default is `gpt-4o-mini`
+
 ---
 
 ### Google Gemini Completion Adapter
@@ -159,6 +173,20 @@ npm i @adminforth/completion-adapter-google-gemini
 ```
 
 Integrates AdminForth with Google Gemini models to provide AI-powered completion and conversational features.
+
+```ts
+import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google-gemini';
+
+new CompletionAdapterGoogleGemini({
+  geminiApiKey: process.env.GEMINI_API_KEY as string,
+  model: "gemini-3-pro-preview",
+  expert: {
+    temperature: 0.7
+  }
+}),
+```
+
+You can specify any gemini model you need. Default is `gemini-3-flash-preview`
 
 
 ## 🔎 Image Analysis
