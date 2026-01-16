@@ -36,6 +36,7 @@ import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
+export { afLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
 
 // exports
@@ -242,7 +243,7 @@ class AdminForth implements IAdminForth {
       unactivatedPlugins.forEach(
         ({pi: pluginInstance, resource}, index) => {
           afLogger.trace(`Activating plugin: ${pluginInstance.constructor.name}`);
-          afLogger.trace(`🔌 Activating plugin ${index + 1}/${allPluginInstances.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+          afLogger.trace(`🔌 Activating plugin ${index + 1}/${unactivatedPlugins.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
           pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
           afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
           
