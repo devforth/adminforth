@@ -39,7 +39,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   }
 
   shouldHaveSingleInstancePerWholeApp(): boolean {
-    return true;
+    return false;
   }
 
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: AdminForthPlugin, resource: AdminForthResource}[]) {
