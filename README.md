@@ -40,21 +40,18 @@ npx adminforth create-app
 
 ## Previews
 
-
 <a href="https://adminforth.dev/docs/tutorial/Customization/customPages">Custom Dashboard</a>
 <br/>
 <img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="80%" />
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Chat-GPT plugin</a>
+<a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Text completion plugin (Copilot-style) using LLMs</a>
 <br/>
 
 <img src="https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028" alt="AdminForth ChatGPT demo" width="80%" />
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image DALEE Generation</a>
-  <br/>
+<a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image Generation using image generation models</a>
+<br/>
 <img src="https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a" alt="AdminForth DALE-E image generator demo" width="80%">
-
-
 
 
 # For developers
