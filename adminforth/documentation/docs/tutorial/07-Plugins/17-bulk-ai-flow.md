@@ -257,7 +257,7 @@ new BulkAiFlowPlugin({
   actionName: 'Generate cartoon avatars',
   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-image-1',
+    model: 'gpt-image-1.5',
   }),
   attachFiles: async ({ record }) => {
     if (!record.user_photo) {
