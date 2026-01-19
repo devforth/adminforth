@@ -155,7 +155,7 @@ import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-
 
 new CompletionAdapterOpenAIChatGPT({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-4o',
+  model: 'gpt-5.2',
   expert: {
     temperature: 0.7
   }
