@@ -105,8 +105,8 @@ export default {
       showIn: {
         list: false, 
         show: true, 
-        edit: true, 
-        create: true
+        edit: false, 
+        create: false
       }, // You can set to ['list', 'show'] if you wish to show path column in list and show views
     },
     {
