@@ -100,9 +100,9 @@ Is used for image generating AI tools.
 npm i @adminforth/image-generation-adapter-openai
 ```
 
-Uses OpenAI’s image generation models (like DALL·E and gpt-image-1) to generate images from text prompts.
+Uses OpenAI’s image generation models (like DALL·E, gpt-image-1, gpt-image-1.5) to generate images from text prompts.
 
-Up to the summer 2025 OpenAI models are one of the most powerful image generation models available (Especially GPT-Image-1), that is why we started with them.
+Up to the winter 2026 OpenAI models are one of the most powerful image generation models available (Especially GPT-Image-1.5), that is why we started with them.
 
 ---
 
