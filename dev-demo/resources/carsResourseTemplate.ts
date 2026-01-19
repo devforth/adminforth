@@ -278,7 +278,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               }
             }),
             fillPlainFields: {
-              description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}.",
+              description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
               price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD."
             }
         }),
@@ -287,7 +287,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5.2',
+            model: 'gpt-4.1-mini',
           }),
           fillFieldsFromImages: {
             body_type: "What is the body type of the car shown in the image?",
