@@ -287,7 +287,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-4.1-mini',
+            model: 'gpt-5.2',
           }),
           fillFieldsFromImages: {
             body_type: "What is the body type of the car shown in the image?",
@@ -346,9 +346,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         delete: true,
         show: true,
         filter: true,
-      },
-      listTableClickUrl: async (record, adminUser, resource) => {
-        return `/resource/${resource.resourceId}/edit/${record[pkFileldName]}`;
       },
       actions: [
         {
