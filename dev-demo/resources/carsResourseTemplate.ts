@@ -279,7 +279,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             }),
             fillPlainFields: {
               description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
-              price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD."
+              price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
             }
         }),
         new BulkAiFlowPlugin({
