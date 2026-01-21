@@ -14,7 +14,7 @@
     <div 
       ref="dropdownRef"
       :class="{'hidden': !showDropdown, 'block': showDropdown }"
-      class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      class="three-dots-dropdown absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -206,3 +206,9 @@ onUnmounted(() => {
 })
 
 </script>
+
+<style scoped>
+.three-dots-dropdown li:first-child > a :deep() {
+  padding: 0 !important;
+}
+</style>
