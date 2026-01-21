@@ -10,6 +10,7 @@ import importExport from '../../plugins/adminforth-import-export/index.js';
 import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js';
 import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
 import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
+import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
 
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
@@ -18,7 +19,7 @@ import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-genera
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
-import { logger } from 'adminforth'
+import { logger } from '../../adminforth/modules/logger.js';
 import { afLogger } from '../../adminforth/modules/logger.js';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
@@ -224,7 +225,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],
       }),
-
+      new ForeignInlineShowPlugin({
+        foreignResourceId: 'adminuser',
+      }),
     /*********************************************************************************
      
                                         AI Plugins
@@ -271,16 +274,17 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         new BulkAiFlowPlugin({
           actionName: 'Generate description and Price',
           askConfirmationBeforeGenerating: true,
-            textCompleteAdapter: new CompletionAdapterGoogleGemini({
-              geminiApiKey: process.env.GEMINI_API_KEY as string,
-              expert: {
-                temperature: 0.7
-              }
-            }),
-            fillPlainFields: {
-              description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
-              price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
-            }
+          textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: "gpt-5.2",
+            expert: {
+              temperature: 0.7,
+            },
+          }),
+          fillPlainFields: {
+            description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
+            price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
+          }
         }),
         new BulkAiFlowPlugin({
           actionName: 'Analyze image',
