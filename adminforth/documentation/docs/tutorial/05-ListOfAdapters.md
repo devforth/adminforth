@@ -188,6 +188,29 @@ new CompletionAdapterGoogleGemini({
 
 You can specify any gemini model you need. Default is `gemini-3-flash-preview`
 
+### Adding extra request body params
+
+There might be cases, whe you want to add extra body params in request, that sent to the AI provider. For those cases you can use `extraRequestBodyParameters`:
+
+
+```ts
+import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google-gemini';
+
+new CompletionAdapterGoogleGemini({
+  geminiApiKey: process.env.GEMINI_API_KEY as string,
+  model: "gemini-3-pro-preview",
+  expert: {
+    temperature: 0.7
+  }
+  //diff-add
+  extraRequestBodyParameters: {
+  //diff-add
+    responseMimeType: "application/json",
+  //diff-add
+  }
+}),
+```
+
 
 ## 🔎 Image Analysis
 
