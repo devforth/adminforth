@@ -283,6 +283,6 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   });
 
   admin.express.listen(port, () => {
-    logger.info(`\x1b[38;5;249m ⚡ AdminForth is available at\x1b[1m\x1b[38;5;46m http://localhost:${port}${ADMIN_BASE_URL}\n`);
+    logger.info(`\x1b[38;5;249m ⚡ AdminForth is available at\x1b[1m\x1b[38;5;46m http://localhost:${port}${ADMIN_BASE_URL}\x1b[0m\n`);
   });
 }
