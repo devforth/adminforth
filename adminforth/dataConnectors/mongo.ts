@@ -213,17 +213,6 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 return null;
             }
             return value?.toString();
-        } else if (field.type == AdminForthDataTypes.JSON) {
-            if (JSON.stringify(value).includes('$numberDecimal')) {
-                const json = JSON.stringify(value, (key, value) => {
-                    if (value && typeof value === 'object' && '$numberDecimal' in value) {
-                        return value.$numberDecimal; 
-                    }
-                    return value;
-                });
-                return JSON.parse(json);
-            }
-            return value;
         }
 
         return value;
