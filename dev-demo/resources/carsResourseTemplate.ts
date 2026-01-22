@@ -209,7 +209,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           completion: {
             adapter: new CompletionAdapterOpenAIChatGPT({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
-              model: 'gpt-4o',
+              model: 'gpt-5-nano',
               expert: {
                 temperature: 0.7
               }
@@ -265,7 +265,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           fieldName: 'model',
           adapter: new CompletionAdapterOpenAIChatGPT({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-4o',
+            model: 'gpt-5-nano',
             expert: {
                 temperature: 0.7
             }
@@ -291,7 +291,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-4.1-mini',
+            model: 'gpt-5-mini',
           }),
           fillFieldsFromImages: {
             body_type: "What is the body type of the car shown in the image?",

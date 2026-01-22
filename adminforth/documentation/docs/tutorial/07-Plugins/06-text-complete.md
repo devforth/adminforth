@@ -44,7 +44,7 @@ export const admin = new AdminForth({
 //diff-add
         openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
-        model: 'gpt-4o', // default "gpt-4o-mini"
+        model: 'gpt-5-nano', // default "gpt-5-nano"
 //diff-add
         expert: {
 //diff-add
