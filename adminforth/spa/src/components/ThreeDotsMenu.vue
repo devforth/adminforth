@@ -13,8 +13,12 @@
     <!-- Dropdown menu -->
     <div 
       ref="dropdownRef"
-      :class="{'hidden': !showDropdown, 'block': showDropdown }"
-      class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      :class="{
+        'block': showDropdown,
+        'hidden': !showDropdown,
+        'left-0 md:left-auto': props.openToRight,
+        'right-0': !props.openToRight}"
+      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0 md:right-0">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <a  href="#" 
@@ -102,6 +106,10 @@ const props = defineProps({
   customActions: Array<AdminForthActionInput>,
   bulkActions: Array<AdminForthBulkActionCommon>,
   checkboxes: Array,
+  openToRight: {
+    type: Boolean,
+    default: false
+  },
   updateList: {
     type: Function,
   },
