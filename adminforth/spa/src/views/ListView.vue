@@ -104,6 +104,7 @@
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
+        :openToRight="checkboxes.length > 0"
         @startBulkAction="startBulkAction"
         :updateList="getList"
         :clearCheckboxes="clearCheckboxes"
