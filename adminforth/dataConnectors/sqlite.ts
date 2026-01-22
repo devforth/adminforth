@@ -123,7 +123,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
@@ -157,7 +157,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         if (field._underlineType == 'text' || field._underlineType == 'varchar') {
           return JSON.stringify(value);
         } else {
-          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
