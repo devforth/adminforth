@@ -24,7 +24,7 @@
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
-              @click="injectedComponentClick(i)">
+              @click.prevent.stop="injectedComponentClick(i)">
               <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
                 :meta="item.meta" 
                 :resource="coreStore.resource" 
@@ -208,7 +208,4 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.three-dots-dropdown li:first-child > a :deep() {
-  padding: 0 !important;
-}
 </style>
