@@ -257,7 +257,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
                 model: 'gpt-image-1', 
               }),
-              fieldsForContext: ['description', 'model', 'color', 'body_type', 'engine_type'],
+              generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
               outputSize: '1536x1024'
             }   
         }),
