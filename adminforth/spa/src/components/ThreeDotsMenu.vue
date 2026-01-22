@@ -17,23 +17,27 @@
       class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
-            <a  href="#" 
-              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+            <div  
+              class="block hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
               :class="{
                 'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
-              @click="injectedComponentClick(i)">
-              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
-                :meta="item.meta" 
-                :resource="coreStore.resource" 
-                :adminUser="coreStore.adminUser"
-                :checkboxes="checkboxes"
-                :updateList="props.updateList"
-                :clearCheckboxes="clearCheckboxes"
-              />
-            </a>
+              @click="injectedComponentClick(i)"
+            >
+              <div class="wrapper">
+                <component 
+                  :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
+                  :meta="item.meta" 
+                  :resource="coreStore.resource" 
+                  :adminUser="coreStore.adminUser"
+                  :checkboxes="checkboxes"
+                  :updateList="props.updateList"
+                  :clearCheckboxes="clearCheckboxes"
+                />
+              </div>
+            </div>
           </li>
           <li v-for="action in customActions" :key="action.id">
             <component
@@ -206,3 +210,10 @@ onUnmounted(() => {
 })
 
 </script>
+
+<style lang="scss" scoped>
+  .wrapper > * {
+    @apply px-4 py-2;
+  }
+</style>
+
