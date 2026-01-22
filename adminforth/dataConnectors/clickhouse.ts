@@ -170,7 +170,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
               return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          afLogger.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
         }
       }
       return value;
@@ -198,7 +198,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
           return JSON.stringify(value);
         } else {
-          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
