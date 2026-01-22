@@ -40,65 +40,68 @@ npx adminforth create-app
 
 ## Previews
 
-
 <a href="https://adminforth.dev/docs/tutorial/Customization/customPages">Custom Dashboard</a>
 <br/>
 <img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="80%" />
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Chat-GPT plugin</a>
+<a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Text completion plugin (Copilot-style) using LLMs</a>
 <br/>
 
 <img src="https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028" alt="AdminForth ChatGPT demo" width="80%" />
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image DALEE Generation</a>
-  <br/>
+<a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image Generation using image generation models</a>
+<br/>
 <img src="https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a" alt="AdminForth DALE-E image generator demo" width="80%">
-
-
 
 
 # For developers
 
 The most convenient way to add new features or fixes is using `dev-demo`. It imports the source code of the repository and plugins so you can edit them and see changes on the fly.
 
-Fork repo, pull it and do next:
-
-
-```sh
-cd adminforth
-npm ci
-npm run build
-```
-
 To run dev demo:
 ```sh
 cd dev-demo
-cp .env.sample .env
 
-# this will install all official plugins and link adminforth package, if plugin installed it will git pull and npm ci
-npm run install-plugins
+npm run setup-dev-demo
+npm run migrate:all
 
-# same for official adapters
-npm run install-adapters
-
-npm ci
-
-./run_inventory.sh
-
-npm run migrate:local
 npm start
 ```
 
 ## Adding columns to a database in dev-demo
 
-Open `.prisma` file, modify it, and run:
+Open `./migrations` folder. There is prisma migration folder for the sqlite, postgres and mysql and `clickhouse_migrations` folder for the clickhouse:
+
+### Migrations for the MySQL, SQLite and Postgres
+To make migration add to the .prisma file in folder with database you need and add new tables or columns. Then run:
+
 
 ```
-npm run namemigration -- --name desctiption_of_changes
+npm run makemigration:sqlite -- --name init
 ```
 
+and 
 
-### Testing CLI commands during development
+```
+npm run migrate:sqlite
+```
+
+to apply migration
+
+> use :sqlite, :mysql or :postgres for you case
+
+### Migrations for the clickhouse
+
+In order to make migration for the clickhouse, go to the `./migrations/clickhouse_migrations` folder and add migration file to the folder.
+
+Then run
+```
+npm run migrate:clickhouse
+```
+
+to apply the migration.
+
+## Testing CLI commands during development
 
 
 Make sure you have not `adminforth` globally installed. If you have it, remove it:
@@ -124,3 +127,7 @@ npx -g adminforth <your command under development>
 ```
 
 This will always run latest version of adminforth package.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adminforth/adminforth&type=date&legend=top-left)](https://www.star-history.com/#adminforth/adminforth&type=date&legend=top-left)

@@ -119,7 +119,7 @@
       :adminUser="coreStore.adminUser"
     />
     <ResourceListTableVirtual
-      v-if="isVirtualScrollEnabled"
+      v-if="isVirtualScrollEnabled && !coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -143,6 +143,11 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
@@ -152,7 +157,7 @@
     />
 
     <ResourceListTable
-      v-else
+      v-else-if="!coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -176,6 +181,11 @@
           ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
           : []
       "
+      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
+        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
+        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
+          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
+          : []"
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
@@ -215,10 +225,10 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 const filtersShow = ref(false);
-
+const { confirm, alert, list } = useAdminforth();
 const coreStore = useCoreStore();
 const filtersStore = useFiltersStore();
 
@@ -345,7 +355,7 @@ async function refreshExistingList(pk?: any) {
 async function startBulkAction(actionId: string) {
   const action = coreStore.resource?.options?.bulkActions?.find(a => a.id === actionId);
   if (action?.confirm) {
-    const confirmed = await adminforth.confirm({
+    const confirmed = await confirm({
       message: action.confirm,
     });
     if (!confirmed) {
@@ -370,7 +380,7 @@ async function startBulkAction(actionId: string) {
     await getList();
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });
@@ -454,7 +464,7 @@ async function init() {
   clearAutoRefresher();
   if (coreStore.resource!.options?.listRowsAutoRefreshSeconds) {
     listAutorefresher = setInterval(async () => {
-      await adminforth.list.silentRefresh();
+      await list.silentRefresh();
     }, coreStore.resource!.options.listRowsAutoRefreshSeconds * 1000);
   }
 }
@@ -464,7 +474,7 @@ watch([page, sort, () => filtersStore.filters], async () => {
   await getList();
 }, { deep: true });
 
-adminforth.list.refresh = async () => {
+list.refresh = async () => {
   const result = await getList();
 
   if (!result) {
@@ -478,11 +488,11 @@ adminforth.list.refresh = async () => {
   return {};
 };
 
-adminforth.list.silentRefresh = async () => {
+list.silentRefresh = async () => {
   return await refreshExistingList();
 }
 
-adminforth.list.silentRefreshRow = async (pk: any) => {
+list.silentRefreshRow = async (pk: any) => {
   return await refreshExistingList(pk);
 }
 

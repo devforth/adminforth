@@ -9,6 +9,8 @@ import {
 import { suggestIfTypo } from "../modules/utils.js";
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
 import { randomUUID } from "crypto";
+import dayjs from "dayjs";
+import { afLogger } from '../modules/logger.js';
 
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
@@ -16,7 +18,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   client: any;
 
   get db() {
-    console.warn('.db is deprecated, use .client instead');
+    afLogger.warn('.db is deprecated, use .client instead');
     return this.client;
   }
 
@@ -79,7 +81,6 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
         if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
           const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
-          // console.log(`\n~~~ column: ${JSON.stringify(column, null, 2)}\n~~~ resource.columns: ${JSON.stringify(resource.dataSourceColumns, null, 2)}\n~~~ filter: ${JSON.stringify(f, null, 2)}\n`);
           if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
             filters[fIndex] = {
               operator: AdminForthFilterOperators.OR,
@@ -102,7 +103,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       // Either compare with value or with rightField (field-to-field). If rightField is set, value must be undefined.
       const comparingWithRightField = filtersAsSingle.rightField !== undefined && filtersAsSingle.rightField !== null;
-      if (!comparingWithRightField && filtersAsSingle.value === undefined) {
+      const isEmptyOperator = filters.operator === AdminForthFilterOperators.IS_EMPTY || filters.operator === AdminForthFilterOperators.IS_NOT_EMPTY;
+      
+      if (!comparingWithRightField && !isEmptyOperator && filtersAsSingle.value === undefined) {
         return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
       }
       if (comparingWithRightField && filtersAsSingle.value !== undefined) {
@@ -117,7 +120,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
       AdminForthFilterOperators.LIKE, AdminForthFilterOperators.ILIKE, AdminForthFilterOperators.IN,
-      AdminForthFilterOperators.NIN].includes(filters.operator)) {
+      AdminForthFilterOperators.NIN, AdminForthFilterOperators.IS_EMPTY, AdminForthFilterOperators.IS_NOT_EMPTY].includes(filters.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
       const fieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field);
@@ -135,7 +138,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           );
         }
         if (isPolymorphicTarget) {
-          process.env.HEAVY_DEBUG && console.log(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          afLogger.trace(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
           return { ok: true, error: '' };
         } else {
           throw new Error(`Field '${filtersAsSingle.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
@@ -150,6 +153,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           throw new Error(`Field '${filtersAsSingle.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // No value conversion needed for field-to-field comparison here
+      } else if (isEmptyOperator) {
+        // IS_EMPTY and IS_NOT_EMPTY don't need value normalization
+        // Set value to null if not already set
+        if (filtersAsSingle.value === undefined) {
+          filtersAsSingle.value = null;
+        }
       } else if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
         if (!Array.isArray(filters.value)) {
           return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
@@ -164,9 +173,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
             return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
           }
         }
-        filters.value = filters.value.map((val: any) => this.setFieldValue(fieldObj, val));
+        filters.value = filters.value.map((val: any) => this.validateAndSetFieldValue(fieldObj, val));
       } else {
-        filtersAsSingle.value = this.setFieldValue(fieldObj, filtersAsSingle.value);
+        filtersAsSingle.value = this.validateAndSetFieldValue(fieldObj, filtersAsSingle.value);
       }
     } else if (filtersAsSingle.insecureRawSQL || filtersAsSingle.insecureRawNoSQL) {
       // if "insecureRawSQL" filter is insecure sql string
@@ -219,6 +228,98 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
+  validateAndSetFieldValue(field: AdminForthResourceColumn, value: any): any {
+    // Int
+    if (field.type === AdminForthDataTypes.INTEGER) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!Number.isFinite(value)) {
+        throw new Error(`Value is not an integer. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Float
+    if (field.type === AdminForthDataTypes.FLOAT) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          `Value is not a float. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`
+        );
+      }
+
+      return this.setFieldValue(field, value);
+    }
+
+    // Decimal
+    if (field.type === AdminForthDataTypes.DECIMAL) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      // Accept string
+      if (typeof value === "string") {
+        const string = value.trim();
+        if (!string) {
+          return this.setFieldValue(field, null);
+        }
+        if (Number.isFinite(Number(string))) {
+          return this.setFieldValue(field, string);
+        }
+        throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      // Accept Decimal-like objects (e.g., decimal.js) by using toString()
+      if (value && typeof value === "object" && typeof (value as any).toString === "function") {
+        const s = (value as any).toString();
+        if (typeof s === "string" && s.trim() !== "" && Number.isFinite(Number(s))) {
+          return this.setFieldValue(field, s);
+        }
+      }
+
+      throw new Error(`Value is not a decimal. Field ${field.name} with type is ${field.type}, but got value: ${String(value)} with type ${typeof value}`);
+    }
+
+    // Date
+
+
+    // DateTime
+    if (field.type === AdminForthDataTypes.DATETIME) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (!dayjs(value).isValid()) {
+        throw new Error(`Value is not a valid datetime. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+
+    // Time
+
+    // Boolean
+    if (field.type === AdminForthDataTypes.BOOLEAN) {
+      if (value === "" || value === null) {
+        return this.setFieldValue(field, null);
+      }
+      if (typeof value !== 'boolean') {
+        throw new Error(`Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+      }
+      return this.setFieldValue(field, value);
+    }
+    
+    // JSON
+
+    // String
+    if (field.type === AdminForthDataTypes.STRING) {
+      if (value === "" || value === null){
+        return this.setFieldValue(field, null);
+      }
+    }
+    return this.setFieldValue(field, value);
+  }
+
   getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource; columns: AdminForthResourceColumn[]; }): Promise<{ [key: string]: { min: any; max: any; }; }> {
     throw new Error('Method not implemented.');
   }
@@ -228,7 +329,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
   }
 
   async checkUnique(resource: AdminForthResource, column: AdminForthResourceColumn, value: any, record?: any): Promise<boolean> {
-    process.env.HEAVY_DEBUG && console.log('☝️🪲🪲🪲🪲 checkUnique|||', column, value);
+    afLogger.trace(`☝️🪲🪲🪲🪲 checkUnique||| ${column.name}, ${value}`);
 
     const primaryKeyField = this.getPrimaryKey(resource);
     const existingRecord = await this.getData({
@@ -268,7 +369,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       if (filledRecord[col.name] !== undefined) {
         // no sense to set value if it is not defined
-        recordWithOriginalValues[col.name] = this.setFieldValue(col, filledRecord[col.name]);
+        recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, filledRecord[col.name]);
       }
     }
 
@@ -284,11 +385,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
-    process.env.HEAVY_DEBUG && console.log('🪲🆕 creating record',JSON.stringify(recordWithOriginalValues));
+    afLogger.trace(`🪲🆕 creating record, ${JSON.stringify(recordWithOriginalValues)}`);
     let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
     if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
       // some data sources always return some value for pk, even if it is was not auto generated
@@ -325,7 +426,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           Update record received field '${field}' (with value ${newValues[field]}), but such column not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}
         `);
       }
-      recordWithOriginalValues[col.name] = this.setFieldValue(col, newValues[col.name]);
+      recordWithOriginalValues[col.name] = this.validateAndSetFieldValue(col, newValues[col.name]);
     }
     const record = await this.getRecordByPrimaryKey(resource, recordId);
     let error: string | null = null;
@@ -340,12 +441,12 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       })
     );
     if (error) {
-      process.env.HEAVY_DEBUG && console.log('🪲🆕 check unique error', error);
+      afLogger.trace(`🪲🆕 check unique error, ${error}`);
       return { error, ok: false };
     }
 
 
-    process.env.HEAVY_DEBUG && console.log(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
+    afLogger.trace(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
     await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
 

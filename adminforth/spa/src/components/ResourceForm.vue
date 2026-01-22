@@ -206,7 +206,7 @@ const setCurrentValue = (key: any, value: any, index = null) => {
     } else if (index === currentValues.value[key].length) {
       currentValues.value[key].push(null);
     } else {
-      if (['integer', 'float', 'decimal'].includes(col.isArray.itemType)) {
+      if (['integer', 'float'].includes(col.isArray.itemType)) {
         if (value || value === 0) {
           currentValues.value[key][index] = +value;
         } else {
@@ -215,12 +215,12 @@ const setCurrentValue = (key: any, value: any, index = null) => {
       } else {
         currentValues.value[key][index] = value;
       }
-      if (col?.isArray && ['text', 'richtext', 'string'].includes(col.isArray.itemType) && col.enforceLowerCase) {
+      if (col?.isArray && ['text', 'richtext', 'string', 'decimal'].includes(col.isArray.itemType) && col.enforceLowerCase) {
         currentValues.value[key][index] = currentValues.value[key][index].toLowerCase();
       }
     }
   } else {
-    if (col?.type && ['integer', 'float', 'decimal'].includes(col.type)) {
+    if (col?.type && ['integer', 'float'].includes(col.type)) {
       if (value || value === 0) {
         currentValues.value[key] = +value;
       } else {
@@ -229,7 +229,7 @@ const setCurrentValue = (key: any, value: any, index = null) => {
     } else {
       currentValues.value[key] = value;
     }
-    if (col?.type && ['text', 'richtext', 'string'].includes(col?.type) && col.enforceLowerCase) {
+    if (col?.type && ['text', 'richtext', 'string', 'decimal'].includes(col?.type) && col.enforceLowerCase) {
       currentValues.value[key] = currentValues.value[key].toLowerCase();
     }
   }
@@ -322,7 +322,7 @@ async function searchOptions(columnName: string, searchTerm: string) {
 
 
 const editableColumns = computed(() => {
-  return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value) : true));
+  return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value, props.resource.columns) : true));
 });
 
 const isValid = computed(() => {

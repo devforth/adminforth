@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
 
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
+import { afLogger } from '../modules/logger.js';
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
   
@@ -95,7 +96,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           });
           rows = await q.json();
         } catch (e) {
-          console.error(` 🛑Error connecting to datasource URL ${this.url}:`, e);
+          afLogger.error(` 🛑Error connecting to datasource URL ${this.url}: ${e}`);
           return null;
         }
 
@@ -169,7 +170,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
               return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          console.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string but ${field._underlineType}, this is not supported yet`);
         }
       }
       return value;
@@ -197,7 +198,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
           return JSON.stringify(value);
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
@@ -217,6 +218,8 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthFilterOperators.NIN]: 'NOT IN',
       [AdminForthFilterOperators.AND]: 'AND',
       [AdminForthFilterOperators.OR]: 'OR',
+      [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+      [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
     };
 
     SortDirectionsMap = {
@@ -238,6 +241,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         const column = resource.dataSourceColumns.find((col) => col.name == field);
         let placeholder = `{f$?:${column._underlineType}}`;
         let operator = this.OperatorsMap[filter.operator];
+
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return `${field} ${operator}`;
+        }
 
         if (column._underlineType.startsWith('Decimal')) {
           field = `toDecimal64(${field}, 8)`;
@@ -292,7 +300,11 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return [];
         }
         // filter is a Single filter
-        if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+        
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return [];
+        } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           return [{ 'p': filter.value }];

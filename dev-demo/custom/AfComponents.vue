@@ -317,6 +317,10 @@ import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
 import { DatePicker } from '@/afcl';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
+import { useAdminforth } from '@/adminforth';
+
+const { alert } = useAdminforth();
+import adminforth  from '@/adminforth';
 
 const files: Ref<File[]> = ref([])
 
@@ -338,7 +342,8 @@ watch(valueStart, (newVal) => {
 });
 
 function doSmth(){
-
+  alert({message: 'Hello world', variant: 'success'})
+  adminforth.alert({message: 'You clicked the button!', variant: 'success' })
 }
 
 </script>

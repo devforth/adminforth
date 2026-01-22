@@ -446,9 +446,14 @@ export function createSearchInputHandlers(
   }, {} as Record<string, (searchTerm: string) => void>);
 }
 
-export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>) {
+export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Record<string, any>, allColumns: AdminForthResourceColumnInputCommon[]) {
   if (!c.showIf) return true;
-
+  const recordCopy = { ...record };
+  for (const col of allColumns) {
+    if (!recordCopy[col.name]) {
+      recordCopy[col.name] = null;
+    }
+  }
   const evaluatePredicate = (predicate: Predicate): boolean => {
     const results: boolean[] = [];
 
@@ -463,7 +468,7 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
     const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
     if (fieldEntries.length > 0) {
       const fieldResult = fieldEntries.every(([field, condition]) => {
-        const recordValue = record[field];
+        const recordValue = recordCopy[field];
 
         if (condition === undefined) {
           return true;
