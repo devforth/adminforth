@@ -360,7 +360,7 @@ export default {
       options: {
         ...
 //diff-add
-        listTableClickUrl: async (record, adminUser) => null,
+        listTableClickUrl: async (record, adminUser, resource) => null,
       }
     }
   ]
@@ -372,7 +372,7 @@ To open a custom page, return URL to the custom page (can start with https://, o
       options: {
         ...
 //diff-add
-        listTableClickUrl: async (record, adminUser) => {
+        listTableClickUrl: async (record, adminUser, resource) => {
 //diff-add
           return `https://google.com/search?q=${record.title}`;
 //diff-add
@@ -386,7 +386,7 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
       options: {
         ...
 //diff-add
-        listTableClickUrl: async (record, adminUser) => {
+        listTableClickUrl: async (record, adminUser, resource) => {
 //diff-add
           return `https://google.com/search?q=${record.name}&target=_blank`;
 //diff-add
@@ -394,6 +394,20 @@ If you wish to open the page in a new tab, add `target=_blank` get param to the 
       }
 ```
 
+### How to open edit instead of show by click in list table
+By using `options.listTableClickUrl` you can open edit view by clicking record, instead of show view:
+
+```ts
+      options: {
+        ...
+        //diff-add
+        listTableClickUrl: async (record, adminUser, resource) => {
+        //diff-add
+          return `/resource/${resource.resourceId}/edit/${record[pkFileldName]}`;
+        //diff-add
+        }
+      }
+```
 
 ### Auto-refresh records
 
@@ -440,8 +454,25 @@ export default {
   ![alt text](<silent refresh.gif>)
 
 
+### Move base actions out of three dots menu
 
+If you want to move base record actions from the three dots menu, you can add `baseActionsAsQuickIcons`:
 
+```ts
+  options: {
+    
+    ...
+    
+    baseActionsAsQuickIcons: ['edit'],
+
+    ...
+
+  }
+```
+
+And `edit` action will be available as quick action:
+
+![alt text](<threeDotsListMenu.png>)
       
 
      

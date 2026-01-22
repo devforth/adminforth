@@ -3,6 +3,7 @@ import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IA
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
+import { dbLogger, afLogger } from '../modules/logger.js';
 
 class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -15,7 +16,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         queueLimit: 0
       });
     } catch (e) {
-      console.error(`Failed to connect to MySQL: ${e}`);
+      afLogger.error(`Failed to connect to MySQL: ${e}`);
     }
   }
 
@@ -32,6 +33,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     [AdminForthFilterOperators.NIN]: 'NOT IN',
     [AdminForthFilterOperators.AND]: 'AND',
     [AdminForthFilterOperators.OR]: 'OR',
+    [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+    [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
   };
 
   SortDirectionsMap = {
@@ -173,8 +176,8 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       } else if (typeof value === 'object') {
         return value;
       } else {
-        console.error('JSON field value is not string or object, but has type:',  typeof value);
-        console.error('Field:', field);
+        afLogger.error(`JSON field value is not string or object, but has type: ${typeof value}`);
+        afLogger.error(`Field:, ${field}`);
         return {}
       }
     }
@@ -215,7 +218,11 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       let placeholder = '?';
       let field = (filter as IAdminForthSingleFilter).field;
       let operator = this.OperatorsMap[filter.operator];
-      if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+      
+      // Handle IS_EMPTY and IS_NOT_EMPTY operators
+      if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+        return `${field} ${operator}`;
+      } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         placeholder = `(${(filter as IAdminForthSingleFilter).value.map(() => '?').join(', ')})`;
       } else if (filter.operator == AdminForthFilterOperators.ILIKE) {
         placeholder = `LOWER(?)`;
@@ -261,7 +268,11 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return [];
       }
       // filter is a Single filter
-      if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+      
+      // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+      if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+        return [];
+      } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
         return [`%${filter.value}%`];
       } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
         return filter.value;
@@ -307,9 +318,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (orderBy) selectQuery += ` ${orderBy}`;
     if (limit) selectQuery += ` LIMIT ${limit}`;
     if (offset) selectQuery += ` OFFSET ${offset}`;
-    if (process.env.HEAVY_DEBUG_QUERY) {
-      console.log('🪲📜 MySQL Q:', selectQuery, 'values:', filterValues);
-    }
+
+    dbLogger.trace(`🪲📜 MySQL Q: ${selectQuery} values: ${JSON.stringify(filterValues)}`);
+    
     const [results] = await this.client.execute(selectQuery, filterValues);
     return results.map((row) => {
       const newRow = {};
@@ -331,9 +342,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
     const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
-    if (process.env.HEAVY_DEBUG_QUERY) {
-      console.log('🪲📜 MySQL Q:', q, 'values:', filterValues);
-    }
+    dbLogger.trace(`🪲📜 MySQL Q: ${q} values: ${JSON.stringify(filterValues)}`);
     const [results] = await this.client.execute(q, filterValues);
     return +results[0]["COUNT(*)"];
   }
@@ -343,9 +352,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const result = {};
     await Promise.all(columns.map(async (col) => {
       const q = `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 MySQL Q:', q);
-      }
+      dbLogger.trace(`🪲📜 MySQL Q: ${q}`);
       const [results] = await this.client.execute(q);
       const { min, max } = results[0];
       result[col.name] = {
@@ -361,9 +368,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const placeholders = columns.map(() => '?').join(', ');
     const values = columns.map((colName) => typeof record[colName] === 'undefined' ? null : record[colName]);
     const q = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-    if (process.env.HEAVY_DEBUG_QUERY) {
-      console.log('🪲📜 MySQL Q:', q, 'values:', values);
-    }
+    dbLogger.trace(`🪲📜 MySQL Q: ${q} values: ${JSON.stringify(values)}`);
     const ret = await this.client.execute(q, values);
     return ret.insertId;
   }
@@ -372,17 +377,13 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const values = [...Object.values(newValues), recordId];
     const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `${col} = ?`).join(', ');
     const q = `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`;
-    if (process.env.HEAVY_DEBUG_QUERY) {
-      console.log('🪲📜 MySQL Q:', q, 'values:', values);
-    }
+    dbLogger.trace(`🪲📜 MySQL Q: ${q} values: ${JSON.stringify(values)}`);
     await this.client.execute(q, values);
   }
 
   async deleteRecord({ resource, recordId }): Promise<boolean> {
     const q = `DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} = ?`;
-    if (process.env.HEAVY_DEBUG_QUERY) {
-      console.log('🪲📜 MySQL Q:', q, 'values:', [recordId]);
-    }
+    dbLogger.trace(`🪲📜 MySQL Q: ${q} values: ${JSON.stringify([recordId])}`);
     const res = await this.client.execute(q, [recordId]);
     return res.rowCount > 0;
   }

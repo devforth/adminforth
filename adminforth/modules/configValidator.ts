@@ -29,6 +29,7 @@ import {
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
+import { afLogger } from "./logger.js";
 
 
 export default class ConfigValidator implements IConfigValidator {
@@ -37,7 +38,7 @@ export default class ConfigValidator implements IConfigValidator {
 
   private static readonly LOGIN_INJECTION_KEYS = ['underInputs', 'underLoginButton', 'panelHeader'];
   private static readonly GLOBAL_INJECTION_KEYS = ['userMenu', 'header', 'sidebar', 'sidebarTop', 'everyPageBottom'];
-  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons'];
+  private static readonly PAGE_INJECTION_KEYS = ['beforeBreadcrumbs', 'beforeActionButtons', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems'];
 
   constructor(private adminforth: IAdminForth, private inputConfig: AdminForthInputConfig) {
     this.adminforth = adminforth;
@@ -249,7 +250,7 @@ export default class ConfigValidator implements IConfigValidator {
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-      action: async ({ selectedIds, adminUser }) => {
+      action: async ({ selectedIds, adminUser, response }) => {
         const connector = this.adminforth.connectors[res.dataSource];
 
         // for now if at least one error, stop and return error
@@ -267,6 +268,7 @@ export default class ConfigValidator implements IConfigValidator {
                     resource: res as AdminForthResource, 
                     record, 
                     adminUser,
+                    response,
                     adminforth: this.adminforth
                   }); 
                   if (!error && resp.error) {
@@ -290,6 +292,7 @@ export default class ConfigValidator implements IConfigValidator {
                     record, 
                     adminUser,
                     recordId: recordId,
+                    response,
                     adminforth: this.adminforth,
                   }); 
                 }
@@ -414,11 +417,13 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.showIn) {
         action.showIn = {
           list: true,
+          listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
         action.showIn.list = action.showIn.list ?? true;
+        action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
@@ -876,10 +881,10 @@ export default class ConfigValidator implements IConfigValidator {
       // Validate page-specific allowed injection keys
       const possiblePages = ['list', 'show', 'create', 'edit'];
       const allowedInjectionsByPage: Record<string, string[]> = {
-        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'tableBodyStart', 'tableRowReplace'],
+        list: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'beforeActionButtons', 'bottom', 'threeDotsDropdownItems', 'customActionIcons', 'customActionIconsThreeDotsMenuItems', 'tableBodyStart', 'tableRowReplace'],
         show: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
-        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
-        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems', 'saveButton'],
+        edit: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
+        create: ['beforeBreadcrumbs', 'afterBreadcrumbs', 'bottom', 'threeDotsDropdownItems'],
       };
 
       if (options.pageInjections) {
@@ -1209,7 +1214,7 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (warnings.length > 0) {
-      console.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
+      afLogger.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
     }
 
     //add ids for onSelectedAllActions for each resource

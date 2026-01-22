@@ -1,1 +1,0 @@
-<span> TEST CUSTOM COMPONENT </span>

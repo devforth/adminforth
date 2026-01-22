@@ -12,9 +12,11 @@ AdminForth has very simple [frontend API](/docs/api/FrontendAPI/interfaces/Front
 To show an alert use `adminforth.alert` method:
 
 ```ts
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
-adminforth.alert({message: 'Hello world', variant: 'success'})
+const { alert } = useAdminforth();
+
+alert({message: 'Hello world', variant: 'success'})
 ```
 
 Next variants are supported:
@@ -62,9 +64,11 @@ Here's how the alert looks now:
 To show a confirmation dialog use `adminforth.confirm` method:
 
 ```ts
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
-const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
+const { confirm } = useAdminforth();
+
+const isConfirmed = await confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
 ```
 
 ## Usage example
@@ -88,26 +92,28 @@ Create a Vue component in the custom directory of your project, e.g. `Alerts.vue
     </div>
 </template>
 <script setup>
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { Button } from '@/afcl'
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
+const { alert, confirm } = useAdminforth();
+
 function successAlert(message) {
-    adminforth.alert({message, variant: 'success'})
+    alert({message, variant: 'success'})
 };
 
 function warningAlert(message) {
-    adminforth.alert({message, variant: 'warning'})
+    alert({message, variant: 'warning'})
 };
 
 async function doConfirm() {
-    const isConfirmed = await adminforth.confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
+    const isConfirmed = await confirm({message: t('Are you sure?'), yes: t('Yes'), no: t('No')})
     if (isConfirmed){
-        adminforth.alert({message: t('Confirmed'), variant: 'success'})
+        alert({message: t('Confirmed'), variant: 'success'})
     } else {
-        adminforth.alert({message: t('Not confirmed'), variant: 'warning'})
+        alert({message: t('Not confirmed'), variant: 'warning'})
     }
 }
 </script>

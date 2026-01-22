@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { getCustomComponent, getIcon } from '@/utils';
 import { useCoreStore } from '@/stores/core';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
@@ -92,7 +92,7 @@ import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
 import type { AdminForthActionInput } from '@/types/Back';
 
-
+const { list, alert} = useAdminforth();
 const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
@@ -123,7 +123,7 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
 }
 
 async function handleActionClick(action: AdminForthActionInput, payload: any) {
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
   
   const actionId = action.id;
   const data = await callAdminForthApi({
@@ -160,7 +160,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
     });
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });
@@ -168,7 +168,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
   }
   
   if (data?.error) {
-    adminforth.alert({
+    alert({
       message: data.error,
       variant: 'danger'
     });
@@ -176,7 +176,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
 }
 
 function startBulkAction(actionId: string) {
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
   showDropdown.value = false;
 }

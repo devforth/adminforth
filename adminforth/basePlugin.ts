@@ -6,6 +6,8 @@ import fs from 'fs';
 
 import crypto from 'crypto';
 
+import { afLogger } from './modules/logger.js';
+
 
 export default class AdminForthPlugin implements IAdminForthPlugin {
 
@@ -24,7 +26,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     this.pluginDir = currentFileDir(metaUrl);
     this.customFolderPath = path.join(this.pluginDir, this.customFolderName);
     this.pluginOptions = pluginOptions;
-    process.env.HEAVY_DEBUG && console.log(`🪲 🪲  AdminForthPlugin.constructor`, this.constructor.name);
+    afLogger.trace(`🪲 🪲  AdminForthPlugin.constructor ${this.constructor.name}`);
     this.className = this.constructor.name;
   }
 
@@ -36,13 +38,17 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     return 'non-uniquely-identified';
   }
 
+  shouldHaveSingleInstancePerWholeApp(): boolean {
+    return false;
+  }
+
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: AdminForthPlugin, resource: AdminForthResource}[]) {
     this.resourceConfig = resourceConfig;
     const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
 
     const seed = `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${uniqueness}`;
     this.pluginInstanceId = md5hash(seed);
-    process.env.HEAVY_DEBUG && console.log(`🪲 AdminForthPlugin.modifyResourceConfig`, seed, 'id', this.pluginInstanceId);
+    afLogger.trace(`🪲 AdminForthPlugin.modifyResourceConfig, ${seed}, 'id', ${this.pluginInstanceId}`);
     this.adminforth = adminforth;
   }
 

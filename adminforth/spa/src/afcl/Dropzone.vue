@@ -100,7 +100,9 @@ import { humanifySize } from '@/utils';
 import { ref, type Ref, computed } from 'vue';
 import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
 import { watch } from 'vue';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert } = useAdminforth();
 
 const props = defineProps<{
   extensions: string[],
@@ -175,7 +177,7 @@ function doEmit(filesIn: FileList) {
     );
     
     if (isDuplicate) {
-      adminforth.alert({
+      alert({
         message: `The file "${file.name}" is already selected.`,
         variant: 'warning',
       });
@@ -183,14 +185,14 @@ function doEmit(filesIn: FileList) {
     }
 
     if (!allowedExtensions.includes(`.${extension}`)) {
-      adminforth.alert({
+      alert({
         message: `Sorry, the file type .${extension} is not allowed. Please upload a file with one of the following extensions: ${allowedExtensions.join(', ')}`,
         variant: 'danger',
       });
       return;
     }
     if (size > maxSizeBytes) {
-      adminforth.alert({
+      alert({
         message: `Sorry, the file size ${humanifySize(size)} exceeds the maximum allowed size of ${humanifySize(maxSizeBytes)}.`,
         variant: 'danger',
       });

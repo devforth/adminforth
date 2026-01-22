@@ -72,11 +72,12 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
   import { onMounted, ref, Ref, computed } from 'vue';
   import { PieChart } from '@/afcl';
   import { callApi } from '@/utils';
-  import adminforth from '@/adminforth';
+  import { useAdminforth } from '@/adminforth';
   
   
   const data: Ref<any[]> = ref([]);
 
+  const { alert } = useAdminforth(); 
 
   const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
   const rooms = computed(() => {
@@ -93,7 +94,7 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
     try {
     data.value = await callApi({ path: '/api/aparts-by-room-percentages', method: 'GET' });
     } catch (error) {
-      adminforth.alert({
+      alert({
         message: `Error fetching data: ${error.message}`,
         variant: 'danger',
         timeout: 'unlimited'
@@ -296,22 +297,24 @@ Now create file `CheckReadingTime.vue` in the `custom` folder of your project:
 
 <script setup>
 import { getReadingTime} from "text-analyzer";
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 defineExpose({
   click,
 });
 
+const { alert, list } = useAdminforth();
+
 function checkReadingTime() {
   const text = document.querySelector('[data-af-column="description"]')?.innerText;
   if (text) {
     const readingTime = getReadingTime(text);
-    adminforth.alert({
+    alert({
       message: `Reading time: ${readingTime.minutes} minutes`,
       variant: 'success',
     });
   }
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
 }
 
 function click() {
@@ -330,7 +333,7 @@ npm i text-analyzer
 ```
 
 
-> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
+> ☝️ Please note that we are using AdminForth [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `list.closeThreeDotsDropdown();` to close the dropdown after the item is clicked.
 
 >☝️ Please note that the injected component might have an exposed click function as well as a defined click function, which executes the click on component logic.
 
@@ -469,6 +472,26 @@ Notes and tips:
 - Requirements:
   - Required `<tr></tr>` structure around `<slot />`
 
+## List table three dots menu injection
+
+`customActionIconsThreeDotsMenuItems` allows to inject component inside three dots menu for each recod in list table.
+
+```ts
+  options: {
+    pageInjections: {
+      list: {
+        customActionIconsThreeDotsMenuItems: {
+          file: '@@/ApartRowRenderer.vue',
+          meta: {
+            // You can pass any meta your component may read
+          }
+        }
+      }
+    }
+  }
+```
+
+
 ## List table beforeActionButtons
 
 `beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
@@ -513,78 +536,6 @@ beforeActionButtons: [
 
 ## List table custom
 
-## Create/Edit custom Save button
-
-You can replace the default Save button on the create and edit pages with your own Vue component.
-
-Supported locations:
-- `pageInjections.create.saveButton`
-- `pageInjections.edit.saveButton`
-
-Example configuration:
-
-```ts title="/resources/apartments.ts"
-{
-  resourceId: 'aparts',
-  ...
-  options: {
-    pageInjections: {
-      create: {
-        // String shorthand
-        saveButton: '@@/SaveBordered.vue',
-      },
-      edit: {
-        // Object form (lets you pass meta later, if needed)
-        saveButton: { file: '@@/SaveBordered.vue' },
-      }
-    }
-  }
-}
-```
-
-Minimal example of a custom save button component:
-
-```vue title="/custom/SaveBordered.vue"
-<template>
-  <button
-    class="px-4 py-2 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 disabled:opacity-50"
-    :disabled="props.disabled || props.saving || !props.isValid"
-    @click="props.saveRecord()"
-  >
-    <span v-if="props.saving">{{$t('Saving…')}}</span>
-    <span v-else>{{$t('Save')}}</span>
-  </button>
-  
-</template>
-
-<script setup lang="ts">
-const props = defineProps<{
-  record: any
-  resource: any
-  adminUser: any
-  meta: any
-  saving: boolean
-  validating: boolean
-  isValid: boolean
-  disabled: boolean
-  saveRecord: () => Promise<void>
-}>();
-</script>
-```
-
-Notes:
-- Your component fully replaces the default Save button in the page header.
-- The `saveRecord()` prop triggers the standard AdminForth save flow. Call it on click.
-- `saving`, `validating`, `isValid`, and `disabled` reflect the current form state.
-- If no `saveButton` is provided, the default button is shown.
-
-Scaffolding via CLI: you can generate a ready-to-wire component and auto-update the resource config using the interactive command:
-
-```bash
-adminforth component
-# Choose: CRUD page injections → (create|edit) → Save button
-```
-
 ## Global Injections
 
 You have opportunity to inject custom components to the global layout. For example, you can add a custom items into user menu
@@ -593,7 +544,7 @@ You have opportunity to inject custom components to the global layout. For examp
 
 ![alt text](<Group 6.png>)
 
-use `adminforth.closeUserMenuDropdown();` to close the dropdown after the item is clicked.
+use `closeUserMenuDropdown();` to close the dropdown after the item is clicked.
 
 ```ts title="/index.ts"
 {
@@ -619,14 +570,16 @@ Now create file `CustomUserMenuItem.vue` in the `custom` folder of your project:
 </template>
 
 <script setup>
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert, closeUserMenuDropdown } = useAdminforth()
 
 function openCustomPage() {
-  adminforth.alert({
+  alert({
     message: 'Custom page is opened',
     variant: 'success',
   });
-  adminforth.closeUserMenuDropdown();
+  closeUserMenuDropdown();
 }
 </script>
 ```
@@ -672,9 +625,12 @@ Now create file `AnyPageWelcome.vue` in the `custom` folder of your project:
 
 <script setup>
 import { onMounted } from 'vue';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { alert } = useAdminforth();
+
 onMounted(() => {
-  adminforth.alert({
+  alert({
     message: 'Welcome!',
     variant: 'success',
   });

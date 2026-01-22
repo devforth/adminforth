@@ -123,9 +123,9 @@
                 :min="getFilterMinValue(c.name)"
                 :max="getFilterMaxValue(c.name)"
                 :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
                 :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
               />
 
               <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
@@ -133,14 +133,14 @@
                   type="number"
                   aria-describedby="helper-text-explanation"
                   :placeholder="$t('From')"
-                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
                   :modelValue="getFilterItem({ column: c, operator: 'gte' })"
                 />
                 <Input
                   type="number"
                   aria-describedby="helper-text-explanation"
                   :placeholder="$t('To')"
-                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? $event : undefined })"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
                   :modelValue="getFilterItem({ column: c, operator: 'lte' })"
                 />
               </div>

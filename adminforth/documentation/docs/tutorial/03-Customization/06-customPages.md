@@ -182,13 +182,15 @@ import { ref, type Ref, onMounted, computed } from 'vue';
 import dayjs from 'dayjs';
 import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { AreaChart, BarChart, PieChart } from '@/afcl';
 
 const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
   apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
 
 const { t } = useI18n();
+
+const { alert } = useAdminforth();
 
 const COLORS = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F"]
 
@@ -246,7 +248,7 @@ onMounted(async () => {
   try {
     data.value = await callApi({path: '/api/dashboard/', method: 'GET'});
   } catch (error) {
-    adminforth.alert({
+    alert({
       message: t(`Error fetching data: {message}`, { message: error.message }),
       variant: 'danger',
     });

@@ -53,9 +53,6 @@ const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 const minFormatted = computed(() => Math.floor(<number>props.min));
 const maxFormatted = computed(() => Math.ceil(<number>props.max));
 
-const isChanged = computed(() => {
-  return start.value && start.value !== minFormatted.value || end.value && end.value !== maxFormatted.value;
-});
 
 const start = ref<string | number>(props.valueStart);
 const end = ref<string | number>(props.valueEnd);
@@ -92,17 +89,23 @@ function updateEndFromProps() {
 }
 
 watch(start, () => {
-  console.log('⚡ emit', start.value)
   emit('update:valueStart', start.value)
 })
 
 watch(end, () => {
-  console.log('⚡ emit', end.value)
   emit('update:valueEnd', end.value);
 })
 
 watch([minFormatted,maxFormatted], () => {
-  setSliderValues(minFormatted.value, maxFormatted.value)
+  if ( !start.value && end.value ) {
+    setSliderValues(minFormatted.value, end.value);
+  } else if ( start.value && !end.value ) {
+    setSliderValues(start.value, maxFormatted.value);
+  } else if ( !start.value && !end.value ) {
+    setSliderValues(minFormatted.value, maxFormatted.value);
+  } else {
+    setSliderValues(start.value, end.value);
+  }
 })
 
 function setSliderValues(start: any, end: any) {

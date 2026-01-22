@@ -144,16 +144,17 @@ import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import ShowTable from '@/components/ShowTable.vue';
-import adminforth from "@/adminforth";
+import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const { t } = useI18n();
+const { confirm, alert, show } = useAdminforth();
 const coreStore = useCoreStore();
 
 const actionLoadingStates = ref<Record<string, boolean>>({});
@@ -206,7 +207,7 @@ const allColumns = computed(() => {
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
-    groups.value.flatMap(group => group.columns.map((col: AdminForthResourceColumnCommon) => col.name))
+    groups.value.flatMap(group => group.columns?.map((col: AdminForthResourceColumnCommon) => col.name))
   );
 
   return coreStore.resource?.columns.filter(
@@ -215,7 +216,7 @@ const otherColumns = computed(() => {
 });
 
 async function deleteRecord() {
-  const data = await adminforth.confirm({
+  const data = await confirm({
     message: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
     no: t('Cancel'),
@@ -282,7 +283,7 @@ async function startCustomAction(actionId: string, extra: any) {
     });
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });
@@ -294,7 +295,7 @@ async function startCustomAction(actionId: string, extra: any) {
   }
 }
 
-adminforth.show.refresh = () => {
+show.refresh = () => {
   (async () => {
     try {
       loading.value = true;
