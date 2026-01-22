@@ -1214,7 +1214,7 @@ export default class ConfigValidator implements IConfigValidator {
     }
 
     if (warnings.length > 0) {
-      afLogger.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
+      console.warn(`AdminForth config warnings: ${warnings.join(', ')}`);
     }
 
     //add ids for onSelectedAllActions for each resource
