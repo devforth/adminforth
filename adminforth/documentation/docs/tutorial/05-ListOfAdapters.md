@@ -162,7 +162,7 @@ new CompletionAdapterOpenAIChatGPT({
 }),
 
 ```
-You can specify any gpt model you need. Default is `gpt-4o-mini`
+You can specify any gpt model you need. Default is `gpt-5-nano`
 
 ---
 
