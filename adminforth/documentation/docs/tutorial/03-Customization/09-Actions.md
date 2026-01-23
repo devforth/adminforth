@@ -22,7 +22,7 @@ Here's how to add a custom action:
         
         // Handler function when action is triggered
         action: async ({ recordId, adminUser }) => {
-          console.log("auto submit", recordId, adminUser);
+          logger.info("auto submit", recordId, adminUser);
           return { 
             ok: true, 
             successMessage: "Auto submitted" 
@@ -31,7 +31,8 @@ Here's how to add a custom action:
 
         // Configure where the action appears
         showIn: {
-          list: true,              // Show in list view
+          list: false,             // Show in list view
+          listThreeDotsMenu: true, // Show in three dots menu in list view
           showButton: true,        // Show as a button
           showThreeDotsMenu: true, // Show in three-dots menu
         }
@@ -49,6 +50,7 @@ Here's how to add a custom action:
 - `action`: Handler function that executes when action is triggered
 - `showIn`: Controls where the action appears
   - `list`: whether to show in list view
+  - `listThreeDotsMenu`: whether to show in three dots menu in the list view
   - `showButton`: whether to show as a button on show view
   - `showThreeDotsMenu`: when to show in the three-dots menu of show view
 
@@ -133,6 +135,7 @@ Instead of defining an `action` handler, you can specify a `url` that the user w
   url: '/resource/aparts',  // URL to redirect to
   showIn: {
     list: true,
+    listThreeDotsMenu: false,
     showButton: true,
     showThreeDotsMenu: true,
   } 
@@ -289,7 +292,7 @@ Below we wrap a “Mark as listed” action (see the original example in [Custom
           meta: { color: '#94a3b8', radius: 10 }
           //diff-add
         },
-        showIn: { list: true, showButton: true, showThreeDotsMenu: true },
+        showIn: { list: false, listThreeDotsMenu: true, showButton: true, showThreeDotsMenu: true },
         action: async ({ recordId }) => {
           await admin.resource('aparts').update(recordId, { listed: 1 });
           return { ok: true, successMessage: 'Marked as listed' };
@@ -368,7 +371,7 @@ Backend handler: read the payload via `extra`.
       {
         name: 'Toggle listed',
         icon: 'flowbite:eye-solid',
-        showIn: { list: false, showButton: true, showThreeDotsMenu: true },
+        showIn: { list: false, listThreeDotsMenu: false, showButton: true, showThreeDotsMenu: true },
         // The payload from emit('callAction', { asListed: true|false }) arrives here as `extra`
         customComponent: {
           file: '@@/ActionToggleListed.vue'

@@ -100,9 +100,9 @@ Is used for image generating AI tools.
 npm i @adminforth/image-generation-adapter-openai
 ```
 
-Uses OpenAI’s image generation models (like DALL·E and gpt-image-1) to generate images from text prompts.
+Uses OpenAI’s image generation models (like DALL·E, gpt-image-1, gpt-image-1.5) to generate images from text prompts.
 
-Up to the summer 2025 OpenAI models are one of the most powerful image generation models available (Especially GPT-Image-1), that is why we started with them.
+Up to the winter 2026 OpenAI models are one of the most powerful image generation models available (Especially GPT-Image-1.5), that is why we started with them.
 
 ---
 
@@ -150,7 +150,67 @@ npm i @adminforth/completion-adapter-open-ai-chat-gpt
 
 Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
 
+```ts
+import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+
+new CompletionAdapterOpenAIChatGPT({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-5.2',
+  extraRequestBodyParameters: {
+    temperature: 0.7
+  }
+}),
+
+```
+You can specify any gpt model you need. Default is `gpt-5-nano`
+
 ---
+
+### Google Gemini Completion Adapter
+
+```
+npm i @adminforth/completion-adapter-google-gemini
+```
+
+Integrates AdminForth with Google Gemini models to provide AI-powered completion and conversational features.
+
+```ts
+import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google-gemini';
+
+new CompletionAdapterGoogleGemini({
+  geminiApiKey: process.env.GEMINI_API_KEY as string,
+  model: "gemini-3-pro-preview",
+  extraRequestBodyParameters: {
+    temperature: 0.7
+  }
+}),
+```
+
+You can specify any gemini model you need. Default is `gemini-3-flash-preview`
+
+### Adding extra request body params
+
+There might be cases, whe you want to add extra body params in request, that sent to the AI provider. For those cases you can use `extraRequestBodyParameters`:
+
+
+```ts
+import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google-gemini';
+
+new CompletionAdapterGoogleGemini({
+  geminiApiKey: process.env.GEMINI_API_KEY as string,
+  model: "gemini-3-pro-preview",
+  extraRequestBodyParameters: {
+    temperature: 0.7
+  }
+  //diff-add
+  extraRequestBodyParameters: {
+  //diff-add
+    responseMimeType: "application/json",
+  //diff-add
+  }
+}),
+```
+
 
 ## 🔎 Image Analysis
 

@@ -309,7 +309,7 @@ new UploadPlugin({
 ## Image generation
 
 Upload plugin supports AI generation for images. Yo use it you need to install image generation adapter.
-For example for OpenAI models like `gpt-image-1` (or old `DALL-E` models):
+For example for OpenAI models like `gpt-image-1.5` (or old `DALL-E` models):
 
 ```bash
 npm i @adminforth/image-generation-adapter-openai
@@ -331,11 +331,11 @@ new UploadPlugin({
   //diff-add
       openAiApiKey: process.env.OPENAI_API_KEY as string,
   //diff-add
-      model: 'gpt-image-1', 
+      model: 'gpt-image-1.5', 
   //diff-add
     }),
 //diff-add
-    fieldsForContext: ['title'],
+    generationPrompt: "Generate image for apartment with title {{title}} and description {{description}}",
 //diff-add
     outputSize: '1536x1024' // size of generated image
 
@@ -354,7 +354,7 @@ new ImageGenerationAdapterOpenAI({
   //diff-add
     openAiApiKey: process.env.OPENAI_API_KEY as string,
   //diff-add
-    model: 'gpt-image-1', 
+    model: 'gpt-image-1.5', 
   //diff-add
     extraParams: {
   //diff-add
@@ -524,7 +524,7 @@ To do this add avatar column to the user resource:
     role          String
     created_at    DateTime
     //diff-add
-    avatar        ?String
+    avatar        String?
   }
 ```
 

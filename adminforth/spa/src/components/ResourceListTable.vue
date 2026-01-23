@@ -119,8 +119,8 @@
             />
           </td>
           <td class=" items-center px-2 md:px-3 lg:px-6 py-4 cursor-default" @click="(e)=>{e.stopPropagation()}">
-            <div class="flex text-lightPrimary dark:text-darkPrimary items-center">
-              <Tooltip>
+            <div class="flex text-lightPrimary dark:text-darkPrimary items-center gap-2">
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('show')">
                 <RouterLink
                   v-if="resource.options?.allowedActions?.show"
                   :to="{ 
@@ -139,8 +139,7 @@
                   {{ $t('Show item') }}
                 </template>
               </Tooltip>
-
-              <Tooltip>
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('edit')" >
                 <RouterLink
                   v-if="resource.options?.allowedActions?.edit"
                   :to="{ 
@@ -157,8 +156,7 @@
                   {{ $t('Edit item') }}
                 </template>
               </Tooltip>
-
-              <Tooltip>
+              <Tooltip v-if="resource.options?.baseActionsAsQuickIcons && resource.options?.baseActionsAsQuickIcons.includes('delete')">
                 <button
                   v-if="resource.options?.allowedActions?.delete"
                   @click="deleteRecord(row)"
@@ -170,7 +168,6 @@
                   {{ $t('Delete item') }}
                 </template>
               </Tooltip>
-                
               <template v-if="customActionsInjection">
                 <component 
                   v-for="c in customActionsInjection"
@@ -185,7 +182,7 @@
 
               <template v-if="resource.options?.actions">
                 <Tooltip
-                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)"
                   :key="action.id"
                 >
                     <component
@@ -194,16 +191,17 @@
                       :row="row"
                       :resource="resource"
                       :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, payload ?? row)"
+                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload)"
                     >
                       <button
                         type="button"
+                        class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                         :disabled="rowActionLoadingStates?.[action.id]"
                       >
                         <component
                           v-if="action.icon"
                           :is="getIcon(action.icon)"
-                          class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
                         />
                       </button>
                     </component>
@@ -213,6 +211,16 @@
                   </template>
                 </Tooltip>
               </template>
+              <ListActionsThreeDots
+                v-if="showListActionsThreeDots"
+                :resourceOptions="resource?.options"
+                :record="row"
+                :updateRecords="()=>emits('update:records', true)"
+                :deleteRecord="deleteRecord"
+                :resourceId="resource.resourceId"
+                :startCustomAction="startCustomAction"
+                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems"
+              />
             </div>
             
           </td>
@@ -324,23 +332,22 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 import { getIcon } from '@/utils';
 import {
-  IconInboxOutline,
-} from '@iconify-prerendered/vue-flowbite';
-
-import {
   IconEyeSolid,
   IconPenSolid,
   IconTrashBinSolid,
+  IconInboxOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
 import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
+import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
+const { alert, confirm } = useAdminforth();
 const props = defineProps<{
   page: number,
   resource: AdminForthResourceCommon | null,
@@ -352,6 +359,7 @@ const props = defineProps<{
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
+  customActionIconsThreeDotsMenuItems?: any[]
   tableRowReplaceInjection?: AdminForthComponentDeclaration,
 }>();
 
@@ -369,6 +377,12 @@ const pageInput = ref('1');
 const page = ref(1);
 const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 
+const showListActionsThreeDots = computed(() => {
+  return  props.resource?.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) // show if any action is set to show in three dots menu
+    || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) // or if there are custom action icons for three dots menu
+    || !props.resource?.options.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
+    || (props.resource?.options.baseActionsAsQuickIcons && props.resource?.options.baseActionsAsQuickIcons.length < 3) // if there all 3 base actions are shown as quick icons - hide three dots icon
+})
 
 const from = computed(() => ((page.value || 1) - 1) * props.pageSize + 1);
 const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.totalRows));
@@ -530,7 +544,7 @@ async function onClick(e: any, row: any) {
 }
 
 async function deleteRecord(row: any) {
-  const data = await adminforth.confirm({
+  const data = await confirm({
     message: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
     no: t('Cancel'),
@@ -561,7 +575,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any) {
+async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
   console.log('Starting custom action', actionId, row);
   actionLoadingStates.value[actionId] = true;
 
@@ -571,7 +585,8 @@ async function startCustomAction(actionId: string, row: any) {
     body: {
       resourceId: props.resource?.resourceId,
       actionId: actionId,
-      recordId: row._primaryKeyValue
+      recordId: row._primaryKeyValue,
+      extra: extraData,
     }
   });
   
@@ -595,7 +610,7 @@ async function startCustomAction(actionId: string, row: any) {
     emits('update:records', true);
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });

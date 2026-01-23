@@ -13,27 +13,35 @@
     <!-- Dropdown menu -->
     <div 
       ref="dropdownRef"
-      :class="{'hidden': !showDropdown, 'block': showDropdown }"
-      class="absolute z-30 right-0 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
+      :class="{
+        'block': showDropdown,
+        'hidden': !showDropdown,
+        'left-0 md:left-auto': checkboxes && checkboxes.length > 0
+      }"
+      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
-            <a  href="#" 
-              class="block px-4 py-2 hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
+            <div  
+              class="block hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
               :class="{
                 'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
-              @click="injectedComponentClick(i)">
-              <component :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
-                :meta="item.meta" 
-                :resource="coreStore.resource" 
-                :adminUser="coreStore.adminUser"
-                :checkboxes="checkboxes"
-                :updateList="props.updateList"
-                :clearCheckboxes="clearCheckboxes"
-              />
-            </a>
+              @click="injectedComponentClick(i)"
+            >
+              <div class="wrapper">
+                <component 
+                  :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
+                  :meta="item.meta" 
+                  :resource="coreStore.resource" 
+                  :adminUser="coreStore.adminUser"
+                  :checkboxes="checkboxes"
+                  :updateList="props.updateList"
+                  :clearCheckboxes="clearCheckboxes"
+                />
+              </div>
+            </div>
           </li>
           <li v-for="action in customActions" :key="action.id">
             <component
@@ -80,7 +88,7 @@
 <script setup lang="ts">
 import { getCustomComponent, getIcon } from '@/utils';
 import { useCoreStore } from '@/stores/core';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
@@ -88,7 +96,7 @@ import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
 import type { AdminForthActionInput } from '@/types/Back';
 
-
+const { list, alert} = useAdminforth();
 const route = useRoute();
 const coreStore = useCoreStore();
 const router = useRouter();
@@ -119,7 +127,7 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
 }
 
 async function handleActionClick(action: AdminForthActionInput, payload: any) {
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
   
   const actionId = action.id;
   const data = await callAdminForthApi({
@@ -156,7 +164,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
     });
 
     if (data.successMessage) {
-      adminforth.alert({
+      alert({
         message: data.successMessage,
         variant: 'success'
       });
@@ -164,7 +172,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
   }
   
   if (data?.error) {
-    adminforth.alert({
+    alert({
       message: data.error,
       variant: 'danger'
     });
@@ -172,7 +180,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
 }
 
 function startBulkAction(actionId: string) {
-  adminforth.list.closeThreeDotsDropdown();
+  list.closeThreeDotsDropdown();
   emit('startBulkAction', actionId);
   showDropdown.value = false;
 }
@@ -206,3 +214,10 @@ onUnmounted(() => {
 })
 
 </script>
+
+<style lang="scss" scoped>
+  .wrapper > * {
+    @apply px-4 py-2;
+  }
+</style>
+

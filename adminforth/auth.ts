@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import AdminForth from './index.js';
 import { IAdminForthAuth } from './types/Back.js';
+import { afLogger } from './modules/logger.js';
+import is_ip_private from 'private-ip'
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -43,20 +45,22 @@ class AdminForthAuth implements IAdminForthAuth {
     this.adminforth = adminforth;
   }
 
-  getClientIp(headers: object) {
+getClientIp(headers: object) {
     const clientIpHeader = this.adminforth.config.auth.clientIpHeader;
 
     const headersLower = Object.keys(headers).reduce((acc, key) => {
       acc[key.toLowerCase()] = headers[key];
       return acc;
     }, {});
+
+    let ip: string | null = null;
     if (clientIpHeader) {
-      return headersLower[clientIpHeader.toLowerCase()] || 'unknown';
+      ip = headersLower[clientIpHeader.toLowerCase()];
     } else {
       // first try common headers which can't bee spoofed, in other words
       // most common to nginx/traefik/apache
       // then fallback to less secure headers
-      return headersLower['x-forwarded-for']?.split(',').shift().trim() ||
+      ip = headersLower['x-forwarded-for']?.split(',').shift().trim() ||
        headersLower['x-real-ip'] || 
        headersLower['x-client-ip'] || 
        headersLower['x-cluster-client-ip'] || 
@@ -65,10 +69,14 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['client-ip'] || 
        headersLower['client-address'] || 
        headersLower['client'] || 
-       headersLower['x-host'] || 
-       headersLower['host'] || 
-       'unknown';
+       headersLower['x-host'] ||
+       null;
     }
+    const isIpPrivate = is_ip_private(ip)
+    if (isIpPrivate) {
+      return null;
+    }
+    return ip;
   }
 
   removeAuthCookie(response) {
@@ -98,7 +106,7 @@ class AdminForthAuth implements IAdminForthAuth {
   }
 
   setCustomCookie({ response, payload }: {
-    response: any, payload: { name: string, value: string, expiry: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
+    response: any, payload: { name: string, value: string, expiry?: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
   }) {
     const {name, value, expiry, httpOnly, expirySeconds } = payload;
 
@@ -106,7 +114,7 @@ class AdminForthAuth implements IAdminForthAuth {
     if (expirySeconds !== undefined) {
       expiryMs = expirySeconds * 1000;
     } else if (expiry !== undefined) {
-      console.warn('setCustomCookie: expiry(in ms) is deprecated, use expirySeconds instead (seconds), traceback:', new Error().stack);
+      afLogger.warn(`setCustomCookie: expiry(in ms) is deprecated, use expirySeconds instead (seconds), traceback: ${new Error().stack}`);
       expiryMs = expiry;
     }
 
@@ -146,23 +154,23 @@ class AdminForthAuth implements IAdminForthAuth {
       decoded = jwt.verify(jwtToken, secret);
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
-        console.error('Token expired:', err.message);
+        afLogger.error(`Token expired: ${err.message}`);
       } else  if (err.name === 'JsonWebTokenError') {
-        console.error('Token error:', err.message);
+        afLogger.error(`Token error: ${err.message}`);
       } else {
-        console.error('Failed to verify JWT token', err);
+        afLogger.error(`Failed to verify JWT token: ${err}`);
       }
       return null;
     }
     const { pk, t } = decoded;
     if (t !== mustHaveType) {
-      console.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
+      afLogger.error(`Invalid token type during verification: ${t}, must be ${mustHaveType}`);
       return null;
     }
     if (decodeUser !== false) {
       const dbUser = await this.adminforth.getUserByPk(pk);
       if (!dbUser) {
-        console.error(`User with pk ${pk} not found in database`);
+        afLogger.error(`User with pk ${pk} not found in database`);
         // will logout user which was deleted
         return null;
       }

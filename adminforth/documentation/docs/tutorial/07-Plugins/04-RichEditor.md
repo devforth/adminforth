@@ -124,10 +124,10 @@ To get completion suggestions for the text in the editor, you can use the `compl
 //diff-add
           openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
-          model: 'gpt-4o', //gpt-4o-mini is a default (cheapest one)
-          expert: {
+          model: 'gpt-5-nano', //gpt-5-nano is a default (cheapest one)
+          extraRequestBodyParameters: {
 //diff-add
-            temperature: 0.7 //Model temperature, default 0.7
+            temperature: 0.7 //Model temperature
 //diff-add
           }
 //diff-add

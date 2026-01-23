@@ -28,7 +28,7 @@ import { useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, getIcon } from '@/utils';
 import { Dropdown } from 'flowbite';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import { VerticalTabs } from '@/afcl'
 import { useRoute } from 'vue-router'
 
@@ -36,6 +36,7 @@ const route = useRoute()
 const coreStore = useCoreStore();
 const router = useRouter();
 
+let { closeUserMenuDropdown } = useAdminforth();
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
 const dropdownUserButton = ref<HTMLElement | null>(null);
@@ -58,7 +59,7 @@ watch(dropdownUserButton, (el) => {
       document.querySelector('#dropdown-user') as HTMLElement,
       document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
     );
-    adminforth.closeUserMenuDropdown = () => dd.hide();
+    closeUserMenuDropdown = () => dd.hide();
   }
 });
 

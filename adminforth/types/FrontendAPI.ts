@@ -10,9 +10,10 @@ export interface FrontendAPIInterface {
      * Example: 
      * 
      * ```ts
-     * import adminforth from '@/adminforth'
+     *import { useAdminforth } from '@/adminforth';
      * 
-     * const isConfirmed = await adminforth.confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
+     * const { confirm } = useAdminforth();
+     * const isConfirmed = await confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
      * if (isConfirmed) {
      *  your code...
      * }
@@ -31,9 +32,10 @@ export interface FrontendAPIInterface {
      * Example:
      * 
      * ```ts
-     * import adminforth from '@/adminforth'
+     * import { useAdminforth } from '@/adminforth';
+     * const { alert } = useAdminforth();
      * 
-     * adminforth.alert({message: 'Hello', variant: 'success'})
+     * alert({message: 'Hello', variant: 'success'})
      * ```
      * 
      * @param params - The parameters of the alert
@@ -76,13 +78,14 @@ export interface FrontendAPIInterface {
          * Example:
          * 
          * ```ts
-         * import adminforth from '@/adminforth'
+         * import { useAdminforth } from '@/adminforth';
          * 
+         * const { list } = useAdminforth();
          * // Regular filter (will show in badge if column.showIn.filter !== false)
-         * adminforth.list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * list.setFilter({field: 'name', operator: 'ilike', value: 'john'})
          * 
          * // Hidden filter (won't show in badge if column.showIn.filter === false)
-         * adminforth.list.setFilter({field: 'internal_status', operator: 'eq', value: 'active'})
+         * list.setFilter({field: 'internal_status', operator: 'eq', value: 'active'})
          * ```
          * 
          * Please note that you can set/update filter even for fields which have showIn.filter=false in resource configuration.
@@ -102,9 +105,9 @@ export interface FrontendAPIInterface {
          * Example:
          * 
          * ```ts
-         * import adminforth from '@/adminforth';
-         * 
-         * adminforth.list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
+         * import { useAdminforth } from '@/adminforth';
+         * const { list } = useAdminforth();
+         * list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
          * ```
          * 
          * @param filter - The filter to update
@@ -136,6 +139,18 @@ export interface FrontendAPIInterface {
      * Close the user menu dropdown
      */
     closeUserMenuDropdown(): void;
+
+    /**
+     * Run save interceptors for a specific resource or all resources if no resourceId is provided
+     */
+    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }>;
+
+    /**
+     * Clear save interceptors for a specific resource or all resources if no resourceId is provided
+     * 
+     * @param resourceId - The resource ID to clear interceptors for
+     */
+    clearSaveInterceptors(resourceId?: string): void;
 }
 
 export type ConfirmParams = {
