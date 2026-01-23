@@ -3,6 +3,7 @@ import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAnd
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
+import { dbLogger, afLogger } from '../modules/logger.js';
 
 class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -122,7 +123,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             return {'error': `Failed to parse JSON: ${e.message}`}
           }
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
@@ -156,7 +157,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         if (field._underlineType == 'text' || field._underlineType == 'varchar') {
           return JSON.stringify(value);
         } else {
-          console.error(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
 
@@ -176,6 +177,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       [AdminForthFilterOperators.NIN]: 'NOT IN',
       [AdminForthFilterOperators.AND]: 'AND',
       [AdminForthFilterOperators.OR]: 'OR',
+      [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+      [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
     };
 
     SortDirectionsMap = {
@@ -196,7 +199,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         let placeholder = '?';
         let field = (filter as IAdminForthSingleFilter).field;
         let operator = this.OperatorsMap[filter.operator];
-        if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+        
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return `${field} ${operator}`;
+        } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           placeholder = `(${filter.value.map(() => '?').join(', ')})`;
         } else if (filter.operator == AdminForthFilterOperators.ILIKE) {
           placeholder = `LOWER(?)`;
@@ -240,7 +247,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           return [];
         }
         // filter is a Single filter
-        if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+        
+        // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+        if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+          return [];
+        } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [`%${filter.value}%`];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
           return filter.value;
@@ -277,9 +288,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const stmt = this.client.prepare(q);
       const d = [...filterValues, limit, offset];
 
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', d);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(d)}`);
       const rows = await stmt.all(d);
 
       return rows.map((row) => {
@@ -303,9 +312,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const where = this.whereClause(filters);
       const filterValues = this.getFilterParams(filters);
       const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', filterValues);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(filterValues)}`);
       const totalStmt = this.client.prepare(q);
       return +totalStmt.get([...filterValues])['COUNT(*)'];
     }
@@ -328,14 +335,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columns = Object.keys(record);
       const placeholders = columns.map(() => '?').join(', ');
       const values = columns.map((colName) => record[colName]);
-      // const q = this.client.prepare(`INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`);
       const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
-      //console.log('\n🟢 [SQLITE INSERT]:', sql);
-      //console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
       const q = this.client.prepare(sql);
-      if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 SQL Q:', q, 'values:', values);
-        }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${sql}, values: ${JSON.stringify(values)}`);
       const ret = await q.run(values);
       return ret.lastInsertRowid;
     }
@@ -344,9 +346,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`);
       const values = [...Object.values(newValues), recordId];
       const q = `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`;
-      if (process.env.HEAVY_DEBUG_QUERY) {
-        console.log('🪲📜 SQLITE Q', q, 'params:', values);
-      }
+      dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(values)}`);
       const query = this.client.prepare(q);
       await query.run(values);
     }

@@ -196,13 +196,16 @@ import { getCustomComponent } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
 import { initFrontedAPI } from '@/adminforth';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
 import { Tooltip } from '@/afcl'
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
+
+const { menu } = useAdminforth();
+let { closeUserMenuDropdown } = useAdminforth();
 
 initFrontedAPI()
 
@@ -310,7 +313,7 @@ watch(dropdownUserButton, (dropdownUserButton) => {
       document.querySelector('#dropdown-user') as HTMLElement,
       document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
     );
-    adminforth.closeUserMenuDropdown = () => {
+    closeUserMenuDropdown = () => {
       dd.hide();
     }
   }
@@ -329,7 +332,7 @@ onMounted(async () => {
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
 
-  adminforth.menu.refreshMenuBadges = async () => {
+  menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }
 

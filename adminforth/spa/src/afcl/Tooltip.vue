@@ -9,9 +9,7 @@
       ref="tooltip"
     >
       <slot name="tooltip"></slot>
-      <div class="tooltip-arrow absolute -top-2" data-popper-arrow>
-        <div class="absolute top-0 -left-0.5 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-lightTooltipBackground dark:border-b-darkTooltipBackground"></div>
-      </div>
+      <div class="tooltip-arrow" data-popper-arrow></div>
     </div>
   </teleport>
 </template>
@@ -51,3 +49,39 @@ function mouseOff() {
 }
 
 </script>
+
+<style>
+.tooltip .tooltip-arrow,
+.tooltip .tooltip-arrow::before {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+}
+
+.tooltip .tooltip-arrow {
+  visibility: hidden;
+}
+
+.tooltip .tooltip-arrow::before {
+  visibility: visible;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.tooltip[data-popper-placement^='top'] > .tooltip-arrow {
+  bottom: -4px;
+}
+
+.tooltip[data-popper-placement^='bottom'] > .tooltip-arrow {
+  top: -4px;
+}
+
+.tooltip[data-popper-placement^='left'] > .tooltip-arrow {
+  right: -4px;
+}
+
+.tooltip[data-popper-placement^='right'] > .tooltip-arrow {
+  left: -4px;
+}
+</style>

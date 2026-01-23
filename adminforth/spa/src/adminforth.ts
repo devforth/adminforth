@@ -19,11 +19,12 @@ class FrontendAPI implements FrontendAPIInterface {
   public modalStore:any
   public filtersStore:any  
   public coreStore:any
+  private saveInterceptors: Record<string, Array<(ctx: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>>> = {};
 
   public list: {
     refresh(): Promise<{ error? : string }>;
     silentRefresh(): Promise<{ error? : string }>;
-    silentRefreshRow(): Promise<{ error? : string }>;
+    silentRefreshRow(pk: any): Promise<{ error? : string }>;
     closeThreeDotsDropdown(): Promise<{ error? : string }>;
     closeUserMenuDropdown: () => void;
     setFilter: (filter: FilterParams) => void;
@@ -81,6 +82,49 @@ class FrontendAPI implements FrontendAPIInterface {
       refresh: () => {
         console.log('show.refresh')
       }
+    }
+  }
+
+  registerSaveInterceptor(
+    handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>,
+  ): void {
+    const rid = router.currentRoute.value?.params?.resourceId as string;
+    if (!rid) {
+      return;
+    }
+    if (!this.saveInterceptors[rid]) {
+      this.saveInterceptors[rid] = [];
+    }
+    this.saveInterceptors[rid].push(handler);
+  }
+
+  async runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }> {
+    const list = this.saveInterceptors[params.resourceId] || [];
+    const aggregatedExtra: Record<string, any> = {};
+    for (const fn of list) {
+      try {
+        const res = await fn(params);
+        if (typeof res !== 'object' || typeof res.ok !== 'boolean') {
+          return { ok: false, error: 'Invalid interceptor return value' };
+        }
+        if (!res.ok) { 
+          return { ok: false, error: res.error ?? 'Interceptor failed' };
+        }
+        if (res.extra) {
+          Object.assign(aggregatedExtra, res.extra);
+        }
+      } catch (e: any) {
+        return { ok: false, error: e?.message || String(e) };
+      }
+    }
+    return { ok: true, extra: aggregatedExtra };
+  }
+
+  clearSaveInterceptors(resourceId?: string): void {
+    if (resourceId) {
+      delete this.saveInterceptors[resourceId];
+    } else {
+      this.saveInterceptors = {};
     }
   }
 
@@ -178,6 +222,21 @@ export function initFrontedAPI() {
   api.modalStore = useModalStore();
   api.coreStore = useCoreStore();
   api.filtersStore = useFiltersStore();
+}
+
+export function useAdminforth() {
+  const api = frontendAPI as FrontendAPI;
+  return {
+    registerSaveInterceptor: (handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>) => api.registerSaveInterceptor(handler),
+    alert: (params: AlertParams) => api.alert(params),
+    confirm: (params: ConfirmParams) => api.confirm(params),
+    list: api.list,
+    show: api.show,
+    menu: api.menu,
+    closeUserMenuDropdown: () => api.closeUserMenuDropdown(),
+    runSaveInterceptors: (params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => api.runSaveInterceptors(params),
+    clearSaveInterceptors: (resourceId?: string) => api.clearSaveInterceptors(resourceId),
+  };
 }
 
 

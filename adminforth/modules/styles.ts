@@ -529,7 +529,7 @@ export const styles = () => ({
     darkFocusRing: "alias:darkPrimary lighten",
     darkTextLabel: "white",
 
-    darkToggleBgUnactive: "#F9FAFB",
+    darkToggleBgUnactive: "#1F2937",
     darkToggleBgActive: "alias:darkPrimary darken",
     darkToggleCircleUnactive: "alias:darkPrimary",
     darkToggleCircleActive: "#F9FAFB",    

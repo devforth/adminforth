@@ -44,11 +44,11 @@ export const admin = new AdminForth({
 //diff-add
         openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
-        model: 'gpt-4o', // default "gpt-4o-mini"
+        model: 'gpt-5-nano', // default "gpt-5-nano"
 //diff-add
-        expert: {
+        extraRequestBodyParameters: {
 //diff-add
-            temperature: 0.7 //Model temperature, default 0.7
+            temperature: 0.7 //Model temperature
 //diff-add
         }
 //diff-add

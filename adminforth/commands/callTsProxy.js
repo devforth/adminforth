@@ -39,7 +39,8 @@ export function callTsProxy(tsCode, silent=false) {
     child.on("close", (code) => {
       if (code === 0) {
         try {
-          const parsed = JSON.parse(stdout);
+          const preparedStdout = stdout.slice(stdout.indexOf("{"), stdout.lastIndexOf("}") + 1);
+          const parsed = JSON.parse(preparedStdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
               console.log(...log);

@@ -3,6 +3,8 @@ import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IA
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
+import { afLogger, dbLogger } from '../modules/logger.js';
+
 const { Client } = pkg;
 
 
@@ -15,13 +17,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         try {
             await this.client.connect();
             this.client.on('error', async (err) => {
-                console.log('Postgres error: ', err.message, err.stack)
+                afLogger.error(`Postgres error: ${err.message} ${err.stack}`);
                 this.client.end();
                 await new Promise((resolve) => { setTimeout(resolve, 1000) });
                 this.setupClient(url);
             });
         } catch (e) {
-            console.error(`Failed to connect to Postgres ${e}`);
+            afLogger.error(`Failed to connect to Postgres ${e}`);
         }
     }
 
@@ -38,6 +40,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         [AdminForthFilterOperators.NIN]: 'NOT IN',
         [AdminForthFilterOperators.AND]: 'AND',
         [AdminForthFilterOperators.OR]: 'OR',
+        [AdminForthFilterOperators.IS_EMPTY]: 'IS NULL',
+        [AdminForthFilterOperators.IS_NOT_EMPTY]: 'IS NOT NULL',
     };
 
     SortDirectionsMap = {
@@ -196,8 +200,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else if (typeof value == 'object') {
                 return value;
             } else {
-                console.error('JSON field value is not string or object, but has type:', typeof value);
-                console.error('Field:', field);
+                afLogger.error(`JSON field value is not string or object, but has type: ${typeof value}`);
+                afLogger.error(`Field:, ${field}`);
                 return {}
             }
         }
@@ -252,7 +256,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             let field = (filter as IAdminForthSingleFilter).field;
             const fieldData = resource.dataSourceColumns.find((col) => col.name == field);
             let operator = this.OperatorsMap[filter.operator];
-            if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+            
+            // Handle IS_EMPTY and IS_NOT_EMPTY operators
+            if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+                return `"${field}" ${operator}`;
+            } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 placeholder = `(${filter.value.map(() => placeholder).join(', ')})`;
             }
 
@@ -293,7 +301,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return [];
             }
             // filter is a Single filter
-            if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
+            
+            // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
+            if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
+                return [];
+            } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
                 return [`%${filter.value}%`];
             } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
                 return filter.value;
@@ -341,9 +353,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const d = [...filterValues, limit, offset];
         const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
         const selectQuery = `SELECT ${columns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
-        if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 PG Q:', selectQuery, 'params:', d);
-        }
+        dbLogger.trace(`🪲📜 PG Q: ${selectQuery}, params: ${JSON.stringify(d)}`);
         const stmt = await this.client.query(selectQuery, d);
         const rows = stmt.rows;
         return rows.map((row) => {
@@ -366,9 +376,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
         const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
         const q = `SELECT COUNT(*) FROM "${tableName}" ${where}`;
-        if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 PG Q:', q, 'values:', filterValues);
-        }
+        dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify(filterValues)}`);
         const stmt = await this.client.query(q, filterValues);
         return +stmt.rows[0].count;
     }
@@ -378,9 +386,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const result = {};
         await Promise.all(columns.map(async (col) => {
             const q = `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM "${tableName}"`;
-            if (process.env.HEAVY_DEBUG_QUERY) {
-                console.log('🪲📜 PG Q:', q);
-            }
+            dbLogger.trace(`🪲📜 PG Q: ${q}`);
             const stmt = await this.client.query(q);
             const { min, max } = stmt.rows[0];
             result[col.name] = {
@@ -400,11 +406,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
         const primaryKey = this.getPrimaryKey(resource);
         const q = `INSERT INTO "${tableName}" (${columns.join(', ')}) VALUES (${placeholders}) RETURNING "${primaryKey}"`;
-    //   console.log('\n🔵 [PG INSERT]:', q);
-    //   console.log('📦 [VALUES]:', JSON.stringify(values, null, 2));
-        if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 PG Q:', q, 'values:', values);
-        }
+        dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify(values)}`);
         const ret = await this.client.query(q, values);
         return ret.rows[0][primaryKey];
     }
@@ -413,17 +415,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const values = [...Object.values(newValues), recordId];
         const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `"${col}" = $${i + 1}`).join(', ');
         const q = `UPDATE "${resource.table}" SET ${columnsWithPlaceholders} WHERE "${this.getPrimaryKey(resource)}" = $${values.length}`;
-        if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 PG Q:', q, 'values:', values);
-        }
+        dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify(values)}`);
         await this.client.query(q, values);
     }
 
     async deleteRecord({ resource, recordId }): Promise<boolean> {
         const q = `DELETE FROM "${resource.table}" WHERE "${this.getPrimaryKey(resource)}" = $1`;
-        if (process.env.HEAVY_DEBUG_QUERY) {
-            console.log('🪲📜 PG Q:', q, 'values:', [recordId]);
-        }
+        dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify([recordId])}`);
         const res = await this.client.query(q, [recordId]);
         return res.rowCount > 0;
     }

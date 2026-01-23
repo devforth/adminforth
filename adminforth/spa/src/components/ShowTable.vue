@@ -24,14 +24,14 @@
               dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
           >
             <component
-                v-if="column.components?.showRow && checkShowIf(column, record)"
+                v-if="column.components?.showRow && checkShowIf(column, record, resource?.columns || [])"
                   :is="getCustomComponent(column.components.showRow)"
                   :meta="column.components.showRow.meta"
                   :column="column"
                   :resource="coreStore.resource"
                   :record="coreStore.record"
               />
-            <template v-else-if="checkShowIf(column, record)">
+            <template v-else-if="checkShowIf(column, record, resource?.columns || [])">
               <td class="px-6 py-4 relative block md:table-cell font-bold md:font-normal pb-0 md:pb-4">
                 {{ column.label }}
               </td>

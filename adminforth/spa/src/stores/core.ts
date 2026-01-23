@@ -2,12 +2,13 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
 
 import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
 export const useCoreStore = defineStore('core', () => {
+  const { alert } = useAdminforth();
   const resourceById: Ref<Record<string, ResourceVeryShort>> = ref({});
   const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem('af__theme') as ('light'|'dark') || 'light');
 
@@ -157,7 +158,7 @@ export const useCoreStore = defineStore('core', () => {
     });
 
     if (respData.error) {
-      adminforth.alert({
+      alert({
         message: respData.error,
         variant: 'danger',
         timeout: 30,
@@ -169,8 +170,8 @@ export const useCoreStore = defineStore('core', () => {
 
   }
 
-  async function fetchResourceFull({ resourceId }: { resourceId: string }) {
-    if (resourceColumnsId.value === resourceId && resource.value) {
+  async function fetchResourceFull({ resourceId, forceFetch }: { resourceId: string, forceFetch?: boolean }) {
+    if (resourceColumnsId.value === resourceId && resource.value && !forceFetch) {
       // already fetched
       return;
     }

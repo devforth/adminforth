@@ -149,7 +149,7 @@ export const admin = new AdminForth({
       //diff-add
             openAiApiKey:  process.env.OPENAI_API_KEY as string,
       //diff-add
-            model: 'gpt-4.1-mini',
+            model: 'gpt-5-mini',
       //diff-add
           }
       //diff-add
@@ -206,8 +206,8 @@ new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
   textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-4o',
-    expert: {
+    model: 'gpt-5-nano',
+    extraRequestBodyParameters: {
       temperature: 0.7
     }
   }),
@@ -230,7 +230,7 @@ new BulkAiFlowPlugin({
   actionName: 'Guess age',
   visionAdapter: new AdminForthImageVisionAdapterOpenAi({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
   }),
   fillFieldsFromImages: { 
     'age': 'Analyze the image and estimate the age of the person. Return only a number.',
@@ -257,7 +257,7 @@ new BulkAiFlowPlugin({
   actionName: 'Generate cartoon avatars',
   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-image-1',
+    model: 'gpt-image-1.5',
   }),
   attachFiles: async ({ record }) => {
     if (!record.user_photo) {

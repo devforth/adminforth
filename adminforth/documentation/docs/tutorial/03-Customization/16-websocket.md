@@ -7,10 +7,11 @@ In two words, to subscribe to a topic from any frontend component you need to do
 
 ```javascript
 import websocket from '@/websocket';
+import { logger } from 'adminforth'
 
 websocket.subscribe('/topic-name', (data) => {
   // this callback called when we receive publish in topic from the websocket
-  console.log(data);
+  logger.info(data);
 });
 ```
 
@@ -192,7 +193,7 @@ const admin = new AdminForth({
 //diff-add
       const [subject, param] = /^\/(.+?)\/(.+)/.exec(topic)!.slice(1);
 //diff-add
-      console.log(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
+      logger.info(`Websocket user ${adminUser.username} tries to subscribe to topic ${subject} with param ${param}`);
 //diff-add
       if (subject === 'property-cost') {
 //diff-add

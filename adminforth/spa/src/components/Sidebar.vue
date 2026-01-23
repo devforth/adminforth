@@ -299,7 +299,9 @@ import { IconCloseSidebarSolid, IconOpenSidebarSolid } from '@iconify-prerendere
 import { getIcon, verySimpleHash, loadFile, getCustomComponent } from '@/utils';
 import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse } from '@/types/Common';
-import adminforth from '@/adminforth';
+import { useAdminforth } from '@/adminforth';
+
+const { menu } = useAdminforth();
 
 interface Props {
   sideBarOpen: boolean;
@@ -424,7 +426,7 @@ function closeCTA() {
   nextTick( async() => {
     emit('loadMenu');
     await coreStore.fetchMenuBadges();
-    adminforth.menu.refreshMenuBadges();
+    menu.refreshMenuBadges();
   })
 }
 
