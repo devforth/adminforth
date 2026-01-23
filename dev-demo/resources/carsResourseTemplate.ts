@@ -210,7 +210,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             adapter: new CompletionAdapterOpenAIChatGPT({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
               model: 'gpt-5-nano',
-              expert: {
+              extraRequestBodyParameters: {
                 temperature: 0.7
               }
             }),
@@ -266,8 +266,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           adapter: new CompletionAdapterOpenAIChatGPT({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5-nano',
-            expert: {
-                temperature: 0.7
+            extraRequestBodyParameters: {
+                temperature: 1
             }
           }),
         }),
@@ -277,8 +277,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: "gpt-5.2",
-            expert: {
-              temperature: 0.7,
+            extraRequestBodyParameters: {
+              temperature: 1,
             },
           }),
           fillPlainFields: {

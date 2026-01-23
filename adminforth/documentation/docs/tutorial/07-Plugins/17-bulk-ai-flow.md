@@ -207,7 +207,7 @@ new BulkAiFlowPlugin({
   textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
-    expert: {
+    extraRequestBodyParameters: {
       temperature: 0.7
     }
   }),
