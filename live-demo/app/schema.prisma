@@ -38,6 +38,7 @@ model audit_logs {
   action            String    /// type of change (create, edit, delete)
   diff              String?   /// delta betwen before/after versions
   record_id         String?   /// identifier of record that been changed
+  ip_address        String?   /// client ip address
 }
 
 model translations {
