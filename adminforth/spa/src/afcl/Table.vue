@@ -1,7 +1,7 @@
 <template>
   <div class="afcl-table-container relative overflow-x-auto overflow-y-auto shadow-md rounded-lg">
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
-          <thead class="afcl-table-thread text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
+          <thead class="afcl-table-thread z-50 text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
             <tr>
               <th
                 scope="col"
