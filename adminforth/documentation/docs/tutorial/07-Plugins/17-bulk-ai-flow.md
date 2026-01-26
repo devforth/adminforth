@@ -122,7 +122,7 @@ export const admin = new AdminForth({
   //diff-add
         filePath: ({originalFilename, originalExtension, contentType}) => 
   //diff-add
-              `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+              `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
   //diff-add
       }),
 

@@ -2,7 +2,7 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
 import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
 import I18nPlugin from "@adminforth/i18n";
-import { v1 as uuid } from "uuid";
+import { randomUUID } from 'crypto';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
@@ -73,7 +73,7 @@ export default {
   columns: [
     {
       name: "id",
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       primaryKey: true,
       showIn: { all: false }
     },
