@@ -1,6 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
 import { defineStore } from 'pinia'
-import { v1 as uuid } from 'uuid';
 import { useRoute } from 'vue-router';
 
 
@@ -23,7 +22,7 @@ export const useToastStore = defineStore('toast', () => {
         buttons?: { value: any; label: string }[];
         onResolve?: (value?: any) => void;
     }): string => {
-        const toastId = uuid();
+        const toastId = crypto.randomUUID();
         toasts.value.push({
             ...toast,
             id: toastId,

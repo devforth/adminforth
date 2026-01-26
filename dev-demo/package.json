@@ -30,8 +30,7 @@
     "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
-    "sqlstring": "^2.3.3",
-    "uuid": "^9.0.1"
+    "sqlstring": "^2.3.3"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.0",
