@@ -209,10 +209,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           completion: {
             adapter: new CompletionAdapterOpenAIChatGPT({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
-              model: 'gpt-5-nano',
-              extraRequestBodyParameters: {
-                temperature: 0.7
-              }
+              model: 'gpt-5-mini',
             }),
             expert: {
               debounceTime: 250,
