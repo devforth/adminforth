@@ -566,7 +566,7 @@ And finally add this callback:
       //diff-add
       if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
         //diff-add
-        return '';
+        return undefined;
         //diff-add
       }
       //diff-add
