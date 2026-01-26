@@ -55,7 +55,7 @@
         <!-- Confirmation Modal -->
         <div
           v-if="showConfirmationOnClose"
-          class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-60"
+          class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]"
         >
           <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
             <h2 class="text-lg font-semibold mb-4 text-lightDialogHeaderText dark:text-darkDialogHeaderText">Confirm Close</h2>
