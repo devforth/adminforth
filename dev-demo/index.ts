@@ -17,6 +17,7 @@ import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
 import { logger, afLogger } from '../adminforth/modules/logger.js';
+import { UUID } from 'crypto';
 
 const ADMIN_BASE_URL = '';
 
