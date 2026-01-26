@@ -1186,6 +1186,30 @@ const tableState = ref("loading");
 
 </div>
 
+
+### Making header and pagination sticky
+
+If you want to make table header or pagination, you can add `makeHeaderSticky`, `makePaginationSticky`
+
+```
+  <Table
+    class="min-h-[200px] max-h-[250px]"
+    makeHeaderSticky
+    makePaginationSticky
+    :columns="[
+      { label: 'Name', fieldName: 'name' },
+      { label: 'Age', fieldName: 'age' },
+      { label: 'Country', fieldName: 'country' },
+    ]"
+    :data="[
+      { name: 'John', age: 30, country: 'US' },
+      { name: 'Rick', age: 25, country: 'CA' },
+      { name: 'Alice', age: 35, country: 'UK' },
+      { name: 'Colin', age: 40, country: 'AU' },
+    ]"
+  ></Table>
+```
+
 ## ProgressBar
 
 <div class="split-screen" >
