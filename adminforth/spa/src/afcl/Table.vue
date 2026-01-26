@@ -1,7 +1,7 @@
 <template>
   <div class="afcl-table-container relative overflow-x-auto overflow-y-auto shadow-md rounded-lg">
       <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
-          <thead class="afcl-table-thread z-50 text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
+          <thead class="afcl-table-thread z-40 text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
             <tr>
               <th
                 scope="col"
@@ -81,7 +81,7 @@
     <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground mt-2 flex flex-col gap-2 items-center sm:flex-row justify-center sm:justify-between px-4 pb-4" 
       v-if="totalPages > 1"
       :aria-label="$t('Table navigation')"
-      :class="makePaginationSticky ? 'sticky bottom-0' : ''"
+      :class="makePaginationSticky ? 'sticky bottom-0 pt-4' : ''"
     >
     <i18n-t 
       keypath="Showing {from} to {to} of {total}" tag="span" class="afcl-table-pagination-text text-sm font-normal text-center text-lightTablePaginationText dark:text-darkTablePaginationText sm:mb-4 md:mb-0 block w-full md:inline md:w-auto"
