@@ -156,7 +156,7 @@ import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-
 new CompletionAdapterOpenAIChatGPT({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: 'gpt-5.2',
-  expert: {
+  extraRequestBodyParameters: {
     temperature: 0.7
   }
 }),
@@ -180,7 +180,7 @@ import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google
 new CompletionAdapterGoogleGemini({
   geminiApiKey: process.env.GEMINI_API_KEY as string,
   model: "gemini-3-pro-preview",
-  expert: {
+  extraRequestBodyParameters: {
     temperature: 0.7
   }
 }),
@@ -199,7 +199,7 @@ import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google
 new CompletionAdapterGoogleGemini({
   geminiApiKey: process.env.GEMINI_API_KEY as string,
   model: "gemini-3-pro-preview",
-  expert: {
+  extraRequestBodyParameters: {
     temperature: 0.7
   }
   //diff-add

@@ -125,9 +125,9 @@ To get completion suggestions for the text in the editor, you can use the `compl
           openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
           model: 'gpt-5-nano', //gpt-5-nano is a default (cheapest one)
-          expert: {
+          extraRequestBodyParameters: {
 //diff-add
-            temperature: 0.7 //Model temperature, default 0.7
+            temperature: 0.7 //Model temperature
 //diff-add
           }
 //diff-add
@@ -171,7 +171,7 @@ npm i @adminforth/storage-adapter-local --save
 import AdminForthStorageAdapterLocalFilesystem from "@adminforth/storage-adapter-local";
 import { AdminForthResourceInput } from "adminforth";
 import UploadPlugin from "@adminforth/upload";
-import { v1 as uuid } from "uuid";
+import { randomUUID } from 'crypto';
 
 export default {
   dataSource: "maindb",
@@ -183,7 +183,7 @@ export default {
       name: "id",
       primaryKey: true,
       required: false,
-      fillOnCreate: ({ initialRecord }: any) => uuid(),
+      fillOnCreate: ({ initialRecord }: any) => randomUUID(),
       showIn: {
         create: false,
       },
@@ -225,7 +225,7 @@ export default {
 
 
       filePath: ({ originalFilename, originalExtension, contentType }) =>
-        `description_images/${new Date().getFullYear()}/${uuid()}/${originalFilename}.${originalExtension}`,
+        `description_images/${new Date().getFullYear()}/${randomUUID()}/${originalFilename}.${originalExtension}`,
 
 
     }),

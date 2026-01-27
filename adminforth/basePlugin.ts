@@ -20,6 +20,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   resourceConfig: AdminForthResource;
   className: string;
   activationOrder: number = 0;
+  shouldHaveSingleInstancePerWholeApp?: () => boolean;
 
   constructor(pluginOptions: any, metaUrl: string) {
     // set up plugin here
@@ -28,6 +29,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     this.pluginOptions = pluginOptions;
     afLogger.trace(`🪲 🪲  AdminForthPlugin.constructor ${this.constructor.name}`);
     this.className = this.constructor.name;
+    this.shouldHaveSingleInstancePerWholeApp = () => false;
   }
 
   setupEndpoints(server: any) {
@@ -38,9 +40,6 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
     return 'non-uniquely-identified';
   }
 
-  shouldHaveSingleInstancePerWholeApp(): boolean {
-    return false;
-  }
 
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: AdminForthPlugin, resource: AdminForthResource}[]) {
     this.resourceConfig = resourceConfig;

@@ -1,7 +1,7 @@
 
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
 import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
-import { v1 as uuid } from "uuid";
+import { randomUUID } from 'crypto';
 
 
 export default {
@@ -44,7 +44,7 @@ export default {
   columns: [
     {
       name: "id",
-      fillOnCreate: ({ initialRecord, adminUser }: any) => uuid(),
+      fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
       primaryKey: true,
       showIn: { all: false },
     },
