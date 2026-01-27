@@ -137,7 +137,7 @@ For example we can prevent the user to see Apartments created by other users. Su
         }
 
         // this function will skip existing realtor_id filter if it supplied already from UI or previous hook, and will add new one for realtor_id
-        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id)
+        query.filterTools.replaceOrAddTopFilter(Filters.EQ('realtor_id', adminUser.dbUser.id))
        
         return { ok: true };
       },

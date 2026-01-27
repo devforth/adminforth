@@ -17,6 +17,9 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
   client: any;
 
+  /**
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use .client instead.
+   */
   get db() {
     afLogger.warn('.db is deprecated, use .client instead');
     return this.client;

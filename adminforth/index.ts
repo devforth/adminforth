@@ -17,12 +17,14 @@ import {
   AdminForthResource,
   IAdminForthDataSourceConnectorBase,
   IWebSocketBroker,
-  HttpExtra,
-  BeforeCreateSaveFunction,
   AdminForthInputConfig,
-  IAdminForthHttpResponse,
+  CreateResourceRecordParams,
+  UpdateResourceRecordParams,
+  DeleteResourceRecordParams,
+  CreateResourceRecordResult,
+  UpdateResourceRecordResult,
+  DeleteResourceRecordResult,
 } from './types/Back.js';
-
 import {
   AdminForthFilterOperators,
   AdminForthDataTypes,
@@ -538,10 +540,15 @@ class AdminForth implements IAdminForth {
     return users.data[0] || null;
   }
 
+  /**
+   * Create record and execute hooks
+   * @param params - Parameters for record creation. See CreateResourceRecordParams.
+   * @returns Result of record creation. See CreateResourceRecordResult.
+   */
   async createResourceRecord(
-    { resource, record, adminUser, extra, response }: 
-    { resource: AdminForthResource, record: any, adminUser: AdminUser, extra?: HttpExtra, response: IAdminForthHttpResponse }
-  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }> {
+    params: CreateResourceRecordParams,
+  ): Promise<CreateResourceRecordResult> {
+    const { resource, record, adminUser, extra, response } = params;
 
     const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
@@ -622,12 +629,15 @@ class AdminForth implements IAdminForth {
 
   /**
    * record is partial record with only changed fields
+   * 
+   * Update record by id and execute hooks
+    * @param params - Parameters for record update. See UpdateResourceRecordParams.
+    * @returns Result of record update. See UpdateResourceRecordResult.
    */
   async updateResourceRecord(
-    { resource, recordId, record, oldRecord, adminUser, response, extra, updates }:
-    | { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates?: never }
-    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates: any }
-  ): Promise<{ error?: string }> {
+    params: UpdateResourceRecordParams,
+  ): Promise<UpdateResourceRecordResult> {
+    const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
@@ -713,10 +723,15 @@ class AdminForth implements IAdminForth {
     return { error: null };
   }
 
+  /**
+   * Delete record by id and execute hooks
+   * @param params - Parameters for record deletion. See DeleteResourceRecordParams.
+   * @returns Result of record deletion. See DeleteResourceRecordResult.
+   */
   async deleteResourceRecord(
-    { resource, recordId, adminUser, record, response, extra }:
-    { resource: AdminForthResource, recordId: any, adminUser: AdminUser, record: any, response: IAdminForthHttpResponse, extra?: HttpExtra }
-  ): Promise<{ error?: string }> {
+    params: DeleteResourceRecordParams,
+  ): Promise<DeleteResourceRecordResult> {
+    const { resource, recordId, adminUser, record, response, extra } = params;
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
       const resp = await hook({ 
