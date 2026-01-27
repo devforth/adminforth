@@ -548,7 +548,7 @@ export type CreateResourceRecordResult = {
 
   /**
    * Optional id of an existing record to redirect to
-   * (used when a beforeSave hook aborts creation and supplies newRecordId).
+   * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
    */
   newRecordId?: any;
 };
