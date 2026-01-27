@@ -577,7 +577,7 @@ export type CreateResourceRecordParams = {
    *
    * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
    */
-  response: IAdminForthHttpResponse;
+  response?: IAdminForthHttpResponse;
 
   /**
    * Extra HTTP information. Prefer using extra.response over the top-level response field.
@@ -622,7 +622,7 @@ export type UpdateResourceRecordParams =
        *
        * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
        */
-      response: IAdminForthHttpResponse;
+      response?: IAdminForthHttpResponse;
 
       /**
        * Extra HTTP information. Prefer using extra.response over the top-level response field.
@@ -667,7 +667,7 @@ export type UpdateResourceRecordParams =
        *
        * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
        */
-      response: IAdminForthHttpResponse;
+      response?: IAdminForthHttpResponse;
 
       /**
        * Extra HTTP information. Prefer using extra.response over the top-level response field.
@@ -709,7 +709,7 @@ export type DeleteResourceRecordParams = {
    *
    * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
    */
-  response: IAdminForthHttpResponse;
+  response?: IAdminForthHttpResponse;
 
   /**
    * Extra HTTP information. Prefer using extra.response over the top-level response field.
@@ -742,7 +742,7 @@ export type BeforeDeleteSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
-  response: IAdminForthHttpResponse,
+  response?: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -758,8 +758,6 @@ export type BeforeEditSaveFunction = (params: {
   response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null}>;
-
-
 
 export type BeforeCreateSaveFunction = (params: {
   resource: AdminForthResource, 
