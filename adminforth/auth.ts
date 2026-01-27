@@ -154,9 +154,9 @@ getClientIp(headers: object) {
       decoded = jwt.verify(jwtToken, secret);
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
-        afLogger.error(`Token expired: ${err.message}`);
+        afLogger.info(`Token expired: ${err.message}`);
       } else  if (err.name === 'JsonWebTokenError') {
-        afLogger.error(`Token error: ${err.message}`);
+        afLogger.info(`Token error: ${err.message}, JWT secret changed?`);
       } else {
         afLogger.error(`Failed to verify JWT token: ${err}`);
       }

@@ -359,17 +359,16 @@ export interface IAdminForth {
   tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
   createResourceRecord(
-    params: { resource: AdminForthResource, record: any, response: IAdminForthHttpResponse, adminUser: AdminUser, extra?: HttpExtra }
-  ): Promise<{ error?: string, createdRecord?: any, newRecordId?: any }>;
+    params: CreateResourceRecordParams,
+  ): Promise<CreateResourceRecordResult>;
 
   updateResourceRecord(
-    params: { resource: AdminForthResource, recordId: any, record: any, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates?: never }
-    | { resource: AdminForthResource, recordId: any, record?: never, oldRecord: any, adminUser: AdminUser, response: IAdminForthHttpResponse, extra?: HttpExtra, updates: any }
-  ): Promise<{ error?: string }>;
+    params: UpdateResourceRecordParams,
+  ): Promise<UpdateResourceRecordResult>;
 
   deleteResourceRecord(
-    params: { resource: AdminForthResource, recordId: string, adminUser: AdminUser, record: any, response: IAdminForthHttpResponse, extra?: HttpExtra }
-  ): Promise<{ error?: string }>;
+    params: DeleteResourceRecordParams,
+  ): Promise<DeleteResourceRecordResult>;
 
   auth: IAdminForthAuth;
 
@@ -534,7 +533,205 @@ export interface HttpExtra {
   cookies: Record<string, string>,
   requestUrl: string,
   meta?: any,
+  response: IAdminForthHttpResponse
 }
+
+/**
+ * Result of {@link IAdminForth.createResourceRecord}.
+ */
+export type CreateResourceRecordResult = {
+  /** Optional error message if creation failed. */
+  error?: string;
+
+  /** Created record as returned from the connector. */
+  createdRecord?: any;
+
+  /**
+   * Optional id of an existing record to redirect to
+   * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
+   */
+  newRecordId?: any;
+};
+
+/**
+ * Parameters for {@link IAdminForth.createResourceRecord}.
+ */
+export type CreateResourceRecordParams = {
+  /**
+   * Resource configuration used to create a record.
+   */
+  resource: AdminForthResource;
+
+  /**
+   * Record data to create.
+   */
+  record: any;
+
+  /**
+   * Admin user performing the action.
+   */
+  adminUser: AdminUser;
+
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
+  response?: IAdminForthHttpResponse;
+
+  /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
+  extra?: HttpExtra;
+};
+
+/**
+ * Parameters for {@link IAdminForth.updateResourceRecord}.
+ */
+export type UpdateResourceRecordParams =
+  | {
+      /**
+       * Resource configuration used to update a record.
+       */
+      resource: AdminForthResource;
+
+      /**
+       * Primary key value of the record to update.
+       */
+      recordId: any;
+
+      /**
+       * Full record data with applied changes.
+       *
+       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use updates instead.
+       */
+      record: any;
+
+      /**
+       * Record data before update.
+       */
+      oldRecord: any;
+
+      /**
+       * Admin user performing the action.
+       */
+      adminUser: AdminUser;
+
+      /**
+       * HTTP response object.
+       *
+       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+       */
+      response?: IAdminForthHttpResponse;
+
+      /**
+       * Extra HTTP information. Prefer using extra.response over the top-level response field.
+       */
+      extra?: HttpExtra;
+
+      /**
+       * Partial record data with only changed fields. Mutually exclusive with record.
+       */
+      updates?: never;
+    }
+  | {
+      /**
+       * Resource configuration used to update a record.
+       */
+      resource: AdminForthResource;
+
+      /**
+       * Primary key value of the record to update.
+       */
+      recordId: any;
+
+      /**
+       * Full record data with applied changes.
+       *
+       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use updates instead.
+       */
+      record?: never;
+
+      /**
+       * Record data before update.
+       */
+      oldRecord: any;
+
+      /**
+       * Admin user performing the action.
+       */
+      adminUser: AdminUser;
+
+      /**
+       * HTTP response object.
+       *
+       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+       */
+      response?: IAdminForthHttpResponse;
+
+      /**
+       * Extra HTTP information. Prefer using extra.response over the top-level response field.
+       */
+      extra?: HttpExtra;
+
+      /**
+       * Partial record data with only changed fields. Mutually exclusive with record.
+       */
+      updates: any;
+    };
+
+/**
+ * Parameters for {@link IAdminForth.deleteResourceRecord}.
+ */
+export type DeleteResourceRecordParams = {
+  /**
+   * Resource configuration used to delete a record.
+   */
+  resource: AdminForthResource;
+
+  /**
+   * Primary key value of the record to delete.
+   */
+  recordId: string;
+
+  /**
+   * Admin user performing the action.
+   */
+  adminUser: AdminUser;
+
+  /**
+   * Record data before deletion.
+   */
+  record: any;
+
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
+  response?: IAdminForthHttpResponse;
+
+  /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
+  extra?: HttpExtra;
+};
+
+/**
+ * Result of {@link IAdminForth.updateResourceRecord}.
+ */
+export type UpdateResourceRecordResult = {
+  /** Optional error message if update failed. */
+  error?: string;
+};
+
+/**
+ * Result of {@link IAdminForth.deleteResourceRecord}.
+ */
+export type DeleteResourceRecordResult = {
+  /** Optional error message if delete failed. */
+  error?: string;
+};
 /**
  * Modify record to change how data is saved to database.
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
@@ -545,7 +742,7 @@ export type BeforeDeleteSaveFunction = (params: {
   adminUser: AdminUser, 
   record: any, 
   adminforth: IAdminForth,
-  response: IAdminForthHttpResponse,
+  response?: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -561,8 +758,6 @@ export type BeforeEditSaveFunction = (params: {
   response: IAdminForthHttpResponse,
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null}>;
-
-
 
 export type BeforeCreateSaveFunction = (params: {
   resource: AdminForthResource, 
@@ -1072,7 +1267,7 @@ export interface AdminForthInputConfig {
       /**       
        * Function to return avatar URL for user.
        */
-      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string> | undefined | Promise<undefined>),
 
       /**
        * Remember me duration for "Remember Me" checkbox on login page.

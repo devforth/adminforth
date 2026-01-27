@@ -210,7 +210,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             : '1d';
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
-            body, headers, query, cookies, requestUrl, 
+            body, headers, query, cookies, requestUrl, response
           }, expireInDuration);
 
           if (toReturn.allowedLogin) {
@@ -1275,7 +1275,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            const createRecordResponse = await this.adminforth.createResourceRecord({ resource, record, adminUser, response, extra: { body, query, headers, cookies, requestUrl } });
+            const createRecordResponse = await this.adminforth.createResourceRecord({ 
+              resource, record, adminUser, response, 
+              extra: { body, query, headers, cookies, requestUrl, response } 
+            });
             if (createRecordResponse.error) {
               return { error: createRecordResponse.error, ok: false, newRecordId: createRecordResponse.newRecordId };
             }
@@ -1395,7 +1398,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
             
-            const { error } = await this.adminforth.updateResourceRecord({ resource, record, adminUser, oldRecord, recordId, response, extra: { body, query, headers, cookies, requestUrl} });
+            const { error } = await this.adminforth.updateResourceRecord({ 
+              resource, record, adminUser, oldRecord, recordId, response, 
+              extra: { body, query, headers, cookies, requestUrl, response } 
+            });
             if (error) {
               return { error };
             }
@@ -1434,7 +1440,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ resource, record, adminUser, recordId: body['primaryKey'], response, extra: { body, query, headers, cookies, requestUrl } });
+            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
+              resource, record, adminUser, recordId: body['primaryKey'], response, 
+              extra: { body, query, headers, cookies, requestUrl, response } 
+            });
             if (deleteError) {
               return { error: deleteError };
             }
