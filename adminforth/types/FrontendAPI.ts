@@ -96,7 +96,8 @@ export interface FrontendAPIInterface {
         setFilter(filter: FilterParams): void;
 
         /**
-         * DEPRECATED: does the same as setFilter, kept for backward compatibility
+         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 2.0.0
+         * 
          * Update a filter in the list
          * 
          * Filters visibility in badge is automatically determined by column configuration:
