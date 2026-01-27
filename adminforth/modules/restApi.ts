@@ -210,7 +210,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             : '1d';
 
           await this.processLoginCallbacks(adminUser, toReturn, response, { 
-            body, headers, query, cookies, requestUrl, 
+            body, headers, query, cookies, requestUrl, response
           }, expireInDuration);
 
           if (toReturn.allowedLogin) {
