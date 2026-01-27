@@ -1072,7 +1072,7 @@ export interface AdminForthInputConfig {
       /**       
        * Function to return avatar URL for user.
        */
-      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string>)
+      avatarUrl?: ((adminUser: AdminUser) => string | Promise<string> | undefined | Promise<undefined>),
 
       /**
        * Remember me duration for "Remember Me" checkbox on login page.

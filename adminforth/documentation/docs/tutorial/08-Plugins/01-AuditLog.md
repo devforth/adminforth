@@ -15,7 +15,6 @@ Create `auditLogs.ts` in `resources` folder:
 ```ts title="./resources/auditLogs.ts"
 import AuditLogPlugin from '@adminforth/audit-log';
 import { AdminForthDataTypes } from 'adminforth'
-import { v4 as uuid } from 'uuid';
 ```
 
 [Getting Started](<../001-gettingStarted.md>) will be used as base for this example.

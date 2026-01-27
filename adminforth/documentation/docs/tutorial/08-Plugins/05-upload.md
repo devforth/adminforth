@@ -111,7 +111,7 @@ import UploadPlugin from '@adminforth/upload';
 //diff-add
 import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 //diff-add
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export const admin = new AdminForth({
   ...
@@ -153,7 +153,7 @@ export const admin = new AdminForth({
     //diff-add
       filePath: ({originalFilename, originalExtension, contentType}) => 
     //diff-add
-            `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+            `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
   //diff-add
     })
 //diff-add
@@ -235,7 +235,7 @@ Then you can change ACL in plugin configuration:
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 20 MB
       filePath: ({originalFilename, originalExtension, contentType}) => 
-            `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+            `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
     })
       
 ```
@@ -299,7 +299,7 @@ new UploadPlugin({
   allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
   maxFileSize: 1024 * 1024 * 20, // 20 MB
   filePath: ({originalFilename, originalExtension, contentType}) => 
-        `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+        `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
 })
 ```
 > adminServeBaseUrl defines the public path prefix. If your AdminForth base URL is /admin, files will be accessible under /admin/static/source/&lt;key&gt;.
@@ -486,7 +486,7 @@ You can set the maximum width for the preview image in the `./resources/apartmen
     allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
     maxFileSize: 5 * 1024 * 1024, // 5MB
     filePath: ({originalFilename, originalExtension, contentType}) => 
-      `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+      `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
     preview: {
       // Global width settings (applies to all views if specific view settings not provided)
       maxWidth: '200px',  // Maximum width for preview images
@@ -642,7 +642,7 @@ And finally add this callback:
       //diff-add
       if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
         //diff-add
-        return '';
+        return undefined;
         //diff-add
       }
       //diff-add

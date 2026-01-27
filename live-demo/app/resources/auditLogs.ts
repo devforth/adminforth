@@ -1,6 +1,6 @@
 import AuditLogPlugin from '@adminforth/audit-log';
 import { AdminForthDataTypes } from 'adminforth'
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'crypto';
 import importExport from '@adminforth/import-export';
 
 
@@ -9,7 +9,7 @@ export default {
   dataSource: 'maindb', 
   table: 'audit_logs',
   columns: [
-    { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => uuid(), showIn: ['show'] },
+    { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => randomUUID(), showIn: ['show'] },
     { name: 'created_at', required: false },
     { name: 'resource_id', required: false },
     { name: 'user_id', required: false, 
@@ -19,6 +19,7 @@ export default {
     { name: 'action', required: false },
     { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
     { name: 'record_id', required: false },
+    { name: 'ip_address', required: false, showIn: {all: false}, backendOnly: true },
   ],
   options: {
     allowedActions: {
@@ -37,7 +38,8 @@ export default {
             resourceDataColumnName: 'diff',
             resourceUserIdColumnName: 'user_id',
             resourceRecordIdColumnName: 'record_id',
-            resourceCreatedColumnName: 'created_at'
+            resourceCreatedColumnName: 'created_at',
+            // resourceIpColumnName: "ip_address",
         }
     }),
   ],

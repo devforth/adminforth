@@ -3,7 +3,7 @@ import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapte
 
 import { AdminForthResourceInput } from "adminforth";
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
-import { v1 as uuid } from "uuid";
+import { randomUUID } from 'crypto';
 
 export default {
   dataSource: "sqlite",
@@ -15,7 +15,7 @@ export default {
       name: "id",
       primaryKey: true,
       required: false,
-      fillOnCreate: ({ initialRecord }: any) => uuid(),
+      fillOnCreate: ({ initialRecord }: any) => randomUUID(),
       showIn: {
         create: false,
       },

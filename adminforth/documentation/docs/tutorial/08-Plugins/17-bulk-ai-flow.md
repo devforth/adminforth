@@ -122,7 +122,7 @@ export const admin = new AdminForth({
   //diff-add
         filePath: ({originalFilename, originalExtension, contentType}) => 
   //diff-add
-              `aparts/${new Date().getFullYear()}/${uuid()}-${originalFilename}.${originalExtension}`,
+              `aparts/${new Date().getFullYear()}/${randomUUID()}-${originalFilename}.${originalExtension}`,
   //diff-add
       }),
 
@@ -207,7 +207,7 @@ new BulkAiFlowPlugin({
   textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
-    expert: {
+    extraRequestBodyParameters: {
       temperature: 0.7
     }
   }),
