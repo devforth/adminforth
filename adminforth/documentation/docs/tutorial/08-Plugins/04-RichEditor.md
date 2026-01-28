@@ -12,7 +12,7 @@ First, install the plugin:
 npm i @adminforth/rich-editor --save
 ```
 
-import plugin:
+Import plugin:
 
 ```ts title="./resources/apartments.ts"
 import RichEditorPlugin from "@adminforth/rich-editor";
