@@ -38,7 +38,7 @@
       </div>
     </div>
     <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
-      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-30': teleportToBody, 'z-[1000]': teleportToTop}"
+      <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-10': teleportToBody, 'z-[1000]': teleportToTop}"
         class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
           dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
