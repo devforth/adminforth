@@ -37,7 +37,7 @@ Here is how it looks in show view:
 ![alt text](markdown-show1.png)
 ![alt text](markdown-show2.png)
 
-### Imges in Markdown
+### Images in Markdown
 
 First, you need to create resource for images:
 ```prisma title="schema.prisma"
