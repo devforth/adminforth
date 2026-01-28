@@ -62,7 +62,7 @@
             <p class="mb-6 text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
             <div class="flex justify-end">
               <Button
-                class="me-3"
+                class="me-3 !bg-gray-50 dark:!bg-gray-700 !text-lightDialogBodyText dark:!text-darkDialogBodyText hover:!bg-gray-100 dark:hover:!bg-gray-600 !border-gray-200 dark:!border-gray-600"
                 @click="showConfirmationOnClose = false"
               >
                 Cancel
