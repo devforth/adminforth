@@ -247,6 +247,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
+              previewUrl({ filePath }) {
+                return `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`;
+              },
             },
             generation: {
               countToGenerate: 2,
@@ -254,6 +257,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
                 model: 'gpt-image-1', 
               }),
+              attachFiles: async ({ record }) => {
+                return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+              },
               generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
               outputSize: '1536x1024'
             }   

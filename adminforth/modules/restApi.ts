@@ -1399,7 +1399,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             
             const { error } = await this.adminforth.updateResourceRecord({ 
-              resource, record, adminUser, oldRecord, recordId, response, 
+              resource, updates: record, adminUser, oldRecord, recordId, response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
             });
             if (error) {
