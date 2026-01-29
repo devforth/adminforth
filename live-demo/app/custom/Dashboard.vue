@@ -16,7 +16,8 @@
           }]"
           :options="{
             chart: {
-              height: 130,
+              height: 200,
+              offsetY: 50,
             },
             yaxis: {
               stepSize: 1,
@@ -83,7 +84,7 @@
           }]"
           :options="{
             chart: {
-              height: 500,
+              height: 650,
             },
             xaxis: {
               labels: { show: true },
