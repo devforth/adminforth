@@ -124,15 +124,17 @@ function checkIfWeCanLeavePage() {
   return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialValues.value);
 }
 
-window.addEventListener('beforeunload', (event) => {
+function onBeforeUnload(event: BeforeUnloadEvent) {
   if (!checkIfWeCanLeavePage()) {
     event.preventDefault();
     event.returnValue = '';
   }
-});
+}
+
+window.addEventListener('beforeunload', onBeforeUnload);
 
 onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', () => {});
+  window.removeEventListener('beforeunload', onBeforeUnload);
 });
 
 onBeforeRouteLeave(async (to, from, next) => {

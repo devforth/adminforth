@@ -105,19 +105,21 @@ const initialRecord = computed(() => coreStore.record);
 const wasSaveSuccessful = ref(false);
 const cancelButtonClicked = ref(false);
 
-function checkIfWeCanLeavePage() {
-  return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialRecord.value);
-}
-
-window.addEventListener('beforeunload', (event) => {
+function onBeforeUnload(event: BeforeUnloadEvent) {
   if (!checkIfWeCanLeavePage()) {
     event.preventDefault();
     event.returnValue = '';
   }
-});
+}
+
+function checkIfWeCanLeavePage() {
+  return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialRecord.value);
+}
+
+window.addEventListener('beforeunload', onBeforeUnload);
 
 onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', () => {});
+  window.removeEventListener('beforeunload', onBeforeUnload);
 });
 
 onBeforeRouteLeave(async (to, from, next) => {
