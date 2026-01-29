@@ -69,7 +69,7 @@ export const useCoreStore = defineStore('core', () => {
       return acc;
     }, {});
     config.value = resp.config;
-    adminUser.value = resp.adminUser;
+    adminUser.value = resp.adminUser;  
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
   }
