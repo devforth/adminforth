@@ -198,6 +198,7 @@ async function saveRecord() {
     if (columnIsUpdated) {
       updates[key] = record.value[key];
     }
+    saving.value = false;
   }
 
   const resp = await callAdminForthApi({
