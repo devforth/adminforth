@@ -563,8 +563,8 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
 
 
 
-export async function startBulkAction(actionId: string, resource: AdminForthResourceCommon, checkboxes: { value: string[] }, 
-  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: Function) {
+export async function startBulkAction(actionId: string, resource: AdminForthResourceCommon, checkboxes: { value: any[] }, 
+  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>) {
   const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
   const { confirm, alert } = useAdminforth();
 
