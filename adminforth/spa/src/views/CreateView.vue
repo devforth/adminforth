@@ -200,23 +200,25 @@ async function saveRecord() {
   });
   if (response?.error && response?.error !== 'Operation aborted by hook') {
     showErrorTost(response.error);
+  } else {
+    saving.value = false;
+    if (route.query.returnTo) {
+      router.push(<string>route.query.returnTo);
+    } else {
+      router.push({ 
+        name: 'resource-show', 
+        params: { 
+          resourceId: route.params.resourceId, 
+          primaryKey: response.newRecordId
+        } 
+      });
+      alert({
+        message: t('Record created successfully!'),
+        variant: 'success'
+      });
+    }
   }
   saving.value = false;
-  if (route.query.returnTo) {
-    router.push(<string>route.query.returnTo);
-  } else {
-    router.push({ 
-      name: 'resource-show', 
-      params: { 
-        resourceId: route.params.resourceId, 
-        primaryKey: response.newRecordId
-      } 
-    });
-    alert({
-      message: t('Record created successfully!'),
-      variant: 'success'
-    });
-  }
 }
 
 function scrollToInvalidField() {
