@@ -12,7 +12,7 @@
 
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
-      <button @click="$router.back()"
+      <button @click="() => {cancelButtonClicked = true; $router.back()}"
         class="af-cancel-button flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
@@ -81,8 +81,8 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onBeforeMount, ref, watch, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { computed } from 'vue';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
@@ -113,10 +113,35 @@ const initialValues = ref({});
 
 const readonlyColumns = ref([]);
 
+const cancelButtonClicked = ref(false);
+const wasSaveSuccessful = ref(false);
 
 async function onUpdateRecord(newRecord: any) {
   record.value = newRecord;
 }
+
+function checkIfWeCanLeavePage() {
+  return cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialValues.value);
+}
+
+window.addEventListener('beforeunload', (event) => {
+  if (!checkIfWeCanLeavePage()) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', () => {});
+});
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!checkIfWeCanLeavePage()) {
+      const answer = confirm('There are unsaved changes. Are you sure you want to leave this page?');
+      if (!answer) return next(false);
+  }
+  next();
+});
 
 onBeforeMount(() => {
   clearSaveInterceptors(route.params.resourceId as string);
