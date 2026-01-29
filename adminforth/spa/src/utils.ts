@@ -1,4 +1,4 @@
-import { onMounted, ref, resolveComponent } from 'vue';
+import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from './spa_types/core';
 import type { ValidationObject } from './types/Common.js';
 import router from "./router";
@@ -10,6 +10,11 @@ import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
 import { i18nInstance } from './i18n'
+
+import { type AdminForthResourceCommon } from './types/Common';
+import { useAdminforth } from '@/adminforth';
+import { showErrorTost } from '@/composables/useFrontendApi'
+
 
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
@@ -513,4 +518,89 @@ export function btoa_function(source: string): string {
 
 export function atob_function(source: string): string {
   return atob(source);
+}
+
+
+export async function getList(resource: AdminForthResourceCommon, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
+  let rows: any[] = [];
+  let totalRows: number | null = null;
+  if (!isPageLoaded) {
+    return; 
+  }
+  const data = await callAdminForthApi({
+    path: '/get_resource_data',
+    method: 'POST',
+    body: {
+      source: 'list',
+      resourceId: resource.resourceId,
+      limit: pageSize,
+      offset: ((page || 1) - 1) * pageSize,
+      filters: filters,
+      sort: sort,
+    }
+  });
+  if (data.error) {
+    showErrorTost(data.error);
+    rows = [];
+    totalRows = 0;
+    return {rows, totalRows, error: data.error};
+  }
+  rows = data.data?.map((row: any) => {
+    if (resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
+      row._primaryKeyValue = row[resource.columns.find(c => c.primaryKey)!.name].pk;
+    } else if (resource) {
+      row._primaryKeyValue = row[resource.columns.find(c => c.primaryKey)!.name];
+    }
+    return row;
+  });
+  totalRows = data.total;
+  
+  // if checkboxes have items which are not in current data, remove them
+  checkboxes.value = checkboxes.value.filter((pk: any) => rows.some((r: any) => r._primaryKeyValue === pk));
+  await nextTick();
+  return { rows, totalRows };
+}
+
+
+
+export async function startBulkAction(actionId: string, resource: AdminForthResourceCommon, checkboxes: { value: string[] }, 
+  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: Function) {
+  const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
+  const { confirm, alert } = useAdminforth();
+
+  if (action?.confirm) {
+    const confirmed = await confirm({
+      message: action.confirm,
+    });
+    if (!confirmed) {
+      return;
+    }
+  }
+  bulkActionLoadingStates.value[actionId] = true;
+
+  const data = await callAdminForthApi({
+    path: '/start_bulk_action',
+    method: 'POST',
+    body: {
+      resourceId: resource.resourceId,
+      actionId: actionId,
+      recordIds: checkboxes.value
+    }
+  });
+  bulkActionLoadingStates.value[actionId] = false;
+  if (data?.ok) {
+    checkboxes.value = [];
+    await getListInner();
+
+    if (data.successMessage) {
+      alert({
+        message: data.successMessage,
+        variant: 'success'
+      });
+    }
+
+  }
+  if (data?.error) {
+    showErrorTost(data.error);
+  }
 }
