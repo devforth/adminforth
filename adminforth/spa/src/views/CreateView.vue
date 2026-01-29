@@ -103,7 +103,7 @@ const router = useRouter();
 const record = ref({});
 
 const coreStore = useCoreStore();
-const { clearSaveInterceptors, runSaveInterceptors, alert } = useAdminforth();
+const { clearSaveInterceptors, runSaveInterceptors, alert, confirm } = useAdminforth();
 
 const { t } = useI18n();
 
@@ -135,9 +135,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', () => {});
 });
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave(async (to, from, next) => {
   if (!checkIfWeCanLeavePage()) {
-      const answer = confirm('There are unsaved changes. Are you sure you want to leave this page?');
+      const answer = await confirm({message: t('There are unsaved changes. Are you sure you want to leave this page?'), yes: 'Yes', no: 'No'});
       if (!answer) return next(false);
   }
   next();
