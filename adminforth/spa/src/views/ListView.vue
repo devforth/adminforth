@@ -323,7 +323,7 @@ async function getListInner() {
   }
   rows.value = result.rows;
   totalRows.value = result.totalRows ?? 0;
-  return { error: result.error };
+  return result.error ? { error: result.error } : {};
 }
 
 class SortQuerySerializer {
