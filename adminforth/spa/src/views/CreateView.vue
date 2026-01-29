@@ -121,7 +121,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 function checkIfWeCanLeavePage() {
-  return cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialValues.value);
+  return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialValues.value);
 }
 
 window.addEventListener('beforeunload', (event) => {
@@ -227,6 +227,7 @@ async function saveRecord() {
     showErrorTost(response.error);
   } else {
     saving.value = false;
+    wasSaveSuccessful.value = true;
     if (route.query.returnTo) {
       router.push(<string>route.query.returnTo);
     } else {
