@@ -1280,7 +1280,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               extra: { body, query, headers, cookies, requestUrl, response } 
             });
             if (createRecordResponse.error) {
-              return { error: createRecordResponse.error, ok: false, newRecordId: createRecordResponse.newRecordId, redirectToRecordId: createRecordResponse.redirectToRecordId };
+              return { 
+                error: createRecordResponse.error, 
+                ok: false, 
+                newRecordId: createRecordResponse.redirectToRecordId ? createRecordResponse.redirectToRecordId :createRecordResponse.newRecordId, 
+                redirectToRecordId: createRecordResponse.redirectToRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
