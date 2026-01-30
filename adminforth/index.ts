@@ -574,14 +574,14 @@ class AdminForth implements IAdminForth {
       if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId && !resp.redirectToRecordId))) {
         throw new Error(
           `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any, redirectToRecordId?: any }.\n` +
-          `Note: Return { ok: false, error: null, newRecordId, redirectToRecordId } to stop creation and redirect to an existing record.`
+          `Note: Return { ok: false, error: null, redirectToRecordId } (preferred) or { ok: false, error: null, newRecordId } (deprecated) to stop creation and redirect to an existing record.`
         );
       }
       if (resp.ok === false && !resp.error) {
         const { error, ok, newRecordId, redirectToRecordId } = resp;
         return {
           error: error ?? 'Operation aborted by hook',
-          newRecordId: newRecordId,
+          newRecordId: redirectToRecordId ? redirectToRecordId : newRecordId,
           redirectToRecordId: redirectToRecordId
         };
       }
