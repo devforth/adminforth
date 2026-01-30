@@ -21,7 +21,7 @@
 
     <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-if="toast.messageHtml" v-html="toast.messageHtml"></div>
     <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-else>
-        <div class="flex flex-col items-center justify-center break-all max-h-screen overflow-hidden">
+        <div class="flex flex-col items-center justify-center break-all overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:70]">
             {{toast.message}}
             <div v-if="toast.buttons" class="flex justify-center mt-2 gap-2">
                 <div v-for="button in toast.buttons" class="af-toast-button rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
