@@ -264,7 +264,26 @@ const adapter = new RedisKeyValueAdapter({
   redisUrl: '127.0.0.1:6379'
 })
 
-adapeter.set('test-key', 'test-value', 120);
+adapeter.set('test-key', 'test-value', 120); //expiry in 120 seconds
+
+```
+
+### LevelDB adapter
+
+```bash
+npm i @adminforth/key-value-adapter-leveldb
+```
+
+LebelDB uses local storage for storing keys.
+
+```ts
+import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb'
+
+const adapter = new LevelDBKeyValueAdapter({ 
+  dbPath: './testdb' 
+});
+
+adapeter.set('test-key', 'test-value', 120); //expiry in 120 seconds
 
 ```
 
