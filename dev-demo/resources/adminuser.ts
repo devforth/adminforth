@@ -141,11 +141,11 @@ export default {
     }),
     new UploadPlugin({
       pathColumnName: "avatar",
-      storageAdapter: new AdminForthAdapterS3Storage({
-        bucket: process.env.AWS_BUCKET_NAME as string,
-        region: process.env.AWS_REGION as string,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        fileSystemFolder: "./db/uploads",
+        adminServeBaseUrl: "static/source",
+        mode: "public", // or "private"
+        signingSecret: '1241245',
       }),
       allowedFileExtensions: [
         "jpg",
