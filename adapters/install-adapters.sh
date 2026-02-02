@@ -5,7 +5,7 @@ adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter adminforth-m
 adminforth-twitch-oauth-adapter adminforth-image-generation-adapter-openai adminforth-storage-adapter-amazon-s3 \
 adminforth-storage-adapter-local adminforth-image-vision-adapter-openai adminforth-key-value-adapter-ram \
 adminforth-login-captcha-adapter-cloudflare adminforth-login-captcha-adapter-recaptcha adminforth-completion-adapter-google-gemini \
-adminforth-key-value-adapter-redis"
+adminforth-key-value-adapter-redis adminforth-key-value-adapter-leveldb"
 
 # for each
 install_adapter() {
