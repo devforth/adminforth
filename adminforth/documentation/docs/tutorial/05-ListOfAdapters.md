@@ -244,9 +244,29 @@ The RAM adapter is a simplest in-memory key-value storage. Stores data in proces
 
 Pros:
 * Simplest in use - does not reqauire any external daemon.
+
 Cones:
 * In production sutable for single-process installations only
 
+
+### Redis adapter
+
+```bash
+npm i @adminforth/key-value-adapter-redis
+```
+
+Redis adapter uses redis database.
+
+```ts
+import RedisKeyValueAdapter from '@adminforth/key-value-adapter-redis';
+
+const adapter = new RedisKeyValueAdapter({
+  redisUrl: '127.0.0.1:6379'
+})
+
+adapeter.set('test-key', 'test-value', 120);
+
+```
 
 ## 🤖Captcha adapters
 
