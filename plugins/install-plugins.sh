@@ -11,13 +11,13 @@ install_plugin() {
   plugin=$1
 
   if [ -d "$plugin/.git" ]; then
-      echo "Repository for $plugin exists. Pulling latest changes..."
-      cd "$plugin"
-      git pull
+    echo "[$plugin] Pulling..."
+    cd "$plugin"
+    git pull
   else
-      echo "Repository for $plugin does not exist. Cloning..."
-      git clone git@github.com:devforth/$plugin.git "$plugin"
-      cd "$plugin"
+    echo "[$plugin] Cloning..."
+    git clone git@github.com:devforth/$plugin.git "$plugin"
+    cd "$plugin"
   fi
 
   cd ..
@@ -25,6 +25,7 @@ install_plugin() {
 
 do_npm_ci() {
   plugin=$1
+  echo "[$plugin] npm ci"
   cd "$plugin"
   npm ci
   cd ..
@@ -33,8 +34,8 @@ do_npm_ci() {
 export -f install_plugin
 export -f do_npm_ci
 
-echo $PLUGINS | tr ' ' '\n' | xargs -P 0 -I {} bash -c 'install_plugin "$@"' _ {}
+echo $PLUGINS | tr ' ' '\n' \
+  | xargs -P 0 -I {} bash -c 'install_plugin "$@"' _ {}
 
-echo $PLUGINS | tr ' ' '\n' | while read plugin; do
-  do_npm_ci "$plugin"
-done
+echo $PLUGINS | tr ' ' '\n' \
+  | xargs -P 0 -I {} bash -c 'do_npm_ci "$@"' _ {}
