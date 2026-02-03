@@ -111,12 +111,12 @@ export const loadFile = (file: string) => {
   let baseUrl = '';
   if (file.startsWith('@/')) {
     path = file.replace('@/', '');
-    baseUrl = new URL(`./${path}`, import.meta.url).href;
+    baseUrl = new URL(`../${path}`, import.meta.url).href;
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
     baseUrl = new URL(`../custom/${path}`, import.meta.url).href;
   } else {
-    baseUrl = new URL(`./${file}`, import.meta.url).href;
+    baseUrl = new URL(`../${file}`, import.meta.url).href;
   }
   return baseUrl;
 }
