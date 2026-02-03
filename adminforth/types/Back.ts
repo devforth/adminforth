@@ -505,7 +505,15 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
+}) => Promise<{
+  ok: boolean, 
+  error?: string | null, 
+  /**
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   */
+  newRecordId?: string, 
+  redirectToRecordId?: string
+}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -549,8 +557,15 @@ export type CreateResourceRecordResult = {
   /**
    * Optional id of an existing record to redirect to
    * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
    */
   newRecordId?: any;
+
+  /**
+   * Optional id of an existing record to redirect to
+   * (used when a beforeSave hook aborts creation and supplies redirectToRecordId, allows to implement programmatic creation via API).
+   */
+  redirectToRecordId?: any;
 };
 
 /**
@@ -838,7 +853,15 @@ export type BeforeCreateSaveFunction = (params: {
   response: IAdminForthHttpResponse,
 
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
+}) => Promise<{
+  ok: boolean, 
+  error?: string | null, 
+  /**
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   */
+  newRecordId?: string, 
+  redirectToRecordId?: string
+}>;
 
 export type AfterCreateSaveFunction = (params: {
     /**

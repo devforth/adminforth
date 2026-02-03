@@ -237,8 +237,12 @@ export function protectAgainstXSS(value: string) {
     ],
     allowedAttributes: {
       'li': [ 'data-list' ],
-      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ]
-    } 
+      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
+      // Allow  markup on spans (classes & styles), and
+      // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
+      'span': [ 'class', 'style' ],
+      '*': [ 'data-*', 'aria-*', 'style' ]
+    },
   });
 }
 
