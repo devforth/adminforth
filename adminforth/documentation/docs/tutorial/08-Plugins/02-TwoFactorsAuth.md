@@ -281,8 +281,6 @@ options: {
         //diff-add
           userPk: adminUser.pk,
         //diff-add
-          response: response,
-        //diff-add
           extra: extra,
         //diff-add
         });
@@ -391,7 +389,6 @@ hooks: {
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
-        response,
         extra
       });
       if (!verifyRes || 'error' in verifyRes) {
@@ -415,7 +412,6 @@ hooks: {
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
-        response,
         extra
       });
       if (!verifyRes || 'error' in verifyRes) {
@@ -533,9 +529,7 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
       // diff-add
         userPk: adminUser.pk,
       //diff-add
-        response: res, 
-      //diff-add
-        extra: {...req.headers, ...req.cookies},
+        extra: {...req.headers, ...req.cookies, response: res},
       //diff-add
       });
       // diff-add
