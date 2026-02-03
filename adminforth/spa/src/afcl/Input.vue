@@ -60,17 +60,9 @@ const emit = defineEmits<{
 
 const onInput = (e: Event) => {
   const el = e.target as HTMLInputElement;
-  const raw = el.value;
 
   if (props.type === 'number') {
-    const num = Number(raw);
-
-    if (isNaN(num)) {
-      emit('update:modelValue', null);
-      return;
-    }
-
-    let val = num;
+    let val = Number(el.value);
 
     if (props.min != null && val < props.min) val = props.min;
     if (props.max != null && val > props.max) val = props.max;
@@ -78,7 +70,7 @@ const onInput = (e: Event) => {
     el.value = String(val);
     emit('update:modelValue', val);
   } else {
-    emit('update:modelValue', raw);
+    emit('update:modelValue', el.value);
   }
 };
 
