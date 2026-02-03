@@ -38,3 +38,4 @@ echo $PLUGINS | tr ' ' '\n' | xargs -P 0 -I {} bash -c 'install_plugin "$@"' _ {
 echo $PLUGINS | tr ' ' '\n' | while read plugin; do
   do_npm_ci "$plugin"
 done
+ 
