@@ -11,7 +11,7 @@
 
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
-      <button @click="$router.back()"
+      <button @click="() => {cancelButtonClicked = true; $router.back()}"
         class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
@@ -76,8 +76,8 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { computed, onMounted, onBeforeMount, ref, type Ref, nextTick, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, onBeforeMount, ref, type Ref, nextTick, watch, onBeforeUnmount } from 'vue';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
@@ -87,7 +87,7 @@ import type { AdminForthResourceColumn } from '@/types/Back';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
-const { clearSaveInterceptors, runSaveInterceptors, alert } = useAdminforth();
+const { clearSaveInterceptors, runSaveInterceptors, alert, confirm } = useAdminforth();
 
 const isValid = ref(false);
 const validating = ref(false);
@@ -100,6 +100,36 @@ const loading = ref(true);
 const saving = ref(false);
 
 const record: Ref<Record<string, any>> = ref({});
+
+const initialRecord = computed(() => coreStore.record);
+const wasSaveSuccessful = ref(false);
+const cancelButtonClicked = ref(false);
+
+function onBeforeUnload(event: BeforeUnloadEvent) {
+  if (!checkIfWeCanLeavePage()) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+}
+
+function checkIfWeCanLeavePage() {
+  return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialRecord.value);
+}
+
+window.addEventListener('beforeunload', onBeforeUnload);
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', onBeforeUnload);
+});
+
+onBeforeRouteLeave(async (to, from, next) => {
+  if (!checkIfWeCanLeavePage()) {
+      const answer = await confirm({message: t('There are unsaved changes. Are you sure you want to leave this page?'), yes: 'Yes', no: 'No'});
+      if (!answer) return next(false);
+  }
+  next();
+});
+
 
 watch(record, (newVal) => {
   console.log('Record updated:', newVal);
@@ -199,22 +229,27 @@ async function saveRecord() {
       updates[key] = record.value[key];
     }
   }
-
-  const resp = await callAdminForthApi({
-    method: 'POST',
-    path: `/update_record`,
-    body: {
-      resourceId: route.params.resourceId,
-      recordId: route.params.primaryKey,
-      record: updates,
-      meta: {
-        ...(interceptorConfirmationResult ? { confirmationResult: interceptorConfirmationResult } : {}),
+  let resp = null;
+  try {
+    resp = await callAdminForthApi({
+      method: 'POST',
+      path: `/update_record`,
+      body: {
+        resourceId: route.params.resourceId,
+        recordId: route.params.primaryKey,
+        record: updates,
+        meta: {
+          ...(interceptorConfirmationResult ? { confirmationResult: interceptorConfirmationResult } : {}),
+        },
       },
-    },
-  });
+    });
+  } finally {
+    saving.value = false;
+  }
   if (resp.error && resp.error !== 'Operation aborted by hook') {
     showErrorTost(resp.error);
   } else {
+    wasSaveSuccessful.value = true;
     alert({
       message: t('Record updated successfully'),
       variant: 'success',

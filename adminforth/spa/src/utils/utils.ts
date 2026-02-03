@@ -1,15 +1,17 @@
-import { onMounted, ref, resolveComponent } from 'vue';
-import type { CoreConfig } from './spa_types/core';
-import type { ValidationObject } from './types/Common.js';
-import router from "./router";
-import { useCoreStore } from './stores/core';
-import { useUserStore } from './stores/user';
+import { nextTick, onMounted, ref, resolveComponent } from 'vue';
+import type { CoreConfig } from '../spa_types/core';
+import type { ValidationObject } from '../types/Common.js';
+import router from "../router";
+import { useCoreStore } from '../stores/core';
+import { useUserStore } from '../stores/user';
 import { Dropdown } from 'flowbite';
-import adminforth from './adminforth';
+import adminforth from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
-import { i18nInstance } from './i18n'
+import { i18nInstance } from '../i18n'
+
+
 
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
@@ -112,7 +114,7 @@ export const loadFile = (file: string) => {
     baseUrl = new URL(`./${path}`, import.meta.url).href;
   } else if (file.startsWith('@@/')) {
     path = file.replace('@@/', '');
-    baseUrl = new URL(`./custom/${path}`, import.meta.url).href;
+    baseUrl = new URL(`../custom/${path}`, import.meta.url).href;
   } else {
     baseUrl = new URL(`./${file}`, import.meta.url).href;
   }
@@ -235,8 +237,12 @@ export function protectAgainstXSS(value: string) {
     ],
     allowedAttributes: {
       'li': [ 'data-list' ],
-      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ]
-    } 
+      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
+      // Allow  markup on spans (classes & styles), and
+      // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
+      'span': [ 'class', 'style' ],
+      '*': [ 'data-*', 'aria-*', 'style' ]
+    },
   });
 }
 
