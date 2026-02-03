@@ -85,7 +85,7 @@ services:
 
       mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS dev_demo;'
       mysql -h mysql -P 3306 -u root -pdemo -e \"CREATE USER IF NOT EXISTS 'demo'@'%' IDENTIFIED BY 'demo';\"
-      mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES ON *.* TO 'demo'@'%';\"
+      mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES, SELECT, INSERT, UPDATE, DELETE ON *.* TO 'demo'@'%';\"
       mysql -h mysql -P 3306 -u root -pdemo -e 'FLUSH PRIVILEGES;'
       "
 
