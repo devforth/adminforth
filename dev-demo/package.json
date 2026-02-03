@@ -18,7 +18,9 @@
     "install-adapters": "cd ../adapters && bash install-adapters.sh",
     "build-adminforth": "cd ../adminforth && npm ci && npm run build && npm link",
     "migrate:all": "npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse",
-    "setup-dev-demo": "npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./run_inventory.sh"
+    "preinstall": "node scripts/check-node.js",
+    "check-docker": "node scripts/check-docker.js",
+    "setup-dev-demo": "npm run preinstall && npm run check-docker && npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
