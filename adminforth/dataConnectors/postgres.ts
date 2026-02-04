@@ -385,7 +385,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const tableName = resource.table;
         const result = {};
         await Promise.all(columns.map(async (col) => {
-            const q = `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM "${tableName}"`;
+            const q = `SELECT MIN("${col.name}") as min, MAX("${col.name}") as max FROM "${tableName}"`;
             dbLogger.trace(`🪲📜 PG Q: ${q}`);
             const stmt = await this.client.query(q);
             const { min, max } = stmt.rows[0];
