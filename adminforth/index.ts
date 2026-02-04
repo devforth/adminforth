@@ -422,7 +422,7 @@ class AdminForth implements IAdminForth {
       res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name] && !col.virtual) {
           const similar = suggestIfTypo(Object.keys(fieldTypes), col.name);
-          throw new Error(`Resource '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+          throw new Error(`Table '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
@@ -430,7 +430,7 @@ class AdminForth implements IAdminForth {
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
-        throw new Error(`Resource '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
+        throw new Error(`Table '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
       }
 
     }));
