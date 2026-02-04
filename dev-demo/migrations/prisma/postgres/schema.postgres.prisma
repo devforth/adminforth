@@ -4,7 +4,7 @@ generator client {
 
 datasource mysql_db {
   provider = "postgres"
-  url = "postgres://demo:demo@localhost:53321/demo"
+  url = "postgres://demo:demo@localhost:53321/dev_demo"
 }
 
 model cars {

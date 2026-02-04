@@ -17,7 +17,7 @@ install_adapter() {
       git pull
   else
       echo "Repository for $adapter does not exist. Cloning..."
-      git clone git@github.com:devforth/$adapter.git "$adapter"
+      git clone https://github.com/devforth/$adapter.git "$adapter"
       cd "$adapter"
   fi
 
