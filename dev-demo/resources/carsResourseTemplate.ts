@@ -373,7 +373,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
             }
             await adminforth
-              .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+              // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+              .getPluginById<AuditLogPlugin>('AuditLogPlugin')
               .logCustomAction({
                 resourceId: resourceId,
                 recordId: null,
