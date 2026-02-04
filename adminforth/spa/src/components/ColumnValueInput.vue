@@ -6,6 +6,7 @@
       :column="column"
       :value="value"
       @update:value="$emit('update:modelValue', $event)"
+      @update:recordFieldValue="$emit('update:recordFieldValue', $event)"
       :meta="column.components[props.source].meta"
       :record="currentValues"
       :resource="coreStore.resource"
