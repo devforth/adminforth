@@ -424,6 +424,17 @@ export interface IAdminForth {
    * 
    */
   getPluginByClassName<T>(className: string): T;
+
+  /**
+   * This method can be used when you want to get a plugin instance by its unique pluginInstanceId.
+   * @param pluginInstanceId - unique id of the plugin instance
+   * 
+   * Example:
+   * ```ts
+   * const auditLog = adminforth.getPluginById<AuditLogPlugin>('TestPlugin');
+   * ```
+   */
+  getPluginById<T>(pluginInstanceId: string): T;
 }
 
 

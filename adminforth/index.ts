@@ -116,6 +116,7 @@ class AdminForth implements IAdminForth {
   connectorClasses: any;
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
+  pluginsById: Record<string, AdminForthPlugin> = {};
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
@@ -256,6 +257,12 @@ class AdminForth implements IAdminForth {
             throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
               To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
           }
+          if (pluginInstance.id) {
+            if (this.pluginsById[pluginInstance.id]) {
+              throw new Error(`Plugin with id "${pluginInstance.id}" already exists!`);
+            }
+            this.pluginsById[pluginInstance.id] = pluginInstance;
+          }
           this.activatedPlugins.push(pluginInstance);
           afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
         }
@@ -280,6 +287,14 @@ class AdminForth implements IAdminForth {
       throw new Error(`Plugin with className ${className} not found. ${similar ? `Did you mean ${similar}?` : ''}`);
     }
     return plugins[0] as T;
+  }
+
+   getPluginById<T = any>(id: string): T {
+    const plugin = this.pluginsById[id];
+    if (!plugin) {
+      throw new Error(`Plugin with id "${id}" not found`);
+    }
+    return plugin as T;
   }
 
   validateFieldGroups(fieldGroups: {
