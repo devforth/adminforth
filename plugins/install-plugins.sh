@@ -16,7 +16,7 @@ install_plugin() {
       git pull
   else
       echo "Repository for $plugin does not exist. Cloning..."
-      git clone git@github.com:devforth/$plugin.git "$plugin"
+      git clone https://github.com/devforth/$plugin.git "$plugin"
       cd "$plugin"
   fi
 
@@ -38,3 +38,4 @@ echo $PLUGINS | tr ' ' '\n' | xargs -P 0 -I {} bash -c 'install_plugin "$@"' _ {
 echo $PLUGINS | tr ' ' '\n' | while read plugin; do
   do_npm_ci "$plugin"
 done
+ 

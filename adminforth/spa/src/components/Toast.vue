@@ -18,14 +18,14 @@
     <div v-else class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
         <IconCheckCircleSolid class="w-5 h-5" aria-hidden="true" />
     </div>
-    <div class="flex flex-col items-center justify-center break-all">
+    <div class="flex flex-col items-center justify-center break-all overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:70]">
         <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-if="toast.messageHtml" v-html="toast.messageHtml"></div>
         <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-else>
             {{toast.message}}
         </div>
-        <div v-if="toast.buttons" class="flex mt-2 gap-2 w-full ml-6">
+        <div v-if="toast.buttons" class="flex mt-2 gap-2 w-full ml-3">
             <div v-for="button in toast.buttons" class="af-toast-button rounded-md bg-lightButtonsBackground hover:bg-lightButtonsHover text-lightButtonsText dark:bg-darkPrimary dark:hover:bg-darkButtonsBackground  dark:text-darkButtonsText">
-                <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10">
+                <button @click="onButtonClick(button.value)" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
                     {{ button.label }}
                 </button>
             </div>

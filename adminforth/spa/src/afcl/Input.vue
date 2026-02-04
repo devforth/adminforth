@@ -12,7 +12,9 @@
       ref="input"
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', type === 'number' ? Number(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
+      :min="min"
+      :max="max"
+      @input="onInput"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
       class="afcl-input  inline-flex bg-lightInputBackground text-lightInputText dark:text-darkInputText border border-lightInputBorder rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
@@ -48,7 +50,30 @@ const props = defineProps<{
   suffix?: string,
   prefix?: string,
   readonly?: boolean,
+  min?: number | null,
+  max?: number | null,
 }>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: number | null): void
+}>();
+
+const onInput = (e: Event) => {
+  const el = e.target as HTMLInputElement;
+
+  if (props.type === 'number') {
+    let val = Number(el.value);
+
+    if (props.min != null && val < props.min) val = props.min;
+    if (props.max != null && val > props.max) val = props.max;
+
+    el.value = String(val);
+    emit('update:modelValue', val);
+  } else {
+    emit('update:modelValue', el.value);
+  }
+};
+
 
 const input = ref<HTMLInputElement | null>(null)
 
