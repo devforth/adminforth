@@ -104,6 +104,13 @@ export interface AdminUser {
    * User record fetched from database, from resource defined in {@link AdminForthConfig.auth.usersResourceId}
    */
   dbUser: any,
+
+  /**
+   * Flag which indicates that this user is not real user from database, but external user from e.g. custom website.
+   * True here is not possible in AdminForth built-in functions, auth middleware etc. 
+   * True value is only possible in your need to tell AdminForth that this is not real "fake" admin user
+   */
+  isExternalUser?: boolean,
 }
 
 
