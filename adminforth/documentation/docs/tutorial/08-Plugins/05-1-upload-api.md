@@ -284,6 +284,9 @@ Sometimes you want to upload a file from one field (custom editor) but store the
 2. Upload from the browser directly to storage.
 3. Emit `update:recordFieldValue` from the custom component with `{ fieldName: pathColumnName, fieldValue: filePath }` so the other field is updated.
 
+> Note: if the target UploadPlugin column is hidden on the current page (`showIn.create: false` / `showIn.edit: false`), the backend rejects such updates by default.
+> To allow this, set the target column config to `allowModifyWhenNotShowInCreate: true` and/or `allowModifyWhenNotShowInEdit: true`.
+
 This lets you reuse the same Upload plugin instance (and its preview logic) while controlling the UX from a different field.
 
 Example Vue custom editor that uploads an avatar and writes the result into another field handled by Upload plugin:

@@ -1233,8 +1233,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
                 const filledOnCreate = await isFilledOnCreate(column);
-                if ((!shown && !filledOnCreate) || bo) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
+                if (bo) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (!shown && !filledOnCreate && !column.allowModifyWhenNotShowInCreate) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`,
+                    ok: false,
+                  };
                 }
               }
             }
@@ -1354,8 +1364,25 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (fieldName in record) {
                 const shown = await isShown(column, 'edit', ctxEdit);
                 const bo = await isBackendOnly(column, ctxEdit);
-                if (!shown || column.editReadonly || bo) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly or showIn.edit is false, please set it to true)`, ok: false };
+                if (bo) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (column.editReadonly) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (editReadonly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (!shown && !column.allowModifyWhenNotShowInEdit) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
+                    ok: false,
+                  };
                 }
               }
             }

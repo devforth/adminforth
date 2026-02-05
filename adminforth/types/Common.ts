@@ -724,6 +724,26 @@ export interface AdminForthResourceColumnInputCommon {
   editReadonly?: boolean,
 
   /**
+   * Allows updating this column on Edit requests even when `showIn.edit` resolves to `false`.
+   *
+   * Default is `false`.
+   *
+   * This is useful for custom edit components which update hidden/technical fields via
+   * `update:recordFieldValue`.
+   */
+  allowModifyWhenNotShowInEdit?: boolean,
+
+  /**
+   * Allows setting this column on Create requests even when `showIn.create` resolves to `false`.
+   *
+   * Default is `false`.
+   *
+   * This is useful for custom create components which update hidden/technical fields via
+   * `update:recordFieldValue`.
+   */
+  allowModifyWhenNotShowInCreate?: boolean,
+
+  /**
    * Defines on which AdminForth pages this field will be shown. By default all.
    * Example: if you want to show field only in create and edit pages, set it to
    * 
