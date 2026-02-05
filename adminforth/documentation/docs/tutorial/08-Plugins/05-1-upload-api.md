@@ -3,10 +3,13 @@
 The Upload plugin exposes an API for both backend-only uploads and direct browser uploads using presigned URLs. You can:
 
 - Upload from the backend (Node.js `Buffer`) and either create a new record or update an existing one.
-- Generate a presigned upload URL on the backend, send it to the frontend, and upload directly from the browser to your storage provider using `multipart/form-data`.
+- Generate a presigned upload URL on the backend, send it to the frontend, and upload directly from the browser to your storage provider using an HTTP `PUT` request (raw file as body, plus any `uploadExtraParams` as headers).
   - After the file is uploaded, it is considered **temporary** and can be auto-deleted until you commit it.
   - You can commit by calling `commitUrlToNewRecord` or `commitUrlToUpdateExistingRecord` from your custom API.
   - Or (only for custom create/edit components on the same resource) you can commit by writing `filePath` into the `pathColumnName` field using `update:recordFieldValue`.
+
+> Note: for presigned browser uploads the upload is performed via an HTTP `PUT` request with the raw file as the request body.
+> `uploadExtraParams` (if returned) must be sent as **HTTP headers** during that upload.
 
 ## Uploading from backend (Buffer API)
 
@@ -83,7 +86,7 @@ For files that originate in the browser (drag & drop, file input, custom SPA, et
 
 1. Your custom or admin frontend sends a request to your backend.
 2. The backend calls `plugin.getUploadUrl(...)` and returns `{ uploadUrl, filePath, uploadExtraParams, pathColumnName }` to the frontend.
-3. The frontend uploads the file directly to `uploadUrl` using `fetch` + `FormData` (including any `uploadExtraParams`).
+3. The frontend uploads the file directly to `uploadUrl` using `XMLHttpRequest` with method `PUT` (sending the file as the request body and attaching `uploadExtraParams` as request headers). This allows tracking upload progress.
 4. After the upload completes, you **commit** the uploaded file to a record using either:
    - `plugin.commitUrlToUpdateExistingRecord` (update existing record), or
    - `plugin.commitUrlToNewRecord` (create new record), or
@@ -138,21 +141,37 @@ const { uploadUrl, filePath, uploadExtraParams } = await fetch('/api/uploads/get
 }).then(r => r.json());
 
 // 2) Direct upload from browser to storage
-const formData = new FormData();
-if (uploadExtraParams) {
-  Object.entries(uploadExtraParams).forEach(([key, value]) => {
-    formData.append(key, value as string);
-  });
-}
-formData.append('file', file);
+await new Promise<void>((resolve, reject) => {
+  const xhr = new XMLHttpRequest();
 
-const uploadResp = await fetch(uploadUrl, {
-  method: 'POST',
-  body: formData,
+  xhr.upload.onprogress = (e) => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      console.log('Upload progress:', `${pct}%`);
+    }
+  };
+
+  xhr.addEventListener('error', () => reject(new Error('Upload failed: network error')));
+  xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+  xhr.addEventListener('loadend', () => {
+    const ok = xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300;
+    if (!ok) {
+      return reject(new Error(`Upload failed: HTTP ${xhr.status}`));
+    }
+    resolve();
+  });
+
+  xhr.open('PUT', uploadUrl, true);
+  xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+  if (uploadExtraParams) {
+    Object.entries(uploadExtraParams).forEach(([key, value]) => {
+      xhr.setRequestHeader(key, String(value));
+    });
+  }
+
+  xhr.send(file);
 });
-if (!uploadResp.ok) {
-  throw new Error('Upload failed');
-}
 ```
 
 ### Committing to an existing record (commitUrlToUpdateExistingRecord)
@@ -310,21 +329,37 @@ async function onFileChange(e: Event) {
   ).then(r => r.json());
 
   // 2) Direct upload to storage
-  const formData = new FormData();
-  if (uploadExtraParams) {
-    Object.entries(uploadExtraParams).forEach(([key, value]) => {
-      formData.append(key, value as string);
-    });
-  }
-  formData.append('file', file);
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-  const uploadResp = await fetch(uploadUrl, {
-    method: 'POST',
-    body: formData,
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        console.log('Upload progress:', `${pct}%`);
+      }
+    };
+
+    xhr.addEventListener('error', () => reject(new Error('Upload failed: network error')));
+    xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+    xhr.addEventListener('loadend', () => {
+      const ok = xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300;
+      if (!ok) {
+        return reject(new Error(`Upload failed: HTTP ${xhr.status}`));
+      }
+      resolve();
+    });
+
+    xhr.open('PUT', uploadUrl, true);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+    if (uploadExtraParams) {
+      Object.entries(uploadExtraParams).forEach(([key, value]) => {
+        xhr.setRequestHeader(key, String(value));
+      });
+    }
+
+    xhr.send(file);
   });
-  if (!uploadResp.ok) {
-    throw new Error('Upload failed');
-  }
 
   // 3) Tell AdminForth to store filePath in the target field
   emit('update:recordFieldValue', {
