@@ -51,6 +51,11 @@
         </div>
       </div>
 
+     <div v-if="coreStore.config.hasDefaultUserOnPublicNetwork" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
+      <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
+      Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
+    </div>
+
       <ul class="af-sidebar-container space-y-2 font-medium" >
       <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
           <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
@@ -300,6 +305,7 @@ import { getIcon, verySimpleHash, loadFile, getCustomComponent } from '@/utils';
 import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
+import { IconExclamationCircleOutline} from '@iconify-prerendered/vue-flowbite';
 
 const { menu } = useAdminforth();
 

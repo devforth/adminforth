@@ -376,6 +376,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
+      let defaultUserExists = false;
+        if (username === 'adminforth') {
+          defaultUserExists = true;
+        }
+      const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
+      const isPrivateIP = clientIp === null ? true : false;
+
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -404,6 +411,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
           settingPages: settingPages,
+          hasDefaultUserOnPublicNetwork: defaultUserExists && !isPrivateIP
         }
 
         // translate menu labels
