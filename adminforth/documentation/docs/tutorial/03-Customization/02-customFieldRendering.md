@@ -239,6 +239,9 @@ Sometimes a custom editor needs to update not only its own field, but also other
 
 For this, custom `edit`/`create` components can emit an `update:recordFieldValue` event with the payload `{ fieldName, fieldValue }`. AdminForth will update the corresponding field in the record.
 
+> If you emit `update:recordFieldValue` to modify a field which is hidden by `showIn.create: false` / `showIn.edit: false`, the backend will reject the request by default.
+> To allow this, set the target column config to `allowModifyWhenNotShowInCreate: true` and/or `allowModifyWhenNotShowInEdit: true`.
+
 ```html title='./custom/TitleWithSlugEditor.vue'
 <template>
   <div class="flex flex-col gap-2">
