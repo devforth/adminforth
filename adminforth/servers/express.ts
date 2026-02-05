@@ -217,7 +217,7 @@ class ExpressServer implements IExpressHttpServer {
     this.server.listen(...args);
   }
 
-  async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: any) {
+  async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: HttpExtra) {
     const adminUserAuthorize = this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined);
 
     for (const hook of listify(adminUserAuthorize)) {
@@ -269,7 +269,15 @@ class ExpressServer implements IExpressHttpServer {
       } else {
         req.adminUser = adminforthUser;
         const toReturn: { error?: string, allowed: boolean } = { allowed: true };
-        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {});
+        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
+          body: req.body,
+          query: req.query,
+          headers: req.headers,
+          cookies: cookies as any,
+          requestUrl: req.url,
+          meta: {},
+          response: res
+        });
         if (!toReturn.allowed) {
           res.status(401).send('Unauthorized by AdminForth');
         } else {

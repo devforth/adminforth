@@ -16,6 +16,9 @@
       class="min-w-5 min-h-5 text-lightSidebarIcons dark:text-darkSidebarIcons group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover transition-all duration-200 ease-in-out"
     >
     </component>
+    <IconFileImageOutline v-else
+      class="min-w-5 min-h-5 text-lightSidebarIcons dark:text-darkSidebarIcons group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover transition-all duration-200 ease-in-out"
+    />
     <div 
       class="overflow-hidden block ms-3 pr-4 text-left rtl:text-right transition-all duration-200 ease-in-out"
       :class="{
@@ -57,6 +60,7 @@ import { getIcon } from '@/utils';
 import { Tooltip } from '@/afcl';
 import { ref, watch, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
+import { IconFileImageOutline } from '@iconify-prerendered/vue-flowbite';
 
 const props = defineProps(['item', 'isChild', 'isSidebarIconOnly', 'isSidebarHovering']);
 

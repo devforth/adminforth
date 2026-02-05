@@ -4,7 +4,8 @@ adminforth-email-adapter-mailgun adminforth-google-oauth-adapter adminforth-gith
 adminforth-facebook-oauth-adapter adminforth-keycloak-oauth-adapter adminforth-microsoft-oauth-adapter \
 adminforth-twitch-oauth-adapter adminforth-image-generation-adapter-openai adminforth-storage-adapter-amazon-s3 \
 adminforth-storage-adapter-local adminforth-image-vision-adapter-openai adminforth-key-value-adapter-ram \
-adminforth-login-captcha-adapter-cloudflare adminforth-login-captcha-adapter-recaptcha adminforth-completion-adapter-google-gemini"
+adminforth-login-captcha-adapter-cloudflare adminforth-login-captcha-adapter-recaptcha adminforth-completion-adapter-google-gemini \
+adminforth-key-value-adapter-redis adminforth-key-value-adapter-leveldb"
 
 # for each
 install_adapter() {
@@ -16,7 +17,7 @@ install_adapter() {
       git pull
   else
       echo "Repository for $adapter does not exist. Cloning..."
-      git clone git@github.com:devforth/$adapter.git "$adapter"
+      git clone https://github.com/devforth/$adapter.git "$adapter"
       cd "$adapter"
   fi
 

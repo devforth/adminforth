@@ -424,6 +424,17 @@ export interface IAdminForth {
    * 
    */
   getPluginByClassName<T>(className: string): T;
+
+  /**
+   *This method can be used when you want to get a plugin instance by its unique identifier.
+   * @param id - unique id of the plugin instance (custom identifier passed when registering/configuring the plugin)
+   * 
+   * Example:
+   * ```ts
+   * const auditLog = adminforth.getPluginById<AuditLogPlugin>('AuditLogPlugin');
+   * ```
+   */
+  getPluginById<T>(id: string): T;
 }
 
 
@@ -505,7 +516,15 @@ export type BeforeDataSourceRequestFunction = (params: {
     requestUrl: string,
   },
   adminforth: IAdminForth,
-}) => Promise<{ok: boolean, error?: string, newRecordId?: string}>;
+}) => Promise<{
+  ok: boolean, 
+  error?: string | null, 
+  /**
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   */
+  newRecordId?: string, 
+  redirectToRecordId?: string
+}>;
 
 /**
  * Modify response to change how data is returned after fetching from database.
@@ -549,8 +568,15 @@ export type CreateResourceRecordResult = {
   /**
    * Optional id of an existing record to redirect to
    * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
    */
   newRecordId?: any;
+
+  /**
+   * Optional id of an existing record to redirect to
+   * (used when a beforeSave hook aborts creation and supplies redirectToRecordId, allows to implement programmatic creation via API).
+   */
+  redirectToRecordId?: any;
 };
 
 /**
@@ -737,45 +763,151 @@ export type DeleteResourceRecordResult = {
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
 export type BeforeDeleteSaveFunction = (params: {
+  /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+  /**
+   * Primary key value of the record to delete.
+   */
   recordId: any, 
-  adminUser: AdminUser, 
+  /**
+   * Admin user performing the action.
+   */
+  adminUser: AdminUser,
+  /**
+   * Record data before deletion.
+   */
   record: any, 
+  /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response?: IAdminForthHttpResponse,
+  /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
 
 export type BeforeEditSaveFunction = (params: {
+    /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+    /**
+   * Primary key value of the record to delete.
+   */
   recordId: any, 
+    /**
+   * Admin user performing the action.
+   */
   adminUser: AdminUser, 
+  /*
+  * Fields to update in record.
+  */
   updates: any,
+  /** 
+  * Record with updates
+  *
+  *  @deprecated. Will be removed in 2.0.0. Use updates instead.
+  */
   record: any, // legacy, 'updates' should be used instead
+  /**
+   * Record data before update.
+   */
   oldRecord: any,
+  /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+    /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response: IAdminForthHttpResponse,
+    /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null}>;
 
 export type BeforeCreateSaveFunction = (params: {
+  /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+  /**
+   * Admin user performing the action.
+   */
   adminUser: AdminUser, 
+  /**
+  * Record data to create.
+  */
   record: any, 
+  /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response: IAdminForthHttpResponse,
+
   extra?: HttpExtra,
-}) => Promise<{ok: boolean, error?: string | null, newRecordId?: string}>;
+}) => Promise<{
+  ok: boolean, 
+  error?: string | null, 
+  /**
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   */
+  newRecordId?: string, 
+  redirectToRecordId?: string
+}>;
 
 export type AfterCreateSaveFunction = (params: {
+    /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+    /**
+   * Primary key value of the record to delete.
+   */
   recordId: any, 
+    /**
+   * Admin user performing the action.
+   */
   adminUser: AdminUser, 
+  /**
+   * Record data after creation.
+   */
   record: any, 
+    /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+  /**
+   * Record with virtual columns after creation.
+   */
   recordWithVirtualColumns?: any,
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response: IAdminForthHttpResponse,
+    /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -784,25 +916,79 @@ export type AfterCreateSaveFunction = (params: {
  * Return ok: false and error: string to stop execution and show error message to user. Return ok: true to continue execution.
  */
 export type AfterDeleteSaveFunction = (params: {
+    /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+    /**
+   * Primary key value of the record to delete.
+   */
   recordId: any, 
+    /**
+   * Admin user performing the action.
+   */
   adminUser: AdminUser, 
+  /**
+   * Record data, that was deleted.
+   */
   record: any, 
+  /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response: IAdminForthHttpResponse,
+    /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
 
 export type AfterEditSaveFunction = (params: {
+    /**
+   * Resource info.
+   */
   resource: AdminForthResource, 
+    /**
+   * Primary key value of the record to delete.
+   */
   recordId: any, 
+    /**
+   * Admin user performing the action.
+   */
   adminUser: AdminUser,
+  /**
+  * Record updates.
+  */
   updates: any, 
+  /** 
+  * Record after update.
+  *
+  *  @deprecated. Will be removed in 2.0.0. Use updates instead.
+  */
   record: any, // legacy, 'updates' should be used instead 
+  /**
+   * Record data before update.
+   */
   oldRecord: any,
+  /**
+   * Adminforth instance.
+   */
   adminforth: IAdminForth,
+  /**
+   * HTTP response object.
+   *
+   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   */
   response: IAdminForthHttpResponse,
+    /**
+   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
 
@@ -810,10 +996,27 @@ export type AfterEditSaveFunction = (params: {
  * Allow to get user data before login confirmation, will triger when user try to login.
  */
 export type BeforeLoginConfirmationFunction = (params?: { 
+    /**
+   * Admin user performing the action.
+   */
     adminUser: AdminUser,
+    /**
+     * HTTP response object.
+     *
+     * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+     */
     response: IAdminForthHttpResponse,
+    /**
+     * Adminforth instance.
+     */
     adminforth: IAdminForth,
+      /**
+     * Extra HTTP information. Prefer using extra.response over the top-level response field.
+     */
     extra?: HttpExtra,
+      /**
+     * Duration of session in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days)
+     */
     sessionDuration?: string,
 }) => Promise<{
   error?: string, 
@@ -827,9 +1030,23 @@ export type BeforeLoginConfirmationFunction = (params?: {
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
+    /**
+   * Admin user performing the action.
+   */
     adminUser: AdminUser,
+      /**
+     * HTTP response object.
+     *
+     * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+     */
     response: IAdminForthHttpResponse,
+    /**
+     * Adminforth instance.
+     */
     adminforth: IAdminForth,
+      /**
+     * Extra HTTP information. Prefer using extra.response over the top-level response field.
+     */
     extra?: HttpExtra,
 }) => Promise<{
   error?: string,
