@@ -47,6 +47,14 @@ new AdminForth({
         closable: true,
         // title: 'Support us for free',
       }
+    },
+      globalInjections: {
+      header: [
+        {
+          file: '@/custom/GitHubButton.vue',
+          meta: { thinEnoughToShrinkHeader: true }
+        }
+      ]
     }
   },
 
