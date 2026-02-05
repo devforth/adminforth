@@ -411,8 +411,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
           settingPages: settingPages,
-          defaultUserExists: defaultUserExists,
-          isPrivateIP: isPrivateIP,
+          hasDefaultUserOnPublicNetwork: defaultUserExists && !isPrivateIP
         }
 
         // translate menu labels
