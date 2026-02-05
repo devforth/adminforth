@@ -164,12 +164,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
 
     *********************************************************************************/
       new UploadPlugin({
-        storageAdapter: new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          s3ACL: 'public-read',
+        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+          fileSystemFolder: "./db/uploads",
+          mode: "public", // or "private"
+          signingSecret: '1241245',
         }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -181,12 +179,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         },
       }),
       new UploadPlugin({
-        storageAdapter: new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          s3ACL: 'public-read',
+        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+          fileSystemFolder: "./db/uploads_promo",
+          mode: "public", // or "private"
+          signingSecret: '1241245',
         }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -233,12 +229,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       ...(process.env.OPENAI_API_KEY ? 
         [
           new UploadPlugin({
-            storageAdapter: new AdminForthAdapterS3Storage({
-              bucket: process.env.AWS_BUCKET_NAME as string,
-              region: process.env.AWS_REGION as string,
-              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-              s3ACL: 'public-read',
+            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+              fileSystemFolder: "./db/uploads_promo_generated",
+              mode: "public", // or "private"
+              signingSecret: '1241245',
             }),
             pathColumnName: 'generated_promo_picture',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -247,6 +241,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
+              previewUrl({ filePath }) {
+                return `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`;
+              },
             },
             generation: {
               countToGenerate: 2,
@@ -254,6 +251,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
                 model: 'gpt-image-1', 
               }),
+              attachFiles: async ({ record }) => {
+                return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+              },
               generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
               outputSize: '1536x1024'
             }   
@@ -373,7 +373,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
             }
             await adminforth
-              .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+              // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+              .getPluginById<AuditLogPlugin>('AuditLogPlugin')
               .logCustomAction({
                 resourceId: resourceId,
                 recordId: null,

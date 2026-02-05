@@ -1280,7 +1280,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               extra: { body, query, headers, cookies, requestUrl, response } 
             });
             if (createRecordResponse.error) {
-              return { error: createRecordResponse.error, ok: false, newRecordId: createRecordResponse.newRecordId };
+              return { 
+                error: createRecordResponse.error, 
+                ok: false, 
+                newRecordId: createRecordResponse.redirectToRecordId ? createRecordResponse.redirectToRecordId :createRecordResponse.newRecordId, 
+                redirectToRecordId: createRecordResponse.redirectToRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
@@ -1399,7 +1403,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             
             const { error } = await this.adminforth.updateResourceRecord({ 
-              resource, record, adminUser, oldRecord, recordId, response, 
+              resource, updates: record, adminUser, oldRecord, recordId, response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
             });
             if (error) {

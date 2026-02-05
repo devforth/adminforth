@@ -244,9 +244,51 @@ The RAM adapter is a simplest in-memory key-value storage. Stores data in proces
 
 Pros:
 * Simplest in use - does not reqauire any external daemon.
+
 Cones:
 * In production sutable for single-process installations only
 
+
+### Redis adapter
+
+```bash
+npm i @adminforth/key-value-adapter-redis
+```
+
+Redis adapter uses in-memory RAM-based Redis database with O(1) get complexity. It is great fit for most of lightweight tasks which fit in RAM. Also capable with multi-process or replica-based installations as centralized storage. Please note that Redis daemon might be not persisted to disk during restarts without additional settings, so if persistence is critical for your task - you might need to set up it separately (for many tasks like rate-limits ephemeral data are fine 
+
+
+```ts
+import RedisKeyValueAdapter from '@adminforth/key-value-adapter-redis';
+
+const adapter = new RedisKeyValueAdapter({
+  redisUrl: '127.0.0.1:6379'
+})
+
+adapeter.set('test-key', 'test-value', 120); //expiry in 120 seconds
+
+```
+
+### LevelDB adapter
+
+```bash
+npm i @adminforth/key-value-adapter-leveldb
+```
+
+LebelDB uses disk storage with o(log(n)) get complexity. Good fit for large and/or persistent KV datasets which still require fast KV access but don't efficently fit into RAM. Please not that this is a single-process adapter only, so if you will run severall processes of admin - they will not be able to work with this adapter (>=2 processes which look at same level database might lead to unpredicted behaviour - exceptions or crashes). 
+
+You can use replicas with isolated disks, however in this case state will be also separated between replicas.
+
+```ts
+import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb'
+
+const adapter = new LevelDBKeyValueAdapter({ 
+  dbPath: './testdb' 
+});
+
+adapeter.set('test-key', 'test-value', 120); //expiry in 120 seconds
+
+```
 
 ## 🤖Captcha adapters
 

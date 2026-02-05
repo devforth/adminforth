@@ -233,6 +233,97 @@ Now you can use this component in the configuration of the resource:
 }
 ```
 
+### Custom record editing (updating other fields)
+
+Sometimes a custom editor needs to update not only its own field, but also other fields of the record (for example, generate a slug from a title).
+
+For this, custom `edit`/`create` components can emit an `update:recordFieldValue` event with the payload `{ fieldName, fieldValue }`. AdminForth will update the corresponding field in the record.
+
+```html title='./custom/TitleWithSlugEditor.vue'
+<template>
+  <div class="flex flex-col gap-2">
+    <Input
+      :model-value="record[column.name]"
+      :placeholder="$t('Title')"
+      @update:model-value="onTitleChange"
+    />
+    <Input
+      :model-value="record.slug"
+      :placeholder="$t('Slug')"
+      readonly
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import Input from "@/afcl/Input.vue";
+import type {
+  AdminForthResourceColumnCommon,
+  AdminForthResourceCommon,
+  AdminUser,
+} from "@/types/Common";
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: any;
+  meta: any;
+  resource: AdminForthResourceCommon;
+  adminUser: AdminUser;
+  readonly: boolean;
+}>();
+
+const emit = defineEmits([
+  "update:value", // update current column value
+  "update:recordFieldValue", // update any other field in the record
+]);
+
+function slugify(value: string) {
+  return value
+    ?.toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+function onTitleChange(newTitle: string) {
+  // update current column value
+  emit("update:value", newTitle);
+
+  // update another field in the record (e.g. slug)
+  emit("update:recordFieldValue", {
+    fieldName: "slug",
+    fieldValue: slugify(newTitle),
+  });
+}
+</script>
+```
+
+And use it in the resource configuration for both `edit` and `create` views:
+
+```ts title='./resources/apartments.ts'
+{
+  ...
+  resourceId: 'aparts',
+  columns: [
+    ...
+    {
+      name: 'title',
+      components: {
+        edit: '@@/TitleWithSlugEditor.vue',
+        create: '@@/TitleWithSlugEditor.vue',
+      },
+    },
+    {
+      name: 'slug',
+      // standard input; value will be kept in sync
+      ...
+    },
+    ...
+  ],
+  ...
+}
+```
+
 ### Custom inValidity inside of the custom create/edit components
 
 Custom componets can emit `update:inValidity` event to parent to say that the field is invalid.

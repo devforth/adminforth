@@ -281,10 +281,6 @@ options: {
         //diff-add
           userPk: adminUser.pk,
         //diff-add
-          cookies: extra.cookies,
-        //diff-add
-          response: response,
-        //diff-add
           extra: extra,
         //diff-add
         });
@@ -393,8 +389,6 @@ hooks: {
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
-        cookies: extra?.cookies,
-        response,
         extra
       });
       if (!verifyRes || 'error' in verifyRes) {
@@ -404,7 +398,7 @@ hooks: {
     },
   },
   create: {
-    beforeSave: async ({ adminUser, adminforth, extra }) => {
+    beforeSave: async ({ adminUser, adminforth, response, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
       if (!t2fa) {
         return { ok: false, error: 'TwoFactorsAuthPlugin is not configured' };
@@ -418,7 +412,7 @@ hooks: {
       const verifyRes = await t2fa.verify(confirmationResult, {
         adminUser,
         userPk: adminUser.pk,
-        cookies: extra?.cookies,
+        extra
       });
       if (!verifyRes || 'error' in verifyRes) {
         return { ok: false, error: verifyRes?.error || 'Two-factor verification failed' };
@@ -534,12 +528,8 @@ app.post(`${ADMIN_BASE_URL}/myCriticalAction`,
         adminUser: adminUser,
       // diff-add
         userPk: adminUser.pk,
-      // diff-add
-        cookies: cookies,
       //diff-add
-        response: res, 
-      //diff-add
-        extra: {...req.headers},
+        extra: {...req.headers, ...req.cookies, response: res},
       //diff-add
       });
       // diff-add

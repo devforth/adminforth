@@ -16,7 +16,7 @@ install_plugin() {
       git pull
   else
       echo "Repository for $plugin does not exist. Cloning..."
-      git clone git@github.com:devforth/$plugin.git "$plugin"
+      git clone https://github.com/devforth/$plugin.git "$plugin"
       cd "$plugin"
   fi
 
