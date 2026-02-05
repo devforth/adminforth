@@ -1117,6 +1117,7 @@ export interface AdminForthConfigForFrontend {
   loginBackgroundImage: string,
   loginBackgroundPosition: string,
   removeBackgroundBlendMode: boolean,
+  defaultUserExists?: boolean;
   title?: string,
   demoCredentials?: string,
   loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
