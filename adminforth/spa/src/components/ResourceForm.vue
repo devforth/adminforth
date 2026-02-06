@@ -129,8 +129,11 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
       }
     }
     if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
+    const value = currentValues.value[column.name];              
       try {
-        JSON.parse(currentValues.value[column.name]);
+        if (typeof value === 'object') {
+          JSON.parse(JSON.stringify(value));
+        } 
       } catch (e) {
         return t('Invalid JSON');
       }
@@ -286,10 +289,11 @@ onMounted(() => {
           }
         }
       } else if (currentValues.value[column.name]) {
-        currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2);
+        if (typeof currentValues.value[column.name] === 'object') {
+          currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2)
+          }
+        }
       }
-
-    }
   });
   emit('update:isValid', isValid.value);
 });
