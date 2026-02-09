@@ -1,4 +1,4 @@
-## Upload API
+# Upload API
 
 The Upload plugin exposes an API for both backend-only uploads and direct browser uploads using presigned URLs. You can:
 

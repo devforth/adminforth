@@ -431,7 +431,7 @@ export interface IAdminForth {
    * 
    * Example:
    * ```ts
-   * const auditLog = adminforth.getPluginById<AuditLogPlugin>('AuditLogPlugin');
+   * const auditLog = adminforth.getPluginById&lt;AuditLogPlugin&gt;('AuditLogPlugin');
    * ```
    */
   getPluginById<T>(id: string): T;
