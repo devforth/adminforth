@@ -90,11 +90,11 @@ export const admin = new AdminForth({
     },
     {
       id: 'postgres',
-      url: 'postgres://demo:demo@localhost:53321/demo',
+      url: 'postgres://demo:demo@localhost:53321/dev_demo',
     },
     {
       id: 'mysql',
-      url: 'mysql://demo:demo@localhost:3307/demo',
+      url: 'mysql://demo:demo@localhost:3307/dev_demo',
     },
     {
       id: 'clickhouse',
