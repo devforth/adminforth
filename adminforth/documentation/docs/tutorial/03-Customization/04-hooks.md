@@ -44,7 +44,7 @@ When user opens edit page, AdminForth makes a request to the backend to get the 
 
 Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
 
-For example [upload plugin](/docs/tutorial/Plugins/upload/) uses this hook to generate signed preview URL so user can see existing uploaded file preview  in form, and at the same time database stores only original file path which might be not accessible without presigned URL.
+For example [upload plugin](/docs/tutorial/Plugins/05-0-upload/) uses this hook to generate signed preview URL so user can see existing uploaded file preview  in form, and at the same time database stores only original file path which might be not accessible without presigned URL.
 
 ## Saving data on edit page
 

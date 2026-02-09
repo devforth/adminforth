@@ -52,7 +52,7 @@ Migrate prisma schema:
 npm run makemigration -- --name add-apartment-image-url ; npm run migrate:local
 ```
 
-We will also attach [upload plugin](/docs/tutorial/Plugins/upload/) to this field.
+We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.
 
 
 Add credentials in your `.env` file:
