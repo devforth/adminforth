@@ -289,7 +289,7 @@ onMounted(() => {
           }
         }
       } else if (currentValues.value[column.name]) {
-        if (typeof currentValues.value[column.name] === 'object') {
+        if (typeof currentValues.value[column.name] !== 'string') {
           currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2)
           }
         }
