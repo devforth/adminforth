@@ -131,9 +131,9 @@ onBeforeRouteLeave(async (to, from, next) => {
 });
 
 
-watch(record, (newVal) => {
-  console.log('Record updated:', newVal);
-}, { deep: true });
+// watch(record, (newVal) => {
+//   console.log('Record updated:', newVal);
+// }, { deep: true });
 
 const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
 
