@@ -51,7 +51,7 @@
         </div>
       </div>
 
-     <div v-if="coreStore.config.hasDefaultUserOnPublicNetwork" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
+     <div v-if="coreStore.config.defaultUserExists && !coreStore.config.isPrivateIP" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
       <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
       Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
     </div>
