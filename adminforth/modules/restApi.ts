@@ -383,7 +383,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           defaultUserExists = true;
         }
       const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
-      const isPrivateIP = is_ip_private(clientIp);
+      const isPrivateIP = is_ip_private(clientIp) === undefined || false ? true : false;
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
