@@ -382,8 +382,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (username === 'adminforth') {
           defaultUserExists = true;
         }
-      const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
-      const isPrivateIP = is_ip_private(clientIp);
 
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
@@ -414,7 +412,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           userFullnameField: this.adminforth.config.auth.userFullNameField,
           settingPages: settingPages,
           defaultUserExists: defaultUserExists,
-          isPrivateIP: isPrivateIP,
         }
 
         // translate menu labels
