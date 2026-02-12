@@ -382,16 +382,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (username === 'adminforth') {
           defaultUserExists = true;
         }
-
-      // getting client ip address (if null - ip definetely is private, if not null - check if it is private)
-      const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
-      let isPrivateIP = true;
-
-      if (clientIp) {
-        // ip is not null, so  we need to make sure that it is not private
-        isPrivateIP = is_ip_private(clientIp);
-      }
-
+        
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
