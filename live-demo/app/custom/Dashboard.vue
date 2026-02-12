@@ -2,7 +2,7 @@
   <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
   
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 flex flex-col justify-between" v-if="data">
         <div>
           <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
           <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
@@ -83,7 +83,7 @@
           }]"
           :options="{
             chart: {
-              height: 500,
+              height: 650,
             },
             xaxis: {
               labels: { show: true },

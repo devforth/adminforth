@@ -39,6 +39,7 @@ export default {
   },
   plugins: [
     new AuditLogPlugin({
+      id: 'AuditLogPlugin',
       // if you want to exclude some resources from logging
       //excludeResourceIds: ['adminuser'],
       resourceColumns: {

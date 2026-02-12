@@ -52,7 +52,7 @@ Migrate prisma schema:
 npm run makemigration -- --name add-apartment-image-url ; npm run migrate:local
 ```
 
-We will also attach [upload plugin](/docs/tutorial/Plugins/upload/) to this field.
+We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.
 
 
 Add credentials in your `.env` file:
@@ -382,3 +382,45 @@ The user will now see a popup with a "Start generation" button and an "Edit prom
 ![alt text](Bulk-vision-6.png)
 
 > ☝️ Updated prompts are stored in the user's local storage. Changes are local to that browser and do not affect other users or devices.
+
+## Processing big sets of data ( filtered records )
+
+There might be cases when you want to process more records than can fit your list view.
+Here you can use the `recordSelector` param.
+It can be `checkbox` (default) or `filtered`.
+`filtered` uses all filtered records for generation, so you can even process the whole resource.
+
+
+```ts
+        new BulkAiFlowPlugin({          
+          actionName: 'Generate description and Price',
+
+          //diff-add
+          recordSelector: 'filtered', // default is 'checkbox'
+
+          ...
+
+        });
+```
+>❗️❗️❗️ Using `recordSelector: 'filtered'` might be expensive. Before processing large data sets, we recommend starting with smaller sets to make sure everything is fine.
+
+
+## Limiting amount of parallel requests using p-limit
+
+If you are processing large sets of data, you might want to limit the number of parallel requests. For this, you can use the `concurrencyLimit` param:
+
+```ts
+        new BulkAiFlowPlugin({          
+          actionName: 'Generate description and Price',
+
+          //diff-add
+          concurrencyLimit: 5, //default is 10
+
+          ...
+
+        });
+```
+
+And there won't be more than 5 parallel requests being handled.
+
+

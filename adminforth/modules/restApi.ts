@@ -383,6 +383,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           defaultUserExists = true;
         }
 
+      // getting client ip address (if null - ip definetely is private, if not null - check if it is private)
+      const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
+      let isPrivateIP = true;
+
+      if (clientIp) {
+        // ip is not null, so  we need to make sure that it is not private
+        isPrivateIP = is_ip_private(clientIp);
+      }
+
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -1233,8 +1242,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const shown = await isShown(column, 'create', ctxCreate); //
                 const bo = await isBackendOnly(column, ctxCreate);
                 const filledOnCreate = await isFilledOnCreate(column);
-                if ((!shown && !filledOnCreate) || bo) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly or showIn.create is false, please set it to true)`, ok: false };
+                if (bo) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (!shown && !filledOnCreate && !column.allowModifyWhenNotShowInCreate) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`,
+                    ok: false,
+                  };
                 }
               }
             }
@@ -1288,7 +1307,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               extra: { body, query, headers, cookies, requestUrl, response } 
             });
             if (createRecordResponse.error) {
-              return { error: createRecordResponse.error, ok: false, newRecordId: createRecordResponse.newRecordId };
+              return { 
+                error: createRecordResponse.error, 
+                ok: false, 
+                newRecordId: createRecordResponse.redirectToRecordId ? createRecordResponse.redirectToRecordId :createRecordResponse.newRecordId, 
+                redirectToRecordId: createRecordResponse.redirectToRecordId };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
@@ -1350,8 +1373,25 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (fieldName in record) {
                 const shown = await isShown(column, 'edit', ctxEdit);
                 const bo = await isBackendOnly(column, ctxEdit);
-                if (!shown || column.editReadonly || bo) {
-                  return { error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly or showIn.edit is false, please set it to true)`, ok: false };
+                if (bo) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (column.editReadonly) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (editReadonly is true).`,
+                    ok: false,
+                  };
+                }
+
+                if (!shown && !column.allowModifyWhenNotShowInEdit) {
+                  return {
+                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
+                    ok: false,
+                  };
                 }
               }
             }

@@ -9,7 +9,7 @@ services:
       environment:
         CLICKHOUSE_USER: demo
         CLICKHOUSE_PASSWORD: demo
-        CLICKHOUSE_DB: demo
+        CLICKHOUSE_DB: dev_demo
       ulimits:
         nproc: 65535
         nofile:
@@ -26,7 +26,7 @@ services:
     environment:
       POSTGRES_USER: demo
       POSTGRES_PASSWORD: demo
-      POSTGRES_DB: demo
+      POSTGRES_DB: dev_demo
     volumes:
       - pg-data:/var/lib/postgresql/data
 
@@ -34,7 +34,7 @@ services:
     image:  mongo:6.0.5
     restart: always
     environment:
-      MONGO_INITDB_DATABASE: demo
+      MONGO_INITDB_DATABASE: dev_demo
     ports:
       - "27028:27017"
     volumes:
@@ -47,7 +47,7 @@ services:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: demo
-      MYSQL_DATABASE: demo
+      MYSQL_DATABASE: dev_demo
       MYSQL_USER: demo
       MYSQL_PASSWORD: demo
     volumes:
@@ -62,7 +62,7 @@ services:
         - KEYCLOAK_ADMIN_PASSWORD=admin
         - DB_VENDOR=postgres
         - DB_ADDR=pg
-        - DB_DATABASE=demo
+        - DB_DATABASE=dev_demo
         - DB_USER=demo
         - DB_PASSWORD=demo
       ports:
@@ -83,9 +83,9 @@ services:
         sleep 2
       done
 
-      mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS demo;'
+      mysql -h mysql -P 3306 -u root -pdemo -e 'CREATE DATABASE IF NOT EXISTS dev_demo;'
       mysql -h mysql -P 3306 -u root -pdemo -e \"CREATE USER IF NOT EXISTS 'demo'@'%' IDENTIFIED BY 'demo';\"
-      mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES ON *.* TO 'demo'@'%';\"
+      mysql -h mysql -P 3306 -u root -pdemo -e \"GRANT CREATE, ALTER, DROP, REFERENCES, SELECT, INSERT, UPDATE, DELETE ON *.* TO 'demo'@'%';\"
       mysql -h mysql -P 3306 -u root -pdemo -e 'FLUSH PRIVILEGES;'
       "
 
