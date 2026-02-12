@@ -104,6 +104,13 @@ export interface AdminUser {
    * User record fetched from database, from resource defined in {@link AdminForthConfig.auth.usersResourceId}
    */
   dbUser: any,
+
+  /**
+   * Flag which indicates that this user is not real user from database, but external user from e.g. custom website.
+   * True here is not possible in AdminForth built-in functions, auth middleware etc. 
+   * True value is only possible in your need to tell AdminForth that this is not real "fake" admin user
+   */
+  isExternalUser?: boolean,
 }
 
 
@@ -715,6 +722,26 @@ export interface AdminForthResourceColumnInputCommon {
    * Whether AdminForth will allow to edit this field in editing mode.
    */
   editReadonly?: boolean,
+
+  /**
+   * Allows updating this column on Edit requests even when `showIn.edit` resolves to `false`.
+   *
+   * Default is `false`.
+   *
+   * This is useful for custom edit components which update hidden/technical fields via
+   * `update:recordFieldValue`.
+   */
+  allowModifyWhenNotShowInEdit?: boolean,
+
+  /**
+   * Allows setting this column on Create requests even when `showIn.create` resolves to `false`.
+   *
+   * Default is `false`.
+   *
+   * This is useful for custom create components which update hidden/technical fields via
+   * `update:recordFieldValue`.
+   */
+  allowModifyWhenNotShowInCreate?: boolean,
 
   /**
    * Defines on which AdminForth pages this field will be shown. By default all.

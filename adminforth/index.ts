@@ -116,6 +116,7 @@ class AdminForth implements IAdminForth {
   connectorClasses: any;
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
+  pluginsById: Record<string, AdminForthPlugin> = {};
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
@@ -256,6 +257,13 @@ class AdminForth implements IAdminForth {
             throw new Error(`Attempt to activate Plugin ${pluginInstance.constructor.name} second time for same resource, but plugin does not support it. 
               To support multiple plugin instance pre one resource, plugin should return unique string values for each installation from instanceUniqueRepresentation`);
           }
+          const pluginId = pluginInstance.pluginOptions?.id;
+          if (pluginId) {
+            if (this.pluginsById[pluginId]) {
+              throw new Error(`Plugin with id "${pluginId}" already exists!`);
+            }
+            this.pluginsById[pluginId] = pluginInstance;
+          }
           this.activatedPlugins.push(pluginInstance);
           afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} activated successfully`);
         }
@@ -281,6 +289,15 @@ class AdminForth implements IAdminForth {
     }
     return plugins[0] as T;
   }
+
+  getPluginById<T = any>(id: string): T {
+    const plugin = this.pluginsById[id];
+    if (!plugin) {
+      const similar = suggestIfTypo(Object.keys(this.pluginsById), id);
+      throw new Error(`Plugin with id "${id}" not found.${similar ? ` Did you mean "${similar}"?` : ''}`);
+      }
+      return plugin as T;
+    }
 
   validateFieldGroups(fieldGroups: {
     groupName: string;
@@ -422,7 +439,7 @@ class AdminForth implements IAdminForth {
       res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name] && !col.virtual) {
           const similar = suggestIfTypo(Object.keys(fieldTypes), col.name);
-          throw new Error(`Resource '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+          throw new Error(`Table '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // first find discovered values, but allow override
         res.columns[i] = { ...fieldTypes[col.name], ...col };
@@ -430,7 +447,7 @@ class AdminForth implements IAdminForth {
 
       // check if primaryKey column is present
       if (!res.columns.some((col) => col.primaryKey)) {
-        throw new Error(`Resource '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
+        throw new Error(`Table '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
       }
 
     }));
@@ -568,17 +585,21 @@ class AdminForth implements IAdminForth {
         response, 
         extra,
       });
-      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId))) {
+      if (resp.newRecordId) {
+        afLogger.warn(`Deprecation warning: beforeSave hook returned 'newRecordId'. Since AdminForth v1.2.9 use 'redirectToRecordId' instead. 'newRecordId' will be removed in v2.0.0`);
+      }
+      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId && !resp.redirectToRecordId))) {
         throw new Error(
-          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any }.\n` +
-          `Note: Return { ok: false, error: null, newRecordId } to stop creation and redirect to an existing record.`
+          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any, redirectToRecordId?: any }.\n` +
+          `Note: Return { ok: false, error: null, redirectToRecordId } (preferred) or { ok: false, error: null, newRecordId } (deprecated) to stop creation and redirect to an existing record.`
         );
       }
       if (resp.ok === false && !resp.error) {
-        const { error, ok, newRecordId } = resp;
+        const { error, ok, newRecordId, redirectToRecordId } = resp;
         return {
           error: error ?? 'Operation aborted by hook',
-          newRecordId: newRecordId
+          newRecordId: redirectToRecordId ? redirectToRecordId : newRecordId,
+          redirectToRecordId: redirectToRecordId
         };
       }
       if (resp.error) {

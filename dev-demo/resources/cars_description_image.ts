@@ -35,11 +35,10 @@ export default {
   plugins: [
     new UploadPlugin({
       pathColumnName: "image_path",
-      storageAdapter: new AdminForthAdapterS3Storage({
-        bucket: process.env.AWS_BUCKET_NAME as string,
-        region: process.env.AWS_REGION as string,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        fileSystemFolder: "./db/uploads_promo_generated",
+        mode: "public", // or "private"
+        signingSecret: '1241245',
       }),
   
       allowedFileExtensions: [

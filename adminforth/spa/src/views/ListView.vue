@@ -48,7 +48,7 @@
         <button
           v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
-          @click="startBulkAction(action.id!)"
+          @click="startBulkActionInner(action.id!)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
           :class="action.buttonCustomCssClass || ''"
         >
@@ -104,8 +104,8 @@
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
         :bulkActions="coreStore.resource?.options?.bulkActions"
         :checkboxes="checkboxes"
-        @startBulkAction="startBulkAction"
-        :updateList="getList"
+        @startBulkAction="startBulkActionInner"
+        :updateList="getListInner"
         :clearCheckboxes="clearCheckboxes"
         ></ThreeDotsMenu>
     </BreadcrumbsWithButtons>
@@ -126,7 +126,7 @@
       @update:page="page = $event"
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
-      @update:records="getList"
+      @update:records="getListInner"
       :sort="sort"
       :pageSize="pageSize"
       :totalRows="totalRows"
@@ -164,7 +164,7 @@
       @update:page="page = $event"
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
-      @update:records="getList"
+      @update:records="getListInner"
       :sort="sort"
       :pageSize="pageSize"
       :totalRows="totalRows"
@@ -209,10 +209,9 @@ import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
-import { computed, onMounted, onUnmounted, ref, watch, nextTick, type Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { showErrorTost } from '@/composables/useFrontendApi'
-import { getCustomComponent, initThreeDotsDropdown } from '@/utils';
+import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
 import type { AdminForthComponentDeclarationFull } from '@/types/Common';
@@ -228,7 +227,7 @@ import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
 
 const filtersShow = ref(false);
-const { confirm, alert, list } = useAdminforth();
+const { list } = useAdminforth();
 const coreStore = useCoreStore();
 const filtersStore = useFiltersStore();
 
@@ -256,45 +255,6 @@ const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listV
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
 const isPageLoaded = ref(false);
-
-async function getList() {
-  rows.value = null;
-  if (!isPageLoaded.value) {
-    return; 
-  }
-  const data = await callAdminForthApi({
-    path: '/get_resource_data',
-    method: 'POST',
-    body: {
-      source: 'list',
-      resourceId: route.params.resourceId,
-      limit: pageSize.value,
-      offset: ((page.value || 1) - 1) * pageSize.value,
-      filters: filtersStore.filters,
-      sort: sort.value,
-    }
-  });
-  if (data.error) {
-    showErrorTost(data.error);
-    rows.value = [];
-    totalRows.value = 0;
-    return {error: data.error};
-  }
-  rows.value = data.data?.map((row: any) => {
-    if (coreStore.resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name].pk;
-    } else if (coreStore.resource) {
-      row._primaryKeyValue = row[coreStore.resource.columns.find(c => c.primaryKey)!.name];
-    }
-    return row;
-  });
-  totalRows.value = data.total;
-  
-  // if checkboxes have items which are not in current data, remove them
-  checkboxes.value = checkboxes.value.filter(pk => rows.value!.some(r => r._primaryKeyValue === pk));
-  await nextTick();
-  return {}
-}
 
 function clearCheckboxes() {
   checkboxes.value = [];
@@ -351,47 +311,20 @@ async function refreshExistingList(pk?: any) {
   return {}
 }
 
-
-async function startBulkAction(actionId: string) {
-  const action = coreStore.resource?.options?.bulkActions?.find(a => a.id === actionId);
-  if (action?.confirm) {
-    const confirmed = await confirm({
-      message: action.confirm,
-    });
-    if (!confirmed) {
-      return;
-    }
-  }
-  bulkActionLoadingStates.value[actionId] = true;
-
-  const data = await callAdminForthApi({
-    path: '/start_bulk_action',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId,
-      actionId: actionId,
-      recordIds: checkboxes.value
-
-    }
-  });
-  bulkActionLoadingStates.value[actionId] = false;
-  if (data?.ok) {
-    checkboxes.value = [];
-    await getList();
-
-    if (data.successMessage) {
-      alert({
-        message: data.successMessage,
-        variant: 'success'
-      });
-    }
-
-  }
-  if (data?.error) {
-    showErrorTost(data.error);
-  }
+async function startBulkActionInner(actionId: string) {
+  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner);
 }
 
+async function getListInner() {
+  rows.value = null; // to show loading state
+  const result = await getList(coreStore.resource!, isPageLoaded.value, page.value, pageSize.value, sort.value, checkboxes, filtersStore.filters);
+  if (!result) {
+    return { error: 'No result returned from getList' };
+  }
+  rows.value = result.rows;
+  totalRows.value = result.totalRows ?? 0;
+  return result.error ? { error: result.error } : {};
+}
 
 class SortQuerySerializer {
     static serialize(sort: {field: string, direction: 'asc' | 'desc'}[]) {
@@ -471,12 +404,11 @@ async function init() {
 
 watch([page, sort, () => filtersStore.filters], async () => {
   // console.log('🔄️ page/sort/filter change fired, page:', page.value);
-  await getList();
+  await getListInner();
 }, { deep: true });
 
 list.refresh = async () => {
-  const result = await getList();
-
+  const result = await getListInner();
   if (!result) {
     return {};
   }

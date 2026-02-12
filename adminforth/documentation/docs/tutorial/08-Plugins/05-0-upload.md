@@ -660,3 +660,8 @@ And finally add this callback:
 ```
 
 And now you can easily update avatar for each user
+
+# API
+
+If you wish to reuse Upload plugin for advanced tasks like upload custom files from frontend/backend
+ (including presigned frontend upload), see [05-1-upload-api.md](05-1-upload-api.md).
