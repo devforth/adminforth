@@ -233,11 +233,13 @@ export function protectAgainstXSS(value: string) {
       "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
       "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
       "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
-      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img'
+      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img', 'video', 'source'
     ],
     allowedAttributes: {
       'li': [ 'data-list' ],
       'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
+      'video': [ 'src', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'width', 'height', 'autoplay', 'playsinline' ],
+      'source': [ 'src', 'type' ],
       // Allow  markup on spans (classes & styles), and
       // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
       'span': [ 'class', 'style' ],
