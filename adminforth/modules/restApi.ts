@@ -26,6 +26,8 @@ import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, Admin
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
+import is_ip_private from 'private-ip'
+
 
 async function resolveBoolOrFn(
   val: BackendOnlyInput | undefined,
@@ -380,9 +382,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (username === 'adminforth') {
           defaultUserExists = true;
         }
-      const clientIp = this.adminforth.auth.getClientIp(response.getHeaders?.() || {});
-      const isPrivateIP = clientIp === null ? true : false;
-
+        
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
@@ -411,7 +411,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           globalInjections: this.adminforth.config.customization.globalInjections,
           userFullnameField: this.adminforth.config.auth.userFullNameField,
           settingPages: settingPages,
-          hasDefaultUserOnPublicNetwork: defaultUserExists && !isPrivateIP
+          defaultUserExists: defaultUserExists,
         }
 
         // translate menu labels
