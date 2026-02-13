@@ -423,4 +423,25 @@ If you are processing large sets of data, you might want to limit the number of 
 
 And there won't be more than 5 parallel requests being handled.
 
+## Confirming long-running generations
 
+For very large datasets, you can pause generation at specific checkpoints so users can review results before continuing.
+Use the `askConfirmation` option to define confirmation breakpoints by processed record count.
+
+```ts
+new BulkAiFlowPlugin({
+  actionName: 'Generate descriptions',
+  // ...adapters + fields
+
+  //diff-add
+  askConfirmation: [
+    { afterRecords: 10 },
+    { afterRecords: 30 },
+    { everyRecords: 1000 },
+  ],
+});
+```
+
+**How it works:**
+- `afterRecords: N` — show a confirmation once, after the first $N$ records.
+- `everyRecords: N` — show a confirmation after every $N$ records.
