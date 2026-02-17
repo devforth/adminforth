@@ -63,6 +63,7 @@
     </BreadcrumbsWithButtons>
 
     <component 
+      v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
       :is="getCustomComponent(c)"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
