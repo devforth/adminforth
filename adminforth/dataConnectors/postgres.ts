@@ -232,7 +232,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             }
             return JSON.stringify(value);
         } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-            return value === null ? null : (value ? 1 : 0);
+            return value === null ? null : (value ? true : false);
         } else if (field.type == AdminForthDataTypes.JSON) {
             if (field._underlineType == 'json') {
                 return typeof value === 'string' || value === null ? value : JSON.stringify(value);

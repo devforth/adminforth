@@ -2215,7 +2215,7 @@ const datePickerValue = ref()
 <div>
 ```html
 <DatePicker
-  v-model:datePickerValue="datePickerValue"
+  v-model:valueStart="datePickerValue"
   :column="{ type: 'datetime' }"
   label="Pick start"
 />
