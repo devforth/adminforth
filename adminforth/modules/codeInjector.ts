@@ -86,6 +86,36 @@ class CodeInjector implements ICodeInjector {
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
   }
 
+  async checkIconNames(icons: string[]) {
+    const uniqueIcons = Array.from(new Set(icons));
+    const collections = new Set(icons.map((icon) => icon.split(':')[0]));
+    const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
+
+    const iconPackages = (
+      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(this.spaTmpPath() +'/node_modules/' + pkg), name: pkg})))
+    );
+
+    const loadedIconPackages = iconPackages.filter((res) => res.status === 'fulfilled').map((res) => res.value).reduce((acc, { pkg, name }) => {
+      acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
+      return acc;
+    }, {});
+
+    uniqueIcons.forEach((icon) => {
+      const [ collection, iconName ] = icon.split(':');
+      const PascalIconName = 'Icon' + iconName.split('-').map((part, index) => {
+        return part[0].toUpperCase() + part.slice(1);
+      }).join('');
+
+      if (!loadedIconPackages[collection]) {
+        throw new Error(`Collection ${collection} not found`);
+      }
+      if (!loadedIconPackages[collection][PascalIconName]) {
+        throw new Error(`Icon ${iconName} not found in collection ${collection}`);
+      }
+    });
+  }
+
+
   registerCustomComponent(filePath: string): void {
     const componentName = getComponentNameFromPath(filePath);
     this.allComponentNames[filePath] = componentName;
@@ -497,7 +527,6 @@ class CodeInjector implements ICodeInjector {
       }
     }
 
-
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
       this.allComponentNames[filePath] = componentName;
@@ -527,7 +556,6 @@ class CodeInjector implements ICodeInjector {
 
     let imports = iconImports + '\n';
     imports += customComponentsImports + '\n';
-
 
     if (this.adminforth.config.customization?.vueUsesFile) {
       imports += `import addCustomUses from '${this.adminforth.config.customization.vueUsesFile}';\n`;
@@ -654,6 +682,7 @@ class CodeInjector implements ICodeInjector {
 
     try {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
+      await this.checkIconNames(icons);
       if (existingHash === fullHash) {
         afLogger.trace(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
@@ -693,7 +722,7 @@ class CodeInjector implements ICodeInjector {
         }
       });
     }
-
+    await this.checkIconNames(icons);
     await fs.promises.writeFile(hashPath, fullHash);
   }
 
