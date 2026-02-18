@@ -529,20 +529,22 @@ export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord
   const coreStore = useCoreStore();
 
   for (const key of newKeys) {
-    if (oldRecord[key] !== newRecord[key]) {
+    const oldValue = typeof oldRecord[key] === 'object' && oldRecord[key] !== null ? JSON.stringify(oldRecord[key]) : oldRecord[key];
+    const newValue = typeof newRecord[key] === 'object' && newRecord[key] !== null ? JSON.stringify(newRecord[key]) : newRecord[key];
+    if (oldValue !== newValue) {
       if (  
             ( 
-              oldRecord[key] === undefined || 
-              oldRecord[key] === null || 
-              oldRecord[key] === '' || 
-              (Array.isArray(oldRecord[key]) && oldRecord[key].length === 0)
+              oldValue === undefined || 
+              oldValue === null || 
+              oldValue === '' || 
+              (Array.isArray(oldValue) && oldValue.length === 0)
             ) 
               &&            
             ( 
-              newRecord[key] === undefined || 
-              newRecord[key] === null || 
-              newRecord[key] === '' || 
-              (Array.isArray(newRecord[key]) && newRecord[key].length === 0)
+              newValue === undefined || 
+              newValue === null || 
+              newValue === '' || 
+              (Array.isArray(newValue) && newValue.length === 0)
             )
       ) {
         // console.log(`Value for key ${key} is considered equal (empty)`)
@@ -556,7 +558,7 @@ export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord
           continue;
         }
       }
-      // console.log(`Value for key ${key} is different`, { oldValue: oldRecord[key], newValue: newRecord[key] });
+      // console.log(`Value for key ${key} is different`, { oldValue: oldValue, newValue: newValue });
       return false;
     }
   }
