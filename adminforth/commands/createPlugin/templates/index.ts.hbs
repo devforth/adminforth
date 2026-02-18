@@ -9,6 +9,7 @@ export default class {{pluginName}} extends AdminForthPlugin {
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
     this.options = options;
+    this.shouldHaveSingleInstancePerWholeApp = () => false;
   }
 
   async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
@@ -25,10 +26,6 @@ export default class {{pluginName}} extends AdminForthPlugin {
     // optional method to return unique string representation of plugin instance. 
     // Needed if plugin can have multiple instances on one resource 
     return `single`;
-  }
-
-  shouldHaveSingleInstancePerWholeApp(): boolean {
-    return false;
   }
 
   setupEndpoints(server: IHttpServer) {
