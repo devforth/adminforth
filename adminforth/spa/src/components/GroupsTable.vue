@@ -22,7 +22,7 @@
           class="bg-lightForm dark:bg-darkForm dark:border-darkFormBorder block md:table-row"
           :class="{ 'border-b': i !== group.columns.length - 1}"
         >
-          <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
+          <td class="px-6 py-4 flex items-center block pb-0 md:pb-4" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
             <span class="flex items-center gap-1">                     
               {{ column.label }}
