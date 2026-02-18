@@ -1302,12 +1302,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 error: createRecordResponse.error, 
                 ok: false, 
                 newRecordId: createRecordResponse.redirectToRecordId ? createRecordResponse.redirectToRecordId :createRecordResponse.newRecordId, 
-                redirectToRecordId: createRecordResponse.redirectToRecordId };
+                redirectToRecordId: createRecordResponse.redirectToRecordId 
+              };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
             return {
               newRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
+              redirectToRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
               ok: true
             }
         }

@@ -237,7 +237,7 @@ async function saveRecord() {
         name: 'resource-show', 
         params: { 
           resourceId: route.params.resourceId, 
-          primaryKey: response.newRecordId
+          primaryKey: response.redirectToRecordId || response.newRecordId
         } 
       });
       alert({
