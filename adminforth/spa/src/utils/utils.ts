@@ -13,6 +13,7 @@ import { i18nInstance } from '../i18n'
 
 
 
+
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
@@ -521,4 +522,43 @@ export function btoa_function(source: string): string {
 
 export function atob_function(source: string): string {
   return atob(source);
+}
+
+export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): boolean {
+  const newKeys = Object.keys(newRecord);
+  const coreStore = useCoreStore();
+
+  for (const key of newKeys) {
+    if (oldRecord[key] !== newRecord[key]) {
+      if (  
+            ( 
+              oldRecord[key] === undefined || 
+              oldRecord[key] === null || 
+              oldRecord[key] === '' || 
+              (Array.isArray(oldRecord[key]) && oldRecord[key].length === 0)
+            ) 
+              &&            
+            ( 
+              newRecord[key] === undefined || 
+              newRecord[key] === null || 
+              newRecord[key] === '' || 
+              (Array.isArray(newRecord[key]) && newRecord[key].length === 0)
+            )
+      ) {
+        // console.log(`Value for key ${key} is considered equal (empty)`)
+        continue;
+      }
+
+      const column = coreStore.resource.columns.find((c) => c.name === key);
+      if (column?.foreignResource) {
+        if (newRecord[key] === oldRecord[key]?.pk) {
+          // console.log(`Value for key ${key} is considered equal (foreign key)`)
+          continue;
+        }
+      }
+      // console.log(`Value for key ${key} is different`, { oldValue: oldRecord[key], newValue: newRecord[key] });
+      return false;
+    }
+  }
+  return true;
 }
