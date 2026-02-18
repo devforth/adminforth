@@ -64,6 +64,10 @@ function hashify(obj) {
   return md5hash(JSON.stringify(obj));
 }
 
+function isFulfilled<T>(result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> {
+  return result.status === 'fulfilled';
+}
+
 function notifyWatcherIssue(limit) {
   afLogger.info('Ran out of file handles after watching %s files.', limit);
   afLogger.info('Falling back to polling which uses more CPU.');
@@ -95,7 +99,7 @@ class CodeInjector implements ICodeInjector {
       await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(this.spaTmpPath() +'/node_modules/' + pkg), name: pkg})))
     );
 
-    const loadedIconPackages = iconPackages.filter((res) => res.status === 'fulfilled').map((res) => res.value).reduce((acc, { pkg, name }) => {
+    const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
       acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
       return acc;
     }, {});
