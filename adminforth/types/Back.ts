@@ -515,6 +515,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     cookies: Record<string, string>,
     requestUrl: string,
   },
+  filtersTools: any,
   adminforth: IAdminForth,
 }) => Promise<{
   ok: boolean, 
