@@ -381,6 +381,20 @@ export function md5hash(str:string) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
+export function convertPeriodToSeconds(period: string): number {
+    const periodChar = period.slice(-1);
+    const duration = parseInt(period.slice(0, -1));
+    if (periodChar === 's') {
+      return duration;
+    } else if (periodChar === 'm') {
+      return duration * 60;
+    } else if (periodChar === 'h') {
+      return duration * 60 * 60;
+    } else if (periodChar === 'd') {
+      return duration * 60 * 60 * 24;
+    }
+    throw new Error(`Invalid period: ${period}`);
+}
 export class RateLimiter {
   // constructor, accepts string like 10/10m, or 20/10s, or 30/1d
 
@@ -394,18 +408,7 @@ export class RateLimiter {
     }
 
 
-    const period = rate.slice(-1);
-    const duration = parseInt(rate.slice(0, -1));
-    if (period === 's') {
-      return duration;
-    } else if (period === 'm') {
-      return duration * 60;
-    } else if (period === 'h') {
-      return duration * 60 * 60;
-    } else if (period === 'd') {
-      return duration * 60 * 60 * 24;
-    }
-    throw new Error(`Invalid rate duration period: ${period}`);
+    return convertPeriodToSeconds(rate);
   }
 
 
