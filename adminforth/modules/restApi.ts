@@ -733,10 +733,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           'edit': 'show',
         }[source];
 
-        for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest)) {
+        for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
           const filterTools = filtersTools.get(body);
           body.filtersTools = filterTools;
-          const resp = await hook({
+          const resp = await (hook as BeforeDataSourceRequestFunction)({
             resource,
             query: body,
             adminUser,
