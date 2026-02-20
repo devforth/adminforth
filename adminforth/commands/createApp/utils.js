@@ -314,8 +314,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       // We'll write .env using the same content as .env.sample
       src: '.env.local.hbs',
       dest: '.env',
-      data: {},
-      empty: true,
+      data: {dbUrl, prismaDbUrl},
     },
     {
       src: 'adminuser.ts.hbs',
