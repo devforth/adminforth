@@ -84,7 +84,7 @@ new AutoRemovePlugin({
         createdAtField: 'created_at',
         mode: 'time-based',
         deleteOlderThan: '1y',
-        interval: '30ds',  
+        interval: '30d',  
       }),
 ```
 
