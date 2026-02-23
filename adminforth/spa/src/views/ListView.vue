@@ -27,6 +27,7 @@
         :resource="coreStore.resource"
         :adminUser="coreStore.adminUser"
         :checkboxes="checkboxes"
+        :clearCheckboxes="clearCheckboxes"
       />
       <button
         @click="()=>{checkboxes = []}"
