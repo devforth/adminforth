@@ -263,3 +263,4 @@ new RichEditorPlugin({
     attachmentResourceIdFieldName: "resource_id",
   }
 })
+```
