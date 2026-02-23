@@ -211,6 +211,45 @@ new CompletionAdapterGoogleGemini({
 }),
 ```
 
+### Using json_schema with adapter
+
+If you want use custom json schema for completion response - you can use outputSchema param for completion:
+
+
+```ts
+const openAi = new CompletionAdapterOpenAIChatGPT({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-5-mini',
+});
+
+const prompt = 'What is the capital of France? return json';
+
+openAi.complete(
+    prompt, 
+    [], 
+    200, 
+    { 
+      json_schema: {
+        name: "capital_response",
+        schema: {
+          type: "object",
+          properties: {
+            capital: { type: "string" },
+          },
+          required: ["capital"],
+        },
+      },
+    },
+  ).then((resp) => {
+    console.log(resp);
+});
+
+```
+
+Then output will be like: 
+```
+{ content: '{"capital":"Paris"}', finishReason: 'stop' }
+```
 
 ## 🔎 Image Analysis
 

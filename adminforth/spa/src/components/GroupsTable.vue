@@ -22,21 +22,23 @@
           class="bg-lightForm dark:bg-darkForm dark:border-darkFormBorder block md:table-row"
           :class="{ 'border-b': i !== group.columns.length - 1}"
         >
-          <td class="px-6 py-4 flex items-center block md:table-cell pb-0 md:pb-4" 
+          <td class="px-6 py-4 flex items-center block pb-0 md:pb-4 relative md:table-cell" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
-            <span class="flex items-center gap-1">                     
-              {{ column.label }}
-              <Tooltip v-if="column.required[mode]">
+            <div class="absolute inset-0 flex items-center overflow-hidden px-6 py-4 max-h-32">
+              <span class="flex items-center gap-1">                     
+                {{ column.label }}
+                <Tooltip v-if="column.required[mode]">
 
-                <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                  :class="(columnError(column) && validating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
-                />
+                  <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
+                    :class="(columnError(column) && validating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
+                  />
 
-                <template #tooltip>
-                  {{ $t('Required field') }}
-                </template>
-              </Tooltip>
-            </span>
+                  <template #tooltip>
+                    {{ $t('Required field') }}
+                  </template>
+                </Tooltip>
+              </span>
+            </div>
           </td>
           <td
             class="px-6 py-4  whitespace-pre-wrap relative block md:table-cell"

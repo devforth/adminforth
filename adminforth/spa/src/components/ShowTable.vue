@@ -32,8 +32,10 @@
                   :record="coreStore.record"
               />
             <template v-else-if="checkShowIf(column, record, resource?.columns || [])">
-              <td class="px-6 py-4 relative block md:table-cell font-bold md:font-normal pb-0 md:pb-4">
-                {{ column.label }}
+              <td class="px-6 py-4 relative block flex justify-start font-bold md:font-normal pb-0 md:pb-4 relative md:table-cell">
+                <div class="absolute inset-0 flex items-center overflow-hidden px-6 py-4 max-h-32">
+                  {{ column.label }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-pre-wrap" :data-af-column="column.name">
                 <component

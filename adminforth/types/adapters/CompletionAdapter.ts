@@ -17,6 +17,7 @@ export interface CompletionAdapter {
     content: string,
     stop: string[],
     maxTokens: number,
+    outputSchema?: any
   ): Promise<{
     content?: string;
     finishReason?: string;

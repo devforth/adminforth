@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -46,10 +46,9 @@ export * from './types/Back.js';
 export * from './types/Common.js';
 export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
-
 export { interpretResource };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, RAMLock, getClientIp };
+export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
 
 
 class AdminForth implements IAdminForth {
