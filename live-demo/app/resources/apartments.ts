@@ -203,7 +203,6 @@ export default {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
         s3ACL: 'public-read',
-        
       }),
       allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
       maxFileSize: 1024 * 1024 * 20, // 5MB
