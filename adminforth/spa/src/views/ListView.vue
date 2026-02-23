@@ -26,6 +26,7 @@
         :meta="(c as AdminForthComponentDeclarationFull).meta"
         :resource="coreStore.resource"
         :adminUser="coreStore.adminUser"
+        :checkboxes="checkboxes"
       />
       <button
         @click="()=>{checkboxes = []}"
