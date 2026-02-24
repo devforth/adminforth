@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
@@ -121,7 +121,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 function checkIfWeCanLeavePage() {
-  return wasSaveSuccessful.value || cancelButtonClicked.value || JSON.stringify(record.value) === JSON.stringify(initialValues.value);
+  return wasSaveSuccessful.value || cancelButtonClicked.value || compareOldAndNewRecord(initialValues.value, record.value);
 }
 
 function onBeforeUnload(event: BeforeUnloadEvent) {
@@ -237,7 +237,7 @@ async function saveRecord() {
         name: 'resource-show', 
         params: { 
           resourceId: route.params.resourceId, 
-          primaryKey: response.newRecordId
+          primaryKey: response.redirectToRecordId || response.newRecordId
         } 
       });
       alert({
