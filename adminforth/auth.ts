@@ -106,9 +106,9 @@ getClientIp(headers: object) {
   }
 
   setCustomCookie({ response, payload }: {
-    response: any, payload: { name: string, value: string, expiry?: number | undefined, expirySeconds: number | undefined, httpOnly: boolean }
+    response: any, payload: { name: string, value: string, expiry?: number | undefined, expirySeconds: number | undefined, httpOnly: boolean, sessionBased?: boolean | undefined }
   }) {
-    const {name, value, expiry, httpOnly, expirySeconds } = payload;
+    const {name, value, expiry, httpOnly, expirySeconds, sessionBased } = payload;
 
     let expiryMs = 24 * 60 * 60 * 1000; // default 1 day
     if (expirySeconds !== undefined) {
@@ -117,11 +117,14 @@ getClientIp(headers: object) {
       afLogger.warn(`setCustomCookie: expiry(in ms) is deprecated, use expirySeconds instead (seconds), traceback: ${new Error().stack}`);
       expiryMs = expiry;
     }
-
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
-    response.setHeader('Set-Cookie', `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
-      httpOnly ? ' HttpOnly;' : ''
-    } SameSite=Strict; Expires=${new Date(Date.now() + expiryMs).toUTCString() } `);
+    response.setHeader('Set-Cookie', 
+      `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
+        httpOnly ? ' HttpOnly;' : '' 
+      }SameSite=Strict;${
+        sessionBased ? '' : `Expires=${new Date(Date.now() + expiryMs).toUTCString() }`
+      }`
+    );
   }
 
   getCustomCookie({ cookies, name }: {

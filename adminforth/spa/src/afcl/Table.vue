@@ -78,7 +78,7 @@
             </tr>
           </tbody>
       </table>
-    <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground mt-2 flex flex-col gap-2 items-center sm:flex-row justify-center sm:justify-between px-4 pb-4" 
+    <nav class="afcl-table-pagination-container bg-lightTableBackground dark:bg-darkTableBackground pt-2 flex flex-col gap-2 items-center sm:flex-row justify-center sm:justify-between px-4 pb-4" 
       v-if="totalPages > 1"
       :aria-label="$t('Table navigation')"
       :class="makePaginationSticky ? 'sticky bottom-0 pt-4' : ''"
