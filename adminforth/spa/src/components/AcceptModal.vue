@@ -14,6 +14,8 @@
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
                     <h3 class="afcl-confirmation-title mb-5 text-lg font-normal text-lightAcceptModalText dark:text-darkAcceptModalText">{{ modalStore?.modalContent?.content }}</h3>
+                    <h3 class=" afcl-confirmation-title mb-5 text-lg font-normal text-lightAcceptModalText dark:text-darkAcceptModalText" v-html="modalStore?.modalContent?.contentHTML"></h3>
+
                     <button @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}" type="button" class="afcl-confirmation-accept-button text-lightAcceptModalConfirmButtonText bg-lightAcceptModalConfirmButtonBackground hover:bg-lightAcceptModalConfirmButtonBackgroundHover focus:ring-4 focus:outline-none focus:ring-lightAcceptModalConfirmButtonFocus font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center dark:text-darkAcceptModalConfirmButtonText dark:bg-darkAcceptModalConfirmButtonBackground dark:hover:bg-darkAcceptModalConfirmButtonBackgroundHover dark:focus:ring-darkAcceptModalConfirmButtonFocus">
                         {{ modalStore?.modalContent?.acceptText }}
                     </button>
