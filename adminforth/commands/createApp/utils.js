@@ -193,10 +193,6 @@ function checkIfDatabaseLocal(urlString) {
       }
     }
 
-    // docker / local network aliases
-    if (['db', 'postgres', 'mysql', 'mongo'].includes(host)) {
-      return true
-    }
 
     return false
   } catch {
