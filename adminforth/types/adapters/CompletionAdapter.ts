@@ -23,4 +23,11 @@ export interface CompletionAdapter {
     finishReason?: string;
     error?: string;
   }>;
+
+  /**
+   * This method should return the number of tokens in the input content.
+   * @param content - The input text for which to measure the token count
+   * @returns The number of tokens in the input content
+   */
+  measureTokensCount(content: string): Promise<number> | number;
 }

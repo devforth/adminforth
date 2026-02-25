@@ -697,12 +697,24 @@ Add the new resource to index.ts:
     ...
   ],
 ```
+To use passkey you need to use Key-Value adapter. For example:
+```bash
+npm i @adminforth/key-value-adapter-ram
+```
+
 
 Now, update the settings of the Two-Factor Authentication plugin:
 
 ```ts tittle='./resources/adminuser.ts'
+
+  //diff-add
+  import RamKeyValueAdapter from '@adminforth/key-value-adapter-ram'
+
+  ...
+
   plugins: [
     new TwoFactorsAuthPlugin ({ 
+      keyValueAdapter: new RamKeyValueAdapter(),
       twoFaSecretFieldName: 'secret2fa', 
       timeStepWindow: 1,       
       //diff-add
