@@ -131,6 +131,7 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
     if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
     const value = currentValues.value[column.name];              
       try {
+        // add object check to allow json fields to be objects in edit mode without throwing validation error, but still validate if the string is a valid json or not
         if (typeof value === 'object') {
           JSON.parse(JSON.stringify(value));
         } 
@@ -289,6 +290,8 @@ onMounted(() => {
           }
         }
       } else if (currentValues.value[column.name]) {
+        // Todo: reconsider basic issue
+        // if value is not string, we should stringify it, but object we already stringify in setCurrentValue, so we should not stringify it again to prevent double stringification
         if (typeof currentValues.value[column.name] !== 'string') {
           currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2)
           }
