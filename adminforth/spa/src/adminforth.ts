@@ -132,6 +132,7 @@ class FrontendAPI implements FrontendAPIInterface {
     return new Promise((resolve, reject) => {
       this.modalStore.setModalContent({ 
         content: params.message, 
+        contentHTML: params.messageHtml,
         acceptText: params.yes || 'Yes',
         cancelText: params.no || 'Cancel' 
       })

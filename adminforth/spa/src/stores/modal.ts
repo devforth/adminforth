@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
  type ModalContentType = {
   title?: string;
   content?: string;
+  contentHTML?: string;
   acceptText?: string;
   cancelText?: string;
  }
@@ -12,7 +13,8 @@ import { defineStore } from 'pinia'
 export const useModalStore = defineStore('modal', () => {
   const modalContent = ref({
     title: 'title',
-    content: 'content',
+    content: '',
+    contentHTML: '',
     acceptText: 'acceptText',
     cancelText: 'cancelText',
   });  
@@ -31,7 +33,8 @@ export const useModalStore = defineStore('modal', () => {
   function setModalContent(content: ModalContentType) {
     modalContent.value = {
       title: content.title || 'title',
-      content: content.content || 'content',
+      content: content.content || '',
+      contentHTML: content.contentHTML || '',
       acceptText: content.acceptText || 'acceptText',
       cancelText: content.cancelText || 'cancelText',
     };
@@ -41,6 +44,7 @@ export const useModalStore = defineStore('modal', () => {
     modalContent.value = {
       title: 'title',
       content: 'content',
+      contentHTML: '',
       acceptText: 'acceptText',
       cancelText: 'cancelText',
     };
