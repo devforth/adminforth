@@ -1452,30 +1452,31 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
         }
     });
-    async function handleCascadeOnDelete(parentResource: AdminForthResource, parentId: any) {
-      const adminforth = this.adminforth;
-      for (const resource of adminforth.config.resources) {
-        if (resource.resourceId === parentResource.resourceId) continue;
-        const foreignKeyColumn = resource.columns.find(c => c.foreignResource?.resourceId === parentResource.resourceId
-        );
-        if (!foreignKeyColumn) continue;
-        const deleteStrategy = foreignKeyColumn.foreignResource?.onDelete ?? 'null';
-        const primaryKeyColumn = resource.columns.find(c => c.primaryKey);
-        if (!primaryKeyColumn) continue;
-        const childRecords = await adminforth.resource(resource.resourceId).list([Filters.EQ(foreignKeyColumn.name, parentId)]);
-        for (const record of childRecords) {
-          const childId = record[primaryKeyColumn.name];
-          if (deleteStrategy === 'cascade') {
-            await handleCascadeOnDelete.call(this, resource, childId);
-            await adminforth.resource(resource.resourceId).delete(childId);
-            continue;
-          }
-          if (deleteStrategy === 'setNull') {
-            await adminforth.resource(resource.resourceId).update(childId, {[foreignKeyColumn.name]: null,});
-          }
-        }
-      }
-    }
+    // async function handleCascadeOnDelete(parentResource: AdminForthResource, parentId: any) {
+    //   const adminforth = this.adminforth;
+    //   for (const resource of adminforth.config.resources) {
+    //     if (resource.resourceId === parentResource.resourceId) continue;
+    //     const foreignKeyColumn = resource.columns.find(c => c.foreignResource?.resourceId === parentResource.resourceId
+    //     );
+    //     if (!foreignKeyColumn) continue;
+    //     const deleteStrategy = foreignKeyColumn.foreignResource?.onDelete ?? 'null';
+    //     const primaryKeyColumn = resource.columns.find(c => c.primaryKey);
+    //     if (!primaryKeyColumn) continue;
+    //     const childRecords = await adminforth.resource(resource.resourceId).list([Filters.EQ(foreignKeyColumn.name, parentId)]);
+    //     for (const record of childRecords) 
+
+    //       const childId = record[primaryKeyColumn.name];
+    //       if (deleteStrategy === 'cascade') {
+    //         await handleCascadeOnDelete.call(this, resource, childId);
+    //         await adminforth.resource(resource.resourceId).delete(childId);
+    //         continue;
+    //       }
+    //       if (deleteStrategy === 'setNull') {
+    //         await adminforth.resource(resource.resourceId).update(childId, {[foreignKeyColumn.name]: null,});
+    //       }
+    //     }
+    //   }
+    // }
     server.endpoint({
         method: 'POST',
         path: '/delete_record',
@@ -1491,6 +1492,27 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (!resource.options.allowedActions.delete) {
                 return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             } 
+
+            for (const childRes of this.adminforth.config.resources) {
+              for (const foreignKeyColumn of childRes.columns.filter(c => c.foreignResource?.resourceId === resource.resourceId)) {
+                const onDelete = (foreignKeyColumn.foreignResource as any).onDelete ?? 'setNull';
+                const primaryKeyColumn = childRes.columns.find(c => c.primaryKey);
+                if (!primaryKeyColumn) continue;
+
+                const childRecords = await this.adminforth.resource(childRes.resourceId).list([Filters.EQ(foreignKeyColumn.name, body['primaryKey'])]);
+
+                for (const childRecord of childRecords) {
+                  const childId = childRecord[primaryKeyColumn.name];
+                  if (onDelete === 'cascade') {
+                    await this.adminforth.resource(childRes.resourceId).delete(childId);
+                  } 
+                   if (onDelete === 'setNull') {
+                    await this.adminforth.resource(resource.resourceId).update(childId, {[foreignKeyColumn.name]: null,});
+                  }
+                }
+              }
+            }
+
             const { allowedActions } = await interpretResource(
               adminUser, 
               resource, 
@@ -1503,8 +1525,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (!allowed) {
               return { error };
             }
-            
-            await handleCascadeOnDelete.call(this, resource, body['primaryKey']);
+
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
               resource, record, adminUser, recordId: body['primaryKey'], response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
