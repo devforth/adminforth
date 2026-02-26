@@ -1494,20 +1494,26 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             } 
 
             for (const childRes of this.adminforth.config.resources) {
-              for (const foreignKeyColumn of childRes.columns.filter(c => c.foreignResource?.resourceId === resource.resourceId)) {
-                const onDelete = (foreignKeyColumn.foreignResource as any).onDelete ?? 'setNull';
-                const primaryKeyColumn = childRes.columns.find(c => c.primaryKey);
-                if (!primaryKeyColumn) continue;
+              const foreignKeyColumns = childRes.columns.filter(c => c.foreignResource?.resourceId === resource.resourceId);
+              if (!foreignKeyColumns.length) continue;
 
+              const primaryKeyColumn = childRes.columns.find(c => c.primaryKey);
+              if (!primaryKeyColumn) continue;
+
+              for (const foreignKeyColumn of foreignKeyColumns) {
                 const childRecords = await this.adminforth.resource(childRes.resourceId).list([Filters.EQ(foreignKeyColumn.name, body['primaryKey'])]);
 
-                for (const childRecord of childRecords) {
-                  const childId = childRecord[primaryKeyColumn.name];
+                const onDelete = (foreignKeyColumn.foreignResource as any).onDelete;
+
+                for (const child of childRecords) {
+                  const childId = child[primaryKeyColumn.name];
+
                   if (onDelete === 'cascade') {
                     await this.adminforth.resource(childRes.resourceId).delete(childId);
-                  } 
-                   if (onDelete === 'setNull') {
-                    await this.adminforth.resource(resource.resourceId).update(childId, {[foreignKeyColumn.name]: null,});
+                  } else if (onDelete === 'setNull') {
+                    await this.adminforth.resource(childRes.resourceId).update(childId, {[foreignKeyColumn.name]: null});
+                  } else {
+                    return { error: `Wrong onDelete strategy ${onDelete} in resource '${childRes.resourceId}'` };
                   }
                 }
               }
