@@ -1498,10 +1498,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               ActionCheckSource.DeleteRequest,
               this.adminforth
             );
+
             const { allowed, error } = checkAccess(AllowedActionsEnum.delete, allowedActions);
             if (!allowed) {
               return { error };
             }
+            
             await handleCascadeOnDelete.call(this, resource, body['primaryKey']);
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
               resource, record, adminUser, recordId: body['primaryKey'], response, 
