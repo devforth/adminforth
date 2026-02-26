@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mt-4 lg:mt-10 w-full max-w-[700px] bg-lightProgressBarUnfilledColor rounded-full h-2.5 dark:bg-darkProgressBarUnfilledColor">
+  <div class="relative w-full max-w-[700px] bg-lightProgressBarUnfilledColor rounded-full h-2.5 dark:bg-darkProgressBarUnfilledColor">
     <span class="absolute -top-6 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ leftLabel }}</span>
     <span class="absolute -top-6 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ rightLabel }}</span>
     <div 
