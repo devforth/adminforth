@@ -1490,6 +1490,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             if (!resource.options.allowedActions.delete) {
                 return { error: `Resource '${resource.resourceId}' does not allow delete action` };
+            } 
+            const { allowedActions } = await interpretResource(
+              adminUser, 
+              resource, 
+              { requestBody: body, record: record }, 
+              ActionCheckSource.DeleteRequest,
+              this.adminforth
+            );
+            const { allowed, error } = checkAccess(AllowedActionsEnum.delete, allowedActions);
+            if (!allowed) {
+              return { error };
             }
             await handleCascadeOnDelete.call(this, resource, body['primaryKey']);
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
