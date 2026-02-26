@@ -4,6 +4,7 @@
     <span class="absolute -top-6 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ rightLabel }}</span>
     <div 
       class="bg-lightProgressBarFilledColor dark:bg-darkProgressBarFilledColor h-2.5 rounded-full transition-all duration-300 ease-in-out"
+      :class="{ 'progress-bar': showAnimation }"  
       :style="{ width: `${percentage}%` }"
     ></div>
     <span v-if="showValues" class="absolute top-4 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(minValue) }}</span>
@@ -26,6 +27,7 @@ interface Props {
   showLabels?: boolean
   showValues?: boolean
   showProgress?: boolean
+  showAnimation?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -53,3 +55,34 @@ const formatValue = (value: number): string => {
   return formatter(value)
 }
 </script>
+
+
+<style scoped>
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100%;
+
+  background: linear-gradient(
+    -45deg,
+    transparent 35%,
+    rgba(255,255,255,0.4),
+    transparent 65%
+  );
+
+  transform: translateX(-100%);
+  animation: progress-slide 2s linear infinite;
+}
+
+@keyframes progress-slide {
+  100% {
+    transform: translateX(100%);
+  }
+}
+</style>
