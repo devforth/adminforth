@@ -1470,16 +1470,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const childResources = this.adminforth.config.resources.filter(r => r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId)); 
             if (childResources.length){
               for (const childRes of childResources) {
-                const foreignKeyColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
-                const onDeleteStrategy = foreignKeyColumn.foreignResource.onDelete;    
-                const childRecords = await this.adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignKeyColumn.name, body['primaryKey']))
+                const foreignResourceColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
+                const onDeleteStrategy = foreignResourceColumn.foreignResource.onDelete;    
+                const childRecords = await this.adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignResourceColumn.name, body['primaryKey']))
                 if (onDeleteStrategy === 'cascade') {
                   for (const childRecord of childRecords) {
                     await this.adminforth.resource(childRes.resourceId).delete(childRecord.id);
                   }
                 } else if (onDeleteStrategy === 'setNull') {
                   for (const childRecord of childRecords) {
-                    await this.adminforth.resource(childRes.resourceId).update(childRecord.id, {[foreignKeyColumn.name]: null});
+                    await this.adminforth.resource(childRes.resourceId).update(childRecord.id, {[foreignResourceColumn.name]: null});
                   }
                 } else {
                   return { error: `Wrong onDelete strategy: ${onDeleteStrategy}` };
