@@ -1471,6 +1471,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (childResources.length){
               for (const childRes of childResources) {
                 const foreignResourceColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
+                if (!foreignResourceColumn.foreignResource.onDelete) continue;
                 const onDeleteStrategy = foreignResourceColumn.foreignResource.onDelete;    
                 const childRecords = await this.adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignResourceColumn.name, body['primaryKey']))
                 if (onDeleteStrategy === 'cascade') {
