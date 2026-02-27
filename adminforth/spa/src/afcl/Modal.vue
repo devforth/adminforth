@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="$slots.trigger"
-    @click="modal?.show()" class="inline-flex items-center cursor-pointer"
+    @click="modal?.show()" class="inline-flex items-center cursor-pointer w-full"
   >
     <slot name="trigger"></slot>
   </div>
