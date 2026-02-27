@@ -160,6 +160,10 @@ export type ConfirmParams = {
      */
     message?: string;
     /**
+     * Message to display in the dialog as HTML (can be used instead of message)
+     */
+    messageHtml?: string;
+    /**
      * The text to display in the "accept" button
      */
     yes?: string;

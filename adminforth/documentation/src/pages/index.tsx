@@ -44,7 +44,7 @@ const images = [
     original: require('@site/static/img/previews/2fa_plugin.png').default,
     title: '2FA Plugin - secure your admin panel',
     link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
-    description: 'RFC 6238-Compliant TOTP-Based 2FA will add additional security layer to your admin panel'
+    description: 'RFC 6238-Compliant TOTP-Based 2FA will add additional security layer to your admin panel. Also supports passkeys'
   },
   {
     original: require('@site/static/img/previews/dark.png').default,
@@ -105,7 +105,13 @@ const images = [
     title: 'AI Translation Plugin - translate your admin and External apps',
     link: '/docs/tutorial/Plugins/i18n/',
     description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
-  }
+  },
+  {
+    original: require('@site/static/img/previews/bulk-ai-flow.png').default,
+    title: 'Bulk AI Plugin - generate data for your resources',
+    link: '/docs/tutorial/Plugins/bulk-ai-flow/',
+    description: 'Use LLMs to fill records with generated data or images. For example, generate product descriptions based on product name and image or generate products images'
+  },
 ];
 
 
@@ -201,13 +207,7 @@ export default function Home(): JSX.Element {
         What it can do for you
       </Heading>
 
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '4rem',
-          justifyContent: 'center',
-          padding: '1rem',
-        }}>
+        <div className={styles.cardsWrapper}>
           {images.map((item, index) => (
             <div className="card-demo" key={`feature${index}`}>
               <div className="card shadow--md" style={{

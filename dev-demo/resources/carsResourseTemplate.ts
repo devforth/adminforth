@@ -11,7 +11,7 @@ import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js'
 import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
 import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
 import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
-
+import MarkdownPlugin from '../../plugins/adminforth-markdown/index.js';
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 import CompletionAdapterGoogleGemini from '../../adapters/adminforth-completion-adapter-google-gemini/index.js';
@@ -193,26 +193,37 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           maxShowWidth: "300px",
         },
       }),
-      new RichEditorPlugin({
-        htmlFieldName: 'description',
-        attachments: {
-          attachmentResource: "cars_description_images",
-          attachmentFieldName: "image_path",
-          attachmentRecordIdFieldName: "record_id",
-          attachmentResourceIdFieldName: "resource_id",
-        },
-        ...(process.env.OPENAI_API_KEY ? {
-          completion: {
-            adapter: new CompletionAdapterOpenAIChatGPT({
-              openAiApiKey: process.env.OPENAI_API_KEY as string,
-              model: 'gpt-5-mini',
-            }),
-            expert: {
-              debounceTime: 250,
-            }
-          }
-        } : {}),
-      }),
+      // new RichEditorPlugin({
+      //   htmlFieldName: 'description',
+      //   attachments: {
+      //     attachmentResource: "cars_description_images",
+      //     attachmentFieldName: "image_path",
+      //     attachmentRecordIdFieldName: "record_id",
+      //     attachmentResourceIdFieldName: "resource_id",
+      //   },
+      //   ...(process.env.OPENAI_API_KEY ? {
+      //     completion: {
+      //       adapter: new CompletionAdapterOpenAIChatGPT({
+      //         openAiApiKey: process.env.OPENAI_API_KEY as string,
+      //         model: 'gpt-5-mini',
+      //       }),
+      //       expert: {
+      //         debounceTime: 250,
+      //       }
+      //     }
+      //   } : {}),
+      // }),
+      new MarkdownPlugin(
+        {
+          fieldName: "description",
+            attachments: {
+              attachmentResource: "cars_description_images",
+              attachmentFieldName: "image_path",
+              attachmentRecordIdFieldName: "record_id",
+              attachmentResourceIdFieldName: "resource_id",
+          },
+        }
+      ),
       new importExport({}),
       // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({

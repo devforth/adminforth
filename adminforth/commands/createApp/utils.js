@@ -13,6 +13,9 @@ import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { getVersion } from '../cli.js';
 
+import { URL } from 'url'
+import net from 'net'
+
 const execAsync = promisify(exec);
 
 function detectAdminforthVersion() {
@@ -159,6 +162,44 @@ function checkForExistingPackageJson(options) {
   }
 }
 
+function checkIfDatabaseLocal(urlString) {
+  if (urlString.startsWith('sqlite')) {
+    return true;
+  }
+  try {
+    const url = new URL(urlString)
+
+    const host = url.hostname
+
+    if (!host) return false
+
+    // localhost
+    if (host === 'localhost') return true
+
+    // loopback ipv4
+    if (host === '127.0.0.1') return true
+
+    // loopback ipv6
+    if (host === '::1') return true
+
+    // private IP ranges
+    if (net.isIP(host)) {
+      if (
+        host.startsWith('10.') ||
+        host.startsWith('192.168.') ||
+        host.match(/^172\.(1[6-9]|2\d|3[0-1])\./)
+      ) {
+        return true
+      }
+    }
+
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 async function scaffoldProject(ctx, options, cwd) {
   const projectDir = path.join(cwd, options.appName);
   await fse.ensureDir(projectDir);
@@ -253,7 +294,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: '.env.local.hbs',
       dest: '.env.local',
-      data: { dbUrl, prismaDbUrl },
+      data: { dbUrl: checkIfDatabaseLocal(dbUrl) ? dbUrl : null, prismaDbUrl },
     },
     {
       src: '.env.prod.hbs',
@@ -269,8 +310,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
       // We'll write .env using the same content as .env.sample
       src: '.env.local.hbs',
       dest: '.env',
-      data: {},
-      empty: true,
+      data: {dbUrl, prismaDbUrl},
     },
     {
       src: 'adminuser.ts.hbs',

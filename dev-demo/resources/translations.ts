@@ -1,4 +1,5 @@
 
+import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
 import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
 import { randomUUID } from 'crypto';
@@ -35,6 +36,11 @@ export default {
       // optional field store list of completed translations
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
+      completeAdapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-5-mini',
+      }),
+      // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
     }),
 
   ],
