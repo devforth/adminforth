@@ -235,7 +235,7 @@ After registering a handler, you can create a job. For example:
         //diff-add
         async (req: any, res: any) => {
           //diff-add
-          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('default');
+          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
           //diff-add
           if (!backgroundJobsPlugin) {
             //diff-add
@@ -397,7 +397,7 @@ Finally, register this component alongside the job task handler:
 ```ts title="./index.ts"
   ...
 
-  const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('default');
+  const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
   
   backgroundJobsPlugin.registerTaskHandler({
     jobHandlerName: 'example_job_handler', // Handler name
