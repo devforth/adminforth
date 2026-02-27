@@ -1482,8 +1482,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   for (const childRecord of childRecords) {
                     await this.adminforth.resource(childRes.resourceId).update(childRecord.id, {[foreignResourceColumn.name]: null});
                   }
-                } else {
-                  return { error: `Wrong onDelete strategy: ${onDeleteStrategy}` };
                 }
               }
             }
