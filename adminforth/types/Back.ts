@@ -1583,6 +1583,24 @@ export interface AdminForthInputConfig {
      * 
      */
     baseUrl?: string,
+
+
+    /**
+     * Most of components are explicitely registered in AdminForth e.g. when you are using them in renderers, page injections and so on.
+     * But some times you might want to have some components registered globally Explicitly. E.g. for ussage in other components without import.
+     * 
+     * ```ts
+     * componentsToExplicitRegister: [
+     *  {
+     *    file: '@@/my-component.vue',
+     *    meta: {
+     *      some: 'meta'
+     *    }
+     *  }
+     * ```
+     * 
+     */
+    componentsToExplicitRegister?: AdminForthComponentDeclarationFull[]
  
 }
 

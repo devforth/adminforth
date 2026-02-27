@@ -531,6 +531,14 @@ class CodeInjector implements ICodeInjector {
       }
     }
 
+    if (this.adminforth.config.componentsToExplicitRegister) {
+      this.adminforth.config.componentsToExplicitRegister.forEach((component) =>  {
+        if (!customResourceComponents.includes(component)) {
+          customResourceComponents.push(component.file);
+        }
+      }); 
+    }
+
     customResourceComponents.forEach((filePath) => {
       const componentName = getComponentNameFromPath(filePath);
       this.allComponentNames[filePath] = componentName;
