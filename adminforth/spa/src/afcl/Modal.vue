@@ -1,19 +1,18 @@
 <template>
   <div
     v-if="$slots.trigger"
-    @click="modal?.show()" class="inline-flex items-center cursor-pointer w-full"
+    @click="toggleModal()" class="inline-flex items-center cursor-pointer w-full"
   >
     <slot name="trigger"></slot>
   </div>
   <Teleport to="body">
-    <div ref="modalEl" tabindex="-1" aria-hidden="true" class="[scrollbar-gutter:stable] hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full max-h-full">
-      <div v-bind="$attrs" class="relative p-4 max-h-full">
+      <div v-show="isModalOpen" v-if="!removeFromDom" @click="backdropClick" v-bind="$attrs" class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-1rem max-h-full flex" >
         <!-- Modal content -->
         <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
 
           <!-- Modal body -->
           <div class="p-4 md:p-5 space-y-4 text-lightDialogBodyText dark:text-darkDialogBodyText">
-            <slot></slot>
+            <slot ></slot>
           </div>
          
           <!-- Confirmation Modal -->
@@ -34,7 +33,7 @@
                 <Button
                   @click="
                     showConfirmationOnClose = false;
-                    modal?.hide();
+                    close();
                   "
                 >
                   Confirm
@@ -44,97 +43,48 @@
           </div>
         </div>
       </div>
-    </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import Button from "./Button.vue";
 import { ref, onMounted, nextTick, onUnmounted, computed, type Ref } from 'vue';
-import { Modal } from 'flowbite';
 
-const modalEl = ref(null);
-const modal: Ref<Modal|null> = ref(null);
+const isModalOpen = ref(false);
 
-interface DialogButton {
-  label: string
-  onclick: (dialog: any) => void
-  options?: Record<string, any> 
-}
+const removeFromDom = computed(() => {
+  return props.removeFromDomOnClose && !isModalOpen.value;
+})
 
 interface DialogProps {
-  buttons?: DialogButton[]
   clickToCloseOutside?: boolean
   beforeCloseFunction?: (() => void | Promise<void>) | null
   beforeOpenFunction?: (() => void | Promise<void>) | null
-  closable?: boolean
   askForCloseConfirmation?: boolean
   closeConfirmationText?: string
+  removeFromDomOnClose?: boolean
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
-  buttons: () => [],
   clickToCloseOutside: true,
   beforeCloseFunction: null,
   beforeOpenFunction: null,
-  closable: true,
   askForCloseConfirmation: false,
   closeConfirmationText: 'Are you sure you want to close this dialog?',
+  removeFromDomOnClose: false,
 })
-
-const buttons = computed<DialogButton[]>(() => {
-  if (props.buttons && props.buttons.length > 0) {
-    return props.buttons;
-  }
-  return [
-    {
-      label: 'Close',
-      onclick: (dialog: any) => {
-        if (!props.askForCloseConfirmation) {
-          dialog.hide();
-        } else {
-          showConfirmationOnClose.value = true;
-        }
-      },
-      options: {}
-    }
-  ];
-});
 
 const showConfirmationOnClose = ref(false);
-onMounted(async () => {
-  //await one tick when all is mounted
-  await nextTick();
-  modal.value = new Modal(
-    modalEl.value,
-    {
-      closable: props.closable,
-      backdrop: props.clickToCloseOutside ? 'dynamic' : 'static',
-      onHide: async () => {
-        if (props.beforeCloseFunction) {
-          await props.beforeCloseFunction();
-        }
-      },
-      onShow: async () => {
-        if (props.beforeOpenFunction) {
-          await props.beforeOpenFunction();
-        }
-      },
-    }
-  );
-})
 
-onUnmounted(() => {
-  //destroy tooltip
-  modal.value?.destroy();
-})
 
-function open() {
-  modal.value?.show();
+async function open() {
+  await props.beforeOpenFunction?.();
+  isModalOpen.value = true;
 }
 
-function close() {
-  modal.value?.hide();
+async function close() {
+  await props.beforeCloseFunction?.();
+  isModalOpen.value = false;
 }
 
 defineExpose({
@@ -145,11 +95,24 @@ defineExpose({
 
 function tryToHideModal() {
   if (!props.askForCloseConfirmation ) {
-    modal.value?.hide();
+    close();
   } else {
     showConfirmationOnClose.value = true;
   }
 }
 
+function toggleModal() {
+  if (isModalOpen.value) {
+    tryToHideModal();
+  } else {
+    open();
+  }
+}
+
+function backdropClick(e: MouseEvent) {
+  if (props.clickToCloseOutside && e.target === e.currentTarget) {
+    tryToHideModal();
+  }
+}
 
 </script>
