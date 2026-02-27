@@ -1,15 +1,17 @@
 <template>
-  <div class="relative w-full max-w-[700px] bg-lightProgressBarUnfilledColor rounded-full h-2.5 dark:bg-darkProgressBarUnfilledColor">
+  <div class="relative w-full max-w-[700px] bg-lightProgressBarUnfilledColor rounded-full h-2.5 dark:bg-darkProgressBarUnfilledColor" :class="props.height ? `h-${props.height}` : ''">
     <span class="absolute -top-6 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ leftLabel }}</span>
     <span class="absolute -top-6 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ rightLabel }}</span>
     <div 
       class="bg-lightProgressBarFilledColor dark:bg-darkProgressBarFilledColor h-2.5 rounded-full transition-all duration-300 ease-in-out"
-      :class="{ 'progress-bar': showAnimation }"  
+      :class="{ 'progress-bar': showAnimation, [`h-${props.height}`]: props.height }"  
       :style="{ width: `${percentage}%` }"
     ></div>
-    <span v-if="showValues" class="absolute top-4 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(minValue) }}</span>
-    <span v-if="showProgress" class="absolute top-4 right-1/2 translate-x-1/2 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ progressText }}</span>
-    <span v-if="showValues" class="absolute top-4 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(maxValue) }}</span>
+    <div class="flex justify-between mt-2">
+      <span v-if="showValues" class="text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(minValue) }}</span>
+      <span v-if="showProgress" class="text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ progressText }}</span>
+      <span v-if="showValues" class="text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ formatValue(maxValue) }}</span>
+    </div>
   </div>
 </template>
 
@@ -28,6 +30,7 @@ interface Props {
   showValues?: boolean
   showProgress?: boolean
   showAnimation?: boolean
+  height?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
