@@ -123,6 +123,25 @@ export default {
 } as AdminForthResourceInput;
 ```
 
+Then make add table schema:
+
+```
+model jobs {
+  id          String @id
+  created_at  DateTime
+  finished_at DateTime?
+  started_by  String
+  name        String
+  state       String
+  progress    String
+  status      String
+  job_handler_name String
+}
+```
+
+and make migration
+
+
 ## Usage
 The plugin saves tasks and keeps executing them even after a server restart, so you should register job task handlers at the start of the AdminForth application.
 
@@ -135,7 +154,7 @@ The plugin saves tasks and keeps executing them even after a server restart, so 
   ...
 
   resources: [
-    
+
     ...
 
     //diff-add
