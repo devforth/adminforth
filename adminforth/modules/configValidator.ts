@@ -618,7 +618,13 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray is enabled but suggestOnCreate is not an array`);
           }
         }
-
+        if (col.foreignResource){
+          if (col.foreignResource.onDelete){
+            if (col.foreignResource.onDelete !== 'cascade' && col.foreignResource.onDelete !== 'setNull'){
+              errors.push (`Wrong delete strategy you can use 'onDelete' or 'cascade'`);
+            }
+          }
+        }
         if (col.foreignResource) {
           if (!col.foreignResource.resourceId) {
             // resourceId is absent or empty
