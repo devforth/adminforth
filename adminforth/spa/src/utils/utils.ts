@@ -10,6 +10,7 @@ import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
+import { useI18n } from 'vue-i18n';
 
 
 
@@ -524,9 +525,10 @@ export function atob_function(source: string): string {
   return atob(source);
 }
 
-export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): boolean {
+export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): {ok: boolean, changedFields: Record<string, {oldValue: any, newValue: any}>} {
   const newKeys = Object.keys(newRecord);
   const coreStore = useCoreStore();
+  const changedColumns: Record<string, { oldValue: any, newValue: any }> = {};
 
   for (const key of newKeys) {
     const oldValue = typeof oldRecord[key] === 'object' && oldRecord[key] !== null ? JSON.stringify(oldRecord[key]) : oldRecord[key];
@@ -537,21 +539,23 @@ export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord
               oldValue === undefined || 
               oldValue === null || 
               oldValue === '' || 
-              (Array.isArray(oldValue) && oldValue.length === 0)
+              (Array.isArray(oldValue) && oldValue.length === 0) ||
+              oldValue === '[]' 
             ) 
               &&            
             ( 
               newValue === undefined || 
               newValue === null || 
               newValue === '' || 
-              (Array.isArray(newValue) && newValue.length === 0)
+              (Array.isArray(newValue) && newValue.length === 0) || 
+              newValue === '[]'
             )
       ) {
         // console.log(`Value for key ${key} is considered equal (empty)`)
         continue;
       }
 
-      const column = coreStore.resource.columns.find((c) => c.name === key);
+      const column = coreStore.resource?.columns.find((c) => c.name === key);
       if (column?.foreignResource) {
         if (newRecord[key] === oldRecord[key]?.pk) {
           // console.log(`Value for key ${key} is considered equal (foreign key)`)
@@ -559,8 +563,57 @@ export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord
         }
       }
       // console.log(`Value for key ${key} is different`, { oldValue: oldValue, newValue: newValue });
-      return false;
+      changedColumns[key] = { oldValue, newValue };
     }
   }
-  return true;
+  return { ok: Object.keys(changedColumns).length !== 0, changedFields: changedColumns };
+}
+
+export function generateMessageHtmlForRecordChange(changedFields: Record<string, { oldValue: any, newValue: any }>, t: ReturnType<typeof useI18n>['t']): string {
+  const coreStore = useCoreStore();
+
+  const escapeHtml = (value: any) => {
+    if (value === null || value === undefined || value === '') return `<em>${t('empty')}</em>`;
+    let s: string;
+    if (typeof value === 'object') {
+      try {
+        s = JSON.stringify(value);
+      } catch (e) {
+        s = String(value);
+      }
+    } else {
+      s = String(value);
+    }
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  };
+
+  const items = Object.keys(changedFields || {}).map(key => {
+    const column = coreStore.resource?.columns?.find((c: any) => c.name === key);
+    const label = column?.label || key;
+    const oldV = escapeHtml(changedFields[key].oldValue);
+    const newV = escapeHtml(changedFields[key].newValue);
+    return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <span class="af-old-value text-muted">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
+  }).join('');
+
+  const listHtml = items ? `<ul class="mt-2 list-disc list-inside">${items}</ul>` : '';
+  const messageHtml = `<div>${escapeHtml(t('There are unsaved changes. Are you sure you want to leave this page?'))}${listHtml}</div>`;
+  return messageHtml; 
+}
+
+export function getTimeAgoString(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} ${diffInSeconds === 1 ? 'second' : 'seconds'} ago`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  }
 }

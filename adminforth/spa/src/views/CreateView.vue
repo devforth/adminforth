@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, generateMessageHtmlForRecordChange } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
@@ -121,7 +121,7 @@ async function onUpdateRecord(newRecord: any) {
 }
 
 function checkIfWeCanLeavePage() {
-  return wasSaveSuccessful.value || cancelButtonClicked.value || compareOldAndNewRecord(initialValues.value, record.value);
+  return wasSaveSuccessful.value || cancelButtonClicked.value || compareOldAndNewRecord(initialValues.value, record.value).ok === false;
 }
 
 function onBeforeUnload(event: BeforeUnloadEvent) {
@@ -139,8 +139,12 @@ onBeforeUnmount(() => {
 
 onBeforeRouteLeave(async (to, from, next) => {
   if (!checkIfWeCanLeavePage()) {
-      const answer = await confirm({message: t('There are unsaved changes. Are you sure you want to leave this page?'), yes: 'Yes', no: 'No'});
-      if (!answer) return next(false);
+    const { changedFields } = compareOldAndNewRecord(initialValues.value, record.value);
+    
+    const messageHtml = generateMessageHtmlForRecordChange(changedFields, t);
+
+    const answer = await confirm({ messageHtml: messageHtml, yes: t('Yes'), no: t('No') });
+    if (!answer) return next(false);
   }
   next();
 });
