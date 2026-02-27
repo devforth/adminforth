@@ -129,6 +129,21 @@ The plugin saves tasks and keeps executing them even after a server restart, so 
 ```ts title="./index.ts"
   //diff-add
   import BackgroundJobsPlugin from '@adminforth/background-jobs';
+  //diff-add
+  import jobs_resource from './resources/jobs.js';
+  
+  ...
+
+  resources: [
+    
+    ...
+
+    //diff-add
+    jobs_resource,
+
+    ...
+
+  ],
 
   ...
 
