@@ -507,22 +507,11 @@ To ensure that plugin activates before some other plugins set `activationOrder` 
 
 ## Splitting frontend logic into multiple files
 
-In case your plugin `.vue` files getting too big, you can split them into multiple files (components)
-Unfortunately when developing plugin, you should register such components(files) manually by calling `componentPath` in `modifyResourceConfig` method:
+In case your plugin `.vue` files getting too big, you can split them into multiple files (components).
 
+Just create a new file `subComponent.vue` in `custom` folder and add your code there. 
 
-```ts title='./af-plugin-chatgpt/index.ts'
-  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
-    super.modifyResourceConfig(adminforth, resourceConfig);
-//diff-add
-      // we just call componentPath method to register component, not using it's result
-//diff-add
-      this.componentPath('subComponent.vue'),
-    };
-  }
-```
-
-Now to import `subComponent.vue` in `completionInput.vue` file you should use `@@/plugins/<plugin-class-name>/subComponent.vue` path:
+Then import it as a component:
 
 ```html title='./af-plugin-chatgpt/custom/completionInput.vue'
 <template>
@@ -534,11 +523,9 @@ Now to import `subComponent.vue` in `completionInput.vue` file you should use `@
 
 <script setup lang="ts">
 //diff-add
-import SubComponent from '@@/plugins/ChatGptPlugin/subComponent.vue';
+import SubComponent from './subComponent.vue';
 </script>
 ```
-
-Pay attention that `ChatGptPlugin` is a class name of your plugin so it should be used in path.
 
 
 ## Using Adapters
