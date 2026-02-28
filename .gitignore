@@ -3,3 +3,4 @@ plugins/*
 !plugins/install-plugins.sh
 adapters/*
 !adapters/install-adapters.sh
+background-jobs-dbs

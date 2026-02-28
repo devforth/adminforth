@@ -161,9 +161,13 @@
         :currentValue="2600"
         :minValue="0"
         :maxValue="5000"
+        :height="6"
+                  :leftLabel="'Level 2'"
+          :rightLabel="'Level 3'"
+        showAnimation
         />
 
-        <ProgressBar
+        <!-- <ProgressBar
           :currentValue="1070"
           :minValue="0"
           :maxValue="5000"
@@ -171,7 +175,7 @@
           :rightLabel="'Level 3'"
           :formatter="(value: number) => `${value} points`"
           :progressFormatter="(value: number, percentage: number) => `${value} done`"
-        />
+        /> -->
 
         <div class="flex flex-col gap-2">
           <Skeleton class="w-full h-4" />
@@ -287,6 +291,22 @@
       label="Pick start"
     />
 
+
+    <Modal class="w-96" clickToCloseOutside>
+      <template #trigger>
+        <Button>Modal Toggle</Button>
+      </template>
+
+      <div class="space-y-4">
+        <p>This is the first paragraph of dialog content.</p>
+        <p>And this is the second paragraph.</p>
+      </div>
+    </Modal>
+
+    <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button>
+
+
+
   </div>
 
 
@@ -313,11 +333,13 @@ import { ProgressBar } from '@/afcl';
 import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
 import { Toggle } from '@/afcl';
+import { Modal } from '@/afcl';
 import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
 import { DatePicker } from '@/afcl';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
+import { callApi } from '@/utils';
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
@@ -344,6 +366,15 @@ watch(valueStart, (newVal) => {
 function doSmth(){
   alert({message: 'Hello world', variant: 'success'})
   adminforth.alert({message: 'You clicked the button!', variant: 'success' })
+}
+
+async function createJob() {
+  try {
+    const res = await callApi({path: '/api/create-job/', method: 'POST'});
+    console.log('Job created successfully:', res);
+  } catch (error) {
+    console.error('Error creating job:', error);
+  }
 }
 
 </script>
