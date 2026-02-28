@@ -132,7 +132,7 @@ model jobs {
   finished_at DateTime?
   started_by  String
   name        String
-  state       String
+  state       String?
   progress    String
   status      String
   job_handler_name String
