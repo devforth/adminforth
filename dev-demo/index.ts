@@ -10,6 +10,8 @@ import cars_MyS_resource from './resources/cars_MyS.js';
 import cars_PG_resource from './resources/cars_PG.js';
 import cars_Mongo_resource from './resources/cars_mongo.js';
 import cars_Ch_resource from './resources/cars_Ch.js';
+import background_jobs_resource from './resources/background_jobs.js';
+import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
 import auditLogsResource from "./resources/auditLogs.js"
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
@@ -79,6 +81,14 @@ export const admin = new AdminForth({
       }
     }
   },
+  componentsToExplicitRegister: [
+    { 
+      file: '@@/JobCustomComponent.vue',
+      meta: {
+        label: 'Job Custom Component',
+      }
+    }
+  ],
   dataSources: [
     {
       id: 'sqlite',
@@ -112,6 +122,7 @@ export const admin = new AdminForth({
     passkeysResource,
     carsDescriptionImage,
     translations,
+    background_jobs_resource
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -180,6 +191,32 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const app = express();
   app.use(express.json());
 
+  app.post(`${ADMIN_BASE_URL}/api/create-job/`,
+    admin.express.authorize(
+      async (req: any, res: any) => {
+        const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+        if (!backgroundJobsPlugin) {
+          res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
+          return;
+        }
+        backgroundJobsPlugin.startNewJob(
+          'Example Job', //job name
+          req.adminUser, // adminuser
+          [
+            { state: { step: 1 } },
+            { state: { step: 2 } },
+            { state: { step: 3 } },
+            { state: { step: 4 } },
+            { state: { step: 5 } },
+            { state: { step: 6 } },
+          ], //initial tasks
+          'example_job_handler', //job handler name
+        )
+        res.json({ok: true, message: 'Job started' });
+      }
+    ),
+  );
+
   initApi(app, admin);
 
   const port = 3000;
@@ -190,6 +227,30 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   admin.express.serve(app);
 
+  const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+
+  backgroundJobsPlugin.registerTaskHandler({
+    // job handler name
+    jobHandlerName: 'example_job_handler',
+    //handler function
+    handler: async ({ setTaskStateField, getTaskStateField }) => {
+      const state = await getTaskStateField();
+      console.log('State of the task at the beginning of the job handler:', state);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      await setTaskStateField({[state.step]: `Step ${state.step} completed`});
+      const updatedState = await getTaskStateField();
+      console.log('State of the task after setting the new state in the job handler:', updatedState);
+    },
+    //limit of tasks, that are running in parallel
+    parallelLimit: 1
+  })
+  
+  backgroundJobsPlugin.registerTaskDetailsComponent({
+    jobHandlerName: 'example_job_handler', // Handler name
+    component: { 
+      file: '@@/JobCustomComponent.vue'  //custom component for the job details
+    },
+  })
   admin.discoverDatabases().then(async () => {
     if (await admin.resource('adminuser').count() === 0) {
       await admin.resource('adminuser').create({
