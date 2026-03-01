@@ -90,3 +90,15 @@ model audit_logs {
     @@index([category])
     @@index([completedLangs])
 }
+
+model jobs {
+  id          String @id
+  created_at  DateTime
+  finished_at DateTime?
+  started_by  String
+  name        String
+  state       String?
+  progress    String
+  status      String
+  job_handler_name String
+}
