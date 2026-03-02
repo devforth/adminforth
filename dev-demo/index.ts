@@ -184,6 +184,11 @@ export const admin = new AdminForth({
       icon: 'material-symbols:translate',
       resourceId: 'translations',
     },
+    {
+      label: 'Background Jobs',
+      icon: 'flowbite:briefcase-solid',
+      resourceId: 'jobs',
+    }
   ],
 });
 
