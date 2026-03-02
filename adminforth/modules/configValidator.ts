@@ -621,7 +621,7 @@ export default class ConfigValidator implements IConfigValidator {
         if (col.foreignResource){
           if (col.foreignResource.onDelete){
             if (col.foreignResource.onDelete !== 'cascade' && col.foreignResource.onDelete !== 'setNull'){
-              errors.push (`Wrong delete strategy you can use 'onDelete' or 'cascade'`);
+              errors.push (`Wrong delete strategy you can use 'setNull' or 'cascade'`);
             }
           }
         }
