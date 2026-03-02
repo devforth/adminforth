@@ -121,7 +121,8 @@ export const useCoreStore = defineStore('core', () => {
         item.badge = badge;
       }
     });
-    websocket.unsubscribeAll();
+    // TODO: This thing was created for something. Find out why
+    // websocket.unsubscribeAll();
     subscribeToMenuBadges();
 
   }

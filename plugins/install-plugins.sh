@@ -4,7 +4,7 @@ adminforth-i18n adminforth-import-export adminforth-text-complete adminforth-ope
 adminforth-rich-editor adminforth-two-factors-auth adminforth-upload adminforth-oauth \
 adminforth-list-in-place-edit adminforth-inline-create adminforth-markdown adminforth-foreign-inline-show adminforth-email-invite \
 adminforth-bulk-ai-flow adminforth-universal-search adminforth-login-captcha adminforth-user-soft-delete adminforth-clone-row \
-adminforth-quick-filters adminforth-many2many"
+adminforth-quick-filters adminforth-many2many adminforth-background-jobs"
 
 # Function to install a plugin
 install_plugin() {

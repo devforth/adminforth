@@ -161,9 +161,13 @@
         :currentValue="2600"
         :minValue="0"
         :maxValue="5000"
+        :height="6"
+                  :leftLabel="'Level 2'"
+          :rightLabel="'Level 3'"
+        showAnimation
         />
 
-        <ProgressBar
+        <!-- <ProgressBar
           :currentValue="1070"
           :minValue="0"
           :maxValue="5000"
@@ -171,7 +175,7 @@
           :rightLabel="'Level 3'"
           :formatter="(value: number) => `${value} points`"
           :progressFormatter="(value: number, percentage: number) => `${value} done`"
-        />
+        /> -->
 
         <div class="flex flex-col gap-2">
           <Skeleton class="w-full h-4" />
@@ -219,6 +223,15 @@
           :pageSize="3"
         >
         </Table>
+
+        <div class="w-full">
+          <p class="text-sm font-semibold text-lightPrimary dark:text-darkPrimary mb-2">TreeMapChart (value + delta)</p>
+          <TreeMapChart
+            :data="treemapData"
+            :series="treemapSeries"
+            :options="treemapOptions"
+          />
+        </div>
 
         <Spinner class="w-10 h-10" />
     </div>
@@ -287,6 +300,22 @@
       label="Pick start"
     />
 
+
+    <Modal class="w-96" clickToCloseOutside>
+      <template #trigger>
+        <Button>Modal Toggle</Button>
+      </template>
+
+      <div class="space-y-4">
+        <p>This is the first paragraph of dialog content.</p>
+        <p>And this is the second paragraph.</p>
+      </div>
+    </Modal>
+
+    <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button>
+
+
+
   </div>
 
 
@@ -313,11 +342,14 @@ import { ProgressBar } from '@/afcl';
 import { Skeleton } from '@/afcl';
 import { Spinner } from '@/afcl';
 import { Toggle } from '@/afcl';
+import { Modal } from '@/afcl';
 import { IconSearchOutline } from '@iconify-prerendered/vue-flowbite'
 import { DatePicker } from '@/afcl';
+import { TreeMapChart } from '@/afcl';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
+import { callApi } from '@/utils';
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
@@ -336,6 +368,55 @@ const selected = ref(null)
 const selected2 = ref([])
 const valueStart = ref()
 
+const deltaToColor = (delta: number) => {
+  if (delta < -10) return '#B91C1C' // bright red
+  if (delta < 0) return '#EF4444'   // red
+  if (delta <= 10) return '#22C55E' // green
+  return '#15803D'                 // very green
+}
+
+const formatDelta = (delta: number) => (delta > 0 ? `+${delta}%` : `${delta}%`)
+
+const treemapData = [
+  { x: 'New Delhi', value: 218, delta: 12 },
+  { x: 'Kolkata', value: 149, delta: -4 },
+  { x: 'Mumbai', value: 184, delta: -14 },
+  { x: 'Ahmedabad', value: 55, delta: 6 },
+  { x: 'Bangalore', value: 84, delta: 9 },
+  { x: 'Pune', value: 31, delta: -2 },
+].map((item) => ({
+  ...item,
+  fillColor: deltaToColor(item.delta),
+}))
+
+const treemapSeries = [
+  { name: 'Value', fieldName: 'value' },
+]
+
+const treemapOptions: any = {
+  chart: { height: 350 },
+  dataLabels: {
+    formatter: (text: string, { seriesIndex, dataPointIndex, w }: any) => {
+      const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex]
+      return `${text} ${formatDelta(point.delta)}`
+    },
+  },
+  plotOptions: {
+    treemap: {
+      distributed: false,
+      enableShades: false,
+    },
+  },
+  tooltip: {
+    y: {
+      formatter: (value: any, { seriesIndex, dataPointIndex, w }: any) => {
+        const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex]
+        return `${point.value} (${formatDelta(point.delta)})`
+      },
+    },
+  },
+}
+
 
 watch(valueStart, (newVal) => {
   console.log('New start value:', newVal);
@@ -344,6 +425,15 @@ watch(valueStart, (newVal) => {
 function doSmth(){
   alert({message: 'Hello world', variant: 'success'})
   adminforth.alert({message: 'You clicked the button!', variant: 'success' })
+}
+
+async function createJob() {
+  try {
+    const res = await callApi({path: '/api/create-job/', method: 'POST'});
+    console.log('Job created successfully:', res);
+  } catch (error) {
+    console.error('Error creating job:', error);
+  }
 }
 
 </script>
