@@ -18,7 +18,7 @@
         'hidden': !showDropdown,
         'left-0 md:left-auto': checkboxes && checkboxes.length > 0
       }"
-      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-48 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
+      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-auto max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <div  
