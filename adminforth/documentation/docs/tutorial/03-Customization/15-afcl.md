@@ -2120,7 +2120,86 @@ import { PieChart } from '@/afcl'
   </div>
 </div>
 
+## Treemap Chart
+
+This example is based on the ApexCharts treemap demo “color range”.
+
+<div class="split-screen" >
+  <div >
+
+```ts
+import { TreeMapChart } from '@/afcl'
+
+const deltaToColor = (delta: number) => {
+  if (delta < -10) return '#B91C1C' // bright red
+  if (delta < 0) return '#EF4444'   // red
+  if (delta <= 10) return '#22C55E' // green
+  return '#15803D'                 // very green
+}
+
+const formatDelta = (delta: number) => (delta > 0 ? `+${delta}%` : `${delta}%`)
+
+const data = [
+  { x: 'New Delhi', value: 218, delta: 12 },
+  { x: 'Kolkata', value: 149, delta: -4 },
+  { x: 'Mumbai', value: 184, delta: -14 },
+  { x: 'Ahmedabad', value: 55, delta: 6 },
+  { x: 'Bangalore', value: 84, delta: 9 },
+  { x: 'Pune', value: 31, delta: -2 },
+  { x: 'Chennai', value: 70, delta: 0 }
+]
+
+// Optional: precompute per-point color using delta
+const dataWithColors = data.map((item) => ({
+  ...item,
+  fillColor: deltaToColor(item.delta),
+}))
+
+const series = [
+  { name: 'Desktops', fieldName: 'value' },
+]
+```
+
+```html
+<TreeMapChart
+  :data="dataWithColors"
+  :series="series"
+  :options="{
+    chart: { height: 350 },
+    dataLabels: {
+      formatter: (text, { seriesIndex, dataPointIndex, w }) => {
+        const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex]
+        if (!point) return text
+        return `${text} ${formatDelta(point.delta)}`
+      },
+    },
+    plotOptions: {
+      treemap: {
+        distributed: false,
+        enableShades: false,
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: (value, { seriesIndex, dataPointIndex, w }) => {
+          const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex]
+          if (!point) return value
+          return `${point.value} (${formatDelta(point.delta)})`
+        },
+      },
+    },
+  }"
+/>
+```
+
+  </div>
+  <div>
+  ![Treemap Chart](image-28.png)
+  </div>
+</div>
+
 ## Mixed Chart
+
 
 ```ts
 import { MixedChart } from '@/afcl'
