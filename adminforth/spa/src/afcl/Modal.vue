@@ -6,7 +6,7 @@
     <slot name="trigger"></slot>
   </div>
   <Teleport to="body">
-      <div v-show="isModalOpen" v-if="!removeFromDom" @click="backdropClick" v-bind="$attrs" class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-1rem max-h-full flex" >
+      <div v-show="isModalOpen" v-if="!removeFromDom" @click="backdropClick" v-bind="$attrs" class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex" >
         <!-- Modal content -->
         <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
 
