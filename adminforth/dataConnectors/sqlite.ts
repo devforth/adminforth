@@ -42,6 +42,12 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         const tableName = resource.table;
         const stmt = this.client.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
+        const fkStmt = this.client.prepare(`PRAGMA foreign_key_list(${tableName})`);
+        const fkRows = await fkStmt.all();
+        const fkMap: { [colName: string]: boolean } = {};
+        fkRows.forEach(fk => {
+            fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE';
+        });
         const fieldTypes = {};
         rows.forEach((row) => {
           const field: any = {};
@@ -86,6 +92,11 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
           field.primaryKey = row.pk == 1;
+
+          field.cascade = fkMap[row.name] || false;
+          if (field.cascade) {
+            afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+          }
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
