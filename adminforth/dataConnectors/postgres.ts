@@ -110,8 +110,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const tableName = resource.table;
         const fkMap = await this.getPgFkCascadeMap(tableName);
         const hasCascade = Object.values(fkMap).some(fk => fk.cascade);
-        const cascadeWarningShownMap: Record<string, boolean> = {};
-        if (hasCascade && !cascadeWarningShownMap[tableName]) {
+        if (hasCascade) {
             afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
         }
         const stmt = await this.client.query(`
