@@ -11,7 +11,7 @@
         <div class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
 
           <!-- Modal body -->
-          <div class="p-4 md:p-5 space-y-4 text-lightDialogBodyText dark:text-darkDialogBodyText">
+          <div class="space-y-4 text-lightDialogBodyText dark:text-darkDialogBodyText">
             <slot ></slot>
           </div>
          
