@@ -618,10 +618,13 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`Resource "${res.resourceId}" column "${col.name}" isArray is enabled but suggestOnCreate is not an array`);
           }
         }
-        
+
         if (col.foreignResource) {
           if (col.foreignResource.onDelete && (col.foreignResource.onDelete !== 'cascade' && col.foreignResource.onDelete !== 'setNull')){
               errors.push (`Resource "${res.resourceId}" column "${col.name}" has wrong delete strategy, you can use 'setNull' or 'cascade'`);
+          }
+          if (col.foreignResource.onDelete === 'setNull' && col.required) {
+            errors.push(`Resource "${res.resourceId}" column "${col.name}" cannot use onDelete 'setNull' because column is required (non-nullable).`);
           }
           if (!col.foreignResource.resourceId) {
             // resourceId is absent or empty
