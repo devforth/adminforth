@@ -57,7 +57,8 @@ const removeFromDom = computed(() => {
 })
 
 interface DialogProps {
-  clickToCloseOutside?: boolean
+  closeByClickOutside?: boolean
+  closeByEsc?: boolean
   beforeCloseFunction?: (() => void | Promise<void>) | null
   beforeOpenFunction?: (() => void | Promise<void>) | null
   askForCloseConfirmation?: boolean
@@ -66,7 +67,8 @@ interface DialogProps {
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
-  clickToCloseOutside: true,
+  closeByClickOutside: true,
+  closeByEsc: true,
   beforeCloseFunction: null,
   beforeOpenFunction: null,
   askForCloseConfirmation: false,
@@ -109,8 +111,25 @@ function toggleModal() {
   }
 }
 
+function onEsc(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    if (props.closeByEsc) {
+      tryToHideModal();
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onEsc)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onEsc)
+})
+
+
 function backdropClick(e: MouseEvent) {
-  if (props.clickToCloseOutside && e.target === e.currentTarget) {
+  if (props.closeByClickOutside && e.target === e.currentTarget) {
     tryToHideModal();
   }
 }
