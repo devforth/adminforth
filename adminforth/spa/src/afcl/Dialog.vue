@@ -10,13 +10,8 @@
     :closeConfirmationText="closeConfirmationText"
     :removeFromDomOnClose="removeFromDomOnClose"
   >
-    <template #trigger>
-      <div
-        v-if="$slots.trigger"
-        class="inline-flex items-center cursor-pointer w-full"
-      >
-        <slot name="trigger"></slot>
-      </div>
+    <template v-if="$slots.trigger" #trigger>
+      <slot name="trigger"></slot>
     </template>
 
     <!-- Modal header -->
