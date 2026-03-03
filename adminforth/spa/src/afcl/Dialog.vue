@@ -61,9 +61,91 @@ import Button from "./Button.vue";
 import { ref, computed, type Ref } from 'vue';
 import { Modal } from '@/afcl'
 import { useI18n } from "vue-i18n";
-import type { IDialogInsideButtonClickHandler, DialogButton, DialogProps } from '@/types/FrontendAPI';
 
 const { t } = useI18n();
+
+
+interface IDialogInsideButtonClickHandler {
+  hide: () => void
+}
+
+
+interface DialogButton {
+  label: string
+  onclick: (dialog: IDialogInsideButtonClickHandler) => void
+  options?: Record<string, any> 
+}
+
+
+interface DialogProps {
+  /**
+   * The header text to display in the dialog. If not provided, no header will be displayed.
+   */
+  header?: string
+
+  /**
+   * If true, a close button will be displayed in the dialog header. Default is true.
+   */
+  headerCloseButton?: boolean
+
+  /**
+   * An array of buttons to display in the dialog footer. 
+   */
+  buttons?: DialogButton[]
+
+  /**
+   * If true, clicking outside the dialog will close it. Default is true.
+   * 
+   * @deprecated Use `closeByClickOutside` instead
+   */
+  clickToCloseOutside?: boolean
+
+  /**
+   * If true, pressing the Esc key will close the dialog. Default is true.
+   */
+  closeByEsc?: boolean
+
+  /**
+   * If true, clicking outside the dialog will close it. Default is true.
+   */
+  closeByClickOutside?: boolean
+
+  /**
+   * Function that will be called before the dialog is closed. 
+   */
+  beforeCloseFunction?: (() => void | Promise<void>) | null
+
+  /**
+   * Function that will be called before the dialog is opened. 
+   */
+  beforeOpenFunction?: (() => void | Promise<void>) | null
+
+  /**
+   * Disables close on Ecs button
+   * 
+   * @deprecated Use `closeByEsc` or  instead
+   */
+  closable?: boolean
+
+  /**
+   * If true, the dialog will ask for confirmation before closing. Default is false.
+   */
+  askForCloseConfirmation?: boolean
+
+  /**
+   * The text to display in the close confirmation dialog. Default is "Are you sure you want to close this dialog?".
+   */
+  closeConfirmationText?: string
+
+  /**
+   * If true, the dialog will be removed from the DOM when closed. Default is false.
+   */
+  removeFromDomOnClose?: boolean
+}
+
+
+
+
 
 
 /**********  for the backward compatibility  ***************/
