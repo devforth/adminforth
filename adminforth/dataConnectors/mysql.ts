@@ -96,8 +96,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         childTable: fk.child_table
       };
       if (fkMap[fk.column_name].cascade) {
-        afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);      }
+        afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);      
       }
+    }
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};
