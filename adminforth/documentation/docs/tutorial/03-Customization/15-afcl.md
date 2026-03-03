@@ -1250,6 +1250,42 @@ Custom labels in the ProgressBar component allow you to customize the text displ
   </div>
 </div>
 
+### Show progress animation
+
+<div class="split-screen" >
+  <div>
+  ```html
+   <ProgressBar
+    :currentValue="2600"
+    :minValue="0"
+    :maxValue="5000"
+    showAnimation
+    />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-96.png)
+  </div>
+</div>
+
+### Change height of the progress bar
+
+<div class="split-screen" >
+  <div>
+  ```html
+   <ProgressBar
+    :currentValue="2600"
+    :minValue="0"
+    :maxValue="5000"
+    height='6'
+    />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-97.png)
+  </div>
+</div>
+
 ## Skeleton
 
 Skeleton component is used to display a loading state for a component. You can use prop `type` to set the type of the skeleton.
