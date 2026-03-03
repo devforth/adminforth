@@ -2317,6 +2317,44 @@ import { JsonViewer } from '@/afcl'
   </div>
 </div>
 
+## Modal
+
+<div class="split-screen" >
+  <div>
+
+```ts
+import { Modal, Button } from '@/afcl';
+```
+
+```html
+  <Modal class="w-96" :closeByClickOutside="true" :closeByEsc="true" askForCloseConfirmation >
+    <template #trigger>
+      <Button>Modal Toggle</Button>
+    </template>
+
+    <div class="space-y-4 p-4">
+      <p>This is the first paragraph of modal content.</p>
+      <p>And this is the second paragraph.</p>
+    </div>
+  </Modal>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-98.png)
+  </div>
+</div>
+
+### Props: 
+```ts
+  closeByClickOutside?: boolean  // Close on click outside of modal (default is true)
+  closeByEsc?: boolean // Close on Esc button click (default is true)
+  beforeCloseFunction?: (() => void | Promise<void>) | null // Callback, that will be executed before open
+  beforeOpenFunction?: (() => void | Promise<void>) | null // Callback, that will be executed before close
+  askForCloseConfirmation?: boolean // Show extra popup to confirm close ( to avoid close by accident)
+  closeConfirmationText?: string // Text that will be shown on close confirmation popup
+  removeFromDomOnClose?: boolean // Remove modal from DOM on close ( default is false )
+```
+
 ## Date picker
 
 ```ts
