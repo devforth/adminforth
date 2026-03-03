@@ -284,7 +284,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           askConfirmationBeforeGenerating: true,
           textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: "gpt-5.2",
+            model: "gpt-5-mini",
             extraRequestBodyParameters: {
               temperature: 1,
             },
