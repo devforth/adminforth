@@ -188,3 +188,35 @@ plugins: [
 ```
 
 This setup will show, in the show view for each record, the `aparts` resource without any filters. And you don’t have to modify the `aparts` resource.
+
+
+## Cascade delete for foreign resources
+
+There might be cases when you want to control what happens with child records when a parent record is deleted.
+You can configure this behavior in the `foreignResource` section using the `onDelete` option.
+
+```ts title="./resources/apartments.ts"
+
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+    ...
+    {
+      name: 'realtor_id',
+      foreignResource: {
+        resourceId: 'adminuser', 
+        //diff-add
+        onDelete: 'cascade' // cascade or setNull
+        //diff-add                       
+      }
+    }
+  ],
+}
+
+```
+
+#### The onDelete option supports two modes:
+
+- `cascade`: When a parent record is deleted, all related child records will be deleted automatically.
+- `setNull`: When a parent record is deleted, child records will remain, but their foreign key will be set to null.
