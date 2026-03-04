@@ -116,7 +116,7 @@ export default {
           credentialMetaFieldName: "meta",
           credentialUserIdFieldName: "user_id",
           settings: {
-            expectedOrigin: "http://localhost:3000",
+            expectedOrigin: "http://localhost:3123",
             rp: {
                 name: "New Reality",
               },
