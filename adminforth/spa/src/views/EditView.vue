@@ -104,8 +104,12 @@ const record: Ref<Record<string, any>> = ref({});
 const initialRecord = computed(() => coreStore.record);
 const wasSaveSuccessful = ref(false);
 const cancelButtonClicked = ref(false);
-
+const useLeaveGuard = ref( false );
+  
 function onBeforeUnload(event: BeforeUnloadEvent) {
+  if (!useLeaveGuard.value) {
+    return;
+  }
   if (!checkIfWeCanLeavePage()) {
     event.preventDefault();
     event.returnValue = '';
@@ -123,7 +127,7 @@ onBeforeUnmount(() => {
 });
 
 const leaveGuardActive = new leaveGuardActiveClass();
-onBeforeRouteLeaveCreateEditViewGuard(initialRecord, record, checkIfWeCanLeavePage, leaveGuardActive);
+onBeforeRouteLeaveCreateEditViewGuard(initialRecord, record, checkIfWeCanLeavePage, leaveGuardActive, useLeaveGuard);
 
 const resourceFormRef = ref<InstanceType<typeof ResourceForm> | null>(null);
 
@@ -153,6 +157,7 @@ onBeforeMount(() => {
 });
 
 onMounted(async () => {
+  useLeaveGuard.value = coreStore.resource?.options?.dontShowWarningAboutUnsavedChanges !== true;
   loading.value = true;
 
   await coreStore.fetchResourceFull({

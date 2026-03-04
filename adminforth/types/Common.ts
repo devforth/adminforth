@@ -362,6 +362,12 @@ export interface AdminForthResourceInputCommon {
 
 
     /**
+     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+     * default is false
+     */
+    dontShowWarningAboutUnsavedChanges?: boolean,
+
+    /**
      * General options for resource.
      */
     options?: {

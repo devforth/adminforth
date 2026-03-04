@@ -115,6 +115,7 @@ const readonlyColumns = ref([]);
 
 const cancelButtonClicked = ref(false);
 const wasSaveSuccessful = ref(false);
+const useLeaveGuard = ref( false );
 
 async function onUpdateRecord(newRecord: any) {
   record.value = newRecord;
@@ -125,6 +126,9 @@ function checkIfWeCanLeavePage() {
 }
 
 function onBeforeUnload(event: BeforeUnloadEvent) {
+  if (!useLeaveGuard.value) {
+    return;
+  }
   if (!checkIfWeCanLeavePage()) {
     event.preventDefault();
     event.returnValue = '';
@@ -140,8 +144,8 @@ onBeforeUnmount(() => {
 
 const leaveGuardActive = new leaveGuardActiveClass();
 
+onBeforeRouteLeaveCreateEditViewGuard(initialValues, record, checkIfWeCanLeavePage, leaveGuardActive, useLeaveGuard);
 
-onBeforeRouteLeaveCreateEditViewGuard(initialValues, record, checkIfWeCanLeavePage, leaveGuardActive);
 
 
 onBeforeMount(() => {
@@ -149,6 +153,8 @@ onBeforeMount(() => {
 });
 
 onMounted(async () => {
+  useLeaveGuard.value = coreStore.resource?.options?.dontShowWarningAboutUnsavedChanges !== true;
+
   loading.value = true;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string,
