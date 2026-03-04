@@ -21,6 +21,7 @@ import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapte
 import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
 import { logger } from '../../adminforth/modules/logger.js';
 import { afLogger } from '../../adminforth/modules/logger.js';
+import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
@@ -193,37 +194,28 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           maxShowWidth: "300px",
         },
       }),
-      // new RichEditorPlugin({
-      //   htmlFieldName: 'description',
-      //   attachments: {
-      //     attachmentResource: "cars_description_images",
-      //     attachmentFieldName: "image_path",
-      //     attachmentRecordIdFieldName: "record_id",
-      //     attachmentResourceIdFieldName: "resource_id",
-      //   },
-      //   ...(process.env.OPENAI_API_KEY ? {
-      //     completion: {
-      //       adapter: new CompletionAdapterOpenAIChatGPT({
-      //         openAiApiKey: process.env.OPENAI_API_KEY as string,
-      //         model: 'gpt-5-mini',
-      //       }),
-      //       expert: {
-      //         debounceTime: 250,
-      //       }
-      //     }
-      //   } : {}),
-      // }),
-      new MarkdownPlugin(
-        {
-          fieldName: "description",
-            attachments: {
-              attachmentResource: "cars_description_images",
-              attachmentFieldName: "image_path",
-              attachmentRecordIdFieldName: "record_id",
-              attachmentResourceIdFieldName: "resource_id",
-          },
-        }
-      ),
+      new MarkdownPlugin({
+        fieldName: 'description',
+        attachments: {
+          attachmentResource: "cars_description_images",
+          attachmentFieldName: "image_path",
+          attachmentRecordIdFieldName: "record_id",
+          attachmentResourceIdFieldName: "resource_id",
+          attachmentAltFieldName: "alt_text",
+          attachmentTitleFieldName: "title",
+        },
+        ...(process.env.OPENAI_API_KEY ? {
+          completion: {
+            adapter: new CompletionAdapterOpenAIChatGPT({
+              openAiApiKey: process.env.OPENAI_API_KEY as string,
+              model: 'gpt-5-mini',
+            }),
+            expert: {
+              debounceTime: 250,
+            }
+          }
+        } : {}),
+      }),
       new importExport({}),
       // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({
@@ -231,6 +223,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       }),
       new ForeignInlineShowPlugin({
         foreignResourceId: 'adminuser',
+      }),
+      new ForeignInlineListPlugin({
+        foreignResourceId: 'cars_description_images',
+        
       }),
     /*********************************************************************************
      
