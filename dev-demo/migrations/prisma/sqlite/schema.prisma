@@ -70,6 +70,9 @@ model audit_logs {
     resource_id String
     record_id   String
     image_path  String
+
+    title       String?
+    alt_text        String?
   }
 
   model translations {
