@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, generateMessageHtmlForRecordChange } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, onBeforeRouteLeaveCreateEditView } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
@@ -137,17 +137,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', onBeforeUnload);
 });
 
-onBeforeRouteLeave(async (to, from, next) => {
-  if (!checkIfWeCanLeavePage()) {
-    const { changedFields } = compareOldAndNewRecord(initialValues.value, record.value);
-    
-    const messageHtml = generateMessageHtmlForRecordChange(changedFields, t);
 
-    const answer = await confirm({ messageHtml: messageHtml, yes: t('Yes'), no: t('No') });
-    if (!answer) return next(false);
-  }
-  next();
-});
+const leaveGuardActive = new leaveGuardActiveClass();
+
+
+onBeforeRouteLeaveCreateEditViewGuard(initialValues, record, checkIfWeCanLeavePage, leaveGuardActive);
+
 
 onBeforeMount(() => {
   clearSaveInterceptors(route.params.resourceId as string);
