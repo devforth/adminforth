@@ -630,12 +630,16 @@ export class leaveGuardActiveClass {
   }
 }
 
-export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, record: any, checkIfWeCanLeavePage: () => boolean, leaveGuardActive: leaveGuardActiveClass): Promise<boolean> {
+export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, record: any, checkIfWeCanLeavePage: () => boolean, leaveGuardActive: leaveGuardActiveClass, isActive: { value: boolean }): Promise<void> {
   
   const { confirm } = useAdminforth();
   const { t } = useI18n();
 
   onBeforeRouteLeave(async (to, from) => {
+    if (!isActive.value) {
+      return true;
+    }
+
 
     if (leaveGuardActive.isActive()) {
       return false;
