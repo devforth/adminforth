@@ -171,8 +171,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
       const childRecords = await this.adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
-      console.log("childRecords", childRecords)
-
       const childPk = childRes.columns.find(c => c.primaryKey)?.name;
       if (!childPk) continue;
 
