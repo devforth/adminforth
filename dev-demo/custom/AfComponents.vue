@@ -5,7 +5,12 @@
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
         :loader="false" class="w-full">
-        Your button text
+        Primary button
+      </Button>
+
+      <Button @click="doSmth" 
+        :loader="false" class="w-full" mode="secondary">
+        Secondary button
       </Button>
 
       <Button @click="doSmth" 
