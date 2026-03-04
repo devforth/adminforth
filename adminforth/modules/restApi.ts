@@ -126,8 +126,7 @@ export async function interpretResource(
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
-  static deleteWithCascade: any;
-
+  
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
   }
