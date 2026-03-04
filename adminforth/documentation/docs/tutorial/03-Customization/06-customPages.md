@@ -569,3 +569,56 @@ export const admin = new AdminForth({
 After this, you will have a custom Settings section in the users menu:
 
 ![alt text](SettingsView-1.png)
+
+
+## Explicit register of components
+
+There might be rare cases, when you need to register component explicitly and then re-use it somewhere else:
+
+
+```ts title='./index.ts'
+  ...
+
+  customization: {
+      brandName: "dev-demo",
+      title: "dev-demo",
+      favicon: '@@/assets/favicon.png',
+      brandLogo: '@@/assets/logo.svg',
+
+  ...
+
+  },
+  //diff-add
+  componentsToExplicitRegister: [
+    //diff-add
+    { 
+      //diff-add
+      file: '@@/JobCustomComponent.vue',
+      //diff-add
+      meta: {
+        //diff-add
+        label: 'Job Custom Component',
+        //diff-add
+      }
+      //diff-add
+    }
+    //diff-add
+  ],
+
+```
+
+and then you can re-use this component like:
+
+```html title='CustomVueComponent.vue'
+  //diff-add
+  import { getCustomComponent } from '@/utils';
+
+  ...
+    //diff-add
+    <component 
+    //diff-add
+      :is="getCustomComponent('@@/JobCustomComponent.vue')" 
+      //diff-add
+    />
+
+```

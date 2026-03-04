@@ -7,11 +7,10 @@ In two words, to subscribe to a topic from any frontend component you need to do
 
 ```javascript
 import websocket from '@/websocket';
-import { logger } from 'adminforth'
 
 websocket.subscribe('/topic-name', (data) => {
   // this callback called when we receive publish in topic from the websocket
-  logger.info(data);
+  console.log(data);
 });
 ```
 

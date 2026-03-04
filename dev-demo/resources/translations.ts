@@ -41,6 +41,7 @@ export default {
         model: 'gpt-5-mini',
       }),
       // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
+      parallelTranslationLimit: 1
     }),
 
   ],

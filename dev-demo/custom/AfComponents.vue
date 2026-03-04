@@ -5,7 +5,12 @@
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
         :loader="false" class="w-full">
-        Your button text
+        Primary button
+      </Button>
+
+      <Button @click="doSmth" 
+        :loader="false" class="w-full" mode="secondary">
+        Secondary button
       </Button>
 
       <Button @click="doSmth" 
@@ -137,11 +142,20 @@
     <div class="flex flex-col gap-10 m-10 mt-20">
 
       <Dialog
+        ref="dialogRef"
         class="w-96"
         header="Dialog Header"
+        :buttons="[
+          { label: 'dialog.hide()', options: { variant: 'outline' }, onclick: (dialog) => dialog.hide() },
+        ]"
+        :closeByClickOutside="true"
+        :closeByEsc="true"
+        askForCloseConfirmation
+        :beforeCloseFunction="() => { console.log('Before close'); }"
+        :beforeOpenFunction="() => { console.log('Before open');}"
       >
         <template #trigger>
-          <Button>Dialog Toggle</Button>
+          <Button>Dialog Toggle 2</Button>
         </template>
 
         <div class="space-y-4">
@@ -149,6 +163,11 @@
           <p>And this is the second paragraph.</p>
         </div>
       </Dialog>
+
+      <Button @click="dialogRef?.open()">
+        dialog.open()
+      </Button>
+
 
       <Dropzone
         :extensions="['.jpg', '.jpeg', '.png']"
@@ -301,18 +320,18 @@
     />
 
 
-    <Modal class="w-96" clickToCloseOutside>
+    <Modal class="w-96" :closeByClickOutside="true" :closeByEsc="true" askForCloseConfirmation >
       <template #trigger>
         <Button>Modal Toggle</Button>
       </template>
 
-      <div class="space-y-4">
-        <p>This is the first paragraph of dialog content.</p>
+      <div class="space-y-4 p-4">
+        <p>This is the first paragraph of modal content.</p>
         <p>And this is the second paragraph.</p>
       </div>
     </Modal>
 
-    <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button>
+    <!-- <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button> -->
 
 
 
@@ -367,6 +386,7 @@ const enable = ref(false)
 const selected = ref(null)
 const selected2 = ref([])
 const valueStart = ref()
+const dialogRef = ref()
 
 const deltaToColor = (delta: number) => {
   if (delta < -10) return '#B91C1C' // bright red

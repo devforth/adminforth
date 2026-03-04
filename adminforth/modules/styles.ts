@@ -6,6 +6,9 @@ export const styles = () => ({
     lightPrimaryContrast: "alias:lightPrimary inverse", // primary color contrast
     lightPrimaryOpacity: "alias:lightPrimary opacity:0.05", // primary color opacity
 
+    lightSecondary: "#f9fafb", // secondary color
+    lightSecondaryContrast: "alias:lightSecondary inverse", // secondary color contrast
+
     lightNavbar: "#FFFFFF", // navbar background
     lightNavbarBorder: "rgb(229 231 235)", // border
     lightNavbarText: "#111827", // navbar text
@@ -360,6 +363,10 @@ export const styles = () => ({
     darkPrimary: "rgb(130 172 255)", // primary color
     darkPrimaryContrast: "alias:darkPrimary inverse", // primary color contrast
     darkPrimaryOpacity: "alias:darkPrimary opacity:0.2", // primary color opacity
+
+    darkSecondary: "#374151", // secondary color
+    darkSecondaryContrast: "alias:darkSecondary inverse", // secondary color contrast
+
 
     darkNavbar: "#111827", 
     darkNavbarBorder: "#e5e7eb",

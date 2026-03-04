@@ -190,7 +190,7 @@ The plugin saves tasks and keeps executing them even after a server restart, so 
     //diff-add
     //handler function
     //diff-add
-    handler: async ({ setTaskStateField, getTaskStateField }) => {
+    handler: async ({ jobId, setTaskStateField, getTaskStateField }) => {
       //diff-add
       const state = await getTaskStateField();
       //diff-add
@@ -245,7 +245,7 @@ After registering a handler, you can create a job. For example:
             //diff-add
           }
           //diff-add
-          backgroundJobsPlugin.startNewJob(
+          const jobId = await backgroundJobsPlugin.startNewJob(
             //diff-add
             'Example Job', //job name
             //diff-add
@@ -316,6 +316,7 @@ const props = defineProps<{
     status: 'IN_PROGRESS' | 'DONE' | 'DONE_WITH_ERRORS' | 'CANCELLED';
     progress: number; // 0 to 100
     createdAt: Date;
+    finishedAt: Date;
     customComponent?: AdminForthComponentDeclarationFull; 
   };
 }>();
@@ -426,5 +427,64 @@ Finally, register this component alongside the job task handler:
   })
 
 
+```
+
+
+## Frontend API
+### Job info popup
+If you want to imedeatelly open job info popup, you shoul return job id from you API, that creates job:
+
+For example:
+
+```ts
+  ...
+
+  const res = await callAdminForthApi({
+    path: `/plugin/${props.meta.pluginInstanceId}/translate-selected-to-languages`,
+    method: 'POST',
+    body: { 
+      selectedIds: listOfIds,
+      selectedLanguages: Object.keys(checkedLanguages.value).filter(lang => checkedLanguages.value[lang]),
+    },
+    silentError: true,
+  });
+
+  if (res.ok) {
+    const jobId = res.jobId;
+    if (jobId) {
+      //diff-add
+      window.OpenJobInfoPopup(jobId);
+    }
+  }
+
+```
+
+## Backend api
+
+Pluging provides some handy methods, that can be used in different situations:
+
+```ts
+//set key:value to the job state in the DB
+setJobField(jobId: string, key: string, value: any)
+//get job field from the state in db
+getJobField(jobId: string, key: string)
+//get job state from the db
+getJobState(jobId: string)
+/**
+ * 
+ * executes code atomically, if you have many task, that can update task state, 
+ * better use this method to avoid cases, when in the task state writes invalid data.
+ * 
+ **/
+updateJobFieldsAtomically(jobId: string, updateFunction: () => Promise<void>) 
+
+//for example
+backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
+  // do all set / get fields in this function to make state update atomic and there is no conflicts when 2 tasks in parallel do get before set.
+  // don't do long awaits in this callback, since it has exclusive lock.
+  let totalUsedTokens = await backgroundJobsPlugin.getJobField(jobId, 'totalUsedTokens');
+  totalUsedTokens += promptCost;
+  await backgroundJobsPlugin.setJobField(jobId, 'totalUsedTokens', totalUsedTokens);
+})
 
 ```
