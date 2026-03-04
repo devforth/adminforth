@@ -153,7 +153,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       }
     }
   }
-  async deleteWithCascade(resource: AdminForthResource, primaryKey: any, context: {body: any, adminUser: any, query: any, headers: any, cookies: any, requestUrl: any, response: any}) {
+  async deleteWithCascade(resource: AdminForthResource, primaryKey: any, context: {body: any, adminUser: any, response: any}) {
     const { adminUser, response } = context;
 
     const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, primaryKey);
@@ -187,7 +187,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       }
     }
 
-    await this.adminforth.deleteResourceRecord({resource, record, adminUser, recordId: primaryKey, response, extra: context});
+    await this.adminforth.deleteResourceRecord({resource, record, adminUser, recordId: primaryKey, response});
   }
 
   registerEndpoints(server: IHttpServer) {
@@ -1518,7 +1518,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            await this.deleteWithCascade(resource, body.primaryKey, {body, adminUser, query, headers, cookies, requestUrl, response});
+            await this.deleteWithCascade(resource, body.primaryKey, {body, adminUser, response});
 
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
               resource, record, adminUser, recordId: body['primaryKey'], response, 
