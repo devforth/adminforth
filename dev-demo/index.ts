@@ -108,7 +108,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'clickhouse',
-      url: 'clickhouse://demo:demo@localhost:8124/demo',
+      url: 'clickhouse://demo:demo@localhost:28124/demo',
     }
   ],
   resources: [
