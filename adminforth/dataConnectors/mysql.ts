@@ -74,26 +74,28 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }));
   }
 
+  private async hasPgCascadeFk(tableName: string): Promise<void> {
+  const [fkResults] = await this.client.execute(
+    `
+    SELECT
+      TABLE_NAME AS child_table,
+      CONSTRAINT_NAME
+    FROM information_schema.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND REFERENCED_TABLE_NAME = ?
+      AND DELETE_RULE = 'CASCADE'
+    `,
+    [tableName]
+  );
+
+  for (const fk of fkResults as any[]) {
+    afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+  }
+}
+
   async discoverFields(resource) {
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
-    const [fkResults] = await this.client.execute(`
-      SELECT
-        kcu.COLUMN_NAME,
-        kcu.TABLE_NAME AS child_table,
-        rc.DELETE_RULE
-      FROM information_schema.KEY_COLUMN_USAGE AS kcu
-      JOIN information_schema.REFERENTIAL_CONSTRAINTS AS rc
-        ON kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
-        AND kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
-      WHERE kcu.REFERENCED_TABLE_NAME = ?
-        AND kcu.TABLE_SCHEMA = DATABASE()
-    `, [resource.table]);
-
-    for (const fk of fkResults as any[]) {
-      if (fk.DELETE_RULE?.toUpperCase() === 'CASCADE') {
-        afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);      
-      }
-    }
+    await this.hasPgCascadeFk(resource.table);
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};
