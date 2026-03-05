@@ -68,23 +68,20 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const sampleRow = sampleRowRes.rows[0] ?? {};
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
-      
+    
     private async hasPgCascadeFk(tableName: string, schema = 'public'): Promise<boolean> {
         const res = await this.client.query(
             `
             SELECT 1
-            FROM pg_constraint con
-            JOIN pg_class rel ON rel.oid = con.conrelid
-            JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
-            JOIN pg_class p ON p.oid = con.confrelid
-            WHERE con.contype = 'f'
-            AND nsp.nspname = $2
-            AND p.relname = $1
-            AND con.confdeltype = 'c'
+            FROM pg_constraint
+            WHERE contype = 'f'
+            AND confrelid = ($2 || '.' || $1)::regclass
+            AND confdeltype = 'c'
             LIMIT 1
             `,
             [tableName, schema]
         );
+
         return res.rowCount > 0;
     }
 
