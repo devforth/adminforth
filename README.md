@@ -64,7 +64,10 @@ cd dev-demo
 
 pnpm setup-dev-demo
 
+pnpm migrate:all
+
 pnpm start
+
 ```
 
 ## Adding columns to a database in dev-demo
