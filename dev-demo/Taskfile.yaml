@@ -54,19 +54,23 @@ vars:
 
 
 tasks:
-  pull_plugins:
-    desc: "Clone and pull repositories from GitHub"
+
+  pull_repos:
+    internal: true
     cmds:
       - |
         set -euo pipefail
-        mkdir -p "{{.PLUGINS_DIR}}"
-        cd "{{.PLUGINS_DIR}}"
-        plugins=({{range .PLUGINS}}{{.}} {{end}})
-        printf '%s\n' "${plugins[@]}" | xargs -n1 -P"{{.PULL_JOBS}}" -I{} bash -c '
+        mkdir -p "{{.DIR}}"
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PULL_JOBS}}" -I{} bash -c '
           set -euo pipefail
           repo="$1"
           repo_url="https://github.com/devforth/${repo}.git"
           name="$(basename "${repo}" .git)"
+
           if [ -d "${name}" ]; then
             echo "Pulling ${name}"
             (cd "${name}" && git pull)
@@ -76,16 +80,19 @@ tasks:
           fi
         ' _ {}
 
-  pnpm_plugins:
-    desc: "Install plugin dependencies using pnpm"
+  pnpm_repos:
+    internal: true
     cmds:
       - |
         set -euo pipefail
-        cd "{{.PLUGINS_DIR}}"
-        plugins=({{range .PLUGINS}}{{.}} {{end}})
-        printf '%s\n' "${plugins[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
           set -euo pipefail
           name="$1"
+
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
             (cd "${name}" && pnpm install)
@@ -93,43 +100,35 @@ tasks:
             echo "Directory ${name} does not exist, skipping"
           fi
         ' _ {}
+
+  pull_plugins:
+    desc: Pull plugin repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS: "{{.PLUGINS}}"
 
   pull_adapters:
-    desc: "Clone and pull adapter repositories from GitHub"
+    desc: Pull adapter repositories
     cmds:
-      - |
-        set -euo pipefail
-        mkdir -p "{{.ADAPTERS_DIR}}"
-        cd "{{.ADAPTERS_DIR}}"
-        adapters=({{range .ADAPTERS}}{{.}} {{end}})
-        printf '%s\n' "${adapters[@]}" | xargs -n1 -P"{{.PULL_JOBS}}" -I{} bash -c '
-          set -euo pipefail
-          repo="$1"
-          repo_url="https://github.com/devforth/${repo}.git"
-          name="$(basename "${repo}" .git)"
-          if [ -d "${name}" ]; then
-            echo "Pulling ${name}"
-            (cd "${name}" && git pull)
-          else
-            echo "Cloning ${name}"
-            git clone "${repo_url}" "${name}"
-          fi
-        ' _ {}
+      - task: pull_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS: "{{.ADAPTERS}}"
+
+  pnpm_plugins:
+    desc: Install plugin dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS: "{{.PLUGINS}}"
 
   pnpm_adapters:
-    desc: "Install adapter dependencies using pnpm"
+    desc: Install adapter dependencies
     cmds:
-      - |
-        set -euo pipefail
-        cd "{{.ADAPTERS_DIR}}"
-        adapters=({{range .ADAPTERS}}{{.}} {{end}})
-        printf '%s\n' "${adapters[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
-          set -euo pipefail
-          name="$1"
-          if [ -d "${name}" ]; then
-            echo "Installing dependencies for ${name}"
-            (cd "${name}" && pnpm install)
-          else
-            echo "Directory ${name} does not exist, skipping"
-          fi
-        ' _ {}
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS: "{{.ADAPTERS}}"
