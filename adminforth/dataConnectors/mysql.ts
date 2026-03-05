@@ -78,23 +78,19 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     const [fkResults] = await this.client.execute(`
       SELECT
+        kcu.COLUMN_NAME,
         kcu.TABLE_NAME AS child_table,
-        rc.DELETE_RULE AS delete_rule
-      FROM information_schema.KEY_COLUMN_USAGE kcu
-      JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
+        rc.DELETE_RULE
+      FROM information_schema.KEY_COLUMN_USAGE AS kcu
+      JOIN information_schema.REFERENTIAL_CONSTRAINTS AS rc
         ON kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
         AND kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
       WHERE kcu.REFERENCED_TABLE_NAME = ?
         AND kcu.TABLE_SCHEMA = DATABASE()
     `, [resource.table]);
 
-    const fkMap: Record<string, { cascade: boolean; childTable: string }> = {};
     for (const fk of fkResults as any[]) {
-      fkMap[String(fk.column_name)] = {
-        cascade: String(fk.delete_rule).toUpperCase() === 'CASCADE',
-        childTable: fk.child_table
-      };
-      if (fkMap[fk.column_name].cascade) {
+      if (fk.DELETE_RULE?.toUpperCase() === 'CASCADE') {
         afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);      
       }
     }
