@@ -13,7 +13,7 @@
     "migrate:mysql": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./migrations/prisma/mysql/schema.mysql.prisma",
     "makemigration:postgres": "npm run _env:dev -- npx --yes prisma migrate dev --create-only --schema=./migrations/prisma/postgres/schema.postgres.prisma",
     "migrate:postgres": "npm run _env:dev -- npx --yes prisma migrate deploy --schema=./migrations/prisma/postgres/schema.postgres.prisma",
-    "migrate:clickhouse": "npx clickhouse-migrations migrate --host=http://localhost:28124/demo --user=demo --password=demo --db=demo --migrations-home=./migrations/clickhouse_migrations",
+    "migrate:clickhouse": "npx clickhouse-migrations migrate --host=http://localhost:28124 --user=demo --password=demo --db=demo --migrations-home=./migrations/clickhouse_migrations",
     "install-plugins": "task pull_plugins && task pnpm_plugins",
     "install-adapters": "task pull_adapters && task pnpm_adapters",
     "build-adminforth": "cd ../adminforth && npm ci && npm run build && npm link",
