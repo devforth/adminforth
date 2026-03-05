@@ -208,7 +208,6 @@ export default {
         resourceId: 'adminuser', 
         //diff-add
         onDelete: 'cascade' // cascade or setNull
-        //diff-add                       
       }
     }
   ],

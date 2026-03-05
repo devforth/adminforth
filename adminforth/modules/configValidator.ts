@@ -283,7 +283,7 @@ export default class ConfigValidator implements IConfigValidator {
             }
             
             const restApi = new AdminForthRestAPI (this.adminforth) 
-            await restApi.deleteWithCascade(res as AdminForthResource, recordId, { adminUser, response, body: null,});
+            await restApi.deleteWithCascade(res as AdminForthResource, recordId, { adminUser, response});
 
             await Promise.all(
               (res.hooks.delete.afterSave).map(
