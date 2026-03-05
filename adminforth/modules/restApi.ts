@@ -1522,7 +1522,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            await this.deleteWithCascade(resource, body.primaryKey, {adminUser, response});
+            const { error: cascadeError } = await this.deleteWithCascade(resource, body.primaryKey, {adminUser, response});
+            if (cascadeError) {
+              return { error: cascadeError };
+            }
 
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
               resource, record, adminUser, recordId: body['primaryKey'], response, 
