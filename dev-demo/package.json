@@ -20,12 +20,13 @@
     "migrate:all": "npm run migrate:sqlite && npm run migrate:mysql && npm run migrate:postgres && npm run migrate:clickhouse",
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
-    "setup-dev-demo": "npm run preinstall && npm run check-docker && npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./scripts/run_inventory.sh"
+    "setup-dev-demo": "pnpm preinstall && pnpm check-docker && pnpm build-adminforth && cp .env.local .env && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "adminforth": "link:../../.local/share/pnpm/global/5/node_modules/adminforth",
     "better-sqlite3": "^10.1.0",
     "clickhouse-migrations": "^1.1.1",
     "decimal.js": "^10.6.0",
