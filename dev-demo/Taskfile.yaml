@@ -88,7 +88,7 @@ tasks:
           name="$1"
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && pnpm install && pnpm link adminforth)
+            (cd "${name}" && pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
@@ -127,8 +127,8 @@ tasks:
           set -euo pipefail
           name="$1"
           if [ -d "${name}" ]; then
-            echo "(NOT IMPLEMENTED YET) Installing dependencies for ${name}"
-            # (cd "${name}" && pnpm install && pnpm link adminforth)
+            echo "Installing dependencies for ${name}"
+            (cd "${name}" && pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
