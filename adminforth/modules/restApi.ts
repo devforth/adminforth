@@ -157,7 +157,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
     const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, primaryKey);
 
-    if (!record){ return {error: null};}
+    if (!record){ 
+      return {error: `Record with id ${primaryKey} not found`};
+    }
 
     const childResources = this.adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
