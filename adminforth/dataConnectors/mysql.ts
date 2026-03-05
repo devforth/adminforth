@@ -79,7 +79,6 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const [fkResults] = await this.client.execute(`
       SELECT
         kcu.TABLE_NAME AS child_table,
-        kcu.COLUMN_NAME AS column_name,
         rc.DELETE_RULE AS delete_rule
       FROM information_schema.KEY_COLUMN_USAGE kcu
       JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
