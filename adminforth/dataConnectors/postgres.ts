@@ -69,47 +69,30 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
       
-    private async getPgFkCascadeMap(
-        tableName: string,
-        schema = 'public'
-    ): Promise<Record<string, { cascade: boolean; targetTable: string }>> {
+    private async hasPgCascadeFk(tableName: string, schema = 'public'): Promise<boolean> {
         const res = await this.client.query(
             `
-            SELECT
-                att.attname AS column_name,
-                rel.relname AS child_table,
-                p.relname AS parent_table,
-                con.confdeltype AS confdeltype
+            SELECT 1
             FROM pg_constraint con
             JOIN pg_class rel ON rel.oid = con.conrelid
             JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
-            JOIN LATERAL unnest(con.conkey) WITH ORDINALITY AS k(attnum, ord) ON TRUE
-            JOIN pg_attribute att 
-                ON att.attrelid = con.conrelid AND att.attnum = k.attnum
             JOIN pg_class p ON p.oid = con.confrelid
             WHERE con.contype = 'f'
             AND nsp.nspname = $2
             AND p.relname = $1
+            AND con.confdeltype = 'c'
+            LIMIT 1
             `,
             [tableName, schema]
         );
-        
-        const fkMap: Record<string, { cascade: boolean; targetTable: string }> = {};
-
-        for (const row of res.rows) {
-            fkMap[row.column_name.toLowerCase()] = {
-                cascade: row.confdeltype === 'c',
-                targetTable: row.parent_table,
-            };
-        }
-        return fkMap;
+        return res.rowCount > 0;
     }
 
     async discoverFields(resource) {
 
         const tableName = resource.table;
-        const fkMap = await this.getPgFkCascadeMap(tableName);
-        const hasCascade = Object.values(fkMap).some(fk => fk.cascade);
+        const hasCascade = await this.hasPgCascadeFk(tableName);
+
         if (hasCascade) {
             afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
         }
