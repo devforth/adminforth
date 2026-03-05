@@ -152,12 +152,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       }
     }
   }
-  async deleteWithCascade(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}) {
+  async deleteWithCascade(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}): Promise<{ error: string | null }> {
     const { adminUser, response } = context;
 
     const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, primaryKey);
 
-    if (!record) return;
+    if (!record){ return {error: null};}
 
     const childResources = this.adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
@@ -175,7 +175,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
       if (strategy === 'cascade') {
         for (const childRecord of childRecords) {
-          await this.deleteWithCascade(childRes, childRecord[childPk], context);
+          const childResult = await this.deleteWithCascade(childRes, childRecord[childPk], context);
+          if (childResult?.error) {
+            return childResult;
+          }
         }
       }
 
@@ -185,8 +188,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     }
-
-    await this.adminforth.deleteResourceRecord({resource, record, adminUser, recordId: primaryKey, response});
+    const deleteResult = await this.adminforth.deleteResourceRecord({resource, record, adminUser, recordId: primaryKey, response});
+    return { error: deleteResult.error};
   }
 
   registerEndpoints(server: IHttpServer) {
