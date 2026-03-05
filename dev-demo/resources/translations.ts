@@ -36,12 +36,16 @@ export default {
       // optional field store list of completed translations
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
-      completeAdapter: new CompletionAdapterOpenAIChatGPT({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-5-mini',
-      }),
-      // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
-      parallelTranslationLimit: 1
+      ...(process.env.OPENAI_API_KEY ? 
+        { 
+        completeAdapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-5-mini',
+        }),
+        // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
+        parallelTranslationLimit: 1 
+       } 
+      : {}),
     }),
 
   ],

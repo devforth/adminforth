@@ -107,7 +107,8 @@ tasks:
       - task: pull_repos
         vars:
           DIR: "{{.PLUGINS_DIR}}"
-          REPOS: "{{.PLUGINS}}"
+          REPOS:
+            ref: .PLUGINS
 
   pull_adapters:
     desc: Pull adapter repositories
@@ -115,7 +116,8 @@ tasks:
       - task: pull_repos
         vars:
           DIR: "{{.ADAPTERS_DIR}}"
-          REPOS: "{{.ADAPTERS}}"
+          REPOS:
+            ref: .ADAPTERS
 
   pnpm_plugins:
     desc: Install plugin dependencies
@@ -123,7 +125,8 @@ tasks:
       - task: pnpm_repos
         vars:
           DIR: "{{.PLUGINS_DIR}}"
-          REPOS: "{{.PLUGINS}}"
+          REPOS:
+            ref: .PLUGINS
 
   pnpm_adapters:
     desc: Install adapter dependencies
@@ -131,4 +134,5 @@ tasks:
       - task: pnpm_repos
         vars:
           DIR: "{{.ADAPTERS_DIR}}"
-          REPOS: "{{.ADAPTERS}}"
+          REPOS:
+            ref: .ADAPTERS
