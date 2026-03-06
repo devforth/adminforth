@@ -14,12 +14,12 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1",
-    "build": "rm -rf dist && tsc && npm run prepareDist && npm link",
+    "build": "rm -rf dist && tsc && pnpm prepareDist && pnpm link",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
-    "rollout-doc": "cd documentation && npm run build && npm run deploy",
+    "rollout-doc": "cd documentation && pnpm build && pnpm deploy",
     "docs": "typedoc",
-    "--comment_postinstall": "postinstall executed after package installed in other project package and when we do npm ci in the package",
+    "--comment_postinstall": "postinstall executed after package installed in other project package and when we do pnpm i in the package",
     "postinstall": "node -e \"const fs=require('fs');const path=require('path');const spaPath=path.join(__dirname,'dist','spa');if(fs.existsSync(spaPath)){process.chdir(spaPath);require('child_process').execSync('npm ci',{stdio:'inherit'});console.log('installed spa dependencies');}\""
   },
   "release": {
