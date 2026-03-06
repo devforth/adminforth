@@ -5,6 +5,7 @@ import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
+import yaml from 'yaml';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
@@ -142,15 +143,12 @@ class CodeInjector implements ICodeInjector {
 
   }
 
-  async runNpmShell({command, cwd, envOverrides = {}}: {
+  async runPnpmShell({command, cwd, envOverrides = {}}: {
     command: string,
     cwd: string,
     envOverrides?: { [key: string]: string }
   }) {
-    const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    // On Windows, npm is npm.cmd, on Unix systems it's npm
-    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
+    const pnpmExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -158,38 +156,24 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    afLogger.trace(`⚙️ exec: npm ${command}`);
-    afLogger.trace(`🪲 npm ${command} cwd: ${cwd}`);
-    afLogger.trace(`npm ${command} done in`);
-    
-    // On Windows, execute npm.cmd directly; on Unix, use node + npm
-    let execCommand: string;
-    if (process.platform === 'win32') {
-      // Quote path if it contains spaces
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNpmPath} ${command}`;
-    } else {
-      // Quote paths that contain spaces (for Unix systems)
-      const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
-    }
-    
+    afLogger.trace(`⚙️ exec: pnpm ${command}`);
+    afLogger.trace(`🪲 pnpm ${command} cwd: ${cwd}`);
+
+    const execCommand = `${pnpmExecutable} ${command}`;
     const execOptions: any = {
       cwd,
       env,
     };
-    
-    // On Windows, use shell to execute .cmd files
+
     if (process.platform === 'win32') {
       execOptions.shell = true;
     }
-    
-    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
-    afLogger.trace(`npm ${command} done in`);
+
+    const { stderr: err } = await execAsync(execCommand, execOptions);
+    afLogger.trace(`pnpm ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲npm ${command} errors/warnings: ${err}`);
+      afLogger.trace(`🪲pnpm ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -207,7 +191,7 @@ class CodeInjector implements ICodeInjector {
     return path.join(this.getSpaDir(), 'dist');
   }
 
-  async packagesFromNpm(dir: string): Promise<[string, string[]]> {
+  async packagesFromPnpm(dir: string): Promise<[string, string[]]> {
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     let lockHash: string = '';
@@ -218,28 +202,43 @@ class CodeInjector implements ICodeInjector {
       // user package.json does not exist, user does not have custom components
     }
     if (packageContent) {
-      const lockPath = path.join(dir, 'package-lock.json');
-      let lock = null;
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
       try {
-        lock = JSON.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
       } catch (e) {
-        throw new Error(`Custom package-lock.json does not exist in ${dir}, but package.json does. 
-          We can't determine version of packages without package-lock.json. Please run npm install in ${dir}`);
+        throw new Error(`Custom pnpm-lock.yaml does not exist in ${dir}, but package.json does. 
+          We can't determine version of packages without pnpm-lock.yaml. Please run pnpm install in ${dir}`);
       }
       lockHash = hashify(lock);
+      const importer = lock?.importers?.['.'];
+      if (!importer) {
+        throw new Error(`pnpm-lock.yaml in ${dir} does not contain importer ".". Please run pnpm install in ${dir}`);
+      }
+
+      const importerDeps = {
+        ...(importer.dependencies || {}),
+        ...(importer.devDependencies || {}),
+        ...(importer.optionalDependencies || {}),
+      };
 
       packages = [
-        ...Object.keys(packageContent.dependencies || []),
-        ...Object.keys(packageContent.devDependencies || [])
+        ...Object.keys(packageContent.dependencies || {}),
+        ...Object.keys(packageContent.devDependencies || {})
       ].reduce(
           (acc, packageName) => {
-            const pack = lock.packages[`node_modules/${packageName}`];
-            if (!pack) {
-              throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
-            }
-            const version = pack.version;
+            const depInfo = importerDeps[packageName];
+            const raw = typeof depInfo === 'string'
+              ? depInfo
+              : (depInfo?.specifier || depInfo?.version);
 
-            acc.push(`${packageName}@${version}`);
+            if (!raw) {
+              throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
+            }
+
+            const cleaned = raw.includes('(') ? raw.split('(')[0] : raw;
+
+            acc.push(`${packageName}@${cleaned}`);
             return acc;
           }, []
       );
@@ -653,9 +652,9 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    const spaPackageLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
-    const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPackageLock);
+  const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+  const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+  const spaLockHash = hashify(spaPnpmLock);
 
     /* customPackageLock */
     let usersLockHash: string = '';
@@ -663,7 +662,7 @@ class CodeInjector implements ICodeInjector {
 
 
     if (this.adminforth.config.customization?.customComponentsDir) {
-      [usersLockHash, usersPackages] = await this.packagesFromNpm(this.adminforth.config.customization.customComponentsDir);
+      [usersLockHash, usersPackages] = await this.packagesFromPnpm(this.adminforth.config.customization.customComponentsDir);
     }
 
     const pluginPackages: {
@@ -675,7 +674,7 @@ class CodeInjector implements ICodeInjector {
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
       afLogger.trace(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
-      const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
+      const [lockHash, packages] = await this.packagesFromPnpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
           pluginName: plugin.constructor.name,
@@ -696,18 +695,18 @@ class CodeInjector implements ICodeInjector {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       await this.checkIconNames(icons);
       if (existingHash === fullHash) {
-        afLogger.trace(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
+        afLogger.trace(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
+        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
       }
     } catch (e) {
       // ignore
-      afLogger.trace(`🪲Hash file does not exist, proceeding with npm ci/install, ${e}`);
+      afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
-      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    await this.runPnpmShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
     }}); 
 
     const allPacks = [
@@ -726,11 +725,11 @@ class CodeInjector implements ICodeInjector {
     const allPacksUnique = Array.from(new Set(allPacksFiltered));
 
     if (allPacks.length) {
-      const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({
-        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+      const pnpmInstallCommand = `install ${allPacksUnique.join(' ')}`;
+      await this.runPnpmShell({
+        command: pnpmInstallCommand, cwd: this.spaTmpPath(), 
         envOverrides: { 
-          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+          NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
         }
       });
     }
@@ -938,7 +937,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!skipExtract) {
-      await this.runNpmShell({command: 'run i18n:extract', cwd});
+  await this.runPnpmShell({command: 'run i18n:extract', cwd});
       
       // create serveDir if not exists
       await fs.promises.mkdir(serveDir, { recursive: true });
@@ -956,7 +955,7 @@ class CodeInjector implements ICodeInjector {
       if (!skipBuild) {
         
         // TODO probably add option to build with tsh check (plain 'build')
-        await this.runNpmShell({command: 'run build-only', cwd});
+  await this.runPnpmShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
         await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
@@ -969,7 +968,7 @@ class CodeInjector implements ICodeInjector {
     } else {
 
       const command = 'run dev';
-      afLogger.info(`⚙️ spawn: npm ${command}...`);
+      afLogger.info(`⚙️ spawn: pnpm ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
         afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
@@ -979,14 +978,12 @@ class CodeInjector implements ICodeInjector {
         ...process.env,
       };
 
-      const nodeBinary = process.execPath;
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
-      
+      const pnpmExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
       let devServer;
       if (process.platform === 'win32') {
-        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+        devServer = spawn(pnpmExecutable, command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
+        devServer = spawn(pnpmExecutable, command.split(' '), { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
