@@ -1,0 +1,138 @@
+version: '3'
+
+vars:
+  PLUGINS_DIR: "../plugins"
+  ADAPTERS_DIR: "../adapters"
+  PULL_JOBS: 30
+  PNPM_JOBS: 10
+  PLUGINS:
+    - "adminforth-audit-log"
+    - "adminforth-email-password-reset"
+    - "adminforth-foreign-inline-list"
+    - "adminforth-i18n"
+    - "adminforth-import-export"
+    - "adminforth-text-complete"
+    - "adminforth-open-signup"
+    - "adminforth-rich-editor"
+    - "adminforth-two-factors-auth"
+    - "adminforth-upload"
+    - "adminforth-oauth"
+    - "adminforth-list-in-place-edit"
+    - "adminforth-inline-create"
+    - "adminforth-markdown"
+    - "adminforth-foreign-inline-show"
+    - "adminforth-email-invite"
+    - "adminforth-bulk-ai-flow"
+    - "adminforth-universal-search"
+    - "adminforth-login-captcha"
+    - "adminforth-user-soft-delete"
+    - "adminforth-clone-row"
+    - "adminforth-quick-filters"
+    - "adminforth-many2many"
+    - "adminforth-background-jobs"
+
+  ADAPTERS:
+    - "adminforth-completion-adapter-open-ai-chat-gpt"
+    - "adminforth-email-adapter-aws-ses"
+    - "adminforth-email-adapter-mailgun"
+    - "adminforth-google-oauth-adapter"
+    - "adminforth-github-oauth-adapter"
+    - "adminforth-facebook-oauth-adapter"
+    - "adminforth-keycloak-oauth-adapter"
+    - "adminforth-microsoft-oauth-adapter"
+    - "adminforth-twitch-oauth-adapter"
+    - "adminforth-image-generation-adapter-openai"
+    - "adminforth-storage-adapter-amazon-s3"
+    - "adminforth-storage-adapter-local"
+    - "adminforth-image-vision-adapter-openai"
+    - "adminforth-key-value-adapter-ram"
+    - "adminforth-login-captcha-adapter-cloudflare"
+    - "adminforth-login-captcha-adapter-recaptcha"
+    - "adminforth-completion-adapter-google-gemini"
+    - "adminforth-key-value-adapter-redis"
+    - "adminforth-key-value-adapter-leveldb"
+
+
+tasks:
+
+  pull_repos:
+    internal: true
+    cmds:
+      - |
+        set -euo pipefail
+        mkdir -p "{{.DIR}}"
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PULL_JOBS}}" -I{} bash -c '
+          set -euo pipefail
+          repo="$1"
+          repo_url="https://github.com/devforth/${repo}.git"
+          name="$(basename "${repo}" .git)"
+
+          if [ -d "${name}" ]; then
+            echo "Pulling ${name}"
+            (cd "${name}" && git pull)
+          else
+            echo "Cloning ${name}"
+            git clone "${repo_url}" "${name}"
+          fi
+        ' _ {}
+
+  pnpm_repos:
+    internal: true
+    cmds:
+      - |
+        set -euo pipefail
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
+          set -euo pipefail
+          name="$1"
+
+          if [ -d "${name}" ]; then
+            echo "Installing dependencies for ${name}"
+            (cd "${name}" && pnpm install)
+          else
+            echo "Directory ${name} does not exist, skipping"
+          fi
+        ' _ {}
+
+  pull_plugins:
+    desc: Pull plugin repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS:
+            ref: .PLUGINS
+
+  pull_adapters:
+    desc: Pull adapter repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS:
+            ref: .ADAPTERS
+
+  pnpm_plugins:
+    desc: Install plugin dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS:
+            ref: .PLUGINS
+
+  pnpm_adapters:
+    desc: Install adapter dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS:
+            ref: .ADAPTERS

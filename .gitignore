@@ -1,6 +1,6 @@
 node_modules
 plugins/*
-!plugins/install-plugins.sh
+!plugins/README.md
 adapters/*
-!adapters/install-adapters.sh
+!adapters/README.md
 background-jobs-dbs
