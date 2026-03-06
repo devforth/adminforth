@@ -21,7 +21,7 @@
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
     "check-task": "node scripts/check-task.js",
-    "setup-dev-demo": "npm run preinstall && npm run check-docker && npm run check-task && npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && npm install && npm link adminforth && bash ./scripts/run_inventory.sh"
+    "setup-dev-demo": "npm run preinstall && npm run check-docker && npm run check-task && npm run build-adminforth && cp .env.local .env && npm run install-plugins && npm run install-adapters && pnpm install && pnpm link adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
