@@ -68,10 +68,31 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const sampleRow = sampleRowRes.rows[0] ?? {};
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
-      
+    
+    private async hasPgCascadeFk(tableName: string, schema = 'public'): Promise<boolean> {
+        const res = await this.client.query(
+            `
+            SELECT 1
+            FROM pg_constraint
+            WHERE contype = 'f'
+            AND confrelid = ($2 || '.' || $1)::regclass
+            AND confdeltype = 'c'
+            LIMIT 1
+            `,
+            [tableName, schema]
+        );
+
+        return res.rowCount > 0;
+    }
+
     async discoverFields(resource) {
 
         const tableName = resource.table;
+        const hasCascade = await this.hasPgCascadeFk(tableName);
+
+        if (hasCascade) {
+            afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+        }
         const stmt = await this.client.query(`
         SELECT
             a.attname AS name,

@@ -2056,6 +2056,7 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
       afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
     },
   },
+  onDelete?: 'cascade' | 'setNull'
 }
 
 export type ShowInModernInput = {
