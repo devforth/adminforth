@@ -20,8 +20,8 @@
     "rollout-doc": "cd documentation && pnpm build && pnpm deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do pnpm i in the package",
-    "postinstall": "node -e \"const fs=require('fs');const path=require('path');const spaPath=path.join(__dirname,'dist','spa');if(fs.existsSync(spaPath)){process.chdir(spaPath);require('child_process').execSync('npm ci',{stdio:'inherit'});console.log('installed spa dependencies');}\""
-  },
+    "postinstall": "node -e \"const fs=require('fs');const path=require('path');const spaPath=path.join(__dirname,'dist','spa');if(fs.existsSync(spaPath) && !process.env.PNPM_INSTALL_SPA){process.env.PNPM_INSTALL_SPA=1;require('child_process').execSync('pnpm install --frozen-lockfile',{cwd:spaPath,stdio:'inherit'});console.log('installed spa dependencies');}\""  
+   },
   "release": {
     "plugins": [
       "@semantic-release/commit-analyzer",
@@ -88,7 +88,8 @@
     "private-ip": "^3.0.2",
     "rate-limiter-flexible": "^8.1.0",
     "recast": "^0.23.11",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@semantic-release/exec": "^7.1.0",
