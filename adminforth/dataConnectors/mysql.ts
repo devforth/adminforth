@@ -75,23 +75,23 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   }
 
   private async hasPgCascadeFk(tableName: string): Promise<void> {
-  const [fkResults] = await this.client.execute(
-    `
-    SELECT
-      TABLE_NAME AS child_table,
-      CONSTRAINT_NAME
-    FROM information_schema.REFERENTIAL_CONSTRAINTS
-    WHERE CONSTRAINT_SCHEMA = DATABASE()
-      AND REFERENCED_TABLE_NAME = ?
-      AND DELETE_RULE = 'CASCADE'
-    `,
-    [tableName]
-  );
+    const [fkResults] = await this.client.execute(
+      `
+      SELECT
+        TABLE_NAME AS child_table,
+        CONSTRAINT_NAME
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+        AND REFERENCED_TABLE_NAME = ?
+        AND DELETE_RULE = 'CASCADE'
+      `,
+      [tableName]
+    );
 
-  for (const fk of fkResults as any[]) {
-    afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+    for (const fk of fkResults as any[]) {
+      afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+    }
   }
-}
 
   async discoverFields(resource) {
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
