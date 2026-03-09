@@ -31,7 +31,6 @@
       [
         "semantic-release-slack-bot",
         {
-          "packageName": "adminforth",
           "notifyOnSuccess": true,
           "notifyOnFail": true,
           "slackIcon": ":package:",
