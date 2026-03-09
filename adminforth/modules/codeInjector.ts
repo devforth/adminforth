@@ -283,7 +283,6 @@ class CodeInjector implements ICodeInjector {
             return acc;
           }, []
       );
-      
     }
     return [lockHash, packages];
   }
