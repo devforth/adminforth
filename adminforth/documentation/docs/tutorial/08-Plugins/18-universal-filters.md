@@ -11,7 +11,7 @@ Ideal for quick, multi‑field lookup without opening the filter panel.
 ## Installation
 
 ```bash
-pnpm i @adminforth/universal-search --save
+npm i @adminforth/universal-search --save
 ```
 
 ## Basic Usage

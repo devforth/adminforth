@@ -3,19 +3,19 @@
 Install dependencies:
 
 ```bash
-pnpm ci
+npm ci
 ```
 
 Migrate the database:
 
 ```bash
-pnpm run migrate:local
+npm run migrate:local
 ```
 
 Start the server:
 
 ```bash
-pnpm run dev
+npm run dev
 ```
 
 ## Changing schema
@@ -25,10 +25,10 @@ Open `schema.prisma` and change schema as needed: add new tables, columns, etc (
 Run the following command to generate a new migration and apply it instantly in local database:
 
 ```bash
-pnpm makemigration -- --name <name_of_changes>
+npm run makemigration -- --name <name_of_changes>
 ```
 
-Your colleagues will need to pull the changes and run `pnpm migrate:local` to apply the migration in their local database.
+Your colleagues will need to pull the changes and run `npm run migrateLocal` to apply the migration in their local database.
 
 ## Deployment tips
 
