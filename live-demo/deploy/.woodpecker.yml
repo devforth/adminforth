@@ -24,7 +24,6 @@ steps:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
       - cd adminforth
       - pnpm install
-      - pnpm setup
       - /bin/bash ../live-demo/deploy/buildRelease.sh
       - pnpm audit
       - pnpm exec semantic-release

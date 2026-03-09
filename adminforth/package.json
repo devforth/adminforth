@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1",
-    "build": "rm -rf dist && tsc && pnpm prepareDist && pnpm link",
+    "build": "rm -rf dist && tsc && pnpm prepareDist",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
     "rollout-doc": "cd documentation && pnpm build && pnpm deploy",
