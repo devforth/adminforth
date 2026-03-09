@@ -8,7 +8,7 @@ This is useful when you want to allow anyone to sign up and assign some low-leve
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/open-signup --save
+npm install @adminforth/open-signup --save
 ```
 
 
@@ -50,7 +50,7 @@ model adminuser {
 And prisma migrate:
 
 ```bash
-pnpm makemigration -- --name add-email-confirmed-to-adminuser ; pnpm migrate:local
+npm run makemigration -- --name add-email-confirmed-to-adminuser ; npm run migrate:local
 
 
 ```
@@ -58,7 +58,7 @@ pnpm makemigration -- --name add-email-confirmed-to-adminuser ; pnpm migrate:loc
 Next, install the `@adminforth/email-adapter-aws-ses` package:
 
 ```bash
-pnpm i @adminforth/email-adapter-aws-ses --save
+npm i @adminforth/email-adapter-aws-ses --save
 ```
 
 Also, update the resource configuration in `./resources/adminuser.ts`:

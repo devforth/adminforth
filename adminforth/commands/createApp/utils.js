@@ -362,12 +362,12 @@ async function installDependencies(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
-  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
-      await execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
     const res = await Promise.all([
@@ -387,11 +387,11 @@ function generateFinalInstructions(skipPrismaSetup, options) {
 
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
-  ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration -- --name init && pnpm migrate:local')}\n`;
+  ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
-  ${chalk.dim('$')}${chalk.cyan(' pnpm dev')}\n
+  ${chalk.dim('$')}${chalk.cyan(' npm run dev')}\n
 `;
 
   instruction += '😉 Happy coding!';

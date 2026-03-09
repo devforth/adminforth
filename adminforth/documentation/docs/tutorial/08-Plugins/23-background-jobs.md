@@ -6,7 +6,7 @@ BackgroundJobsPlugin adds a durable background-job system to AdminForth. Jobs ar
 
 First, install the plugin:
 ```bash
-pnpm i @adminforth/background-jobs
+npm i @adminforth/background-jobs
 ```
 
 and create a resource for jobs:
