@@ -1,0 +1,1 @@
+This folder will be filled with adapters, after dev_demo setup
