@@ -17,16 +17,16 @@ steps:
       - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
 
   release:
-    image: devforth/node20-pnpm:latest
+    image: node:20
     when:
       - event: push
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
       - cd adminforth
-      - pnpm install
+      - npm clean-install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
-      - pnpm audit --audit-level=critical
-      - pnpm exec semantic-release
+      - npm audit signatures
+      - npx semantic-release
 
   slack-on-success:
     when:

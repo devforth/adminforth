@@ -8,7 +8,7 @@ Allows to deactivate users accound without deleting it.
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/user-soft-delete --save
+npm install @adminforth/user-soft-delete --save
 ```
 
 ## Setting up
@@ -31,7 +31,7 @@ model adminuser {
 and make migration:
 
 ```bash
-pnpm makemigration -- --name add-active-field-to-users ; pnpm migrate:local
+npm run makemigration -- --name add-active-field-to-users ; npm run migrate:local
 ```
 
 To setup the plugin in users resource add:

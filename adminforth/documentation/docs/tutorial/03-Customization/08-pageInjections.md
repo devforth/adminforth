@@ -329,7 +329,7 @@ For this demo we will use text-analyzer package:
 
 ```bash 
 cd custom
-pnpm i text-analyzer
+npm i text-analyzer
 ```
 
 
@@ -396,7 +396,7 @@ Install used icon:
 
 ```sh
 cd custom
-pnpm i @iconify-prerendered/vue-mdi
+npm i @iconify-prerendered/vue-mdi
 ```
 
 ## List table row replace injection

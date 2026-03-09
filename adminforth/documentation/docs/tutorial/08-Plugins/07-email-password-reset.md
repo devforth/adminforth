@@ -11,8 +11,8 @@ Plugin allows to reset password for admin users who forgot their password by sen
 Installation:
 
 ```bash
-pnpm install @adminforth/email-password-reset --save
-pnpm install @adminforth/email-adapter-aws-ses --save
+npm install @adminforth/email-password-reset --save
+npm install @adminforth/email-adapter-aws-ses --save
 ```
 
 Import plugin:

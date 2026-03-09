@@ -125,13 +125,13 @@ To install package into frontend component, first of all we have to initialize n
 
 ```bash
 cd af-plugin-chatgpt/custom
-pnpm init -y
+npm init -y
 ```
 
 Now install our dependency:
 
 ```bash
-pnpm i vue-suggestion-input -D
+npm i vue-suggestion-input -D
 ```
 
 Create file `completionInput.vue`:
@@ -423,10 +423,10 @@ Finally, since we want to support multiple installations on one resource (e.g. o
 To compile plugin run:
 
 ```bash
-pnpm build
+npm run build
 ```
 
-You can also publish your plugin to npm using `pnpm publish`.
+You can also publish your plugin to npm using `npm publish`.
 
 ## Installation of plugin
 
@@ -434,13 +434,13 @@ If you want to test your plugin locally before publishing, enter plugin dir and 
 
 ```bash
 cd af-plugin-chatgpt
-pnpm link
+npm link
 ```
 
 Then enter your AdminForth project and run:
 
 ```bash
-pnpm link af-plugin-chatgpt
+npm link af-plugin-chatgpt
 ```
 
 Now  in your app `index.ts` file:
@@ -471,8 +471,8 @@ import ChatGptPlugin from 'af-plugin-chatgpt';
 
 Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new secret key. Paste value in your `.env` file OPENAI_API_KEY=your_key
 
-> ☝️ Using `pnpm link` approach still requires `pnpm build` in plugin dir after each change because plugin entry point is defined as `dist/index.js` in
-> `package.json` file. To speed up plugin development you can also don't use `pnpm link` and just import plugin main file from your demo file:
+> ☝️ Using `npm link` approach still requires `npm run build` in plugin dir after each change because plugin entry point is defined as `dist/index.js` in
+> `package.json` file. To speed up plugin development you can also don't use `npm link` and just import plugin main file from your demo file:
 > ```
 > import ChatGptPlugin from '<path to af plugin>/af-plugin-chatgpt/index.js';
 > ```

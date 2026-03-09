@@ -5,8 +5,8 @@ This plugin allows you to auto-complete text and string fields using OpenAI Chat
 ## Installation
 
 ```
-pnpm i @adminforth/text-complete --save
-pnpm i @adminforth/completion-adapter-open-ai-chat-gpt --save
+npm i @adminforth/text-complete --save
+npm i @adminforth/completion-adapter-open-ai-chat-gpt --save
 ```
 
 Go to https://platform.openai.com/, open `Dashboard` -> `API keys` -> `Create new secret key`. Paste value in your `.env` file:

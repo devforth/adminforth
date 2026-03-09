@@ -5,7 +5,7 @@ This plugin allows you to upload files to Amazon S3 bucket.
 ## Installation
 
 ```
-pnpm i @adminforth/upload --save
+npm i @adminforth/upload --save
 ```
 
 Plugin needs some storage adapter to store files and serve them for preview.
@@ -15,7 +15,7 @@ Plugin needs some storage adapter to store files and serve them for preview.
 Amazon S3 is probably the most popular storage service.
 
 ```
-pnpm i @adminforth/storage-adapter-amazon-s3 --save
+npm i @adminforth/storage-adapter-amazon-s3 --save
 ```
 
 1. Go to https://aws.amazon.com and login.
@@ -100,7 +100,7 @@ model apartments {
 Migrate prisma schema:
 
 ```bash
-pnpm makemigration -- --name add-apartment-image ; pnpm migrate:local
+npm run makemigration -- --name add-apartment-image ; npm run migrate:local
 ```
 
 Add column to `aparts` resource configuration:
@@ -282,7 +282,7 @@ Also you will have to enable static website hosting in your bucket settings and 
 The local storage adapter saves files directly on the server’s filesystem and serves them through Express routes. It supports both public and private modes (with presigned URLs).
 
 ```
-pnpm i @adminforth/storage-adapter-local --save
+npm i @adminforth/storage-adapter-local --save
 ```
 
 ```ts title="./index.ts"
@@ -312,7 +312,7 @@ Upload plugin supports AI generation for images. Yo use it you need to install i
 For example for OpenAI models like `gpt-image-1.5` (or old `DALL-E` models):
 
 ```bash
-pnpm i @adminforth/image-generation-adapter-openai
+npm i @adminforth/image-generation-adapter-openai
 ```
 
 
@@ -531,7 +531,7 @@ To do this add avatar column to the user resource:
 Then make migration:
 
 ```bash
-  pnpm makemigration -- --name add-user-avatar-field ; pnpm migrate:local
+  npm run makemigration -- --name add-user-avatar-field ; npm run migrate:local
 ```
 
 Add this column to the users resource:
