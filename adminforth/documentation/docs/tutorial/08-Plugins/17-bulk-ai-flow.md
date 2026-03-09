@@ -8,13 +8,13 @@ This also supports vision tasks so you can ask it to e.g. detect dominant color 
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/bulk-ai-flow --save
+npm install @adminforth/bulk-ai-flow --save
 ```
 
 You'll also need an image vision adapter:
 
 ```bash
-pnpm install @adminforth/image-vision-adapter-openai --save
+npm install @adminforth/image-vision-adapter-openai --save
 ```
 
 
@@ -49,7 +49,7 @@ model apartments {
 Migrate prisma schema:
 
 ```bash
-pnpm makemigration -- --name add-apartment-image-url ; pnpm migrate:local
+npm run makemigration -- --name add-apartment-image-url ; npm run migrate:local
 ```
 
 We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.

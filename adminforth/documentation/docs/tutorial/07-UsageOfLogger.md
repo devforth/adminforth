@@ -49,7 +49,7 @@ To change it, set the environment variable for the logger you want to see:
 Or run the Adminforth app like this:
 
 ```bash
-DB_DEBUG_LEVEL=trace pnpm start
+DB_DEBUG_LEVEL=trace npm start
 ```
 
 And the logs will be visible as well.

@@ -89,7 +89,7 @@ async function seedDatabase() {
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  // if script is executed directly e.g. node index.ts or pnpm start
+  // if script is executed directly e.g. node index.ts or npm start
 
 
   const app = express()
