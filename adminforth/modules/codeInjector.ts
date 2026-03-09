@@ -148,7 +148,12 @@ class CodeInjector implements ICodeInjector {
     cwd: string,
     envOverrides?: { [key: string]: string }
   }) {
+
+    const nodeBinary = process.execPath; // Path to the Node.js binary running this script
+    // On Windows, pnpm is pnpm.cmd, on Unix systems it's pnpm
     const pnpmExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+    const pnpmPath = path.join(path.dirname(nodeBinary), pnpmExecutable); // Path to the pnpm executable
+
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -159,7 +164,18 @@ class CodeInjector implements ICodeInjector {
     afLogger.trace(`⚙️ exec: pnpm ${command}`);
     afLogger.trace(`🪲 pnpm ${command} cwd: ${cwd}`);
 
-    const execCommand = `${pnpmExecutable} ${command}`;
+    let execCommand: string;
+    if (process.platform === 'win32') {
+      // Quote path if it contains spaces
+      const quotedPnpmPath = pnpmPath.includes(' ') ? `"${pnpmPath}"` : pnpmPath;
+      execCommand = `${quotedPnpmPath} ${command}`;
+    } else {
+      // Quote paths that contain spaces (for Unix systems)
+      const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
+      const quotedPnpmPath = pnpmPath.includes(' ') ? `"${pnpmPath}"` : pnpmPath;
+      execCommand = `${quotedNodeBinary} ${quotedPnpmPath} ${command}`;
+    }
+    
     const execOptions: any = {
       cwd,
       env,
@@ -937,7 +953,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!skipExtract) {
-  await this.runPnpmShell({command: 'run i18n:extract', cwd});
+      await this.runPnpmShell({command: 'run i18n:extract', cwd});
       
       // create serveDir if not exists
       await fs.promises.mkdir(serveDir, { recursive: true });
@@ -955,7 +971,7 @@ class CodeInjector implements ICodeInjector {
       if (!skipBuild) {
         
         // TODO probably add option to build with tsh check (plain 'build')
-  await this.runPnpmShell({command: 'run build-only', cwd});
+        await this.runPnpmShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
         await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
@@ -977,13 +993,15 @@ class CodeInjector implements ICodeInjector {
         FORCE_COLOR: '1',
         ...process.env,
       };
-
-      const pnpmExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+      
+      const nodeBinary = process.execPath;
+      const pnpmPath = path.join(path.dirname(nodeBinary), 'pnpm');
+      
       let devServer;
       if (process.platform === 'win32') {
-        devServer = spawn(pnpmExecutable, command.split(' '), { cwd, env, shell: true });
+        devServer = spawn('pnpm', command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(pnpmExecutable, command.split(' '), { cwd, env });
+        devServer = spawn(`${nodeBinary}`, [`${pnpmPath}`, ...command.split(' ')], { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
