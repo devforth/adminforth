@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  adminforth: link:../adminforth
+
 importers:
 
   .:
@@ -11,6 +14,9 @@ importers:
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
+      adminforth:
+        specifier: link:../adminforth
+        version: link:../adminforth
       better-sqlite3:
         specifier: ^10.1.0
         version: 10.1.0
