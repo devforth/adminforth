@@ -192,7 +192,7 @@ export interface IAdminForthDataSourceConnector {
    * 
    * @param resource 
    */
-  discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}>;
+  discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{[key: string]: AdminForthResourceColumn}>;
 
 
   /**

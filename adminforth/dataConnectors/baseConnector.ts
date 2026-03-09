@@ -1,7 +1,8 @@
 import { 
   AdminForthResource, IAdminForthDataSourceConnectorBase, 
   AdminForthResourceColumn, 
-  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter 
+  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter, 
+  AdminForthConfig
 } from "../types/Back.js";
 
 
@@ -219,7 +220,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  discoverFields(resource: AdminForthResource): Promise<{ [key: string]: AdminForthResourceColumn; }> {
+  discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{ [key: string]: AdminForthResourceColumn; }> {
     throw new Error('Method not implemented.');
   }
 
