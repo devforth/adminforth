@@ -338,6 +338,11 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: {
         sqliteFile,
       },
+    },
+    {
+      src: 'pnpm-workspace.yaml.hbs',
+      dest: 'pnpm-workspace.yaml',
+      data: {},
     }
   ];
 
@@ -387,7 +392,7 @@ function generateFinalInstructions(skipPrismaSetup, options) {
 
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
-  ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration -- --name init && pnpm migrate:local')}\n`;
+  ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration --name init && pnpm migrate:local')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
