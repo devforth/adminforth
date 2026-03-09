@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  adminforth: link:../../.local/share/pnpm/global/5/node_modules/adminforth
+  adminforth: link:../adminforth
 
 importers:
 
@@ -15,8 +15,8 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       adminforth:
-        specifier: link:../../.local/share/pnpm/global/5/node_modules/adminforth
-        version: link:../../.local/share/pnpm/global/5/node_modules/adminforth
+        specifier: link:../adminforth
+        version: link:../adminforth
       better-sqlite3:
         specifier: ^10.1.0
         version: 10.1.0
