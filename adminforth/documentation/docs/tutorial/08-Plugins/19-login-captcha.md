@@ -9,13 +9,13 @@ This plugin provides a captcha for the login page to enhance security.
 To install the plugin, run the following command:
 
 ```bash
-npm i @adminforth/login-captcha
+pnpm i @adminforth/login-captcha
 ```
 
 You will also need to install a captcha adapter. For example, to use the Cloudflare adapter, run:
 
 ```bash
-npm i @adminforth/login-captcha-adapter-cloudflare
+pnpm i @adminforth/login-captcha-adapter-cloudflare
 ```
 
 ## Usage
