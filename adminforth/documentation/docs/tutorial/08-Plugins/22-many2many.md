@@ -7,7 +7,7 @@ This plugin lets you manage many-to-many relationships.
 Install the plugin:
 
 ```bash
-pnpm i @adminforth/many2many
+npm i @adminforth/many2many
 ```
 
 ## Setting up
@@ -44,7 +44,7 @@ model realtorsAparts {
 Migrate the Prisma schema:
 
 ```bash 
-pnpm makemigration -- --name add-realtors-and-realtorsAparts; pnpm migrate:local
+npm run makemigration -- --name add-realtors-and-realtorsAparts; npm run migrate:local
 ```
 
 Now create a resource for the realtors:
