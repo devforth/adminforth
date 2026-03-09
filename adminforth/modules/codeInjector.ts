@@ -995,7 +995,6 @@ class CodeInjector implements ICodeInjector {
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           
-          afLogger.trace(`🪲 devServer stdout ➜ (port detect): ${s}`);
           const portMatch = s.match(/.+?http:\/\/.+?:(\d+).+?/m);
           if (portMatch) {
             this.devServerPort = parseInt(portMatch[1]);
