@@ -81,7 +81,7 @@ myadmin/
 CLI will suggest you a command to initialize the database with Prisma:
 
 ```bash
-npm run makemigration -- --name init
+pnpm makemigration -- --name init
 ```
 
 This will create a migration file in `migrations` and apply it to the database.
@@ -89,17 +89,17 @@ This will create a migration file in `migrations` and apply it to the database.
 In future, when you need to add new resources, you need to modify `schema.prisma` (add models, change fields, etc.). After doing any modification you need to create a new migration using next command:
 
 ```bash
-npm run makemigration -- --name init ; npm run migrate:local
+pnpm makemigration -- --name init ; pnpm migrate:local
 ```
 
-Other developers need to pull migration and run `npm run migrateLocal` to apply any unapplied migrations.
+Other developers need to pull migration and run `pnpm migrate:local` to apply any unapplied migrations.
 
 ## Run the Server
 
 Now you can run your app:
 
 ```bash
-npm start
+pnpm start
 ```
 
 Open http://localhost:3500 in your browser and (default credentials are `adminforth`/`adminforth` if you haven’t changed them).
@@ -173,7 +173,7 @@ model apartments {
 Run the following command to create a new migration:
 
 ```bash
-npm run makemigration -- --name add-apartments ; npm run migrate:local
+pnpm makemigration -- --name add-apartments ; pnpm migrate:local
 ```
 
 ### Step3. Create the `apartments` resource

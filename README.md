@@ -115,7 +115,7 @@ Make sure you have not `adminforth` globally installed. If you have it, remove i
 
 
 ```sh
-npm uninstall -g adminforth
+pnpm uninstall -g adminforth
 ```
 
 Then, in the root of the project, run once:

@@ -7,7 +7,7 @@ Requires separate table in the database to store logs.
 
 
 ```bash
-npm i @adminforth/audit-log --save
+pnpm i @adminforth/audit-log --save
 ```
 
 Create `auditLogs.ts` in `resources` folder:
@@ -40,7 +40,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npm run makemigration -- --name add-audit-logs ; npm run migrate:local
+pnpm makemigration -- --name add-audit-logs ; pnpm migrate:local
 ```
 
 Also to make this code start 
@@ -205,7 +205,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npm run makemigration -- --name add-ip-address-to-audit-logs ; npm run migrate:local
+pnpm makemigration -- --name add-ip-address-to-audit-logs ; pnpm migrate:local
 ```
 
 Also, update the resource configuration in `./resources/auditLogs.ts`:
@@ -271,7 +271,7 @@ model audit_logs {
 And `prisma migrate`:
 
 ```bash
-npm run makemigration -- --name add-ip-address-to-audit-logs ; npm run migrate:local
+pnpm makemigration -- --name add-ip-address-to-audit-logs ; pnpm migrate:local
 ```
 
 Update the resource configuration in `./resources/auditLogs.ts`:

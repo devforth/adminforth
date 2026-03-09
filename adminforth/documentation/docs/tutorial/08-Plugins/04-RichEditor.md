@@ -9,7 +9,7 @@ This plugin allows you to use Quill editor in your AdminForth application.
 First, install the plugin:
 
 ```bash
-npm i @adminforth/rich-editor --save
+pnpm i @adminforth/rich-editor --save
 ```
 
 Import plugin:
@@ -106,7 +106,7 @@ If you need multiple fields in one resource which happens rarely, just add multi
 First, install the completion adapter:
 
 ```bash
-npm i @adminforth/completion-adapter-open-ai-chat-gpt --save
+pnpm i @adminforth/completion-adapter-open-ai-chat-gpt --save
 ```
 
 To get completion suggestions for the text in the editor, you can use the `completion` option. This option is an object with the following properties:
@@ -159,12 +159,12 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image ; npm run migrate:local
+pnpm makemigration -- --name add_description_image ; pnpm migrate:local
 ```
 
 ```bash
-npm i @adminforth/upload --save
-npm i @adminforth/storage-adapter-local --save
+pnpm i @adminforth/upload --save
+pnpm i @adminforth/storage-adapter-local --save
 ```
 
 ```typescript title="./resources/description_images.ts"
