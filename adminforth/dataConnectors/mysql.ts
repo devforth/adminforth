@@ -74,17 +74,6 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }));
   }
 
-  async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
-    const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
-    if (!currentResource) return;
-      const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
-  
-    if (hasUploadPlugin) {
-      const tableName = (resource.table);
-      afLogger.warn(`Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`);
-    }
-  }
-
   async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
 
     const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
