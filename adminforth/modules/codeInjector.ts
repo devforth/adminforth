@@ -223,8 +223,33 @@ class CodeInjector implements ICodeInjector {
       try {
         lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
       } catch (e) {
-        throw new Error(`Custom pnpm-lock.yaml does not exist in ${dir}, but package.json does. 
-          We can't determine version of packages without pnpm-lock.yaml. Please run pnpm install in ${dir}`);
+        const npmLockPath = path.join(dir, 'package-lock.json');
+        let npmLock: any = null;
+        try {
+          npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
+        } catch (npmLockError) {
+          throw new Error(`Custom pnpm-lock.yaml does not exist in ${dir}, but package.json does.
+          We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
+        }
+
+        lockHash = hashify(npmLock);
+
+        packages = [
+          ...Object.keys(packageContent.dependencies || {}),
+          ...Object.keys(packageContent.devDependencies || {})
+        ].reduce(
+          (acc, packageName) => {
+            const pack = npmLock?.packages?.[`node_modules/${packageName}`];
+            if (!pack?.version) {
+              throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
+            }
+
+            acc.push(`${packageName}@${pack.version}`);
+            return acc;
+          }, []
+        );
+
+        return [lockHash, packages];
       }
       lockHash = hashify(lock);
       const importer = lock?.importers?.['.'];
