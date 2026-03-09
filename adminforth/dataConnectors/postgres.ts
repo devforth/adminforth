@@ -96,19 +96,6 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return hasCascade;
     }
 
-    async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
-        const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
-        if (!currentResource) return;
-        const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
-
-        if (hasUploadPlugin) {
-            const tableName = (resource.table);
-            afLogger.warn(
-                `Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`
-            );
-        }
-    }
-
     async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
         await this.checkForeignResourceCascade(resource, config);
         await this.checkCascadeWhenUploadPlugin(resource, config);

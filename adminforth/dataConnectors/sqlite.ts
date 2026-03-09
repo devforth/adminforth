@@ -37,25 +37,13 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       sampleValue: sampleRow[col.name],
     }));
   }
-
-    async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
-      const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
-      if (!currentResource) return;
-        const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
-      
-      if (hasUploadPlugin) {
-        const tableName = (resource.table);
-        afLogger.warn(`Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`);
-      }
-    }
-
+  
     async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig, fkMap: { [colName: string]: boolean }): Promise<boolean> {
 
       const hasAdminCascade = resource.columns?.some(c => c.foreignResource?.onDelete === 'cascade');
       if (!hasAdminCascade) return false; 
 
       const hasDbCascade = Object.values(fkMap).some(v => v);
-      console.log("resource.resourceId" , resource.resourceId);
 
       if (hasDbCascade) {
         const tableName = (resource.table);

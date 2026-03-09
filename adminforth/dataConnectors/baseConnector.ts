@@ -507,6 +507,17 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     return result;
   }
 
+  async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
+    const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
+    if (!currentResource) return;
+      const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
+      
+    if (hasUploadPlugin) {
+      const tableName = (resource.table);
+      afLogger.warn(`Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`);
+    }
+  }
+
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any> {
     return this.getRecordByPrimaryKeyWithOriginalTypes(resource, recordId).then((record) => {
         const newRecord = {};
