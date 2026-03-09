@@ -1206,8 +1206,8 @@ interface AdminForthInputConfigCustomization {
    * 
    * ```bashcreating rec
    * cd custom
-   * pnpm init -y
-   * pnpm install highcharts highcharts-vue
+   * npm init -y
+   * npm install highcharts highcharts-vue
    * ```
    * 
    * And specify vueUsesFile in AdminForth config:

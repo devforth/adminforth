@@ -15,7 +15,7 @@ Used to send emails
 ### AWS SES Email Adapter
 
 ```
-ppnpm i @adminforth/email-adapter-aws-ses
+npm i @adminforth/email-adapter-aws-ses
 ```
 
 Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazon.com/ses/), suitable for high-volume, programmatic email sending.
@@ -23,7 +23,7 @@ Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazo
 ### Mailgun Email Adapter
 
 ```
-pnpm i @adminforth/email-adapter-mailgun
+npm i @adminforth/email-adapter-mailgun
 ```
 
 Allows sending transactional or marketing emails using [Mailgun](https://www.mailgun.com/), a developer-friendly email service.
@@ -40,7 +40,7 @@ Used to authenticate users via OAuth 2.0 providers
 ### Google OAuth Adapter
 
 ```
-pnpm i @adminforth/google-oauth-adapter
+npm i @adminforth/google-oauth-adapter
 ```
 
 Supports Google sign-in to allow users to authenticate using their Google or Google Workspaces accounts.
@@ -48,7 +48,7 @@ Supports Google sign-in to allow users to authenticate using their Google or Goo
 ### GitHub OAuth Adapter
 
 ```
-pnpm i @adminforth/github-oauth-adapter
+npm i @adminforth/github-oauth-adapter
 ```
 
 Enables authentication via GitHub accounts, useful for developer tools and open-source apps.
@@ -56,7 +56,7 @@ Enables authentication via GitHub accounts, useful for developer tools and open-
 ### Facebook OAuth Adapter
 
 ```
-pnpm i @adminforth/facebook-oauth-adapter
+npm i @adminforth/facebook-oauth-adapter
 ```
 
 Allows users to log in with Facebook credentials. Facebook OAuth is commonly used for social media integrations.
@@ -64,7 +64,7 @@ Allows users to log in with Facebook credentials. Facebook OAuth is commonly use
 ### Keycloak OAuth Adapter
 
 ```
-pnpm i @adminforth/keycloak-oauth-adapter
+npm i @adminforth/keycloak-oauth-adapter
 ```
 
 Connects AdminForth to an Open-Source [Keycloak](https://www.keycloak.org/) - generally self-hosted - identity provider for enterprise-grade SSO (Single Sign-On).
@@ -72,7 +72,7 @@ Connects AdminForth to an Open-Source [Keycloak](https://www.keycloak.org/) - ge
 ### Microsoft OAuth Adapter
 
 ```
-pnpm i @adminforth/microsoft-oauth-adapter
+npm i @adminforth/microsoft-oauth-adapter
 ```
 
 Supports login through Microsoft accounts including Azure AD, Office365, and Outlook.com.
@@ -80,7 +80,7 @@ Supports login through Microsoft accounts including Azure AD, Office365, and Out
 ### Twitch OAuth Adapter
 
 ```
-pnpm i @adminforth/twitch-oauth-adapter
+npm i @adminforth/twitch-oauth-adapter
 ```
 
 Adds support for Twitch authentication, useful for streaming or creator-oriented platforms.
@@ -97,7 +97,7 @@ Is used for image generating AI tools.
 ### OpenAI Image Generation Adapter
 
 ```
-pnpm i @adminforth/image-generation-adapter-openai
+npm i @adminforth/image-generation-adapter-openai
 ```
 
 Uses OpenAI’s image generation models (like DALL·E, gpt-image-1, gpt-image-1.5) to generate images from text prompts.
@@ -116,7 +116,7 @@ Is used for storing files
 ### Amazon S3 Storage Adapter
 
 ```
-pnpm i @adminforth/storage-adapter-amazon-s3
+npm i @adminforth/storage-adapter-amazon-s3
 ```
 
 Stores uploaded files in [Amazon S3](https://aws.amazon.com/s3/), providing scalable cloud storage.
@@ -126,7 +126,7 @@ Can be easily forked and customized to work with any S3-compatible storage servi
 ### Local Storage Adapter
 
 ```
-pnpm i @adminforth/storage-adapter-local
+npm i @adminforth/storage-adapter-local
 ```
 
 Stores files locally on the server’s filesystem. Suitable for development or small-scale self-hosted setups.
@@ -145,7 +145,7 @@ Feel free to fork and implement other models including models from Anthropic, Go
 ### OpenAI Completion Adapter
 
 ```
-pnpm i @adminforth/completion-adapter-open-ai-chat-gpt
+npm i @adminforth/completion-adapter-open-ai-chat-gpt
 ```
 
 Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
@@ -169,7 +169,7 @@ You can specify any gpt model you need. Default is `gpt-5-nano`
 ### Google Gemini Completion Adapter
 
 ```
-pnpm i @adminforth/completion-adapter-google-gemini
+npm i @adminforth/completion-adapter-google-gemini
 ```
 
 Integrates AdminForth with Google Gemini models to provide AI-powered completion and conversational features.
@@ -260,7 +260,7 @@ Used for AI-powered image analysis. These adapters can automatically analyze ima
 ### OpenAI Vision Adapter
 
 ```
-pnpm install @adminforth/image-vision-adapter-openai --save
+npm install @adminforth/image-vision-adapter-openai --save
 ```
 
 Integrates AdminForth with OpenAI to provide advanced AI-powered image analysis. Can describe image content, read and extract text from images, identify objects and people, and provide detailed visual insights.
@@ -276,7 +276,7 @@ Key-value adapters are used to store data in a key-value format. They provide a 
 ### RAM Adapter
 
 ```
-pnpm i @adminforth/key-value-adapter-ram
+npm i @adminforth/key-value-adapter-ram
 ```
 
 The RAM adapter is a simplest in-memory key-value storage. Stores data in process RAM memory. Not sutable if you run application with several processes because each process will have own RAM. In last case you need centralized KV adapter, e.g. Redis. 
@@ -291,7 +291,7 @@ Cones:
 ### Redis adapter
 
 ```bash
-pnpm i @adminforth/key-value-adapter-redis
+npm i @adminforth/key-value-adapter-redis
 ```
 
 Redis adapter uses in-memory RAM-based Redis database with O(1) get complexity. It is great fit for most of lightweight tasks which fit in RAM. Also capable with multi-process or replica-based installations as centralized storage. Please note that Redis daemon might be not persisted to disk during restarts without additional settings, so if persistence is critical for your task - you might need to set up it separately (for many tasks like rate-limits ephemeral data are fine 
@@ -311,7 +311,7 @@ adapeter.set('test-key', 'test-value', 120); //expiry in 120 seconds
 ### LevelDB adapter
 
 ```bash
-pnpm i @adminforth/key-value-adapter-leveldb
+npm i @adminforth/key-value-adapter-leveldb
 ```
 
 LebelDB uses disk storage with o(log(n)) get complexity. Good fit for large and/or persistent KV datasets which still require fast KV access but don't efficently fit into RAM. Please not that this is a single-process adapter only, so if you will run severall processes of admin - they will not be able to work with this adapter (>=2 processes which look at same level database might lead to unpredicted behaviour - exceptions or crashes). 
@@ -338,13 +338,13 @@ Used to add capthca to the login screen
 ### Cloudflare adapter
 
 ```
-pnpm i @adminforth/login-captcha-adapter-cloudflare
+npm i @adminforth/login-captcha-adapter-cloudflare
 ```
 
 
 ### reCaptcha adapter
 
 ```
-pnpm i @adminforth/login-captcha-adapter-recaptcha
+npm i @adminforth/login-captcha-adapter-recaptcha
 ```
 

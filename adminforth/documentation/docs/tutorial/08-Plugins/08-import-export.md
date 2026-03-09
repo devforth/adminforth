@@ -13,7 +13,7 @@ This plugin is mostly useful for next use cases:
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/import-export --save
+npm install @adminforth/import-export --save
 ```
 
 ## Usage

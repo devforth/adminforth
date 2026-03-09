@@ -15,7 +15,7 @@ Also it supports both:
 ## Installation
 
 ``` bash
-pnpm i @adminforth/two-factors-auth --save
+npm i @adminforth/two-factors-auth --save
 ```
 
 To import:
@@ -41,7 +41,7 @@ model adminuser {
 Then:
 
 ```bash
-pnpm makemigration -- --name add-2fa-secret ; pnpm migrate:local
+npm run makemigration -- --name add-2fa-secret ; npm run migrate:local
 ```
 
 And add it to `adminuser.ts`
@@ -150,7 +150,7 @@ model adminuser {
 Then run:
 
 ```bash
-pnpm makemigration -- --name add-use2fa ; pnpm migrate:local
+npm run makemigration -- --name add-use2fa ; npm run migrate:local
 ```
 
 Then in `adminuser.ts`:
@@ -641,7 +641,7 @@ First, you need to create a passkeys table in your schema.prisma file:
 And make migration:
 
 ```bash
-pnpm makemigration -- --name add-passkeys ; pnpm migrate:local
+npm run makemigration -- --name add-passkeys ; npm run migrate:local
 ```
 
 Next, you need to create a new resource for passkeys:
@@ -699,7 +699,7 @@ Add the new resource to index.ts:
 ```
 To use passkey you need to use Key-Value adapter. For example:
 ```bash
-pnpm i @adminforth/key-value-adapter-ram
+npm i @adminforth/key-value-adapter-ram
 ```
 
 

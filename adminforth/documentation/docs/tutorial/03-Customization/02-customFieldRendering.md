@@ -151,10 +151,10 @@ To install 3rd-party npm packages you should create npm package in the `custom` 
 cd custom
 ```
 
-And simply do `pnpm install` for the package you need:
+And simply do `npm install` for the package you need:
 
 ```bash
-pnpm i <some package> -D
+npm i <some package> -D
 ```
 
 ## Editing values component
