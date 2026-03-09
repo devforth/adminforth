@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
@@ -74,28 +74,52 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }));
   }
 
-  private async hasPgCascadeFk(tableName: string): Promise<void> {
-    const [fkResults] = await this.client.execute(
+  async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
+    const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
+    if (!currentResource) return;
+      const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
+  
+    if (hasUploadPlugin) {
+      const tableName = (resource.table);
+      afLogger.warn(`Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`);
+    }
+  }
+
+  async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
+
+    const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
+    if (!cascadeColumn) return false;
+
+    const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+
+    if (!parentResource) return false;
+
+    const [rows] = await this.client.execute(
       `
-      SELECT
-        TABLE_NAME AS child_table,
-        CONSTRAINT_NAME
+      SELECT 1
       FROM information_schema.REFERENTIAL_CONSTRAINTS
       WHERE CONSTRAINT_SCHEMA = DATABASE()
         AND REFERENCED_TABLE_NAME = ?
         AND DELETE_RULE = 'CASCADE'
+      LIMIT 1
       `,
-      [tableName]
+      [parentResource.table]
     );
 
-    for (const fk of fkResults as any[]) {
-      afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
+    const hasCascade = (rows as any[]).length > 0;
+
+    if (hasCascade) {
+      afLogger.warn(`Table "${parentResource.table}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion.`);
     }
+    
+    return hasCascade;
   }
 
-  async discoverFields(resource) {
+  async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
+    await this.checkCascadeWhenUploadPlugin(resource, config);
+
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
-    await this.hasPgCascadeFk(resource.table);
+    await this.hasMySQLCascadeFk(resource, config);
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};
