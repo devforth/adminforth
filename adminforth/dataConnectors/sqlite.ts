@@ -1,5 +1,5 @@
 import betterSqlite3 from 'better-sqlite3';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
@@ -38,16 +38,47 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }));
   }
 
-    async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
+    async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
+      const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
+      if (!currentResource) return;
+        const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
+      
+      if (hasUploadPlugin) {
+        const tableName = (resource.table);
+        afLogger.warn(`Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`);
+      }
+    }
+
+    async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig, fkMap: { [colName: string]: boolean }): Promise<boolean> {
+
+      const hasAdminCascade = resource.columns?.some(c => c.foreignResource?.onDelete === 'cascade');
+      if (!hasAdminCascade) return false; 
+
+      const hasDbCascade = Object.values(fkMap).some(v => v);
+      console.log("resource.resourceId" , resource.resourceId);
+
+      if (hasDbCascade) {
+        const tableName = (resource.table);
+        afLogger.warn(
+          
+          `Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion`
+        );
+      }
+
+      return hasDbCascade;
+    }
+
+    async discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{[key: string]: AdminForthResourceColumn}> {
+        await this.checkCascadeWhenUploadPlugin(resource, config);
+
         const tableName = resource.table;
         const stmt = this.client.prepare(`PRAGMA table_info(${tableName})`);
         const rows = await stmt.all();
         const fkStmt = this.client.prepare(`PRAGMA foreign_key_list(${tableName})`);
         const fkRows = await fkStmt.all();
         const fkMap: { [colName: string]: boolean } = {};
-        fkRows.forEach(fk => {
-            fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE';
-        });
+        fkRows.forEach(fk => {fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE';})
+        await this.hasSQLiteCascadeFk(resource, config, fkMap);
         const fieldTypes = {};
         rows.forEach((row) => {
           const field: any = {};
@@ -94,9 +125,6 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           field.primaryKey = row.pk == 1;
 
           field.cascade = fkMap[row.name] || false;
-          if (field.cascade) {
-            afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
-          }
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });

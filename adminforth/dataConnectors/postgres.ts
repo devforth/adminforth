@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
@@ -69,7 +69,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
     
-    private async hasPgCascadeFk(tableName: string, schema = 'public'): Promise<boolean> {
+    async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<boolean> {
+        const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
+        if (!cascadeColumn) return; 
+
+        const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
         const res = await this.client.query(
             `
             SELECT 1
@@ -79,20 +83,37 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             AND confdeltype = 'c'
             LIMIT 1
             `,
-            [tableName, schema]
+            [parentResource.table, schema]
         );
 
-        return res.rowCount > 0;
+        const hasCascade = res.rowCount > 0;
+        if (hasCascade) {
+            afLogger.warn(
+                `Table "${parentResource.table}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion`
+            );
+        }
+
+        return hasCascade;
     }
 
-    async discoverFields(resource) {
+    async checkCascadeWhenUploadPlugin(resource: AdminForthResource, config: AdminForthConfig) {
+        const currentResource = config.resources.find(r => r.resourceId === resource.resourceId);
+        if (!currentResource) return;
+        const hasUploadPlugin = currentResource.plugins?.some(p => p.className === "UploadPlugin");
+
+        if (hasUploadPlugin) {
+            const tableName = (resource.table);
+            afLogger.warn(
+                `Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth UploadPlugin.`
+            );
+        }
+    }
+
+    async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
+        await this.checkForeignResourceCascade(resource, config);
+        await this.checkCascadeWhenUploadPlugin(resource, config);
 
         const tableName = resource.table;
-        const hasCascade = await this.hasPgCascadeFk(tableName);
-
-        if (hasCascade) {
-            afLogger.warn(`The database has ON DELETE CASCADE, which may conflict with adminForth cascade deletion and upload logic. Please remove it.`);
-        }
         const stmt = await this.client.query(`
         SELECT
             a.attname AS name,
