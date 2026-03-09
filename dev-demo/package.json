@@ -18,7 +18,7 @@
     "install-adapters": "task pull_adapters && task pnpm_adapters",
     "pull-plugins": "task pull_plugins",
     "pull-adapters": "task pull_adapters",
-    "build-adminforth": "cd ../adminforth && pnpm i && pnpm build",
+    "build-adminforth": "cd ../adminforth && pnpm i && pnpm build && pnpm link",
     "migrate:all": "pnpm migrate:sqlite && pnpm migrate:mysql && pnpm migrate:postgres && pnpm migrate:clickhouse",
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
