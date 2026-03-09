@@ -23,7 +23,6 @@ steps:
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
       - cd adminforth
-      - pnpm setup
       - pnpm install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
       - pnpm audit
