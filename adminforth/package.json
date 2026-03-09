@@ -44,6 +44,10 @@
       {
         "name": "next",
         "prerelease": true
+      },
+      {
+        "name": "test",
+        "prerelease": true
       }
     ]
   },
