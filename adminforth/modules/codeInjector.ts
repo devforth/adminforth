@@ -230,7 +230,7 @@ class CodeInjector implements ICodeInjector {
             const depInfo = importerDeps[packageName];
             const raw = typeof depInfo === 'string'
               ? depInfo
-              : (depInfo?.specifier || depInfo?.version);
+              : (depInfo?.version || depInfo?.specifier);
 
             if (!raw) {
               throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
