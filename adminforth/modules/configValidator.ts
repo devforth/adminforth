@@ -283,8 +283,8 @@ export default class ConfigValidator implements IConfigValidator {
               return;
             }
             
-            await connector.deleteRecord({ resource: res as AdminForthResource, recordId });
             await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, response}, this.adminforth);
+            await connector.deleteRecord({ resource: res as AdminForthResource, recordId });
             
             await Promise.all(
               (res.hooks.delete.afterSave).map(
