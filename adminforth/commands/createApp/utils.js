@@ -370,10 +370,6 @@ async function installDependencies(ctx, cwd) {
       await execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
-    console.log(`Using Node.js binary at: ${nodeBinary}`);
-    console.log(`Using pnpm binary at: ${npmPath}`);
-    console.log(`Using custom directory at: ${customDir}`);
-    console.log(`Running install commands...`);
     const res = await Promise.all([
       await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
       await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
