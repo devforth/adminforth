@@ -49,12 +49,25 @@ export default defineConfig({
             return id.toString().split('node_modules/')[1].split('/')[0].toString();
           }
         },
+
+        // by default servers doesnt returns dotfiles
+        // so if we'll generate file with name like ".pnpm-BLnlxqcJ.js"
+        // it won't be loaded
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name?.startsWith('.pnpm') 
+            ? chunkInfo.name.replace(/^\.pnpm/, 'pnpm') + '.js'
+            : '[name]-[hash].js'
+        },
+        chunkFileNames: (chunkInfo) => {
+          return chunkInfo.name?.startsWith('.pnpm') 
+            ? chunkInfo.name.replace(/^\.pnpm/, 'pnpm') + '.js'
+            : '[name]-[hash].js'
+        },
         assetFileNames: (assetInfo) => {
           return assetInfo.name?.startsWith('.pnpm') 
             ? assetInfo.name.replace(/^\.pnpm/, 'pnpm') 
-            : assetInfo.name;
-        },
-
+            : '[name]-[hash][extname]'
+        }
       },
     },
   },
