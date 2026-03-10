@@ -10,58 +10,58 @@ importers:
     dependencies:
       '@adminforth/audit-log':
         specifier: ^1.8.3
-        version: 1.9.8(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.9.8(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.18.11
-        version: 1.23.8(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.23.8(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/chat-gpt':
         specifier: ^1.0.20
         version: 1.0.20
       '@adminforth/clone-row':
         specifier: ^1.2.0
-        version: 1.2.3(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.2.3(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/completion-adapter-open-ai-chat-gpt':
         specifier: ^1.0.2
         version: 1.0.11
       '@adminforth/email-password-reset':
         specifier: ^1.3.6
-        version: 1.3.10(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.3.10(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/foreign-inline-list':
         specifier: ^1.10.5
-        version: 1.10.7(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.10.7(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/i18n':
         specifier: ^1.6.7
-        version: 1.10.1(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.10.1(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.7
-        version: 1.0.9(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.0.9(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/image-vision-adapter-openai':
         specifier: ^1.0.1
-        version: 1.0.2(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.0.2(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/import-export':
         specifier: ^1.4.6
-        version: 1.4.11(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.4.11(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/rich-editor':
         specifier: ^1.6.14
-        version: 1.6.16(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.6.16(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/storage-adapter-amazon-s3':
         specifier: ^1.0.11
-        version: 1.0.16(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.0.16(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/text-complete':
         specifier: ^1.8.9
-        version: 1.8.10(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 1.8.10(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/two-factors-auth':
         specifier: ^2.9.20
-        version: 2.10.12(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 2.10.12(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@adminforth/upload':
         specifier: ^2.14.4
-        version: 2.14.4(adminforth@2.25.0-test.5(@types/node@25.3.5))
+        version: 2.14.4(adminforth@2.25.0-test.6(@types/node@25.3.5))
       '@prisma/client':
         specifier: ^6.6.0
         version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       adminforth:
-        specifier: 2.25.0-test.5
-        version: 2.25.0-test.5(@types/node@25.3.5)
+        specifier: 2.25.0-test.6
+        version: 2.25.0-test.6(@types/node@25.3.5)
       better-sqlite3:
         specifier: ^10.0.0
         version: 10.1.0
@@ -1028,8 +1028,8 @@ packages:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
 
-  adminforth@2.25.0-test.5:
-    resolution: {integrity: sha512-+U1u4fx1DA++0vfS/Kb9T/x1RhC5n8ZeUxnmYjBuafJQOXRh5kvpbNSdpSr8qUK+2Ai6kKPhSQHrd75aaSkgug==}
+  adminforth@2.25.0-test.6:
+    resolution: {integrity: sha512-JqCRokFKCyGJ6ca8yHgPFknyiuNnhCvIh9sgTmTOWxfg7dWs6+BGXq2PJQG2AfwLkTLACzMzKgGHPwRYN2p62w==}
     hasBin: true
 
   ansi-escapes@7.3.0:
@@ -2411,43 +2411,43 @@ packages:
 
 snapshots:
 
-  '@adminforth/audit-log@1.9.8(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/audit-log@1.9.8(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       dayjs: 1.11.19
 
-  '@adminforth/bulk-ai-flow@1.23.8(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/bulk-ai-flow@1.23.8(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@types/handlebars': 4.1.0
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       handlebars: 4.7.8
 
   '@adminforth/chat-gpt@1.0.20': {}
 
-  '@adminforth/clone-row@1.2.3(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/clone-row@1.2.3(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
 
   '@adminforth/completion-adapter-open-ai-chat-gpt@1.0.11': {}
 
-  '@adminforth/email-password-reset@1.3.10(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/email-password-reset@1.3.10(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@aws-sdk/client-ses': 3.1004.0
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       validator: 13.15.26
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/foreign-inline-list@1.10.7(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/foreign-inline-list@1.10.7(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       clone: 2.1.2
 
-  '@adminforth/i18n@1.10.1(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/i18n@1.10.1(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@aws-sdk/client-ses': 3.1004.0
       '@sapphire/async-queue': 1.5.5
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       bcp-47: 2.1.0
       chokidar: 4.0.3
       country-flag-svg: 1.0.19
@@ -2457,9 +2457,9 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/image-generation-adapter-openai@1.0.9(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/image-generation-adapter-openai@1.0.9(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       axios: 1.13.6
       file-type: 20.5.0
       form-data: 4.0.5
@@ -2468,44 +2468,44 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/image-vision-adapter-openai@1.0.2(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/image-vision-adapter-openai@1.0.2(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       typescript: 5.9.3
 
-  '@adminforth/import-export@1.4.11(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/import-export@1.4.11(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
 
-  '@adminforth/rich-editor@1.6.16(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/rich-editor@1.6.16(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       cheerio: 1.2.0
 
-  '@adminforth/storage-adapter-amazon-s3@1.0.16(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/storage-adapter-amazon-s3@1.0.16(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@aws-sdk/client-s3': 3.1004.0
       '@aws-sdk/s3-request-presigner': 3.1004.0
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       typescript: 5.9.3
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/text-complete@1.8.10(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/text-complete@1.8.10(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
 
-  '@adminforth/two-factors-auth@2.10.12(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/two-factors-auth@2.10.12(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@simplewebauthn/server': 13.2.3
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
       node-2fa: 2.0.3
 
-  '@adminforth/upload@2.14.4(adminforth@2.25.0-test.5(@types/node@25.3.5))':
+  '@adminforth/upload@2.14.4(adminforth@2.25.0-test.6(@types/node@25.3.5))':
     dependencies:
       '@aws-sdk/client-s3': 3.1004.0
       '@aws-sdk/s3-request-presigner': 3.1004.0
-      adminforth: 2.25.0-test.5(@types/node@25.3.5)
+      adminforth: 2.25.0-test.6(@types/node@25.3.5)
     transitivePeerDependencies:
       - aws-crt
 
@@ -3820,7 +3820,7 @@ snapshots:
       mime-types: 2.1.35
       negotiator: 0.6.3
 
-  adminforth@2.25.0-test.5(@types/node@25.3.5):
+  adminforth@2.25.0-test.6(@types/node@25.3.5):
     dependencies:
       '@babel/parser': 7.29.0
       '@clickhouse/client': 1.18.1
