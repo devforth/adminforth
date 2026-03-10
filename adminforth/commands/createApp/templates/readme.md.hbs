@@ -1,7 +1,25 @@
 ## Starting the application
 
 Install dependencies:
+{{#if useNpm}}
+```bash
+npm i
+```
 
+Migrate the database:
+
+```bash
+npm run migrate:local
+```
+
+Start the server:
+
+```bash
+npm run dev
+```
+{{/if}}
+
+{{#unless useNpm}}
 ```bash
 pnpm i
 ```
@@ -17,6 +35,7 @@ Start the server:
 ```bash
 pnpm dev
 ```
+{{/unless}}
 
 {{#if prismaDbUrl}}
 ## Changing schema

@@ -44,6 +44,7 @@ export function parseArgumentsIntoOptions(rawArgs) {
     {
       '--app-name': String,
       '--db': String,
+      '--use-npm': Boolean,
       // you can add more flags here if needed
     },
     {
@@ -54,6 +55,7 @@ export function parseArgumentsIntoOptions(rawArgs) {
   return {
     appName: args['--app-name'],
     db: args['--db'],
+    useNpm: args['--use-npm'],
   };
 }
 
@@ -78,11 +80,21 @@ export async function promptForMissingOptions(options) {
       });
   };
 
+  if (!options.useNpm) {
+    questions.push({
+      type: 'confirm',
+      name: 'useNpm',
+      message: 'Do you want to use npm instead of pnpm?',
+      default: false,
+    });
+  }
+
   const answers = await inquirer.prompt(questions);
   return {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
+      useNpm: options.useNpm || answers.useNpm,
   };
 }
 
@@ -230,7 +242,7 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
   // Write templated files
-  await writeTemplateFiles(dirname, projectDir, {
+  await writeTemplateFiles(dirname, projectDir, options.useNpm, {
     dbUrl: connectionString.toString(),
     dbUrlProd: connectionStringProd,
     prismaDbUrl,
@@ -244,7 +256,7 @@ async function scaffoldProject(ctx, options, cwd) {
   return projectDir;  // Return the new directory path
 }
 
-async function writeTemplateFiles(dirname, cwd, options) {
+async function writeTemplateFiles(dirname, cwd, useNpm, options) {
   const { 
     dbUrl, prismaDbUrl, appName, provider, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
@@ -267,14 +279,6 @@ async function writeTemplateFiles(dirname, cwd, options) {
       src:  'prisma.config.ts.hbs',
       dest: 'prisma.config.ts',
       data: {},
-    },
-    {
-      src: 'package.json.hbs',
-      dest: 'package.json',
-      data: { 
-        appName,
-        adminforthVersion: adminforthVersion,
-       },
     },
     {
       src: 'index.ts.hbs',
@@ -304,7 +308,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl, appName, sqliteFile },
+      data: { dbUrl, prismaDbUrl, appName, sqliteFile, useNpm },
     },
     {
       // We'll write .env using the same content as .env.sample
@@ -323,11 +327,6 @@ async function writeTemplateFiles(dirname, cwd, options) {
       data: {},
     },
     {
-      src: 'Dockerfile.hbs',
-      dest: 'Dockerfile',
-      data: { nodeMajor },
-    },
-    {
       src: '.dockerignore.hbs',
       dest: '.dockerignore',
       data: {
@@ -335,11 +334,38 @@ async function writeTemplateFiles(dirname, cwd, options) {
       },
     },
     {
-      src: 'pnpm-workspace.yaml.hbs',
-      dest: 'pnpm-workspace.yaml',
-      data: {},
-    }
+      src: 'Dockerfile.hbs',
+      dest: 'Dockerfile',
+      data: { nodeMajor, useNpm },
+    },
+    {
+      src: 'package.json.hbs',
+      dest: 'package.json',
+      data: { 
+        appName,
+        adminforthVersion: adminforthVersion,
+        useNpm
+      },
+    },
   ];
+
+  if (!useNpm) {
+    templateTasks.push(
+      {
+        src: 'pnpm_templates/pnpm-workspace.yaml.hbs',
+        dest: 'pnpm-workspace.yaml',
+        data: {},
+      },
+    )
+  } else {
+    templateTasks.push(
+      {
+        src: 'custom/package.json.hbs',
+        dest: 'custom/package.json',
+        data: {}
+      }
+    )
+  }
 
   for (const task of templateTasks) {
     // If a condition is specified and false, skip this file
@@ -358,7 +384,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
   }
 }
 
-async function installDependencies(ctx, cwd) {
+async function installDependenciesPnpm(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
@@ -375,10 +401,28 @@ async function installDependencies(ctx, cwd) {
       await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
-  // console.log(chalk.dim(`Dependencies installed in ${cwd} and ${customDir}: \n${res[0].stdout}${res[1].stdout}`));
 }
 
-function generateFinalInstructions(skipPrismaSetup, options) {
+async function installDependenciesNpm(ctx, cwd) {
+  const isWindows = process.platform === 'win32';
+
+  const nodeBinary = process.execPath; 
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
+  const customDir = ctx.customDir;
+  if (isWindows) {
+    const res = await Promise.all([
+      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  } else {
+    const res = await Promise.all([
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  }
+}
+
+function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
   if (!skipPrismaSetup)
     instruction += `
@@ -392,6 +436,27 @@ function generateFinalInstructions(skipPrismaSetup, options) {
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
   ${chalk.dim('$')}${chalk.cyan(' pnpm dev')}\n
+`;
+
+  instruction += '😉 Happy coding!';
+
+  return instruction;
+}
+
+function generateFinalInstructionsNpm(skipPrismaSetup, options) {
+  let instruction = '⏭️  Run the following commands to get started:\n';
+  if (!skipPrismaSetup)
+    instruction += `
+  ${chalk.dim('// Go to the project directory')}
+  ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
+
+    instruction += `
+  ${chalk.dim('// Generate and apply initial migration')}
+  ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
+
+  instruction += `
+  ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
+  ${chalk.dim('$')}${chalk.cyan(' npm run dev')}\n
 `;
 
   instruction += '😉 Happy coding!';
@@ -425,13 +490,23 @@ export function prepareWorkflow(options) {
     },
     {
       title: '📦 Installing dependencies...',
-      task: async (ctx) => installDependencies(ctx, ctx.projectDir)
+      task: async (ctx) => {
+        if (options.useNpm) {
+          await installDependenciesNpm(ctx, ctx.projectDir);
+        } else {
+          await installDependenciesPnpm(ctx, ctx.projectDir);
+        }
+      }
     },
     {
       title: '📝 Preparing final instructions...',
       task: (ctx) => {
         console.log(chalk.green(`✅ Successfully created your new Adminforth project in ${ctx.projectDir}!\n`));
-        console.log(generateFinalInstructions(ctx.skipPrismaSetup, options));
+        if (options.useNpm) {
+          console.log(generateFinalInstructionsNpm(ctx.skipPrismaSetup, options));
+        } else {
+          console.log(generateFinalInstructionsPnpm(ctx.skipPrismaSetup, options));
+        }
         console.log('\n\n');
       }
     }
