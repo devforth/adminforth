@@ -15,46 +15,6 @@ async function getNextAvailablePort(startPort: number | undefined) {
   return await portfinder.getPortPromise({ port: startPort });
 };
 
-function ignoreTailwindErrors(): Plugin {
-  return {
-    name: 'ignore-tailwind-errors',
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const originalWrite = res.write;
-        res.write = function(chunk) {
-          if (typeof chunk === 'string' && chunk.includes('tailwind')) {
-            return true;
-          }
-          return originalWrite.call(this, chunk);
-        };
-        next();
-      });
-    },
-    config(config, { command }) {
-      if (command === 'build') {
-        // Override PostCSS config for build
-        config.css = config.css || {};
-        config.css.postcss = {
-          plugins: [
-            {
-              postcssPlugin: 'ignore-tailwind-errors',
-              Once(root, helpers) {
-                try {
-                  return tailwindcss()(root, helpers);
-                } catch (error: any) {
-                  console.warn('TailwindCSS warning ignored:', error.message);
-                  return;
-                }
-              }
-            }
-          ]
-        };
-      }
-    }
-  };
-}
-
-
 const appPort = await getNextAvailablePort(5173);
 const hmrPort = await getNextAvailablePort(5273);
 console.log(`SPA port: ${appPort}. HMR port: ${hmrPort}`);
@@ -89,6 +49,12 @@ export default defineConfig({
             return id.toString().split('node_modules/')[1].split('/')[0].toString();
           }
         },
+        assetFileNames: (assetInfo) => {
+          return assetInfo.name?.startsWith('.pnpm') 
+            ? assetInfo.name.replace(/^\.pnpm/, 'pnpm') 
+            : assetInfo.name;
+        },
+
       },
     },
   },
