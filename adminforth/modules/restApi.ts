@@ -15,6 +15,8 @@ import {
   Filters,
 } from "../types/Back.js";
 
+import {cascadeChildrenDelete} from './utils.js'
+
 import { afLogger } from "./logger.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
@@ -151,47 +153,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         break;
       }
     }
-  }
-  async deleteWithCascade(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}): Promise<{ error: string | null }> {
-    const { adminUser, response } = context;
-
-    const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, primaryKey);
-
-    if (!record){ 
-      return {error: `Record with id ${primaryKey} not found`};
-    }
-
-    const childResources = this.adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
-
-    for (const childRes of childResources) {
-      const foreignColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
-
-      if (!foreignColumn?.foreignResource?.onDelete) continue;
-
-      const strategy = foreignColumn.foreignResource.onDelete;
-
-      const childRecords = await this.adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
-
-      const childPk = childRes.columns.find(c => c.primaryKey)?.name;
-      if (!childPk) continue;
-
-      if (strategy === 'cascade') {
-        for (const childRecord of childRecords) {
-          const childResult = await this.deleteWithCascade(childRes, childRecord[childPk], context);
-          if (childResult?.error) {
-            return childResult;
-          }
-        }
-      }
-
-      if (strategy === 'setNull') {
-        for (const childRecord of childRecords) {
-          await this.adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
-        }
-      }
-    }
-    const deleteResult = await this.adminforth.deleteResourceRecord({resource, record, adminUser, recordId: primaryKey, response});
-    return { error: deleteResult.error};
   }
 
   registerEndpoints(server: IHttpServer) {
@@ -1522,7 +1483,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { error: cascadeError } = await this.deleteWithCascade(resource, body.primaryKey, {adminUser, response});
+            const { error: cascadeError } = await cascadeChildrenDelete(resource, body.primaryKey, {adminUser, response}, this.adminforth);
             if (cascadeError) {
               return { error: cascadeError };
             }

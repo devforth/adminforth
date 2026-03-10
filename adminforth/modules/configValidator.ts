@@ -30,6 +30,7 @@ import {
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
 import { afLogger } from "./logger.js";
+import {cascadeChildrenDelete} from './utils.js'
 import AdminForthRestAPI from './restApi.js';
 
 export default class ConfigValidator implements IConfigValidator {
@@ -282,9 +283,9 @@ export default class ConfigValidator implements IConfigValidator {
               return;
             }
             
-            const restApi = new AdminForthRestAPI (this.adminforth) 
-            await restApi.deleteWithCascade(res as AdminForthResource, recordId, { adminUser, response});
-
+            await connector.deleteRecord({ resource: res as AdminForthResource, recordId });
+            await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, response}, this.adminforth);
+            
             await Promise.all(
               (res.hooks.delete.afterSave).map(
                 async (hook) => {
