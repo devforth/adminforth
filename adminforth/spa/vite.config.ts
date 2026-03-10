@@ -55,19 +55,19 @@ export default defineConfig({
         // it won't be loaded
         assetFileNames: (assetInfo) => {
           return assetInfo.name?.startsWith('.pnpm') 
-            ? assetInfo.name.replace(/^\.pnpm/, 'pnpm') 
-            : assetInfo.name;
+            ? `assets/${assetInfo.name.replace(/^\.pnpm/, 'pnpm')}`
+            : `assets/${assetInfo.name}`;
         },
         
         entryFileNames: (chunkInfo) => {
           return chunkInfo.name?.startsWith('.pnpm') 
-            ? chunkInfo.name.replace(/^\.pnpm/, 'pnpm') + '.js'
-            : chunkInfo.name;
+            ? `assets/${chunkInfo.name.replace(/^\.pnpm/, 'pnpm')}.js`
+            : `assets/${chunkInfo.name}.js`;
         },
         chunkFileNames: (chunkInfo) => {
           return chunkInfo.name?.startsWith('.pnpm') 
-            ? chunkInfo.name.replace(/^\.pnpm/, 'pnpm') + '.js'
-            : chunkInfo.name;
+            ? `assets/${chunkInfo.name.replace(/^\.pnpm/, 'pnpm')}.js`
+            : `assets/${chunkInfo.name}.js`;
         },
       },
     },
