@@ -8,7 +8,7 @@
   "files": [
     "dist/**/*",
     "commands/**/*",
-    "sctripts/**/*"
+    "scripts/**/*"
   ],
   "bin": {
     "adminforth": "./commands/cli.js"
