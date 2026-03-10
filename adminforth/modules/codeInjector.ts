@@ -143,16 +143,47 @@ class CodeInjector implements ICodeInjector {
 
   }
 
-  async runPnpmShell({command, cwd, envOverrides = {}}: {
+
+  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    const usersPackagePath = path.join(dir, 'package.json');
+    let packageContent: { dependencies: any, devDependencies: any } = null;
+    try {
+      packageContent = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+    } catch (e) {
+      // user package.json does not exist, user does not have custom components
+    }
+    if (packageContent) {
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
+      try {
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async runPackageManagerShell({command, cwd, envOverrides = {}}: {
     command: string,
     cwd: string,
     envOverrides?: { [key: string]: string }
   }) {
-
+    
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    // On Windows, pnpm is pnpm.cmd, on Unix systems it's pnpm
-    const pnpmExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-    const pnpmPath = path.join(path.dirname(nodeBinary), pnpmExecutable); // Path to the pnpm executable
+    const doesUserHavePnpmLock = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir);
+
+    // On Windows, npm/pnpm is npm/pnpm.cmd, on Unix systems it's npm/pnpm
+    let packageExecutable 
+    if (doesUserHavePnpmLock) {
+      afLogger.trace(`User has pnpm-lock.yaml, using pnpm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+    } else {
+      afLogger.trace(`User does not have pnpm-lock.yaml, falling back to npm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    }
+    const packagePath = path.join(path.dirname(nodeBinary), packageExecutable); // Path to the package executable
 
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
@@ -161,19 +192,19 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    afLogger.trace(`⚙️ exec: pnpm ${command}`);
-    afLogger.trace(`🪲 pnpm ${command} cwd: ${cwd}`);
+    afLogger.trace(`⚙️ exec: ${packageExecutable} ${command}`);
+    afLogger.trace(`🪲 ${packageExecutable} ${command} cwd: ${cwd}`);
 
     let execCommand: string;
     if (process.platform === 'win32') {
       // Quote path if it contains spaces
-      const quotedPnpmPath = pnpmPath.includes(' ') ? `"${pnpmPath}"` : pnpmPath;
-      execCommand = `${quotedPnpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedPackagePath} ${command}`;
     } else {
       // Quote paths that contain spaces (for Unix systems)
       const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
-      const quotedPnpmPath = pnpmPath.includes(' ') ? `"${pnpmPath}"` : pnpmPath;
-      execCommand = `${quotedNodeBinary} ${quotedPnpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedNodeBinary} ${quotedPackagePath} ${command}`;
     }
     
     const execOptions: any = {
@@ -186,10 +217,10 @@ class CodeInjector implements ICodeInjector {
     }
 
     const { stderr: err } = await execAsync(execCommand, execOptions);
-    afLogger.trace(`pnpm ${command} done in`);
+    afLogger.trace(`${packageExecutable} ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲pnpm ${command} errors/warnings: ${err}`);
+      afLogger.trace(`🪲${packageExecutable} ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -745,7 +776,7 @@ class CodeInjector implements ICodeInjector {
       afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
-    await this.runPnpmShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
+    await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
       NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
     }}); 
 
@@ -766,7 +797,7 @@ class CodeInjector implements ICodeInjector {
 
     if (allPacks.length) {
       const pnpmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runPnpmShell({
+      await this.runPackageManagerShell({
         command: pnpmInstallCommand, cwd: this.spaTmpPath(), 
         envOverrides: { 
           NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
@@ -977,7 +1008,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!skipExtract) {
-      await this.runPnpmShell({command: 'run i18n:extract', cwd});
+      await this.runPackageManagerShell({command: 'run i18n:extract', cwd});
       
       // create serveDir if not exists
       await fs.promises.mkdir(serveDir, { recursive: true });
@@ -995,7 +1026,7 @@ class CodeInjector implements ICodeInjector {
       if (!skipBuild) {
         
         // TODO probably add option to build with tsh check (plain 'build')
-        await this.runPnpmShell({command: 'run build-only', cwd});
+        await this.runPackageManagerShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
         await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
