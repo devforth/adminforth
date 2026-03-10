@@ -26,7 +26,7 @@ Open `schema.prisma` and change schema as needed: add new tables, columns, etc (
 Run the following command to generate a new migration and apply it instantly in local database:
 
 ```bash
-pnpm makemigration -- --name <name_of_changes>
+pnpm makemigration --name <name_of_changes>
 ```
 
 Your colleagues will need to pull the changes and run `pnpm migrate:local` to apply the migration in their local database.

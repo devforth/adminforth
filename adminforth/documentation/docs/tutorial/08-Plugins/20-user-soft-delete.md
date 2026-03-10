@@ -31,7 +31,7 @@ model adminuser {
 and make migration:
 
 ```bash
-pnpm makemigration -- --name add-active-field-to-users ; pnpm migrate:local
+pnpm makemigration --name add-active-field-to-users ; pnpm migrate:local
 ```
 
 To setup the plugin in users resource add:

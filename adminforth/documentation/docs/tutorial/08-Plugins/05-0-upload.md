@@ -100,7 +100,7 @@ model apartments {
 Migrate prisma schema:
 
 ```bash
-pnpm makemigration -- --name add-apartment-image ; pnpm migrate:local
+pnpm makemigration --name add-apartment-image ; pnpm migrate:local
 ```
 
 Add column to `aparts` resource configuration:
@@ -531,7 +531,7 @@ To do this add avatar column to the user resource:
 Then make migration:
 
 ```bash
-  pnpm makemigration -- --name add-user-avatar-field ; pnpm migrate:local
+  pnpm makemigration --name add-user-avatar-field ; pnpm migrate:local
 ```
 
 Add this column to the users resource:

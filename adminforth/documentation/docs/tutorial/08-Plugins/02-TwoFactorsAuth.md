@@ -41,7 +41,7 @@ model adminuser {
 Then:
 
 ```bash
-pnpm makemigration -- --name add-2fa-secret ; pnpm migrate:local
+pnpm makemigration --name add-2fa-secret ; pnpm migrate:local
 ```
 
 And add it to `adminuser.ts`
@@ -150,7 +150,7 @@ model adminuser {
 Then run:
 
 ```bash
-pnpm makemigration -- --name add-use2fa ; pnpm migrate:local
+pnpm makemigration --name add-use2fa ; pnpm migrate:local
 ```
 
 Then in `adminuser.ts`:
@@ -641,7 +641,7 @@ First, you need to create a passkeys table in your schema.prisma file:
 And make migration:
 
 ```bash
-pnpm makemigration -- --name add-passkeys ; pnpm migrate:local
+pnpm makemigration --name add-passkeys ; pnpm migrate:local
 ```
 
 Next, you need to create a new resource for passkeys:

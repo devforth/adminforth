@@ -144,7 +144,7 @@ model adminuser {
 Run the migration:
 
 ```bash
-pnpm makemigration -- --name add-email-confirmed ; pnpm migrate:local
+pnpm makemigration --name add-email-confirmed ; pnpm migrate:local
 ```
 
 Then update your resource configuration:
