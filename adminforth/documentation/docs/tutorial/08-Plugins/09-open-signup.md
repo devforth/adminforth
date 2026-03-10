@@ -50,7 +50,7 @@ model adminuser {
 And prisma migrate:
 
 ```bash
-pnpm makemigration -- --name add-email-confirmed-to-adminuser ; pnpm migrate:local
+pnpm makemigration --name add-email-confirmed-to-adminuser ; pnpm migrate:local
 
 
 ```

@@ -159,7 +159,7 @@ model description_image {
 ```
 
 ```bash
-pnpm makemigration -- --name add_description_image ; pnpm migrate:local
+pnpm makemigration --name add_description_image ; pnpm migrate:local
 ```
 
 ```bash

@@ -84,7 +84,7 @@ model adminuser {
 2. Run the migration:
 
 ```bash
-pnpm makemigration -- --name add-email-confirmed-to-adminuser ; pnpm migrate:local
+pnpm makemigration --name add-email-confirmed-to-adminuser ; pnpm migrate:local
 ```
 
 3. Configure the plugin with `emailConfirmedField`:
@@ -419,7 +419,7 @@ model adminuser {
 And make migration:
 
 ```bash
-pnpm makemigration -- --name add-avatar-field ; pnpm migrate:local
+pnpm makemigration --name add-avatar-field ; pnpm migrate:local
 ```
 
 Then add this field to users resource and install upload plugin:

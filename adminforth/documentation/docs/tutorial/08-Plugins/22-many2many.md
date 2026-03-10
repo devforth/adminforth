@@ -44,7 +44,7 @@ model realtorsAparts {
 Migrate the Prisma schema:
 
 ```bash 
-pnpm makemigration -- --name add-realtors-and-realtorsAparts; pnpm migrate:local
+pnpm makemigration --name add-realtors-and-realtorsAparts; pnpm migrate:local
 ```
 
 Now create a resource for the realtors:

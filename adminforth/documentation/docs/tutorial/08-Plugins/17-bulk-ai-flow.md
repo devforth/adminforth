@@ -49,7 +49,7 @@ model apartments {
 Migrate prisma schema:
 
 ```bash
-pnpm makemigration -- --name add-apartment-image-url ; pnpm migrate:local
+pnpm makemigration --name add-apartment-image-url ; pnpm migrate:local
 ```
 
 We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.

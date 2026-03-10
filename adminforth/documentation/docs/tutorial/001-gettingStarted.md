@@ -60,13 +60,13 @@ The CLI will create boilerplate files and folders in your current directory and 
 myadmin/
 ├── custom
 │   ├── assets/           # Static assets like images, fonts, etc.
-│   ├── package.json      # For any custom npm packages you will use in Vue files
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
 │   └── adminuser.ts      # Example resource file for users management
 ├── schema.prisma         # Prisma schema file for database schema
 ├── index.ts              # Main entry point: configures AdminForth & starts the server
 ├── package.json          # Project dependencies
+├── pnpm-workspace.yaml
 ├── tsconfig.json         # TypeScript configuration
 ├── .env                  # Env vars like tokens, secrets that should not be in version control
 ├── .env.local            # General local environment variables
@@ -173,7 +173,7 @@ model apartments {
 Run the following command to create a new migration:
 
 ```bash
-pnpm makemigration -- --name add-apartments ; pnpm migrate:local
+pnpm makemigration --name add-apartments ; pnpm migrate:local
 ```
 
 ### Step3. Create the `apartments` resource
