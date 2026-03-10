@@ -16,7 +16,8 @@ async function bundle() {
     `);
 
   } catch (e) {
-    console.log(`Running budndle failed`, e);
+    console.log(`Running bundle failed`, e);
+    throw new Error(`Failed to bundle admin SPA: ${e.message}`);
   }
 }
 
