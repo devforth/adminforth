@@ -38,35 +38,34 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }));
   }
   
-    async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig, fkMap: { [colName: string]: boolean }): Promise<boolean> {
+    async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
+      const cascadeColumn = resource.columns?.find(c => c.foreignResource?.onDelete === 'cascade');
+      if (!cascadeColumn) return false;
 
-      const hasAdminCascade = resource.columns?.some(c => c.foreignResource?.onDelete === 'cascade');
-      if (!hasAdminCascade) return false; 
+      const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+      if (!parentResource) return false;
 
-      const hasDbCascade = Object.values(fkMap).some(v => v);
+      const fkStmt = this.client.prepare(`PRAGMA foreign_key_list(${resource.table})`);
+      const fkRows = await fkStmt.all();
+      const fkMap: { [colName: string]: boolean } = {};
+      fkRows.forEach(fk => { fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE'; });
 
-      if (hasDbCascade) {
-        const tableName = (resource.table);
-        afLogger.warn(
-          
-          `Table "${tableName}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion`
-        );
+      const hasCascadeOnTable = fkMap[cascadeColumn.name] || false;
+      const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
+
+      if (hasCascadeOnTable && isUploadPluginInstalled) {
+          afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and UploadPlugin installed, which may conflict with adminForth cascade deletion`);
       }
 
-      return hasDbCascade;
+      return hasCascadeOnTable;
     }
 
     async discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{[key: string]: AdminForthResourceColumn}> {
-        await this.checkCascadeWhenUploadPlugin(resource, config);
 
         const tableName = resource.table;
         const stmt = this.client.prepare(`PRAGMA table_info(${tableName})`);
-        const rows = await stmt.all();
-        const fkStmt = this.client.prepare(`PRAGMA foreign_key_list(${tableName})`);
-        const fkRows = await fkStmt.all();
-        const fkMap: { [colName: string]: boolean } = {};
-        fkRows.forEach(fk => {fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE';})
-        await this.hasSQLiteCascadeFk(resource, config, fkMap);
+        const rows = await stmt.all();       
+        await this.hasSQLiteCascadeFk(resource, config);
         const fieldTypes = {};
         rows.forEach((row) => {
           const field: any = {};
@@ -112,7 +111,6 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           field.required = row.notnull == 1;
           field.primaryKey = row.pk == 1;
 
-          field.cascade = fkMap[row.name] || false;
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
