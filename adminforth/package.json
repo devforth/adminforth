@@ -20,7 +20,7 @@
     "rollout-doc": "cd documentation && pnpm build && pnpm deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do pnpm i in the package",
-    "postinstall": "node -e \"const fs=require('fs');const path=require('path');const spaPath=path.join(__dirname,'dist','spa');if(fs.existsSync(spaPath) && !process.env.PNPM_INSTALL_SPA){process.env.PNPM_INSTALL_SPA=1;require('child_process').execSync('pnpm install --frozen-lockfile',{cwd:spaPath,stdio:'inherit'});console.log('installed spa dependencies');}\""  
+    "postinstall": "node scripts/postinstall.js"  
    },
   "release": {
     "plugins": [
