@@ -71,9 +71,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
     
     async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<boolean> {
         const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
-        if (!cascadeColumn) return; 
+        if (!cascadeColumn) return;
 
         const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+        if (!parentResource) return;
+
         const res = await this.client.query(
             `
             SELECT 1
@@ -86,19 +88,16 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             [parentResource.table, schema]
         );
 
-        const hasCascade = res.rowCount > 0;
-        if (hasCascade) {
-            afLogger.warn(
-                `Table "${parentResource.table}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion`
-            );
-        }
+        const hasCascadeOnTable = res.rowCount > 0;
+        const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
 
-        return hasCascade;
+        if (hasCascadeOnTable && isUploadPluginInstalled) {
+            afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and installed upload plugin, which may conflict with adminForth cascade deletion`);
+        }
     }
 
     async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
         await this.checkForeignResourceCascade(resource, config);
-        await this.checkCascadeWhenUploadPlugin(resource, config);
 
         const tableName = resource.table;
         const stmt = await this.client.query(`

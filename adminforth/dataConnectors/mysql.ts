@@ -80,7 +80,6 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (!cascadeColumn) return false;
 
     const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
-
     if (!parentResource) return false;
 
     const [rows] = await this.client.execute(
@@ -95,18 +94,16 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       [parentResource.table]
     );
 
-    const hasCascade = (rows as any[]).length > 0;
+    const hasCascadeOnTable = (rows as any[]).length > 0;
 
-    if (hasCascade) {
-      afLogger.warn(`Table "${parentResource.table}" has ON DELETE CASCADE, which may conflict with adminForth cascade deletion.`);
+    const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
+
+    if (hasCascadeOnTable && isUploadPluginInstalled) {
+      afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and UploadPlugin installed, which may conflict with adminForth cascade deletion`);
     }
-    
-    return hasCascade;
   }
 
   async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
-    await this.checkCascadeWhenUploadPlugin(resource, config);
-
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
     await this.hasMySQLCascadeFk(resource, config);
     const fieldTypes = {};
