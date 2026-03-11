@@ -69,7 +69,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
     
-    async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<boolean> {
+    async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<void> {
         const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
         if (!cascadeColumn) return;
 
@@ -81,11 +81,12 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             SELECT 1
             FROM pg_constraint
             WHERE contype = 'f'
-            AND confrelid = ($2 || '.' || $1)::regclass
-            AND confdeltype = 'c'
+                AND confrelid = ($2 || '.' || $1)::regclass
+                AND conrelid = ($2 || '.' || $3)::regclass
+                AND confdeltype = 'c'
             LIMIT 1
-            `,
-            [parentResource.table, schema]
+                    `,
+            [parentResource.table, schema, resource.table ]
         );
 
         const hasCascadeOnTable = res.rowCount > 0;
