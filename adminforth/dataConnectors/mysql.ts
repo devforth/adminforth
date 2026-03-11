@@ -87,11 +87,12 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       SELECT 1
       FROM information_schema.REFERENTIAL_CONSTRAINTS
       WHERE CONSTRAINT_SCHEMA = DATABASE()
+        AND TABLE_NAME = ?
         AND REFERENCED_TABLE_NAME = ?
         AND DELETE_RULE = 'CASCADE'
       LIMIT 1
       `,
-      [parentResource.table]
+      [resource.table, parentResource.table]
     );
 
     const hasCascadeOnTable = (rows as any[]).length > 0;
@@ -101,6 +102,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (hasCascadeOnTable && isUploadPluginInstalled) {
       afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and UploadPlugin installed, which may conflict with adminForth cascade deletion`);
     }
+    return hasCascadeOnTable;
   }
 
   async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {

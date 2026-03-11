@@ -480,9 +480,15 @@ export function slugifyString(str: string): string {
     .replace(/[^a-z0-9-_]/g, '-');
 }
 
-export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
+export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth, visitedResources: Set<string> = new Set()): Promise<{ error: string | null }> {
     const { adminUser, response } = context;
     
+    if (visitedResources.has(resource.resourceId)) {
+      return { error: null };
+    }
+
+    visitedResources.add(resource.resourceId);
+
     const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
     for (const childRes of childResources) {
@@ -495,11 +501,13 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
       const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
       const childPk = childRes.columns.find(c => c.primaryKey)?.name;
-      if (!childPk) continue;
 
       if (strategy === 'cascade') {
         for (const childRecord of childRecords) {
-          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
+          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth, visitedResources);
+          if (childResult?.error) {
+            return childResult;
+          }
           const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
           if (deleteChild.error) return { error: deleteChild.error };
           if (childResult?.error) {
