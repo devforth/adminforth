@@ -7,7 +7,7 @@ The List in Place Edit plugin allows you to edit records directly in the list vi
 First, install the plugin:
 
 ```bash
-npm i @adminforth/list-in-place-edit --save
+pnpm i @adminforth/list-in-place-edit --save
 ```
 
 Import plugin:

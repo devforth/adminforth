@@ -5,6 +5,7 @@ import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
+import yaml from 'yaml';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
@@ -142,15 +143,48 @@ class CodeInjector implements ICodeInjector {
 
   }
 
-  async runNpmShell({command, cwd, envOverrides = {}}: {
+
+  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    const usersPackagePath = path.join(dir, 'package.json');
+    let packageContent: { dependencies: any, devDependencies: any } = null;
+    try {
+      packageContent = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+    } catch (e) {
+      // user package.json does not exist, user does not have custom components
+    }
+    if (packageContent) {
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
+      try {
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async runPackageManagerShell({command, cwd, envOverrides = {}}: {
     command: string,
     cwd: string,
     envOverrides?: { [key: string]: string }
   }) {
+    
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    // On Windows, npm is npm.cmd, on Unix systems it's npm
-    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
+    const doesUserHavePnpmLock = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir);
+
+    // On Windows, npm/pnpm is npm/pnpm.cmd, on Unix systems it's npm/pnpm
+    let packageExecutable 
+    if (doesUserHavePnpmLock) {
+      afLogger.trace(`User has pnpm-lock.yaml, using pnpm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+    } else {
+      afLogger.trace(`User does not have pnpm-lock.yaml, falling back to npm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    }
+    const packagePath = path.join(path.dirname(nodeBinary), packageExecutable); // Path to the package executable
+
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -158,38 +192,35 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    afLogger.trace(`⚙️ exec: npm ${command}`);
-    afLogger.trace(`🪲 npm ${command} cwd: ${cwd}`);
-    afLogger.trace(`npm ${command} done in`);
-    
-    // On Windows, execute npm.cmd directly; on Unix, use node + npm
+    afLogger.trace(`⚙️ exec: ${packageExecutable} ${command}`);
+    afLogger.trace(`🪲 ${packageExecutable} ${command} cwd: ${cwd}`);
+
     let execCommand: string;
     if (process.platform === 'win32') {
       // Quote path if it contains spaces
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedPackagePath} ${command}`;
     } else {
       // Quote paths that contain spaces (for Unix systems)
       const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedNodeBinary} ${quotedPackagePath} ${command}`;
     }
     
     const execOptions: any = {
       cwd,
       env,
     };
-    
-    // On Windows, use shell to execute .cmd files
+
     if (process.platform === 'win32') {
       execOptions.shell = true;
     }
-    
-    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
-    afLogger.trace(`npm ${command} done in`);
+
+    const { stderr: err } = await execAsync(execCommand, execOptions);
+    afLogger.trace(`${packageExecutable} ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲npm ${command} errors/warnings: ${err}`);
+      afLogger.trace(`🪲${packageExecutable} ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -207,7 +238,7 @@ class CodeInjector implements ICodeInjector {
     return path.join(this.getSpaDir(), 'dist');
   }
 
-  async packagesFromNpm(dir: string): Promise<[string, string[]]> {
+  async packagesFromPnpm(dir: string): Promise<[string, string[]]> {
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     let lockHash: string = '';
@@ -218,32 +249,71 @@ class CodeInjector implements ICodeInjector {
       // user package.json does not exist, user does not have custom components
     }
     if (packageContent) {
-      const lockPath = path.join(dir, 'package-lock.json');
-      let lock = null;
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
       try {
-        lock = JSON.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
       } catch (e) {
-        throw new Error(`Custom package-lock.json does not exist in ${dir}, but package.json does. 
-          We can't determine version of packages without package-lock.json. Please run npm install in ${dir}`);
-      }
-      lockHash = hashify(lock);
+        const npmLockPath = path.join(dir, 'package-lock.json');
+        let npmLock: any = null;
+        try {
+          npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
+        } catch (npmLockError) {
+          throw new Error(`Custom pnpm-lock.yaml or package-lock.json does not exist in ${dir}, but package.json does.
+          We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
+        }
 
-      packages = [
-        ...Object.keys(packageContent.dependencies || []),
-        ...Object.keys(packageContent.devDependencies || [])
-      ].reduce(
+        lockHash = hashify(npmLock);
+
+        packages = [
+          ...Object.keys(packageContent.dependencies || {}),
+          ...Object.keys(packageContent.devDependencies || {})
+        ].reduce(
           (acc, packageName) => {
-            const pack = lock.packages[`node_modules/${packageName}`];
-            if (!pack) {
+            const pack = npmLock?.packages?.[`node_modules/${packageName}`];
+            if (!pack?.version) {
               throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
             }
-            const version = pack.version;
 
-            acc.push(`${packageName}@${version}`);
+            acc.push(`${packageName}@${pack.version}`);
+            return acc;
+          }, []
+        );
+
+        return [lockHash, packages];
+      }
+      lockHash = hashify(lock);
+      const importer = lock?.importers?.['.'];
+      if (!importer) {
+        throw new Error(`pnpm-lock.yaml in ${dir} does not contain importer ".". Please run pnpm install in ${dir}`);
+      }
+
+      const importerDeps = {
+        ...(importer.dependencies || {}),
+        ...(importer.devDependencies || {}),
+        ...(importer.optionalDependencies || {}),
+      };
+
+      packages = [
+        ...Object.keys(packageContent.dependencies || {}),
+        ...Object.keys(packageContent.devDependencies || {})
+      ].reduce(
+          (acc, packageName) => {
+            const depInfo = importerDeps[packageName];
+            const raw = typeof depInfo === 'string'
+              ? depInfo
+              : (depInfo?.version || depInfo?.specifier);
+
+            if (!raw) {
+              throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
+            }
+
+            const cleaned = raw.includes('(') ? raw.split('(')[0] : raw;
+
+            acc.push(`${packageName}@${cleaned}`);
             return acc;
           }, []
       );
-      
     }
     return [lockHash, packages];
   }
@@ -653,9 +723,10 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    const spaPackageLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
-    const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPackageLock);
+    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
+    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+    const spaLockHash = hashify(spaPnpmLock);
 
     /* customPackageLock */
     let usersLockHash: string = '';
@@ -663,7 +734,7 @@ class CodeInjector implements ICodeInjector {
 
 
     if (this.adminforth.config.customization?.customComponentsDir) {
-      [usersLockHash, usersPackages] = await this.packagesFromNpm(this.adminforth.config.customization.customComponentsDir);
+      [usersLockHash, usersPackages] = await this.packagesFromPnpm(this.adminforth.config.customization.customComponentsDir);
     }
 
     const pluginPackages: {
@@ -675,7 +746,7 @@ class CodeInjector implements ICodeInjector {
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
       afLogger.trace(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
-      const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
+      const [lockHash, packages] = await this.packagesFromPnpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
           pluginName: plugin.constructor.name,
@@ -696,18 +767,19 @@ class CodeInjector implements ICodeInjector {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       await this.checkIconNames(icons);
       if (existingHash === fullHash) {
-        afLogger.trace(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
+        afLogger.trace(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
+        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
       }
     } catch (e) {
       // ignore
-      afLogger.trace(`🪲Hash file does not exist, proceeding with npm ci/install, ${e}`);
+      afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
-      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    // install --frozen-lockfile works for npm and pnpm
+    await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
     }}); 
 
     const allPacks = [
@@ -726,11 +798,11 @@ class CodeInjector implements ICodeInjector {
     const allPacksUnique = Array.from(new Set(allPacksFiltered));
 
     if (allPacks.length) {
-      const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({
-        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+      const packageManagerInstallCommand = `install ${allPacksUnique.join(' ')}`;
+      await this.runPackageManagerShell({
+        command: packageManagerInstallCommand, cwd: this.spaTmpPath(), 
         envOverrides: { 
-          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+          NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
         }
       });
     }
@@ -938,7 +1010,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!skipExtract) {
-      await this.runNpmShell({command: 'run i18n:extract', cwd});
+      await this.runPackageManagerShell({command: 'run i18n:extract', cwd});
       
       // create serveDir if not exists
       await fs.promises.mkdir(serveDir, { recursive: true });
@@ -956,7 +1028,7 @@ class CodeInjector implements ICodeInjector {
       if (!skipBuild) {
         
         // TODO probably add option to build with tsh check (plain 'build')
-        await this.runNpmShell({command: 'run build-only', cwd});
+        await this.runPackageManagerShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
         await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
@@ -969,7 +1041,8 @@ class CodeInjector implements ICodeInjector {
     } else {
 
       const command = 'run dev';
-      afLogger.info(`⚙️ spawn: npm ${command}...`);
+      const usersPackageManager = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir) ? 'pnpm' : 'npm';
+      afLogger.info(`⚙️ spawn: ${usersPackageManager} ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
         afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
@@ -978,15 +1051,15 @@ class CodeInjector implements ICodeInjector {
         FORCE_COLOR: '1',
         ...process.env,
       };
-
+      
       const nodeBinary = process.execPath;
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
       
       let devServer;
       if (process.platform === 'win32') {
-        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+        devServer = spawn(usersPackageManager, command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
+        devServer = spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
