@@ -259,7 +259,7 @@ class CodeInjector implements ICodeInjector {
         try {
           npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
         } catch (npmLockError) {
-          throw new Error(`Custom pnpm-lock.yaml does not exist in ${dir}, but package.json does.
+          throw new Error(`Custom pnpm-lock.yaml or package-lock.json does not exist in ${dir}, but package.json does.
           We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
         }
 
@@ -723,9 +723,10 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-  const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
-  const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
-  const spaLockHash = hashify(spaPnpmLock);
+    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
+    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+    const spaLockHash = hashify(spaPnpmLock);
 
     /* customPackageLock */
     let usersLockHash: string = '';
@@ -1039,7 +1040,8 @@ class CodeInjector implements ICodeInjector {
     } else {
 
       const command = 'run dev';
-      afLogger.info(`⚙️ spawn: pnpm ${command}...`);
+      const usersPackageManager = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir) ? 'pnpm' : 'npm';
+      afLogger.info(`⚙️ spawn: ${usersPackageManager} ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
         afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
@@ -1050,13 +1052,13 @@ class CodeInjector implements ICodeInjector {
       };
       
       const nodeBinary = process.execPath;
-      const pnpmPath = path.join(path.dirname(nodeBinary), 'pnpm');
+      const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
       
       let devServer;
       if (process.platform === 'win32') {
-        devServer = spawn('pnpm', command.split(' '), { cwd, env, shell: true });
+        devServer = spawn(usersPackageManager, command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(`${nodeBinary}`, [`${pnpmPath}`, ...command.split(' ')], { cwd, env });
+        devServer = spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
