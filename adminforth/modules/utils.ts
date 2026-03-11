@@ -480,14 +480,8 @@ export function slugifyString(str: string): string {
     .replace(/[^a-z0-9-_]/g, '-');
 }
 
-export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth, visitedResources: Set<string> = new Set()): Promise<{ error: string | null }> {
+export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
     const { adminUser, response } = context;
-    
-    if (visitedResources.has(resource.resourceId)) {
-      return { error: null };
-    }
-
-    visitedResources.add(resource.resourceId);
 
     const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
@@ -504,7 +498,7 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
       if (strategy === 'cascade') {
         for (const childRecord of childRecords) {
-          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth, visitedResources);
+          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
           if (childResult?.error) {
             return childResult;
           }
