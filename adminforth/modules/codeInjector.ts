@@ -777,6 +777,7 @@ class CodeInjector implements ICodeInjector {
       afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
+    // install --frozen-lockfile works for npm and pnpm
     await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
       NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
     }}); 
@@ -797,9 +798,9 @@ class CodeInjector implements ICodeInjector {
     const allPacksUnique = Array.from(new Set(allPacksFiltered));
 
     if (allPacks.length) {
-      const pnpmInstallCommand = `install ${allPacksUnique.join(' ')}`;
+      const packageManagerInstallCommand = `install ${allPacksUnique.join(' ')}`;
       await this.runPackageManagerShell({
-        command: pnpmInstallCommand, cwd: this.spaTmpPath(), 
+        command: packageManagerInstallCommand, cwd: this.spaTmpPath(), 
         envOverrides: { 
           NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
         }
