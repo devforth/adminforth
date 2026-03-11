@@ -11,6 +11,7 @@ import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, d
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 import { afLogger } from '../modules/logger.js';
+import { pathToFileURL } from 'url';
 
 
 let TMP_DIR;
@@ -98,7 +99,7 @@ class CodeInjector implements ICodeInjector {
     console.log('iconPackageNames', iconPackageNames);
 
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(path.join(this.spaTmpPath(), 'node_modules', pkg)), name: pkg})))
+      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
     );
 
     console.log('iconPackages', iconPackages);
