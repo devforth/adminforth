@@ -84,7 +84,7 @@ export async function promptForMissingOptions(options) {
     questions.push({
       type: 'select',
       name: 'useNpm',
-      message: 'Select your package manager ->',
+      message: 'Select your package manager >',
       choices: [
         { name: 'pnpm', value: false },
         { name: 'npm', value: true },
