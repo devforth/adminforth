@@ -216,7 +216,7 @@ export default {
           model: "dall-e-3",
         }),
         outputSize: "1792x1024",
-        fieldsForContext: ["title"],
+        generationPrompt: "Generate an image for apartment with title {{title}}. Make it look like a photo from a real estate listing.",
         rateLimit: {
           limit: "2/1m",
           errorMessage:
