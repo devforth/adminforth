@@ -16,7 +16,7 @@ npm install @adminforth/clone-row --save
 To setup the plugin just add it to your resource:
 
 ```ts .title="./resources/apartments.ts"
-import CloneRow from "@adminforth/CloneRow";
+import CloneRow from "@adminforth/clone-row";
 
     ...
 
