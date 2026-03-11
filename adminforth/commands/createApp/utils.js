@@ -82,9 +82,13 @@ export async function promptForMissingOptions(options) {
 
   if (!options.useNpm) {
     questions.push({
-      type: 'confirm',
+      type: 'select',
       name: 'useNpm',
-      message: 'Do you want to use npm instead of pnpm?',
+      message: 'Select your package manager ->',
+      choices: [
+        { name: 'pnpm', value: false },
+        { name: 'npm', value: true },
+      ],
       default: false,
     });
   }
@@ -347,6 +351,11 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
         useNpm
       },
     },
+    {
+      src: 'custom/package.json.hbs',
+      dest: 'custom/package.json',
+      data: {}
+    }
   ];
 
   if (!useNpm) {
@@ -356,13 +365,10 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
         dest: 'pnpm-workspace.yaml',
         data: {},
       },
-    )
-  } else {
-    templateTasks.push(
       {
-        src: 'custom/package.json.hbs',
-        dest: 'custom/package.json',
-        data: {}
+        src: 'pnpm_templates/pnpm-lock.yaml.hbs',
+        dest: 'custom/pnpm-lock.yaml',
+        data: {},
       }
     )
   }
