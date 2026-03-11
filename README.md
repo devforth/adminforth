@@ -58,14 +58,21 @@ npx adminforth create-app
 
 The most convenient way to add new features or fixes is using `dev-demo`. It imports the source code of the repository and plugins so you can edit them and see changes on the fly.
 
+# Requirements
+
+- **Node.js 20**
+- **Docker**
+- **pnpm**
+- **Taskfile**
+
 To run dev demo:
 ```sh
 cd dev-demo
 
-npm run setup-dev-demo
-npm run migrate:all
+pnpm setup-dev-demo
+pnpm migrate:all
 
-npm start
+pnpm start
 ```
 
 ## Adding columns to a database in dev-demo
@@ -77,13 +84,13 @@ To make migration add to the .prisma file in folder with database you need and a
 
 
 ```
-npm run makemigration:sqlite -- --name init
+pnpm makemigration:sqlite -- --name init
 ```
 
 and 
 
 ```
-npm run migrate:sqlite
+pnpm migrate:sqlite
 ```
 
 to apply migration
@@ -96,7 +103,7 @@ In order to make migration for the clickhouse, go to the `./migrations/clickhous
 
 Then run
 ```
-npm run migrate:clickhouse
+pnpm migrate:clickhouse
 ```
 
 to apply the migration.
@@ -108,17 +115,16 @@ Make sure you have not `adminforth` globally installed. If you have it, remove i
 
 
 ```sh
-npm uninstall -g adminforth
+pnpm uninstall -g adminforth
 ```
 
 Then, in the root of the project, run once:
 
 ```
 cd adminforth/adminforth
-npm run build
+pnpm build
+pnpm link
 ```
-
-This will automatically make an npm link to the `adminforth` package in the root of the project.
 
 Then, go to testing app, e.g. created with CLI, and use next command:
 

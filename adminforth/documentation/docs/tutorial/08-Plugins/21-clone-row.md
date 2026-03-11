@@ -8,7 +8,7 @@ Allows to create a copy of record quickly, by substituting default values to cre
 To install the plugin:
 
 ```bash
-npm install @adminforth/clone-row --save
+pnpm install @adminforth/clone-row --save
 ```
 
 ## Setting up
