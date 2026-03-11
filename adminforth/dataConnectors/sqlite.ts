@@ -1,5 +1,5 @@
 import betterSqlite3 from 'better-sqlite3';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
@@ -37,11 +37,35 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       sampleValue: sampleRow[col.name],
     }));
   }
+  
+    async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
+      const cascadeColumn = resource.columns?.find(c => c.foreignResource?.onDelete === 'cascade');
+      if (!cascadeColumn) return false;
 
-    async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
+      const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+      if (!parentResource) return false;
+
+      const fkStmt = this.client.prepare(`PRAGMA foreign_key_list(${resource.table})`);
+      const fkRows = await fkStmt.all();
+      const fkMap: { [colName: string]: boolean } = {};
+      fkRows.forEach(fk => { fkMap[fk.from] = fk.on_delete?.toUpperCase() === 'CASCADE'; });
+
+      const hasCascadeOnTable = fkMap[cascadeColumn.name] || false;
+      const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
+
+      if (hasCascadeOnTable && isUploadPluginInstalled) {
+          afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and UploadPlugin installed, which may conflict with adminForth cascade deletion`);
+      }
+
+      return hasCascadeOnTable;
+    }
+
+    async discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{[key: string]: AdminForthResourceColumn}> {
+
         const tableName = resource.table;
         const stmt = this.client.prepare(`PRAGMA table_info(${tableName})`);
-        const rows = await stmt.all();
+        const rows = await stmt.all();       
+        await this.hasSQLiteCascadeFk(resource, config);
         const fieldTypes = {};
         rows.forEach((row) => {
           const field: any = {};
@@ -86,6 +110,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
           field._baseTypeDebug = baseType;
           field.required = row.notnull == 1;
           field.primaryKey = row.pk == 1;
+
           field.default = row.dflt_value;
           fieldTypes[row.name] = field
         });
