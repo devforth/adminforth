@@ -45,7 +45,7 @@ class AdminForthAuth implements IAdminForthAuth {
     this.adminforth = adminforth;
   }
 
-getClientIp(headers: object) {
+  getClientIp(headers: object) {
     const clientIpHeader = this.adminforth.config.auth.clientIpHeader;
 
     const headersLower = Object.keys(headers).reduce((acc, key) => {
