@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
@@ -74,8 +74,40 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     }));
   }
 
-  async discoverFields(resource) {
+  async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
+
+    const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
+    if (!cascadeColumn) return false;
+
+    const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+    if (!parentResource) return false;
+
+    const [rows] = await this.client.execute(
+      `
+      SELECT 1
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+        AND TABLE_NAME = ?
+        AND REFERENCED_TABLE_NAME = ?
+        AND DELETE_RULE = 'CASCADE'
+      LIMIT 1
+      `,
+      [resource.table, parentResource.table]
+    );
+
+    const hasCascadeOnTable = (rows as any[]).length > 0;
+
+    const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
+
+    if (hasCascadeOnTable && isUploadPluginInstalled) {
+      afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and UploadPlugin installed, which may conflict with adminForth cascade deletion`);
+    }
+    return hasCascadeOnTable;
+  }
+
+  async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
     const [results] = await this.client.execute("SHOW COLUMNS FROM " + resource.table);
+    await this.hasMySQLCascadeFk(resource, config);
     const fieldTypes = {};
     results.forEach((row) => {
       const field: any = {};

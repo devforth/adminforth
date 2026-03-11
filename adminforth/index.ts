@@ -419,7 +419,7 @@ class AdminForth implements IAdminForth {
       }
       let fieldTypes = null;
       try {
-        fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
+        fieldTypes = await this.connectors[res.dataSource].discoverFields(res, this.config);
       } catch (e) {
         afLogger.error(`Error discovering fields for resource '${res.table}' (In resource '${res.resourceId}') ${e}`);
       }
