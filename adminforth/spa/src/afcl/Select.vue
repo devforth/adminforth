@@ -122,7 +122,7 @@ import { useElementSize } from '@vueuse/core'
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: Array as PropType<(string | number)[]>,
+    type: Array as PropType<(string | number)[] | (string | number)>,
     default: () => [],
   },
   multiple: {

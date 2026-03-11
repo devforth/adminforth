@@ -224,7 +224,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   initApi(app, admin);
 
-  const port = 3000;
+  const port = 3123;
   
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
     logger.info('Bundling AdminForth SPA done.');
