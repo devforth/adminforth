@@ -60,6 +60,7 @@ The CLI will create boilerplate files and folders in your current directory and 
 myadmin/
 ├── custom
 │   ├── assets/           # Static assets like images, fonts, etc.
+│   ├── package.json      # For any custom npm packages you will use in Vue files
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
 │   └── adminuser.ts      # Example resource file for users management
