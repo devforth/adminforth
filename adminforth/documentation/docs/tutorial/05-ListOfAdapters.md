@@ -15,7 +15,7 @@ Used to send emails
 ### AWS SES Email Adapter
 
 ```
-ppnpm i @adminforth/email-adapter-aws-ses
+pnpm i @adminforth/email-adapter-aws-ses
 ```
 
 Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazon.com/ses/), suitable for high-volume, programmatic email sending.

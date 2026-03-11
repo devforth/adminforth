@@ -123,7 +123,7 @@ Then, in the root of the project, run once:
 ```
 cd adminforth/adminforth
 pnpm build
-pnpm linl
+pnpm link
 ```
 
 Then, go to testing app, e.g. created with CLI, and use next command:
