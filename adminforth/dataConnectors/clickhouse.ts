@@ -499,6 +499,13 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       return res;
     }
 
+    async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: any[] }): Promise<number> {
+      const idsList = recordIds.map(id => `'${id}'`).join(', ');
+      const query = `ALTER TABLE ${resource.table} DELETE WHERE ${this.getPrimaryKey(resource)} IN (${idsList})`;
+      const res = await this.client.query({ query });
+      return recordIds.length ?? 0;
+    }
+
     close() {
       this.client.disconnect();
     }
