@@ -292,6 +292,8 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
   }): Promise<{ok: boolean, error?: string}>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+
+  deleteMany?(params: { resource: AdminForthResource; recordIds: any[] }): Promise<number>;
 }
 
 
@@ -1760,6 +1762,8 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
+  
+  deleteMany?(params: { resource: AdminForthResource; recordIds: any[] }): Promise<number>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }

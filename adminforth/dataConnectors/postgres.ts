@@ -455,6 +455,13 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rowCount > 0;
     }
 
+    async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: any[] }): Promise<number> {
+        const placeholders = recordIds.map((_, idx) => `$${idx + 1}`).join(', ');
+        const query = `DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} IN (${placeholders})`;
+        const res = await this.client.query(query, recordIds);
+        return res.rowCount ?? 0;
+    }
+
     async close() {
         await this.client.end();
     }
