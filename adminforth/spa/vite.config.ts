@@ -53,22 +53,24 @@ export default defineConfig({
         // by default servers doesnt returns dotfiles
         // so if we'll generate file with name like ".pnpm-BLnlxqcJ.js"
         // it won't be loaded
-        assetFileNames: (assetInfo) => {
-          return assetInfo.name?.startsWith('.pnpm') 
-            ? `assets/${assetInfo.name.replace(/^\.pnpm/, 'pnpm')}`
-            : `assets/${assetInfo.name}`;
+        assetFileNames: (chunkInfo) => {
+          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
+            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].[ext]`;
+          }
+          return 'assets/[name]-[hash].[ext]';
         },
-        
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name?.startsWith('.pnpm') 
-            ? `assets/${chunkInfo.name.replace(/^\.pnpm/, 'pnpm')}.js`
-            : `assets/${chunkInfo.name}.js`;
+          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
+            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].js`;
+          }
+          return 'assets/[name]-[hash].js';
         },
         chunkFileNames: (chunkInfo) => {
-          return chunkInfo.name?.startsWith('.pnpm') 
-            ? `assets/${chunkInfo.name.replace(/^\.pnpm/, 'pnpm')}.js`
-            : `assets/${chunkInfo.name}.js`;
-        },
+          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
+            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].js`;
+          }
+          return 'assets/[name]-[hash].js';
+        }
       },
     },
   },
