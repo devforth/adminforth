@@ -6,7 +6,6 @@
       <input
         ref="inputEl"
         type="text"
-        v-bind="$attrs"
         :readonly="readonly || searchDisabled"
         v-model="search"
         @click="inputClick"
