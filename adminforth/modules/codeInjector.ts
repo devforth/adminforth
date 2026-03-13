@@ -1037,7 +1037,7 @@ class CodeInjector implements ICodeInjector {
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
-
+    console.log({buildHash, sourcesHash});
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
@@ -1072,6 +1072,7 @@ class CodeInjector implements ICodeInjector {
 
     if (!hotReload) {
       if (!skipBuild) {     
+        console.log(`🪲 Build cache miss, building SPA...`);
         let oldHashForFiles = null;
         try {
           oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
