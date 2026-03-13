@@ -56,7 +56,7 @@
       Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
     </div>
 
-      <ul class="af-sidebar-container space-y-2 font-medium" >
+      <ul class="af-sidebar-container space-y-2 font-medium" @click.capture="handleURLClick">
       <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
           <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
           <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
@@ -306,6 +306,9 @@ import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import { IconExclamationCircleOutline} from '@iconify-prerendered/vue-flowbite';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
 
@@ -385,6 +388,24 @@ function clickOnMenuItem(label: string | number) {
     opened.value.push(label);
   }
 }
+
+const handleURLClick = (event: MouseEvent) => {
+  const target = (event.target as HTMLElement).closest('.af-sidebar-menu-link');
+  if (!target) return;
+
+  const label = target.textContent?.trim();
+  const item = coreStore.menu.find(m => m.label === label) || coreStore.menu.flatMap(m => m.children || []).find(c => c.label === label);
+
+  if (item?.url) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const { pathname, search, hash } = new URL(item.url as string, window.location.origin);
+    router.push(pathname + search + hash);
+    
+    emit('hideSidebar');
+  }
+};
 
 watch(()=>coreStore.menu, () => {
     coreStore.menu.forEach((item, i) => {
