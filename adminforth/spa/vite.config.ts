@@ -54,8 +54,8 @@ export default defineConfig({
         // so if we'll generate file with name like ".pnpm-BLnlxqcJ.js"
         // it won't be loaded
         assetFileNames: 'assets/[name]-[hash].[ext]',
-        entryFileNames: 'assets/[name]-[hash].[ext]',
-        chunkFileNames: 'assets/[name]-[hash].[ext]',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
       },
     },
   },
