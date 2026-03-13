@@ -946,7 +946,7 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
           return '';
         }
 
