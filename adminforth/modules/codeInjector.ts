@@ -963,6 +963,51 @@ class CodeInjector implements ICodeInjector {
     return md5hash(hashes.join(''));
   }
 
+  // Compute a map of file relative paths -> md5 hash of file contents and return it.
+  // Skips directories/files that are ignored by computeSourcesHash (node_modules, dist, i18n files).
+  async computeSourcesHashMap(folderPath: string = this.spaTmpPath(), rootFolder: string = this.spaTmpPath(), map: { [key: string]: string } = {}): Promise<{ [key: string]: string }> {
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(folderPath, file.name);
+
+        // 🚫 Skip big/dynamic folders or files
+        if (file.name === 'node_modules' || file.name === 'dist' ||
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+          return;
+        }
+
+        if (file.isDirectory()) {
+          return await this.computeSourcesHashMap(filePath, rootFolder, map);
+        } else {
+          try {
+            const content = await fs.promises.readFile(filePath, 'utf-8');
+            const hash = md5hash(content);
+            // store relative path using forward slashes for portability
+            const rel = path.relative(rootFolder, filePath).split(path.sep).join('/');
+            map[rel] = hash;
+          } catch (e) {
+            // If a file can't be read (binary or permission), log and continue
+            afLogger.trace(`🪲File ${filePath} read error: ${e}`);
+            return;
+          }
+        }
+      })
+    );
+
+    return map;
+  }
+
+  // Convenience helper: compute per-file hashes and save them into hashes.json in the spa tmp dir
+  async saveSourcesHashesToFile(outputFileName: string = 'hashes.json', hashMap: { [key: string]: string } = {}): Promise<string> {
+    const root = this.spaTmpPath();
+    const outPath = path.join(root, outputFileName);
+    await fs.promises.writeFile(outPath, JSON.stringify(hashMap, null, 2), 'utf-8');
+    afLogger.trace(`🪲 Saved sources hashes to ${outPath}`);
+    return outPath;
+  }
+
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
     afLogger.info(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
@@ -1026,8 +1071,51 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!hotReload) {
-      if (!skipBuild) {
-        
+      if (!skipBuild) {     
+        let oldHashForFiles = null;
+        try {
+          oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
+        } catch (e) {
+          // ignore if file doesn't exist, it is only for debugging
+          console.log(`Build cache not found, building now (downtime) please consider running npx adminforth bundle at build time to avoid downtimes at runtime`);
+        }
+        const root = this.spaTmpPath();
+        const hashMap = await this.computeSourcesHashMap(root, root, {});
+        if (oldHashForFiles) {
+          const parsedOldHashForFiles = JSON.parse(oldHashForFiles);
+          const logsToDisplay = [];
+          logsToDisplay.push(`Build cache exists but is outdated:`);
+          for(const [file, hash] of Object.entries(hashMap)) {
+            if (!parsedOldHashForFiles[file]) {
+              logsToDisplay.push(`   - file ${file} - does not exist in cache but exists in runtime`);
+            } else if (parsedOldHashForFiles[file] !== hash) {
+              logsToDisplay.push(`   - file ${file} - content in cache is different then in runtime`);
+            }
+          }
+          /**
+           * Currently we can't detect, if file was removed, 
+           * because we can only add files to the tpm folder but not remove them, 
+           * so if file existed before and now doesn't exist, we will not detect it
+           */
+
+          // for(const [file, hash] of Object.entries(parsedOldHashForFiles)) {
+          //   console.log(`checking file ${file} in old hash: ${hash}`);
+          //   console.log(`checking file ${file} in new hash: ${hashMap[file]}`);
+          //   if (!hashMap[file]) {
+          //     logsToDisplay.push(`   - file ${file} - exists in cache but does not exist in runtime`);
+          //   }
+          // }
+
+          logsToDisplay.push(`If you are running in production now, then the cache loss is a downtime issue.`);
+          logsToDisplay.push(`If you have npx adminforth bundle in build time, then this issue might be caused by conditional instantiation of plugins:`)
+          logsToDisplay.push(`Please avoid constructions like (process.env.SOME_KEY ? new Plugin(...) ) because if you will miss SOME_KEY in build time build cache and functionality fails.`);
+          if (logsToDisplay.length > 4) {
+            for(const log of logsToDisplay) {
+              console.log(log);
+            }
+          }
+        }
+
         // TODO probably add option to build with tsh check (plain 'build')
         await this.runPackageManagerShell({command: 'run build-only', cwd});
         
@@ -1036,6 +1124,8 @@ class CodeInjector implements ICodeInjector {
 
         // save hash
         await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
+        // save sources hashes to file for later debugging if needed
+        await this.saveSourcesHashesToFile('hashes.json', hashMap);
       } else {
         afLogger.info(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
       }
