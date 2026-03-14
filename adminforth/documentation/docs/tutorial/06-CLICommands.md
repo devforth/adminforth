@@ -126,14 +126,14 @@ Creates a folder with all the necessary files for your plugin and instructions f
 
 ```bash
 cd my-awesome-plugin
-npm run build
-npm link
+pnpm build
+pnpm link
 ```
 
 Then in your AdminForth project:
 
 ```bash
-npm link my-awesome-plugin
+pnpm link my-awesome-plugin
 ```
 
 ---

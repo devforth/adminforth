@@ -1,3 +1,14 @@
+
+{{#unless useNpm}}
+FROM devforth/node20-pnpm:latest
+WORKDIR /code/
+ADD package.json pnpm-lock.yaml pnpm-workspace.yaml /code/
+RUN pnpm i  
+ADD . /code/
+RUN pnpm exec adminforth bundle
+CMD ["sh", "-c", "pnpm migrate:prod && pnpm prod"]
+{{/unless}}
+{{#if useNpm}}
 FROM node:{{nodeMajor}}-slim
 WORKDIR /code/
 ADD package.json package-lock.json /code/
@@ -5,3 +16,4 @@ RUN npm ci
 ADD . /code/
 RUN npx adminforth bundle
 CMD ["sh", "-c", "npm run migrate:prod && npm run prod"]
+{{/if}}

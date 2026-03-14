@@ -192,7 +192,7 @@ export interface IAdminForthDataSourceConnector {
    * 
    * @param resource 
    */
-  discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}>;
+  discoverFields(resource: AdminForthResource, config: AdminForthConfig): Promise<{[key: string]: AdminForthResourceColumn}>;
 
 
   /**
@@ -1206,8 +1206,8 @@ interface AdminForthInputConfigCustomization {
    * 
    * ```bashcreating rec
    * cd custom
-   * npm init -y
-   * npm install highcharts highcharts-vue
+   * pnpm init -y
+   * pnpm install highcharts highcharts-vue
    * ```
    * 
    * And specify vueUsesFile in AdminForth config:
@@ -2056,6 +2056,7 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
       afterDatasourceResponse?: AfterDataSourceResponseFunction | Array<AfterDataSourceResponseFunction>,
     },
   },
+  onDelete?: 'cascade' | 'setNull'
 }
 
 export type ShowInModernInput = {

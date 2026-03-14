@@ -158,8 +158,8 @@ async function installDependencies(ctx, cwd) {
   const customDir = ctx.customDir;
 
   await Promise.all([
-    await execa("npm", ["install", "--no-package-lock"], { cwd }),
-    await execa("npm", ["install"], { cwd: customDir }),
+    await execa("pnpm", ["install"], { cwd }),
+    await execa("pnpm", ["install"], { cwd: customDir }),
   ]);
 }
 
@@ -168,15 +168,14 @@ function generateFinalInstructions() {
 
   instruction += `
   ${chalk.dim("// Build your plugin")}
-  ${chalk.cyan("$ npm run build")}\n`;
+  ${chalk.cyan("$ pnpm build")}\n`;
 
   instruction += `
   ${chalk.dim("// To test your plugin locally")}
-  ${chalk.cyan("$ npm link")}\n`;
-
+  ${chalk.cyan("$ pnpm link")}\n`;
   instruction += `
   ${chalk.dim("// In your AdminForth project")}
-  ${chalk.cyan("$ npm link " + chalk.italic("your-plugin-name"))}\n`;
+  ${chalk.cyan("$ pnpm link " + chalk.italic("your-plugin-name"))}\n`;
 
   instruction += "\n😉 Happy coding!";
 

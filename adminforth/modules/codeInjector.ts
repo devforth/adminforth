@@ -5,11 +5,13 @@ import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
+import yaml from 'yaml';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
 import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 import { afLogger } from '../modules/logger.js';
+import { pathToFileURL } from 'url';
 
 
 let TMP_DIR;
@@ -96,7 +98,7 @@ class CodeInjector implements ICodeInjector {
     const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
 
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(this.spaTmpPath() +'/node_modules/' + pkg), name: pkg})))
+      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
     );
 
     const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
@@ -142,15 +144,48 @@ class CodeInjector implements ICodeInjector {
 
   }
 
-  async runNpmShell({command, cwd, envOverrides = {}}: {
+
+  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    const usersPackagePath = path.join(dir, 'package.json');
+    let packageContent: { dependencies: any, devDependencies: any } = null;
+    try {
+      packageContent = JSON.parse(await fs.promises.readFile(usersPackagePath, 'utf-8'));
+    } catch (e) {
+      // user package.json does not exist, user does not have custom components
+    }
+    if (packageContent) {
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
+      try {
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async runPackageManagerShell({command, cwd, envOverrides = {}}: {
     command: string,
     cwd: string,
     envOverrides?: { [key: string]: string }
   }) {
+    
     const nodeBinary = process.execPath; // Path to the Node.js binary running this script
-    // On Windows, npm is npm.cmd, on Unix systems it's npm
-    const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const npmPath = path.join(path.dirname(nodeBinary), npmExecutable); // Path to the npm executable
+    const doesUserHavePnpmLock = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir);
+
+    // On Windows, npm/pnpm is npm/pnpm.cmd, on Unix systems it's npm/pnpm
+    let packageExecutable 
+    if (doesUserHavePnpmLock) {
+      afLogger.trace(`User has pnpm-lock.yaml, using pnpm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+    } else {
+      afLogger.trace(`User does not have pnpm-lock.yaml, falling back to npm for installing custom components`);
+      packageExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    }
+    const packagePath = path.join(path.dirname(nodeBinary), packageExecutable); // Path to the package executable
+
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
       FORCE_COLOR: '1',
@@ -158,38 +193,35 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    afLogger.trace(`⚙️ exec: npm ${command}`);
-    afLogger.trace(`🪲 npm ${command} cwd: ${cwd}`);
-    afLogger.trace(`npm ${command} done in`);
-    
-    // On Windows, execute npm.cmd directly; on Unix, use node + npm
+    afLogger.trace(`⚙️ exec: ${packageExecutable} ${command}`);
+    afLogger.trace(`🪲 ${packageExecutable} ${command} cwd: ${cwd}`);
+
     let execCommand: string;
     if (process.platform === 'win32') {
       // Quote path if it contains spaces
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedPackagePath} ${command}`;
     } else {
       // Quote paths that contain spaces (for Unix systems)
       const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
-      const quotedNpmPath = npmPath.includes(' ') ? `"${npmPath}"` : npmPath;
-      execCommand = `${quotedNodeBinary} ${quotedNpmPath} ${command}`;
+      const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
+      execCommand = `${quotedNodeBinary} ${quotedPackagePath} ${command}`;
     }
     
     const execOptions: any = {
       cwd,
       env,
     };
-    
-    // On Windows, use shell to execute .cmd files
+
     if (process.platform === 'win32') {
       execOptions.shell = true;
     }
-    
-    const { stdout: out, stderr: err } = await execAsync(execCommand, execOptions);
-    afLogger.trace(`npm ${command} done in`);
+
+    const { stderr: err } = await execAsync(execCommand, execOptions);
+    afLogger.trace(`${packageExecutable} ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲npm ${command} errors/warnings: ${err}`);
+      afLogger.trace(`🪲${packageExecutable} ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -207,7 +239,7 @@ class CodeInjector implements ICodeInjector {
     return path.join(this.getSpaDir(), 'dist');
   }
 
-  async packagesFromNpm(dir: string): Promise<[string, string[]]> {
+  async packagesFromPnpm(dir: string): Promise<[string, string[]]> {
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     let lockHash: string = '';
@@ -218,32 +250,71 @@ class CodeInjector implements ICodeInjector {
       // user package.json does not exist, user does not have custom components
     }
     if (packageContent) {
-      const lockPath = path.join(dir, 'package-lock.json');
-      let lock = null;
+      const lockPath = path.join(dir, 'pnpm-lock.yaml');
+      let lock: any = null;
       try {
-        lock = JSON.parse(await fs.promises.readFile(lockPath, 'utf-8'));
+        lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
       } catch (e) {
-        throw new Error(`Custom package-lock.json does not exist in ${dir}, but package.json does. 
-          We can't determine version of packages without package-lock.json. Please run npm install in ${dir}`);
-      }
-      lockHash = hashify(lock);
+        const npmLockPath = path.join(dir, 'package-lock.json');
+        let npmLock: any = null;
+        try {
+          npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
+        } catch (npmLockError) {
+          throw new Error(`Custom pnpm-lock.yaml or package-lock.json does not exist in ${dir}, but package.json does.
+          We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
+        }
 
-      packages = [
-        ...Object.keys(packageContent.dependencies || []),
-        ...Object.keys(packageContent.devDependencies || [])
-      ].reduce(
+        lockHash = hashify(npmLock);
+
+        packages = [
+          ...Object.keys(packageContent.dependencies || {}),
+          ...Object.keys(packageContent.devDependencies || {})
+        ].reduce(
           (acc, packageName) => {
-            const pack = lock.packages[`node_modules/${packageName}`];
-            if (!pack) {
+            const pack = npmLock?.packages?.[`node_modules/${packageName}`];
+            if (!pack?.version) {
               throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
             }
-            const version = pack.version;
 
-            acc.push(`${packageName}@${version}`);
+            acc.push(`${packageName}@${pack.version}`);
+            return acc;
+          }, []
+        );
+
+        return [lockHash, packages];
+      }
+      lockHash = hashify(lock);
+      const importer = lock?.importers?.['.'];
+      if (!importer) {
+        throw new Error(`pnpm-lock.yaml in ${dir} does not contain importer ".". Please run pnpm install in ${dir}`);
+      }
+
+      const importerDeps = {
+        ...(importer.dependencies || {}),
+        ...(importer.devDependencies || {}),
+        ...(importer.optionalDependencies || {}),
+      };
+
+      packages = [
+        ...Object.keys(packageContent.dependencies || {}),
+        ...Object.keys(packageContent.devDependencies || {})
+      ].reduce(
+          (acc, packageName) => {
+            const depInfo = importerDeps[packageName];
+            const raw = typeof depInfo === 'string'
+              ? depInfo
+              : (depInfo?.version || depInfo?.specifier);
+
+            if (!raw) {
+              throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
+            }
+
+            const cleaned = raw.includes('(') ? raw.split('(')[0] : raw;
+
+            acc.push(`${packageName}@${cleaned}`);
             return acc;
           }, []
       );
-      
     }
     return [lockHash, packages];
   }
@@ -653,9 +724,10 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    const spaPackageLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
-    const spaPackageLock = JSON.parse(await fs.promises.readFile(spaPackageLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPackageLock);
+    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
+    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+    const spaLockHash = hashify(spaPnpmLock);
 
     /* customPackageLock */
     let usersLockHash: string = '';
@@ -663,7 +735,7 @@ class CodeInjector implements ICodeInjector {
 
 
     if (this.adminforth.config.customization?.customComponentsDir) {
-      [usersLockHash, usersPackages] = await this.packagesFromNpm(this.adminforth.config.customization.customComponentsDir);
+      [usersLockHash, usersPackages] = await this.packagesFromPnpm(this.adminforth.config.customization.customComponentsDir);
     }
 
     const pluginPackages: {
@@ -675,7 +747,7 @@ class CodeInjector implements ICodeInjector {
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
       afLogger.trace(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
-      const [lockHash, packages] = await this.packagesFromNpm(plugin.customFolderPath);
+      const [lockHash, packages] = await this.packagesFromPnpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
           pluginName: plugin.constructor.name,
@@ -696,18 +768,19 @@ class CodeInjector implements ICodeInjector {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       await this.checkIconNames(icons);
       if (existingHash === fullHash) {
-        afLogger.trace(`🪲Hashes match, skipping npm ci/install, from file: ${existingHash}, actual: ${fullHash}`);
+        afLogger.trace(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with npm ci/install`);
+        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
       }
     } catch (e) {
       // ignore
-      afLogger.trace(`🪲Hash file does not exist, proceeding with npm ci/install, ${e}`);
+      afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
-    await this.runNpmShell({command: 'ci', cwd: this.spaTmpPath(), envOverrides: { 
-      NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+    // install --frozen-lockfile works for npm and pnpm
+    await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
+      NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
     }}); 
 
     const allPacks = [
@@ -726,11 +799,11 @@ class CodeInjector implements ICodeInjector {
     const allPacksUnique = Array.from(new Set(allPacksFiltered));
 
     if (allPacks.length) {
-      const npmInstallCommand = `install ${allPacksUnique.join(' ')}`;
-      await this.runNpmShell({
-        command: npmInstallCommand, cwd: this.spaTmpPath(), 
+      const packageManagerInstallCommand = `install ${allPacksUnique.join(' ')}`;
+      await this.runPackageManagerShell({
+        command: packageManagerInstallCommand, cwd: this.spaTmpPath(), 
         envOverrides: { 
-          NODE_ENV: 'development' // othewrwise it will not install devDependencies which we still need, e.g for extract
+          NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
         }
       });
     }
@@ -890,6 +963,51 @@ class CodeInjector implements ICodeInjector {
     return md5hash(hashes.join(''));
   }
 
+  // Compute a map of file relative paths -> md5 hash of file contents and return it.
+  // Skips directories/files that are ignored by computeSourcesHash (node_modules, dist, i18n files).
+  async computeSourcesHashMap(folderPath: string = this.spaTmpPath(), rootFolder: string = this.spaTmpPath(), map: { [key: string]: string } = {}): Promise<{ [key: string]: string }> {
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(folderPath, file.name);
+
+        // 🚫 Skip big/dynamic folders or files
+        if (file.name === 'node_modules' || file.name === 'dist' ||
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+          return;
+        }
+
+        if (file.isDirectory()) {
+          return await this.computeSourcesHashMap(filePath, rootFolder, map);
+        } else {
+          try {
+            const content = await fs.promises.readFile(filePath, 'utf-8');
+            const hash = md5hash(content);
+            // store relative path using forward slashes for portability
+            const rel = path.relative(rootFolder, filePath).split(path.sep).join('/');
+            map[rel] = hash;
+          } catch (e) {
+            // If a file can't be read (binary or permission), log and continue
+            afLogger.trace(`🪲File ${filePath} read error: ${e}`);
+            return;
+          }
+        }
+      })
+    );
+
+    return map;
+  }
+
+  // Convenience helper: compute per-file hashes and save them into hashes.json in the spa tmp dir
+  async saveSourcesHashesToFile(outputFileName: string = 'hashes.json', hashMap: { [key: string]: string } = {}): Promise<string> {
+    const root = this.spaTmpPath();
+    const outPath = path.join(root, outputFileName);
+    await fs.promises.writeFile(outPath, JSON.stringify(hashMap, null, 2), 'utf-8');
+    afLogger.trace(`🪲 Saved sources hashes to ${outPath}`);
+    return outPath;
+  }
+
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
     afLogger.info(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
@@ -919,7 +1037,7 @@ class CodeInjector implements ICodeInjector {
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
-
+    console.log({buildHash, sourcesHash});
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
@@ -938,7 +1056,7 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!skipExtract) {
-      await this.runNpmShell({command: 'run i18n:extract', cwd});
+      await this.runPackageManagerShell({command: 'run i18n:extract', cwd});
       
       // create serveDir if not exists
       await fs.promises.mkdir(serveDir, { recursive: true });
@@ -953,23 +1071,70 @@ class CodeInjector implements ICodeInjector {
     }
 
     if (!hotReload) {
-      if (!skipBuild) {
-        
+      if (!skipBuild) {     
+        console.log(`🪲 Build cache miss, building SPA...`);
+        let oldHashForFiles = null;
+        try {
+          oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
+        } catch (e) {
+          // ignore if file doesn't exist, it is only for debugging
+          console.log(`Build cache not found, building now (downtime) please consider running npx adminforth bundle at build time to avoid downtimes at runtime`);
+        }
+        const root = this.spaTmpPath();
+        const hashMap = await this.computeSourcesHashMap(root, root, {});
+        if (oldHashForFiles) {
+          const parsedOldHashForFiles = JSON.parse(oldHashForFiles);
+          const logsToDisplay = [];
+          logsToDisplay.push(`Build cache exists but is outdated:`);
+          for(const [file, hash] of Object.entries(hashMap)) {
+            if (!parsedOldHashForFiles[file]) {
+              logsToDisplay.push(`   - file ${file} - does not exist in cache but exists in runtime`);
+            } else if (parsedOldHashForFiles[file] !== hash) {
+              logsToDisplay.push(`   - file ${file} - content in cache is different then in runtime`);
+            }
+          }
+          /**
+           * Currently we can't detect, if file was removed, 
+           * because we can only add files to the tpm folder but not remove them, 
+           * so if file existed before and now doesn't exist, we will not detect it
+           */
+
+          // for(const [file, hash] of Object.entries(parsedOldHashForFiles)) {
+          //   console.log(`checking file ${file} in old hash: ${hash}`);
+          //   console.log(`checking file ${file} in new hash: ${hashMap[file]}`);
+          //   if (!hashMap[file]) {
+          //     logsToDisplay.push(`   - file ${file} - exists in cache but does not exist in runtime`);
+          //   }
+          // }
+
+          logsToDisplay.push(`If you are running in production now, then the cache loss is a downtime issue.`);
+          logsToDisplay.push(`If you have npx adminforth bundle in build time, then this issue might be caused by conditional instantiation of plugins:`)
+          logsToDisplay.push(`Please avoid constructions like (process.env.SOME_KEY ? new Plugin(...) ) because if you will miss SOME_KEY in build time build cache and functionality fails.`);
+          if (logsToDisplay.length > 4) {
+            for(const log of logsToDisplay) {
+              console.log(log);
+            }
+          }
+        }
+
         // TODO probably add option to build with tsh check (plain 'build')
-        await this.runNpmShell({command: 'run build-only', cwd});
+        await this.runPackageManagerShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
         await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
 
         // save hash
         await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
+        // save sources hashes to file for later debugging if needed
+        await this.saveSourcesHashesToFile('hashes.json', hashMap);
       } else {
         afLogger.info(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
       }
     } else {
 
       const command = 'run dev';
-      afLogger.info(`⚙️ spawn: npm ${command}...`);
+      const usersPackageManager = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir) ? 'pnpm' : 'npm';
+      afLogger.info(`⚙️ spawn: ${usersPackageManager} ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
         afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
@@ -978,15 +1143,15 @@ class CodeInjector implements ICodeInjector {
         FORCE_COLOR: '1',
         ...process.env,
       };
-
+      
       const nodeBinary = process.execPath;
-      const npmPath = path.join(path.dirname(nodeBinary), 'npm');
+      const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
       
       let devServer;
       if (process.platform === 'win32') {
-        devServer = spawn('npm', command.split(' '), { cwd, env, shell: true });
+        devServer = spawn(usersPackageManager, command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(`${nodeBinary}`, [`${npmPath}`, ...command.split(' ')], { cwd, env });
+        devServer = spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
