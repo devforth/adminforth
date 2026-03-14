@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
@@ -68,8 +68,37 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const sampleRow = sampleRowRes.rows[0] ?? {};
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
-      
-    async discoverFields(resource) {
+    
+    async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<void> {
+        const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
+        if (!cascadeColumn) return;
+
+        const parentResource = config.resources.find(r => r.resourceId === cascadeColumn.foreignResource.resourceId);
+        if (!parentResource) return;
+
+        const res = await this.client.query(
+            `
+            SELECT 1
+            FROM pg_constraint
+            WHERE contype = 'f'
+                AND confrelid = ($2 || '.' || $1)::regclass
+                AND conrelid = ($2 || '.' || $3)::regclass
+                AND confdeltype = 'c'
+            LIMIT 1
+                    `,
+            [parentResource.table, schema, resource.table ]
+        );
+
+        const hasCascadeOnTable = res.rowCount > 0;
+        const isUploadPluginInstalled = resource.plugins?.some(p => p.className === "UploadPlugin");
+
+        if (hasCascadeOnTable && isUploadPluginInstalled) {
+            afLogger.warn(`Table "${resource.table}" has ON DELETE CASCADE and installed upload plugin, which may conflict with adminForth cascade deletion`);
+        }
+    }
+
+    async discoverFields(resource: AdminForthResource, config: AdminForthConfig) {
+        await this.checkForeignResourceCascade(resource, config);
 
         const tableName = resource.table;
         const stmt = await this.client.query(`

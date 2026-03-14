@@ -15,6 +15,8 @@ import {
   Filters,
 } from "../types/Back.js";
 
+import {cascadeChildrenDelete} from './utils.js'
+
 import { afLogger } from "./logger.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
@@ -126,7 +128,7 @@ export async function interpretResource(
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
-
+  
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
   }
@@ -1479,6 +1481,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const { allowed, error } = checkAccess(AllowedActionsEnum.delete, allowedActions);
             if (!allowed) {
               return { error };
+            }
+
+            const { error: cascadeError } = await cascadeChildrenDelete(resource, body.primaryKey, {adminUser, response}, this.adminforth);
+            if (cascadeError) {
+              return { error: cascadeError };
             }
 
             const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 

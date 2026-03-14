@@ -9,7 +9,7 @@ Also, it allows previewing of Markdown fields in the show page.
 To install the plugin:
 
 ```bash
-npm install @adminforth/markdown --save
+pnpm install @adminforth/markdown --save
 ```
 
 ### Usage
@@ -51,12 +51,12 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image ; npm run migrate:local
+pnpm makemigration --name add_description_image ; pnpm migrate:local
 ```
 
 ```bash
-npm i @adminforth/upload --save
-npm i @adminforth/storage-adapter-local --save
+pnpm i @adminforth/upload --save
+pnpm i @adminforth/storage-adapter-local --save
 ```
 
 ```typescript title="./resources/description_images.ts"

@@ -59,6 +59,10 @@ class AdminForth implements IAdminForth {
       return await AdminForthAuth.generatePasswordHash(password);
     },
 
+    verifyPassword: async (password, hash) => {
+      return await AdminForthAuth.verifyPassword(password, hash);
+    },
+
     applyRegexValidation(value, validation) {
       if (validation?.length) {
         const validationArray = validation;
@@ -419,7 +423,7 @@ class AdminForth implements IAdminForth {
       }
       let fieldTypes = null;
       try {
-        fieldTypes = await this.connectors[res.dataSource].discoverFields(res);
+        fieldTypes = await this.connectors[res.dataSource].discoverFields(res, this.config);
       } catch (e) {
         afLogger.error(`Error discovering fields for resource '${res.table}' (In resource '${res.resourceId}') ${e}`);
       }
