@@ -8,9 +8,7 @@
         'pl-6 pr-3.5': (isChild && !isSidebarIconOnly && !isSidebarHovering) || (isChild && isSidebarIconOnly && isSidebarHovering),
         'px-3.5 ': !isChild || (isSidebarIconOnly && !isSidebarHovering),
         'max-w-12': isSidebarIconOnly && !isSidebarHovering,
-        'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': item.url ? ($route.fullPath === item.url) : (item.resourceId ?
-        ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
-        ($route.name === item.path))
+        'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': isItemActive(item)
       }"
   >
     <component v-if="item.icon" :is="getIcon(item.icon)" 
@@ -62,6 +60,21 @@ import { Tooltip } from '@/afcl';
 import { ref, watch, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { IconFileImageOutline } from '@iconify-prerendered/vue-flowbite';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const isItemActive = (item: any) => {
+  if (item.url) {
+    return route.fullPath === item.url;
+  }
+
+  if (item.resourceId) {
+    return route.params.resourceId === item.resourceId && route.name === 'resource-list';
+  }
+
+  return route.name === item.path;
+};
 
 const props = defineProps(['item', 'isChild', 'isSidebarIconOnly', 'isSidebarHovering']);
 
