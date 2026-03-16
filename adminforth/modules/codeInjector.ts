@@ -724,11 +724,16 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
-    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
-    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPnpmLock);
-
+    let spaLockHash = '';
+    if (await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir)) {
+      const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+      const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaPnpmLock);
+    } else {
+      const spaNpmLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
+      const spaNpmLock = JSON.parse(await fs.promises.readFile(spaNpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaNpmLock);
+    }
     /* customPackageLock */
     let usersLockHash: string = '';
     let usersPackages: string[] = [];
@@ -946,7 +951,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return '';
         }
 
@@ -974,7 +981,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big/dynamic folders or files
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return;
         }
 
@@ -1041,9 +1050,7 @@ class CodeInjector implements ICodeInjector {
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
-    afLogger.trace(`🪲 SPA build hash: ${buildHash}`);
     afLogger.trace(`🪲 SPA messages hash: ${messagesHash}`);
-    afLogger.trace(`🪲 SPA sources hash: ${sourcesHash}`);
 
     if (!skipBuild) {
       // remove serveDir if exists
@@ -1072,7 +1079,7 @@ class CodeInjector implements ICodeInjector {
 
     if (!hotReload) {
       if (!skipBuild) {     
-        console.log(`🪲 Build cache miss, building SPA...`);
+        console.log(`🪲 Build cache miss or outdated, building SPA...`);
         let oldHashForFiles = null;
         try {
           oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
