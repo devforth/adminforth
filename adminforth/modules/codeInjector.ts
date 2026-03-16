@@ -946,7 +946,7 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
           return '';
         }
 
@@ -1072,7 +1072,7 @@ class CodeInjector implements ICodeInjector {
 
     if (!hotReload) {
       if (!skipBuild) {     
-        console.log(`🪲 Build cache miss, building SPA...`);
+        console.log(`🪲 Build cache miss or outdated, building SPA...`);
         let oldHashForFiles = null;
         try {
           oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
