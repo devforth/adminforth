@@ -511,7 +511,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         query: `ALTER TABLE ${this.dbName}.${resource.table} DELETE WHERE ${conditions}`,
         query_params: queryParams,
       });
-      return recordIds.length ?? 0;
+      return recordIds.length;
     }
 
     close() {

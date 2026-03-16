@@ -383,6 +383,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }
 
     async deleteMany({ resource, recordIds }: { resource: AdminForthResource, recordIds: any[] }): Promise<number> {
+      if (!recordIds || recordIds.length === 0) {
+        return 0;
+      }
       const placeholders = recordIds.map(() => '?').join(',');
       const q = this.client.prepare(`DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} IN (${placeholders})`);
       const res = await q.run(...recordIds);
