@@ -382,7 +382,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       return res.changes > 0;
     }
 
-    async deleteMany({ resource, recordIds }: { resource: AdminForthResource, recordIds: string }): Promise<number> {
+    async deleteMany({ resource, recordIds }: { resource: AdminForthResource, recordIds: string[] }): Promise<number> {
       if (!recordIds || recordIds.length === 0) {
         return 0;
       }
