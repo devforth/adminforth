@@ -733,11 +733,16 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
-    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
-    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPnpmLock);
-
+    let spaLockHash = '';
+    if (await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir)) {
+      const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+      const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaPnpmLock);
+    } else {
+      const spaNpmLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
+      const spaNpmLock = JSON.parse(await fs.promises.readFile(spaNpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaNpmLock);
+    }
     /* customPackageLock */
     let usersLockHash: string = '';
     let usersPackages: string[] = [];
@@ -1050,9 +1055,7 @@ class CodeInjector implements ICodeInjector {
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
-    afLogger.trace(`🪲 SPA build hash: ${buildHash}`);
     afLogger.trace(`🪲 SPA messages hash: ${messagesHash}`);
-    afLogger.trace(`🪲 SPA sources hash: ${sourcesHash}`);
 
     if (!skipBuild) {
       // remove serveDir if exists
