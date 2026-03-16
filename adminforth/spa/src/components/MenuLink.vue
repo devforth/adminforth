@@ -1,15 +1,14 @@
 <template>
   <RouterLink 
-      :to="{name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
+      :to="item.url || { name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
+      :target="item.isOpenInNewTab ? '_blank' : '_self'"
       class="af-menu-link flex group relative items-center w-full py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default transition-all duration-200 ease-in-out" 
       :class="{ 
         'hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover active:bg-lightSidebarActive dark:active:bg-darkSidebarHover': !['divider', 'gap', 'heading'].includes(item.type),
         'pl-6 pr-3.5': (isChild && !isSidebarIconOnly && !isSidebarHovering) || (isChild && isSidebarIconOnly && isSidebarHovering),
         'px-3.5 ': !isChild || (isSidebarIconOnly && !isSidebarHovering),
         'max-w-12': isSidebarIconOnly && !isSidebarHovering,
-        'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': item.resourceId ?
-        ($route.params.resourceId === item.resourceId && $route.name === 'resource-list') :
-        ($route.name === item.path)
+        'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': isItemActive(item)
       }"
   >
     <component v-if="item.icon" :is="getIcon(item.icon)" 
@@ -61,6 +60,21 @@ import { Tooltip } from '@/afcl';
 import { ref, watch, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { IconFileImageOutline } from '@iconify-prerendered/vue-flowbite';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const isItemActive = (item: any) => {
+  if (item.url) {
+    return route.fullPath === item.url;
+  }
+
+  if (item.resourceId) {
+    return route.params.resourceId === item.resourceId && route.name === 'resource-list';
+  }
+
+  return route.name === item.path;
+};
 
 const props = defineProps(['item', 'isChild', 'isSidebarIconOnly', 'isSidebarHovering']);
 
