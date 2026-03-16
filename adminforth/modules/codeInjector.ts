@@ -446,15 +446,7 @@ class CodeInjector implements ICodeInjector {
     const spaDir = this.getSpaDir();
 
     afLogger.trace(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
-    let isPackageJsonInSpaFolder = false;
 
-    try {
-      await fs.promises.access(path.join(this.spaTmpPath(), 'package.json'));
-      isPackageJsonInSpaFolder = true;
-      afLogger.trace('🪲⚙️ package.json is in spa tmp folder, will not copy package.json from user spa folder to not break cache');
-    } catch (e) {
-      afLogger.trace('🪲⚙️ package.json is not in spa tmp folder, will copy package.json from user spa folder if it exists');
-    }
     // try to rm <spa tmp path>/src/types directory 
     try {
       await fs.promises.rm(path.join(this.spaTmpPath(), 'src', 'types'), { recursive: true });
@@ -468,8 +460,7 @@ class CodeInjector implements ICodeInjector {
       filter: (src) => {
         // /adminforth/* used for local development and /dist/* used for production
         const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
-                          && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`)
-                          && !(isPackageJsonInSpaFolder && (src.endsWith('package.json') || src.endsWith('package-lock.json') || src.endsWith('pnpm-lock.yaml'))); // if package.json is in spa folder, don't copy it, to not break cache
+                          && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
         if (!filterPasses) {
           afLogger.trace(`🪲⚙️ fsExtra.copy filtered out, ${src}`);
         }
@@ -960,7 +951,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return '';
         }
 
@@ -988,7 +981,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big/dynamic folders or files
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return;
         }
 
