@@ -397,7 +397,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         return res.deletedCount > 0;
     }
 
-    async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: any[] }): Promise<number> {
+    async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: string }): Promise<number> {
         if (!recordIds || recordIds.length === 0) {
             return 0;
         }
