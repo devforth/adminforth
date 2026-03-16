@@ -18,7 +18,7 @@
     "build": "rm -rf dist && tsc && pnpm prepareDist",
     "--comment-prepareDist": "-rl allows supply the spa without symlinks which allows to not include source code in the package",
     "prepareDist": "cp -rL spa dist/",
-    "rollout-doc": "cd documentation && pnpm build && pnpm deploy",
+    "rollout-doc": "cd documentation && pnpm build && pnpm run deploy",
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do pnpm i in the package",
     "postinstall": "node scripts/postinstall.js"  
