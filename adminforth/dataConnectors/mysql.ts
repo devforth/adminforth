@@ -420,7 +420,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return res.rowCount > 0;
   }
 
-  async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: string }): Promise<number> {
+  async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: string[] }): Promise<number> {
     if (!recordIds || recordIds.length === 0) {
       return 0;
     }
