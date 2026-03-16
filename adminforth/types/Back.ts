@@ -1760,6 +1760,8 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
+  
+  deleteMany?(recordIds: any[]): Promise<number>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }
