@@ -333,7 +333,18 @@
 
     <!-- <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button> -->
 
+    <Select
+      class="w-full"
+      :options="[
+        {label: 'Last 7 days', value: '7'}, 
+        {label: 'Last 30 days', value: '30'}, 
+        {label: 'Last 90 days', value: '90'},
+      ]"
+      v-model="selected"
+      classesForInput="py-[4px] text-sm bg-white rounded"
+    >
 
+    </Select>
 
   </div>
 
