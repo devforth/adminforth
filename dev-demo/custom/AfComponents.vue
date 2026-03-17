@@ -346,6 +346,24 @@
 
     </Select>
 
+    <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
+
   </div>
 
 
@@ -380,6 +398,8 @@ import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
 import { callApi } from '@/utils';
+import { JsonViewer } from '@/afcl'
+
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
