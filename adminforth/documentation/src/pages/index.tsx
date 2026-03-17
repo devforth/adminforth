@@ -112,6 +112,18 @@ const images = [
     link: '/docs/tutorial/Plugins/bulk-ai-flow/',
     description: 'Use LLMs to fill records with generated data or images. For example, generate product descriptions based on product name and image or generate products images'
   },
+  {
+    original: require('@site/static/img/previews/quick-filters.png').default,
+    title: 'Quick Filters Plugin - filter your data quickly',
+    link: '/docs/tutorial/Plugins/quick-filters/',
+    description: 'Use quick filters to filter your data efficiently. Create custom filters and apply them with a single click'
+  },
+  {
+    original: require('@site/static/img/previews/background-jobs.png').default,
+    title: 'Background Jobs Plugin - manage your background tasks',
+    link: '/docs/tutorial/Plugins/background-jobs/',
+    description: 'Use background jobs to handle long-running tasks efficiently. Schedule, monitor, and manage your background processes with ease even after server restarts'
+  },
 ];
 
 

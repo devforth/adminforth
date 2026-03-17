@@ -243,19 +243,16 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       new QuickFiltersPlugin({
         filters: [
           {
-            name: 'Listed',
+            name: 'Price',
             enum: [
-              { label: 'Listed', filters: () => Filters.EQ('listed', true) }, 
-              { label: 'Not listed', filters: () => Filters.EQ('listed', false) },
+              { label: 'Budget-Friendly', filters: () => Filters.AND(Filters.GTE('price', '0'), Filters.LTE('price', '3500')) }, 
+              { label: 'Mid-Range', filters: () => Filters.AND(Filters.GTE('price', '3501'), Filters.LTE('price', '7000')) }, 
+              { label: 'Premium', filters: () => Filters.AND(Filters.GTE('price', '7001'), Filters.LTE('price', '10000')) }, 
             ]
           },
           {
             name: 'Model',
             searchInput: (searchVal) => Filters.ILIKE('model', searchVal)
-          },
-          {
-            name: 'Price',
-            searchInput: (searchVal) => Filters.ILIKE('price', searchVal)
           },
         ]
       }),
