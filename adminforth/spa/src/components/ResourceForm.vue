@@ -65,7 +65,7 @@
 
 import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, checkShowIf } from '@/utils';
 import { computedAsync } from '@vueuse/core';
-import { computed, onMounted, reactive, ref, watch, provide, type Ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch, provide, type Ref, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
@@ -329,7 +329,13 @@ const editableColumns = computed(() => {
   return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value, props.resource.columns) : true));
 });
 
-const isValid = computed(() => {
+const isValid = computed(async () => {
+  console.log('Recomputing validity');
+  if (props.validating) {
+    //Here I need to add debounce 
+    const isValid = await validateUsingUserValidationFunction(editableColumns.value);
+  }
+  console.log('Returning validity ', editableColumns.value?.every(column => !columnError(column)));
   return editableColumns.value?.every(column => !columnError(column));
 });
 
@@ -377,9 +383,33 @@ provide('columnLoadingState', columnLoadingState);
 provide('onSearchInput', onSearchInput);
 provide('loadMoreOptions', loadMoreOptions);
 
-watch(() => isValid.value, (value) => {
-  emit('update:isValid', value);
+watch(() => isValid.value, async (value) => {
+  const resolvedValue = value instanceof Promise ? await value : value;
+  emit('update:isValid', resolvedValue);
 });
+
+async function validateUsingUserValidationFunction(editableColumns: AdminForthResourceColumnCommon[]): Promise<Boolean> {
+  console.log('Checking for custom validation functions in columns ', editableColumns);
+  const doesUserHaveCustomValidation = props.resource.columns.some(column => column.validator);
+  if (doesUserHaveCustomValidation) {
+    console.log('Custom validation functions found, validating...');
+    try {
+      const res = await callAdminForthApi({
+        method: 'POST',
+        path: '/validate_columns',
+        body: {
+          resourceId: props.resource.resourceId,
+          editableColumns: editableColumns.map(col => {return {name: col.name, value: currentValues.value?.[col.name]} }),
+          record: currentValues.value,
+        }
+      })
+    } catch (e) {
+      console.error('Error during custom validation', e);
+      return false;
+    }
+  }
+  return true;
+}
 
 defineExpose({
   columnError,

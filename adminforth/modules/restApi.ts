@@ -606,6 +606,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                         col.validation.map(async (val) => {
                           return  {
                             ...val,
+                            customValidator: val.validator ? true: false,
                             message: await tr(val.message, `resource.${resource.resourceId}`),
                           }
                         })
@@ -1586,7 +1587,38 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
-
+    server.endpoint({
+      method: 'POST',
+      path: '/validate_columns',
+      handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
+        const { resourceId, editableColumns, record } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource '${resourceId}' not found` };
+        }
+        const validationResults = {};
+        for (const col of editableColumns) {
+          const columnConfig = resource.columns.find((c) => c.name === col.name);
+          if (columnConfig && columnConfig.validation)  {
+            for (const val of columnConfig.validation) {
+              if (val.validator) {
+                const result = await val.validator(col.value, record, this.adminforth);
+                if (result.isValid === false) {
+                  validationResults[col.name] = {
+                    isValid: result.isValid,
+                    message: result.message,
+                  }
+                  break;
+                }
+              }
+            }
+          }
+        }
+        return {
+          validationResults
+        }
+      }
+    });
     // setup endpoints for all plugins
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);
