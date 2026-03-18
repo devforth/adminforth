@@ -112,6 +112,7 @@ const columnOffsets = reactive<Record<string, number>>({});
 const columnEmptyResultsCount = reactive<Record<string, number>>({});
 const columnsWithErrors = ref<Record<string, string>>({});
 const isValidating = ref(false);
+const isValid = ref(true);
 
 const columnError = (column: AdminForthResourceColumnCommon) => {
   const val = computed(() => {
@@ -351,21 +352,31 @@ function checkIfColumnHasError(column: AdminForthResourceColumnCommon) {
   }
 }
 
-const isValid = computed(async () => {
+const checkIfAnyColumnHasErrors = () => {
+  return Object.keys(columnsWithErrors.value).length > 0 ? false : true;
+}
+
+const debouncedValidation = debounce(async (columns: AdminForthResourceColumnCommon[]) => {
+  await mutex.runExclusive(async () => {
+    await validateUsingUserValidationFunction(columns);
+  });
+  isValidating.value = false;
+  isValid.value = checkIfAnyColumnHasErrors();
+}, 500);
+
+watch(() => [editableColumns.value, props.validating], async () => {
   editableColumns.value?.forEach(column => {
     checkIfColumnHasError(column);
   });
 
   isValidating.value = true;
-  let isValid = true;
   if (props.validating) {
     //Here I need to add debounce 
-    await mutex.runExclusive(async () => {
-      isValid = await validateUsingUserValidationFunction(editableColumns.value);
-    });
+    debouncedValidation(editableColumns.value);
+  } else {
+    isValidating.value = false;
+    isValid.value = checkIfAnyColumnHasErrors();
   }
-  isValidating.value = false;
-  return Object.keys(columnsWithErrors.value).length > 0 ? false : true;
 });
 
 
@@ -417,7 +428,7 @@ watch(() => isValid.value, async (value) => {
   emit('update:isValid', resolvedValue);
 });
 
-async function validateUsingUserValidationFunction(editableColumnsInner: AdminForthResourceColumnCommon[]): Promise<boolean> {
+async function validateUsingUserValidationFunction(editableColumnsInner: AdminForthResourceColumnCommon[]): Promise<void> {
   const doesUserHaveCustomValidation = props.resource.columns.some(column => column.validation && column.validation.some((val: any) => val.customValidator));
   if (doesUserHaveCustomValidation) {
     try {
@@ -450,10 +461,8 @@ async function validateUsingUserValidationFunction(editableColumnsInner: AdminFo
 
     } catch (e) {
       console.error('Error during custom validation', e);
-      return false;
     }
   }
-  return true;
 }
 
 defineExpose({
