@@ -20,6 +20,7 @@
     "@unhead/vue": "^1.9.12",
     "@vueuse/core": "^10.10.0",
     "apexcharts": "^4.7.0",
+    "async-mutex": "^0.5.0",
     "dayjs": "^1.11.11",
     "debounce": "^2.1.0",
     "flowbite-datepicker": "^1.2.6",
