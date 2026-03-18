@@ -19,7 +19,7 @@
       <button
         @click="() => saveRecord()"
         class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
-        :disabled="saving || (validating && !isValid)"
+        :disabled="saving || (validatingMode && !isValid)"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
         {{ $t('Save') }}
@@ -50,7 +50,7 @@
       :adminUser="coreStore.adminUser"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
-      :validating="validating"
+      :validating="validatingMode"
       :source="'edit'"
     >
     </ResourceForm>
@@ -90,7 +90,7 @@ const coreStore = useCoreStore();
 const { clearSaveInterceptors, runSaveInterceptors, alert, confirm } = useAdminforth();
 
 const isValid = ref(false);
-const validating = ref(false);
+const validatingMode = ref(false);
 
 const route = useRoute();
 const router = useRouter();
@@ -179,13 +179,22 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
+  validatingMode.value = true;
+  await nextTick();
+  //wait for response for the user validation function if it exists
+  while (1) {
+    if (resourceFormRef.value?.isValidating) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } else {
+      break;
+    }
+  }
   if (!isValid.value) {
-    validating.value = true;
     await nextTick();
     scrollToInvalidField();
     return;
   } else {
-    validating.value = false;
+    validatingMode.value = false;
   }
 
   saving.value = true;
@@ -258,9 +267,11 @@ async function saveRecord() {
 function scrollToInvalidField() {
   let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
   for (const column of resourceFormRef.value?.editableColumns || []) {
-    const error = resourceFormRef.value?.columnError(column);
-    if (error) {
-      columnsWithErrors.push({column, error});
+    if (resourceFormRef.value?.columnsWithErrors[column.name]) {
+      columnsWithErrors.push({
+        column,
+        error: resourceFormRef.value?.columnsWithErrors[column.name]
+      });
     }
   }
   const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';

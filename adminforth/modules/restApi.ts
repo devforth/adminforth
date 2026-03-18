@@ -603,10 +603,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
-                        col.validation.map(async (val) => {
+                        col.validation.map(async (val, index) => {
                           return  {
                             ...val,
-                            customValidator: val.validator ? true: false,
+                            customValidator: inCol.validation[index].validator ? true: false,
                             message: await tr(val.message, `resource.${resource.resourceId}`),
                           }
                         })
