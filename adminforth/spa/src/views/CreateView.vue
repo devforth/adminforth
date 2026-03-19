@@ -195,9 +195,6 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
-  const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
-  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
-
   const interceptorsResult = await saveRecordPreparations(
     'create', 
     validatingMode, 
@@ -210,6 +207,9 @@ async function saveRecord() {
     coreStore, 
     route
   );
+
+  const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
+  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
 
   const interceptorConfirmationResult = (interceptorsResult.extra as Record<string, any>)?.confirmationResult;
   const response = await callAdminForthApi({
