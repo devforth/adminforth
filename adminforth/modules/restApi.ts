@@ -606,7 +606,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                         col.validation.map(async (val, index) => {
                           return  {
                             ...val,
-                            customValidator: inCol.validation[index].validator ? true: false,
+                            validator: inCol.validation[index].validator ? true: false,
                             message: await tr(val.message, `resource.${resource.resourceId}`),
                           }
                         })
@@ -1603,7 +1603,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             for (const val of columnConfig.validation) {
               if (val.validator) {
                 const result = await val.validator(col.value, record, this.adminforth);
-                if (result.isValid === false) {
+                if (typeof result === 'object' && result.isValid === false) {
                   validationResults[col.name] = {
                     isValid: result.isValid,
                     message: result.message,
