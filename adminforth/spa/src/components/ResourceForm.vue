@@ -71,7 +71,7 @@
 
 import { applyRegexValidation, callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, checkShowIf } from '@/utils';
 import { computedAsync } from '@vueuse/core';
-import { computed, onMounted, reactive, ref, watch, provide, type Ref, watchEffect } from 'vue';
+import { computed, onMounted, reactive, ref, watch, provide, type Ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
@@ -83,7 +83,6 @@ import debounce from 'lodash.debounce';
 const { t } = useI18n();
 
 const mutex = new Mutex();
-
 
 const coreStore = useCoreStore();
 const router = useRouter();
@@ -372,7 +371,6 @@ watch(() => [editableColumns.value, props.validatingMode], async () => {
   });
 
   if (props.validatingMode) {
-    //Here I need to add debounce 
     debouncedValidation(editableColumns.value);
   } else {
     isValidating.value = false;
@@ -424,7 +422,7 @@ provide('columnLoadingState', columnLoadingState);
 provide('onSearchInput', onSearchInput);
 provide('loadMoreOptions', loadMoreOptions);
 
-watch(() => isValid.value, async (value) => {
+watch(() => isValid.value, (value) => {
   emit('update:isValid', value);
 });
 
