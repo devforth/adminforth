@@ -58,9 +58,8 @@
               :readonly="readonlyColumns?.includes(column.name)"
               :columnsWithErrors="columnsWithErrors"
               :isValidating="isValidating"
+              :validatingMode="validatingMode"
             />
-            <div v-if="columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
-            <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>
       </tbody>
