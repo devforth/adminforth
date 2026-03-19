@@ -111,7 +111,9 @@ const columnOffsets = reactive<Record<string, number>>({});
 const columnEmptyResultsCount = reactive<Record<string, number>>({});
 const columnsWithErrors = ref<Record<string, string>>({});
 const isValidating = ref(false);
+const blockSettingIsValidating = ref(false);
 const isValid = ref(true);
+const doesUserHaveCustomValidation = computed(() => props.resource.columns.some(column => column.validation && column.validation.some((val) => val.validator)));
 
 const columnError = (column: AdminForthResourceColumnCommon) => {
   const val = computed(() => {
@@ -359,24 +361,30 @@ const debouncedValidation = debounce(async (columns: AdminForthResourceColumnCom
   await mutex.runExclusive(async () => {
     await validateUsingUserValidationFunction(columns);
   });
-  isValidating.value = false;
+  setIsValidatingValue(false);
   isValid.value = checkIfAnyColumnHasErrors();
 }, 500);
 
 watch(() => [editableColumns.value, props.validatingMode], async () => {
-  isValidating.value = true;
+  setIsValidatingValue(true);
   
   editableColumns.value?.forEach(column => {
     checkIfColumnHasError(column);
   });
 
-  if (props.validatingMode) {
+  if (props.validatingMode && doesUserHaveCustomValidation.value) {
     debouncedValidation(editableColumns.value);
   } else {
-    isValidating.value = false;
+    setIsValidatingValue(false);
     isValid.value = checkIfAnyColumnHasErrors();
   }
 });
+
+const setIsValidatingValue = (value: boolean) => {
+  if (!blockSettingIsValidating.value) {
+    isValidating.value = value;
+  }
+}
 
 
 const groups = computed(() => {
@@ -427,9 +435,9 @@ watch(() => isValid.value, (value) => {
 });
 
 async function validateUsingUserValidationFunction(editableColumnsInner: AdminForthResourceColumnCommon[]): Promise<void> {
-  const doesUserHaveCustomValidation = props.resource.columns.some(column => column.validation && column.validation.some((val) => val.validator));
-  if (doesUserHaveCustomValidation) {
+  if (doesUserHaveCustomValidation.value) {
     try {
+      blockSettingIsValidating.value = true;
       const res = await callAdminForthApi({
         method: 'POST',
         path: '/validate_columns',
@@ -456,9 +464,10 @@ async function validateUsingUserValidationFunction(editableColumnsInner: AdminFo
           checkIfColumnHasError(column);
         });
       }
-
+      blockSettingIsValidating.value = false;
     } catch (e) {
       console.error('Error during custom validation', e);
+      blockSettingIsValidating.value = false;
     }
   }
 }
