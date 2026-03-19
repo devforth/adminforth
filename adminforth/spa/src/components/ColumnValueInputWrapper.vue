@@ -53,7 +53,9 @@
     @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
     @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
   />
-  <Spinner v-if="shouldWeShowSpinner" class="w-3 absolute top-1.5 left-3.5"/>
+  <div v-if="columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
+  <Spinner v-if="shouldWeShowSpinner" class="w-4 mt-1"/>
+  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
 </template>
   
 <script setup lang="ts">
@@ -72,7 +74,8 @@
     setCurrentValue: Function,
     readonly?: boolean,
     columnsWithErrors: Record<string, string>,
-    isValidating: boolean
+    isValidating: boolean,
+    validatingMode: boolean,
   }>();
 
   const shouldWeShowSpinner = ref(false);
