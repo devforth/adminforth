@@ -170,3 +170,38 @@ plugins: [
     }),
 ]
 ```
+
+### Markdown Top Panel
+The Markdown plugin also provides a convenient top panel with formatting buttons, allowing users to quickly apply Markdown syntax without typing it manually.
+
+By default, the toolbar includes common formatting actions such as:
+- Bold
+- Italic
+- Underline
+- Strikethrough
+- Headings (H1, H2, H3)
+- Lists (ordered and unordered)
+- Links
+- Code blocks
+
+If some buttons are unnecessary for your use case, you can easily disable them using the topPanelSettings option.
+
+```typescript title="./resources/apartments.ts"
+import MarkdownPlugin from '@adminforth/markdown';
+
+// ... existing resource configuration ...
+
+plugins: [
+  new MarkdownPlugin({
+  fieldName: "description",
+  // diff-add
+  topPanelSettings: {
+    // diff-add
+    bold: false, //disable bold button
+  },
+})
+]
+```
+
+>👆 Full list of buttons you can enable or disable via topPanelSettings:
+Bold, Italic, Underline, Strike, H1, H2, H3, UL, OL, Link, CodeBlock 
