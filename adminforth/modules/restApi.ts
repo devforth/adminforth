@@ -1597,23 +1597,31 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error: `Resource '${resourceId}' not found` };
         }
         const validationResults = {};
+        const customColumnValidatorsFunctions = [];
         for (const col of editableColumns) {
           const columnConfig = resource.columns.find((c) => c.name === col.name);
           if (columnConfig && columnConfig.validation)  {
-            for (const val of columnConfig.validation) {
-              if (val.validator) {
-                const result = await val.validator(col.value, record, this.adminforth);
-                if (typeof result === 'object' && result.isValid === false) {
-                  validationResults[col.name] = {
-                    isValid: result.isValid,
-                    message: result.message,
+            customColumnValidatorsFunctions.push(async ()=>{
+              for (const val of columnConfig.validation) {
+                if (val.validator) {
+                  const result = await val.validator(col.value, record, this.adminforth);
+                  if (typeof result === 'object' && result.isValid === false) {
+                    validationResults[col.name] = {
+                      isValid: result.isValid,
+                      message: result.message,
+                    }
+                    break;
                   }
-                  break;
                 }
               }
-            }
+            })
           }
         }
+        
+        if (customColumnValidatorsFunctions.length) {
+          await Promise.all(customColumnValidatorsFunctions.map((fn) => fn()));
+        }
+
         return {
           validationResults
         }
