@@ -79,17 +79,14 @@
 
 
   watch(() => props.currentValues[props.column.name], async (newVal) => {
-    console.log('Current value for column', props.column.name, 'changed to', newVal);
     await nextTick();
     if (props.isValidating) {
       shouldWeShowSpinner.value = true;
     }
   });
 
-  watch(() => [props.columnsWithErrors[props.column.name], props.isValidating], () => {
-    if (props.isValidating) {
-      shouldWeShowSpinner.value = false;
-    } else {
+  watch(() => [props.isValidating], () => {
+    if (!props.isValidating) {
       shouldWeShowSpinner.value = false;
     }
   });
