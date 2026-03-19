@@ -10,7 +10,7 @@
             <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
         </div>      
     </div>
-    <table v-else class=" w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
@@ -64,7 +64,7 @@
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
-          :columns="resource?.columns.filter((c: AdminForthResourceColumnInputCommon) => c.showIn?.list).length + 2"
+          :columns="resource?.columns.filter((c: AdminForthResourceColumnCommon) => c.showIn?.list).length + 2"
           :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
           :column-widths="columnWidths"
@@ -182,7 +182,7 @@
 
               <template v-if="resource.options?.actions">
                 <Tooltip
-                  v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)"
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
                   :key="action.id"
                 >
                     <component
@@ -339,7 +339,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
@@ -360,7 +360,7 @@ const props = defineProps<{
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
   customActionIconsThreeDotsMenuItems?: any[]
-  tableRowReplaceInjection?: AdminForthComponentDeclaration,
+  tableRowReplaceInjection?: AdminForthComponentDeclarationFull,
 }>();
 
 // emits, update page
@@ -436,7 +436,7 @@ watch(() => props.rows, (newRows) => {
   columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
 });
 
-function addToCheckedValues(id: string) {
+function addToCheckedValues(id: string | number) {
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
@@ -468,7 +468,7 @@ const allFromThisPageChecked = computed(() => {
   if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
-const ascArr = computed(() => sort.value.filter((s:any) => s.direction === 'asc').map((s: any) => s.field));
+const ascArr = computed(() => sort.value.filter((s: any) => s.direction === 'asc').map((s: any) => s.field));
 const descArr = computed(() => sort.value.filter((s: any) => s.direction === 'desc').map((s: any) => s.field));
 
 
@@ -487,9 +487,9 @@ function onSortButtonClick(event: any, field: string) {
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
-      sort.value = sort.value.map((s: any) => s.field === field ? {field, direction: 'desc'} : s);
+      sort.value = sort.value.map((s) => s.field === field ? {field, direction: 'desc'} : s);
     } else {
-      sort.value = sort.value.filter((s: any) => s.field !== field);
+      sort.value = sort.value.filter((s) => s.field !== field);
     }
   }
 }
@@ -576,7 +576,7 @@ async function deleteRecord(row: any) {
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
 async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
-  console.log('Starting custom action', actionId, row);
+
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
@@ -586,7 +586,7 @@ async function startCustomAction(actionId: string, row: any, extraData: Record<s
       resourceId: props.resource?.resourceId,
       actionId: actionId,
       recordId: row._primaryKeyValue,
-      extra: extraData,
+      extra: extraData
     }
   });
   
