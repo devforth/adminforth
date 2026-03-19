@@ -94,7 +94,6 @@
 
         <!-- Visible rows -->
         <component
-            v-else
             v-for="(row, rowI) in visibleRows"
             :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
             :key="`row_${row._primaryKeyValue}`"
@@ -108,7 +107,7 @@
             :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
             @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
          >
-        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
+        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
             @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
