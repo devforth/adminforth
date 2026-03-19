@@ -204,4 +204,4 @@ plugins: [
 ```
 
 >👆 Full list of buttons you can enable or disable via topPanelSettings:
-Bold, Italic, Underline, Strike, H1, H2, H3, UL, OL, Link, CodeBlock 
+bold, italic, underline, strike, h1, h2, h3, ul, ol, link, codeBlock 
