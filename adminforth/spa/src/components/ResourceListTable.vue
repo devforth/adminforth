@@ -1,6 +1,6 @@
 <template>
   <!-- table -->
-  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
+  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto border dark:border-gray-700"
     :class="{'rounded-default': !noRoundings}"
   >
     <!-- skelet loader -->
@@ -14,7 +14,7 @@
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
+        <tr class="border-b dark:border-gray-700 t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
           <td scope="col" class="list-table-header-cell p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
@@ -28,7 +28,7 @@
           <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
-                class="flex items-center " :class="{'cursor-pointer':c.sortable}">
+                class="flex items-center font-semibold" :class="{'cursor-pointer':c.sortable}">
               {{ c.label }}
 
               <div v-if="c.sortable">

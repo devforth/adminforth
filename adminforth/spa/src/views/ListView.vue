@@ -81,14 +81,14 @@
 
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button flex items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
+        class="af-create-button flex items-center py-1 h-[34px] px-3 text-sm drop-shadow-xl font-medium text-lightPrimaryContrast transition-all focus:outline-none bg-lightPrimary hover:bg-lightPrimary/80 dark:bg-darkPrimary dark:hover:bg-darkPrimary/80 rounded border border-lightPrimary/90 focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing  dark:text-darkPrimaryContrast dark:border-darkPrimary/80 dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Create') }}
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="af-filter-button flex gap-1 items-center py-1 h-[34px] px-3 me-2 drop-shadow-xl text-sm font-medium text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
         @click="()=>{filtersShow = !filtersShow}"
         v-if="coreStore.resource?.options?.allowedActions?.filter"
       >
