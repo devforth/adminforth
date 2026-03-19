@@ -13,7 +13,7 @@
         :mode="mode"
         :unmasked="unmasked"
         :columnOptions="columnOptions"
-        :validating="validating"
+        :validatingMode="validatingMode"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
         @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
@@ -33,7 +33,7 @@
           :mode="mode"
           :unmasked="unmasked"
           :columnOptions="columnOptions"
-          :validating="validating"
+          :validatingMode="validatingMode"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
           @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
@@ -52,7 +52,7 @@
           :mode="mode"
           :unmasked="unmasked"
           :columnOptions="columnOptions"
-          :validating="validating"
+          :validatingMode="validatingMode"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
           @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
@@ -91,7 +91,7 @@ const route = useRoute();
 const props = defineProps<{
   resource: AdminForthResourceCommon,
   record: any,
-  validating: boolean,
+  validatingMode: boolean,
   source: 'create' | 'edit',
   readonlyColumns?: string[],
 }>();
@@ -364,13 +364,14 @@ const debouncedValidation = debounce(async (columns: AdminForthResourceColumnCom
   isValid.value = checkIfAnyColumnHasErrors();
 }, 500);
 
-watch(() => [editableColumns.value, props.validating], async () => {
+watch(() => [editableColumns.value, props.validatingMode], async () => {
+  isValidating.value = true;
+  
   editableColumns.value?.forEach(column => {
     checkIfColumnHasError(column);
   });
 
-  isValidating.value = true;
-  if (props.validating) {
+  if (props.validatingMode) {
     //Here I need to add debounce 
     debouncedValidation(editableColumns.value);
   } else {
@@ -424,12 +425,11 @@ provide('onSearchInput', onSearchInput);
 provide('loadMoreOptions', loadMoreOptions);
 
 watch(() => isValid.value, async (value) => {
-  const resolvedValue = value instanceof Promise ? await value : value;
-  emit('update:isValid', resolvedValue);
+  emit('update:isValid', value);
 });
 
 async function validateUsingUserValidationFunction(editableColumnsInner: AdminForthResourceColumnCommon[]): Promise<void> {
-  const doesUserHaveCustomValidation = props.resource.columns.some(column => column.validation && column.validation.some((val: any) => val.customValidator));
+  const doesUserHaveCustomValidation = props.resource.columns.some(column => column.validation && column.validation.some((val) => val.validator));
   if (doesUserHaveCustomValidation) {
     try {
       const res = await callAdminForthApi({

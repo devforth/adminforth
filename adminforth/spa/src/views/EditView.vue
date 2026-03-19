@@ -19,7 +19,7 @@
       <button
         @click="() => saveRecord()"
         class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
-        :disabled="saving || (validatingMode && !isValid)"
+        :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       >
         <IconFloppyDiskSolid class="w-4 h-4" />
         {{ $t('Save') }}
@@ -50,7 +50,7 @@
       :adminUser="coreStore.adminUser"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
-      :validating="validatingMode"
+      :validatingMode="validatingMode"
       :source="'edit'"
     >
     </ResourceForm>
@@ -84,6 +84,7 @@ import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
+import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
@@ -179,31 +180,20 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
-  validatingMode.value = true;
-  await nextTick();
-  //wait for response for the user validation function if it exists
-  while (1) {
-    if (resourceFormRef.value?.isValidating) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    } else {
-      break;
-    }
-  }
-  if (!isValid.value) {
-    await nextTick();
-    scrollToInvalidField();
-    return;
-  } else {
-    validatingMode.value = false;
-  }
 
-  saving.value = true;
-  const interceptorsResult = await runSaveInterceptors({
-    action: 'edit',
-    values: record.value,
-    resource: coreStore.resource,
-    resourceId: route.params.resourceId as string,
-  });
+  const interceptorsResult = await saveRecordPreparations(
+    'edit', 
+    validatingMode, 
+    resourceFormRef, 
+    isValid, 
+    t, 
+    saving, 
+    runSaveInterceptors, 
+    record, 
+    coreStore, 
+    route
+  );
+
   if (!interceptorsResult.ok) {
     saving.value = false;
     if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
@@ -262,27 +252,6 @@ async function saveRecord() {
     router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
-}
-
-function scrollToInvalidField() {
-  let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
-  for (const column of resourceFormRef.value?.editableColumns || []) {
-    if (resourceFormRef.value?.columnsWithErrors[column.name]) {
-      columnsWithErrors.push({
-        column,
-        error: resourceFormRef.value?.columnsWithErrors[column.name]
-      });
-    }
-  }
-  const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
-  alert({
-    messageHtml: errorMessage,
-    variant: 'danger'
-  });
-  const firstInvalidElement = document.querySelector('.af-invalid-field-message');
-  if (firstInvalidElement) {
-    firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
 }
 
 </script>

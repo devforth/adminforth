@@ -30,7 +30,7 @@
                 <Tooltip v-if="column.required[mode]">
 
                   <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                    :class="(columnsWithErrors[column.name] && validating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
+                    :class="(columnsWithErrors[column.name] && validatingMode && !isValidating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
                   />
 
                   <template #tooltip>
@@ -59,7 +59,7 @@
               :columnsWithErrors="columnsWithErrors"
               :isValidating="isValidating"
             />
-            <div v-if="columnsWithErrors[column.name] && validating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
+            <div v-if="columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
             <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>
@@ -82,7 +82,7 @@
     source: 'create' | 'edit',
     group: any,
     mode: string,
-    validating: boolean,
+    validatingMode: boolean,
     currentValues: any,
     unmasked: any,
     columnError: (column: any) => string,

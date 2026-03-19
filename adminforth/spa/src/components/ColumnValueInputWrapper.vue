@@ -53,7 +53,7 @@
     @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
     @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
   />
-  <Spinner v-if="shouldWeShowSpinner" class="w-4 absolute top-1 left-2"/>
+  <Spinner v-if="shouldWeShowSpinner" class="w-3 absolute top-1.5 left-3.5"/>
 </template>
   
 <script setup lang="ts">

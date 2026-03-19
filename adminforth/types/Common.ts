@@ -618,7 +618,7 @@ export type ValidationObject = {
      * }
      * ```
      */
-    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}>,
+    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}> | boolean,
 }
 
 
