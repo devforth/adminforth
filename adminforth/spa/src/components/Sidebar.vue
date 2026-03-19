@@ -217,7 +217,7 @@
   
   .sidebar-expanded {
     width: v-bind(expandedWidth); /* Expanded width (w-64) */
-    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.15);
+    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.075);
   }
 
   :deep(.dark) .sidebar-collapsed {
