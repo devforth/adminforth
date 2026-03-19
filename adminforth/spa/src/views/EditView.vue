@@ -21,7 +21,8 @@
         class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       >
-        <IconFloppyDiskSolid class="w-4 h-4" />
+        <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
+        <IconFloppyDiskSolid v-else class="w-4 h-4" />
         {{ $t('Save') }}
       </button>
 
@@ -85,6 +86,7 @@ import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
+import { Spinner } from '@/afcl'
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
