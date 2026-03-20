@@ -28,6 +28,13 @@ const config: Config = {
     {
       src: '/scripts/adminforth.js',
     },
+    {
+      src: '/scripts/tluma-config.js',
+    },
+    {
+      src: 'https://tluma.ai/widget.js',
+      async: true,
+    },
   ],
 
   // Even if you don't use internationalization, you can use this field to set
