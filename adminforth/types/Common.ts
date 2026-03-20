@@ -964,6 +964,18 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /*
+  ______________________________________________
+  |                                             |
+  | Min and max values are used                 |
+  | in getMinMaxForColumns from base connector  |
+  |_____________________________________________|
+        |
+        |
+        |
+        |
+        V  
+  */
   /**
    * Minimal value stored in this field.
    */
