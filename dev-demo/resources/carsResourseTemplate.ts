@@ -12,6 +12,7 @@ import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/i
 import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
 import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
 import MarkdownPlugin from '../../plugins/adminforth-markdown/index.js';
+import QuickFiltersPlugin from '../../plugins/adminforth-quick-filters/index.js';
 
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 import CompletionAdapterGoogleGemini from '../../adapters/adminforth-completion-adapter-google-gemini/index.js';
@@ -170,6 +171,12 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           mode: "public", // or "private"
           signingSecret: '1241245',
         }),
+        // storageAdapter: new AdminForthAdapterS3Storage({
+        //   bucket: process.env.AWS_BUCKET_NAME as string,
+        //   region: process.env.AWS_REGION as string,
+        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        // }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -185,6 +192,12 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           mode: "public", // or "private"
           signingSecret: '1241245',
         }),
+        // storageAdapter: new AdminForthAdapterS3Storage({
+        //   bucket: process.env.AWS_BUCKET_NAME as string,
+        //   region: process.env.AWS_REGION as string,
+        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        // }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -226,7 +239,22 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       }),
       new ForeignInlineListPlugin({
         foreignResourceId: 'cars_description_images',
-        
+      }),
+      new QuickFiltersPlugin({
+        filters: [
+          {
+            name: 'Price',
+            enum: [
+              { label: 'Budget-Friendly', filters: () => Filters.AND(Filters.GTE('price', '0'), Filters.LTE('price', '3500')) }, 
+              { label: 'Mid-Range', filters: () => Filters.AND(Filters.GTE('price', '3501'), Filters.LTE('price', '7000')) }, 
+              { label: 'Premium', filters: () => Filters.AND(Filters.GTE('price', '7001'), Filters.LTE('price', '10000')) }, 
+            ]
+          },
+          {
+            name: 'Model',
+            searchInput: (searchVal) => Filters.ILIKE('model', searchVal)
+          },
+        ]
       }),
     /*********************************************************************************
      
@@ -241,6 +269,12 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               mode: "public", // or "private"
               signingSecret: '1241245',
             }),
+            // storageAdapter: new AdminForthAdapterS3Storage({
+            //   bucket: process.env.AWS_BUCKET_NAME as string,
+            //   region: process.env.AWS_REGION as string,
+            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+            // }),
             pathColumnName: 'generated_promo_picture',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
             maxFileSize: 1024 * 1024 * 20, // 20 MB

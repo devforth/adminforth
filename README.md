@@ -3,6 +3,7 @@
 
 <a href="https://adminforth.dev"><img src="https://img.shields.io/badge/website-adminforth.dev-blue" style="height:24px"/></a> <a href="https://adminforth.dev"><img src="https://img.shields.io/npm/dw/adminforth" style="height:24px"/></a> <a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" style="height:28px"/></a>
 
+[![Ask AI](http://tluma.ai/badge)](http://tluma.ai/ask-ai/devforth/adminforth)
 
 * [Try live demo](https://demo.adminforth.dev/)  (Read-only mode)
 
@@ -136,4 +137,4 @@ This will always run latest version of adminforth package.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=adminforth/adminforth&type=date&legend=top-left)](https://www.star-history.com/#adminforth/adminforth&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=devforth/adminforth&type=date&legend=top-left)](https://www.star-history.com/#devforth/adminforth&type=date&legend=top-left)

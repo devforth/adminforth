@@ -14,6 +14,9 @@ importers:
       '@iconify-prerendered/vue-flowbite':
         specifier: ^0.28.1754899090
         version: 0.28.1754899090(vue@3.5.29(typescript@5.4.5))
+      '@iconify-prerendered/vue-heroicons':
+        specifier: ^0.28.1721921294
+        version: 0.28.1721921294(vue@3.5.29(typescript@5.4.5))
       '@iconify-prerendered/vue-humbleicons':
         specifier: ^0.28.1754108846
         version: 0.28.1754108846(vue@3.5.29(typescript@5.4.5))
@@ -332,6 +335,11 @@ packages:
 
   '@iconify-prerendered/vue-flowbite@0.28.1754899090':
     resolution: {integrity: sha512-WPXCiCRFLR0QC0kW0RbL8Gf2Fj1sjzXgFKD8blU3YaranXgfSe47AMuIFT/nFxxiVWhEDwtn/luOjyj+wuR31A==}
+    peerDependencies:
+      vue: ^3.0.0
+
+  '@iconify-prerendered/vue-heroicons@0.28.1721921294':
+    resolution: {integrity: sha512-L/Xe9HeunSvUA2+KtlaRehFpKjdZPpzPWsynX1To4QmCPAF3YD0lwusV9fZrtkdi0Y5NYS8WZF1SDypkL65+dQ==}
     peerDependencies:
       vue: ^3.0.0
 
@@ -2016,6 +2024,10 @@ snapshots:
       vue: 3.5.29(typescript@5.4.5)
 
   '@iconify-prerendered/vue-flowbite@0.28.1754899090(vue@3.5.29(typescript@5.4.5))':
+    dependencies:
+      vue: 3.5.29(typescript@5.4.5)
+
+  '@iconify-prerendered/vue-heroicons@0.28.1721921294(vue@3.5.29(typescript@5.4.5))':
     dependencies:
       vue: 3.5.29(typescript@5.4.5)
 

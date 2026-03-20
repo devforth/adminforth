@@ -80,12 +80,16 @@ const showConfirmationOnClose = ref(false);
 
 
 async function open() {
-  await props.beforeOpenFunction?.();
+  if (props.beforeOpenFunction) {
+    await props.beforeOpenFunction?.();
+  }
   isModalOpen.value = true;
 }
 
 async function close() {
-  await props.beforeCloseFunction?.();
+  if (props.beforeCloseFunction) {
+    await props.beforeCloseFunction?.();
+  }
   isModalOpen.value = false;
 }
 

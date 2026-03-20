@@ -333,7 +333,36 @@
 
     <!-- <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button> -->
 
+    <Select
+      class="w-full"
+      :options="[
+        {label: 'Last 7 days', value: '7'}, 
+        {label: 'Last 30 days', value: '30'}, 
+        {label: 'Last 90 days', value: '90'},
+      ]"
+      v-model="selected"
+      classesForInput="py-[4px] text-sm bg-white rounded"
+    >
 
+    </Select>
+
+    <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
 
   </div>
 
@@ -369,6 +398,8 @@ import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
 import { callApi } from '@/utils';
+import { JsonViewer } from '@/afcl'
+
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';

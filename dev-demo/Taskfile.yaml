@@ -30,6 +30,7 @@ vars:
     - "adminforth-quick-filters"
     - "adminforth-many2many"
     - "adminforth-background-jobs"
+    - "adminforth-auto-remove"
 
   ADAPTERS:
     - "adminforth-completion-adapter-open-ai-chat-gpt"

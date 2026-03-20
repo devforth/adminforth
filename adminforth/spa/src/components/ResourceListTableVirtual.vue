@@ -18,8 +18,8 @@
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-20 top-0 text-xs  bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-gray-400">
-          <td scope="col" class="list-table-header-cell  p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
+        <tr class="t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
+          <td scope="col" class="list-table-header-cell p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
               :disabled="!rows || !rows.length"
@@ -29,7 +29,7 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell  px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center " :class="{'cursor-pointer':c.sortable}">
@@ -69,7 +69,7 @@
         <SkeleteLoader 
           v-if="!rows" 
           :columns="resource?.columns.filter((c: AdminForthResourceColumnCommon) => c.showIn?.list).length + 2"
-          :rows="rowHeights.length || 20"
+          :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
           :column-widths="columnWidths"
         />
@@ -94,7 +94,6 @@
 
         <!-- Visible rows -->
         <component
-            v-else
             v-for="(row, rowI) in visibleRows"
             :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
             :key="`row_${row._primaryKeyValue}`"
@@ -108,7 +107,7 @@
             :class="{'border-b': rowI !== visibleRows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
             @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
          >
-        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading" @click="(e)=>e.stopPropagation()">
+        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
           <Checkbox
             :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
             @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
@@ -116,7 +115,7 @@
           >
             <span class="sr-only">{{ $t('checkbox') }}</span>
           </Checkbox>
-          </td>
+        </td>
           <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
@@ -177,7 +176,7 @@
                 <template v-slot:tooltip>
                   {{ $t('Delete item') }}
                 </template>
-              </Tooltip>                
+              </Tooltip>
               <template v-if="customActionsInjection">
                 <component 
                   v-for="c in customActionsInjection"
@@ -191,7 +190,7 @@
               </template>
               <template v-if="resource.options?.actions">
                 <Tooltip
-                  v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)"
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
                   :key="action.id"
                 >
                   <CallActionWrapper
@@ -251,9 +250,9 @@
   <!-- pagination
   totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
   -->
-  <div class="flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
+  <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="inline-flex "
+    <div class="af-pagination-buttons-container inline-flex "
       v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
     >
         <!-- Buttons -->
@@ -279,11 +278,10 @@
           type="text"
           v-model="pageInput"
           :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
-          class="af-pagination-input min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
+          class="af-pagination-input min-w-10 outline-none inline-block py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
           @keydown="onPageKeydown($event)"
           @blur="validatePageInput()"
-        >
-        </input>
+        />
 
         <button
           class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
@@ -309,7 +307,7 @@
         <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
         <template v-else-if="resource && totalRows > 0">
           
-          <span class="hidden sm:inline">
+          <span class="af-pagination-info hidden sm:inline">
             <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
               <template v-slot:from>
                 <strong>{{ from }}</strong>
@@ -343,7 +341,7 @@
 <script setup lang="ts">
 
 
-import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref, onUnmounted } from 'vue';
+import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
@@ -353,17 +351,14 @@ import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
 import { getIcon } from '@/utils';
 import {
-  IconInboxOutline,
-} from '@iconify-prerendered/vue-flowbite';
-
-import {
   IconEyeSolid,
   IconPenSolid,
-  IconTrashBinSolid
+  IconTrashBinSolid,
+  IconInboxOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
@@ -387,7 +382,7 @@ const props = defineProps<{
   itemHeight?: number,
   bufferSize?: number,
   customActionIconsThreeDotsMenuItems?: any[]
-  tableRowReplaceInjection?: AdminForthComponentDeclaration
+  tableRowReplaceInjection?: AdminForthComponentDeclarationFull
 }>();
 
 // emits, update page
@@ -463,7 +458,7 @@ watch(() => props.rows, (newRows) => {
   columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
 });
 
-function addToCheckedValues(id: any) {
+function addToCheckedValues(id: string | number) {
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
@@ -499,7 +494,7 @@ const ascArr = computed(() => sort.value.filter((s: any) => s.direction === 'asc
 const descArr = computed(() => sort.value.filter((s: any) => s.direction === 'desc').map((s: any) => s.field));
 
 
-function onSortButtonClick(event: any, field: any) {
+function onSortButtonClick(event: any, field: string) {
   // if ctrl key is pressed, add to sort otherwise sort by this field
   // in any case if field is already in sort, toggle direction
   
@@ -524,7 +519,7 @@ function onSortButtonClick(event: any, field: any) {
 
 const clickTarget = ref(null);
 
-async function onClick(e: any,row: any) {
+async function onClick(e: any, row: any) {
   if(clickTarget.value === e.target) return;
   clickTarget.value = e.target;
   await new Promise((resolve) => setTimeout(resolve, 100));
