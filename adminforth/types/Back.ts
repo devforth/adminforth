@@ -1760,6 +1760,8 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
+  
+  deleteMany?(recordIds: any[]): Promise<number>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }
@@ -1811,7 +1813,6 @@ export type AllowedActions = {
  */
 export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
-  baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.

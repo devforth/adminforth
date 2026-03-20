@@ -294,14 +294,6 @@ resource "aws_security_group" "instance_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "Allow Docker registry"
-    from_port   = 5000
-    to_port     = 5000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   # SSH
   ingress {
     description = "Allow SSH"
@@ -351,26 +343,52 @@ resource "aws_instance" "app_instance" {
 
   user_data = <<-EOF
     #!/bin/bash
-    sudo apt-get update
-    sudo apt-get install ca-certificates curl python3 python3-pip -y
-    sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    set -euo pipefail
 
-    # Add the repository to Apt sources:
+    LOG_FILE="/home/ubuntu/user_data.log"
+    exec > >(tee -a "$LOG_FILE") 2>&1
+    chown ubuntu:ubuntu "$LOG_FILE" || true
+
+    touch /home/ubuntu/user_data_started
+
+    on_error() {
+      echo "failed" > /home/ubuntu/user_data_failed
+    }
+    trap on_error ERR
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl
+
+    # Install the latest Docker Engine from Docker's official Ubuntu repo
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      > /etc/apt/sources.list.d/docker.list
 
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin screen
+    apt-get update
+    apt-get install -y --no-install-recommends \
+      docker-ce \
+      docker-ce-cli \
+      containerd.io \
+      docker-buildx-plugin \
+      docker-compose-plugin
 
-    systemctl start docker
-    systemctl enable docker
-    usermod -a -G docker ubuntu
+    # Ensure Docker daemon is up
+    systemctl enable --now docker
 
-    sudo snap install aws-cli --classic
+    # Allow ubuntu user to run docker without sudo (new SSH session required)
+    usermod -aG docker ubuntu || true
+
+    docker --version
+    docker compose version
 
     echo "done" > /home/ubuntu/user_data_done
 
@@ -669,20 +687,10 @@ jobs:
         with:
           terraform_version: 1.10.1 
       
-      - name: Import Registry CA
-        run: |
-          mkdir -p deploy/.keys
-          echo "$VAULT_REGISTRY_CA_PEM" > deploy/.keys/ca.pem
-          echo "$VAULT_REGISTRY_CA_KEY" > deploy/.keys/ca.key
-        env:
-          VAULT_REGISTRY_CA_PEM: ${{ secrets.VAULT_REGISTRY_CA_PEM }}
-          VAULT_REGISTRY_CA_KEY: ${{ secrets.VAULT_REGISTRY_CA_KEY }}
-
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Import registry SSH keys
+      - name: Import SSH keys
         run: |
           mkdir -p deploy/.keys
           echo "$VAULT_SSH_PRIVATE_KEY" > deploy/.keys/id_rsa
@@ -732,8 +740,6 @@ Go to your GitHub repository, then `Settings` -> `Secrets` -> `New repository se
 - `VAULT_AWS_SECRET_ACCESS_KEY` - your AWS secret key
 - `VAULT_SSH_PRIVATE_KEY` - execute `cat deploy/.keys/id_rsa` and paste to GitHub secrets
 - `VAULT_SSH_PUBLIC_KEY` - execute `cat deploy/.keys/id_rsa.pub` and paste to GitHub secrets
-- `VAULT_REGISTRY_CA_PEM` - execute `cat deploy/.keys/ca.pem` and paste to GitHub secrets
-- `VAULT_REGISTRY_CA_KEY` - execute `cat deploy/.keys/ca.key` and paste to GitHub secrets
 - `VAULT_ADMINFORTH_SECRET` - generate some random string and paste to GitHub secrets, e.g. `openssl rand -base64 32 | tr -d '\n'`
 
 

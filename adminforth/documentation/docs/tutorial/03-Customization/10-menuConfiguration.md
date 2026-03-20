@@ -278,3 +278,23 @@ auth: {
 This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
 
 
+## Custom URL
+You can use the url property to override default navigation. This is useful for linking to pre-filtered lists or external sites.
+
+
+```ts title='./index.ts'
+
+menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+      //diff-add
+      url: '/resource/aparts?filter__country__in=["DE"]',  
+      //diff-add
+      isOpenInNewTab: true // You can also add isOpenInNewTab: true to open the link in a new browser tab
+    },
+  ],
+
+```
+> 👆 Please note start internal URLs with a leading / to ensure correct routing.
