@@ -1,0 +1,1 @@
+ALTER TABLE cars ADD COLUMN secret_field Nullable(String);
