@@ -7,6 +7,7 @@ import { Filters } from 'adminforth';
 import { logger } from 'adminforth';
 import cars_SQLITE_resource from './resources/cars_sl_allow_create.js';
 import cars_sl_dont_allow_create from './resources/cars_sl_dont_allow_create.js';
+import cars_sl_dont_allow_edit from './resources/cars_sl_dont_allow_edit.js';
 import carsDescriptionImage from '../../dev-demo/resources/cars_description_image.js';
 import passkeysResource from '../../dev-demo/resources/passkeys.js';
 
@@ -61,6 +62,7 @@ export const admin = new AdminForth({
     usersResource,
     cars_SQLITE_resource,
     cars_sl_dont_allow_create,
+    cars_sl_dont_allow_edit,
     carsDescriptionImage,
     passkeysResource
   ],

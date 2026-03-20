@@ -7,7 +7,6 @@ describe('POST /create_record', () => {
   const requestBody: any ={
     "resourceId": "cars_sl",
     "record": {
-        "photos": [],
         "model": "Abobus",
         "price": "1234",
         "engine_type": "gasoline",
@@ -117,6 +116,290 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe(`Record with id '${createdRecordId}' already exists`);
   });
 
+  it('dont allow to set backend only field', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+        resourceId: 'cars_sl',
+        record: {
+          ...requestBody.record,
+          secret_field: 'some value',
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Field "secret_field" cannot be modified as it is restricted from creation (backendOnly is true).`);
+  });
 
+  it('dont allow to set field, that is hidden from create view', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+        resourceId: 'cars_sl',
+        record: {
+          ...requestBody.record,
+          photos: ['photo1.jpg', 'photo2.jpg'],
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Field \"photos\" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`);
+  });
+
+  it('normal create record', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl',
+      });
+    createdRecordId = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+
+    const getRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        filters: [{field: "id", operator: "eq", value: createdRecordId}],
+        limit: 1,
+        offset: 0,
+        resourceId: 'cars_sl',
+        sort: [],
+        source: "show",
+      })
+    expect(getRes.status).toEqual(200);
+    expect(getRes.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      model: "Abobus",
+      price: 1234,
+      engine_type: "gasoline",
+      engine_power: 1234,
+      production_year: 2000,
+      description: "1234",
+      listed: true,
+      mileage: 1234,
+      color: "Blue",
+      body_type: "sedan",
+    });
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+describe('POST /update_record', () => {
+  const requestBody: any ={
+    "resourceId": "cars_sl",
+    "record": {
+        "model": "Abobus",
+        "price": "1234",
+        "engine_type": "gasoline",
+        "engine_power": 1234,
+        "production_year": 2000,
+        "description": "1234",
+        "listed": true,
+        "mileage": 1234,
+        "color": "Blue",
+        "body_type": "sedan"
+    },
+    "requiredColumnsToSkip": [],
+    "meta": {}
+  };
+
+    
+  beforeAll(async () => {
+    const res = await agent
+      .post('/adminapi/v1/login')
+      .send({
+        username: 'adminforth',
+        password: 'adminforth',
+      });
+    expect(res.status).toEqual(200);
+    authCookie = res.headers['set-cookie']?.[0];
+    expect(authCookie).toContain('adminforth_');
+  });
+
+  let createdRecordId: string;
+  let createdRecordId_noEdit: string;
+  it('normal create record', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl',
+      });
+    createdRecordId = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    
+    //record to check allowed actions
+    await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl_no_edit',
+      });
+    createdRecordId_noEdit = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //____________________________________
+
+    const getRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        filters: [{field: "id", operator: "eq", value: createdRecordId}],
+        limit: 1,
+        offset: 0,
+        resourceId: 'cars_sl',
+        sort: [],
+        source: "show",
+      })
+    expect(getRes.status).toEqual(200);
+    expect(getRes.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      model: "Abobus",
+      price: 1234,
+      engine_type: "gasoline",
+      engine_power: 1234,
+      production_year: 2000,
+      description: "1234",
+      listed: true,
+      mileage: 1234,
+      color: "Blue",
+      body_type: "sedan",
+    });
+  });
+    
+  it('should throw error, that resource is not found', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'non_existent_resource',
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
+  });
+
+  it('should throw error, that record with id "21345667" is not found', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: '21345667',
+        meta: {},
+        record: {
+          model: "Abobus2",
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Record with id 21345667 not found");
+  });
+
+  it('should throw error, that action is not allowed', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl_no_edit',
+        recordId: createdRecordId_noEdit,
+        meta: {},
+        record: {
+          model: "Abobus2",
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Action is not allowed");
+  });
+
+  it('should throw error, that record with id is already exist', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          model: "Abobus2",
+          id: createdRecordId,
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Record with id '${createdRecordId}' already exists`);
+  });
+
+  it('should throw error, that we are trying to update a record`s backend only field', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          model: "Abobus2",
+          secret_field: "some value",
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Field \"secret_field\" cannot be modified as it is restricted from editing (backendOnly is true).`);
+  });
+
+  it('should throw error, that we are trying to update a editReadOnly field', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          model: "Abobus2",
+          generated_promo_picture: "some_picture.jpg",
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Field \"generated_promo_picture\" cannot be modified as it is restricted from editing (editReadonly is true).`);
+  });
+
+  it('should throw error, that we are trying to update hidden from edit view field', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          model: "Abobus2",
+          photos: ["some_picture.jpg"],
+        },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe(`Field \"photos\" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`);
+  });
 
 });
