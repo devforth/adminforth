@@ -1,0 +1,6 @@
+version: '3'
+tasks:
+  start_app:
+    desc: "Start the application server for testing"
+    cmds:
+      - "cd application && pnpm migrate:local && pnpm install && pnpm start"
