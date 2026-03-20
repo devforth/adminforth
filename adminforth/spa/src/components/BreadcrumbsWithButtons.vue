@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="absolute inset-0 z-50 bg-white " v-if="coreStore.resourceColumnsError?.includes('not found')">
+    <div class="absolute inset-0 z-50 bg-white " v-if="!coreStore.resource && !coreStore.isResourceFetching">
       <PageNotFound />
     </div>
   </div>
