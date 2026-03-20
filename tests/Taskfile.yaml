@@ -4,3 +4,8 @@ tasks:
     desc: "Start the application server for testing"
     cmds:
       - "cd application && pnpm migrate:local && pnpm install && pnpm start"
+
+  run_tests:
+    desc: "Run unit tests"
+    cmds:
+      - "cd jest_tests && pnpm install && pnpm test"
