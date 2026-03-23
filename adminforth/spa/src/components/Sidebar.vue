@@ -9,7 +9,8 @@
       '-translate-x-full': !sideBarOpen, 
       'transform-none': sideBarOpen,
       'sidebar-collapsed': iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering,
-      'sidebar-expanded': !iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)
+      'sidebar-expanded': !iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering),
+      'sidebar-floating': isSidebarIconOnly && isSidebarHovering
      }"
     aria-label="Sidebar"
   >
@@ -217,6 +218,9 @@
   
   .sidebar-expanded {
     width: v-bind(expandedWidth); /* Expanded width (w-64) */
+  }
+
+  .sidebar-floating {
     box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.15);
   }
 

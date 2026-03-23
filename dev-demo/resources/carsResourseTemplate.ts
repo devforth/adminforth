@@ -154,6 +154,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           resourceId: 'adminuser',
           searchableFields: ["id", "email"],
         }
+      },
+      {
+        name: 'secret_field',
+        type: AdminForthDataTypes.STRING,
+        backendOnly: true,
       }
     ],
     plugins: [
