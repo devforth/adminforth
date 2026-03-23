@@ -96,11 +96,11 @@ class AdminForth implements IAdminForth {
     PASSWORD_VALIDATORS: {
       UP_LOW_NUM_SPECIAL: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*\\(\\)\\-_=\\+\\[\\]\\{\\}\\|;:\',\\.<>\\/\\?]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, one number, and one special character'
       },
       UP_LOW_NUM: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, and one number'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, and one number'
       },
     },
     EMAIL_VALIDATOR: {
