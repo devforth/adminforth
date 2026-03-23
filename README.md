@@ -63,10 +63,10 @@ To run dev demo:
 ```sh
 cd dev-demo
 
-npm run setup-dev-demo
-npm run migrate:all
+pnpm setup-dev-demo
+pnpm migrate:all
 
-npm start
+pnpm start
 ```
 
 ## Adding columns to a database in dev-demo
@@ -78,13 +78,13 @@ To make migration add to the .prisma file in folder with database you need and a
 
 
 ```
-npm run makemigration:sqlite -- --name init
+pnpm makemigration:sqlite -- --name init
 ```
 
 and 
 
 ```
-npm run migrate:sqlite
+pnpm migrate:sqlite
 ```
 
 to apply migration
