@@ -183,9 +183,23 @@ export interface IAdminForthDataSourceConnector {
    * For string fields:
    *  - {@link AdminForthResourceColumn.maxLength}
    * For numbers:
+   *  // min/max are used inside getMinMaxForColumns from base connector
    *  - {@link AdminForthResourceColumn.min}
    *  - {@link AdminForthResourceColumn.max}
-   *  - {@link AdminForthResourceColumn.minValue}, {@link AdminForthResourceColumn.maxValue}, {@link AdminForthResourceColumn.enum}, {@link AdminForthResourceColumn.foreignResource}, {@link AdminForthResourceColumn.sortable}, {@link AdminForthResourceColumn.backendOnly}, {@link AdminForthResourceColumn.masked}, {@link AdminForthResourceColumn.virtual}, {@link AdminForthResourceColumn.components}, {@link AdminForthResourceColumn.allowMinMaxQuery}, {@link AdminForthResourceColumn.editingNote}, {@link AdminForthResourceColumn.showIn}, {@link AdminForthResourceColumn.isUnique}, {@link AdminForthResourceColumn.validation})
+   *  - {@link AdminForthResourceColumn.minValue}, 
+   *  - {@link AdminForthResourceColumn.maxValue}, 
+   *  - {@link AdminForthResourceColumn.enum}, 
+   *  - {@link AdminForthResourceColumn.foreignResource}, 
+   *  - {@link AdminForthResourceColumn.sortable}, 
+   *  - {@link AdminForthResourceColumn.backendOnly}, 
+   *  - {@link AdminForthResourceColumn.masked}, 
+   *  - {@link AdminForthResourceColumn.virtual}, 
+   *  - {@link AdminForthResourceColumn.components}, 
+   *  - {@link AdminForthResourceColumn.allowMinMaxQuery}, 
+   *  - {@link AdminForthResourceColumn.editingNote}, 
+   *  - {@link AdminForthResourceColumn.showIn}, 
+   *  - {@link AdminForthResourceColumn.isUnique}, 
+   *  - {@link AdminForthResourceColumn.validation})
    * Also you can additionally save original column type to {@link AdminForthResourceColumn._underlineType}. This might be later used
    * in {@link IAdminForthDataSourceConnector.getFieldValue} and {@link IAdminForthDataSourceConnector.setFieldValue} methods.
    * 
@@ -292,6 +306,8 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
   }): Promise<{ok: boolean, error?: string}>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+
+  deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
 }
 
 
@@ -1760,8 +1776,6 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
-  
-  deleteMany?(recordIds: any[]): Promise<number>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }

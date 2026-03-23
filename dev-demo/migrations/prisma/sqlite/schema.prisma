@@ -41,7 +41,7 @@ model cars {
 
   promo_picture  String?
   generated_promo_picture  String?
-
+  secret_field   String?
 }
 
 model audit_logs {
