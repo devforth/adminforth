@@ -293,7 +293,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
 
-  deleteMany?(recordIds: any[]): Promise<number>;
+  deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
 }
 
 
