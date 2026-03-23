@@ -6,7 +6,7 @@
         <slot></slot>
       </div>
     </div>
-    <div v-if="!coreStore.resource && !coreStore.isResourceFetching" >
+    <div v-if="coreStore.resourceColumnsError" >
       <PageNotFound :errorMessage="coreStore.resourceColumnsError" />
     </div>
   </div>
