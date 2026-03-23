@@ -35,6 +35,7 @@ import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
+import QdrantConnector from './dataConnectors/qdrant.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -394,6 +395,7 @@ class AdminForth implements IAdminForth {
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
+      'qdrant': QdrantConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
