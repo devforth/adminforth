@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.0",
-    "prisma": "^5.22.0",
+    "prisma": "^7.5.0",
     "tsx": "^4.19.2",
     "typescript": "^5.4.5"
   }
