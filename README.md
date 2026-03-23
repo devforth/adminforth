@@ -97,7 +97,7 @@ In order to make migration for the clickhouse, go to the `./migrations/clickhous
 
 Then run
 ```
-npm run migrate:clickhouse
+pnpm migrate:clickhouse
 ```
 
 to apply the migration.
