@@ -748,10 +748,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+          if (!resp || typeof resp.ok !== 'boolean') {
+            throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
           }
-
+          if (resp.ok === false && !resp.error) {
+            return { error: resp.error ?? 'Operation aborted by hook' };
+          }
           if (resp.error) {
             return { error: resp.error };
           }
