@@ -95,50 +95,22 @@ class QdrantConnector extends AdminForthBaseConnector implements IAdminForthData
 		return (collections.collections ?? []).map((collection: { name: string }) => collection.name);
 	}
 
-  // get all columns in a collection
-	async getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>> {
-		const response = await this.client.scroll(tableName, {
-			limit: 1,
-			with_payload: true,
-			with_vector: true,
-		});
-		const point = ((response.points ?? [])[0] ?? {}) as QdrantPoint;
-		const payload = point.payload ?? {};
-		const vector = point.vector ?? null;
+  // discover fields 
+	async discoverFields(resource) {
+			return resource.columns.filter((col) => !col.virtual).reduce((acc, col) => {
+					if (!col.type) {
+							throw new Error(`Type is not defined for column ${col.name} in resource ${resource.table}`);
+					}
 
-		const fields: Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }> = [
-			{ name: 'id', type: AdminForthDataTypes.STRING, isPrimaryKey: true, sampleValue: point.id ?? null },
-			{ name: 'payload', type: AdminForthDataTypes.JSON, sampleValue: payload },
-		];
-
-		if (vector !== undefined) {
-			fields.push({ name: 'vector', type: AdminForthDataTypes.JSON, sampleValue: vector });
-		}
-
-		for (const [name, sampleValue] of Object.entries(payload)) {
-			fields.push({
-				name,
-				type: this.detectColumnType(sampleValue),
-				sampleValue,
-			});
-		}
-
-		return fields;
-	}
-
-  // discover fields
-	async discoverFields(resource: AdminForthResource, _config: AdminForthConfig): Promise<{ [key: string]: AdminForthResourceColumn; }> {
-		const columns = await this.getAllColumnsInTable(this.getCollectionName(resource));
-		return columns.reduce((acc, column) => {
-			acc[column.name] = {
-				name: column.name,
-				type: (column.type as AdminForthDataTypes) ?? AdminForthDataTypes.STRING,
-				primaryKey: column.isPrimaryKey ?? false,
-				required: column.name === 'id' ? { create: true, edit: true } : undefined,
-				_underlineType: column.type ?? 'unknown',
-			} as AdminForthResourceColumn;
-			return acc;
-		}, {} as { [key: string]: AdminForthResourceColumn; });
+					acc[col.name] = {
+							name: col.name,
+							type: col.type,
+							primaryKey: col.primaryKey,
+							virtual: col.virtual,
+							_underlineType: col._underlineType,
+					};
+					return acc;
+			}, {});
 	}
 
   // get field value
