@@ -1459,9 +1459,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (!record){
                 return { error: `Record with ${body['primaryKey']} not found` };
             }
-            if (resource.options.allowedActions.delete === false) {
-                return { error: `Resource '${resource.resourceId}' does not allow delete action` };
-            }
 
             const { allowedActions } = await interpretResource(
               adminUser, 
