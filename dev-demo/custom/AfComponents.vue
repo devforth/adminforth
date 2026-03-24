@@ -242,6 +242,19 @@
           :pageSize="3"
         >
         </Table>
+        <div>
+          Backend pagination ⬇️
+          <Table
+            :columns="[
+              { label: 'Name', fieldName: 'name' },
+              { label: 'Age', fieldName: 'age' },
+              { label: 'Country', fieldName: 'country' },
+            ]"
+            :data="loadPageData"
+
+            :pageSize="3"> 
+          </Table>
+        </div>
 
         <div class="w-full">
           <p class="text-sm font-semibold text-lightPrimary dark:text-darkPrimary mb-2">TreeMapChart (value + delta)</p>
@@ -484,6 +497,20 @@ async function createJob() {
     console.log('Job created successfully:', res);
   } catch (error) {
     console.error('Error creating job:', error);
+  }
+}
+
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  await new Promise(resolve => setTimeout(resolve, 1000)) // simulate network delay
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 30 // should return total amount of records in database
   }
 }
 
