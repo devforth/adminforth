@@ -11,7 +11,7 @@
       <div
         v-if="showMenu"
         ref="menuRef"
-        class="z-50 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
+        class="z-40 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
         :style="menuStyles"
       >
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
