@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "pnpm _env:dev tsx watch index.ts",
     "start": "pnpm dev",
-    "migrate:local": "pnpm _env:dev npx --yes prisma migrate deploy --schema=../../dev-demo/migrations/prisma/sqlite/schema.prisma",
-    "_env:dev": "dotenvx run -f .env -f .env.local --"
+    "migrate:local": "pnpm _env:dev npx --yes prisma migrate deploy --config=prisma.config.ts --schema=../../dev-demo/migrations/prisma/sqlite/schema.prisma",
+    "_env:dev": "dotenvx run -f .env.local --"
   },
   "engines": {
     "node": ">=20"
