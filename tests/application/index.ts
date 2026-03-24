@@ -55,7 +55,7 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'sqlite',
-      url: `${process.env.DATABASE_URL}`
+      url: `${process.env.SQLITE_URL}`
     },
   ],
   resources: [
