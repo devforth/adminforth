@@ -35,13 +35,13 @@ describe('POST /create_record', () => {
     expect(authCookie).toContain('adminforth_');
   });
 
-  it('should block unauthorized access after login', async () => {
+  it('throw an error, that unauthorized access is blocked after login', async () => {
     const res = await agent
       .post('/adminapi/v1/create_record');
     expect(res.status).toEqual(401);
   });
 
-  it('should throw error, that resource is not found', async () => {
+  it('throw an error, that resource is not found', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -53,7 +53,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
   });
 
-  it('should throw error, that resource is not found', async () => {
+  it('throw an error, that resource is not found', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -65,7 +65,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe("Action is not allowed");
   });
 
-  it('should throw error, that column is required', async () => {
+  it('throw an error, that column is required', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -82,7 +82,7 @@ describe('POST /create_record', () => {
   });
 
   let createdRecordId: string;
-  it('skip required column (NEEDS TO BE FIXED)', async () => {
+  it('should skip required column (NEEDS TO BE FIXED)', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -100,7 +100,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBeUndefined();
   });
 
-  it('dont create record with existing id', async () => {
+  it('throw an error, that record with existing id cannot be created', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -116,7 +116,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe(`Record with id '${createdRecordId}' already exists`);
   });
 
-  it('dont allow to set backend only field', async () => {
+  it('throw an error, that backend only field cannot be modified', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -132,7 +132,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe(`Field "secret_field" cannot be modified as it is restricted from creation (backendOnly is true).`);
   });
 
-  it('dont allow to set field, that is hidden from create view', async () => {
+  it('throw an error, that field is hidden from create view', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -164,7 +164,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe(`Model must contain at least two words`);
   });
 
-  it('throw an error that value can`t be less than minValue', async () => {
+  it('throw an error, that value can`t be less than minValue', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -181,7 +181,7 @@ describe('POST /create_record', () => {
   });
 
 
-  it('throw an error that value can`t be greater than maxValue', async () => {
+  it('throw an error, that value can`t be greater than maxValue', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -197,7 +197,7 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBe(`Value in \"production_year\" must be less than ${new Date().getFullYear()}`);
   });
 
-  it('dont allow to create record by hook', async () => {
+  it('throw an error, that create action is not allowed by hook', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -498,7 +498,7 @@ describe('POST /update_record', () => {
     expect(res.body.error).toBe(`Model must contain at least two words`);
   });
 
-  it('should throw error that value can`t be less than minValue', async () => {
+  it('should throw error, that value can`t be less than minValue', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/update_record')
@@ -514,7 +514,7 @@ describe('POST /update_record', () => {
     expect(res.body.error).toBe(`Value in \"production_year\" must be greater than 1900`);
   });
 
-  it('should throw error that value can`t be greater than maxValue', async () => {
+  it('should throw error, that value can`t be greater than maxValue', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/update_record')
