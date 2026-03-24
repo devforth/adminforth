@@ -1452,10 +1452,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         path: '/delete_record',
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
-            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!record){
                 return { error: `Record with ${body['primaryKey']} not found` };
             }
