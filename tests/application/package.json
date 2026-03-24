@@ -27,6 +27,7 @@
     "@types/node": "latest",
     "prisma": "^7.5.0",
     "tsx": "4.11.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "wait-on": "^9.0.4"
   }
 }
