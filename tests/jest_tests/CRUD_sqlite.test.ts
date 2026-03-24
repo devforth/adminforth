@@ -304,6 +304,8 @@ describe('POST /update_record', () => {
 
   let createdRecordId: string;
   let createdRecordId_noEdit: string;
+  let createdRecordId_noEdit_by_hook: string;
+
   it('normal create record', async () => {
     const res = await agent
       .set('Cookie', authCookie)
@@ -337,7 +339,7 @@ describe('POST /update_record', () => {
         ...requestBody,
           resourceId: 'cars_sl_no_edit_by_hook',
       });
-    createdRecordId_noEdit = res.body.newRecordId;
+    createdRecordId_noEdit_by_hook = res.body.newRecordId;
     expect(res.status).toEqual(200);
     expect(res.body.error).toBeUndefined();
     //____________________________________
@@ -534,7 +536,7 @@ describe('POST /update_record', () => {
       .post('/adminapi/v1/update_record')
       .send({
         resourceId: 'cars_sl_no_edit_by_hook',
-        recordId: createdRecordId_noEdit,
+        recordId: createdRecordId_noEdit_by_hook,
         meta: {},
         record: {
           model: "Abobus2 amogus2",
@@ -586,4 +588,270 @@ describe('POST /update_record', () => {
       body_type: "sedan",
     });
   });
+});
+
+describe('POST /get_resource_data', () => {
+  const requestBody: any ={
+    "resourceId": "cars_sl",
+    "record": {
+        "model": "Abobus amogus",
+        "price": "1234",
+        "engine_type": "gasoline",
+        "engine_power": 1234,
+        "production_year": 2000,
+        "description": "1234",
+        "listed": true,
+        "mileage": 1234,
+        "color": "Blue",
+        "body_type": "sedan"
+    },
+    "requiredColumnsToSkip": [],
+    "meta": {}
+  };
+
+  let createdRecordId: string;
+  let createdRecordId_noRead: string;
+  let createdRecordId_noRead_by_hook: string;
+  it('create and read ', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl',
+      });
+    createdRecordId = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //record to check allowed actions
+    await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl_no_show',
+      });
+    createdRecordId_noRead = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //____________________________________
+
+    //record to hook block
+    await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl_no_show_by_hook',
+      });
+    createdRecordId_noRead_by_hook = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //____________________________________
+
+    const getRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        filters: [{field: "id", operator: "eq", value: createdRecordId}],
+        limit: 1,
+        offset: 0,
+        resourceId: 'cars_sl',
+        sort: [],
+        source: "show",
+      })
+    expect(getRes.status).toEqual(200);
+    expect(getRes.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      model: "Abobus amogus",
+      price: 1234,
+      engine_type: "gasoline",
+      engine_power: 1234,
+      production_year: 2000,
+      description: "1234",
+      listed: true,
+      mileage: 1234,
+      color: "Blue",
+      body_type: "sedan",
+    });
+  });
+
+  it('should throw error, that resource is not found', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'non_existent_resource',
+        filters: [],
+        limit: 1,
+        offset: 0,
+        sort: [],
+        source: "show",
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Resource non_existent_resource not found");
+  });
+
+  it('should throw error, that action is not allowed', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl_no_show',
+        filters: [{field: "id", operator: "eq", value: createdRecordId_noRead}],
+        limit: 1,
+        offset: 0,
+        sort: [],
+        source: "show",
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Action is not allowed");
+  });
+
+  it('should throw error, that action is not allowed by hook', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl_no_show_by_hook',
+        filters: [{field: "id", operator: "eq", value: createdRecordId_noRead_by_hook}],
+        limit: 1,
+        offset: 0,
+        sort: [],
+        source: "show",
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Operation aborted by hook");
+  });
+
+});
+
+
+
+describe('POST /delete_record', () => {
+  const requestBody: any ={
+    "resourceId": "cars_sl",
+    "record": {
+        "model": "Abobus amogus",
+        "price": "1234",
+        "engine_type": "gasoline",
+        "engine_power": 1234,
+        "production_year": 2000,
+        "description": "1234",
+        "listed": true,
+        "mileage": 1234,
+        "color": "Blue",
+        "body_type": "sedan"
+    },
+    "requiredColumnsToSkip": [],
+    "meta": {}
+  };
+
+  let createdRecordId: string;
+  let createdRecordId_noDelete: string;
+  let createdRecordId_noDelete_by_hook: string;
+  it('create and read ', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl',
+      });
+    createdRecordId = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //record to check allowed actions
+    await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl_no_delete',
+      });
+    createdRecordId_noDelete = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //____________________________________
+
+    //record to hook block
+    await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+          resourceId: 'cars_sl_no_delete_by_hook',
+      });
+    createdRecordId_noDelete_by_hook = res.body.newRecordId;
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    //____________________________________
+
+    const getRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        filters: [{field: "id", operator: "eq", value: createdRecordId}],
+        limit: 1,
+        offset: 0,
+        resourceId: 'cars_sl',
+        sort: [],
+        source: "show",
+      })
+    expect(getRes.status).toEqual(200);
+    expect(getRes.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      model: "Abobus amogus",
+      price: 1234,
+      engine_type: "gasoline",
+      engine_power: 1234,
+      production_year: 2000,
+      description: "1234",
+      listed: true,
+      mileage: 1234,
+      color: "Blue",
+      body_type: "sedan",
+    });
+  });
+
+  it('should throw error, that resource is not found', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/delete_record')
+      .send({
+        resourceId: 'non_existent_resource',
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
+  });
+
+  it('should throw error, that record with such id is not found', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/delete_record')
+      .send({
+        resourceId: 'cars_sl',
+        primaryKey: 'non_existent_id',
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Record with non_existent_id not found");
+  });
+
+  it('should throw error, that delete action is not allowed', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/delete_record')
+      .send({
+        resourceId: 'cars_sl_no_delete',
+        primaryKey: createdRecordId_noDelete,
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Action is not allowed");
+  });
+
+  it('should throw error, that delete action is not allowed by hook', async () => {
+    const res = await agent      .set('Cookie', authCookie)
+      .post('/adminapi/v1/delete_record')
+      .send({
+        resourceId: 'cars_sl_no_delete_by_hook',
+        primaryKey: createdRecordId_noDelete_by_hook,
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Operation aborted by hook");
+  });
+
 });
