@@ -120,8 +120,8 @@
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
-    <ResourceListTableVirtual
-      v-if="isVirtualScrollEnabled && !coreStore.isResourceFetching"
+    <ResourceListTable
+      v-if="!coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -153,44 +153,11 @@
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
+
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
-    />
-
-    <ResourceListTable
-      v-else-if="!coreStore.isResourceFetching"
-      :resource="coreStore.resource"
-      :rows="rows"
-      :page="page"
-      @update:page="page = $event"
-      @update:sort="sort = $event"
-      @update:checkboxes="checkboxes = $event"
-      @update:records="getListInner"
-      :sort="sort"
-      :pageSize="pageSize"
-      :totalRows="totalRows"
-      :checkboxes="checkboxes"
-      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
-        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
-        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
-          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
-          : []
-      "
-      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
-        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
-        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
-          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
-          : []
-      "
-      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
-        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
-        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
-          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
-          : []"
-      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
-        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
-        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
+      :isVirtualScrollEnabled="true"
     />
 
     <component 
@@ -206,7 +173,6 @@
 
 <script setup lang="ts">
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import ResourceListTableVirtual from '@/components/ResourceListTableVirtual.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
