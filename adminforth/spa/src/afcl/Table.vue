@@ -91,12 +91,12 @@
       <template #total><span class="font-semibold text-lightTablePaginationNumeration dark:text-darkTablePaginationNumeration">{{ dataResult.total }}</span></template>
     </i18n-t>
     <div class="af-pagination-container flex flex-row items-center xs:flex-row xs:justify-between xs:items-center gap-3">
-      <div class="inline-flex" :class="isLoading || props.isLoading ? 'pointer-events-none select-none opacity-50' : ''">
+      <div class="inline-flex" :class="blockPagination ? 'pointer-events-none select-none opacity-50' : ''">
           <!-- Buttons -->
           <button
             class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText bg-lightActivePaginationButtonBackground border-r-0 rounded-s hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
             @click="currentPage--; pageInput = currentPage.toString();" 
-            :disabled="currentPage <= 1 || isLoading || props.isLoading">
+            :disabled="currentPage <= 1 || blockPagination">
             <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 14 10">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -106,7 +106,7 @@
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-r-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
             @click="switchPage(1); pageInput = currentPage.toString();" 
-            :disabled="currentPage <= 1 || isLoading || props.isLoading">
+            :disabled="currentPage <= 1 || blockPagination">
             <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
             1
           </button>
@@ -123,7 +123,7 @@
           <button
             class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
             @click="currentPage = totalPages; pageInput = currentPage.toString();" 
-            :disabled="currentPage >= totalPages || isLoading || props.isLoading"
+            :disabled="currentPage >= totalPages || blockPagination"
           >
             {{ totalPages }}
 
@@ -131,7 +131,7 @@
           <button
             class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText focus:outline-none bg-lightActivePaginationButtonBackground border-l-0 rounded-e hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
             @click="currentPage++; pageInput = currentPage.toString();" 
-            :disabled="currentPage >= totalPages || isLoading || props.isLoading"
+            :disabled="currentPage >= totalPages || blockPagination"
           >
             <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 14 10">
@@ -163,7 +163,7 @@
       }[],
       data: {
         [key: string]: any,
-      }[] | ((params: { offset: number, limit: number, sortField?: string, sortDirection?: 'asc' | 'desc' }) => Promise<{data: {[key: string]: any}[], total: number}>),
+      }[] | ((params: { offset: number, limit: number, sortField?: string, sortDirection?: 'asc' | 'desc' }, abortSignal?: AbortSignal) => Promise<{data: {[key: string]: any}[], total: number}>),
       evenHighlights?: boolean,
       pageSize?: number,
       isLoading?: boolean,
@@ -171,9 +171,11 @@
       defaultSortDirection?: 'asc' | 'desc',
       makeHeaderSticky?: boolean,
       makePaginationSticky?: boolean,
+      blockPaginationOnLoading?: boolean,
     }>(), {
       evenHighlights: true,
       pageSize: 5,
+      blockPaginationOnLoading: true,
     }
   );
 
@@ -188,6 +190,9 @@
   const isAtLeastOneLoading = ref<boolean[]>([false]);
   const currentSortField = ref<string | undefined>(props.defaultSortField);
   const currentSortDirection = ref<'asc' | 'desc'>(props.defaultSortDirection ?? 'asc');
+  const oldAbortController = ref<AbortController | null>(null);
+
+  const blockPagination = computed(() => (isLoading.value || props.isLoading) && props.blockPaginationOnLoading);
 
   onMounted(() => {
     // If defaultSortField points to a non-sortable column, ignore it
@@ -277,12 +282,20 @@
       isLoading.value = true;
       const currentLoadingIndex = currentPage.value;
       isAtLeastOneLoading.value[currentLoadingIndex] = true;
-      const result = await props.data({
-        offset: (currentLoadingIndex - 1) * props.pageSize,
-        limit: props.pageSize,
-        sortField: currentSortField.value,
-        ...(currentSortField.value ? { sortDirection: currentSortDirection.value } : {}),
-      });
+      const abortController = new AbortController();
+      if (oldAbortController.value) {
+        oldAbortController.value.abort();
+      }
+      oldAbortController.value = abortController;
+      const result = await props.data(
+        {
+          offset: (currentLoadingIndex - 1) * props.pageSize,
+          limit: props.pageSize,
+          sortField: currentSortField.value,
+          ...(currentSortField.value ? { sortDirection: currentSortDirection.value } : {}),
+        }, 
+        abortController.signal
+      );
       isAtLeastOneLoading.value[currentLoadingIndex] = false;
       if (isAtLeastOneLoading.value.every(v => v === false)) {
         isLoading.value = false;
