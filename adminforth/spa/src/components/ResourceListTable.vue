@@ -2,6 +2,9 @@
   <!-- table -->
   <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
     :class="{'rounded-default': !noRoundings}"
+    :style="isVirtualScrollEnabled ? { maxHeight: `${containerHeight}px` } : {}"
+    @scroll="handleScroll"
+    ref="containerRef"
   >
     <!-- skelet loader -->
     <div role="status" v-if="!resource || !resource.columns"
@@ -82,10 +85,12 @@
 
           </td>
         </tr>
-
+        <!-- Top spacer(virtual scroll) -->
+        <tr v-if="isVirtualScrollEnabled && spacerHeight > 0">
+          <td :colspan="resource?.columns.length + 2" :style="{ height: `${spacerHeight}px` }"></td>
+        </tr>
          <component
-            v-else
-            v-for="(row, rowI) in rows"
+            v-for="(row, rowI) in rowsToRender"
             :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
             :key="`row_${row._primaryKeyValue}`"
             :record="row"
@@ -95,7 +100,8 @@
             @click="onClick($event, row)"
             ref="rowRefs"
             class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-            :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+            :class="{'border-b': rowI !== rowsToRender.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+            @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
          >
         <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
           <Checkbox
@@ -225,6 +231,12 @@
             
           </td>
          </component>
+          <!-- Bottom spacer(virtual scroll) -->
+          <tr v-if="isVirtualScrollEnabled && totalHeight > 0">
+            <td :colspan="resource?.columns.length + 2"
+                :style="{ height: `${Math.max(0, totalHeight - (endIndex + 1) * (props.itemHeight || 52.5))}px` }">
+            </td>
+          </tr>
       </tbody>
     </table>
   </div>
@@ -359,9 +371,22 @@ const props = defineProps<{
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
+  containerHeight?: number,
+  itemHeight?: number,
+  bufferSize?: number,
   customActionIconsThreeDotsMenuItems?: any[]
   tableRowReplaceInjection?: AdminForthComponentDeclarationFull,
+  isVirtualScrollEnabled: boolean
 }>();
+
+//select between all rows or rows, that should be rendered in virtual scroll
+const rowsToRender = computed(() => {
+  if (!props.isVirtualScrollEnabled) {
+    return props.rows || [];
+  } else {
+    return visibleRows.value;
+  }
+});
 
 // emits, update page
 const emits = defineEmits([
@@ -628,6 +653,119 @@ function validatePageInput() {
   page.value = validPage;
   pageInput.value = validPage.toString();
 }
+/*
+*___________________________________________________________________
+*                                                                   |
+*                 Virtual Scroll Implementation                     |
+*___________________________________________________________________|
+*/
+// Add throttle utility
+const throttle = (fn: Function, delay: number) => { 
+  let lastCall = 0;
+  return (...args: any[]) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    }
+  };
+};
+// Virtual scroll state
+const containerRef = ref<HTMLElement | null>(null);
+const scrollTop = ref(0);
+const visibleRows = ref<any[]>([]);
+const startIndex = ref(0);
+const endIndex = ref(0);
+const totalHeight = ref(0);
+const spacerHeight = ref(0);
+const rowHeightsMap = ref<{[key: string]: number}>({});
+const rowPositions = ref<number[]>([]);
+// Calculate row positions based on heights
+const calculateRowPositions = () => {
+  if (!props.rows) return;
+  
+  let currentPosition = 0;
+  rowPositions.value = props.rows.map((row) => {
+    const height = rowHeightsMap.value[`row_${row._primaryKeyValue}`] || props.itemHeight || 52.5;
+    const position = currentPosition;
+    currentPosition += height;
+    return position;
+  });
+  totalHeight.value = currentPosition;
+};
+// Calculate visible rows based on scroll position
+const calculateVisibleRows = () => {
+  if (!props.rows?.length) {
+    visibleRows.value = props.rows || [];
+    return;
+  }
+  const buffer = props.bufferSize || 5;
+  const containerHeight = props.containerHeight || 900;
+  
+  // For single item or small datasets, show all rows
+  if (props.rows.length <= buffer * 2 + 1) {
+    startIndex.value = 0;
+    endIndex.value = props.rows.length - 1;
+    visibleRows.value = props.rows;
+    spacerHeight.value = 0;
+    return;
+  }
+  
+  // Binary search for start index
+  let low = 0;
+  let high = rowPositions.value.length - 1;
+  const targetPosition = scrollTop.value;
+  
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (rowPositions.value[mid] <= targetPosition) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  
+  const newStartIndex = Math.max(0, low - 1 - buffer);
+  const newEndIndex = Math.min(
+    props.rows.length - 1,
+    newStartIndex + Math.ceil(containerHeight / (props.itemHeight || 52.5)) + buffer * 2
+  );
+  // Ensure at least one row is visible
+  if (newEndIndex < newStartIndex) {
+    startIndex.value = 0;
+    endIndex.value = Math.min(props.rows.length - 1, Math.ceil(containerHeight / (props.itemHeight || 52.5)));
+  } else {
+    startIndex.value = newStartIndex;
+    endIndex.value = newEndIndex;
+  }
+  
+  visibleRows.value = props.rows.slice(startIndex.value, endIndex.value + 1);
+  spacerHeight.value = startIndex.value > 0 ? rowPositions.value[startIndex.value - 1] : 0;
+};
+// Throttled scroll handler
+const handleScroll = throttle((e: Event) => {
+  if (!props.isVirtualScrollEnabled) return;
+  const target = e.target as HTMLElement;
+  scrollTop.value = target.scrollTop;
+  calculateVisibleRows();
+}, 16);
+// Update row height when it changes
+const updateRowHeight = (rowId: string, height: number) => {
+  if (!props.isVirtualScrollEnabled) return;
+  if (rowHeightsMap.value[rowId] !== height) {
+    rowHeightsMap.value[rowId] = height;
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+};
+// Watch for changes in rows
+watch(() => props.rows, () => {
+  if (props.rows) {
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+}, { immediate: true });
+
 
 </script>
 
