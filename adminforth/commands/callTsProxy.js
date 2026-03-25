@@ -25,11 +25,11 @@ export function callTsProxy(tsCode, silent=false) {
     const child = spawn("tsx", [path.join(currentFileFolder, "proxy.ts")], {
       env: process.env,
     });
-    let stdout = "";
     let stderr = "";
+    let stdoutLogs = [];
 
     child.stdout.on("data", (data) => {
-      stdout += data;
+      stdoutLogs.push(data.toString());
     });
 
     child.stderr.on("data", (data) => {
@@ -39,7 +39,12 @@ export function callTsProxy(tsCode, silent=false) {
     child.on("close", (code) => {
       if (code === 0) {
         try {
-          const preparedStdout = stdout.slice(stdout.indexOf("{"), stdout.lastIndexOf("}") + 1);
+          const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>> <-- found this in stream start reading'));
+          const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>> <-- found this in stream start reading') + 46, tsProxyResult.lastIndexOf('<<<<<<< <-- found end'));
+          const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>> <-- found this in stream start reading'));
+          for (const log of preparedStdoutLogs) {
+            console.log(log);
+          }
           const parsed = JSON.parse(preparedStdout);
           if (!silent) {
             parsed.capturedLogs.forEach((log) => {
@@ -52,10 +57,10 @@ export function callTsProxy(tsCode, silent=false) {
           }
           resolve(parsed.result);
         } catch (e) {
-          reject(new Error("Invalid JSON from tsproxy: " + stdout));
+          reject(new Error("Invalid JSON from tsproxy: " + preparedStdout));
         }
       } else {
-        console.error(`tsproxy exited with non-0, this should never happen, stdout: ${stdout}, stderr: ${stderr}`);
+        console.error(`tsproxy exited with non-0, this should never happen, stdout: ${preparedStdout}, stderr: ${stderr}`);
         reject(new Error(stderr));
       }
     });
