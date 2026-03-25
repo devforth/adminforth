@@ -27,7 +27,7 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
       filters: filters,
       sort: sort,
     },
-    abortController
+    abortSignal: abortController.signal
   });
   if (data.error) {
     showErrorTost(data.error);
