@@ -1,0 +1,17 @@
+import { AdminUser } from "../../../adminforth/index.js";
+import carsResourseTemplate from "../../../dev-demo/resources/carsResourseTemplate.js";
+
+
+export default {
+  ...carsResourseTemplate("cars_sl_no_edit_by_hook", "sqlite", "id"), 
+  options: {
+    ...carsResourseTemplate("cars_sl_no_edit_by_hook", "sqlite", "id").options,
+  },
+  hooks: {
+    edit: {
+      beforeSave: async () => {
+        return { ok: false }
+      }
+    }
+  }
+};

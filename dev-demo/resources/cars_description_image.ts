@@ -29,8 +29,15 @@ export default {
       },
     },
     { name: "resource_id", required: false },
-    { name: "record_id", required: false },
+    { name: "record_id", required: false, 
+      foreignResource: {
+        resourceId: "cars_sl",
+        labelField: "model",
+      },
+     },
     { name: "image_path", required: false },
+    { name: "title", required: false },
+    { name: "alt_text", required: false },
   ],
   plugins: [
     new UploadPlugin({
@@ -40,6 +47,15 @@ export default {
         mode: "public", // or "private"
         signingSecret: '1241245',
       }),
+
+      // to test s3:
+      // storageAdapter: new AdminForthAdapterS3Storage({
+      //   bucket: process.env.AWS_BUCKET_NAME as string,
+      //   region: process.env.AWS_REGION as string,
+      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      // }),
+
   
       allowedFileExtensions: [
         "jpg",
@@ -54,8 +70,15 @@ export default {
 
 
       filePath: ({ originalFilename, originalExtension, contentType }) =>
-        `sqlite/cars_description_images/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`,
+        `sqlite/cars_description_images/${+new Date()}/${originalFilename}.${originalExtension}`,
 
+      // to test s3 public preview
+      // preview: {
+      //   previewUrl: ({ s3Path, filePath }: { s3Path?: string; filePath?: string }) => {
+      //     const path = s3Path ?? filePath ?? '';
+      //     return `https://static.devforth.io/${path}`;
+      //   },
+      // }
 
     }),
   ],

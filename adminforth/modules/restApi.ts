@@ -19,7 +19,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
@@ -748,12 +748,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
         const { limit, offset, filters, sort } = body;
@@ -952,13 +949,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
 
@@ -1459,15 +1452,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         path: '/delete_record',
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
-            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!record){
                 return { error: `Record with ${body['primaryKey']} not found` };
-            }
-            if (resource.options.allowedActions.delete === false) {
-                return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             }
 
             const { allowedActions } = await interpretResource(
