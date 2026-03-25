@@ -300,6 +300,7 @@
       if (isAtLeastOneLoading.value.every(v => v === false)) {
         isLoading.value = false;
       }
+      if(abortController.signal.aborted) return;
       dataResult.value = result;
     } else if (typeof props.data === 'object' && Array.isArray(props.data)) {
       const start = (currentPage.value - 1) * props.pageSize;
