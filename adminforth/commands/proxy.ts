@@ -41,19 +41,27 @@ import path from 'path';
 
     // Restore original console.log
     console.log = origLog;
-    console.log(JSON.stringify({ 
-      result, 
-      capturedLogs,
-      error: null 
-    }));
+    console.log(
+      ">>>>>>> <-- found this in stream start reading"+
+      JSON.stringify({ 
+        result, 
+        capturedLogs,
+        error: null 
+      })
+      +"<<<<<<< <-- found end"
+    );
   } catch (error: any) {
     // Restore original console.log
     console.log = origLog;
-    console.log(JSON.stringify({ 
-      error: error.message, 
-      stack: error.stack,
-      capturedLogs 
-    }));
+    console.log(
+      ">>>>>>> <-- found this in stream start reading"+
+      JSON.stringify({ 
+        error: error.message, 
+        stack: error.stack,
+        capturedLogs 
+      })
+      +"<<<<<<< <-- found end"
+    );
   } finally {
     await unlink(tmpFile).catch(() => {});
   }
