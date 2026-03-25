@@ -157,7 +157,7 @@
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
-      :isVirtualScrollEnabled="true"
+      :isVirtualScrollEnabled="isVirtualScrollEnabled"
     />
 
     <component 
