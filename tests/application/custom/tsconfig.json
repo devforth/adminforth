@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../node_modules/adminforth/dist/spa/src/*"],
+      "@@/*": ["./*"]
+    }
+  }
+}

@@ -285,6 +285,33 @@ You might need to put some extra item at bottom of list
   </div>
 </div>
 
+### Add classes to the input directly
+
+You might need to put some extra item at bottom of list
+
+<div class="split-screen" >
+  <div >
+```html
+<Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7'}, 
+    {label: 'Last 30 days', value: '30'}, 
+    {label: 'Last 90 days', value: '90'},
+  ]"
+  v-model="selected"
+  //diff-add
+  classesForInput="py-[4px] text-sm bg-white rounded"
+>
+
+</Select>
+```
+  </div>
+  <div>
+   ![AFCL Select](image-99.png)
+  </div>
+</div>
+
 ## Input
 
 
@@ -1247,6 +1274,42 @@ Custom labels in the ProgressBar component allow you to customize the text displ
   </div>
   <div>
   ![ProgressBar](image-80.png)
+  </div>
+</div>
+
+### Show progress animation
+
+<div class="split-screen" >
+  <div>
+  ```html
+   <ProgressBar
+    :currentValue="2600"
+    :minValue="0"
+    :maxValue="5000"
+    showAnimation
+    />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-96.png)
+  </div>
+</div>
+
+### Change height of the progress bar
+
+<div class="split-screen" >
+  <div>
+  ```html
+   <ProgressBar
+    :currentValue="2600"
+    :minValue="0"
+    :maxValue="5000"
+    height='6'
+    />
+  ```
+  </div>
+  <div>
+  ![ProgressBar](image-97.png)
   </div>
 </div>
 
@@ -2280,6 +2343,44 @@ import { JsonViewer } from '@/afcl'
     ![JSON Viewer](image-93.png)
   </div>
 </div>
+
+## Modal
+
+<div class="split-screen" >
+  <div>
+
+```ts
+import { Modal, Button } from '@/afcl';
+```
+
+```html
+  <Modal class="w-96" :closeByClickOutside="true" :closeByEsc="true" askForCloseConfirmation >
+    <template #trigger>
+      <Button>Modal Toggle</Button>
+    </template>
+
+    <div class="space-y-4 p-4">
+      <p>This is the first paragraph of modal content.</p>
+      <p>And this is the second paragraph.</p>
+    </div>
+  </Modal>
+```
+  </div>
+  <div>
+  ![AFCL Dialog](image-98.png)
+  </div>
+</div>
+
+### Props: 
+```ts
+  closeByClickOutside?: boolean  // Close on click outside of modal (default is true)
+  closeByEsc?: boolean // Close on Esc button click (default is true)
+  beforeCloseFunction?: (() => void | Promise<void>) | null // Callback, that will be executed before open
+  beforeOpenFunction?: (() => void | Promise<void>) | null // Callback, that will be executed before close
+  askForCloseConfirmation?: boolean // Show extra popup to confirm close ( to avoid close by accident)
+  closeConfirmationText?: string // Text that will be shown on close confirmation popup
+  removeFromDomOnClose?: boolean // Remove modal from DOM on close ( default is false )
+```
 
 ## Date picker
 

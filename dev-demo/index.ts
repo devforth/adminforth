@@ -18,8 +18,7 @@ import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
-import { logger, afLogger } from '../adminforth/modules/logger.js';
-import { UUID } from 'crypto';
+import { logger } from '../adminforth/modules/logger.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -108,7 +107,7 @@ export const admin = new AdminForth({
     },
     {
       id: 'clickhouse',
-      url: 'clickhouse://demo:demo@localhost:8124/demo',
+      url: 'clickhouse://demo:demo@localhost:28124/demo',
     }
   ],
   resources: [
@@ -224,7 +223,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   initApi(app, admin);
 
-  const port = 3000;
+  const port = 3123;
   
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
     logger.info('Bundling AdminForth SPA done.');

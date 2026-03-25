@@ -18,7 +18,7 @@
         'hidden': !showDropdown,
         'left-0 md:left-auto': checkboxes && checkboxes.length > 0
       }"
-      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-auto max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
+      class="absolute z-30 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-max max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <div  
@@ -50,7 +50,7 @@
                 :meta="action.customComponent?.meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
               >
-                <a href="#" @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+                <a @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
                   <div class="flex items-center gap-2">
                     <component 
                       v-if="action.icon" 
@@ -64,7 +64,7 @@
             </div>
           </li>
           <li v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)" :key="action.id">
-            <a href="#" @click.prevent="startBulkAction(action.id)" 
+            <a @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
                   'pointer-events-none': checkboxes && checkboxes.length === 0,

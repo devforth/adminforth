@@ -170,3 +170,20 @@ You can notify users of important information by displaying an announcement badg
 
 Here's what the announcement will look like:
 ![alt text](image-11.png)
+
+## Disable "There are unsaved changed" popup for resource
+
+By default, when you want to leave create/edit pages with usaved changes, there will be shown an confirmation popup. If you don't like this behaviour, you can disable it for resource:
+
+```ts title='./resources/cusom_resource.ts'
+    ...
+
+    options: {
+      listPageSize: 12,
+      //diff-add
+      dontShowWarningAboutUnsavedChanges: true,
+        ...
+    }
+    ...
+
+```

@@ -362,9 +362,23 @@ export interface AdminForthResourceInputCommon {
 
 
     /**
+     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+     * default is false
+     */
+    dontShowWarningAboutUnsavedChanges?: boolean,
+
+    /**
      * General options for resource.
      */
     options?: {
+      
+
+      /**
+       * Show quick action icons for base actions (show, edit, delete) in list view. 
+       * By default, they are inside three dots dropdown menu. 
+       */
+      baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
+
 
       /**
        * Default sort for list view.
@@ -950,6 +964,18 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /*
+  ______________________________________________
+  |                                             |
+  | Min and max values are used                 |
+  | in getMinMaxForColumns from base connector  |
+  |_____________________________________________|
+        |
+        |
+        |
+        |
+        V  
+  */
   /**
    * Minimal value stored in this field.
    */
@@ -1116,6 +1142,8 @@ export interface AdminForthConfigMenuItem {
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
   itemId?: string,  // todo move to runtime type
+  
+  url?: string
 }
 
 

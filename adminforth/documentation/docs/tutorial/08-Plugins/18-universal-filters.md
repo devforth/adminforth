@@ -1,4 +1,5 @@
-# Universal Search
+# Universal Search (legacy)
+> **Deprecated:** Prefer the [**Quick Filters**](/docs/tutorial/Plugins/quick-filters) plugin. It provides the same functionality and more.
 
 Ephemeral, debounced multi‑column search for List pages. A lightweight input (injected at `beforeActionButtons`) sends the term with each list request; a hook expands it server‑side into a single `OR` filter group over your configured columns. The term never enters the standard filter store, so:
 
@@ -11,7 +12,7 @@ Ideal for quick, multi‑field lookup without opening the filter panel.
 ## Installation
 
 ```bash
-npm i @adminforth/universal-search --save
+pnpm i @adminforth/universal-search --save
 ```
 
 ## Basic Usage

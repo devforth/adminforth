@@ -5,7 +5,12 @@
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
         :loader="false" class="w-full">
-        Your button text
+        Primary button
+      </Button>
+
+      <Button @click="doSmth" 
+        :loader="false" class="w-full" mode="secondary">
+        Secondary button
       </Button>
 
       <Button @click="doSmth" 
@@ -137,11 +142,20 @@
     <div class="flex flex-col gap-10 m-10 mt-20">
 
       <Dialog
+        ref="dialogRef"
         class="w-96"
         header="Dialog Header"
+        :buttons="[
+          { label: 'dialog.hide()', options: { variant: 'outline' }, onclick: (dialog) => dialog.hide() },
+        ]"
+        :closeByClickOutside="true"
+        :closeByEsc="true"
+        askForCloseConfirmation
+        :beforeCloseFunction="() => { console.log('Before close'); }"
+        :beforeOpenFunction="() => { console.log('Before open');}"
       >
         <template #trigger>
-          <Button>Dialog Toggle</Button>
+          <Button>Dialog Toggle 2</Button>
         </template>
 
         <div class="space-y-4">
@@ -149,6 +163,11 @@
           <p>And this is the second paragraph.</p>
         </div>
       </Dialog>
+
+      <Button @click="dialogRef?.open()">
+        dialog.open()
+      </Button>
+
 
       <Dropzone
         :extensions="['.jpg', '.jpeg', '.png']"
@@ -223,6 +242,19 @@
           :pageSize="3"
         >
         </Table>
+        <div>
+          Backend pagination ⬇️
+          <Table
+            :columns="[
+              { label: 'Name', fieldName: 'name' },
+              { label: 'Age', fieldName: 'age' },
+              { label: 'Country', fieldName: 'country' },
+            ]"
+            :data="loadPageData"
+
+            :pageSize="3"> 
+          </Table>
+        </div>
 
         <div class="w-full">
           <p class="text-sm font-semibold text-lightPrimary dark:text-darkPrimary mb-2">TreeMapChart (value + delta)</p>
@@ -301,20 +333,49 @@
     />
 
 
-    <Modal class="w-96" clickToCloseOutside>
+    <Modal class="w-96" :closeByClickOutside="true" :closeByEsc="true" askForCloseConfirmation >
       <template #trigger>
         <Button>Modal Toggle</Button>
       </template>
 
-      <div class="space-y-4">
-        <p>This is the first paragraph of dialog content.</p>
+      <div class="space-y-4 p-4">
+        <p>This is the first paragraph of modal content.</p>
         <p>And this is the second paragraph.</p>
       </div>
     </Modal>
 
-    <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button>
+    <!-- <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button> -->
 
+    <Select
+      class="w-full"
+      :options="[
+        {label: 'Last 7 days', value: '7'}, 
+        {label: 'Last 30 days', value: '30'}, 
+        {label: 'Last 90 days', value: '90'},
+      ]"
+      v-model="selected"
+      classesForInput="py-[4px] text-sm bg-white rounded"
+    >
 
+    </Select>
+
+    <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
 
   </div>
 
@@ -350,6 +411,8 @@ import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
 import { callApi } from '@/utils';
+import { JsonViewer } from '@/afcl'
+
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
@@ -367,6 +430,7 @@ const enable = ref(false)
 const selected = ref(null)
 const selected2 = ref([])
 const valueStart = ref()
+const dialogRef = ref()
 
 const deltaToColor = (delta: number) => {
   if (delta < -10) return '#B91C1C' // bright red
@@ -433,6 +497,20 @@ async function createJob() {
     console.log('Job created successfully:', res);
   } catch (error) {
     console.error('Error creating job:', error);
+  }
+}
+
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  await new Promise(resolve => setTimeout(resolve, 1000)) // simulate network delay
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 30 // should return total amount of records in database
   }
 }
 

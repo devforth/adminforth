@@ -15,6 +15,7 @@
   "dependencies": {
     "@iconify-prerendered/vue-flag": "^0.28.1748584105",
     "@iconify-prerendered/vue-flowbite": "^0.28.1754899090",
+    "@iconify-prerendered/vue-heroicons": "^0.28.1721921294",
     "@iconify-prerendered/vue-humbleicons": "^0.28.1754108846",
     "@unhead/vue": "^1.9.12",
     "@vueuse/core": "^10.10.0",
@@ -30,7 +31,8 @@
     "vue-diff": "^1.2.4",
     "vue-i18n": "^10.0.5",
     "vue-router": "^4.3.0",
-    "vue-slider-component": "^4.1.0-beta.7"
+    "vue-slider-component": "^4.1.0-beta.7",
+    "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
@@ -54,7 +56,6 @@
     "typescript": "~5.4.0",
     "vite": "^5.2.13",
     "vue-i18n-extract": "^2.0.7",
-    "vue-tsc": "^2.0.11",
-    "vue3-json-viewer": "^2.2.2"
+    "vue-tsc": "^2.0.11"
   }
 }

@@ -420,6 +420,17 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return res.rowCount > 0;
   }
 
+  async deleteMany({ resource, recordIds }: { resource: AdminForthResource; recordIds: string[] }): Promise<number> {
+    if (!recordIds || recordIds.length === 0) {
+      return 0;
+    }
+    const placeholders = recordIds.map(() => '?').join(',');
+    const query = `DELETE FROM ${resource.table} WHERE ${this.getPrimaryKey(resource)} IN (${placeholders})`;
+    dbLogger.trace(`🪲📜 MySQL Q: ${query} values: ${JSON.stringify([recordIds])}`);
+    const [result] = await this.client.execute(query, recordIds);
+    return result.affectedRows ?? 0;
+  }
+
   async close() {
     await this.client.end();
   }

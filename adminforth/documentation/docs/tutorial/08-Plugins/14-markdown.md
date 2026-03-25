@@ -9,7 +9,7 @@ Also, it allows previewing of Markdown fields in the show page.
 To install the plugin:
 
 ```bash
-npm install @adminforth/markdown --save
+pnpm install @adminforth/markdown --save
 ```
 
 ### Usage
@@ -51,12 +51,12 @@ model description_image {
 ```
 
 ```bash
-npm run makemigration -- --name add_description_image ; npm run migrate:local
+pnpm makemigration --name add_description_image ; pnpm migrate:local
 ```
 
 ```bash
-npm i @adminforth/upload --save
-npm i @adminforth/storage-adapter-local --save
+pnpm i @adminforth/upload --save
+pnpm i @adminforth/storage-adapter-local --save
 ```
 
 ```typescript title="./resources/description_images.ts"
@@ -170,3 +170,38 @@ plugins: [
     }),
 ]
 ```
+
+### Markdown Top Panel
+The Markdown plugin also provides a convenient top panel with formatting buttons, allowing users to quickly apply Markdown syntax without typing it manually.
+
+By default, the toolbar includes common formatting actions such as:
+- Bold
+- Italic
+- Underline
+- Strikethrough
+- Headings (H1, H2, H3)
+- Lists (ordered and unordered)
+- Links
+- Code blocks
+
+If some buttons are unnecessary for your use case, you can easily disable them using the topPanelSettings option.
+
+```typescript title="./resources/apartments.ts"
+import MarkdownPlugin from '@adminforth/markdown';
+
+// ... existing resource configuration ...
+
+plugins: [
+  new MarkdownPlugin({
+  fieldName: "description",
+  // diff-add
+  topPanelSettings: {
+    // diff-add
+    bold: false, //disable bold button
+  },
+})
+]
+```
+
+>👆 Full list of buttons you can enable or disable via topPanelSettings:
+bold, italic, underline, strike, h1, h2, h3, ul, ol, link, codeBlock 

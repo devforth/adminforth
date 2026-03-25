@@ -5,13 +5,13 @@ import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
 import { Dropdown } from 'flowbite';
-import adminforth from '../adminforth';
+import adminforth, { useAdminforth } from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
 import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
-
+import { onBeforeRouteLeave } from 'vue-router';
 
 
 
@@ -616,4 +616,59 @@ export function getTimeAgoString(date: Date): string {
     const days = Math.floor(diffInSeconds / 86400);
     return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
+}
+
+export class leaveGuardActiveClass {
+  private active = false;
+
+  isActive() {
+    return this.active;
+  }
+
+  setActive(value: boolean) {
+    this.active = value;
+  }
+}
+
+export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, record: any, checkIfWeCanLeavePage: () => boolean, leaveGuardActive: leaveGuardActiveClass, isActive: { value: boolean }): Promise<void> {
+  
+  const { confirm } = useAdminforth();
+  const { t } = useI18n();
+
+  onBeforeRouteLeave(async (to, from) => {
+    if (!isActive.value) {
+      return true;
+    }
+
+
+    if (leaveGuardActive.isActive()) {
+      return false;
+    }
+
+    if (checkIfWeCanLeavePage()) {
+      return true;
+    }
+
+    leaveGuardActive.setActive(true);
+
+    try {
+      const { changedFields } = compareOldAndNewRecord(
+        initialValues.value,
+        record.value
+      );
+
+      const messageHtml =
+        generateMessageHtmlForRecordChange(changedFields, t);
+
+      const answer = await confirm({
+        messageHtml,
+        yes: t('Yes'),
+        no: t('No'),
+      });
+
+      return answer;
+    } finally {
+      leaveGuardActive.setActive(false);
+    }
+  });
 }

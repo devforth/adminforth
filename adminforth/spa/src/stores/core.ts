@@ -92,6 +92,7 @@ export const useCoreStore = defineStore('core', () => {
 
       // console.log('🔔 subscribeToMenuBadges', mi.badge, JSON.stringify(mi));
       if (mi.badge !== undefined) {
+        websocket.unsubscribe(`/opentopic/update-menu-badge/${mi.itemId}`);
         websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
           mi.badge = badge;
         });
@@ -121,8 +122,6 @@ export const useCoreStore = defineStore('core', () => {
         item.badge = badge;
       }
     });
-    // TODO: This thing was created for something. Find out why
-    // websocket.unsubscribeAll();
     subscribeToMenuBadges();
 
   }

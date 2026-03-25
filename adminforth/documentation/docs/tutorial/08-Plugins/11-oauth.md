@@ -8,8 +8,8 @@ Optionaly, you can also enable open signup for new users and assign some default
 To install the plugin:
 
 ```bash
-npm install @adminforth/oauth --save
-npm install @adminforth/google-oauth-adapter --save  # for Google OAuth
+pnpm install @adminforth/oauth --save
+pnpm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 ```
 
 ## Configuration
@@ -84,7 +84,7 @@ model adminuser {
 2. Run the migration:
 
 ```bash
-npm run makemigration -- --name add-email-confirmed-to-adminuser ; npm run migrate:local
+pnpm makemigration --name add-email-confirmed-to-adminuser ; pnpm migrate:local
 ```
 
 3. Configure the plugin with `emailConfirmedField`:
@@ -139,7 +139,7 @@ new OAuthPlugin({
 Install Adapter:
 
 ```
-npm install @adminforth/facebook-oauth-adapter --save
+pnpm install @adminforth/facebook-oauth-adapter --save
 ```
 
 
@@ -180,7 +180,7 @@ plugins: [
 Install Adapter:
 
 ```
-npm install @adminforth/github-oauth-adapter --save
+pnpm install @adminforth/github-oauth-adapter --save
 ```
 
 
@@ -219,7 +219,7 @@ plugins: [
 Install Adapter:
 
 ```
-npm install @adminforth/keycloak-oauth-adapter --save
+pnpm install @adminforth/keycloak-oauth-adapter --save
 ```
 
 If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](/blog/keycloak-setup-example).
@@ -261,7 +261,7 @@ plugins: [
 Install Adapter:
 
 ```
-npm install @adminforth/microsoft-oauth-adapter --save
+pnpm install @adminforth/microsoft-oauth-adapter --save
 ```
 
 
@@ -304,7 +304,7 @@ plugins: [
 Install Adapter:
 
 ```
-npm install @adminforth/twitch-oauth-adapter --save
+pnpm install @adminforth/twitch-oauth-adapter --save
 ```
 
 1. Go to the [Twitch dashboard](https://dev.twitch.tv/console/)
@@ -419,7 +419,7 @@ model adminuser {
 And make migration:
 
 ```bash
-npm run makemigration -- --name add-avatar-field ; npm run migrate:local
+pnpm makemigration --name add-avatar-field ; pnpm migrate:local
 ```
 
 Then add this field to users resource and install upload plugin:

@@ -183,9 +183,23 @@ export interface IAdminForthDataSourceConnector {
    * For string fields:
    *  - {@link AdminForthResourceColumn.maxLength}
    * For numbers:
+   *  // min/max are used inside getMinMaxForColumns from base connector
    *  - {@link AdminForthResourceColumn.min}
    *  - {@link AdminForthResourceColumn.max}
-   *  - {@link AdminForthResourceColumn.minValue}, {@link AdminForthResourceColumn.maxValue}, {@link AdminForthResourceColumn.enum}, {@link AdminForthResourceColumn.foreignResource}, {@link AdminForthResourceColumn.sortable}, {@link AdminForthResourceColumn.backendOnly}, {@link AdminForthResourceColumn.masked}, {@link AdminForthResourceColumn.virtual}, {@link AdminForthResourceColumn.components}, {@link AdminForthResourceColumn.allowMinMaxQuery}, {@link AdminForthResourceColumn.editingNote}, {@link AdminForthResourceColumn.showIn}, {@link AdminForthResourceColumn.isUnique}, {@link AdminForthResourceColumn.validation})
+   *  - {@link AdminForthResourceColumn.minValue}, 
+   *  - {@link AdminForthResourceColumn.maxValue}, 
+   *  - {@link AdminForthResourceColumn.enum}, 
+   *  - {@link AdminForthResourceColumn.foreignResource}, 
+   *  - {@link AdminForthResourceColumn.sortable}, 
+   *  - {@link AdminForthResourceColumn.backendOnly}, 
+   *  - {@link AdminForthResourceColumn.masked}, 
+   *  - {@link AdminForthResourceColumn.virtual}, 
+   *  - {@link AdminForthResourceColumn.components}, 
+   *  - {@link AdminForthResourceColumn.allowMinMaxQuery}, 
+   *  - {@link AdminForthResourceColumn.editingNote}, 
+   *  - {@link AdminForthResourceColumn.showIn}, 
+   *  - {@link AdminForthResourceColumn.isUnique}, 
+   *  - {@link AdminForthResourceColumn.validation})
    * Also you can additionally save original column type to {@link AdminForthResourceColumn._underlineType}. This might be later used
    * in {@link IAdminForthDataSourceConnector.getFieldValue} and {@link IAdminForthDataSourceConnector.setFieldValue} methods.
    * 
@@ -1208,8 +1222,8 @@ interface AdminForthInputConfigCustomization {
    * 
    * ```bashcreating rec
    * cd custom
-   * npm init -y
-   * npm install highcharts highcharts-vue
+   * pnpm init -y
+   * pnpm install highcharts highcharts-vue
    * ```
    * 
    * And specify vueUsesFile in AdminForth config:
@@ -1813,7 +1827,6 @@ export type AllowedActions = {
  */
 export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
 
-  baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
