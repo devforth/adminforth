@@ -19,12 +19,12 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body, headers, silentError = false, abortController}: {
+export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
   silentError?: boolean
-  abortController?: AbortController
+  abortSignal?: AbortSignal
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -35,7 +35,7 @@ export async function callApi({path, method, body, headers, silentError = false,
       ...headers
     },
     body: JSON.stringify(body),
-    signal: abortController?.signal
+    signal: abortSignal
   };
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
@@ -84,17 +84,17 @@ export async function callAdminForthApi(
     body=undefined, 
     headers=undefined, 
     silentError = false,
-    abortController = undefined
+    abortSignal = undefined
   }: {
     path: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
     body?: any,
     headers?: Record<string, string>,
     silentError?: boolean,
-    abortController?: AbortController
+    abortSignal?: AbortSignal
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError, abortController} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError, abortSignal} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
