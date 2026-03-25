@@ -10,7 +10,7 @@ export function initApi(app: Express, admin: IAdminForth) {
     async (req: Request, res: Response) => {
       const allUsers = await admin.resource("adminuser").list([]);
       res.json({
-        message: "List of adminuser from AdminForth API",
+        message: "List of logged-in admin user from AdminForth API",
         users: allUsers,
       });
     }
