@@ -70,6 +70,18 @@ export interface StorageAdapter {
    * @returns A promise that resolves to a string containing the data URL
    */
   getKeyAsDataURL(key: string): Promise<string>;
+
+  /**
+    * Determines whether the given URL points to a resource managed by this storage adapter.
+    * * This method is important for plugins (such as MarkdownPlugin) to distinguish between
+    * "own" resources (stored in your S3 bucket or local storage) and external links * (such as images from Unsplash or Google).
+    * * The implementation logic typically includes:
+    * 1. Checking whether the hostname of the URL matches the configured bucket domain or custom CDN.
+    * 2. Checking whether the URL path contains the adapter's specific download prefix.
+    * * @param url - The full URL string to check (can be a public URL or a pre-signed URL).
+    * @returns A promise that returns true if the URL belongs to this adapter, false otherwise.
+    */
+  isInternalUrl (url: string): Promise<boolean>;
 }
 
   
