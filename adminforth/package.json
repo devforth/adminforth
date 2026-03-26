@@ -13,6 +13,10 @@
   "bin": {
     "adminforth": "./commands/cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devforth/adminforth.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1",
     "build": "rm -rf dist && tsc && pnpm prepareDist",
