@@ -53,23 +53,6 @@ services:
       - mysql-data:/var/lib/mysql
       - ./prisma/mysql/mysql-init:/docker-entrypoint-initdb.d
 
-  keycloak:
-      image: quay.io/keycloak/keycloak:latest
-      command: start-dev
-      environment:
-        - KEYCLOAK_ADMIN=admin
-        - KEYCLOAK_ADMIN_PASSWORD=admin
-        - DB_VENDOR=postgres
-        - DB_ADDR=pg
-        - DB_DATABASE=dev_demo
-        - DB_USER=demo
-        - DB_PASSWORD=demo
-      ports:
-        - "8080:8080"
-      depends_on:
-        - pg
-      volumes:
-        - keycloak-data:/opt/keycloak/data
   init-db:
     image: mysql
     depends_on:
