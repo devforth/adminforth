@@ -1,4 +1,4 @@
-import type { Express, Request } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
@@ -67,6 +67,10 @@ export interface IHttpServer {
       headers: {[key: string]: string}, 
       cookies: {[key: string]: string}, 
       response: IAdminForthHttpResponse,
+      requestUrl: string,
+      abortSignal: AbortSignal,
+      _raw_express_req: Request,
+      _raw_express_res: Response,
     ) => void,
   }): void;
 
