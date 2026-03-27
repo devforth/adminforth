@@ -2417,6 +2417,8 @@ import { Modal, Button } from '@/afcl';
   askForCloseConfirmation?: boolean // Show extra popup to confirm close ( to avoid close by accident)
   closeConfirmationText?: string // Text that will be shown on close confirmation popup
   removeFromDomOnClose?: boolean // Remove modal from DOM on close ( default is false )
+  backgroundCustomClasses?: string // allows to add custom classes to the gray background of modal (e.g. you can have bg-pink-500/60)
+  modalCustomClasses?: string // allows to add custom classes to modal popup
 ```
 
 ## Date picker
