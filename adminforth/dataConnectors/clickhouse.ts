@@ -192,7 +192,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return iso;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
-        return  value === null ? null : (value ? 1 : 0);
+        return  value === null ? null : (value ? true : false);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
         if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
