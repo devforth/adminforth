@@ -677,34 +677,6 @@ export default {
 > `minValue` and `maxValue` checks are enforced both on frontend and backend.
 
 
-### Validation
-
-In cases when column values must follow certain format, you can add `validation` to it.
-`validation` is an array of rules, each containing `regExp` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
-
-```typescript title="./resources/adminuser.ts"
-export default {
-      name: 'adminuser',
-      columns: [
-        ...
-        {
-          name: 'email',
-          required: true,
-          isUnique: true,
-          validation: [
-            {
-              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com',
-            },
-          ],
-        },
-      ],
-    },
-    ...
-  ],
-```
-
-> `validation` checks are enforced both on frontend and backend.
 
 ### Input prefix and suffix
 
@@ -966,6 +938,81 @@ export default {
 When defined like this, adminforth will use value in `property_type` to figure out to what table does id in `property_id` refers to and properly link them. When creating or editing a record, adminforth will figure out to what table new `property_id` links to and fill `property_type` on its own using corresponding `whenValue`. Note, that `whenValue` does not have to be the same as `resourceId`, it can be any string as long as they do not repeat withing `polymorphicResources` array. Also, since `whenValue` is a string, column designated as `polymorphicOn` must also be string. Another thing to note is that, `polymorphicOn` column (`property_type` in our case) must not be editable by user, so it must include both `create` and `edit` as `false` in `showIn` value. Even though, `polymorphicOn` column is no editable, it can be beneficial to set is as an enumerator. This will have two benefits: first, columns value displayed in table and show page can be changed to a desired one and second, when filtering on this column, user will only able to choose values provided for him.
 
 If `beforeDatasourceRequest` or `afterDatasourceResponse` hooks are set for polymorphic foreign resource, they will be called for each resource in `polymorphicResources` array.
+
+## Validation (create/edit view)
+In cases when column values must follow certain format, you can add `validation` to it.
+`validation` is an array of rules, each containing `regExp` or `validator function` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
+
+### Frontend validation
+We recomend to use this validation with regExp, because it validates fields in real time
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: 'email',
+          required: true,
+          isUnique: true,
+          //diff-add
+          validation: [
+            //diff-add
+            {
+              //diff-add
+              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+              //diff-add
+              message: 'Email is not valid, must be in format example@test.com',
+              //diff-add
+            },
+            //diff-add
+          ],
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+### Backend validation
+There might be rare cases, when you want to have your own validation function. For this you can use `validator` callback:
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: 'email',
+          required: true,
+          isUnique: true,
+          //diff-add
+          validation: [
+            //diff-add
+            {
+              //diff-add
+              async validator(value: any, record: any) {
+                //diff-add
+                if (value.endsWith("@example.com")) {
+                  //diff-add
+                  return { isValid: false, message: 'Your email can`t end with `@example.com`' };
+                  //diff-add
+                }
+                //diff-add
+                return { isValid: true }
+                //diff-add
+              }
+              //diff-add
+            }
+            //diff-add
+          ],
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+>Better avoid using of custom validator, because every time change field (after failed first save attempt), it will make an API call
 
 ## Filtering
 
