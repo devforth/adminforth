@@ -11,8 +11,8 @@
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -21,8 +21,8 @@
     <BreadcrumbsWithButtons>
       <component 
         v-if="!coreStore.isResourceFetching && !initInProcess"
-        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons || []"
-        :is="getCustomComponent(c)"
+        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
+        :is="getCustomComponent(formatComponent(c))"
         :meta="(c as AdminForthComponentDeclarationFull).meta"
         :resource="coreStore.resource"
         :adminUser="coreStore.adminUser"
@@ -114,8 +114,8 @@
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -161,8 +161,8 @@
     />
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -176,13 +176,13 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
-import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
+import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
-import type { AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull } from '@/types/Common';
 
 
 import {
