@@ -103,12 +103,12 @@
 
         <component
           v-for="(row, rowI) in rowsToRender"
-          :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
+          :is="tableRowReplaceInjection ? getCustomComponent(formatComponent(tableRowReplaceInjection)) : 'tr'"
           :key="`row_${row._primaryKeyValue}`"
           :record="row"
           :resource="resource"
           :adminUser="coreStore.adminUser"
-          :meta="tableRowReplaceInjection ? tableRowReplaceInjection.meta : undefined"
+          :meta="tableRowReplaceInjection ? formatComponent(tableRowReplaceInjection).meta : undefined"
           @click="onClick($event, row)"
           ref="rowRefs"
           class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
@@ -203,17 +203,17 @@
                   :key="action.id"
                 >
                     <component
-                      :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-                      :meta="action.customComponent?.meta"
+                      v-if="action.customComponent"
+                      :is="action.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+                      :meta="formatComponent(action.customComponent).meta"
                       :row="row"
                       :resource="resource"
-                      :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload)"
+                      :adminUser="coreStore.adminUser"
+                      @callAction="(payload? : Object) => startCustomAction(action.id as string | number, row, payload)"
                     >
                       <button
                         type="button"
                         class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                        :disabled="rowActionLoadingStates?.[action.id]"
                       >
                         <component
                           v-if="action.icon"
@@ -236,7 +236,7 @@
                 :deleteRecord="deleteRecord"
                 :resourceId="resource.resourceId"
                 :startCustomAction="startCustomAction"
-                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems"
+                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems ?? []"
               />
             </div>
             
@@ -347,7 +347,7 @@ import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } f
 import { callAdminForthApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
@@ -360,7 +360,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull, AdminForthComponentDeclaration } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
@@ -383,8 +383,8 @@ const props = defineProps<{
   containerHeight?: number,
   itemHeight?: number,
   bufferSize?: number,
-  customActionIconsThreeDotsMenuItems?: any[]
-  tableRowReplaceInjection?: AdminForthComponentDeclarationFull,
+  customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration[]
+  tableRowReplaceInjection?: AdminForthComponentDeclaration,
   isVirtualScrollEnabled: boolean
 }>();
 
@@ -414,7 +414,7 @@ const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 const showListActionsThreeDots = computed(() => {
   return  props.resource?.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) // show if any action is set to show in three dots menu
     || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) // or if there are custom action icons for three dots menu
-    || !props.resource?.options.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
+    || !props.resource?.options?.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
     || (props.resource?.options.baseActionsAsQuickIcons && props.resource?.options.baseActionsAsQuickIcons.length < 3) // if there all 3 base actions are shown as quick icons - hide three dots icon
 })
 
@@ -609,7 +609,7 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
+async function startCustomAction(actionId: string | number, row: any, extraData: Record<string, any> = {}) {
 
   actionLoadingStates.value[actionId] = true;
 

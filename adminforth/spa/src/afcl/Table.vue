@@ -364,7 +364,7 @@ function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
   });
 }
 
-function tableRowClick(row) {
+function tableRowClick(row: any) {
   emit("clickTableRow", row)
 }
 </script>
