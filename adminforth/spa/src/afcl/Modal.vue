@@ -6,7 +6,13 @@
     <slot name="trigger"></slot>
   </div>
   <Teleport to="body">
-      <div v-show="isModalOpen" v-if="!removeFromDom" @click="backdropClick" class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex" >
+      <div 
+        v-show="isModalOpen" 
+        v-if="!removeFromDom" 
+        @click="backdropClick" 
+        class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
+        :class="props.backgroundCustomClasses"
+      >
         <!-- Modal content -->
         <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
 
@@ -19,6 +25,7 @@
           <div
             v-if="showConfirmationOnClose"
             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]"
+            :class="props.modalCustomClasses"
           >
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
               <h2 class="text-lg font-semibold mb-4 text-lightDialogHeaderText dark:text-darkDialogHeaderText">Confirm Close</h2>
@@ -64,6 +71,8 @@ interface DialogProps {
   askForCloseConfirmation?: boolean
   closeConfirmationText?: string
   removeFromDomOnClose?: boolean
+  backgroundCustomClasses?: string
+  modalCustomClasses?: string
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
@@ -74,6 +83,8 @@ const props = withDefaults(defineProps<DialogProps>(), {
   askForCloseConfirmation: false,
   closeConfirmationText: 'Are you sure you want to close this dialog?',
   removeFromDomOnClose: false,
+  backgroundCustomClasses: '',
+  modalCustomClasses: '',
 })
 
 const showConfirmationOnClose = ref(false);
