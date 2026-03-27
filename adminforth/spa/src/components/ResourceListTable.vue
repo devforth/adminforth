@@ -209,7 +209,7 @@
                       :row="row"
                       :resource="resource"
                       :adminUser="coreStore.adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload)"
+                      @callAction="(payload? : Object) => startCustomAction(action.id as string | number, row, payload)"
                     >
                       <button
                         type="button"

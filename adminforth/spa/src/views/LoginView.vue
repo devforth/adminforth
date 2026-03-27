@@ -35,8 +35,8 @@
                       <component 
                         v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
                         :key="index"
-                        :is="getCustomComponent(c)"
-                        :meta="c.meta"
+                        :is="getCustomComponent(formatComponent(c))"
+                        :meta="formatComponent(c).meta"
                       />
                     </template>
                     <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
@@ -88,8 +88,8 @@
                         
                         <component 
                           v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                         
@@ -107,8 +107,8 @@
                         </Button>
                         <component 
                           v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                     </form>
@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, formatComponent } from '@/utils';
 import { onBeforeMount, onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
