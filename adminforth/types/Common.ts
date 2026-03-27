@@ -322,6 +322,17 @@ export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionComm
   id: string,
 }
 
+type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
+
+export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+  actions?: AdminForthActionFront[],
+  bulkActions?: AdminForthBulkActionFront[],
+}
+
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+  options: AdminForthOptionsForFrontend;
+}
+
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.

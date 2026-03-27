@@ -4,18 +4,10 @@ import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthActionFront, AdminForthBulkActionFront } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
-type AdminforthOptionsCommon = AdminForthResourceCommon['options'];
 
-interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
-  actions?: AdminForthActionFront[],
-  bulkActions?: AdminForthBulkActionFront[],
-}
-interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
-  options: AdminForthOptionsForFrontend;
-}
 
 export const useCoreStore = defineStore('core', () => {
   const { alert } = useAdminforth();
