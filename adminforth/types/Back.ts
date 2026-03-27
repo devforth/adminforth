@@ -1641,7 +1641,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
-    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclarationFull>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 

@@ -4,8 +4,18 @@ import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthActionFront, AdminForthBulkActionFront } from '@/types/Common';
 import type { Ref } from 'vue'
+
+type AdminforthOptionsCommon = AdminForthResourceCommon['options'];
+
+interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+  actions?: AdminForthActionFront[],
+  bulkActions?: AdminForthBulkActionFront[],
+}
+interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+  options: AdminForthOptionsForFrontend;
+}
 
 export const useCoreStore = defineStore('core', () => {
   const { alert } = useAdminforth();
@@ -15,7 +25,7 @@ export const useCoreStore = defineStore('core', () => {
   const menu: Ref<AdminForthConfigMenuItem[]> = ref([]);
   const config: Ref<AdminForthConfigForFrontend | null> = ref(null);
   const record: Ref<any | null> = ref({});
-  const resource: Ref<AdminForthResourceCommon | null> = ref(null);
+  const resource: Ref<AdminForthResourceFrontend | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
   const isResourceFetching = ref(false);
   const isInternetError = ref(false);

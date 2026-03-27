@@ -420,13 +420,13 @@ export interface AdminForthResourceInputCommon {
       /*
        * Custom actions list. Actions available in show, edit and create views. 
        */
-      actions?: AdminForthActionFront[],
+      actions?: AdminForthActionInput[],
       
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
        */
-      bulkActions?: AdminForthBulkActionFront[],
+      bulkActions?: AdminForthBulkActionCommon[],
 
       /**
        * Allowed actions for resource.
@@ -1178,9 +1178,9 @@ export interface AdminForthConfigForFrontend {
   demoCredentials?: string,
   loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
   loginPageInjections: {
-    underInputs: Array<AdminForthComponentDeclarationFull>,
-    panelHeader: Array<AdminForthComponentDeclarationFull>,
-    underLoginButton: Array<AdminForthComponentDeclarationFull>,
+    underInputs: Array<AdminForthComponentDeclaration>,
+    panelHeader: Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
