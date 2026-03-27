@@ -1,6 +1,6 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from '../spa_types/core';
-import type { ValidationObject } from '../types/Common.js';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, ValidationObject } from '../types/Common.js';
 import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
@@ -98,6 +98,14 @@ export async function callAdminForthApi(
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
+  }
+}
+
+export function formatComponent(component: AdminForthComponentDeclaration): AdminForthComponentDeclarationFull {
+  if (typeof component === 'string') {
+    return { file: component, meta: {} };
+  } else {
+    return { file: component.file, meta: component.meta };
   }
 }
 

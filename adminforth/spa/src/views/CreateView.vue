@@ -2,8 +2,8 @@
   <div class="relative w-full">
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -36,8 +36,8 @@
     </BreadcrumbsWithButtons>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -61,8 +61,8 @@
     </ResourceForm>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, onBeforeRouteLeaveCreateEditView } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
@@ -88,7 +88,7 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 
 const isValid = ref(false);

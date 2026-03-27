@@ -314,6 +314,14 @@ export type FieldGroup = {
   noTitle?: boolean;
 };
 
+export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id'> {
+  id: string;
+}
+
+export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
+  id: string,
+}
+
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
@@ -361,17 +369,17 @@ export interface AdminForthResourceInputCommon {
     recordLabel?: (item: any) => string,
 
 
-    /**
-     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
-     * default is false
-     */
-    dontShowWarningAboutUnsavedChanges?: boolean,
 
     /**
      * General options for resource.
      */
     options?: {
       
+      /**
+       * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+       * default is false
+       */
+      dontShowWarningAboutUnsavedChanges?: boolean,
 
       /**
        * Show quick action icons for base actions (show, edit, delete) in list view. 
@@ -412,13 +420,13 @@ export interface AdminForthResourceInputCommon {
       /*
        * Custom actions list. Actions available in show, edit and create views. 
        */
-      actions?: AdminForthActionInput[],
+      actions?: AdminForthActionFront[],
       
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
        */
-      bulkActions?: AdminForthBulkActionCommon[],
+      bulkActions?: AdminForthBulkActionFront[],
 
       /**
        * Allowed actions for resource.
@@ -1170,8 +1178,9 @@ export interface AdminForthConfigForFrontend {
   demoCredentials?: string,
   loginPromptHTML?: string | (() => string | Promise<string> | void | Promise<void> | Promise<undefined>) | undefined 
   loginPageInjections: {
-    underInputs: Array<AdminForthComponentDeclaration>,
-    panelHeader: Array<AdminForthComponentDeclaration>,
+    underInputs: Array<AdminForthComponentDeclarationFull>,
+    panelHeader: Array<AdminForthComponentDeclarationFull>,
+    underLoginButton: Array<AdminForthComponentDeclarationFull>,
   },
   rememberMeDuration: string,
   showBrandNameInSidebar: boolean,

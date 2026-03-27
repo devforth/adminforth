@@ -1,8 +1,8 @@
 <template>
   <div class="relative w-full">
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="editableRecord"
       :resource="coreStore.resource"
@@ -32,8 +32,8 @@
     </BreadcrumbsWithButtons>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -56,8 +56,8 @@
     </ResourceForm>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -82,7 +82,8 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { formatComponent } from '@/utils';
+import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 
 const { t } = useI18n();

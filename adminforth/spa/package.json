@@ -39,6 +39,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.12.5",
+    "@types/sanitize-html": "^2.16.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/eslint-config-typescript": "^13.0.0",
     "@vue/tsconfig": "^0.5.1",
