@@ -22,11 +22,12 @@ steps:
       - event: push
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
-      - cd adminforth/spa
-      - npm ci
+      - cd adminforth
+      - pnpm install
+      - cd ./spa
+      - pnpm install
       - /bin/bash ../../live-demo/deploy/typeCheckSPA.sh
       - cd ..
-      - pnpm install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
       - pnpm audit --audit-level=critical
       - pnpm exec semantic-release
