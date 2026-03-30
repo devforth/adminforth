@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ls -la
 npm ci
 pnpm type-check 2>&1
 type_check_status=$?
