@@ -39,9 +39,9 @@ export function callTsProxy(tsCode, silent=false) {
     child.on("close", (code) => {
       if (code === 0) {
         try {
-          const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>> <-- found this in stream start reading'));
-          const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>> <-- found this in stream start reading') + 46, tsProxyResult.lastIndexOf('<<<<<<< <-- found end'));
-          const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>> <-- found this in stream start reading'));
+          const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>>'));
+          const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>>') + 46, tsProxyResult.lastIndexOf('<<<<<<<'));
+          const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>>'));
           for (const log of preparedStdoutLogs) {
             console.log(log);
           }
