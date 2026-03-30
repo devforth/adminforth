@@ -3,7 +3,7 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -65,7 +65,7 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -120,7 +120,7 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
-      :is="getCustomComponent(c)"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -148,7 +148,7 @@ import ShowTable from '@/components/ShowTable.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
-import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
+import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup} from '@/types/Common.js';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 
 const route = useRoute();
