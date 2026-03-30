@@ -691,3 +691,161 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
     }
   });
 }
+
+export async function executeCustomAction({
+  actionId,
+  resourceId,
+  recordId,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+}: {
+  actionId: string | number,
+  resourceId: string,
+  recordId: string | number,
+  extra?: Record<string, any>,
+  onSuccess?: (data: any) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+}): Promise<any> {
+  setLoadingState?.(true);
+
+  try {
+    const data = await callAdminForthApi({
+      path: '/start_custom_action',
+      method: 'POST',
+      body: {
+        resourceId,
+        actionId,
+        recordId,
+        extra: extra || {},
+      }
+    });
+
+    if (data?.redirectUrl) {
+      // Check if the URL should open in a new tab
+      if (data.redirectUrl.includes('target=_blank')) {
+        window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        // Navigate within the app
+        if (data.redirectUrl.startsWith('http')) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+        }
+      }
+      return data;
+    }
+
+    if (data?.ok) {
+      if (onSuccess) {
+        await onSuccess(data);
+      }
+      return data;
+    }
+
+    if (data?.error) {
+      if (onError) {
+        onError(data.error);
+      }
+    }
+
+    return data;
+  } finally {
+    setLoadingState?.(false);
+  }
+}
+
+export async function executeCustomBulkAction({
+  actionId,
+  resourceId,
+  recordIds,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+  confirmMessage,
+}: {
+  actionId: string | number,
+  resourceId: string,
+  recordIds: (string | number)[],
+  extra?: Record<string, any>,
+  onSuccess?: (results: any[]) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+  confirmMessage?: string,
+}): Promise<any> {
+  if (!recordIds || recordIds.length === 0) {
+    if (onError) {
+      onError('No records selected');
+    }
+    return { error: 'No records selected' };
+  }
+
+  if (confirmMessage) {
+    const { confirm } = useAdminforth();
+    const confirmed = await confirm({
+      message: confirmMessage,
+    });
+    if (!confirmed) {
+      return { cancelled: true };
+    }
+  }
+
+  setLoadingState?.(true);
+
+  try {
+    // Execute action for all records in parallel using Promise.all
+    const results = await Promise.all(
+      recordIds.map(recordId =>
+        callAdminForthApi({
+          path: '/start_custom_action',
+          method: 'POST',
+          body: {
+            resourceId,
+            actionId,
+            recordId,
+            extra: extra || {},
+          }
+        })
+      )
+    );
+
+    const lastResult = results[results.length - 1];
+    if (lastResult?.redirectUrl) {
+      if (lastResult.redirectUrl.includes('target=_blank')) {
+        window.open(lastResult.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        if (lastResult.redirectUrl.startsWith('http')) {
+          window.location.href = lastResult.redirectUrl;
+        } else {
+          router.push(lastResult.redirectUrl);
+        }
+      }
+      return lastResult;
+    }
+
+    const allSucceeded = results.every(r => r?.ok);
+    const hasErrors = results.some(r => r?.error);
+
+    if (allSucceeded) {
+      if (onSuccess) {
+        await onSuccess(results);
+      }
+      return { ok: true, results };
+    }
+
+    if (hasErrors) {
+      const errorMessages = results.filter(r => r?.error).map(r => r.error).join(', ');
+      if (onError) {
+        onError(errorMessages);
+      }
+      return { error: errorMessages, results };
+    }
+
+    return { results };
+  } finally {
+    setLoadingState?.(false);
+  }
+}

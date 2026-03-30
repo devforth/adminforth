@@ -137,7 +137,7 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import { useCoreStore } from '@/stores/core';
-import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, computed } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
@@ -246,54 +246,47 @@ async function deleteRecord() {
 }
 
 async function startCustomAction(actionId: string, extra?: any) {  
-  actionLoadingStates.value[actionId] = true;
+  await executeCustomAction({
+    actionId,
+    resourceId: route.params.resourceId as string,
+    recordId: route.params.primaryKey as string,
+    extra,
+    setLoadingState: (loading: boolean) => {
+      actionLoadingStates.value[actionId] = loading;
+    },
+    onSuccess: async (data: any) => {
+      if (data?.redirectUrl) {
+        // Check if the URL should open in a new tab
+        if (data.redirectUrl.includes('target=_blank')) {
+          window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+        } else {
+          // Navigate within the app
+          if (data.redirectUrl.startsWith('http')) {
+            window.location.href = data.redirectUrl;
+          } else {
+            router.push(data.redirectUrl);
+          }
+        }
+        return;
+      }
 
-  const data = await callAdminForthApi({
-    path: '/start_custom_action',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId,
-      actionId: actionId,
-      recordId: route.params.primaryKey,
-      extra: extra,
+      await coreStore.fetchRecord({
+        resourceId: route.params.resourceId as string,
+        primaryKey: route.params.primaryKey as string,
+        source: 'show',
+      });
+
+      if (data.successMessage) {
+        alert({
+          message: data.successMessage,
+          variant: 'success'
+        });
+      }
+    },
+    onError: (error: string) => {
+      showErrorTost(error);
     }
   });
-  
-  actionLoadingStates.value[actionId] = false;
-  
-  if (data?.redirectUrl) {
-    // Check if the URL should open in a new tab
-    if (data.redirectUrl.includes('target=_blank')) {
-      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
-    } else {
-      // Navigate within the app
-      if (data.redirectUrl.startsWith('http')) {
-        window.location.href = data.redirectUrl;
-      } else {
-        router.push(data.redirectUrl);
-      }
-    }
-    return;
-  }
-  
-  if (data?.ok) {
-    await coreStore.fetchRecord({
-      resourceId: route.params.resourceId as string, 
-      primaryKey: route.params.primaryKey as string,
-      source: 'show',
-    });
-
-    if (data.successMessage) {
-      alert({
-        message: data.successMessage,
-        variant: 'success'
-      });
-    }
-  }
-  
-  if (data?.error) {
-    showErrorTost(data.error);
-  }
 }
 
 show.refresh = () => {
