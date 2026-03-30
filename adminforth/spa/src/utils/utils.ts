@@ -101,11 +101,13 @@ export async function callAdminForthApi(
   }
 }
 
-export function formatComponent(component: AdminForthComponentDeclaration): AdminForthComponentDeclarationFull {
+export function formatComponent(component: AdminForthComponentDeclaration | undefined): AdminForthComponentDeclarationFull {
   if (typeof component === 'string') {
     return { file: component, meta: {} };
-  } else {
+  } else if (typeof component === 'object') {
     return { file: component.file, meta: component.meta };
+  } else {
+    return { file: '', meta: {} };
   }
 }
 
