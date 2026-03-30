@@ -344,7 +344,7 @@
 
 
 import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, executeCustomAction } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import { getCustomComponent, formatComponent } from '@/utils';
@@ -610,50 +610,28 @@ async function deleteRecord(row: any) {
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
 async function startCustomAction(actionId: string | number, row: any, extraData: Record<string, any> = {}) {
+  await executeCustomAction({
+    actionId,
+    resourceId: props.resource?.resourceId || '',
+    recordId: row._primaryKeyValue,
+    extra: extraData,
+    setLoadingState: (loading: boolean) => {
+      actionLoadingStates.value[actionId] = loading;
+    },
+    onSuccess: async (data: any) => {
+      emits('update:records', true);
 
-  actionLoadingStates.value[actionId] = true;
-
-  const data = await callAdminForthApi({
-    path: '/start_custom_action',
-    method: 'POST',
-    body: {
-      resourceId: props.resource?.resourceId,
-      actionId: actionId,
-      recordId: row._primaryKeyValue,
-      extra: extraData
+      if (data.successMessage) {
+        alert({
+          message: data.successMessage,
+          variant: 'success'
+        });
+      }
+    },
+    onError: (error: string) => {
+      showErrorTost(error);
     }
   });
-  
-  actionLoadingStates.value[actionId] = false;
-  
-  if (data?.redirectUrl) {
-    // Check if the URL should open in a new tab
-    if (data.redirectUrl.includes('target=_blank')) {
-      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
-    } else {
-      // Navigate within the app
-      if (data.redirectUrl.startsWith('http')) {
-        window.location.href = data.redirectUrl;
-      } else {
-        router.push(data.redirectUrl);
-      }
-    }
-    return;
-  }
-  if (data?.ok) {
-    emits('update:records', true);
-
-    if (data.successMessage) {
-      alert({
-        message: data.successMessage,
-        variant: 'success'
-      });
-    }
-  }
-  
-  if (data?.error) {
-    showErrorTost(data.error);
-  }
 }
 
 function validatePageInput() {

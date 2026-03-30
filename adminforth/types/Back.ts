@@ -1291,11 +1291,14 @@ interface AdminForthInputConfigCustomization {
 
 export interface AdminForthActionInput {
   name: string;
+  bulkConfirmationMessage?: string;
+  bulkSuccessMessage?: string;
   showIn?: {
       list?: boolean,
       listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
+      bulkButton?: boolean,
   };
   allowed?: (params: {
     adminUser: AdminUser;
@@ -1316,7 +1319,7 @@ export interface AdminForthActionInput {
       message?: string;
   }>;
   icon?: string;
-  id?: string;
+  id: string;
   customComponent?: AdminForthComponentDeclaration;
 }
 
