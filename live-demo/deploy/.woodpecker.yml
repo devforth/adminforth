@@ -25,6 +25,7 @@ steps:
       - cd adminforth
       - pnpm install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
+      - /bin/bash ../live-demo/deploy/typeCheckSPA.sh
       - pnpm audit --audit-level=critical
       - pnpm exec semantic-release
 
