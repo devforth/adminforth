@@ -167,7 +167,7 @@ const customActions = computed(() => {
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
-    resourceId: route.params.resourceId as string,
+    resourceId: route.params.resourceId,
   });
   initThreeDotsDropdown();
   await coreStore.fetchRecord({
