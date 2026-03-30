@@ -609,14 +609,14 @@ export type ValidationObject = {
      * ```
      * 
      */
-    regExp: string,
+    regExp?: string,
 
     /**
      * Error message shown to user if validation fails
      * 
      * Example: "Invalid email format"
      */
-    message: string,
+    message?: string,
 
     /**
      * Whether to check case sensitivity (i flag)

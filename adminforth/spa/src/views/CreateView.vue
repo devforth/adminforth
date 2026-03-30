@@ -79,16 +79,14 @@ import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
 import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
-import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
-import { computed } from 'vue';
+import { onMounted, onBeforeMount, onBeforeUnmount, ref  } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
-import type { AdminForthResourceColumn } from '@/types/Back';
-import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
+import { saveRecordPreparations } from '@/utils';
 import { Spinner } from '@/afcl'
 
 const isValid = ref(false);
