@@ -26,7 +26,7 @@ steps:
       - pnpm install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
       - cd ./spa
-      - /bin/bash ../live-demo/deploy/typeCheckSPA.sh
+      - /bin/bash ../../live-demo/deploy/typeCheckSPA.sh
       - cd ..
       - pnpm audit --audit-level=critical
       - pnpm exec semantic-release
