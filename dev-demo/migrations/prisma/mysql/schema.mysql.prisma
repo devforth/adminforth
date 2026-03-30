@@ -4,7 +4,6 @@ generator client {
 
 datasource mysql_db {
   provider = "mysql"
-  url = "mysql://demo:demo@localhost:3307/dev_demo"
 }
 
 model cars {
@@ -30,5 +29,5 @@ model cars {
 
   promo_picture  String?
   generated_promo_picture  String?
-
+  secret_field   String?
 }

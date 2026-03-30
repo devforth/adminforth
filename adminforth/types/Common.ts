@@ -371,6 +371,14 @@ export interface AdminForthResourceInputCommon {
      * General options for resource.
      */
     options?: {
+      
+
+      /**
+       * Show quick action icons for base actions (show, edit, delete) in list view. 
+       * By default, they are inside three dots dropdown menu. 
+       */
+      baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
+
 
       /**
        * Default sort for list view.
@@ -970,6 +978,18 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /*
+  ______________________________________________
+  |                                             |
+  | Min and max values are used                 |
+  | in getMinMaxForColumns from base connector  |
+  |_____________________________________________|
+        |
+        |
+        |
+        |
+        V  
+  */
   /**
    * Minimal value stored in this field.
    */
