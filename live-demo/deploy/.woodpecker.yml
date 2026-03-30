@@ -23,7 +23,7 @@ steps:
     commands:
       - export $(cat /woodpecker/deploy.vault.env | xargs)
       - cd adminforth/spa
-      - pnpm install
+      - npm ci
       - /bin/bash ../../live-demo/deploy/typeCheckSPA.sh
       - cd ..
       - pnpm install
