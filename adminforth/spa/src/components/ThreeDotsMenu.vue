@@ -46,6 +46,7 @@
           <li v-for="action in customActions" :key="action.id">
             <div class="wrapper"> 
               <component
+                v-if="action.customComponent"
                 :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
                 :meta="formatComponent(action.customComponent).meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
