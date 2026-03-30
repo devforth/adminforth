@@ -944,7 +944,7 @@ In cases when column values must follow certain format, you can add `validation`
 `validation` is an array of rules, each containing `regExp` or `validator function` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
 
 ### Frontend validation
-We recomend to use this validation with regExp, because it validates fields in real time
+We recommend to use this validation with regExp, because it validates fields in real time
 
 ```typescript title="./resources/adminuser.ts"
 export default {
@@ -1012,7 +1012,7 @@ export default {
   ],
 ```
 
->Better avoid using of custom validator, because every time change field (after failed first save attempt), it will make an API call
+>Avoid using a custom validator because every time you change a field (after a failed first save attempt), it will make an API call.
 
 ## Filtering
 
