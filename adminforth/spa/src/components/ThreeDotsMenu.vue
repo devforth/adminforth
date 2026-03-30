@@ -89,7 +89,7 @@
 
 
 <script setup lang="ts">
-import { getCustomComponent, getIcon, formatComponent } from '@/utils';
+import { getCustomComponent, getIcon, formatComponent, executeCustomAction } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { useAdminforth } from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
@@ -131,55 +131,32 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
 
 async function handleActionClick(action: AdminForthActionInput, payload: any) {
   list.closeThreeDotsDropdown();
-  
-  const actionId = action.id;
-  const data = await callAdminForthApi({
-    path: '/start_custom_action',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId,
-      actionId: actionId,
-      recordId: route.params.primaryKey,
-      extra: payload || {},
-    }
-  });
+  await executeCustomAction({
+    actionId: action.id,
+    resourceId: route.params.resourceId as string,
+    recordId: route.params.primaryKey as string,
+    extra: payload || {},
+    onSuccess: async (data: any) => {
+      await coreStore.fetchRecord({
+        resourceId: route.params.resourceId as string,
+        primaryKey: route.params.primaryKey as string,
+        source: 'show',
+      });
 
-  if (data?.redirectUrl) {
-    // Check if the URL should open in a new tab
-    if (data.redirectUrl.includes('target=_blank')) {
-      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
-    } else {
-      // Navigate within the app
-      if (data.redirectUrl.startsWith('http')) {
-        window.location.href = data.redirectUrl;
-      } else {
-        router.push(data.redirectUrl);
+      if (data.successMessage) {
+        alert({
+          message: data.successMessage,
+          variant: 'success'
+        });
       }
-    }
-    return;
-  }
-  
-  if (data?.ok) {
-    await coreStore.fetchRecord({
-      resourceId: route.params.resourceId as string, 
-      primaryKey: route.params.primaryKey as string,
-      source: 'show',
-    });
-
-    if (data.successMessage) {
+    },
+    onError: (error: string) => {
       alert({
-        message: data.successMessage,
-        variant: 'success'
+        message: error,
+        variant: 'danger'
       });
     }
-  }
-  
-  if (data?.error) {
-    alert({
-      message: data.error,
-      variant: 'danger'
-    });
-  }
+  });
 }
 
 function startBulkAction(actionId: string) {

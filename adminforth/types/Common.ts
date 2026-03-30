@@ -436,6 +436,7 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
+       * @deprecated in favor of defining .
        */
       bulkActions?: AdminForthBulkActionCommon[],
 
