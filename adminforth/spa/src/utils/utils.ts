@@ -1,6 +1,6 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from '../spa_types/core';
-import type { ValidationObject } from '../types/Common.js';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, ValidationObject } from '../types/Common.js';
 import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
@@ -19,11 +19,12 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body, headers, silentError = false}: {
+export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
   silentError?: boolean
+  abortSignal?: AbortSignal
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -34,6 +35,7 @@ export async function callApi({path, method, body, headers, silentError = false}
       ...headers
     },
     body: JSON.stringify(body),
+    signal: abortSignal
   };
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
@@ -68,25 +70,42 @@ export async function callApi({path, method, body, headers, silentError = false}
       return null;
     }
 
-    if (!silentError) {
+    if (!silentError && !(e instanceof DOMException && e.name === 'AbortError')) {
       adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
     }
     console.error(`error in callApi ${path}`, e);
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
-  path: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-  body?: any,
-  headers?: Record<string, string>,
-  silentError?: boolean
+export async function callAdminForthApi(
+  { 
+    path, 
+    method, 
+    body=undefined, 
+    headers=undefined, 
+    silentError = false,
+    abortSignal = undefined
+  }: {
+    path: string,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    body?: any,
+    headers?: Record<string, string>,
+    silentError?: boolean,
+    abortSignal?: AbortSignal
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError, abortSignal} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
+  }
+}
+
+export function formatComponent(component: AdminForthComponentDeclaration): AdminForthComponentDeclarationFull {
+  if (typeof component === 'string') {
+    return { file: component, meta: {} };
+  } else {
+    return { file: component.file, meta: component.meta };
   }
 }
 
@@ -671,4 +690,162 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
       leaveGuardActive.setActive(false);
     }
   });
+}
+
+export async function executeCustomAction({
+  actionId,
+  resourceId,
+  recordId,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordId: string | number,
+  extra?: Record<string, any>,
+  onSuccess?: (data: any) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+}): Promise<any> {
+  setLoadingState?.(true);
+
+  try {
+    const data = await callAdminForthApi({
+      path: '/start_custom_action',
+      method: 'POST',
+      body: {
+        resourceId,
+        actionId,
+        recordId,
+        extra: extra || {},
+      }
+    });
+
+    if (data?.redirectUrl) {
+      // Check if the URL should open in a new tab
+      if (data.redirectUrl.includes('target=_blank')) {
+        window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        // Navigate within the app
+        if (data.redirectUrl.startsWith('http')) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+        }
+      }
+      return data;
+    }
+
+    if (data?.ok) {
+      if (onSuccess) {
+        await onSuccess(data);
+      }
+      return data;
+    }
+
+    if (data?.error) {
+      if (onError) {
+        onError(data.error);
+      }
+    }
+
+    return data;
+  } finally {
+    setLoadingState?.(false);
+  }
+}
+
+export async function executeCustomBulkAction({
+  actionId,
+  resourceId,
+  recordIds,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+  confirmMessage,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordIds: (string | number)[],
+  extra?: Record<string, any>,
+  onSuccess?: (results: any[]) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+  confirmMessage?: string,
+}): Promise<any> {
+  if (!recordIds || recordIds.length === 0) {
+    if (onError) {
+      onError('No records selected');
+    }
+    return { error: 'No records selected' };
+  }
+
+  if (confirmMessage) {
+    const { confirm } = useAdminforth();
+    const confirmed = await confirm({
+      message: confirmMessage,
+    });
+    if (!confirmed) {
+      return { cancelled: true };
+    }
+  }
+
+  setLoadingState?.(true);
+
+  try {
+    // Execute action for all records in parallel using Promise.all
+    const results = await Promise.all(
+      recordIds.map(recordId =>
+        callAdminForthApi({
+          path: '/start_custom_action',
+          method: 'POST',
+          body: {
+            resourceId,
+            actionId,
+            recordId,
+            extra: extra || {},
+          }
+        })
+      )
+    );
+
+    const lastResult = results[results.length - 1];
+    if (lastResult?.redirectUrl) {
+      if (lastResult.redirectUrl.includes('target=_blank')) {
+        window.open(lastResult.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        if (lastResult.redirectUrl.startsWith('http')) {
+          window.location.href = lastResult.redirectUrl;
+        } else {
+          router.push(lastResult.redirectUrl);
+        }
+      }
+      return lastResult;
+    }
+
+    const allSucceeded = results.every(r => r?.ok);
+    const hasErrors = results.some(r => r?.error);
+
+    if (allSucceeded) {
+      if (onSuccess) {
+        await onSuccess(results);
+      }
+      return { ok: true, results };
+    }
+
+    if (hasErrors) {
+      const errorMessages = results.filter(r => r?.error).map(r => r.error).join(', ');
+      if (onError) {
+        onError(errorMessages);
+      }
+      return { error: errorMessages, results };
+    }
+
+    return { results };
+  } finally {
+    setLoadingState?.(false);
+  }
 }

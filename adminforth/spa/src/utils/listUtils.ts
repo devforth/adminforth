@@ -4,13 +4,18 @@ import { type AdminForthResourceCommon } from '../types/Common';
 import { useAdminforth } from '@/adminforth';
 import { showErrorTost } from '@/composables/useFrontendApi'
 
-
+let getResourceDataLastAbortController: AbortController | null = null;
 export async function getList(resource: AdminForthResourceCommon, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
   let rows: any[] = [];
   let totalRows: number | null = null;
   if (!isPageLoaded) {
     return; 
   }
+  const abortController = new AbortController();
+  if (getResourceDataLastAbortController) {
+    getResourceDataLastAbortController.abort();
+  }
+  getResourceDataLastAbortController = abortController;
   const data = await callAdminForthApi({
     path: '/get_resource_data',
     method: 'POST',
@@ -21,7 +26,8 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
       offset: ((page || 1) - 1) * pageSize,
       filters: filters,
       sort: sort,
-    }
+    },
+    abortSignal: abortController.signal
   });
   if (data.error) {
     showErrorTost(data.error);

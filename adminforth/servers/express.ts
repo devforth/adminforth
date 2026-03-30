@@ -303,6 +303,12 @@ class ExpressServer implements IExpressHttpServer {
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
 
     const expressHandler = async (req, res) => {
+      const abortController = new AbortController();
+      res.on('close', () => {
+        if(req.destroyed) {
+          abortController.abort();
+        }
+      });
       // Enforce JSON-only for mutation HTTP methods
       // AdminForth API endpoints accept only application/json for POST, PUT, PATCH, DELETE
       // If you need other content types, use a custom server endpoint.
@@ -357,7 +363,7 @@ class ExpressServer implements IExpressHttpServer {
 
       const acceptLang = headers['accept-language'];
       const tr = (msg: string, category: string, params: any, pluralizationNumber?: number): Promise<string> => this.adminforth.tr(msg, category, acceptLang, params, pluralizationNumber);
-      const input = { body, query, headers, cookies, adminUser, response, requestUrl, _raw_express_req: req, _raw_express_res: res, tr};
+      const input = { body, query, headers, cookies, adminUser, response, requestUrl, _raw_express_req: req, _raw_express_res: res, tr, abortSignal: abortController.signal};
       
       let output;
       try {

@@ -1237,6 +1237,43 @@ If you want to make table header or pagination, you can add `makeHeaderSticky`, 
   ></Table>
 ```
 
+### Don't block pagination on loading
+
+Sometimes you might want to allow user switch between pages, even if old request wasn't finished. For these porpuses you can use `blockPaginationOnLoading` and `abortSignal` in data callback:
+```ts
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="loadPageData"
+  //diff-add
+  :blockPaginationOnLoading="false"
+  :pageSize="3"> 
+</Table>
+
+
+...
+
+async function loadPageData(data, abortSignal) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  await new Promise(resolve => setTimeout(resolve, offset === 500)) // simulate network delay
+  if (abortSignal.abort) return; // since result won't be displayed, we stop computing
+  
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 30 // should return total amount of records in database
+  }
+}
+
+```
+
 ## ProgressBar
 
 <div class="split-screen" >
@@ -2380,6 +2417,8 @@ import { Modal, Button } from '@/afcl';
   askForCloseConfirmation?: boolean // Show extra popup to confirm close ( to avoid close by accident)
   closeConfirmationText?: string // Text that will be shown on close confirmation popup
   removeFromDomOnClose?: boolean // Remove modal from DOM on close ( default is false )
+  backgroundCustomClasses?: string // allows to add custom classes to the gray background of modal (e.g. you can have bg-pink-500/60)
+  modalCustomClasses?: string // allows to add custom classes to modal popup
 ```
 
 ## Date picker
