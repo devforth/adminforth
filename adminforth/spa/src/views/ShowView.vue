@@ -3,8 +3,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -14,15 +14,15 @@
 
         <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
           <component
-            :is="action?.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-            :meta="action.customComponent?.meta"
-            @callAction="(payload?) => startCustomAction(action.id, payload)"
+            :is="action?.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+            :meta="action.customComponent ? formatComponent(action.customComponent).meta : undefined"
+            @callAction="(payload?: any) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
           >
             <button 
               :key="action.id"
               :disabled="actionLoadingStates[action.id!]"
-              class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+              class="flex items-center af-button-shadow h-[34px] py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
             >
               <component 
                 v-if="action.icon" 
@@ -36,21 +36,21 @@
       </template>
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-add-new-button flex items-center py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover rounded-default gap-1"
+        class="af-add-new-button af-button-shadow h-[34px] flex items-center py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Add new') }}
       </RouterLink>
 
       <RouterLink v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
-        class="flex items-center af-edit-button py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded-default border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+        class="flex items-center h-[34px] af-button-shadow af-edit-button py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded-default border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
       >
         <IconPenSolid class="w-4 h-4" />
         {{ $t('Edit') }}
       </RouterLink>
 
       <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
-        class="flex items-center af-delete-button py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-lightShowViewButtonBackground  border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-red-500 dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+        class="flex items-center h-[34px] af-button-shadow af-delete-button py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-lightShowViewButtonBackground  border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-red-500 dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
       >
         <IconTrashBinSolid class="w-4 h-4" />
         {{ $t('Delete') }}
@@ -65,8 +65,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -95,7 +95,7 @@
     <template v-else> 
       <template v-for="group in groups" :key="group.groupName">
         <ShowTable
-          :columns="group.columns"
+          :columns="group.columns as any"
           :groupName="group.groupName"
           :noTitle="group.noTitle"
           :resource="coreStore.resource"
@@ -120,8 +120,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -137,7 +137,7 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import { useCoreStore } from '@/stores/core';
-import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, computed } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
@@ -245,7 +245,7 @@ async function deleteRecord() {
     
 }
 
-async function startCustomAction(actionId: string, extra: any) {  
+async function startCustomAction(actionId: string, extra?: any) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({
