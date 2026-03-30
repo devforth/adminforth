@@ -3,6 +3,8 @@
     <Modal 
       ref="modalRef"
       :beforeCloseFunction="()=>{modalStore.onAcceptFunction(false);modalStore.isOpened=false}"
+      backgroundCustomClasses="z-[998]"
+      modalCustomClasses="z-[999]"
     >
       <div class="relative p-4 w-full max-w-md max-h-full" >
         <button type="button" @click="modalStore.togleModal()" class="absolute top-3 end-2.5 text-lightAcceptModalCloseIcon bg-transparent hover:bg-lightAcceptModalCloseIconHoverBackground hover:text-lightAcceptModalCloseIconHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkAcceptModalCloseIcon dark:hover:bg-darkAcceptModalCloseIconHoverBackground dark:hover:text-darkAcceptModalCloseIconHover" >

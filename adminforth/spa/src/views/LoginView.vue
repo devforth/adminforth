@@ -31,12 +31,12 @@
                 <!-- Modal header -->
                 <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
-                    <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
+                    <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length  && coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
                       <component 
                         v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
                         :key="index"
-                        :is="getCustomComponent(c)"
-                        :meta="c.meta"
+                        :is="getCustomComponent(formatComponent(c))"
+                        :meta="formatComponent(c).meta"
                       />
                     </template>
                     <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
@@ -55,7 +55,7 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              @keydown.enter="passwordInput.focus()"
+                              @keydown.enter="passwordInput?.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
                         </div>
@@ -76,7 +76,7 @@
                             </Input>
                         </div>
 
-                        <div v-if="coreStore.config.rememberMeDuration" 
+                        <div v-if="coreStore?.config?.rememberMeDuration" 
                             class="flex items-start mb-5"
                             :title="$t(`Stay logged in for {days}`, {days: coreStore.config.rememberMeDuration})"
                         >
@@ -88,8 +88,8 @@
                         
                         <component 
                           v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                         
@@ -107,8 +107,8 @@
                         </Button>
                         <component 
                           v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                     </form>
@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, formatComponent } from '@/utils';
 import { onBeforeMount, onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
@@ -137,8 +137,8 @@ import ErrorMessage from '@/components/ErrorMessage.vue';
 
 const { t } = useI18n();
 
-const passwordInput = ref(null);
-const usernameInput = ref(null);
+const passwordInput = ref<InstanceType<typeof Input> | null>(null);
+const usernameInput = ref<InstanceType<typeof Input> | null>(null);
 const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
@@ -179,7 +179,7 @@ onMounted(async () => {
       username.value = demoUsername;
       password.value = demoPassword;
     }
-    usernameInput.value.focus();
+    usernameInput.value?.focus();
 });
 
 

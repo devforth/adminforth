@@ -119,10 +119,12 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
+type ISingleSelectModelValue = string | number;
+
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: Array as PropType<(string | number)[] | (string | number)>,
+    type: Array as PropType<(ISingleSelectModelValue)[] | ISingleSelectModelValue>,
     default: () => [],
   },
   multiple: {
@@ -201,7 +203,7 @@ function updateFromProps() {
         selectedItems.value = [];
       }
     } else {
-      selectedItems.value = props.options?.filter((item: any) => props.modelValue?.includes(item.value)) || [];
+      selectedItems.value = props.options?.filter((item: any) => (props.modelValue as (ISingleSelectModelValue)[])?.includes(item.value)) || [];
     }
   }
 }
