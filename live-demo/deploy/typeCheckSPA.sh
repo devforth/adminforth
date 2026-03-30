@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pnpm install
+ls -la
 pnpm type-check 2>&1
 type_check_status=$?
 
