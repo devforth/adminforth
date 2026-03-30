@@ -46,9 +46,8 @@
           <li v-for="action in customActions" :key="action.id">
             <div class="wrapper"> 
               <component
-                v-if="action.customComponent"
                 :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
-                :meta="formatComponent(action.customComponent).meta"
+                :meta="formatComponent(action.customComponent as AdminForthComponentDeclarationFull).meta || {}"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
               >
                 <a @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
