@@ -474,16 +474,7 @@ watch([sort], async () => {
 
 
   .af-button-shadow {
-    position: relative;
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 100%;
-      box-shadow: -0px 6px 6px rgb(0, 0, 0, 0.1);
-      border-radius: inherit;
-    }
+    box-shadow: -0px 6px 6px rgb(0, 0, 0, 0.1);
   }
   
 
