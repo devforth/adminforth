@@ -404,37 +404,39 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         {
           name: 'Approve Listing',
           icon: 'flowbite:check-outline',
+          // bulkConfirmationMessage: 'Are you sure you want to approve listing for selected cars?',
+          // bulkSuccessMessage: `Selected cars have been listed successfully!`,
           action: async ({ recordId, adminUser, adminforth, extra, response }) => {
             logger.info(`Admin User is approving listing for record ${recordId} in resource ${resourceId}`);
             //@ts-ignore
-            const verificationResult = extra?.verificationResult
-            if (!verificationResult) {
-              return { ok: false, error: 'No verification result provided' };
-            }
-            const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
-            const result = await t2fa.verify(verificationResult, {
-              adminUser: adminUser,
-              userPk: adminUser.pk as string,
-              cookies: extra.cookies,
-              response: response,
-              extra: extra,
-            });
+            // const verificationResult = extra?.verificationResult
+            // if (!verificationResult) {
+            //   return { ok: false, error: 'No verification result provided' };
+            // }
+            // const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+            // const result = await t2fa.verify(verificationResult, {
+            //   adminUser: adminUser,
+            //   userPk: adminUser.pk as string,
+            //   cookies: extra.cookies,
+            //   response: response,
+            //   extra: extra,
+            // });
 
 
-            if (!result || 'error' in result) {
-              return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
-            }
-            await adminforth
-              // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
-              .getPluginById<AuditLogPlugin>('AuditLogPlugin')
-              .logCustomAction({
-                resourceId: resourceId,
-                recordId: null,
-                actionId: 'visitedDashboard',
-                oldData: null,
-                data: { dashboard: 'main' },
-                user: adminUser,
-              });
+            // if (!result || 'error' in result) {
+            //   return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+            // }
+            // await adminforth
+            //   // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+            //   .getPluginById<AuditLogPlugin>('AuditLogPlugin')
+            //   .logCustomAction({
+            //     resourceId: resourceId,
+            //     recordId: null,
+            //     actionId: 'visitedDashboard',
+            //     oldData: null,
+            //     data: { dashboard: 'main' },
+            //     user: adminUser,
+            //   });
 
 
 
@@ -448,6 +450,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             list: true,
             showButton: true,
             showThreeDotsMenu: true,
+            bulkButton: true,
           },
           customComponent: {
             file: '@@/RequireTwoFaGate.vue'

@@ -35,6 +35,7 @@ Here's how to add a custom action:
           listThreeDotsMenu: true, // Show in three dots menu in list view
           showButton: true,        // Show as a button
           showThreeDotsMenu: true, // Show in three-dots menu
+          bulkButton: true
         }
       }
     ]
