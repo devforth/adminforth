@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model adminuser {
+  id            String     @id
+  email         String     @unique
+  password_hash String
+  role          String
+  created_at    DateTime
+}
