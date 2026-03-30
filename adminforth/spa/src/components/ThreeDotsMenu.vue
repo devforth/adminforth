@@ -30,9 +30,9 @@
               }"
               @click="injectedComponentClick(i)"
             >
-              <div class="wrapper">
+              <div class="wrapper" v-if="getCustomComponent(item)">
                 <component 
-                  :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)"
+                  :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)!"
                   :meta="item.meta" 
                   :resource="coreStore.resource" 
                   :adminUser="coreStore.adminUser"
