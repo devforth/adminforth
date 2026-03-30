@@ -93,7 +93,7 @@
       </div>
       <div
         v-if="checkboxes.length"
-        v-for="(action,i) in coreStore.resource?.options?.actions.filter(a => a.showIn?.bulkButton)" 
+        v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
       >
         <button
           :key="action.id"
@@ -337,7 +337,7 @@ async function startBulkActionInner(actionId: string) {
 }
 
 async function startCustomBulkActionInner(actionId: string | number) {
-  const action = coreStore.resource?.options?.actions.find(a => a.id === actionId);
+  const action = coreStore.resource?.options?.actions?.find(a => a.id === actionId);
   
   await executeCustomBulkAction({
     actionId,
