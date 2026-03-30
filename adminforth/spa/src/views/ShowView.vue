@@ -3,8 +3,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -14,9 +14,9 @@
 
         <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
           <component
-            :is="action?.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-            :meta="action.customComponent?.meta"
-            @callAction="(payload?) => startCustomAction(action.id, payload)"
+            :is="action?.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+            :meta="action.customComponent ? formatComponent(action.customComponent).meta : undefined"
+            @callAction="(payload?: any) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
           >
             <button 
@@ -65,8 +65,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -95,7 +95,7 @@
     <template v-else> 
       <template v-for="group in groups" :key="group.groupName">
         <ShowTable
-          :columns="group.columns"
+          :columns="group.columns as any"
           :groupName="group.groupName"
           :noTitle="group.noTitle"
           :resource="coreStore.resource"
@@ -120,8 +120,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -137,7 +137,7 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import { useCoreStore } from '@/stores/core';
-import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, ref, computed } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
@@ -245,7 +245,7 @@ async function deleteRecord() {
     
 }
 
-async function startCustomAction(actionId: string, extra: any) {  
+async function startCustomAction(actionId: string, extra?: any) {  
   actionLoadingStates.value[actionId] = true;
 
   const data = await callAdminForthApi({

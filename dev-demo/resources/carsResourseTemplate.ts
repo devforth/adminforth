@@ -59,6 +59,12 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         type: AdminForthDataTypes.STRING,
         maxLength: 255,
         minLength: 3,
+        validation: [
+          {
+            regExp: '^\\s*\\S+(\\s+\\S+)+\\s*$',
+            message: 'Model must contain at least two words',
+          },
+        ],
       },
       {
         name: 'price',
@@ -154,6 +160,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           resourceId: 'adminuser',
           searchableFields: ["id", "email"],
         }
+      },
+      {
+        name: 'secret_field',
+        type: AdminForthDataTypes.STRING,
+        backendOnly: true,
       }
     ],
     plugins: [
