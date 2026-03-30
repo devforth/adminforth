@@ -1,8 +1,8 @@
 <template>
   <div class="relative w-full">
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="editableRecord"
       :resource="coreStore.resource"
@@ -12,13 +12,13 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
+        class="flex items-center h-[34px] af-button-shadow py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
       <button
         @click="() => saveRecord()"
-        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
+        class="flex items-center h-[34px] af-button-shadow py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       >
         <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
@@ -33,8 +33,8 @@
     </BreadcrumbsWithButtons>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -57,8 +57,8 @@
     </ResourceForm>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.edit?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -83,7 +83,8 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { formatComponent } from '@/utils';
+import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
 import { Spinner } from '@/afcl'

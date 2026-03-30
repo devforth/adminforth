@@ -16,11 +16,11 @@
         :unmasked="unmasked"
         :deletable="!column.editReadonly"
         @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
-        @update:recordFieldValue="({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) => setCurrentValue(fieldName, fieldValue)"
+        @update:recordFieldValue="recordFieldValueUpdate"
         @update:unmasked="$emit('update:unmasked', column.name)"
         @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
         @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
-        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_: any, index: any) => index !== arrayItemIndex))"
+        @delete="deleteHandler(arrayItemIndex)"
       />
     </div>
     <div class="flex items-center">
@@ -48,7 +48,7 @@
     :columnOptions="columnOptions"
     :unmasked="unmasked"
     @update:modelValue="setCurrentValue(column.name, $event)"
-    @update:recordFieldValue="({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) => setCurrentValue(fieldName, fieldValue)"
+    @update:recordFieldValue="recordFieldValueUpdate"
     @update:unmasked="$emit('update:unmasked', column.name)"
     @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
     @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
@@ -102,5 +102,13 @@
     props.setCurrentValue(props.column.name, props.currentValues[props.column.name], props.currentValues[props.column.name].length);
     await nextTick();
     arrayItemRefs.value[arrayItemRefs.value.length - 1].focus();
+  }
+
+  function recordFieldValueUpdate({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) {
+    props.setCurrentValue(fieldName, fieldValue);
+  }
+
+  function deleteHandler(arrayItemIndex: number | string) {
+    props.setCurrentValue(props.column.name, props.currentValues[props.column.name].filter((_: any, index: any) => index !== arrayItemIndex));
   }
 </script> 

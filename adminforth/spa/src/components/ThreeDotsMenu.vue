@@ -1,9 +1,9 @@
 <template >
-  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
+  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionFront) => action.showInThreeDotsDropdown))">
     <button 
       ref="buttonTriggerRef"
       @click="toggleDropdownVisibility"
-      class="flex items-center py-2 px-2 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
+      class="flex transition-all items-center af-button-shadow py-2.5 px-2.5 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
     >
       <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
         <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
@@ -46,8 +46,9 @@
           <li v-for="action in customActions" :key="action.id">
             <div class="wrapper"> 
               <component
-                :is="(action.customComponent && getCustomComponent(action.customComponent)) || CallActionWrapper"
-                :meta="action.customComponent?.meta"
+                v-if="action.customComponent"
+                :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
+                :meta="formatComponent(action.customComponent).meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
               >
                 <a @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
@@ -88,14 +89,14 @@
 
 
 <script setup lang="ts">
-import { getCustomComponent, getIcon } from '@/utils';
+import { getCustomComponent, getIcon, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { useAdminforth } from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
-import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
 import type { AdminForthActionInput } from '@/types/Back';
 
 const { list, alert} = useAdminforth();
@@ -109,8 +110,8 @@ const buttonTriggerRef = ref<HTMLElement | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
-  customActions: Array<AdminForthActionInput>,
-  bulkActions: Array<AdminForthBulkActionCommon>,
+  customActions: Array<AdminForthActionFront>,
+  bulkActions: Array<AdminForthBulkActionFront>,
   checkboxes: Array,
   updateList: {
     type: Function,

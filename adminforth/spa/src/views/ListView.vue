@@ -11,8 +11,8 @@
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -21,8 +21,8 @@
     <BreadcrumbsWithButtons>
       <component 
         v-if="!coreStore.isResourceFetching && !initInProcess"
-        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons || []"
-        :is="getCustomComponent(c)"
+        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
+        :is="getCustomComponent(formatComponent(c))"
         :meta="(c as AdminForthComponentDeclarationFull).meta"
         :resource="coreStore.resource"
         :adminUser="coreStore.adminUser"
@@ -33,7 +33,12 @@
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
-        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText af-button-shadow 
+          focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[34px]
+          hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 
+          focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+          dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
       >
           <Tooltip>
             <IconBanOutline class="w-5 h-5 "/>
@@ -51,7 +56,13 @@
           v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
           @click="startBulkActionInner(action.id!)"
-          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[34px]
+            border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
+            hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
+            focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+            dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+            dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
           :class="action.buttonCustomCssClass || ''"
         >
           <component
@@ -72,7 +83,9 @@
             <span class="sr-only">Loading...</span>
           </div>
           {{ `${action.label} (${checkboxes.length})` }}
-          <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 
+          <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 
+          via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none
+           focus:ring-purple-300 dark:focus:ring-purple-800 
             font-medium rounded-sm text-xs px-1 ml-1 text-center ">
             {{ action.badge }}            
           </div>
@@ -81,14 +94,24 @@
 
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button flex items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
+        class="af-create-button flex items-center py-1 h-[34px] px-3 text-sm af-button-shadow
+          font-medium text-lightPrimaryContrast transition-all focus:outline-none 
+          bg-lightPrimary hover:bg-lightPrimary/80 dark:bg-darkPrimary dark:hover:bg-darkPrimary/80 
+          rounded border border-lightPrimary/90 focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing 
+          dark:focus:ring-darkListViewButtonFocusRing  dark:text-darkPrimaryContrast dark:border-darkPrimary/80 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Create') }}
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="af-filter-button flex gap-1 items-center py-1 h-[34px] px-3 me-2 af-button-shadow text-sm font-medium 
+          text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border 
+          border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+          focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+          dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
         @click="()=>{filtersShow = !filtersShow}"
         v-if="coreStore.resource?.options?.allowedActions?.filter"
       >
@@ -114,8 +137,8 @@
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -161,8 +184,8 @@
     />
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -176,13 +199,13 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
-import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
+import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
-import type { AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull } from '@/types/Common';
 
 
 import {
@@ -446,3 +469,22 @@ watch([sort], async () => {
 });
 
 </script>
+
+<style lang="scss">
+
+
+  .af-button-shadow {
+    position: relative;
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 100%;
+      box-shadow: -0px 6px 6px rgb(0, 0, 0, 0.1);
+      border-radius: inherit;
+    }
+  }
+  
+
+</style>
