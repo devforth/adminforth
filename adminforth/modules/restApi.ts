@@ -155,6 +155,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     }
   }
 
+  checkAbortSignal(abortSignal: AbortSignal): boolean {
+    if (abortSignal.aborted) {
+      return true;
+    }
+    return false;
+  }
+
   registerEndpoints(server: IHttpServer) {
     server.endpoint({
       noAuth: true,
@@ -686,7 +693,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl, abortSignal }) => {
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };
@@ -728,7 +735,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!allowed) {
           return { error };
         }
-
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
         const hookSource = {
           'show': 'show',
           'list': 'list',
@@ -738,6 +745,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
           const filterTools = filtersTools.get(body);
           body.filtersTools = filterTools;
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await (hook as BeforeDataSourceRequestFunction)({
             resource,
             query: body,
@@ -783,6 +791,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
           }
         }
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
         const data = await this.adminforth.connectors[resource.dataSource].getData({
           resource,
@@ -815,6 +824,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (pksUnique.length === 0) {
                 return;
               }
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
               const targetData = await targetConnector.getData({
                 resource: targetResource,
                 limit: pksUnique.length,
@@ -859,6 +869,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   return;
                 }
               });
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
               const targetData = (await Promise.all(Object.keys(pksUniques).map((polymorphicOnValue) =>
                 targetConnectors[polymorphicOnValue].getData({
@@ -939,6 +950,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await hook({
             resource,
             query: body,

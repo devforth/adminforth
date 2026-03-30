@@ -2,8 +2,8 @@
   <div class="relative w-full">
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -13,13 +13,13 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="af-cancel-button flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover"
+        class="af-cancel-button h-[34px] af-button-shadow flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
       <button  
         @click="() => saveRecord()"
-        class="af-save-button flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50 gap-1"
+        class="af-save-button h-[34px] af-button-shadow flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50 gap-1"
         :disabled="saving || (validating && !isValid)"
       > 
         <svg v-if="saving"
@@ -36,8 +36,8 @@
     </BreadcrumbsWithButtons>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -61,8 +61,8 @@
     </ResourceForm>
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.create?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, onBeforeRouteLeaveCreateEditView } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref, watch, nextTick } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
@@ -88,7 +88,7 @@ import { showErrorTost } from '@/composables/useFrontendApi';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthComponentDeclarationFull } from '@/types/Common.js';
+import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 
 const isValid = ref(false);

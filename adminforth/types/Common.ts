@@ -314,6 +314,25 @@ export type FieldGroup = {
   noTitle?: boolean;
 };
 
+export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id'> {
+  id: string;
+}
+
+export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
+  id: string,
+}
+
+type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
+
+export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+  actions?: AdminForthActionFront[],
+  bulkActions?: AdminForthBulkActionFront[],
+}
+
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+  options: AdminForthOptionsForFrontend;
+}
+
 /**
  * Resource describes one table or collection in database.
  * AdminForth generates set of pages for 'list', 'show', 'edit', 'create', 'filter' operations for each resource.
@@ -361,17 +380,17 @@ export interface AdminForthResourceInputCommon {
     recordLabel?: (item: any) => string,
 
 
-    /**
-     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
-     * default is false
-     */
-    dontShowWarningAboutUnsavedChanges?: boolean,
 
     /**
      * General options for resource.
      */
     options?: {
       
+      /**
+       * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+       * default is false
+       */
+      dontShowWarningAboutUnsavedChanges?: boolean,
 
       /**
        * Show quick action icons for base actions (show, edit, delete) in list view. 
@@ -417,6 +436,7 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
+       * @deprecated in favor of defining .
        */
       bulkActions?: AdminForthBulkActionCommon[],
 
@@ -1172,6 +1192,7 @@ export interface AdminForthConfigForFrontend {
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
