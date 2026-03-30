@@ -701,7 +701,7 @@ export async function executeCustomAction({
   onError,
   setLoadingState,
 }: {
-  actionId: string | number,
+  actionId: string | number | undefined,
   resourceId: string,
   recordId: string | number,
   extra?: Record<string, any>,
@@ -767,7 +767,7 @@ export async function executeCustomBulkAction({
   setLoadingState,
   confirmMessage,
 }: {
-  actionId: string | number,
+  actionId: string | number | undefined,
   resourceId: string,
   recordIds: (string | number)[],
   extra?: Record<string, any>,
