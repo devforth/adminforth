@@ -1,4 +1,4 @@
-import type { Express, Request } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
@@ -67,6 +67,10 @@ export interface IHttpServer {
       headers: {[key: string]: string}, 
       cookies: {[key: string]: string}, 
       response: IAdminForthHttpResponse,
+      requestUrl: string,
+      abortSignal: AbortSignal,
+      _raw_express_req: Request,
+      _raw_express_res: Response,
     ) => void,
   }): void;
 
@@ -1637,7 +1641,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
-    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclarationFull>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
@@ -1825,7 +1829,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions' | 'actions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by

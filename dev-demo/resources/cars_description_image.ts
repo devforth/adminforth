@@ -49,14 +49,13 @@ export default {
       }),
 
       // to test s3:
-      //  storageAdapter: new AdminForthAdapterS3Storage({
-      //   bucket: 'static.devforth.io',
-      //   region: process.env.AWS_REGION || "eu-central-1",
-      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID || "your-access-key-id",
-      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "your-secret-access-key",
-      //   s3ACL: 'public-read',
+      // storageAdapter: new AdminForthAdapterS3Storage({
+      //   bucket: process.env.AWS_BUCKET_NAME as string,
+      //   region: process.env.AWS_REGION as string,
+      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
       // }),
-  
+
   
       allowedFileExtensions: [
         "jpg",

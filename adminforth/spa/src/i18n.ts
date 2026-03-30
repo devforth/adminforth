@@ -51,6 +51,6 @@ export function initI18n(app: ReturnType<typeof createApp>) {
     },
   });
   app.use(i18n);
-  i18nInstance = i18n 
+  i18nInstance = i18n as typeof i18nInstance
   return i18n
 }

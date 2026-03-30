@@ -144,7 +144,7 @@ export interface FrontendAPIInterface {
     /**
      * Run save interceptors for a specific resource or all resources if no resourceId is provided
      */
-    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }>;
+    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: any; }>;
 
     /**
      * Clear save interceptors for a specific resource or all resources if no resourceId is provided
@@ -152,6 +152,11 @@ export interface FrontendAPIInterface {
      * @param resourceId - The resource ID to clear interceptors for
      */
     clearSaveInterceptors(resourceId?: string): void;
+
+    /**
+     * Register a save interceptor for a specific resource
+     */
+    registerSaveInterceptor(handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: any; }>): void;
 }
 
 export type ConfirmParams = {

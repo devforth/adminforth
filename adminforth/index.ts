@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -643,12 +643,9 @@ class AdminForth implements IAdminForth {
         extra,
       });
 
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -695,14 +692,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || typeof resp.ok !== 'boolean') {
-        throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
-      }
-      if (resp.ok === false && !resp.error) {
-        return { error: resp.error ?? 'Operation aborted by hook' };
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -740,11 +732,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
     
@@ -771,12 +761,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -794,12 +781,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 

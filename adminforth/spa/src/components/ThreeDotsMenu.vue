@@ -1,5 +1,5 @@
 <template >
-  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionCommon) => action.showInThreeDotsDropdown))">
+  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionFront) => action.showInThreeDotsDropdown))">
     <button 
       ref="buttonTriggerRef"
       @click="toggleDropdownVisibility"
@@ -46,11 +46,12 @@
           <li v-for="action in customActions" :key="action.id">
             <div class="wrapper"> 
               <component
-                :is="(action.customComponent && getCustomComponent(action.customComponent)) || CallActionWrapper"
-                :meta="action.customComponent?.meta"
+                v-if="action.customComponent"
+                :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
+                :meta="formatComponent(action.customComponent).meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
               >
-                <a href="#" @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+                <a @click.prevent class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
                   <div class="flex items-center gap-2">
                     <component 
                       v-if="action.icon" 
@@ -64,7 +65,7 @@
             </div>
           </li>
           <li v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)" :key="action.id">
-            <a href="#" @click.prevent="startBulkAction(action.id)" 
+            <a @click.prevent="startBulkAction(action.id)" 
                 class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
                 :class="{
                   'pointer-events-none': checkboxes && checkboxes.length === 0,
@@ -88,14 +89,14 @@
 
 
 <script setup lang="ts">
-import { getCustomComponent, getIcon } from '@/utils';
+import { getCustomComponent, getIcon, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { useAdminforth } from '@/adminforth';
 import { callAdminForthApi } from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
-import type { AdminForthBulkActionCommon, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
 import type { AdminForthActionInput } from '@/types/Back';
 
 const { list, alert} = useAdminforth();
@@ -109,8 +110,8 @@ const buttonTriggerRef = ref<HTMLElement | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
-  customActions: Array<AdminForthActionInput>,
-  bulkActions: Array<AdminForthBulkActionCommon>,
+  customActions: Array<AdminForthActionFront>,
+  bulkActions: Array<AdminForthBulkActionFront>,
   checkboxes: Array,
   updateList: {
     type: Function,

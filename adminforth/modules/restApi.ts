@@ -19,7 +19,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
@@ -153,6 +153,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         break;
       }
     }
+  }
+
+  checkAbortSignal(abortSignal: AbortSignal): boolean {
+    if (abortSignal.aborted) {
+      return true;
+    }
+    return false;
   }
 
   registerEndpoints(server: IHttpServer) {
@@ -686,7 +693,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl, abortSignal }) => {
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };
@@ -728,7 +735,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!allowed) {
           return { error };
         }
-
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
         const hookSource = {
           'show': 'show',
           'list': 'list',
@@ -738,6 +745,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
           const filterTools = filtersTools.get(body);
           body.filtersTools = filterTools;
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await (hook as BeforeDataSourceRequestFunction)({
             resource,
             query: body,
@@ -748,12 +756,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
         const { limit, offset, filters, sort } = body;
@@ -786,6 +791,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
           }
         }
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
         const data = await this.adminforth.connectors[resource.dataSource].getData({
           resource,
@@ -818,6 +824,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (pksUnique.length === 0) {
                 return;
               }
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
               const targetData = await targetConnector.getData({
                 resource: targetResource,
                 limit: pksUnique.length,
@@ -862,6 +869,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   return;
                 }
               });
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
               const targetData = (await Promise.all(Object.keys(pksUniques).map((polymorphicOnValue) =>
                 targetConnectors[polymorphicOnValue].getData({
@@ -942,6 +950,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await hook({
             resource,
             query: body,
@@ -952,13 +961,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
 
@@ -1459,15 +1464,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         path: '/delete_record',
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
-            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!record){
                 return { error: `Record with ${body['primaryKey']} not found` };
-            }
-            if (resource.options.allowedActions.delete === false) {
-                return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             }
 
             const { allowedActions } = await interpretResource(

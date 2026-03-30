@@ -6,8 +6,19 @@ import path from 'path';
 import { Filters } from 'adminforth';
 import { logger } from 'adminforth';
 import cars_SQLITE_resource from './resources/cars_sl_allow_create.js';
+
 import cars_sl_dont_allow_create from './resources/cars_sl_dont_allow_create.js';
+import cars_sl_dont_allow_create_by_hook from './resources/cars_sl_dont_allow_create_by_hook.js';
+
 import cars_sl_dont_allow_edit from './resources/cars_sl_dont_allow_edit.js';
+import cars_sl_dont_allow_edit_by_hook from './resources/cars_sl_dont_allow_edit_by_hook.js';
+
+import cars_sl_dont_allow_show from './resources/cars_sl_dont_allow_show.js';
+import cars_sl_dont_allow_show_by_hook from './resources/cars_sl_dont_allow_show_by_hook.js';
+
+import cars_sl_dont_allow_delete from './resources/cars_sl_dont_allow_delete.js';
+import cars_sl_dont_allow_delete_by_hook from './resources/cars_sl_dont_allow_delete_by_hook.js';
+
 import carsDescriptionImage from '../../dev-demo/resources/cars_description_image.js';
 import passkeysResource from '../../dev-demo/resources/passkeys.js';
 
@@ -55,14 +66,25 @@ export const admin = new AdminForth({
   dataSources: [
     {
       id: 'sqlite',
-      url: `${process.env.DATABASE_URL}`
+      url: `${process.env.SQLITE_URL}`
     },
   ],
   resources: [
     usersResource,
     cars_SQLITE_resource,
+
     cars_sl_dont_allow_create,
+    cars_sl_dont_allow_create_by_hook,
+
     cars_sl_dont_allow_edit,
+    cars_sl_dont_allow_edit_by_hook,
+
+    cars_sl_dont_allow_show,
+    cars_sl_dont_allow_show_by_hook,
+
+    cars_sl_dont_allow_delete,
+    cars_sl_dont_allow_delete_by_hook,
+
     carsDescriptionImage,
     passkeysResource
   ],
