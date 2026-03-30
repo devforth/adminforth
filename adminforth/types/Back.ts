@@ -1319,7 +1319,7 @@ export interface AdminForthActionInput {
       message?: string;
   }>;
   icon?: string;
-  id?: string;
+  id: string;
   customComponent?: AdminForthComponentDeclaration;
 }
 
