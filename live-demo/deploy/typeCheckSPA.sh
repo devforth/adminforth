@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ls -la
-pnpx vue-tsc --build --force 2>&1
+pnpm install
+pnpm type-check 2>&1
 type_check_status=$?
 
 if [ $type_check_status -ne 0 ]; then
