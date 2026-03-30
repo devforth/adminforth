@@ -11,7 +11,7 @@
       <div
         v-if="showMenu"
         ref="menuRef"
-        class="z-50 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
+        class="z-40 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
         :style="menuStyles"
       >
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
@@ -57,14 +57,14 @@
             {{ $t('Delete item') }}
           </button>
         </template>
-        <div v-for="action in (resourceOptions.actions ?? []).filter(a => a.showIn?.listThreeDotsMenu)" :key="action.id" >
+        <div v-for="action in (resourceOptions.actions ?? []).filter((a: AdminForthActionInput) => a.showIn?.listThreeDotsMenu)" :key="action.id" >
             <button class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300" @click="() => { startCustomAction(action.id, record); showMenu = false; }">
               <component
                 :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
                 :meta="action.customComponent?.meta"
                 :row="record"
-                :resource="resource"
-                :adminUser="adminUser"
+                :resource="coreStore.resource"
+                :adminUser="coreStore.adminUser"
                 @callAction="(payload? : Object) => startCustomAction(action.id, record, payload)"
               >
                 <component
@@ -79,8 +79,8 @@
         <template v-if="customActionIconsThreeDotsMenuItems">
             <component 
                 v-for="c in customActionIconsThreeDotsMenuItems"
-                :is="getCustomComponent(c)"
-                :meta="c.meta"
+                :is="getCustomComponent(formatComponent(c))"
+                :meta="formatComponent(c).meta"
                 :resource="coreStore.resource" 
                 :adminUser="coreStore.adminUser"
                 :record="record"
@@ -100,9 +100,10 @@ import {
   IconDotsHorizontalOutline
 } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue';
-import { getIcon, getCustomComponent } from '@/utils';
+import { getIcon, getCustomComponent, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { type AdminForthActionInput, type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common';
 
 const coreStore = useCoreStore();
 const showMenu = ref(false);
@@ -113,11 +114,11 @@ const menuStyles = ref<Record<string, string>>({});
 const props = defineProps<{
     resourceOptions: any;
     record: any;
-    customActionIconsThreeDotsMenuItems: any[];
+    customActionIconsThreeDotsMenuItems: AdminForthComponentDeclaration[];
     resourceId: string;
     deleteRecord: (record: any) => void;
     updateRecords: () => void;
-    startCustomAction: (actionId: string, record: any) => void;
+    startCustomAction: (actionId: string, row: any, extraData?: Record<string, any>) => void;
 }>();
 
 onMounted(() => {

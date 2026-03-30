@@ -1,6 +1,6 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from '../spa_types/core';
-import type { ValidationObject } from '../types/Common.js';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, ValidationObject } from '../types/Common.js';
 import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
@@ -19,11 +19,12 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 
-export async function callApi({path, method, body, headers, silentError = false}: {
+export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
   silentError?: boolean
+  abortSignal?: AbortSignal
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -34,6 +35,7 @@ export async function callApi({path, method, body, headers, silentError = false}
       ...headers
     },
     body: JSON.stringify(body),
+    signal: abortSignal
   };
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
@@ -68,25 +70,42 @@ export async function callApi({path, method, body, headers, silentError = false}
       return null;
     }
 
-    if (!silentError) {
+    if (!silentError && !(e instanceof DOMException && e.name === 'AbortError')) {
       adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
     }
     console.error(`error in callApi ${path}`, e);
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
-  path: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-  body?: any,
-  headers?: Record<string, string>,
-  silentError?: boolean
+export async function callAdminForthApi(
+  { 
+    path, 
+    method, 
+    body=undefined, 
+    headers=undefined, 
+    silentError = false,
+    abortSignal = undefined
+  }: {
+    path: string,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    body?: any,
+    headers?: Record<string, string>,
+    silentError?: boolean,
+    abortSignal?: AbortSignal
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError, abortSignal} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
+  }
+}
+
+export function formatComponent(component: AdminForthComponentDeclaration): AdminForthComponentDeclarationFull {
+  if (typeof component === 'string') {
+    return { file: component, meta: {} };
+  } else {
+    return { file: component.file, meta: component.meta };
   }
 }
 

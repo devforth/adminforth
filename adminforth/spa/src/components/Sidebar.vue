@@ -9,7 +9,8 @@
       '-translate-x-full': !sideBarOpen, 
       'transform-none': sideBarOpen,
       'sidebar-collapsed': iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering,
-      'sidebar-expanded': !iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)
+      'sidebar-expanded': !iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering),
+      'sidebar-floating': isSidebarIconOnly && isSidebarHovering
      }"
     aria-label="Sidebar"
   >
@@ -51,7 +52,7 @@
         </div>
       </div>
 
-     <div v-if="coreStore.config.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
+     <div v-if="coreStore?.config?.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
       <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
       Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
     </div>
@@ -217,7 +218,10 @@
   
   .sidebar-expanded {
     width: v-bind(expandedWidth); /* Expanded width (w-64) */
-    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.075);
+  }
+
+  .sidebar-floating {
+    box-shadow: 3px 0px 12px -2px rgba(0, 0, 0, 0.15);
   }
 
   :deep(.dark) .sidebar-collapsed {

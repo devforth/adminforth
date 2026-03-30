@@ -1,5 +1,5 @@
 <template>
-    <Tooltip>
+    <component :is="shouldShowTooltip ? Tooltip : 'span'">
       <span class="flex items-center">
         <CountryFlag class="w-[1.6rem] h-[1.2rem]" :countryCode="countryIsoLow" />
         <span v-if="meta.showCountryName" class="ms-2">{{ countryName }}</span>
@@ -8,7 +8,7 @@
       <template v-if="shouldShowTooltip" #tooltip>
         {{ countryName }}
       </template>
-    </Tooltip>
+    </component>
 </template>
 
 <script setup>  

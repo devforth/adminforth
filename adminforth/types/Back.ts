@@ -1,4 +1,4 @@
-import type { Express, Request } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
@@ -67,6 +67,10 @@ export interface IHttpServer {
       headers: {[key: string]: string}, 
       cookies: {[key: string]: string}, 
       response: IAdminForthHttpResponse,
+      requestUrl: string,
+      abortSignal: AbortSignal,
+      _raw_express_req: Request,
+      _raw_express_res: Response,
     ) => void,
   }): void;
 
@@ -183,9 +187,23 @@ export interface IAdminForthDataSourceConnector {
    * For string fields:
    *  - {@link AdminForthResourceColumn.maxLength}
    * For numbers:
+   *  // min/max are used inside getMinMaxForColumns from base connector
    *  - {@link AdminForthResourceColumn.min}
    *  - {@link AdminForthResourceColumn.max}
-   *  - {@link AdminForthResourceColumn.minValue}, {@link AdminForthResourceColumn.maxValue}, {@link AdminForthResourceColumn.enum}, {@link AdminForthResourceColumn.foreignResource}, {@link AdminForthResourceColumn.sortable}, {@link AdminForthResourceColumn.backendOnly}, {@link AdminForthResourceColumn.masked}, {@link AdminForthResourceColumn.virtual}, {@link AdminForthResourceColumn.components}, {@link AdminForthResourceColumn.allowMinMaxQuery}, {@link AdminForthResourceColumn.editingNote}, {@link AdminForthResourceColumn.showIn}, {@link AdminForthResourceColumn.isUnique}, {@link AdminForthResourceColumn.validation})
+   *  - {@link AdminForthResourceColumn.minValue}, 
+   *  - {@link AdminForthResourceColumn.maxValue}, 
+   *  - {@link AdminForthResourceColumn.enum}, 
+   *  - {@link AdminForthResourceColumn.foreignResource}, 
+   *  - {@link AdminForthResourceColumn.sortable}, 
+   *  - {@link AdminForthResourceColumn.backendOnly}, 
+   *  - {@link AdminForthResourceColumn.masked}, 
+   *  - {@link AdminForthResourceColumn.virtual}, 
+   *  - {@link AdminForthResourceColumn.components}, 
+   *  - {@link AdminForthResourceColumn.allowMinMaxQuery}, 
+   *  - {@link AdminForthResourceColumn.editingNote}, 
+   *  - {@link AdminForthResourceColumn.showIn}, 
+   *  - {@link AdminForthResourceColumn.isUnique}, 
+   *  - {@link AdminForthResourceColumn.validation})
    * Also you can additionally save original column type to {@link AdminForthResourceColumn._underlineType}. This might be later used
    * in {@link IAdminForthDataSourceConnector.getFieldValue} and {@link IAdminForthDataSourceConnector.setFieldValue} methods.
    * 
@@ -292,6 +310,8 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
   }): Promise<{ok: boolean, error?: string}>;
 
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+
+  deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
 }
 
 
@@ -1621,7 +1641,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
-    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclarationFull>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
@@ -1760,8 +1780,6 @@ export interface IOperationalResource {
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
-  
-  deleteMany?(recordIds: any[]): Promise<number>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }
@@ -1811,7 +1829,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions' | 'actions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by

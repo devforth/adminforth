@@ -522,3 +522,16 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
     return { error: null };
   }
+
+  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
+    if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
+      throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+    }
+    if (hookResponse.ok === false && !hookResponse.error) {
+      return { error: hookResponse.error ?? 'Operation aborted by hook' };
+    }
+    if (hookResponse.error) {
+      return { error: hookResponse.error };
+    }
+    return null;
+  }

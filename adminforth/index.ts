@@ -6,7 +6,7 @@ import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -35,6 +35,7 @@ import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
 import ClickhouseConnector from './dataConnectors/clickhouse.js';
+import QdrantConnector from './dataConnectors/qdrant.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -96,11 +97,11 @@ class AdminForth implements IAdminForth {
     PASSWORD_VALIDATORS: {
       UP_LOW_NUM_SPECIAL: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*\\(\\)\\-_=\\+\\[\\]\\{\\}\\|;:\',\\.<>\\/\\?]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, one number, and one special character'
       },
       UP_LOW_NUM: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, and one number'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, and one number'
       },
     },
     EMAIL_VALIDATOR: {
@@ -394,6 +395,7 @@ class AdminForth implements IAdminForth {
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
+      'qdrant': QdrantConnector,
     };
     if (!this.config.databaseConnectors) {
       this.config.databaseConnectors = {...this.connectorClasses};
@@ -641,12 +643,9 @@ class AdminForth implements IAdminForth {
         extra,
       });
 
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -693,14 +692,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || typeof resp.ok !== 'boolean') {
-        throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
-      }
-      if (resp.ok === false && !resp.error) {
-        return { error: resp.error ?? 'Operation aborted by hook' };
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -738,11 +732,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
     
@@ -769,12 +761,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -792,12 +781,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 

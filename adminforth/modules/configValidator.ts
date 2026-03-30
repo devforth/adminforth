@@ -32,6 +32,7 @@ import { AdminForthConfigMenuItem } from "adminforth";
 import { afLogger } from "./logger.js";
 import {cascadeChildrenDelete} from './utils.js'
 
+const DEBOUNCE_TIME_MS = 300;
 export default class ConfigValidator implements IConfigValidator {
 
   customComponentsDir: string | undefined;
@@ -484,7 +485,7 @@ export default class ConfigValidator implements IConfigValidator {
         // define default filter options
         if (!Object.keys(col).includes('filterOptions')) {
           col.filterOptions = {
-            debounceTimeMs: 10,
+            debounceTimeMs: DEBOUNCE_TIME_MS,
             substringSearch: true,
           };
           if (col.enum || col.foreignResource || col.type === AdminForthDataTypes.BOOLEAN) {
@@ -496,7 +497,7 @@ export default class ConfigValidator implements IConfigValidator {
               errors.push(`Resource "${res.resourceId}" column "${col.name}" filterOptions.debounceTimeMs must be a number`);
             }
           } else {
-            col.filterOptions.debounceTimeMs = 10;
+            col.filterOptions.debounceTimeMs = DEBOUNCE_TIME_MS;
           }
 
           if (col.filterOptions.substringSearch !== undefined) {
