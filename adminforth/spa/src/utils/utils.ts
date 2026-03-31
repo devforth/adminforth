@@ -193,7 +193,8 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
   if ( validation?.length ) {
     const validationArray = validation;
     for (let i = 0; i < validationArray.length; i++) {
-      if (validationArray[i].regExp) {
+      const regExpPattern = validationArray[i].regExp;
+      if (regExpPattern) {
         let flags = '';
         if (validationArray[i].caseSensitive) {
           flags += 'i';
@@ -205,7 +206,7 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
           flags += 'g';
         }
 
-        const regExp = new RegExp(validationArray[i].regExp, flags);
+        const regExp = new RegExp(regExpPattern, flags);
         if (value === undefined || value === null) {
           value = '';
         }
