@@ -98,7 +98,13 @@
         <button
           :key="action.id"
           @click="startCustomBulkActionInner(action.id!)"
-          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[34px]
+            border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
+            hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
+            focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+            dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+            dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
         >
           <component
             v-if="action.icon && !customActionLoadingStates[action.id!]"
