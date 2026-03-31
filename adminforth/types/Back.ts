@@ -1316,7 +1316,7 @@ export interface AdminForthActionInput {
   }) => Promise<{
       ok: boolean;
       error?: string;
-      message?: string;
+      successMessage?: string;
   }>;
   action?: (params: {
       adminforth: IAdminForth;
