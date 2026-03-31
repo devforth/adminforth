@@ -1312,7 +1312,7 @@ export interface AdminForthActionInput {
       adminUser: AdminUser;
       response: IAdminForthHttpResponse;
       extra?: HttpExtra;
-      tr: Function;
+      tr: ITranslateFunction;
   }) => Promise<{
       ok: boolean;
       error?: string;
@@ -1325,7 +1325,7 @@ export interface AdminForthActionInput {
       adminUser: AdminUser;
       response: IAdminForthHttpResponse;
       extra?: HttpExtra;
-      tr: Function;
+      tr: ITranslateFunction;
   }) => Promise<{
       ok: boolean;
       error?: string;
