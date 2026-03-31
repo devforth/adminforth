@@ -212,7 +212,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-  .wrapper > * {
+  .wrapper {
     @apply px-4 py-2 
     hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover 
     dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover
