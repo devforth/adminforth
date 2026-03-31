@@ -80,7 +80,7 @@
   const props = defineProps<{
     source: 'create' | 'edit',
     group: any,
-    mode: string,
+    mode: 'create' | 'edit',
     validatingMode: boolean,
     currentValues: any,
     unmasked: any,

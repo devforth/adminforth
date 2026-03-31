@@ -68,7 +68,7 @@
     source: 'create' | 'edit',
     column: any,
     currentValues: any,
-    mode: string,
+    mode: 'create' | 'edit',
     columnOptions: any,
     unmasked: any,
     setCurrentValue: Function,
