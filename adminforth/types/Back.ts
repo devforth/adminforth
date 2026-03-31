@@ -1305,6 +1305,19 @@ export interface AdminForthActionInput {
     standardAllowedActions: AllowedActions;
   }) => boolean;
   url?: string;
+  bulkHandler?: (params: {
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordIds: string[];
+      adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
+      extra?: HttpExtra;
+      tr: Function;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      message?: string;
+  }>;
   action?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;

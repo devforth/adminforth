@@ -12,7 +12,7 @@
     <BreadcrumbsWithButtons>
       <template v-if="coreStore.resource?.options?.actions">
 
-        <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
+        <div class="flex gap-1" v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
           <component
             :is="action?.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
             :meta="action.customComponent ? formatComponent(action.customComponent).meta : undefined"
@@ -45,7 +45,7 @@
               {{ action.name }}
             </button>
           </component>
-        </template>
+        </div>
       </template>
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
