@@ -224,7 +224,9 @@ const input = ref<HTMLInputElement | null>(null);
   const formatSelectOptions = (options: any, column: any) => {
     const optionsToReturn = options;
     if (!column.required[props.mode] && !column.isArray?.enabled) {
-      optionsToReturn.push({ label: t('Unset'), value: null });
+      if (!optionsToReturn.some((option: any) => option.value === null)) {
+        optionsToReturn.push({ label: t('Unset'), value: null });
+      }
     }
     return optionsToReturn;
   };
