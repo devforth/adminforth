@@ -1308,7 +1308,7 @@ export interface AdminForthActionInput {
   bulkHandler?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;
-      recordIds: string[];
+      recordIds: (string | number)[];
       adminUser: AdminUser;
       response: IAdminForthHttpResponse;
       extra?: HttpExtra;

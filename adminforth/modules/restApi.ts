@@ -1614,7 +1614,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
         }
         if (!action.bulkHandler) {
-          return { error: `Action "${actionId}" has no bulkHandler` };
+          return { error: await tr(`Action "{actionId}" has no bulkHandler`, 'errors', { actionId }) };
         }
         if (action.allowed) {
           const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
