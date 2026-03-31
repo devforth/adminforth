@@ -150,7 +150,7 @@ async function handleActionClick(action: AdminForthActionInput, payload: any) {
     recordId: route.params.primaryKey as string,
     extra: payload || {},
     setLoadingState: (loading: boolean) => {
-      actionLoadingStates.value[action.id] = loading;
+      actionLoadingStates.value[action.id!] = loading;
     },
     onSuccess: async (data: any) => {
       await coreStore.fetchRecord({
