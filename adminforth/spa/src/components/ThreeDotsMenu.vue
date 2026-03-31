@@ -46,12 +46,11 @@
           <li v-for="action in customActions" :key="action.id">
             <div class="wrapper"> 
               <component
-                v-if="action.customComponent"
                 :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
                 :meta="formatComponent(action.customComponent).meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
               >
-                <a @click.prevent class="block cursor-pointer px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
+                <a @click.prevent class="block">
                   <div class="flex items-center gap-2">
                     <component 
                       v-if="action.icon && !actionLoadingStates[action.id!]" 
@@ -214,7 +213,10 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
   .wrapper > * {
-    @apply px-4 py-2;
+    @apply px-4 py-2 
+    hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover 
+    dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover
+    cursor-pointer;
   }
 </style>
 

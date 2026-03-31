@@ -303,7 +303,7 @@ export interface AdminForthComponentDeclarationFull {
     [key: string]: any,
   }
 }
-import { type AdminForthActionInput, type AdminForthResource } from './Back.js' 
+import { type IAdminForth, type AdminForthActionInput, type AdminForthResource } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
@@ -610,14 +610,14 @@ export type ValidationObject = {
      * ```
      * 
      */
-    regExp: string,
+    regExp?: string,
 
     /**
      * Error message shown to user if validation fails
      * 
      * Example: "Invalid email format"
      */
-    message: string,
+    message?: string,
 
     /**
      * Whether to check case sensitivity (i flag)
@@ -633,6 +633,20 @@ export type ValidationObject = {
      * Whether to check global strings (g flag)
      */
     global?: boolean
+
+    /**
+     * Custom validator function.
+     * 
+     * Example:
+     * 
+     * ```ts
+     * validator: async (value) => {
+     *   // custom validation logic
+     *   return { isValid: true, message: 'Validation passed' }; // or { isValid: false, message: 'Validation failed' }
+     * }
+     * ```
+     */
+    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}> | boolean,
 }
 
 
