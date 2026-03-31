@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl">
+  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl border dark:border-darkFormBorder">
     <div v-if="group.groupName && !group.noTitle" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-darkFormBorder text-lightListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkListTableHeadingText rounded-t-lg">
       {{ group.groupName }}
     </div>

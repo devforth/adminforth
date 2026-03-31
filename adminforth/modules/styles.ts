@@ -84,7 +84,7 @@ export const styles = () => ({
     lightShowTableUnderHeadingText: "#374151",
     lightShowTablesBodyBackground: "alias:lightForm",
     lightShowTableBodyText: "#6B7280",
-    lightShowTableBodyBorder: "#F3F4F6",
+    lightShowTableBodyBorder: "#E5E7EB",
 
 
     /* Show View buttons*/
