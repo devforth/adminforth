@@ -682,7 +682,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               ),
               actions: resource.options.actions?.map((action) => ({
                 ...action,
-                bulkHandler: !!action.bulkHandler,
+                hasBulkHandler: !!action.bulkHandler,
+                bulkHandler: undefined,
               })),
               allowedActions,
             } 

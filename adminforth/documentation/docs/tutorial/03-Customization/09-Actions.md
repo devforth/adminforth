@@ -48,12 +48,57 @@ Here's how to add a custom action:
 - `name`: Display name of the action
 - `icon`: Icon to show (using Flowbite icon set)
 - `allowed`: Function to control access to the action
-- `action`: Handler function that executes when action is triggered
+- `action`: Handler function that executes when action is triggered for a **single** record
+- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Bulk button with bulkHandler](#bulk-button-with-bulkhandler))
 - `showIn`: Controls where the action appears
   - `list`: whether to show in list view
   - `listThreeDotsMenu`: whether to show in three dots menu in the list view
   - `showButton`: whether to show as a button on show view
   - `showThreeDotsMenu`: when to show in the three-dots menu of show view
+  - `bulkButton`: whether to show as a bulk-selection button in the list view
+
+### Bulk button with `action`
+
+When `showIn.bulkButton` is `true` and only `action` (not `bulkHandler`) is defined, AdminForth automatically calls your `action` function **once per selected record** using `Promise.all`. This is convenient for simple cases but means N separate handler invocations run in parallel:
+
+```ts title="./resources/apartments.ts"
+{
+  name: 'Auto submit',
+  action: async ({ recordId }) => {
+    // Called once per selected record when used as a bulk button
+    await doSomething(recordId);
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    bulkButton: true,   // triggers Promise.all over selected records
+    showButton: true,
+  }
+}
+```
+
+If your operation can be expressed more efficiently as a single batched query (e.g., a single `UPDATE … WHERE id IN (…)`), define `bulkHandler` instead. AdminForth will call it **once** with all selected record IDs:
+
+```ts title="./resources/apartments.ts"
+{
+  name: 'Auto submit',
+  // bulkHandler receives all recordIds in one call – use it for batched operations
+  bulkHandler: async ({ recordIds, adminforth, resource }) => {
+    await doSomethingBatch(recordIds);
+    return { ok: true, successMessage: `Processed ${recordIds.length} records` };
+  },
+  // You can still keep `action` for the single-record show/edit buttons
+  action: async ({ recordId }) => {
+    await doSomething(recordId);
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    bulkButton: true,
+    showButton: true,
+  }
+}
+```
+
+> ☝️ When both `action` and `bulkHandler` are defined, AdminForth uses `bulkHandler` for bulk operations and `action` for single-record operations. When only `action` is defined and `bulkButton` is enabled, AdminForth falls back to `Promise.all` over individual `action` calls.
 
 ### Access Control
 
