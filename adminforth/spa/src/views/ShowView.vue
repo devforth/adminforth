@@ -229,7 +229,7 @@ onMounted(async () => {
   if(coreStore.resourceOptions){
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
-  // loading.value = false;
+  loading.value = false;
 });
 
 const groups = computed(() => {
