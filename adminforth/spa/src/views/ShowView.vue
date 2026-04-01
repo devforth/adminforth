@@ -203,7 +203,7 @@ const customActions = computed(() => {
 });
 
 const skeletonRowsCount = computed(() => {
-  const allCols = coreStore.resource?.columns;
+  const allCols = coreStore.resource?.columns || [];
 
   const isEnabledInConfig = (col: any) => {
     return col.showIn?.list !== false;
@@ -253,17 +253,17 @@ const groups = computed(() => {
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource?.columns?.filter(col => col.showIn?.show) ?? [];
+  return coreStore.resource?.columns?.filter(col => col.showIn?.show);
 });
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
-    groups.value.flatMap(group => group.columns?.map((col: AdminForthResourceColumnCommon) => col.name) || [])
+    groups.value.flatMap(group => group.columns?.map((col: AdminForthResourceColumnCommon) => col.name))
   );
 
-  return coreStore.resource?.columns?.filter(
+  return coreStore.resource?.columns.filter(
     col => !groupedColumnNames.has(col.name) && col.showIn?.show
-  ) ?? [];
+  );
 });
 
 async function deleteRecord() {
