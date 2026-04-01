@@ -1850,6 +1850,8 @@ export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourc
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
+   * @deprecated Since 2.26.5. Will be removed in 3.0.0. Use `actions` instead.
+
    */
   bulkActions?: Array<AdminForthBulkAction>,
 
