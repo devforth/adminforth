@@ -5,11 +5,19 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { Decimal } from 'decimal.js';
 import { initApi } from './api.js';
-import cars_SQLITE_resource from './resources/cars_SL.js';
-import cars_MyS_resource from './resources/cars_MyS.js';
-import cars_PG_resource from './resources/cars_PG.js';
-import cars_Mongo_resource from './resources/cars_mongo.js';
-import cars_Ch_resource from './resources/cars_Ch.js';
+
+import cars_SQLITE_resource from './resources/cars_resources/cars_SL.js';
+import cars_MyS_resource from './resources/cars_resources/cars_MyS.js';
+import cars_PG_resource from './resources/cars_resources/cars_PG.js';
+import cars_Mongo_resource from './resources/cars_resources/cars_mongo.js';
+import cars_Ch_resource from './resources/cars_resources/cars_Ch.js';
+
+import m2m_sqlite from './resources/many2many_resources/m2m_sqlite.js';
+import m2m_mysql from './resources/many2many_resources/m2m_mysql.js';
+import m2m_pg from './resources/many2many_resources/m2m_PG.js';
+import m2m_mongo from './resources/many2many_resources/m2m_mongo.js';
+import m2m_ch from './resources/many2many_resources/m2m_ch.js';
+
 import background_jobs_resource from './resources/background_jobs.js';
 import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
@@ -118,6 +126,11 @@ export const admin = new AdminForth({
     cars_PG_resource,
     cars_Mongo_resource,
     cars_Ch_resource,
+    m2m_sqlite,
+    m2m_mysql,
+    m2m_pg,
+    m2m_mongo,
+    m2m_ch,
     passkeysResource,
     carsDescriptionImage,
     translations,
