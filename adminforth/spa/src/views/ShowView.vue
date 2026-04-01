@@ -253,7 +253,7 @@ const groups = computed(() => {
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource?.columns.filter(col => col.showIn?.show);
+  return coreStore.resource?.columns?.filter(col => col.showIn?.show) ?? [];
 });
 
 const otherColumns = computed(() => {
