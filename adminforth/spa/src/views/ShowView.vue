@@ -258,12 +258,12 @@ const allColumns = computed(() => {
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
-    groups.value.flatMap(group => group.columns?.map((col: AdminForthResourceColumnCommon) => col.name))
+    groups.value.flatMap(group => group.columns?.map((col: AdminForthResourceColumnCommon) => col.name) || [])
   );
 
-  return coreStore.resource?.columns.filter(
+  return coreStore.resource?.columns?.filter(
     col => !groupedColumnNames.has(col.name) && col.showIn?.show
-  );
+  ) ?? [];
 });
 
 async function deleteRecord() {
