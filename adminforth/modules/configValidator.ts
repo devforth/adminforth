@@ -880,6 +880,9 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      if (resInput?.options?.bulkActions?.length) {
+        warnings.push(`Resource "${res.resourceId}" uses deprecated \`bulkActions\`. Please migrate to \`actions\` instead. \`bulkActions\` will be removed in 3.0.0.`);
+      }
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
 
