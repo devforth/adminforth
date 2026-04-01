@@ -1,28 +1,29 @@
-import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../adminforth/index.js';
-import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
+import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../../adminforth/index.js';
+import { ENGINE_TYPES, BODY_TYPES } from '../../custom/cars_data.js';
 
-import UploadPlugin from '../../plugins/adminforth-upload/index.js';
-import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js';
-import AuditLogPlugin from '../../plugins/adminforth-audit-log/index.js';
-import RichEditorPlugin from '../../plugins/adminforth-rich-editor/index.js';
-import TextCompletePlugin from '../../plugins/adminforth-text-complete/index.js';
-import importExport from '../../plugins/adminforth-import-export/index.js';
-import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js';
-import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
-import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
-import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
-import MarkdownPlugin from '../../plugins/adminforth-markdown/index.js';
-import QuickFiltersPlugin from '../../plugins/adminforth-quick-filters/index.js';
+import UploadPlugin from '../../../plugins/adminforth-upload/index.js';
+import TwoFactorsAuthPlugin from '../../../plugins/adminforth-two-factors-auth/index.js';
+import AuditLogPlugin from '../../../plugins/adminforth-audit-log/index.js';
+import RichEditorPlugin from '../../../plugins/adminforth-rich-editor/index.js';
+import TextCompletePlugin from '../../../plugins/adminforth-text-complete/index.js';
+import importExport from '../../../plugins/adminforth-import-export/index.js';
+import InlineCreatePlugin from '../../../plugins/adminforth-inline-create/index.js';
+import ListInPlaceEditPlugin from "../../../plugins/adminforth-list-in-place-edit/index.js";
+import BulkAiFlowPlugin from '../../../plugins/adminforth-bulk-ai-flow/index.js';
+import ForeignInlineShowPlugin from '../../../plugins/adminforth-foreign-inline-show/index.js';
+import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
+import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
+import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 
-import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
-import CompletionAdapterGoogleGemini from '../../adapters/adminforth-completion-adapter-google-gemini/index.js';
-import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-generation-adapter-openai/index.js';
-import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
-import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
-import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
-import { logger } from '../../adminforth/modules/logger.js';
-import { afLogger } from '../../adminforth/modules/logger.js';
-import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
+import CompletionAdapterOpenAIChatGPT from '../../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
+import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
+import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthAdapterS3Storage from '../../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
+import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-image-vision-adapter-openai/index.js';
+import { logger } from '../../../adminforth/modules/logger.js';
+import { afLogger } from '../../../adminforth/modules/logger.js';
+import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
@@ -265,6 +266,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           },
         ]
       }),
+      new Many2ManyPlugin({
+        linkedResourceId: 'adminuser'
+      }),
     /*********************************************************************************
      
                                         AI Plugins
@@ -407,34 +411,33 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           action: async ({ recordId, adminUser, adminforth, extra, response }) => {
             logger.info(`Admin User is approving listing for record ${recordId} in resource ${resourceId}`);
             //@ts-ignore
-            // const verificationResult = extra?.verificationResult
-            // if (!verificationResult) {
-            //   return { ok: false, error: 'No verification result provided' };
-            // }
-            // const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
-            // const result = await t2fa.verify(verificationResult, {
-            //   adminUser: adminUser,
-            //   userPk: adminUser.pk as string,
-            //   cookies: extra.cookies,
-            //   response: response,
-            //   extra: extra,
-            // });
+            const verificationResult = extra?.verificationResult
+            if (!verificationResult) {
+              return { ok: false, error: 'No verification result provided' };
+            }
+            const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+            const result = await t2fa.verify(verificationResult, {
+              adminUser: adminUser,
+              userPk: adminUser.pk as string,
+              cookies: extra.cookies,
+              response: response,
+              extra: extra,
+            });
 
 
-            // if (!result || 'error' in result) {
-            //   return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
-            // }
-            // await adminforth
-            //   // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
-            //   .getPluginById<AuditLogPlugin>('AuditLogPlugin')
-            //   .logCustomAction({
-            //     resourceId: resourceId,
-            //     recordId: null,
-            //     actionId: 'visitedDashboard',
-            //     oldData: null,
-            //     data: { dashboard: 'main' },
-            //     user: adminUser,
-            //   });
+            if (!result || 'error' in result) {
+              return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+            }
+            await adminforth
+              .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
+              .logCustomAction({
+                resourceId: resourceId,
+                recordId: null,
+                actionId: 'visitedDashboard',
+                oldData: null,
+                data: { dashboard: 'main' },
+                user: adminUser,
+              });
 
 
 
