@@ -76,7 +76,6 @@
       v-if="loading" 
       role="status" 
       class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
-      :class="{ 'rounded-default': isRounded }"
     >
       <div 
         v-if="groups && groups.length > 0" 
@@ -229,7 +228,7 @@ onMounted(async () => {
   if(coreStore.resourceOptions){
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
-  loading.value = false;
+  // loading.value = false;
 });
 
 const groups = computed(() => {
