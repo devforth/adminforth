@@ -8,7 +8,7 @@ import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
-import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -769,6 +769,7 @@ export async function executeCustomBulkAction({
   onError,
   setLoadingState,
   confirmMessage,
+  resource,
 }: {
   actionId: string | number | undefined,
   resourceId: string,
@@ -778,6 +779,7 @@ export async function executeCustomBulkAction({
   onError?: (error: string) => void,
   setLoadingState?: (loading: boolean) => void,
   confirmMessage?: string,
+  resource?: AdminForthResourceCommon,
 }): Promise<any> {
   if (!recordIds || recordIds.length === 0) {
     if (onError) {
@@ -799,7 +801,38 @@ export async function executeCustomBulkAction({
   setLoadingState?.(true);
 
   try {
-    // Execute action for all records in parallel using Promise.all
+    const action = resource?.options?.actions?.find((a: any) => a.id === actionId) as AdminForthActionFront | undefined;
+
+    if (action?.hasBulkHandler && action?.showIn?.bulkButton) {
+      const result = await callAdminForthApi({
+        path: '/start_custom_bulk_action',
+        method: 'POST',
+        body: {
+          resourceId,
+          actionId,
+          recordIds,
+          extra: extra || {},
+        }
+      });
+
+      if (result?.ok) {
+        if (onSuccess) {
+          await onSuccess([result]);
+        }
+        return { ok: true, results: [result] };
+      }
+
+      if (result?.error) {
+        if (onError) {
+          onError(result.error);
+        }
+        return { error: result.error };
+      }
+
+      return result;
+    }
+
+    // Per-record parallel calls (legacy path)
     const results = await Promise.all(
       recordIds.map(recordId =>
         callAdminForthApi({
@@ -814,7 +847,6 @@ export async function executeCustomBulkAction({
         })
       )
     );
-
     const lastResult = results[results.length - 1];
     if (lastResult?.redirectUrl) {
       if (lastResult.redirectUrl.includes('target=_blank')) {
