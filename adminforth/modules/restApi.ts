@@ -680,6 +680,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
                 })
               ),
+              actions: resource.options.actions?.map((action) => ({
+                ...action,
+                hasBulkHandler: !!action.bulkHandler,
+                bulkHandler: undefined,
+              })),
               allowedActions,
             } 
         }
@@ -1587,6 +1592,47 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           resourceId,
           ...actionResponse
         }
+      }
+    });
+    server.endpoint({
+      method: 'POST',
+      path: '/start_custom_bulk_action',
+      handler: async ({ body, adminUser, tr, response, cookies, headers }) => {
+        const { resourceId, actionId, recordIds, extra } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: body },
+          ActionCheckSource.CustomActionRequest,
+          this.adminforth
+        );
+        const action = resource.options.actions.find((act) => act.id == actionId);
+        if (!action) {
+          return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+        }
+        if (!action.bulkHandler) {
+          return { error: await tr(`Action "{actionId}" has no bulkHandler`, 'errors', { actionId }) };
+        }
+        if (action.allowed) {
+          const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+          if (!execAllowed) {
+            return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
+          }
+        }
+        const result = await action.bulkHandler({
+          recordIds,
+          adminUser,
+          resource,
+          tr,
+          adminforth: this.adminforth,
+          response,
+          extra: { ...extra, cookies, headers },
+        });
+        return { actionId, recordIds, resourceId, ...result };
       }
     });
     server.endpoint({
