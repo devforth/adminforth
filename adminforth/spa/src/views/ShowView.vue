@@ -85,14 +85,52 @@
       :adminUser="coreStore.adminUser"
     />
 
-    <div v-if="loading" role="status" class="max-w-sm animate-pulse">
-        <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
-        <span class="sr-only">{{ $t('Loading...') }}</span>
+    <div 
+      v-if="loading" 
+      role="status" 
+      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
+    >
+      <div 
+        v-if="groups && groups.length > 0" 
+        class="text-md font-semibold px-6 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText rounded-t-lg border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+      >
+        <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded-full w-32"></div>
+      </div>
+
+      <table class="w-full text-sm text-left table-fixed">
+        <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+              {{ $t('Field') }}
+            </th>
+            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+              {{ $t('Value') }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr 
+            v-for="i in skeletonRowsCount" 
+            :key="i"
+            class="bg-lightShowTablesBodyBackground border-t border-lightShowTableBodyBorder dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
+          >
+            <td class="px-6 py-[15.5px] relative block md:table-cell pb-0 md:pb-[15.5px]">
+              <div class="md:absolute md:inset-0 flex items-center px-6 py-[15.5px]">
+                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-24"></div>
+              </div>
+            </td>
+
+            <td class="px-6 py-[15.5px] whitespace-pre-wrap block md:table-cell">
+              <div class="flex items-center h-full min-h-[21px]">
+                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-full max-w-[280px]"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <span class="sr-only">{{ $t('Loading...') }}</span>
     </div>
     <div 
       v-else-if="coreStore.record"
@@ -177,6 +215,18 @@ const customActions = computed(() => {
   return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
 });
 
+const skeletonRowsCount = computed(() => {
+  const allCols = coreStore.resource?.columns || [];
+
+  const isEnabledInConfig = (col: any) => {
+    return col.showIn?.list !== false;
+  };
+  
+  const finalCount = allCols.filter(isEnabledInConfig).length;
+
+  return finalCount > 0 ? finalCount : 10;
+});
+
 onMounted(async () => {
   loading.value = true;
   await coreStore.fetchResourceFull({
@@ -216,7 +266,7 @@ const groups = computed(() => {
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource?.columns.filter(col => col.showIn?.show);
+  return coreStore.resource?.columns?.filter(col => col.showIn?.show);
 });
 
 const otherColumns = computed(() => {
