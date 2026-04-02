@@ -119,7 +119,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
-type ISingleSelectModelValue = string | number;
+type ISingleSelectModelValue = string | number | boolean;
 
 const props = defineProps({
   options: Array,
