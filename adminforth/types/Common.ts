@@ -303,7 +303,7 @@ export interface AdminForthComponentDeclarationFull {
     [key: string]: any,
   }
 }
-import { type AdminForthActionInput, type AdminForthResource } from './Back.js' 
+import { type IAdminForth, type AdminForthActionInput, type AdminForthResource } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
@@ -314,8 +314,9 @@ export type FieldGroup = {
   noTitle?: boolean;
 };
 
-export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id'> {
+export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
   id: string;
+  hasBulkHandler?: boolean;
 }
 
 export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
@@ -436,6 +437,7 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
+       * @deprecated in favor of defining .
        */
       bulkActions?: AdminForthBulkActionCommon[],
 
@@ -609,14 +611,14 @@ export type ValidationObject = {
      * ```
      * 
      */
-    regExp: string,
+    regExp?: string,
 
     /**
      * Error message shown to user if validation fails
      * 
      * Example: "Invalid email format"
      */
-    message: string,
+    message?: string,
 
     /**
      * Whether to check case sensitivity (i flag)
@@ -632,6 +634,20 @@ export type ValidationObject = {
      * Whether to check global strings (g flag)
      */
     global?: boolean
+
+    /**
+     * Custom validator function.
+     * 
+     * Example:
+     * 
+     * ```ts
+     * validator: async (value) => {
+     *   // custom validation logic
+     *   return { isValid: true, message: 'Validation passed' }; // or { isValid: false, message: 'Validation failed' }
+     * }
+     * ```
+     */
+    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}> | boolean,
 }
 
 

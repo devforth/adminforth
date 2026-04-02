@@ -1,28 +1,29 @@
-import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../adminforth/index.js';
-import { ENGINE_TYPES, BODY_TYPES } from '../custom/cars_data.js';
+import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../../adminforth/index.js';
+import { ENGINE_TYPES, BODY_TYPES } from '../../custom/cars_data.js';
 
-import UploadPlugin from '../../plugins/adminforth-upload/index.js';
-import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js';
-import AuditLogPlugin from '../../plugins/adminforth-audit-log/index.js';
-import RichEditorPlugin from '../../plugins/adminforth-rich-editor/index.js';
-import TextCompletePlugin from '../../plugins/adminforth-text-complete/index.js';
-import importExport from '../../plugins/adminforth-import-export/index.js';
-import InlineCreatePlugin from '../../plugins/adminforth-inline-create/index.js';
-import ListInPlaceEditPlugin from "../../plugins/adminforth-list-in-place-edit/index.js";
-import BulkAiFlowPlugin from '../../plugins/adminforth-bulk-ai-flow/index.js';
-import ForeignInlineShowPlugin from '../../plugins/adminforth-foreign-inline-show/index.js';
-import MarkdownPlugin from '../../plugins/adminforth-markdown/index.js';
-import QuickFiltersPlugin from '../../plugins/adminforth-quick-filters/index.js';
+import UploadPlugin from '../../../plugins/adminforth-upload/index.js';
+import TwoFactorsAuthPlugin from '../../../plugins/adminforth-two-factors-auth/index.js';
+import AuditLogPlugin from '../../../plugins/adminforth-audit-log/index.js';
+import RichEditorPlugin from '../../../plugins/adminforth-rich-editor/index.js';
+import TextCompletePlugin from '../../../plugins/adminforth-text-complete/index.js';
+import importExport from '../../../plugins/adminforth-import-export/index.js';
+import InlineCreatePlugin from '../../../plugins/adminforth-inline-create/index.js';
+import ListInPlaceEditPlugin from "../../../plugins/adminforth-list-in-place-edit/index.js";
+import BulkAiFlowPlugin from '../../../plugins/adminforth-bulk-ai-flow/index.js';
+import ForeignInlineShowPlugin from '../../../plugins/adminforth-foreign-inline-show/index.js';
+import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
+import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
+import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 
-import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
-import CompletionAdapterGoogleGemini from '../../adapters/adminforth-completion-adapter-google-gemini/index.js';
-import ImageGenerationAdapterOpenAI from '../../adapters/adminforth-image-generation-adapter-openai/index.js';
-import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
-import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
-import AdminForthImageVisionAdapterOpenAi from '../../adapters/adminforth-image-vision-adapter-openai/index.js';
-import { logger } from '../../adminforth/modules/logger.js';
-import { afLogger } from '../../adminforth/modules/logger.js';
-import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
+import CompletionAdapterOpenAIChatGPT from '../../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
+import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
+import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
+import AdminForthAdapterS3Storage from '../../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
+import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-image-vision-adapter-openai/index.js';
+import { logger } from '../../../adminforth/modules/logger.js';
+import { afLogger } from '../../../adminforth/modules/logger.js';
+import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 
 export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
   return {
@@ -177,17 +178,16 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
 
     *********************************************************************************/
       new UploadPlugin({
-        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
           fileSystemFolder: "./db/uploads",
           mode: "public", // or "private"
           signingSecret: '1241245',
+        }) : new AdminForthAdapterS3Storage({
+          bucket: process.env.AWS_BUCKET_NAME as string,
+          region: process.env.AWS_REGION as string,
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
         }),
-        // storageAdapter: new AdminForthAdapterS3Storage({
-        //   bucket: process.env.AWS_BUCKET_NAME as string,
-        //   region: process.env.AWS_REGION as string,
-        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-        // }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -198,17 +198,16 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         },
       }),
       new UploadPlugin({
-        storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+        storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
           fileSystemFolder: "./db/uploads_promo",
           mode: "public", // or "private"
           signingSecret: '1241245',
+        }) : new AdminForthAdapterS3Storage({
+          bucket: process.env.AWS_BUCKET_NAME as string,
+          region: process.env.AWS_REGION as string,
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
         }),
-        // storageAdapter: new AdminForthAdapterS3Storage({
-        //   bucket: process.env.AWS_BUCKET_NAME as string,
-        //   region: process.env.AWS_REGION as string,
-        //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-        // }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
         maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -267,6 +266,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           },
         ]
       }),
+      new Many2ManyPlugin({
+        linkedResourceId: 'adminuser'
+      }),
     /*********************************************************************************
      
                                         AI Plugins
@@ -275,17 +277,17 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       ...(process.env.OPENAI_API_KEY ? 
         [
           new UploadPlugin({
-            storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+            storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
               fileSystemFolder: "./db/uploads_promo_generated",
               mode: "public", // or "private"
               signingSecret: '1241245',
+            }) : new AdminForthAdapterS3Storage({
+              bucket: process.env.AWS_BUCKET_NAME as string,
+              region: process.env.AWS_REGION as string,
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
             }),
-            // storageAdapter: new AdminForthAdapterS3Storage({
-            //   bucket: process.env.AWS_BUCKET_NAME as string,
-            //   region: process.env.AWS_REGION as string,
-            //   accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-            //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-            // }),
+            
             pathColumnName: 'generated_promo_picture',
             allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
             maxFileSize: 1024 * 1024 * 20, // 20 MB
@@ -293,9 +295,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
-              previewUrl({ filePath }) {
-                return `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`;
-              },
             },
             generation: {
               countToGenerate: 2,
@@ -404,6 +403,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         {
           name: 'Approve Listing',
           icon: 'flowbite:check-outline',
+          // bulkConfirmationMessage: 'Are you sure you want to approve listing for selected cars?',
+          // bulkSuccessMessage: `Selected cars have been listed successfully!`,
           action: async ({ recordId, adminUser, adminforth, extra, response }) => {
             logger.info(`Admin User is approving listing for record ${recordId} in resource ${resourceId}`);
             //@ts-ignore
@@ -425,8 +426,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
             }
             await adminforth
-              // .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
-              .getPluginById<AuditLogPlugin>('AuditLogPlugin')
+              .getPluginByClassName<AuditLogPlugin>('AuditLogPlugin')
               .logCustomAction({
                 resourceId: resourceId,
                 recordId: null,
@@ -448,6 +448,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             list: true,
             showButton: true,
             showThreeDotsMenu: true,
+            bulkButton: true,
           },
           customComponent: {
             file: '@@/RequireTwoFaGate.vue'

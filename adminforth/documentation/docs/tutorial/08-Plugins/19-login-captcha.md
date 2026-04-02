@@ -22,7 +22,7 @@ pnpm i @adminforth/login-captcha-adapter-cloudflare
 
 To use the plugin, add it to your user resource file. Here's an example:
 
-```ts template="./resources/adminuser.ts"
+```ts title="./resources/adminuser.ts"
 // Import the plugin and adapter
 import CaptchaPlugin from "@adminforth/login-captcha";
 import CaptchaAdapterCloudflare from "@adminforth/captcha-adapter-cloudflare";

@@ -8,7 +8,7 @@ import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
-import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -101,11 +101,13 @@ export async function callAdminForthApi(
   }
 }
 
-export function formatComponent(component: AdminForthComponentDeclaration): AdminForthComponentDeclarationFull {
+export function formatComponent(component: AdminForthComponentDeclaration | undefined): AdminForthComponentDeclarationFull {
   if (typeof component === 'string') {
     return { file: component, meta: {} };
-  } else {
+  } else if (typeof component === 'object') {
     return { file: component.file, meta: component.meta };
+  } else {
+    return { file: '', meta: {} };
   }
 }
 
@@ -191,7 +193,8 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
   if ( validation?.length ) {
     const validationArray = validation;
     for (let i = 0; i < validationArray.length; i++) {
-      if (validationArray[i].regExp) {
+      const regExpPattern = validationArray[i].regExp;
+      if (regExpPattern) {
         let flags = '';
         if (validationArray[i].caseSensitive) {
           flags += 'i';
@@ -203,7 +206,7 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
           flags += 'g';
         }
 
-        const regExp = new RegExp(validationArray[i].regExp, flags);
+        const regExp = new RegExp(regExpPattern, flags);
         if (value === undefined || value === null) {
           value = '';
         }
@@ -690,4 +693,194 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
       leaveGuardActive.setActive(false);
     }
   });
+}
+
+export async function executeCustomAction({
+  actionId,
+  resourceId,
+  recordId,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordId: string | number,
+  extra?: Record<string, any>,
+  onSuccess?: (data: any) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+}): Promise<any> {
+  setLoadingState?.(true);
+
+  try {
+    const data = await callAdminForthApi({
+      path: '/start_custom_action',
+      method: 'POST',
+      body: {
+        resourceId,
+        actionId,
+        recordId,
+        extra: extra || {},
+      }
+    });
+
+    if (data?.redirectUrl) {
+      // Check if the URL should open in a new tab
+      if (data.redirectUrl.includes('target=_blank')) {
+        window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        // Navigate within the app
+        if (data.redirectUrl.startsWith('http')) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+        }
+      }
+      return data;
+    }
+
+    if (data?.ok) {
+      if (onSuccess) {
+        await onSuccess(data);
+      }
+      return data;
+    }
+
+    if (data?.error) {
+      if (onError) {
+        onError(data.error);
+      }
+    }
+
+    return data;
+  } finally {
+    setLoadingState?.(false);
+  }
+}
+
+export async function executeCustomBulkAction({
+  actionId,
+  resourceId,
+  recordIds,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+  confirmMessage,
+  resource,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordIds: (string | number)[],
+  extra?: Record<string, any>,
+  onSuccess?: (results: any[]) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+  confirmMessage?: string,
+  resource?: AdminForthResourceCommon,
+}): Promise<any> {
+  if (!recordIds || recordIds.length === 0) {
+    if (onError) {
+      onError('No records selected');
+    }
+    return { error: 'No records selected' };
+  }
+
+  if (confirmMessage) {
+    const { confirm } = useAdminforth();
+    const confirmed = await confirm({
+      message: confirmMessage,
+    });
+    if (!confirmed) {
+      return { cancelled: true };
+    }
+  }
+
+  setLoadingState?.(true);
+
+  try {
+    const action = resource?.options?.actions?.find((a: any) => a.id === actionId) as AdminForthActionFront | undefined;
+
+    if (action?.hasBulkHandler && action?.showIn?.bulkButton) {
+      const result = await callAdminForthApi({
+        path: '/start_custom_bulk_action',
+        method: 'POST',
+        body: {
+          resourceId,
+          actionId,
+          recordIds,
+          extra: extra || {},
+        }
+      });
+
+      if (result?.ok) {
+        if (onSuccess) {
+          await onSuccess([result]);
+        }
+        return { ok: true, results: [result] };
+      }
+
+      if (result?.error) {
+        if (onError) {
+          onError(result.error);
+        }
+        return { error: result.error };
+      }
+
+      return result;
+    }
+
+    // Per-record parallel calls (legacy path)
+    const results = await Promise.all(
+      recordIds.map(recordId =>
+        callAdminForthApi({
+          path: '/start_custom_action',
+          method: 'POST',
+          body: {
+            resourceId,
+            actionId,
+            recordId,
+            extra: extra || {},
+          }
+        })
+      )
+    );
+    const lastResult = results[results.length - 1];
+    if (lastResult?.redirectUrl) {
+      if (lastResult.redirectUrl.includes('target=_blank')) {
+        window.open(lastResult.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        if (lastResult.redirectUrl.startsWith('http')) {
+          window.location.href = lastResult.redirectUrl;
+        } else {
+          router.push(lastResult.redirectUrl);
+        }
+      }
+      return lastResult;
+    }
+
+    const allSucceeded = results.every(r => r?.ok);
+    const hasErrors = results.some(r => r?.error);
+
+    if (allSucceeded) {
+      if (onSuccess) {
+        await onSuccess(results);
+      }
+      return { ok: true, results };
+    }
+
+    if (hasErrors) {
+      const errorMessages = results.filter(r => r?.error).map(r => r.error).join(', ');
+      if (onError) {
+        onError(errorMessages);
+      }
+      return { error: errorMessages, results };
+    }
+
+    return { results };
+  } finally {
+    setLoadingState?.(false);
+  }
 }
