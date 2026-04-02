@@ -651,10 +651,10 @@ function validatePageInput() {
   pageInput.value = validPage.toString();
 }
 /*
-*___________________________________________________________________
-*                                                                   |
-*                 Virtual Scroll Implementation                     |
-*___________________________________________________________________|
+* ___________________________________________________________________
+*|                                                                   |
+*|                 Virtual Scroll Implementation                     |
+*|___________________________________________________________________|
 */
 // Add throttle utility
 const throttle = (fn: Function, delay: number) => { 
