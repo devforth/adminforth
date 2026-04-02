@@ -2,7 +2,7 @@
   <div class="relative flex flex-col max-w-full w-full">
     <Teleport to="body">
       <Filters
-        :columns="coreStore.resource?.columns"
+        :columns="coreStore.resource?.columns as AdminForthResourceColumnCommon[] || []"
         :columnsMinMax="columnsMinMax" 
         :show="filtersShow"
         @hide="filtersShow = false"
@@ -240,7 +240,7 @@ import { useRoute } from 'vue-router';
 import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
-import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators } from '@/types/Common';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
 
 
 import {

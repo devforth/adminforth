@@ -193,7 +193,7 @@ const AFFO = AdminForthFilterOperators;
 // const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
 const props = defineProps<{
   columns: AdminForthResourceColumnCommon[],
-  filters: AdminforthFilterStore['filters'],
+  filters?: AdminforthFilterStore['filters'],
   show: Boolean,
   columnsMinMax: ColumnMinMaxValue
 }>();
