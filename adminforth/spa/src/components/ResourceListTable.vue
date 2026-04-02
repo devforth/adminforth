@@ -472,7 +472,7 @@ watch(() => props.page, (newPage) => {
 
 const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
 const headerRefs = useTemplateRef<HTMLElement[]>('headerRefs');
-const rowHeights = ref<number[]>([]);
+const rowHeights = ref<string[]>([]);
 const columnWidths = ref<number[]>([]);
 watch(() => props.rows, (newRows) => {
   // rows are set to null when new records are loading
