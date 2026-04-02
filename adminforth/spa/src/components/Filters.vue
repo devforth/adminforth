@@ -168,10 +168,9 @@
 import { watch, computed, ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
-import { callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, formatComponent } from '@/utils';
+import { loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, formatComponent } from '@/utils';
 import { useRouter } from 'vue-router';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
-import { useFiltersStore } from '@/stores/filters';
 import { getCustomComponent } from '@/utils';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
@@ -179,11 +178,11 @@ import Spinner from '@/afcl/Spinner.vue';
 import debounce from 'debounce';
 import { Tooltip } from '@/afcl';
 import { IconCloseOutline } from '@iconify-prerendered/vue-flowbite';
-import type { AdminforthFilterStore } from '@/spa_types/core';
+import type { AdminforthFilterStore, AdminforthFilterStoreUnwrapped } from '@/spa_types/core';
 import type { AdminForthResourceColumnCommon, FilterParams, ColumnMinMaxValue } from '@/types/Common';
 import { AdminForthFilterOperators } from '@/types/Common';
 
-const filtersStore = useFiltersStore();
+
 const { t } = useI18n();
 
 const AFFO = AdminForthFilterOperators;
@@ -195,7 +194,8 @@ const props = defineProps<{
   columns: AdminForthResourceColumnCommon[],
   filters?: AdminforthFilterStore['filters'],
   show: Boolean,
-  columnsMinMax: ColumnMinMaxValue
+  columnsMinMax: ColumnMinMaxValue,
+  filtersStore: AdminforthFilterStoreUnwrapped
 }>();
 
 const emits = defineEmits(['update:filters', 'hide']);
@@ -317,29 +317,29 @@ const onSearchInput = computed(() => {
 
 function setFilterItem({ column, operator, value }: { column: AdminForthResourceColumnCommon; operator: AdminForthFilterOperators; value: any }) {
 
-  const index = filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
+  const index = props.filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
   if (value === undefined || value === '' || value === null) {
     if (index !== -1) {
-      filtersStore.filters.splice(index, 1);
+      props.filtersStore.filters.splice(index, 1);
     }
   } else {
     if (index === -1) {
-      filtersStore.setFilter({ field: column.name, value, operator });
+      props.filtersStore.setFilter({ field: column.name, value, operator });
     } else {
-      filtersStore.setFilters([...filtersStore.filters.slice(0, index), { field: column.name, value, operator }, ...filtersStore.filters.slice(index + 1)])
+      props.filtersStore.setFilters([...props.filtersStore.filters.slice(0, index), { field: column.name, value, operator }, ...props.filtersStore.filters.slice(index + 1)])
     }
   }
-  emits('update:filters', [...filtersStore.filters]);
+  emits('update:filters', [...props.filtersStore.filters]);
 }
 
 function getFilterItem({ column, operator }: { column: AdminForthResourceColumnCommon; operator: AdminForthFilterOperators }) {
-  const filterValue = filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value;
+  const filterValue = props.filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value;
   return filterValue !== undefined ? filterValue : '';
 }
 
 async function clear() {
-  filtersStore.filters = [...filtersStore.filters.filter(f => filtersStore.shouldFilterBeHidden(f.field))];
-  emits('update:filters', [...filtersStore.filters]);
+  props.filtersStore.filters = [...props.filtersStore.filters.filter(f => props.filtersStore.shouldFilterBeHidden(f.field))];
+  emits('update:filters', [...props.filtersStore.filters]);
 }
 
 function getFilterMinValue(columnName: string) {

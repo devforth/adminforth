@@ -6,6 +6,7 @@
         :columnsMinMax="columnsMinMax" 
         :show="filtersShow"
         @hide="filtersShow = false"
+        :filtersStore="filtersStore"
       />
     </Teleport>
 
