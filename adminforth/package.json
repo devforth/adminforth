@@ -26,7 +26,7 @@
     "docs": "typedoc",
     "--comment_postinstall": "postinstall executed after package installed in other project package and when we do pnpm i in the package",
     "postinstall": "node scripts/postinstall.js",
-    "type-check-spa": "cd spa && pnpm i && pnpx vue-tsc --build --force --noEmit"
+    "type-check-spa": "cd spa && pnpm i && pnpx vue-tsc --build --force --noEmit  --pretty"
   },
   "release": {
     "plugins": [
