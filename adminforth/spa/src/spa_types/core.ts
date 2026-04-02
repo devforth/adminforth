@@ -87,3 +87,9 @@ export type AdminforthFilterStore = {
 
   visibleFiltersCount: ComputedRef<number>,
 }
+
+export interface AdminforthFilterStoreUnwrapped extends Omit<AdminforthFilterStore, 'filters' | 'visibleFiltersCount'> {
+    filters: FilterParams[],
+    visibleFiltersCount: number,
+}
+
