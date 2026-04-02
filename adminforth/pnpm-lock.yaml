@@ -29,6 +29,9 @@ importers:
       arg:
         specifier: ^5.0.2
         version: 5.0.2
+      ast-types:
+        specifier: ^0.14.2
+        version: 0.14.2
       better-sqlite3:
         specifier: ^11.5.0
         version: 11.10.0
@@ -1452,6 +1455,10 @@ packages:
   array-union@2.1.0:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
+
+  ast-types@0.14.2:
+    resolution: {integrity: sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA==}
+    engines: {node: '>=4'}
 
   ast-types@0.16.1:
     resolution: {integrity: sha512-6t10qk83GOG8p0vKmaCr8eiilZwO171AvbROMtvvNiwrTly62t+7XkA8RdIIVbpMhCASAsxgAzdRSwh6nw/5Dg==}
@@ -5338,6 +5345,10 @@ snapshots:
   array-ify@1.0.0: {}
 
   array-union@2.1.0: {}
+
+  ast-types@0.14.2:
+    dependencies:
+      tslib: 2.8.1
 
   ast-types@0.16.1:
     dependencies:
