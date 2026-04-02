@@ -12,16 +12,17 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="flex items-center py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
+        class="flex items-center h-[34px] af-button-shadow py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
       >
         {{ $t('Cancel') }}
       </button>
       <button
         @click="() => saveRecord()"
-        class="flex items-center py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
-        :disabled="saving || (validating && !isValid)"
+        class="flex items-center h-[34px] af-button-shadow py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
+        :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       >
-        <IconFloppyDiskSolid class="w-4 h-4" />
+        <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
+        <IconFloppyDiskSolid v-else class="w-4 h-4" />
         {{ $t('Save') }}
       </button>
 
@@ -50,7 +51,7 @@
       :adminUser="coreStore.adminUser"
       @update:record="onUpdateRecord"
       @update:isValid="isValid = $event"
-      :validating="validating"
+      :validatingMode="validatingMode"
       :source="'edit'"
     >
     </ResourceForm>
@@ -85,13 +86,15 @@ import { useI18n } from 'vue-i18n';
 import { formatComponent } from '@/utils';
 import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
+import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
+import { Spinner } from '@/afcl'
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
 const { clearSaveInterceptors, runSaveInterceptors, alert, confirm } = useAdminforth();
 
 const isValid = ref(false);
-const validating = ref(false);
+const validatingMode = ref(false);
 
 const route = useRoute();
 const router = useRouter();
@@ -180,22 +183,20 @@ onMounted(async () => {
 });
 
 async function saveRecord() {
-  if (!isValid.value) {
-    validating.value = true;
-    await nextTick();
-    scrollToInvalidField();
-    return;
-  } else {
-    validating.value = false;
-  }
 
-  saving.value = true;
-  const interceptorsResult = await runSaveInterceptors({
-    action: 'edit',
-    values: record.value,
-    resource: coreStore.resource,
-    resourceId: route.params.resourceId as string,
-  });
+  const interceptorsResult = await saveRecordPreparations(
+    'edit', 
+    validatingMode, 
+    resourceFormRef, 
+    isValid, 
+    t, 
+    saving, 
+    runSaveInterceptors, 
+    record, 
+    coreStore, 
+    route
+  );
+
   if (!interceptorsResult.ok) {
     saving.value = false;
     if (interceptorsResult.error) showErrorTost(interceptorsResult.error);
@@ -254,25 +255,6 @@ async function saveRecord() {
     router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
   saving.value = false;
-}
-
-function scrollToInvalidField() {
-  let columnsWithErrors: {column: AdminForthResourceColumn, error: string}[] = [];
-  for (const column of resourceFormRef.value?.editableColumns || []) {
-    const error = resourceFormRef.value?.columnError(column);
-    if (error) {
-      columnsWithErrors.push({column, error});
-    }
-  }
-  const errorMessage = t('Failed to save. Please fix errors for the following fields:') + '<ul class="mt-2 list-disc list-inside">' + columnsWithErrors.map(c => `<li><strong>${c.column.label || c.column.name}</strong>: ${c.error}</li>`).join('') + '</ul>';
-  alert({
-    messageHtml: errorMessage,
-    variant: 'danger'
-  });
-  const firstInvalidElement = document.querySelector('.af-invalid-field-message');
-  if (firstInvalidElement) {
-    firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
 }
 
 </script>

@@ -123,9 +123,9 @@
                 :min="getFilterMinValue(c.name)"
                 :max="getFilterMaxValue(c.name)"
                 :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
+                @update:valueStart="(val) => rangeChangeHandler((val !== '' && val !== null) ? (c.type === 'decimal' ? String(val) : val) : undefined, c, 'gte')"
                 :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
+                @update:valueEnd="(val) => rangeChangeHandler((val !== '' && val !== null) ? (c.type === 'decimal' ? String(val) : val) : undefined, c, 'lte')"
               />
 
               <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
@@ -274,6 +274,27 @@ const onFilterInput = computed(() => {
     };
   }, {});
 });
+
+// rangeState is used for cutom range picker, because if we change two values very quickly
+// in filters writes only the last one, because of debounce
+const rangeState = reactive({});
+
+const updateRange = (column) => {
+  debounce(() => {
+    const { gte, lte } = rangeState[column.name];
+
+    setFilterItem({ column, operator: 'gte', value: gte });
+    setFilterItem({ column, operator: 'lte', value: lte });
+  }, column?.filterOptions?.debounceTimeMs || 10)();
+}
+
+function rangeChangeHandler(value, column, operator) {
+  if (!rangeState[column.name]) {
+    rangeState[column.name] = { gte: null, lte: null };
+  }
+  rangeState[column.name][operator] = value;
+  updateRange(column);
+}
 
 const onSearchInput = computed(() => {
   return createSearchInputHandlers(

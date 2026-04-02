@@ -53,23 +53,46 @@
     @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
     @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
   />
+  <div v-if="columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
+  <Spinner v-if="shouldWeShowSpinner" class="w-4 mt-1"/>
+  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
 </template>
   
 <script setup lang="ts">
   import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
   import ColumnValueInput from "./ColumnValueInput.vue";
-  import { ref, nextTick } from 'vue';
+  import { ref, watch, nextTick } from 'vue';
+  import { Spinner } from '@/afcl';
   
   const props = defineProps<{
     source: 'create' | 'edit',
     column: any,
     currentValues: any,
-    mode: string,
+    mode: 'create' | 'edit',
     columnOptions: any,
     unmasked: any,
     setCurrentValue: Function,
     readonly?: boolean,
+    columnsWithErrors: Record<string, string>,
+    isValidating: boolean,
+    validatingMode: boolean,
   }>();
+
+  const shouldWeShowSpinner = ref(false);
+
+
+  watch(() => props.currentValues[props.column.name], async (newVal) => {
+    await nextTick();
+    if (props.isValidating) {
+      shouldWeShowSpinner.value = true;
+    }
+  });
+
+  watch(() => [props.isValidating], () => {
+    if (!props.isValidating) {
+      shouldWeShowSpinner.value = false;
+    }
+  });
   
   const emit = defineEmits(['update:unmasked', 'update:inValidity', 'update:emptiness', 'focus-last-input']);
   

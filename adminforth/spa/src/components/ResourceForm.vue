@@ -13,11 +13,13 @@
         :mode="mode"
         :unmasked="unmasked"
         :columnOptions="columnOptions"
-        :validating="validating"
+        :validatingMode="validatingMode"
         :columnError="columnError"
         :setCurrentValue="setCurrentValue"
         @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
         @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
+        :columnsWithErrors="columnsWithErrors"
+        :isValidating="isValidating"
         />
       </div>
       <div v-else class="flex flex-col gap-4">
@@ -31,11 +33,13 @@
           :mode="mode"
           :unmasked="unmasked"
           :columnOptions="columnOptions"
-          :validating="validating"
+          :validatingMode="validatingMode"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
           @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
           @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
+          :columnsWithErrors="columnsWithErrors"
+          :isValidating="isValidating"
           />
         </template>
         <div v-if="otherColumns?.length || 0 > 0">
@@ -48,11 +52,13 @@
           :mode="mode"
           :unmasked="unmasked"
           :columnOptions="columnOptions"
-          :validating="validating"
+          :validatingMode="validatingMode"
           :columnError="columnError"
           :setCurrentValue="setCurrentValue"
           @update:customComponentsInValidity="(data) => customComponentsInValidity = { ...customComponentsInValidity, ...data }"
           @update:customComponentsEmptiness="(data) => customComponentsEmptiness = { ...customComponentsEmptiness, ...data }"
+          :columnsWithErrors="columnsWithErrors"
+          :isValidating="isValidating"
           />
         </div>
       </div>
@@ -71,8 +77,12 @@ import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthResourceColumnCommon, type AdminForthResourceCommon } from '@/types/Common';
+import { Mutex } from 'async-mutex';
+import debounce from 'lodash.debounce';
 
 const { t } = useI18n();
+
+const mutex = new Mutex();
 
 const coreStore = useCoreStore();
 const router = useRouter();
@@ -80,7 +90,7 @@ const route = useRoute();
 const props = defineProps<{
   resource: AdminForthResourceCommon,
   record: any,
-  validating: boolean,
+  validatingMode: boolean,
   source: 'create' | 'edit',
   readonlyColumns?: string[],
 }>();
@@ -99,6 +109,11 @@ const columnOptions = ref<Record<string, any[]>>({});
 const columnLoadingState = reactive<Record<string, { loading: boolean; hasMore: boolean }>>({});
 const columnOffsets = reactive<Record<string, number>>({});
 const columnEmptyResultsCount = reactive<Record<string, number>>({});
+const columnsWithErrors = ref<Record<string, string>>({});
+const isValidating = ref(false);
+const blockSettingIsValidating = ref(false);
+const isValid = ref(true);
+const doesUserHaveCustomValidation = computed(() => props.resource.columns.some(column => column.validation && column.validation.some((val) => val.validator)));
 
 const columnError = (column: AdminForthResourceColumnCommon) => {
   const val = computed(() => {
@@ -329,9 +344,47 @@ const editableColumns = computed(() => {
   return props.resource?.columns?.filter(column => column.showIn?.[mode.value] && (currentValues.value ? checkShowIf(column, currentValues.value, props.resource.columns) : true));
 });
 
-const isValid = computed(() => {
-  return editableColumns.value?.every(column => !columnError(column));
+function checkIfColumnHasError(column: AdminForthResourceColumnCommon) {
+  const error = columnError(column);
+  if (error) {
+    columnsWithErrors.value[column.name] = error;
+  } else {
+    delete columnsWithErrors.value[column.name];
+  }
+}
+
+const checkIfAnyColumnHasErrors = () => {
+  return Object.keys(columnsWithErrors.value).length > 0 ? false : true;
+}
+
+const debouncedValidation = debounce(async (columns: AdminForthResourceColumnCommon[]) => {
+  await mutex.runExclusive(async () => {
+    await validateUsingUserValidationFunction(columns);
+  });
+  setIsValidatingValue(false);
+  isValid.value = checkIfAnyColumnHasErrors();
+}, 500);
+
+watch(() => [editableColumns.value, props.validatingMode], async () => {
+  setIsValidatingValue(true);
+  
+  editableColumns.value?.forEach(column => {
+    checkIfColumnHasError(column);
+  });
+
+  if (props.validatingMode && doesUserHaveCustomValidation.value) {
+    debouncedValidation(editableColumns.value);
+  } else {
+    setIsValidatingValue(false);
+    isValid.value = checkIfAnyColumnHasErrors();
+  }
 });
+
+const setIsValidatingValue = (value: boolean) => {
+  if (!blockSettingIsValidating.value) {
+    isValidating.value = value;
+  }
+}
 
 
 const groups = computed(() => {
@@ -381,9 +434,50 @@ watch(() => isValid.value, (value) => {
   emit('update:isValid', value);
 });
 
+async function validateUsingUserValidationFunction(editableColumnsInner: AdminForthResourceColumnCommon[]): Promise<void> {
+  if (doesUserHaveCustomValidation.value) {
+    try {
+      blockSettingIsValidating.value = true;
+      const res = await callAdminForthApi({
+        method: 'POST',
+        path: '/validate_columns',
+        body: {
+          resourceId: props.resource.resourceId,
+          editableColumns: editableColumnsInner.map(col => {return {name: col.name, value: currentValues.value?.[col.name]} }),
+          record: currentValues.value,
+        }
+      })
+      if (res.validationResults && Object.keys(res.validationResults).length > 0) {
+        for (const [columnName, validationResult] of Object.entries(res.validationResults) as [string, any][]) {
+          if (!validationResult.isValid) {
+            columnsWithErrors.value[columnName] = validationResult.message || 'Invalid value';
+          } else {
+            delete columnsWithErrors.value[columnName];
+          }
+        }
+        const columnsToProcess = editableColumns.value.filter(col => res.validationResults[col.name] === undefined);
+        columnsToProcess.forEach(column => {
+          checkIfColumnHasError(column);
+        });
+      } else {
+        editableColumnsInner.forEach(column => {
+          checkIfColumnHasError(column);
+        });
+      }
+      blockSettingIsValidating.value = false;
+    } catch (e) {
+      console.error('Error during custom validation', e);
+      blockSettingIsValidating.value = false;
+    }
+  }
+}
+
 defineExpose({
   columnError,
   editableColumns,
+  columnsWithErrors,
+  isValidating,
+  validateUsingUserValidationFunction
 })
 
 </script>

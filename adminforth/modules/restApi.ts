@@ -610,9 +610,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
-                        col.validation.map(async (val) => {
+                        col.validation.map(async (val, index) => {
                           return  {
                             ...val,
+                            validator: inCol.validation[index].validator ? true: false,
                             message: await tr(val.message, `resource.${resource.resourceId}`),
                           }
                         })
@@ -679,6 +680,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
                 })
               ),
+              actions: resource.options.actions?.map((action) => ({
+                ...action,
+                hasBulkHandler: !!action.bulkHandler,
+                bulkHandler: undefined,
+              })),
               allowedActions,
             } 
         }
@@ -1588,7 +1594,87 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+    server.endpoint({
+      method: 'POST',
+      path: '/start_custom_bulk_action',
+      handler: async ({ body, adminUser, tr, response, cookies, headers }) => {
+        const { resourceId, actionId, recordIds, extra } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: body },
+          ActionCheckSource.CustomActionRequest,
+          this.adminforth
+        );
+        const action = resource.options.actions.find((act) => act.id == actionId);
+        if (!action) {
+          return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+        }
+        if (!action.bulkHandler) {
+          return { error: await tr(`Action "{actionId}" has no bulkHandler`, 'errors', { actionId }) };
+        }
+        if (action.allowed) {
+          const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+          if (!execAllowed) {
+            return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
+          }
+        }
+        const result = await action.bulkHandler({
+          recordIds,
+          adminUser,
+          resource,
+          tr,
+          adminforth: this.adminforth,
+          response,
+          extra: { ...extra, cookies, headers },
+        });
+        return { actionId, recordIds, resourceId, ...result };
+      }
+    });
+    server.endpoint({
+      method: 'POST',
+      path: '/validate_columns',
+      handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
+        const { resourceId, editableColumns, record } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource '${resourceId}' not found` };
+        }
+        const validationResults = {};
+        const customColumnValidatorsFunctions = [];
+        for (const col of editableColumns) {
+          const columnConfig = resource.columns.find((c) => c.name === col.name);
+          if (columnConfig && columnConfig.validation)  {
+            customColumnValidatorsFunctions.push(async ()=>{
+              for (const val of columnConfig.validation) {
+                if (val.validator) {
+                  const result = await val.validator(col.value, record, this.adminforth);
+                  if (typeof result === 'object' && result.isValid === false) {
+                    validationResults[col.name] = {
+                      isValid: result.isValid,
+                      message: result.message,
+                    }
+                    break;
+                  }
+                }
+              }
+            })
+          }
+        }
+        
+        if (customColumnValidatorsFunctions.length) {
+          await Promise.all(customColumnValidatorsFunctions.map((fn) => fn()));
+        }
 
+        return {
+          validationResults
+        }
+      }
+    });
     // setup endpoints for all plugins
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);

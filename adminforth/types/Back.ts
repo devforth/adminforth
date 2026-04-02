@@ -1291,17 +1291,33 @@ interface AdminForthInputConfigCustomization {
 
 export interface AdminForthActionInput {
   name: string;
+  bulkConfirmationMessage?: string;
+  bulkSuccessMessage?: string;
   showIn?: {
       list?: boolean,
       listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
+      bulkButton?: boolean,
   };
   allowed?: (params: {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
   }) => boolean;
   url?: string;
+  bulkHandler?: (params: {
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordIds: (string | number)[];
+      adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
+      extra?: HttpExtra;
+      tr: ITranslateFunction;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      successMessage?: string;
+  }>;
   action?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;
@@ -1309,7 +1325,7 @@ export interface AdminForthActionInput {
       adminUser: AdminUser;
       response: IAdminForthHttpResponse;
       extra?: HttpExtra;
-      tr: Function;
+      tr: ITranslateFunction;
   }) => Promise<{
       ok: boolean;
       error?: string;
@@ -1834,6 +1850,8 @@ export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourc
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
+   * @deprecated Since 2.26.5. Will be removed in 3.0.0. Use `actions` instead.
+
    */
   bulkActions?: Array<AdminForthBulkAction>,
 

@@ -30,7 +30,7 @@ export default {
     { name: 'record_id', required: false },
     { name: 'ip_address', required: false },
   ],
-  options: {
+options: {
     allowedActions: {
       edit: false,
       delete: false,
@@ -39,7 +39,6 @@ export default {
   },
   plugins: [
     new AuditLogPlugin({
-      id: 'AuditLogPlugin',
       // if you want to exclude some resources from logging
       //excludeResourceIds: ['adminuser'],
       resourceColumns: {

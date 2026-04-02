@@ -89,11 +89,17 @@ onMounted(() => {
 })
 
 function updateStartFromProps() {
+  if (props.valueStart == start.value) {
+    return;
+  }
   start.value = props.valueStart;
   setSliderValues(start.value, end.value)
 }
 
 function updateEndFromProps() {
+  if (props.valueEnd == end.value) {
+    return;
+  }
   end.value = props.valueEnd;
   setSliderValues(start.value, end.value)
 }

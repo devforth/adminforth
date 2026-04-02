@@ -47,12 +47,66 @@ Here's how to add a custom action:
 - `name`: Display name of the action
 - `icon`: Icon to show (using Flowbite icon set)
 - `allowed`: Function to control access to the action
-- `action`: Handler function that executes when action is triggered
+- `action`: Handler function that executes when action is triggered for a **single** record
+- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Bulk button with bulkHandler](#bulk-button-with-bulkhandler))
 - `showIn`: Controls where the action appears
-  - `list`: whether to show in list view
-  - `listThreeDotsMenu`: whether to show in three dots menu in the list view
-  - `showButton`: whether to show as a button on show view
-  - `showThreeDotsMenu`: when to show in the three-dots menu of show view
+  - `list`: whether to show as an icon button per row in the list view
+  - `listThreeDotsMenu`: whether to show in the three-dots menu per row in the list view
+  - `showButton`: whether to show as a button on the show view
+  - `showThreeDotsMenu`: whether to show in the three-dots menu of the show view
+  - `bulkButton`: whether to show as a bulk action button when rows are selected
+
+### Bulk button with `action`
+
+When `showIn.bulkButton` is `true` and only `action` (not `bulkHandler`) is defined, AdminForth automatically calls your `action` function **once per selected record** using `Promise.all`. This is convenient for simple cases but means N separate handler invocations run in parallel:
+
+```ts title="./resources/apartments.ts"
+{
+  name: 'Auto submit',
+  action: async ({ recordId }) => {
+    // Called once per selected record when used as a bulk button
+    await doSomething(recordId);
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    bulkButton: true,   // triggers Promise.all over selected records
+    showButton: true,
+  }
+}
+```
+
+If your operation can be expressed more efficiently as a single batched query (e.g., a single `UPDATE … WHERE id IN (…)`), define `bulkHandler` instead. AdminForth will call it **once** with all selected record IDs:
+
+```ts title="./resources/apartments.ts"
+{
+  name: 'Auto submit',
+  // bulkHandler receives all recordIds in one call – use it for batched operations
+  bulkHandler: async ({ recordIds, adminforth, resource }) => {
+    await doSomethingBatch(recordIds);
+    return { ok: true, successMessage: `Processed ${recordIds.length} records` };
+  },
+  // You can still keep `action` for the single-record show/edit buttons
+  action: async ({ recordId }) => {
+    await doSomething(recordId);
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    bulkButton: true,
+    showButton: true,
+  }
+}
+```
+
+> ☝️ When both `action` and `bulkHandler` are defined, AdminForth uses `bulkHandler` for bulk operations and `action` for single-record operations. When only `action` is defined and `bulkButton` is enabled, AdminForth falls back to `Promise.all` over individual `action` calls.
+
+### Bulk-specific options
+
+| Option | Type | Description |
+|---|---|---|
+| `showIn.bulkButton` | `boolean` | Show as a bulk action button in the list toolbar. |
+| `bulkHandler` | `async ({ recordIds, adminUser, adminforth, resource, response, tr }) => { ok, error?, message? }` | Called with all selected IDs at once. Falls back to calling `action` per record in parallel if omitted. |
+| `bulkConfirmationMessage` | `string` | Confirmation dialog text shown before the bulk action executes. |
+| `bulkSuccessMessage` | `string` | Success message shown after the bulk operation. Defaults to `"N out of M items processed successfully"`. |
 
 ### Access Control
 
@@ -84,45 +138,10 @@ The `allowed` function receives:
 Return:
 - `true` to allow access
 - `false` to deny access
-- A string with an error message to explain why access was denied
+- A string with an error message to explain why access was denied — e.g. `return 'Only superadmins can perform this action'`
 
 Here is how it looks:
 ![alt text](<Single record actions.png>)
-
-
-You might want to allow only certain users to perform your custom bulk action. 
-
-To implement this limitation use `allowed`:
-
-If you want to prohibit the use of bulk action for user, you can do it this way:
-
-```ts title="./resources/apartments.ts"
-import { admin } from '../index';
-
-....
-
-bulkActions: [
-  {
-    label: 'Mark as listed',
-    icon: 'flowbite:eye-solid',
-    allowed: async ({ resource, adminUser, selectedIds }) => {
-      if (adminUser.dbUser.role !== 'superadmin') {
-        return false;
-      } 
-      return true;
-    },
-    confirm: 'Are you sure you want to mark all selected apartments as listed?',
-    action: async ({ resource, selectedIds, adminUser, tr }) => {
-        const stmt = admin.resource('aparts').dataConnector.client.prepare(
-          `UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`
-        );
-        await stmt.run(...selectedIds);
-
-        return { ok: true, message: tr(`Marked ${selectedIds.length} apartments as listed`) };
-    },
-  }
-],
-```
 
 ### Action URL
 
@@ -146,7 +165,7 @@ The URL can be:
 - A relative path within your admin panel (starting with '/')
 - An absolute URL (starting with 'http://' or 'https://')
 
-To open the URL in a new tab, add `?target=_blank` to the URL:
+To open the URL in a new tab, append `target=_blank` as a query parameter. If the URL already has query parameters, use `&target=_blank`; otherwise use `?target=_blank`:
 
 ```ts
 {
@@ -162,118 +181,12 @@ To open the URL in a new tab, add `?target=_blank` to the URL:
 
 > ☝️ Note: You cannot specify both `action` and `url` for the same action - only one should be used.
 
-
-
-## Custom bulk actions
-
-You might need to give admin users a feature to perform same action on multiple records at once. 
-
-For example you might want allow setting `listed` field to `false` for multiple apartment records at once. 
-
-AdminForth by default provides a checkbox in first column of the list view for this purposes.
- 
-By default AdminForth provides only one bulk action `delete` which allows to delete multiple records at once 
-(if deletion for records available by [resource.options.allowedActions](/docs/api/Back/interfaces/ResourceOptions/#allowedactions))
-
-To add custom bulk action quickly:
-
-```ts title="./resources/apartments.ts"
-//diff-add
-import { AdminUser } from 'adminforth';
-//diff-add
-import { admin } from '../index';
-
-{
-  ...
-  resourceId: 'aparts',
-     ...
-     options: {
-//diff-add
-        bulkActions: [
-//diff-add
-          {
-//diff-add
-            label: 'Mark as listed',
-//diff-add
-            icon: 'flowbite:eye-solid',
-//diff-add
-            // if optional `confirm` is provided, user will be asked to confirm action
-//diff-add
-            confirm: 'Are you sure you want to mark all selected apartments as listed?',
-//diff-add
-            action: async function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }) {
-//diff-add
-              const stmt = admin.resource('aparts').dataConnector.client.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')})`);
-//diff-add
-              await stmt.run(...selectedIds);
-//diff-add
-              return { ok: true, successMessage: `Marked ${selectedIds.length} apartments as listed` };
-//diff-add
-            },
-//diff-add
-          }
-//diff-add
-        ],
-      }
-}
-```
-
-Action code is called on the server side only and allowed to only authorized users. 
-
-> ☝️ AdminForth provides no way to update the data, it is your responsibility to manage the data by selectedIds. You can use any ORM system
-> or write raw queries to update the data.
-
-> ☝️ You can use `adminUser` object to check whether user is allowed to perform bulk action
-
-
-> Action response can return optional `successMessage` property which will be shown to user after action is performed. If this property is not provided, no messages will be shown to user.
-
-Here is how it looks:
-![alt text](<Custom bulk actions.png>)
-
-
-## Limiting access to bulk actions
-
-You might want to allow only certain users to perform your custom bulk action. 
-
-To implement this limitation use `allowed`:
-
-If you want to prohibit the use of bulk action for user, you can do it this way:
-
-```ts title="./resources/apartments.ts"
-bulkActions: [
-  {
-    label: 'Mark as listed',
-    icon: 'flowbite:eye-solid',
-//diff-add
-    allowed: async ({ resource, adminUser, selectedIds }) => {
-//diff-add     
-      if (adminUser.dbUser.role !== 'superadmin') {
-//diff-add       
-        return false;
-//diff-add
-        } 
-//diff-add       
-        return true;
-//diff-add       
-    },
-      // if optional `confirm` is provided, user will be asked to confirm action
-    confirm: 'Are you sure you want to mark all selected apartments as listed?',
-    action: async function ({selectedIds, adminUser }: {selectedIds: any[], adminUser: AdminUser }, allow) {
-      const stmt = admin.resource('aparts').dataConnector.client.prepare(`UPDATE apartments SET listed = 1 WHERE id IN (${selectedIds.map(() => '?').join(',')}`);
-      await stmt.run(...selectedIds);
-      return { ok: true, error: false, successMessage: `Marked ${selectedIds.length} apartments as listed` };
-    },
-  }
-],
-```
-
 ## Custom Component
 
 If you want to style an action's button/icon without changing its behavior, attach a custom UI wrapper via `customComponent`. 
 The file points to your SFC in the custom folder (alias `@@/`), and `meta` lets you pass lightweight styling options (e.g., border color, radius).
 
-Below we wrap a “Mark as listed” action (see the original example in [Custom bulk actions](#custom-bulk-actions)).
+Below we wrap a "Mark as listed" action.
 
 ```ts title="./resources/apartments.ts"
 {

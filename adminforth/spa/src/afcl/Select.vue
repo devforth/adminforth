@@ -159,6 +159,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  disableTogleOfSelectedItem: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
@@ -314,7 +318,7 @@ const removeClickListener = () => {
 };
 
 const toogleItem = (item: any) => {
-  if (selectedItems.value.includes(item)) {
+  if (selectedItems.value.includes(item) && !props.disableTogleOfSelectedItem) {
     selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {

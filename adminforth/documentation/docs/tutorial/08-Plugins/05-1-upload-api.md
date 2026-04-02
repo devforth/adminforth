@@ -405,4 +405,30 @@ app.post(
 
 > ⚠️ Do not call `commitUrlToUpdateExistingRecord` or `commitUrlToNewRecord` from the same resource’s `beforeSave`/`afterSave` hooks, as it would create an infinite loop of updates/creates. These methods are intended to be called from your own API endpoints after the browser upload finishes.
 
+## Handling Internal vs. External Links (isInternalUrl)
+
+Have you ever encountered a situation where a user pastes a beautiful image directly from Google Images into the Markdown editor, but your system tries to save it as if it were a file from your own S3 bucket? Previously, this could lead to "broken" paths and corrupted data in your database.
+
+### You can easily use this method in your code:
+Imagine you are building a custom preview page or a specialized plugin, and you need to know: Is this file something we manage in our storage, or is it just a link to an external resource?
+
+```ts title="./index.ts"
+// Get the upload plugin instance
+const uploadPlugin = admin.getPluginById('my_s3_storage');
+
+const urlFromEditor = "https://my-bucket.s3.eu-central-1.amazonaws.com/apartments/flat.png";
+const externalUrl = "https://images.unsplash.com/photo-1503376780353-7e6692767b70";
+
+// Check the first link
+if (await uploadPlugin.isInternalUrl(urlFromEditor)) {
+  console.log("✅ This is our file. We can extract the path and manage it in S3.");
+  const path = uploadPlugin.getPathFromUrl(urlFromEditor); 
+  // Result: "capartmentsars/flat.png"
+}
+
+// Check the second link
+if (!(await uploadPlugin.isInternalUrl(externalUrl))) {
+  console.log("🌐 This is an external link.");
+}
+```
 
