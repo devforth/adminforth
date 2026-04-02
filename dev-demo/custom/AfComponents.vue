@@ -81,7 +81,7 @@
 
       </Select>
 
-
+ 
       <Input type="number" class="w-full" v-model="numberInput">
         <template #suffix>
           USD
