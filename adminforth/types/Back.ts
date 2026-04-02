@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthConfigMenuItem,
   type AnnouncementBadgeResponse,
   type AdminForthResourceColumnInputCommon,
+  type ColumnMinMaxValue,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -256,7 +257,7 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Internally should call {@link IAdminForthDataSourceConnector.getFieldValue} for both min and max values.
    */
-  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
 
   /**
@@ -309,7 +310,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     newValues: any, 
   }): Promise<{ok: boolean, error?: string}>;
 
-  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
   deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
 }

@@ -1258,3 +1258,7 @@ export interface GetBaseConfigResponse {
   adminUser: AdminUser,
   version: string,
 }
+
+export interface ColumnMinMaxValue { 
+  [key: string]: { min: any, max: any } 
+}

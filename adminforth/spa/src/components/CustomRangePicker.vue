@@ -35,16 +35,12 @@ import {computed, onMounted, ref, watch} from "vue";
 import debounce from 'debounce'
 import RangePicker from './RangePicker.vue';
 
-const props = defineProps({
-  valueStart: {
-    default: '',
-  },
-  valueEnd: {
-    default: '',
-  },
-  min: {},
-  max: {},
-});
+const props = defineProps<{
+  valueStart: number | null,
+  valueEnd: number | null,
+  min: number,
+  max: number,
+}>()
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
@@ -52,8 +48,8 @@ const minFormatted = computed(() => Math.floor(<number>props.min));
 const maxFormatted = computed(() => Math.ceil(<number>props.max));
 
 
-const start = ref<string | number>(props.valueStart);
-const end = ref<string | number>(props.valueEnd);
+const start = ref<number | null>(props.valueStart);
+const end = ref<number | null>(props.valueEnd);
 
 const sliderValue = ref<[number, number]>([minFormatted.value, maxFormatted.value]);
 
@@ -71,8 +67,8 @@ watch([start, end], () => {
 
 const updateFromSlider =
     debounce((value: [number, number]) => {
-      start.value = value[0] === minFormatted.value ? '': value[0];
-      end.value = value[1] === maxFormatted.value ? '': value[1];
+      start.value = value[0] === minFormatted.value ? null : value[0];
+      end.value = value[1] === maxFormatted.value ? null : value[1];
     }, 500);
 
 onMounted(() => {
