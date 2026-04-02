@@ -240,7 +240,7 @@ import { useRoute } from 'vue-router';
 import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip } from '@/afcl'
-import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull } from '@/types/Common';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators } from '@/types/Common';
 
 
 import {
@@ -420,7 +420,7 @@ async function init() {
     const [_, field, operator] = k.split('__');
     return {
       field,
-      operator,
+      operator: operator as AdminForthFilterOperators,
       value: JSON.parse((route.query[k] as string))
     }
   });
