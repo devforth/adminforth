@@ -1164,7 +1164,7 @@ export interface AdminForthConfigMenuItem {
    * Optional callback which will be called before rendering the menu for each item.
    * Result of callback if not null will be used as a small badge near the menu item.
    */
-  badge?: string | ((user: AdminUser) => Promise<string>),
+  badge?: string | number |  ((user: AdminUser) => Promise<string> | string | Promise<number> | number),
 
   /**
    * Tooltip shown on hover for badge
