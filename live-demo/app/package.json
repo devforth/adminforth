@@ -31,7 +31,7 @@
     "@adminforth/storage-adapter-amazon-s3": "^1.0.11",
     "@adminforth/text-complete": "^1.8.9",
     "@adminforth/two-factors-auth": "^2.9.20",
-    "@adminforth/upload": "^2.15.2",
+    "@adminforth/upload": "^2.15.3",
     "@prisma/client": "^6.6.0",
     "adminforth": "^2.27.0-next.12",
     "better-sqlite3": "^10.0.0",
