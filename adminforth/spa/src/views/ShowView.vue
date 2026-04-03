@@ -84,7 +84,7 @@
         <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded-full w-32"></div>
       </div>
 
-      <table class="w-full text-sm text-left table-fixed">
+      <table class="w-full text-sm text-left table-fixed border rounded-lg overflow-hidden">
         <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
           <tr>
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
