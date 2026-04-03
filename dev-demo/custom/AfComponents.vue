@@ -377,6 +377,18 @@
       :expandDepth="2" 
     />
 
+    <Button @click="createJob">
+      Create Job
+    </Button>
+
+    <Button @click="callHelloWorldApi">
+      Call API
+    </Button>
+
+    <Button @click="callHelloWorldApi">
+      Refresh badge
+    </Button>
+
   </div>
 
 
@@ -522,4 +534,13 @@ watch(numberInput, (newVal) => {
 watch(textInput, (newVal) => {
   console.log('Text input changed:', newVal, typeof newVal);
 });
+
+async function callHelloWorldApi() {
+  try {
+    const response = await callApi({ path: '/api/hello/', method: 'GET' });
+    console.log('API response:', response);
+  } catch (error) {
+    console.error('API error:', error);
+  }
+}
 </script>
