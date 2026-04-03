@@ -456,6 +456,8 @@ export interface IAdminForth {
    * ```
    */
   getPluginById<T>(id: string): T;
+
+  refreshMenuBadge(menuItemId: string, adminUser: AdminUser): Promise<void>;
 }
 
 
