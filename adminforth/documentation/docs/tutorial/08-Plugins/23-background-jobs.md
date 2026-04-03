@@ -438,6 +438,11 @@ For example:
 
 ```ts
   ...
+//diff-add
+  import { useJobInfoStore } from '@/custom/plugins/BackgroundJobsPlugin/useBackgroundJobPlugin.ts';
+ 
+ //diff-add
+  const jobInfoStore = useJobInfoStore();
 
   const res = await callAdminForthApi({
     path: `/plugin/${props.meta.pluginInstanceId}/translate-selected-to-languages`,
@@ -453,7 +458,7 @@ For example:
     const jobId = res.jobId;
     if (jobId) {
       //diff-add
-      window.OpenJobInfoPopup(jobId);
+      jobInfoStore.openJobInfoPopup(jobId);
     }
   }
 
