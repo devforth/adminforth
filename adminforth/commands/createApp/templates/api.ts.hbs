@@ -2,12 +2,22 @@ import { Express, Request, Response } from "express";
 import { IAdminForth } from "adminforth";
 export function initApi(app: Express, admin: IAdminForth) {
   app.get(`${admin.config.baseUrl}/api/hello/`,
+
+    // you can use data API to work with your database https://adminforth.dev/docs/tutorial/Customization/dataApi/
     async (req: Request, res: Response) => {
+      // req.adminUser to get info about the logged-in admin user
       const allUsers = await admin.resource("adminuser").list([]);
       res.json({
-        message: "Hello from AdminForth API!",
+        message: "List of logged-in admin user from AdminForth API",
         users: allUsers,
       });
     }
+
+    // you can use admin.express.authorize to get info about the current user
+    admin.express.authorize(
+      async (req: Request, res: Response) => {
+        res.json({ message: "Current adminuser from AdminForth API", adminUser: req.adminUser });
+      }
+    )
   );
 }
