@@ -75,18 +75,18 @@
     <div 
       v-if="loading" 
       role="status" 
-      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
+      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow rounded-lg overflow-hidden border border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
     >
       <div 
         v-if="groups && groups.length > 0" 
-        class="text-md font-semibold px-6 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText rounded-t-lg border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+        class="text-md font-semibold px-6 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
       >
         <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded-full w-32"></div>
       </div>
 
-      <table class="w-full text-sm text-left table-fixed border rounded-lg overflow-hidden">
+      <table class="w-full text-sm text-left table-fixed border-collapse">
         <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
-          <tr>
+          <tr class="block md:table-row">
             <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
               {{ $t('Field') }}
             </th>
@@ -228,7 +228,7 @@ onMounted(async () => {
   if(coreStore.resourceOptions){
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
-  loading.value = false;
+  // loading.value = false;
 });
 
 const groups = computed(() => {
