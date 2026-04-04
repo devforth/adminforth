@@ -52,7 +52,7 @@
         </div>
       </div>
 
-     <div v-if="coreStore.config.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
+     <div v-if="coreStore?.config?.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
       <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
       Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
     </div>
@@ -71,7 +71,7 @@
             >
               <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
               <span class="overflow-hidden flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
-                <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+                <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
                   fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
                   <Tooltip v-if="item.badgeTooltip">
                     {{ item.badge }}
@@ -129,7 +129,7 @@
                       } : {}"
                     >{{ item.label }}
 
-                        <span v-if="item.badge" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+                        <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
                         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
                         <Tooltip v-if="item.badgeTooltip">
                             {{ item.badge }}

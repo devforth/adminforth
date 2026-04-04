@@ -19,8 +19,7 @@
     >
 
     <div v-if="min && max" class="w-full px-2.5">
-      <vue-slider
-        class="custom-slider"
+      <RangePicker
         :dot-size="20"
         height="7.99px"
         :min="minFormatted"
@@ -32,21 +31,16 @@
   </div>
 </template>
 <script setup lang="ts">
-import VueSlider from 'vue-slider-component';
-import 'vue-slider-component/theme/antd.css'
 import {computed, onMounted, ref, watch} from "vue";
 import debounce from 'debounce'
+import RangePicker from './RangePicker.vue';
 
-const props = defineProps({
-  valueStart: {
-    default: '',
-  },
-  valueEnd: {
-    default: '',
-  },
-  min: {},
-  max: {},
-});
+const props = defineProps<{
+  valueStart: number | null,
+  valueEnd: number | null,
+  min: number,
+  max: number,
+}>()
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
@@ -54,15 +48,27 @@ const minFormatted = computed(() => Math.floor(<number>props.min));
 const maxFormatted = computed(() => Math.ceil(<number>props.max));
 
 
-const start = ref<string | number>(props.valueStart);
-const end = ref<string | number>(props.valueEnd);
+const start = ref<number | null>(props.valueStart);
+const end = ref<number | null>(props.valueEnd);
 
-const sliderValue = ref([minFormatted.value, maxFormatted.value]);
+const sliderValue = ref<[number, number]>([minFormatted.value, maxFormatted.value]);
+
+watch([start, end], () => {
+  if ( !start.value && end.value ) {
+    setSliderValues(minFormatted.value, end.value);
+  } else if ( start.value && !end.value ) {
+    setSliderValues(start.value, maxFormatted.value);
+  } else if ( !start.value && !end.value ) {
+    setSliderValues(minFormatted.value, maxFormatted.value);
+  } else {
+    setSliderValues(start.value, end.value);
+  }
+})
 
 const updateFromSlider =
     debounce((value: [number, number]) => {
-      start.value = value[0] === minFormatted.value ? '': value[0];
-      end.value = value[1] === maxFormatted.value ? '': value[1];
+      start.value = value[0] === minFormatted.value ? null : value[0];
+      end.value = value[1] === maxFormatted.value ? null : value[1];
     }, 500);
 
 onMounted(() => {
@@ -79,11 +85,17 @@ onMounted(() => {
 })
 
 function updateStartFromProps() {
+  if (props.valueStart == start.value) {
+    return;
+  }
   start.value = props.valueStart;
   setSliderValues(start.value, end.value)
 }
 
 function updateEndFromProps() {
+  if (props.valueEnd == end.value) {
+    return;
+  }
   end.value = props.valueEnd;
   setSliderValues(start.value, end.value)
 }
@@ -112,64 +124,3 @@ function setSliderValues(start: any, end: any) {
   sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
 }
 </script>
-
-<style lang="scss" scoped>
-.custom-slider {
-    &:deep(.vue-slider-rail) {
-        background-color: rgb(229 231 235);
-    }
-
-    &:deep(.vue-slider-dot-handle) {
-        // apply bg-blue-500 to the handle when active
-        @apply bg-lightPrimary;
-        border: none;
-        box-shadow: none;
-    }
-
-    &:deep(.vue-slider-dot-handle:hover) {
-        @apply bg-lightPrimary;
-        filter: brightness(1.1);
-        border: none;
-        box-shadow: none;
-    }
-
-    &:deep(.vue-slider-process) {
-      @apply bg-lightPrimaryOpacity;
-
-    }
-
-    &:deep(.vue-slider-process:hover) {
-      filter: brightness(1.1);
-      @apply bg-lightPrimaryOpacity;
-    }
-}
-
-.dark .custom-slider {
-  &:deep(.vue-slider-rail) {
-    background-color: rgb(55 65 81); // gray-700
-  }
-
-  &:deep(.vue-slider-dot-handle) {
-    @apply bg-darkPrimary;
-    border: none;
-    box-shadow: none;
-  }
-
-  &:deep(.vue-slider-dot-handle:hover) {
-    @apply bg-darkPrimary;
-    filter: brightness(1.1);
-    border: none;
-    box-shadow: none;
-  }
-
-  &:deep(.vue-slider-process) {
-    @apply bg-darkPrimaryOpacity;
-  }
-
-  &:deep(.vue-slider-process:hover) {
-    filter: brightness(1.1);
-    @apply bg-darkPrimaryOpacity;
-  }
-}
-
-</style>

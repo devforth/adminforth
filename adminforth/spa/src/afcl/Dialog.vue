@@ -206,7 +206,7 @@ function open() {
 }
 
 function close() {
-  modalRef.value.hide();
+  modalRef.value.close();
 }
 
 defineExpose({

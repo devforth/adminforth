@@ -55,7 +55,7 @@ const images = [
   {
     original: require('@site/static/img/previews/upload.png').default,
     title: 'Upload Plugin - upload files',
-    link: '/docs/tutorial/Plugins/Upload/',
+    link: '/docs/tutorial/Plugins/05-0-upload/',
     description: 'Upload files to Amazon S3 with instantiating plugin and providing your S3 credentials' 
   },
   {

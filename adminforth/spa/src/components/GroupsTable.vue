@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl">
+  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl border dark:border-darkFormBorder">
     <div v-if="group.groupName && !group.noTitle" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-darkFormBorder text-lightListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkListTableHeadingText rounded-t-lg">
       {{ group.groupName }}
     </div>
@@ -30,7 +30,7 @@
                 <Tooltip v-if="column.required[mode]">
 
                   <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
-                    :class="(columnError(column) && validating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
+                    :class="(columnsWithErrors[column.name] && validatingMode && !isValidating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
                   />
 
                   <template #tooltip>
@@ -56,9 +56,10 @@
               @update:inValidity="customComponentsInValidity[$event.name] = $event.value"
               @update:emptiness="customComponentsEmptiness[$event.name] = $event.value"
               :readonly="readonlyColumns?.includes(column.name)"
+              :columnsWithErrors="columnsWithErrors"
+              :isValidating="isValidating"
+              :validatingMode="validatingMode"
             />
-            <div v-if="columnError(column) && validating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnError(column) }}</div>
-            <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
           </td>
         </tr>
       </tbody>
@@ -79,14 +80,16 @@
   const props = defineProps<{
     source: 'create' | 'edit',
     group: any,
-    mode: string,
-    validating: boolean,
+    mode: 'create' | 'edit',
+    validatingMode: boolean,
     currentValues: any,
     unmasked: any,
     columnError: (column: any) => string,
     setCurrentValue: (columnName: string, value: any) => void,
     columnOptions: any,
     readonlyColumns?: string[],
+    columnsWithErrors: Record<string, string>,
+    isValidating: boolean
   }>();
 
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});

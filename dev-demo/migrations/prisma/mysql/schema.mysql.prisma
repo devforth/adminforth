@@ -31,3 +31,9 @@ model cars {
   generated_promo_picture  String?
   secret_field   String?
 }
+
+model adminuserCars {
+  id            String @id
+  adminuserId   String
+  carId         String
+}

@@ -400,12 +400,12 @@ export default class ConfigValidator implements IConfigValidator {
         errors.push(`Resource "${res.resourceId}" has action without name`);
       }
 
-      if (!action.action && !action.url) {
-        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action or url`);
+      if (!action.action && !action.bulkHandler && !action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" must have action, bulkHandler or url`);
       }
       
-      if (action.action && action.url) {
-        errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot have both action and url`);
+      if ((action.action && action.url) || (action.bulkHandler && action.url)) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" cannot combine url with action or bulkHandler`);
       }
 
       if (action.customComponent) {
@@ -428,6 +428,11 @@ export default class ConfigValidator implements IConfigValidator {
         action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
+      }
+
+      const shownInNonBulk = action.showIn.list || action.showIn.listThreeDotsMenu || action.showIn.showButton || action.showIn.showThreeDotsMenu;
+      if (shownInNonBulk && !action.action && !action.url) {
+        errors.push(`Resource "${res.resourceId}" action "${action.name}" has showIn enabled for non-bulk locations (list, listThreeDotsMenu, showButton, showThreeDotsMenu) but has no "action" or "url" handler. Either add an "action" handler or set those showIn flags to false.`);
       }
     });
 
@@ -875,6 +880,9 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      if (resInput?.options?.bulkActions?.length) {
+        warnings.push(`Resource "${res.resourceId}" uses deprecated \`bulkActions\`. Please migrate to \`actions\` instead. \`bulkActions\` will be removed in 3.0.0.`);
+      }
       options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
 

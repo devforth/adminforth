@@ -303,7 +303,7 @@ export interface AdminForthComponentDeclarationFull {
     [key: string]: any,
   }
 }
-import { type AdminForthActionInput, type AdminForthResource } from './Back.js' 
+import { type IAdminForth, type AdminForthActionInput, type AdminForthResource } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
@@ -313,6 +313,26 @@ export type FieldGroup = {
   columns: string[];
   noTitle?: boolean;
 };
+
+export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
+  id: string;
+  hasBulkHandler?: boolean;
+}
+
+export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
+  id: string,
+}
+
+type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
+
+export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+  actions?: AdminForthActionFront[],
+  bulkActions?: AdminForthBulkActionFront[],
+}
+
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+  options: AdminForthOptionsForFrontend;
+}
 
 /**
  * Resource describes one table or collection in database.
@@ -361,17 +381,17 @@ export interface AdminForthResourceInputCommon {
     recordLabel?: (item: any) => string,
 
 
-    /**
-     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
-     * default is false
-     */
-    dontShowWarningAboutUnsavedChanges?: boolean,
 
     /**
      * General options for resource.
      */
     options?: {
       
+      /**
+       * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+       * default is false
+       */
+      dontShowWarningAboutUnsavedChanges?: boolean,
 
       /**
        * Show quick action icons for base actions (show, edit, delete) in list view. 
@@ -417,6 +437,7 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
+       * @deprecated in favor of defining .
        */
       bulkActions?: AdminForthBulkActionCommon[],
 
@@ -590,14 +611,14 @@ export type ValidationObject = {
      * ```
      * 
      */
-    regExp: string,
+    regExp?: string,
 
     /**
      * Error message shown to user if validation fails
      * 
      * Example: "Invalid email format"
      */
-    message: string,
+    message?: string,
 
     /**
      * Whether to check case sensitivity (i flag)
@@ -613,6 +634,20 @@ export type ValidationObject = {
      * Whether to check global strings (g flag)
      */
     global?: boolean
+
+    /**
+     * Custom validator function.
+     * 
+     * Example:
+     * 
+     * ```ts
+     * validator: async (value) => {
+     *   // custom validation logic
+     *   return { isValid: true, message: 'Validation passed' }; // or { isValid: false, message: 'Validation failed' }
+     * }
+     * ```
+     */
+    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}> | boolean,
 }
 
 
@@ -1129,7 +1164,7 @@ export interface AdminForthConfigMenuItem {
    * Optional callback which will be called before rendering the menu for each item.
    * Result of callback if not null will be used as a small badge near the menu item.
    */
-  badge?: string | ((user: AdminUser) => Promise<string>),
+  badge?: string | number |  ((user: AdminUser) => Promise<string> | string | Promise<number> | number),
 
   /**
    * Tooltip shown on hover for badge
@@ -1172,6 +1207,7 @@ export interface AdminForthConfigForFrontend {
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
@@ -1221,4 +1257,8 @@ export interface GetBaseConfigResponse {
   config: AdminForthConfigForFrontend,
   adminUser: AdminUser,
   version: string,
+}
+
+export interface ColumnMinMaxValue { 
+  [key: string]: { min: any, max: any } 
 }

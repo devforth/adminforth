@@ -81,14 +81,14 @@
 
       </Select>
 
-
-      <Input type="number" class="w-full">
+ 
+      <Input type="number" class="w-full" v-model="numberInput">
         <template #suffix>
           USD
         </template>
       </Input>
 
-      <Input type="text" class="w-full">
+      <Input type="text" class="w-full" v-model="textInput">
         <template #rightIcon>
           <IconSearchOutline class="w-5 h-5 text-lightPrimary dark:text-darkPrimary "/>
         </template>
@@ -431,6 +431,8 @@ const selected = ref(null)
 const selected2 = ref([])
 const valueStart = ref()
 const dialogRef = ref()
+const numberInput = ref()
+const textInput = ref()
 
 const deltaToColor = (delta: number) => {
   if (delta < -10) return '#B91C1C' // bright red
@@ -514,4 +516,10 @@ async function loadPageData(data) {
   }
 }
 
+watch(numberInput, (newVal) => {
+  console.log('Number input changed:', newVal, typeof newVal);
+});
+watch(textInput, (newVal) => {
+  console.log('Text input changed:', newVal, typeof newVal);
+});
 </script>
