@@ -1,4 +1,6 @@
 import type { AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
+import type { FilterParams } from '@/types/Common';
+import type { Ref, ComputedRef } from 'vue';
 
 export type resourceById = {
     [key: string]: AdminForthResource;
@@ -59,5 +61,35 @@ export type AllowedActions = {
     create: boolean,
     edit: boolean,
     delete: boolean,
+}
+
+
+export type sortType = {
+  field: string, 
+  direction: 'ask' | 'desc'
+} | null;
+
+export type AdminforthFilterStore = {
+  filters: Ref<FilterParams[]>,
+
+  setSort: (sort: sortType) => void,
+  getSort: () => sortType,
+
+  setFilter: (filters: FilterParams) => void,
+  setFilters: (filters: FilterParams[]) => void,
+
+  getFilters: () => FilterParams[],
+
+  clearFilter: (fieldName: string) => void,
+  clearFilters: () => void,
+
+  shouldFilterBeHidden: (fieldName: string) => boolean,
+
+  visibleFiltersCount: ComputedRef<number>,
+}
+
+export interface AdminforthFilterStoreUnwrapped extends Omit<AdminforthFilterStore, 'filters' | 'visibleFiltersCount'> {
+    filters: FilterParams[],
+    visibleFiltersCount: number,
 }
 

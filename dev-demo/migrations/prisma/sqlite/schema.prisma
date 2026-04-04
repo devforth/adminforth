@@ -104,3 +104,9 @@ model jobs {
   status      String
   job_handler_name String
 }
+
+model adminuserCars {
+  id            String @id
+  adminuserId   String
+  carId         String
+}

@@ -19,7 +19,7 @@
    
     <div class="py-4 ">
       <ul class="space-y-3 font-medium text-sm">
-         <li v-for="c in columnsWithFilter" :key="c">
+         <li v-for="c in columnsWithFilter" :key="c.name">
             <div class="flex flex-col">
               <div class="flex justify-between items-center">
                 <p class="dark:text-gray-400 my-1">{{ c.label }}</p>
@@ -38,15 +38,15 @@
               </div>
               <component
                 v-if="c.components?.filter"
-                :is="getCustomComponent(c.components.filter)"
-                :meta="c?.components?.list?.meta"
+                :is="getCustomComponent(formatComponent(c.components.filter))"
+                :meta="formatComponent(c.components.filter)?.meta"
                 :column="c"
                 class="w-full"
-                @update:modelValue="(filtersArray) => {
+                @update:modelValue="(filtersArray:FilterParams[] ) => {
                   filtersStore.filters = filtersStore.filters.filter(f => f.field !== c.name);
 
                   for (const f of filtersArray) {
-                    filtersStore.filters.push({ field: c.name, ...f });
+                    filtersStore.filters.push({ ...f, field: c.name });
                   }
                   console.log('filtersStore.filters', filtersStore.filters);
                   emits('update:filters', [...filtersStore.filters]);
@@ -55,18 +55,18 @@
               />
               <Select
                 v-else-if="c.foreignResource"
-                :multiple="c.filterOptions.multiselect"
+                :multiple="c?.filterOptions?.multiselect"
                 class="w-full"
                 :options="columnOptions[c.name] || []"
                 :searchDisabled="!c.foreignResource.searchableFields"
                 @scroll-near-end="loadMoreOptions(c.name)"
                 @search="(searchTerm) => {
-                  if (c.foreignResource.searchableFields && onSearchInput[c.name]) {
+                  if (c.foreignResource?.searchableFields && onSearchInput[c.name]) {
                     onSearchInput[c.name](searchTerm);
                   }
                 }"
-                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ, value: c.filterOptions?.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ))?.value || (c.filterOptions?.multiselect ? [] : '')"
               >
                 <template #extra-item v-if="columnLoadingState[c.name]?.loading">
                   <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
@@ -76,7 +76,7 @@
                 </template>
               </Select>
               <Select
-                :multiple="c.filterOptions.multiselect"
+                :multiple="c.filterOptions?.multiselect"
                 class="w-full"
                 v-else-if="c.type === 'boolean'"
                 :options="[
@@ -85,63 +85,63 @@
                   // if field is not required, undefined might be there, and user might want to filter by it
                   ...(c.required ? [] : [ { label: $t('Unset'), value: undefined } ])
                 ]"
-                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event })"
-                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value !== undefined
-                  ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value
-                  : (c.filterOptions.multiselect ? [] : '')"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ, value: c.filterOptions?.multiselect ? ($event.length ? $event : undefined) : $event })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ))?.value !== undefined
+                  ? filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ))?.value
+                  : (c.filterOptions?.multiselect ? [] : '')"
               />
               
               <Select
-                :multiple="c.filterOptions.multiselect"
+                :multiple="c.filterOptions?.multiselect"
                 class="w-full"
                 v-else-if="c.enum"
                 :options="c.enum"
-                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions.multiselect ? 'in' : 'eq', value: c.filterOptions.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
-                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions.multiselect ? 'in' : 'eq'))?.value || (c.filterOptions.multiselect ? [] : '')"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ, value: c.filterOptions?.multiselect ? ($event.length ? $event : undefined) : $event || undefined })"
+                :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ))?.value || (c.filterOptions?.multiselect ? [] : '')"
               />
 
               <Input
-                v-else-if="['string', 'text', 'json', 'richtext', 'unknown'].includes(c.type)"
+                v-else-if="['string', 'text', 'json', 'richtext', 'unknown'].includes(c.type ?? '')"
                 type="text"
                 full-width
                 :placeholder="$t('Search')"
-                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq', value: $event || undefined })"
-                :modelValue="getFilterItem({ column: c, operator: c.filterOptions?.substringSearch ? 'ilike' : 'eq' })"
+                @update:modelValue="onFilterInput[c.name]({ column: c, operator: c.filterOptions?.substringSearch ? AFFO.ILIKE : AFFO.EQ, value: $event || undefined })"
+                :modelValue="(getFilterItem({ column: c, operator: c.filterOptions?.substringSearch ? AFFO.ILIKE : AFFO.EQ }) as string | number)"
               />
 
               <CustomDateRangePicker
-                v-else-if="['datetime', 'date', 'time'].includes(c.type)"
+                v-else-if="['datetime', 'date', 'time'].includes(c.type ?? '')"
                 :column="c"
-                :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === 'gte')?.value || undefined"
-                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: $event || undefined })"
-                :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === 'lte')?.value || undefined"
-                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: $event || undefined })"
+                :valueStart="filtersStore.filters.find(f => f.field === c.name && f.operator === AFFO.GTE)?.value || undefined"
+                @update:valueStart="onFilterInput[c.name]({ column: c, operator: AFFO.GTE, value: $event || undefined })"
+                :valueEnd="filtersStore.filters.find(f => f.field === c.name && f.operator === AFFO.LTE)?.value || undefined"
+                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: AFFO.LTE, value: $event || undefined })"
               />
 
               <CustomRangePicker
-                v-else-if="['integer', 'decimal', 'float'].includes(c.type) && c.allowMinMaxQuery"
+                v-else-if="['integer', 'decimal', 'float'].includes(c.type ?? '') && c.allowMinMaxQuery"
                 :min="getFilterMinValue(c.name)"
                 :max="getFilterMaxValue(c.name)"
-                :valueStart="getFilterItem({ column: c, operator: 'gte' })"
-                @update:valueStart="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
-                :valueEnd="getFilterItem({ column: c, operator: 'lte' })"
-                @update:valueEnd="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
+                :valueStart="(getFilterItem({ column: c, operator: AFFO.GTE }) as number)"
+                @update:valueStart="(val) => rangeChangeHandler((val !== '' && val !== null) ? (c.type === 'decimal' ? String(val) : val) : undefined, c, AFFO.GTE)"
+                :valueEnd="(getFilterItem({ column: c, operator: AFFO.LTE }) as number)"
+                @update:valueEnd="(val) => rangeChangeHandler((val !== '' && val !== null) ? (c.type === 'decimal' ? String(val) : val) : undefined, c, AFFO.LTE)"
               />
 
-              <div v-else-if="['integer', 'decimal', 'float'].includes(c.type)" class="flex gap-2">
+              <div v-else-if="['integer', 'decimal', 'float'].includes(c.type ?? '')" class="flex gap-2">
                 <Input
                   type="number"
                   aria-describedby="helper-text-explanation"
                   :placeholder="$t('From')"
-                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'gte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
-                  :modelValue="getFilterItem({ column: c, operator: 'gte' })"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: AFFO.GTE, value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
+                  :modelValue="(getFilterItem({ column: c, operator: AFFO.GTE }) as number)"
                 />
                 <Input
                   type="number"
                   aria-describedby="helper-text-explanation"
                   :placeholder="$t('To')"
-                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: 'lte', value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
-                  :modelValue="getFilterItem({ column: c, operator: 'lte' })"
+                  @update:modelValue="onFilterInput[c.name]({ column: c, operator: AFFO.LTE, value: ($event !== '' && $event !== null) ? (c.type === 'decimal' ? String($event) : $event) : undefined })"
+                  :modelValue="(getFilterItem({ column: c, operator: AFFO.LTE }) as number)"
                 />
               </div>
             </div>
@@ -164,14 +164,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { watch, computed, ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomDateRangePicker from '@/components/CustomDateRangePicker.vue';
-import { callAdminForthApi, loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers } from '@/utils';
+import { loadMoreForeignOptions, searchForeignOptions, createSearchInputHandlers, formatComponent } from '@/utils';
 import { useRouter } from 'vue-router';
 import CustomRangePicker from "@/components/CustomRangePicker.vue";
-import { useFiltersStore } from '@/stores/filters';
 import { getCustomComponent } from '@/utils';
 import Input from '@/afcl/Input.vue';
 import Select from '@/afcl/Select.vue';
@@ -179,27 +178,39 @@ import Spinner from '@/afcl/Spinner.vue';
 import debounce from 'debounce';
 import { Tooltip } from '@/afcl';
 import { IconCloseOutline } from '@iconify-prerendered/vue-flowbite';
+import type { AdminforthFilterStore, AdminforthFilterStoreUnwrapped } from '@/spa_types/core';
+import type { AdminForthResourceColumnCommon, FilterParams, ColumnMinMaxValue } from '@/types/Common';
+import { AdminForthFilterOperators } from '@/types/Common';
 
-const filtersStore = useFiltersStore();
+
 const { t } = useI18n();
 
+const AFFO = AdminForthFilterOperators;
 
 // props: columns
 // add support for v-model:filers
-const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
+// const props = defineProps(['columns', 'filters', 'show', 'columnsMinMax']);
+const props = defineProps<{
+  columns: AdminForthResourceColumnCommon[],
+  filters?: AdminforthFilterStore['filters'],
+  show: Boolean,
+  columnsMinMax: ColumnMinMaxValue,
+  filtersStore: AdminforthFilterStoreUnwrapped
+}>();
+
 const emits = defineEmits(['update:filters', 'hide']);
 
 const router = useRouter();
 
 
 const columnsWithFilter = computed(
-  () => props.columns?.filter(column => column.showIn.filter) || []
+  () => props.columns?.filter(column => column.showIn?.filter) || []
 );
 
-const columnOptions = ref({});
-const columnLoadingState = reactive({});
-const columnOffsets = reactive({});
-const columnEmptyResultsCount = reactive({});
+const columnOptions = ref<{[key: string]: Record<string, any>[]}>({});
+const columnLoadingState = reactive<Record<string, { loading: boolean; hasMore: boolean }>>({});
+const columnOffsets = reactive<Record<string, number>>({});
+const columnEmptyResultsCount = reactive<Record<string, number>>({});
 
 watch(() => props.columns, async (newColumns) => {
   if (!newColumns) return;
@@ -219,12 +230,12 @@ watch(() => props.columns, async (newColumns) => {
 }, { immediate: true });
 
 // Function to load more options for a specific column
-async function loadMoreOptions(columnName, searchTerm = '') {
+async function loadMoreOptions(columnName: string, searchTerm = '') {
   return loadMoreForeignOptions({
     columnName,
     searchTerm,
     columns: props.columns,
-    resourceId: router.currentRoute.value.params.resourceId,
+    resourceId: router.currentRoute.value.params.resourceId as string,
     columnOptions,
     columnLoadingState,
     columnOffsets,
@@ -232,12 +243,12 @@ async function loadMoreOptions(columnName, searchTerm = '') {
   });
 }
 
-async function searchOptions(columnName, searchTerm) {
+async function searchOptions(columnName: string, searchTerm: string) {
   return searchForeignOptions({
     columnName,
     searchTerm,
     columns: props.columns,
-    resourceId: router.currentRoute.value.params.resourceId,
+    resourceId: router.currentRoute.value.params.resourceId as string,
     columnOptions,
     columnLoadingState,
     columnOffsets,
@@ -263,9 +274,9 @@ watch(() => props.show, (show) => {
 // }
 
 const onFilterInput = computed(() => {
-  if (!props.columns) return {};
+  if (!props.columns) return {} as Record<string, any>;
 
-  return props.columns.reduce((acc, c) => {
+  return props.columns.reduce<Record<string, ReturnType<typeof debounce>>>((acc, c) => {
     return {
       ...acc,
       [c.name]: debounce(({ column, operator, value }) => {
@@ -275,6 +286,27 @@ const onFilterInput = computed(() => {
   }, {});
 });
 
+// rangeState is used for cutom range picker, because if we change two values very quickly
+// in filters writes only the last one, because of debounce
+const rangeState = reactive<Record<string, { gte: number | null; lte: number | null }>>({});
+
+const updateRange = (column: AdminForthResourceColumnCommon) => {
+  debounce(() => {
+    const { gte, lte } = rangeState[column.name];
+
+    setFilterItem({ column, operator: AFFO.GTE, value: gte });
+    setFilterItem({ column, operator: AFFO.LTE, value: lte });
+  }, column?.filterOptions?.debounceTimeMs || 10)();
+}
+
+function rangeChangeHandler(value: number | null, column: AdminForthResourceColumnCommon, operator: 'gte' | 'lte') {
+  if (!rangeState[column.name]) {
+    rangeState[column.name] = { gte: null, lte: null };
+  }
+  rangeState[column.name][operator] = value;
+  updateRange(column);
+}
+
 const onSearchInput = computed(() => {
   return createSearchInputHandlers(
     props.columns,
@@ -283,40 +315,40 @@ const onSearchInput = computed(() => {
   );
 });
 
-function setFilterItem({ column, operator, value }) {
+function setFilterItem({ column, operator, value }: { column: AdminForthResourceColumnCommon; operator: AdminForthFilterOperators; value: any }) {
 
-  const index = filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
+  const index = props.filtersStore.filters.findIndex(f => f.field === column.name && f.operator === operator);
   if (value === undefined || value === '' || value === null) {
     if (index !== -1) {
-      filtersStore.filters.splice(index, 1);
+      props.filtersStore.filters.splice(index, 1);
     }
   } else {
     if (index === -1) {
-      filtersStore.setFilter({ field: column.name, value, operator });
+      props.filtersStore.setFilter({ field: column.name, value, operator });
     } else {
-      filtersStore.setFilters([...filtersStore.filters.slice(0, index), { field: column.name, value, operator }, ...filtersStore.filters.slice(index + 1)])
+      props.filtersStore.setFilters([...props.filtersStore.filters.slice(0, index), { field: column.name, value, operator }, ...props.filtersStore.filters.slice(index + 1)])
     }
   }
-  emits('update:filters', [...filtersStore.filters]);
+  emits('update:filters', [...props.filtersStore.filters]);
 }
 
-function getFilterItem({ column, operator }) {
-  const filterValue = filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value;
+function getFilterItem({ column, operator }: { column: AdminForthResourceColumnCommon; operator: AdminForthFilterOperators }) {
+  const filterValue = props.filtersStore.filters.find(f => f.field === column.name && f.operator === operator)?.value;
   return filterValue !== undefined ? filterValue : '';
 }
 
 async function clear() {
-  filtersStore.filters = [...filtersStore.filters.filter(f => filtersStore.shouldFilterBeHidden(f.field))];
-  emits('update:filters', [...filtersStore.filters]);
+  props.filtersStore.filters = [...props.filtersStore.filters.filter(f => props.filtersStore.shouldFilterBeHidden(f.field))];
+  emits('update:filters', [...props.filtersStore.filters]);
 }
 
-function getFilterMinValue(columnName) {
+function getFilterMinValue(columnName: string) {
   if(props.columnsMinMax && props.columnsMinMax[columnName]) {
     return props.columnsMinMax[columnName]?.min
   }
 }
 
-function getFilterMaxValue(columnName) {
+function getFilterMaxValue(columnName: string) {
   if(props.columnsMinMax && props.columnsMinMax[columnName]) {
     return props.columnsMinMax[columnName]?.max
   }

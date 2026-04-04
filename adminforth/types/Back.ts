@@ -1,4 +1,4 @@
-import type { Express, Request } from 'express';
+import type { Express, Request, Response } from 'express';
 import type { Writable } from 'stream';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthConfigMenuItem,
   type AnnouncementBadgeResponse,
   type AdminForthResourceColumnInputCommon,
+  type ColumnMinMaxValue,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -67,6 +68,10 @@ export interface IHttpServer {
       headers: {[key: string]: string}, 
       cookies: {[key: string]: string}, 
       response: IAdminForthHttpResponse,
+      requestUrl: string,
+      abortSignal: AbortSignal,
+      _raw_express_req: Request,
+      _raw_express_res: Response,
     ) => void,
   }): void;
 
@@ -252,7 +257,7 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Internally should call {@link IAdminForthDataSourceConnector.getFieldValue} for both min and max values.
    */
-  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
 
   /**
@@ -305,7 +310,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     newValues: any, 
   }): Promise<{ok: boolean, error?: string}>;
 
-  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
   deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
 }
@@ -1287,17 +1292,33 @@ interface AdminForthInputConfigCustomization {
 
 export interface AdminForthActionInput {
   name: string;
+  bulkConfirmationMessage?: string;
+  bulkSuccessMessage?: string;
   showIn?: {
       list?: boolean,
       listThreeDotsMenu?: boolean,
       showButton?: boolean,
       showThreeDotsMenu?: boolean,
+      bulkButton?: boolean,
   };
   allowed?: (params: {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
   }) => boolean;
   url?: string;
+  bulkHandler?: (params: {
+      adminforth: IAdminForth;
+      resource: AdminForthResource;
+      recordIds: (string | number)[];
+      adminUser: AdminUser;
+      response: IAdminForthHttpResponse;
+      extra?: HttpExtra;
+      tr: ITranslateFunction;
+  }) => Promise<{
+      ok: boolean;
+      error?: string;
+      successMessage?: string;
+  }>;
   action?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;
@@ -1305,7 +1326,7 @@ export interface AdminForthActionInput {
       adminUser: AdminUser;
       response: IAdminForthHttpResponse;
       extra?: HttpExtra;
-      tr: Function;
+      tr: ITranslateFunction;
   }) => Promise<{
       ok: boolean;
       error?: string;
@@ -1637,7 +1658,7 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
-    underLoginButton?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclarationFull>,
     panelHeader: Array<AdminForthComponentDeclarationFull>,
   },
 
@@ -1825,11 +1846,13 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions'> {
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions' | 'actions'> {
 
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
+   * @deprecated Since 2.26.5. Will be removed in 3.0.0. Use `actions` instead.
+
    */
   bulkActions?: Array<AdminForthBulkAction>,
 

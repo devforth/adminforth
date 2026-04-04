@@ -19,26 +19,13 @@ class FrontendAPI implements FrontendAPIInterface {
   public modalStore:any
   public filtersStore:any  
   public coreStore:any
-  private saveInterceptors: Record<string, Array<(ctx: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>>> = {};
+  private saveInterceptors: Record<string, Array<Parameters<FrontendAPIInterface['registerSaveInterceptor']>[0]>> = {};
 
-  public list: {
-    refresh(): Promise<{ error? : string }>;
-    silentRefresh(): Promise<{ error? : string }>;
-    silentRefreshRow(pk: any): Promise<{ error? : string }>;
-    closeThreeDotsDropdown(): Promise<{ error? : string }>;
-    closeUserMenuDropdown: () => void;
-    setFilter: (filter: FilterParams) => void;
-    updateFilter: (filter: FilterParams) => void;
-    clearFilters: () => void;
-  }
+  public list: FrontendAPIInterface['list'];
 
-  public menu: {
-    refreshMenuBadges: () => void;
-  }
+  public menu: FrontendAPIInterface['menu'];
 
-  public show: {
-    refresh(): void;
-  }
+  public show: FrontendAPIInterface['show'];
 
   closeUserMenuDropdown(): void {
     console.log('closeUserMenuDropdown')
@@ -70,9 +57,6 @@ class FrontendAPI implements FrontendAPIInterface {
         console.log('closeThreeDotsDropdown')
         return { error: 'Not implemented' }
       },
-      closeUserMenuDropdown: () => {
-        console.log('closeUserMenuDropdown')
-      },
       setFilter: this.setListFilter.bind(this),
       updateFilter: this.updateListFilter.bind(this),
       clearFilters: this.clearListFilters.bind(this),
@@ -83,11 +67,15 @@ class FrontendAPI implements FrontendAPIInterface {
         console.log('show.refresh')
       }
     }
+
+    this.closeUserMenuDropdown = () => {
+      console.log('closeUserMenuDropdown')
+    };
   }
 
   registerSaveInterceptor(
-    handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: object; }>,
-  ): void {
+    handler: Parameters<FrontendAPIInterface['registerSaveInterceptor']>[0]
+  ): ReturnType<FrontendAPIInterface['registerSaveInterceptor']> {
     const rid = router.currentRoute.value?.params?.resourceId as string;
     if (!rid) {
       return;
@@ -98,7 +86,7 @@ class FrontendAPI implements FrontendAPIInterface {
     this.saveInterceptors[rid].push(handler);
   }
 
-  async runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }> {
+  async runSaveInterceptors(params: Parameters<FrontendAPIInterface['runSaveInterceptors']>[0]): ReturnType<FrontendAPIInterface['runSaveInterceptors']> {
     const list = this.saveInterceptors[params.resourceId] || [];
     const aggregatedExtra: Record<string, any> = {};
     for (const fn of list) {
@@ -120,7 +108,7 @@ class FrontendAPI implements FrontendAPIInterface {
     return { ok: true, extra: aggregatedExtra };
   }
 
-  clearSaveInterceptors(resourceId?: string): void {
+  clearSaveInterceptors(resourceId?: Parameters<FrontendAPIInterface['clearSaveInterceptors']>[0]): ReturnType<FrontendAPIInterface['clearSaveInterceptors']> {
     if (resourceId) {
       delete this.saveInterceptors[resourceId];
     } else {
@@ -128,7 +116,7 @@ class FrontendAPI implements FrontendAPIInterface {
     }
   }
 
-  confirm(params: ConfirmParams): Promise<boolean> {
+  confirm(params: Parameters<FrontendAPIInterface['confirm']>[0]): ReturnType<FrontendAPIInterface['confirm']> {
     return new Promise((resolve, reject) => {
       this.modalStore.setModalContent({ 
         content: params.message, 
@@ -142,7 +130,7 @@ class FrontendAPI implements FrontendAPIInterface {
     })
   }
 
-  alert(params: AlertParams): void | Promise<string> | string {
+  alert(params: Parameters<FrontendAPIInterface['alert']>[0]): ReturnType<FrontendAPIInterface['alert']> {
     const toats = {
       message: params.message,
       messageHtml: params.messageHtml,
@@ -162,14 +150,14 @@ class FrontendAPI implements FrontendAPIInterface {
     }
   }
 
-  listFilterValidation(filter: FilterParams): boolean {
+  listFilterValidation(filter: Parameters<FrontendAPIInterface['list']['setFilter']>[0]): boolean {
     if(router.currentRoute.value.meta.type !== 'list'){
       throw new Error(`Cannot use ${this.setListFilter.name} filter on a list page`)
     }
     return true
   }
 
-  setListFilter(filter: FilterParams): void {
+  setListFilter(filter: Parameters<FrontendAPIInterface['list']['setFilter']>[0]): ReturnType<FrontendAPIInterface['list']['setFilter']> {
     if(this.listFilterValidation(filter)){
       const existingFilterIndex = this.filtersStore.filters.findIndex((f: any) => {
         return f.field === filter.field && f.operator === filter.operator

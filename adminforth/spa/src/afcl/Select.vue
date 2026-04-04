@@ -119,10 +119,12 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
+type ISingleSelectModelValue = string | number | boolean;
+
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: Array as PropType<(string | number)[] | (string | number)>,
+    type: Array as PropType<(ISingleSelectModelValue)[] | ISingleSelectModelValue>,
     default: () => [],
   },
   multiple: {
@@ -157,6 +159,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  disableTogleOfSelectedItem: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
@@ -201,7 +207,7 @@ function updateFromProps() {
         selectedItems.value = [];
       }
     } else {
-      selectedItems.value = props.options?.filter((item: any) => props.modelValue?.includes(item.value)) || [];
+      selectedItems.value = props.options?.filter((item: any) => (props.modelValue as (ISingleSelectModelValue)[])?.includes(item.value)) || [];
     }
   }
 }
@@ -312,7 +318,7 @@ const removeClickListener = () => {
 };
 
 const toogleItem = (item: any) => {
-  if (selectedItems.value.includes(item)) {
+  if (selectedItems.value.includes(item) && !props.disableTogleOfSelectedItem) {
     selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {
