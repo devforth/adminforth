@@ -13,9 +13,19 @@
         Secondary button
       </Button>
 
+      <Button
+        :loader="false" class="w-full" disabled>
+        Disabled button
+      </Button>
+
+      <Button @click="doSmth" 
+        :loader="false" class="w-full" active>
+        Active button
+      </Button>
+
       <Button @click="doSmth" 
           :loader="true" class="w-full mt-4">
-        Your button text
+        Loading button
       </Button>
 
       <Link to="/login">Go to login</Link>
