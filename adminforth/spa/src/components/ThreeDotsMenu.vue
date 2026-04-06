@@ -174,8 +174,12 @@ function startBulkAction(actionId: string) {
 
 async function injectedComponentClick(index: number) {
   const componentRef = threeDotsDropdownItemsRefs.value[index];
-  if (componentRef && 'click' in componentRef) {
-    (componentRef as any).click?.();
+  if (componentRef) {
+    if (typeof (componentRef as any).click === 'function') {
+      (componentRef as any).click();
+    } else if (componentRef.$el && typeof componentRef.$el.click === 'function') {
+      componentRef.$el.click();
+    }
   }
   showDropdown.value = false;
 }
