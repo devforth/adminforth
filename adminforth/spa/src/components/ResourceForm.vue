@@ -162,7 +162,7 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
       return currentValues.value[column.name] && currentValues.value[column.name].reduce((error: any, item: any) => {
         if (column.isArray) {
           return error || validateValue(column.isArray.itemType, item, column) ||
-            (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
+            (item === null || (!item || item.toString() === '') ? t('Array cannot contain empty items') : null);
         } else {
           return error; 
         }
