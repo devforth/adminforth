@@ -74,7 +74,3 @@ steps:
         from_secret: VAULT_AWS_SECRET_ACCESS_KEY
       VAULT_ADMIN_PASSWORD:
         from_secret: VAULT_ADMIN_PASSWORD
-      VAULT_CLOUDFLARE_SITE_KEY:
-        from_secret: VAULT_CLOUDFLARE_SITE_KEY
-      VAULT_CLOUDFLARE_SECRET_KEY:
-        from_secret: VAULT_CLOUDFLARE_SECRET_KEY

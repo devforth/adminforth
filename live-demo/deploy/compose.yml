@@ -12,8 +12,6 @@ services:
       - AWS_SECRET_ACCESS_KEY=${VAULT_AWS_SECRET_ACCESS_KEY}
       - DATABASE_FILE_URL=file:./db/live.sqlite
       - ADMIN_PASSWORD=${VAULT_ADMIN_PASSWORD}
-      - CLOUDFLARE_SITE_KEY=${VAULT_CLOUDFLARE_SITE_KEY}
-      - CLOUDFLARE_SECRET_KEY=${VAULT_CLOUDFLARE_SECRET_KEY}
     volumes:
       - af-db:/code/db/
       
