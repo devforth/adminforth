@@ -30,8 +30,8 @@ export default {
     }),
     new CaptchaPlugin({ 
         captchaAdapter: new CaptchaAdapterCloudflare({
-        siteKey: "0x4AAAAAACy5qrUGxw0KU3KI", // Replace with your site key
-        secretKey: "0x4AAAAAACy5qvlONDC41YGD9XCwRl9xHD0", // Replace with your secret key
+        siteKey: `${process.env.CLOUDFLARE_SITE_KEY}`, // Replace with your site key
+        secretKey: `${process.env.CLOUDFLARE_SECRET_KEY}`, // Replace with your secret key
       }),
     }),
   ],
