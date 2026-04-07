@@ -219,6 +219,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       }),
       new MarkdownPlugin({
         fieldName: 'description',
+        maxShowViewContainerHeightPx: 400,
         attachments: {
           attachmentResource: "cars_description_images",
           attachmentFieldName: "image_path",
@@ -332,6 +333,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           fillPlainFields: {
             description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
             price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
+          },
+          rateLimits: { // bulk generation limits
+            fillFieldsFromImages: "1/1m", // 1 request per minute
+            fillPlainFields: "1/1m",      // 1 request per minute
+            generateImages: "1/1m",       // 1 request per minute
           }
         }),
         new BulkAiFlowPlugin({
@@ -352,6 +358,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
             }
             return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
           },
+          rateLimits: { // bulk generation limits
+            fillFieldsFromImages: "1/1m", // 1 request per minute
+            fillPlainFields: "1/1m",      // 1 request per minute
+            generateImages: "1/1m",       // 1 request per two minutes
+          }
         }),
         new BulkAiFlowPlugin({
           actionName: 'Generate promo image',
@@ -367,7 +378,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               prompt: "Create a high-quality promotional image for a {{color}} car shown on attached image. Generated image should be in anime style",
             }
           },
-          
+          rateLimits: { // bulk generation limits
+            fillFieldsFromImages: "1/1m", // 1 request per minute
+            fillPlainFields: "1/1m",      // 1 request per minute
+            generateImages: "1/1m",       // 1 request per minute
+          },
           attachFiles: async ({ record }) => {
             if (!record.promo_picture) {
               return [];
