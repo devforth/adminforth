@@ -27,6 +27,8 @@
     "@adminforth/image-generation-adapter-openai": "^1.0.7",
     "@adminforth/image-vision-adapter-openai": "^1.0.1",
     "@adminforth/import-export": "^1.4.6",
+    "@adminforth/login-captcha": "^1.1.7",
+    "@adminforth/login-captcha-adapter-cloudflare": "^1.0.16",
     "@adminforth/rich-editor": "^1.6.14",
     "@adminforth/storage-adapter-amazon-s3": "^1.0.11",
     "@adminforth/text-complete": "^1.8.9",

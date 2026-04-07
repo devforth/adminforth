@@ -1,6 +1,8 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
+import CaptchaAdapterCloudflare from '../../../adapters/adminforth-login-captcha-adapter-cloudflare/index.js';
+import CaptchaPlugin from '../../../plugins/adminforth-login-captcha/index.js';
 
 const blockDemoUsers = async ({ record, adminUser, resource }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
@@ -25,6 +27,12 @@ export default {
     }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'audit_logs',
+    }),
+    new CaptchaPlugin({ 
+        captchaAdapter: new CaptchaAdapterCloudflare({
+        siteKey: `${process.env.CLOUDFLARE_SITE_KEY}`, // Replace with your site key
+        secretKey: `${process.env.CLOUDFLARE_SECRET_KEY}`, // Replace with your secret key
+      }),
     }),
   ],
   columns: [

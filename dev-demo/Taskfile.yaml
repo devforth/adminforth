@@ -52,6 +52,7 @@ vars:
     - "adminforth-completion-adapter-google-gemini"
     - "adminforth-key-value-adapter-redis"
     - "adminforth-key-value-adapter-leveldb"
+    - "adminforth-image-generation-adapter-nano-banana"
 
 
 tasks:
