@@ -8,7 +8,7 @@ export function initApi(app: Express, admin: IAdminForth) {
       // req.adminUser to get info about the admin users
       const allUsers = await admin.resource("adminuser").list([]);
       res.json({
-        message: "List of admin user from AdminForth API",
+        message: "List of admin users from AdminForth API",
         users: allUsers,
       });
     }
