@@ -598,3 +598,149 @@ handler: async (a) => {
   ...
 }
 ``` 
+## Providing a frontend API
+If a plugin needs to provide an external frontend API so user code or other plugins can interact with it, you can create a .ts file or a global Pinia store (if you want to have some global variables or use plugin modals) and then re-use it in your frontend logic. For example:
+
+1) Create new `./custom/useChatGptApi.ts` and `./custom/customModal` files
+```text
+af-plugin-chatgpt/
+├── custom
+│   └── tsconfig.json
+|   └── completionInput.vue
+//diff-add
+|   └── useChatGptApi.ts
+//diff-add
+|   └── customModal.vue
+├── index.ts
+├── package.json
+├── tsconfig.json
+└── types.ts
+```
+
+2) Write your custom logic:
+
+```ts title="./custom/useChatGptApi.ts"
+import { ref } from 'vue';
+import { callAdminForthApi } from '@/utils';
+import { defineStore } from 'pinia'
+
+export const useChatGptApi = defineStore('chatGptApi', () => {
+  const isCustomModalOpened = ref(false);
+  const customModalData = ref({})
+  
+  function openCustomModal(modalData) {
+    customModalData.value = modalData;
+    isCustomModalOpened.value = true;
+  }
+
+  function closeCustomModal() {
+    isCustomModalOpened.value = false;
+  }
+
+  async function doComplete(pluginInstanceId, record, columnName, textBeforeCursor) {
+    const res = await callAdminForthApi({
+      path: `/plugin/${pluginInstanceId}/doComplete`,
+      method: 'POST',
+      body: {
+        record: { ...record, [columnName]: textBeforeCursor },
+      },
+    });
+
+    return res.completion;
+  }
+
+  return {
+    isCustomModalOpened,
+    customModalData,
+    openCustomModal,
+    closeCustomModal,
+    doComplete
+  }
+```
+
+3) If you want your plugin to have its own modal API, then first of all you'll need to inject this component somewhere so you can open it:
+
+```ts title="./index.ts"
+
+async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+
+...
+
+  // Global API injection: exposes openCustomModal(...) to open chatGptModal from anywhere
+  (adminforth.config.customization.globalInjections.header).push({
+    file: this.componentPath('customModal.vue'),
+    meta: {
+      pluginInstanceId: this.pluginInstanceId,
+    }
+  });
+
+...
+
+}
+
+```
+
+
+and:
+
+```html title="customModal.vue"
+<template>
+  <!-- Hidden component that registers a global function to open job info modal -->
+  <Modal 
+    ref="dialogRef" 
+    removeFromDomOnClose 
+    class="p-4"
+    :beforeCloseFunction="() => { chatGpt.closeCustomModal(); }"
+  >
+    <div>
+      ***Modal content***
+      {{ chatGpt.customModalData }}
+    </div
+  </Modal>
+</template>
+
+<script setup lang="ts">
+  import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+  import { Modal } from '@/afcl';
+  import { useChatGptApi } from './useChatGptApi';
+
+  const chatGpt = useChatGptApi();
+  const dialogRef = ref<any>(null);
+
+  const props = defineProps<{
+    meta: {
+      pluginInstanceId: string;
+    }
+  }>();
+
+  watch(() => chatGpt.isCustomModalOpened, (newVal) => {
+    if (newVal) {
+      dialogRef.value?.open?.();
+    } else {
+      dialogRef.value?.close?.();
+    }
+  });
+</script>
+
+
+```
+
+4) Re-use this api in your component:
+
+```html
+  <template>
+    ...
+  </template>
+
+  <script setup>
+    //diff-add
+    import { useChatGptApi } from '@/custom/plugins/ChatGptPlugin/useChatGptApi';
+    ...
+  </script>
+```
+
+### How to get the plugin file path from a custom component
+
+`ChatGptPlugin` is the class name that is defined inside `index.ts`.
+So if we want to access plugin files from a custom component, we should use the path:
+>`@/custom/plugins/*Plugin class name*/*File name*`
