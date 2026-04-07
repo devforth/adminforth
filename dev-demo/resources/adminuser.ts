@@ -10,6 +10,9 @@ import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapt
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
+import CaptchaAdapterCloudflare from "@adminforth/login-captcha-adapter-cloudflare";
+import CaptchaPlugin from "@adminforth/login-captcha";
+
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -134,6 +137,12 @@ export default {
         } 
       }
     ),
+    new CaptchaPlugin({ 
+        captchaAdapter: new CaptchaAdapterCloudflare({
+        siteKey: `${process.env.CLOUDFLARE_SITE_KEY}`, // Replace with your site key
+        secretKey: `${process.env.CLOUDFLARE_SECRET_KEY}`, // Replace with your secret key
+      }),
+    }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'cars_sl'
     }),
