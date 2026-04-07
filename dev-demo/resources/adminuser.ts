@@ -137,12 +137,6 @@ export default {
         } 
       }
     ),
-    new CaptchaPlugin({ 
-        captchaAdapter: new CaptchaAdapterCloudflare({
-        siteKey: `${process.env.CLOUDFLARE_SITE_KEY}`, // Replace with your site key
-        secretKey: `${process.env.CLOUDFLARE_SECRET_KEY}`, // Replace with your secret key
-      }),
-    }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'cars_sl'
     }),
