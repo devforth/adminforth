@@ -33,7 +33,7 @@ importers:
         specifier: ^0.14.2
         version: 0.14.2
       better-sqlite3:
-        specifier: ^11.5.0
+        specifier: ^11.10.0
         version: 11.10.0
       bson:
         specifier: ^7.2.0
