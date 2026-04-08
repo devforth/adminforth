@@ -28,7 +28,7 @@
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
-              @click="injectedComponentClick(i)"
+              @click="injectedComponentClick($event, i)"
             >
               <div class="wrapper" v-if="getCustomComponent(item)">
                 <component 
@@ -172,7 +172,9 @@ function startBulkAction(actionId: string) {
   showDropdown.value = false;
 }
 
-async function injectedComponentClick(index: number) {
+function injectedComponentClick(e: MouseEvent, index: number) {
+  if (!e.isTrusted) return;
+
   const componentRef = threeDotsDropdownItemsRefs.value[index];
   if (componentRef) {
     if (typeof (componentRef as any).click === 'function') {
