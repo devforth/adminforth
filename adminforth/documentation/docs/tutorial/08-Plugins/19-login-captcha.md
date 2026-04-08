@@ -25,7 +25,7 @@ To use the plugin, add it to your user resource file. Here's an example:
 ```ts title="./resources/adminuser.ts"
 // Import the plugin and adapter
 import CaptchaPlugin from "@adminforth/login-captcha";
-import CaptchaAdapterCloudflare from "@adminforth/captcha-adapter-cloudflare";
+import CaptchaAdapterCloudflare from "@adminforth/login-captcha-adapter-cloudflare";
 
 ...
 
