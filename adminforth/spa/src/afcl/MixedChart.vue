@@ -3,8 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import ApexCharts, { type ApexOptions } from 'apexcharts';
+import { type ApexOptions } from 'apexcharts';
 import { ref, onUnmounted, watch, computed } from 'vue';
+import { loadApexCharts } from './afcl_utils';
 
 const props = defineProps<{
   data: {
@@ -105,7 +106,7 @@ const chartOptions = computed(() => {
 let apexChart: ApexCharts | null = null;
 
 
-watch(() => [chartOptions.value, chart.value], ([newOptions, newRef]) => {
+watch(() => [chartOptions.value, chart.value], async ([newOptions, newRef]) => {
   if (!newOptions || !newRef) {
     return;
   }
@@ -113,8 +114,10 @@ watch(() => [chartOptions.value, chart.value], ([newOptions, newRef]) => {
   if (apexChart) {
     apexChart.updateOptions(newOptions);
   } else if (chart.value) {
-    apexChart = new ApexCharts(chart.value, newOptions);
-    apexChart.render();
+    const ApexCharts = await loadApexCharts();
+    const chartInstance = new ApexCharts(chart.value, newOptions);
+    apexChart = chartInstance;
+    chartInstance.render();
   }
 }, { deep: true });
 

@@ -116,7 +116,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import {checkEmptyValues} from '@/utils';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { JsonViewer } from "vue3-json-viewer";
 import "vue3-json-viewer/dist/vue3-json-viewer.css";
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
