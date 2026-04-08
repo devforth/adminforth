@@ -2153,6 +2153,7 @@ export interface IWebSocketBroker {
 
   registerWsClient: (client: IWebSocketClient) => void;
 }
+
 export interface PluginsCommonOptions {
    /**
      * Id of the plugin. It should be unique across all plugins.
