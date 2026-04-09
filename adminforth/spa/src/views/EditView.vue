@@ -41,7 +41,7 @@
       :adminUser="coreStore.adminUser"
     />
 
-    <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+    <CreateEditSkeleton v-if="loading"></CreateEditSkeleton>
  
     <ResourceForm 
       v-else-if="coreStore.resource"
@@ -88,6 +88,7 @@ import { type AdminForthComponentDeclaration, type AdminForthComponentDeclaratio
 import type { AdminForthResourceColumn } from '@/types/Back';
 import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
 import { Spinner } from '@/afcl'
+import CreateEditSkeleton from './CreateEditSkeleton.vue';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
