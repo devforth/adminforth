@@ -236,6 +236,21 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthSortDirections.asc]: 'ASC',
       [AdminForthSortDirections.desc]: 'DESC',
     };
+
+    isArrayType(underlineType: string): boolean {
+      return underlineType.startsWith('Array(') || underlineType.startsWith('Nullable(Array(');
+    }
+
+    isNullableType(underlineType: string): boolean {
+      return underlineType.startsWith('Nullable(');
+    }
+
+    isStringLikeType(underlineType: string): boolean {
+      return underlineType.startsWith('String')
+        || underlineType.startsWith('FixedString')
+        || underlineType.startsWith('Nullable(String)')
+        || underlineType.startsWith('Nullable(FixedString)');
+    }
   
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
@@ -255,6 +270,23 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         // Handle IS_EMPTY and IS_NOT_EMPTY operators
         if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
           return `${field} ${operator}`;
+        }
+
+        if ((filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE)
+            && column.isArray?.enabled) {
+          placeholder = '{f$?:String}';
+
+          if (this.isArrayType(column._underlineType)) {
+            const arrayField = this.isNullableType(column._underlineType) ? `assumeNotNull(${field})` : field;
+            const arrayMatch = `arrayExists(item -> toString(item) ${operator} ${placeholder}, ${arrayField})`;
+            return this.isNullableType(column._underlineType)
+              ? `${field} IS NOT NULL AND ${arrayMatch}`
+              : arrayMatch;
+          }
+
+          if (this.isStringLikeType(column._underlineType)) {
+            return `${field} ${operator} ${placeholder}`;
+          }
         }
 
         if (column._underlineType.startsWith('Decimal')) {
