@@ -1,5 +1,5 @@
 import express from 'express';
-import AdminForth, {  Filters } from '../adminforth/index.js';
+import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -143,6 +143,12 @@ export const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/AfComponents.vue',
       path: '/af-components',
+      itemId: 'menuTimestamp',
+      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
+        const now = new Date();
+        return now.getSeconds();
+      },
+      badgeTooltip: 'Seconds in current minute',  
     },
     {
       type: 'divider'
