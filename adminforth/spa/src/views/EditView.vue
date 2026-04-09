@@ -180,7 +180,7 @@ onMounted(async () => {
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'edit');
   }
 
-  // loading.value = false;
+  loading.value = false;
 });
 
 async function saveRecord() {

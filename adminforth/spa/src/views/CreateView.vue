@@ -188,7 +188,7 @@ onMounted(async () => {
     }
   }
   record.value = initialValues.value;
-  // loading.value = false;
+  loading.value = false;
   checkAcessByAllowedActions(coreStore.resourceOptions!.allowedActions,'create');
   initThreeDotsDropdown();
 });
