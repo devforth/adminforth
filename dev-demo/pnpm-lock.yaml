@@ -21,8 +21,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0
       clickhouse-migrations:
-        specifier: ^1.1.1
-        version: 1.1.2
+        specifier: ^1.2.0
+        version: 1.2.0
       decimal.js:
         specifier: ^10.6.0
         version: 10.6.0
@@ -66,11 +66,11 @@ packages:
   '@chevrotain/utils@10.5.0':
     resolution: {integrity: sha512-hBzuU5+JjB2cqNZyszkDHZgOSrUUT8V3dhgRl8Q9Gp6dAj/H5+KILGjbhDpc3Iy9qmqlm/akuOI2ut9VUtzJxQ==}
 
-  '@clickhouse/client-common@1.18.1':
-    resolution: {integrity: sha512-kDk8miGZVDAzqFrBZRmD9rD82Li8gwaGlJ5MNUpWgxx1OUXRBUkcV6ULysWP1C9Jinb3yle3YLz/XbNOPVgVtQ==}
+  '@clickhouse/client-common@1.18.2':
+    resolution: {integrity: sha512-J0SG6q9V31ydxonglpj9xhNRsUxCsF71iEZ784yldqMYwsHixj/9xHFDgBDX3DuMiDx/kPDfXnf+pimp08wIBA==}
 
-  '@clickhouse/client@1.18.1':
-    resolution: {integrity: sha512-fO4QggCOSr0WBS9oGIFa83FUhbweP8VTFGOXF51DJQbR/oEXegdocNSma3Gp6F4Km9A1Xm1ZAhwrldtg3prPiQ==}
+  '@clickhouse/client@1.18.2':
+    resolution: {integrity: sha512-fuquQswRSHWM6D079ZeuGqkMOsqtcUPL06UdTnowmoeeYjVrqisfVmvnw8pc3OeKS4kVb91oygb/MfLDiMs0TQ==}
     engines: {node: '>=16'}
 
   '@dotenvx/dotenvx@1.53.0':
@@ -394,8 +394,8 @@ packages:
   citty@0.2.1:
     resolution: {integrity: sha512-kEV95lFBhQgtogAPlQfJJ0WGVSokvLr/UEoFPiKKOXF7pl98HfUVUD0ejsuTCld/9xH9vogSywZ5KqHzXrZpqg==}
 
-  clickhouse-migrations@1.1.2:
-    resolution: {integrity: sha512-n5EIBSmg5+sjLcnGvBhP5AQ0zmsOAKN9yRQcSgqXSuM7jyiwKP8lW7pB+jktLi/BQEaTTrzaKWzPkgEia3z3bQ==}
+  clickhouse-migrations@1.2.0:
+    resolution: {integrity: sha512-Vtr1ihSx59J67Nr1N+sXiQ9TscwRuzOGvfCPtrA6yHrCabMcu+MKxZKQVuq7yWk83bXq3zpVgiaK7wCW6z4OjQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1169,11 +1169,11 @@ snapshots:
 
   '@chevrotain/utils@10.5.0': {}
 
-  '@clickhouse/client-common@1.18.1': {}
+  '@clickhouse/client-common@1.18.2': {}
 
-  '@clickhouse/client@1.18.1':
+  '@clickhouse/client@1.18.2':
     dependencies:
-      '@clickhouse/client-common': 1.18.1
+      '@clickhouse/client-common': 1.18.2
 
   '@dotenvx/dotenvx@1.53.0':
     dependencies:
@@ -1468,9 +1468,9 @@ snapshots:
 
   citty@0.2.1: {}
 
-  clickhouse-migrations@1.1.2:
+  clickhouse-migrations@1.2.0:
     dependencies:
-      '@clickhouse/client': 1.18.1
+      '@clickhouse/client': 1.18.2
       commander: 14.0.3
 
   commander@11.1.0: {}

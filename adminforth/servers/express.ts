@@ -136,7 +136,11 @@ class ExpressServer implements IExpressHttpServer {
               'Pragma': 'public',
             }
           }
-        )
+        , (err) => {
+          if (err && err.message.includes('ENOENT')) {
+            res.status(404).send('Not found');
+          }
+        });
       })
 
       this.expressApp.get(`${prefix}*`, async (req, res) => {

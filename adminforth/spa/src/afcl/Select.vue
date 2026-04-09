@@ -287,6 +287,7 @@ onMounted(() => {
   // Add scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
   }
 });
 
@@ -349,6 +350,7 @@ onUnmounted(() => {
   // Remove scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.removeEventListener('scroll', handleScroll, true);
+    window.removeEventListener('resize', handleScroll);
   }
   if (searchDebounceHandle) {
     clearTimeout(searchDebounceHandle);

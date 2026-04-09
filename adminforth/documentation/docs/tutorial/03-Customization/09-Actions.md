@@ -224,7 +224,7 @@ Keep the `<slot />` (that's where AdminForth renders the default button) and emi
   <!-- Keep the slot: AdminForth renders the default action button/icon here -->
   <!-- Emit `callAction` (optionally with a payload) to trigger the action when the wrapper is clicked -->
   <!-- Example: provide `meta.extra` to send custom data. In list views we merge with `row` so recordId context is kept. -->
-  <div :style="styleObj" @click="emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })">
+  <div :style="styleObj" @click="click({ ...props.row, ...(props.meta?.extra ?? {}) })">
     <slot />
   </div>
 </template>
@@ -248,6 +248,14 @@ const styleObj = computed(() => ({
   borderRadius: (props.meta?.radius ?? 8) + 'px',
   padding: (props.meta?.padding ?? 2) + 'px',
 }));
+
+function click(payload: any) {
+  emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })
+}
+//we need to define this expose, because padding is added by adminforth wrapper and to trigger click on this padding we use this expose
+defineExpose({
+  click
+});
 </script>
 ```
 

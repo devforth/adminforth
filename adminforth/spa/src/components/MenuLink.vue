@@ -35,7 +35,7 @@
     >
       {{ item.label }}
     </div>
-    <span class="absolute flex items-center justify-center right-1 top-1/2 -translate-y-1/2" v-if="item.badge && showExpandedBadge">
+    <span class="absolute flex items-center justify-center right-1 top-1/2 -translate-y-1/2" v-if="(item.badge || item.badge === 0) && showExpandedBadge ">
       <Tooltip v-if="item.badgeTooltip">
         <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
@@ -48,7 +48,7 @@
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
       </template>
     </span>
-    <div v-if="item.badge && isSidebarIconOnly && !isSidebarHovering"  class="af-badge absolute right-0.5 bottom-1 -translate-y-1/2 inline-flex items-center justify-center h-2 w-2 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+    <div v-if="(item.badge || item.badge === 0) && isSidebarIconOnly && !isSidebarHovering"  class="af-badge absolute right-0.5 bottom-1 -translate-y-1/2 inline-flex items-center justify-center h-2 w-2 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
       fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
     </div>
   </RouterLink>
