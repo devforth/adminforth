@@ -1,5 +1,3 @@
-import { type ApexOptions } from 'apexcharts';
-
 export let ApexChartsPromise: Promise<any> | null = null;
 
 export function loadApexCharts() {
