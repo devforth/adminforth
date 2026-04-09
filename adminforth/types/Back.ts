@@ -2155,3 +2155,10 @@ export interface IWebSocketBroker {
 
   registerWsClient: (client: IWebSocketClient) => void;
 }
+export interface PluginsCommonOptions {
+   /**
+     * Id of the plugin. It should be unique across all plugins.
+     * It is required if you want to log custom actions, otherwise it is optional.
+    */
+    id?: string;
+}

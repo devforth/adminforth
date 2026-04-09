@@ -106,6 +106,18 @@ Up to the winter 2026 OpenAI models are one of the most powerful image generatio
 
 ---
 
+### Gemini (Nano Banana) Image Generation Adapter
+
+```
+pnpm i @adminforth/image-generation-adapter-nano-banana
+```
+
+Uses the latest gemini-3.1-flash-image-preview model for instant image generation with text descriptions.
+
+This model is the top of the Nano Banana line as of 2026, combining the lightning-fast speed of the Flash series with the improved detail of version 3.1. The adapter allows you to integrate the advanced capabilities of previous models into your interface, providing high-precision visualization for even the most specific and complex queries.
+
+---
+
 ## 💾 Storage Adapters
 
 
