@@ -289,6 +289,32 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           }
         }
 
+        if ((filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN)
+            && column.isArray?.enabled
+            && this.isArrayType(column._underlineType)) {
+          const itemType = column._underlineType
+            .replace(/^Nullable\(/, '')
+            .match(/^Array\((.*)\)$/)?.[1];
+
+          if (!itemType) {
+            throw new Error(`Unable to determine item type for array field '${column.name}' with type '${column._underlineType}'`);
+          }
+
+          placeholder = `{f$?:Array(${itemType})}`;
+          const arrayField = this.isNullableType(column._underlineType) ? `assumeNotNull(${field})` : field;
+          const hasAnyExpression = `hasAny(${arrayField}, ${placeholder})`;
+
+          if (filter.operator == AdminForthFilterOperators.NIN) {
+            return this.isNullableType(column._underlineType)
+              ? `(${field} IS NULL OR NOT ${hasAnyExpression})`
+              : `NOT ${hasAnyExpression}`;
+          }
+
+          return this.isNullableType(column._underlineType)
+            ? `${field} IS NOT NULL AND ${hasAnyExpression}`
+            : hasAnyExpression;
+        }
+
         if (column._underlineType.startsWith('Decimal')) {
           field = `toDecimal64(${field}, 8)`;
           placeholder = `toDecimal64({f$?:String}, 8)`;
@@ -335,13 +361,14 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(` ${this.OperatorsMap[filter.operator]} `);
     }
     
-    getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
+    getFilterParams(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
         if ((filter as IAdminForthSingleFilter).rightField) {
           // No params for field-to-field comparisons
           return [];
         }
         // filter is a Single filter
+        const column = resource.dataSourceColumns.find((col) => col.name == (filter as IAdminForthSingleFilter).field);
         
         // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
         if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
@@ -349,6 +376,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+          if (column?.isArray?.enabled && this.isArrayType(column._underlineType)) {
+            return [{ 'f': filter.value }];
+          }
           return [{ 'p': filter.value }];
         } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
           // there is no param for IS NULL filter
@@ -368,15 +398,15 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
       // filter is a AndOrFilter
       return (filter as IAdminForthAndOrFilter).subFilters.reduce((params: any[], f: IAdminForthSingleFilter | IAdminForthAndOrFilter) => {
-        return params.concat(this.getFilterParams(f));
+        return params.concat(this.getFilterParams(resource, f));
       }, []);
     }
 
-    whereParams(filters: IAdminForthAndOrFilter): any {
+    whereParams(resource: AdminForthResource, filters: IAdminForthAndOrFilter): any {
       if (filters.subFilters.length === 0) {
         return {};
       }
-      const paramsArray = this.getFilterParams(filters);
+      const paramsArray = this.getFilterParams(resource, filters);
       const params = paramsArray.reduce((acc, param, paramIndex) => {
         if (param.f !== undefined) {
           acc[`f${paramIndex}`] = param.f;
@@ -404,7 +434,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           params: {},
         }
       }
-      const params = this.whereParams(filters);
+      const params = this.whereParams(resource, filters);
       const where = Object.keys(params).reduce((w, paramKey) => {
         // remove first char of string (will be "f" or "p") to leave only index
         const keyIndex = paramKey.substring(1);
@@ -430,6 +460,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(', ');
       const tableName = resource.table;
 
+      console.log('getDataWithOriginalTypes called with filters', JSON.stringify(filters), 'and sort', JSON.stringify(sort));
       const { where, params } = this.whereClause(resource, filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
