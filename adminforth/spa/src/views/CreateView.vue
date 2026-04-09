@@ -42,7 +42,7 @@
       :adminUser="coreStore.adminUser"
     />
 
-    <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+    <CreateEditSkeleton v-if="loading"></CreateEditSkeleton>
 
     
     <ResourceForm 
@@ -88,6 +88,7 @@ import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import { saveRecordPreparations } from '@/utils';
 import { Spinner } from '@/afcl'
+import CreateEditSkeleton from './CreateEditSkeleton.vue';
 
 const isValid = ref(false);
 const validatingMode = ref(false);
