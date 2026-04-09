@@ -117,11 +117,16 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import {checkEmptyValues} from '@/utils';
 import { useRoute } from 'vue-router';
-import { JsonViewer } from "vue3-json-viewer";
-import "vue3-json-viewer/dist/vue3-json-viewer.css";
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
 
 import { useCoreStore } from '@/stores/core';
+import { defineAsyncComponent, onMounted } from 'vue';
+
+const JsonViewer = defineAsyncComponent(async () => {
+  await import('vue3-json-viewer/dist/vue3-json-viewer.css');
+  const { JsonViewer } = await import('vue3-json-viewer');
+  return JsonViewer;
+});
 
 const coreStore = useCoreStore();
 const route = useRoute();

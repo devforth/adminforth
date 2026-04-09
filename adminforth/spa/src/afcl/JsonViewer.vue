@@ -11,8 +11,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { JsonViewer } from 'vue3-json-viewer'
 import { useCoreStore } from '@/stores/core'
+import { defineAsyncComponent } from 'vue';
+
+const JsonViewer = defineAsyncComponent(async () => {
+  await import('vue3-json-viewer/dist/vue3-json-viewer.css');
+  const { JsonViewer } = await import('vue3-json-viewer');
+  return JsonViewer;
+});
 
 defineProps<{
   value: any
