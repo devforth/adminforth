@@ -149,7 +149,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return dayjs.unix(+value).toISOString();
         } else if (field._underlineType.startsWith('DateTime') 
             || field._underlineType.startsWith('String') 
-            || field._underlineType.startsWith('FixedString')) {
+            || field._underlineType.startsWith('FixedString')
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           const v = dayjs(value).toISOString();
           return v;
         } else {
@@ -163,7 +165,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value === null ? null : !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
-        if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
+        if (field._underlineType.startsWith('String') 
+            || field._underlineType.startsWith('FixedString') 
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           try {
             return JSON.parse(value);
           } catch (e) {
@@ -186,7 +191,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return dayjs(value).unix();
         } else if (field._underlineType.startsWith('DateTime') 
           || field._underlineType.startsWith('String') 
-          || field._underlineType.startsWith('FixedString')) {
+          || field._underlineType.startsWith('FixedString')
+          || field._underlineType.startsWith('Nullable(String)')
+          || field._underlineType.startsWith('Nullable(FixedString)')) {
           // value is iso string now, convert to unix timestamp
           const iso = dayjs(value).format('YYYY-MM-DDTHH:mm:ss');
           return iso;
@@ -195,7 +202,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         return  value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
-        if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
+        if (field._underlineType.startsWith('String') 
+            || field._underlineType.startsWith('FixedString') 
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           return JSON.stringify(value);
         } else {
           afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
