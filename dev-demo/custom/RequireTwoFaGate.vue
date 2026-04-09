@@ -15,4 +15,8 @@
     const verificationResult = await modal.get2FaConfirmationResult();
     emit('callAction',  { verificationResult } );
   }
+
+  defineExpose({
+    click: onClick
+  });
 </script>
