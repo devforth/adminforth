@@ -31,7 +31,7 @@
     "@adminforth/login-captcha-adapter-cloudflare": "^1.0.16",
     "@adminforth/rich-editor": "^1.6.14",
     "@adminforth/storage-adapter-amazon-s3": "^1.0.11",
-    "@adminforth/text-complete": "^1.8.9",
+    "@adminforth/text-complete": "^2.0.7",
     "@adminforth/two-factors-auth": "^2.9.20",
     "@adminforth/upload": "^2.15.3",
     "@prisma/client": "^6.6.0",
