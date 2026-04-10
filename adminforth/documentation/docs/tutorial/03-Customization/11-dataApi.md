@@ -139,9 +139,8 @@ const usersWithNoUgcAccess = await admin.resource('adminuser').list(
 
   ], 15, 0, Sorts.DESC('createdAt')
 );
-
-This will produce next SQL query:
 ```
+This will produce next SQL query:
 
 ```
 SELECT *
@@ -150,9 +149,7 @@ WHERE "role" != 'Admin'
   AND (user_meta->>'age') < 18
 ORDER BY "createdAt" DESC
 LIMIT 15 OFFSET 0;
-
 ```
-
 
 Finds users with age less then 18 from meta field which should be a JSONB field in Postgress.
 
