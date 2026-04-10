@@ -137,7 +137,7 @@ watch(start, () => {
   emit('update:valueStart', start.value)
 })
 
-function initDatepickers() {
+async function initDatepickers() {
   const LS_LANG_KEY = `afLanguage`;
   const options = {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)};
 
@@ -145,7 +145,8 @@ function initDatepickers() {
     options.autohide = true;
   }
 
-  datepickerObject.value = new DatePickerPromise(datepickerStartEl.value, options);
+  const datePickerModule = await loadDatePicker();
+  datepickerObject.value = new datePickerModule(datepickerStartEl.value, options);
 
   addChangeDateListener();
 }
@@ -180,8 +181,7 @@ const toggleTimeInputs = () => {
 }
 
 onMounted(async () => {
-  await loadDatePicker();
-  initDatepickers();
+  await initDatepickers();
 });
 
 onBeforeUnmount(() => {

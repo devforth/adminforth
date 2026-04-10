@@ -189,7 +189,6 @@ function updateFromProps() {
 }
 
 onMounted(async () => {
-  await loadDatePicker();
   updateFromProps();
 
   watch(() => [props.valueStart, props.valueEnd], (value) => {
@@ -205,10 +204,11 @@ watch(end, () => {
   emit('update:valueEnd', end.value)
 })
 
-function initDatepickers() {
+async function initDatepickers() {
   const LS_LANG_KEY = `afLanguage`;
-  datepickerStartObject.value = new DatePickerPromise(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
-  datepickerEndObject.value = new DatePickerPromise(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  const datePickerModule = await loadDatePicker();
+  datepickerStartObject.value = new datePickerModule(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  datepickerEndObject.value = new datePickerModule(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   addChangeDateListener();
 }
 
@@ -248,8 +248,8 @@ const toggleTimeInputs = () => {
   showTimeInputs.value = !showTimeInputs.value
 }
 
-onMounted(() => {
-  initDatepickers();
+onMounted(async () => {
+  await initDatepickers();
 });
 
 onBeforeUnmount(() => {
