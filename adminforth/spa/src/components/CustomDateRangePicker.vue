@@ -72,7 +72,7 @@ import {useCoreStore} from '@/stores/core';
 
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";
-import { loadDatePicker, DatePickerPromise } from '../afcl/afcl_utils';
+import { loadDatePicker } from '../afcl/afcl_utils';
 
 const coreStore = useCoreStore();
 dayjs.extend(utc)
@@ -223,8 +223,12 @@ function removeChangeDateListener() {
 }
 
 function destroyDatepickerElement() {
-  datepickerStartObject.value.destroy();
-  datepickerEndObject.value.destroy();
+  if( datepickerStartObject.value && datepickerStartObject.value.destroy) {
+    datepickerStartObject.value.destroy();
+  }
+  if( datepickerEndObject.value && datepickerEndObject.value.destroy) {
+    datepickerEndObject.value.destroy();
+  }
 }
 
 function setStartDate(event) {
