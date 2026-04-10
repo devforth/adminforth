@@ -1384,6 +1384,24 @@ Skeleton component is used to display a loading state for a component. You can u
   </div>
 </div>
 
+### Skeleton input
+<div class="split-screen" >
+  <div>
+  ```html
+    <div class="flex flex-col gap-2">
+      <Skeleton type="input" class="w-full h-4" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+    </div>
+  ```
+  </div>
+  <div>
+  ![Spinner](image-100.png)
+  </div>
+</div>
+
 ### Skeleton video
 
 <div class="split-screen" >
