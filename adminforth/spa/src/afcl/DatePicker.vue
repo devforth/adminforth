@@ -52,9 +52,9 @@ import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
 
-import Datepicker from "flowbite-datepicker/Datepicker";
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";
+import { loadDatePicker, DatePickerPromise } from './afcl_utils';
 
 const coreStore = useCoreStore();
 dayjs.extend(utc)
@@ -145,7 +145,7 @@ function initDatepickers() {
     options.autohide = true;
   }
 
-  datepickerObject.value = new Datepicker(datepickerStartEl.value, options);
+  datepickerObject.value = new DatePickerPromise(datepickerStartEl.value, options);
 
   addChangeDateListener();
 }
@@ -179,7 +179,8 @@ const toggleTimeInputs = () => {
   showTimeInputs.value = !showTimeInputs.value
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadDatePicker();
   initDatepickers();
 });
 

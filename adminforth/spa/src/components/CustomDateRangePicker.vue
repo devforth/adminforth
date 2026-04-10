@@ -70,9 +70,9 @@ import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
 
-import Datepicker from "flowbite-datepicker/Datepicker";
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";
+import { loadDatePicker, DatePickerPromise } from '../afcl/afcl_utils';
 
 const coreStore = useCoreStore();
 dayjs.extend(utc)
@@ -188,7 +188,8 @@ function updateFromProps() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadDatePicker();
   updateFromProps();
 
   watch(() => [props.valueStart, props.valueEnd], (value) => {
@@ -206,8 +207,8 @@ watch(end, () => {
 
 function initDatepickers() {
   const LS_LANG_KEY = `afLanguage`;
-  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
-  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  datepickerStartObject.value = new DatePickerPromise(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
+  datepickerEndObject.value = new DatePickerPromise(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   addChangeDateListener();
 }
 
