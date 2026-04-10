@@ -125,7 +125,7 @@ const users = await admin.resource('adminuser').list(
 
 ## Using a raw SQL in queries.
 
-Rarely you might want to add ciondition for some exotic SQL but still want to keep the rest of API.
+Rarely you might want to add condition for some exotic SQL but still want to keep the rest of API.
 Technically it happened that AdminForth allows you to do this also
 
 ```js
