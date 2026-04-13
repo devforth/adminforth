@@ -90,13 +90,14 @@
               </svg>
             </button>
 
-            <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
-              <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+            <transition name="slow-drop">
+              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                 <li class="af-sidebar-menu-link">
                     <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
-                  </li>
-              </template>
-          </ul>
+                </li>
+                </template>
+              </ul>
+            </transition>
       </li>
       <li v-else class="af-sidebar-menu-link">
         <MenuLink :item="item" @click="$emit('hideSidebar')"/>
@@ -291,6 +292,49 @@
   .dark .sidebar-scroll:active::-webkit-scrollbar-thumb {
     background-color: rgba(75, 85, 99, 0.4);
   }
+
+  /* Custom animation for dropdown */
+  .slow-drop-enter-active {
+    transition: grid-template-rows 0.3s ease-out, opacity 0.2s ease-out;
+    display: grid;
+    grid-template-rows: 1fr;
+  }
+
+  .slow-drop-leave-active {
+    transition: grid-template-rows 0.2s ease-in, opacity 0.2s ease-in;
+    display: grid;
+    grid-template-rows: 0fr;
+  }
+
+  .slow-drop-enter-from,
+  .slow-drop-leave-to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .slow-drop-enter-active li {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        transition-delay: #{0.03 + ($i * 0.03)}s;
+      }
+    }
+  }
+
+  .slow-drop-enter-to li {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .slow-drop-leave-active li {
+    transition: opacity 0.1s ease-in; 
+    opacity: 0;
+    transition-delay: 0s !important; 
+  }
+
 
   /* For browsers that support overlay scrollbars natively */
   @supports (overflow: overlay) {
