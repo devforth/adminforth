@@ -176,6 +176,36 @@ new CompletionAdapterOpenAIChatGPT({
 ```
 You can specify any gpt model you need. Default is `gpt-5-nano`
 
+This adapter uses the OpenAI `responses` API and supports:
+
+- regular text completion
+- `json_schema` structured output
+- reasoning effort control
+- streaming output chunks
+- streaming reasoning chunks
+
+### OpenAI adapter `complete()` signature
+
+```ts
+complete(
+  content: string,
+  maxTokens?: number,
+  outputSchema?: any,
+  reasoningEffort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh",
+  onChunk?: (
+    chunk: string,
+    event?: {
+      type: "output" | "reasoning";
+      delta: string;
+      text: string;
+      source?: "summary" | "text";
+    },
+  ) => void | Promise<void>,
+)
+```
+
+`reasoningEffort` is optional and defaults to `low` in the adapter implementation.
+
 ---
 
 ### Google Gemini Completion Adapter
@@ -225,7 +255,7 @@ new CompletionAdapterGoogleGemini({
 
 ### Using json_schema with adapter
 
-If you want use custom json schema for completion response - you can use outputSchema param for completion:
+If you want to use a custom `json_schema` for completion response, pass it as `outputSchema`:
 
 
 ```ts
@@ -237,26 +267,78 @@ const openAi = new CompletionAdapterOpenAIChatGPT({
 const prompt = 'What is the capital of France? return json';
 
 openAi.complete(
-    prompt, 
-    [], 
-    200, 
-    { 
-      json_schema: {
-        name: "capital_response",
-        schema: {
-          type: "object",
-          properties: {
-            capital: { type: "string" },
-          },
-          required: ["capital"],
-        },
+  prompt,
+  200,
+  {
+    name: "capital_response",
+    schema: {
+      type: "object",
+      properties: {
+        capital: { type: "string" },
       },
+      required: ["capital"],
     },
-  ).then((resp) => {
-    console.log(resp);
+  },
+).then((resp) => {
+  console.log(resp);
 });
 
 ```
+
+### Using reasoning effort
+
+If you want to explicitly test a reasoning-capable GPT-5 model, pass `reasoningEffort` as the 4th argument:
+
+```ts
+const openAi = new CompletionAdapterOpenAIChatGPT({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: "gpt-5-mini",
+});
+
+const resp = await openAi.complete(
+  "Explain why the sky looks blue in 3 short paragraphs",
+  300,
+  undefined,
+  "medium",
+);
+
+console.log(resp.content);
+```
+
+### Using streaming output and reasoning events
+
+If you pass `onChunk`, adapter switches to streaming mode automatically:
+
+```ts
+const openAi = new CompletionAdapterOpenAIChatGPT({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: "gpt-5-mini",
+});
+
+await openAi.complete(
+  "Think step by step and write a short answer about how ABS brakes work",
+  300,
+  undefined,
+  "medium",
+  async (chunk, event) => {
+    if (!event) return;
+
+    if (event.type === "reasoning") {
+      console.log("Reasoning chunk:", event.delta);
+      return;
+    }
+
+    console.log("Output chunk:", event.delta);
+  },
+);
+```
+
+Note:
+
+- `event.type === "reasoning"` means a reasoning chunk
+- `event.type === "output"` means visible output text chunk
+- `event.text` contains accumulated text for that stream type
+- reasoning events depend on the selected OpenAI model and provider response
 
 Then output will be like: 
 ```
@@ -359,4 +441,3 @@ pnpm i @adminforth/login-captcha-adapter-cloudflare
 ```
 pnpm i @adminforth/login-captcha-adapter-recaptcha
 ```
-
