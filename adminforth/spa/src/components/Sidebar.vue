@@ -91,10 +91,11 @@
             </button>
 
             <transition name="slow-drop">
-              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                <li class="af-sidebar-menu-link">
-                    <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
-                </li>
+              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              
+                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+                  <li class="af-sidebar-menu-link">
+                      <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
+                  </li>
                 </template>
               </ul>
             </transition>
