@@ -7,17 +7,18 @@ export interface CompletionAdapter {
   validate(): void;
 
   /**
-   * This method should return a text completion based on the provided content and stop sequence.
+   * This method should return a text completion based on the provided content.
    * @param content - The input text to complete
-   * @param stop - An array of stop sequences to indicate where to stop the completion
    * @param maxTokens - The maximum number of tokens to generate
+   * @param outputSchema - Optional structured output schema for the response
+   * @param onChunk - Optional callback invoked for each streamed chunk
    * @returns A promise that resolves to an object containing the completed text and other metadata
    */
   complete(
     content: string,
-    stop: string[],
     maxTokens: number,
-    outputSchema?: any
+    outputSchema?: any,
+    onChunk?: (chunk: string) => void | Promise<void>,
   ): Promise<{
     content?: string;
     finishReason?: string;
