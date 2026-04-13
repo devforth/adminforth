@@ -1,3 +1,9 @@
+export type CompletionStreamEvent = {
+  type: "output" | "reasoning";
+  delta: string;
+  text: string;
+  source?: "summary" | "text";
+};
 export interface CompletionAdapter {
 
   /**
@@ -11,14 +17,19 @@ export interface CompletionAdapter {
    * @param content - The input text to complete
    * @param maxTokens - The maximum number of tokens to generate
    * @param outputSchema - Optional structured output schema for the response
-   * @param onChunk - Optional callback invoked for each streamed chunk
+   * @param reasoningEffort - Optional parameter to indicate the level of reasoning effort for the completion
+   * @param onChunk - Optional callback invoked for each streamed chunk or reasoning event
    * @returns A promise that resolves to an object containing the completed text and other metadata
    */
   complete(
     content: string,
     maxTokens: number,
     outputSchema?: any,
-    onChunk?: (chunk: string) => void | Promise<void>,
+    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh',
+    onChunk?: (
+      chunk: string,
+      event?: CompletionStreamEvent,
+    ) => void | Promise<void>,
   ): Promise<{
     content?: string;
     finishReason?: string;
