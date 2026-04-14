@@ -504,11 +504,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const badgeFunctions = [];
 
+        const adminforth = this.adminforth;
+
         function processMenuItem(menuItem) {
           if (menuItem.badge) {
             if (typeof menuItem.badge === 'function') {
               badgeFunctions.push(async () => {
-                badges[menuItem.itemId] = await menuItem.badge(adminUser);
+                badges[menuItem.itemId] = await menuItem.badge(adminUser, adminforth);
               });
             } else {
               badges[menuItem.itemId] = menuItem.badge;
