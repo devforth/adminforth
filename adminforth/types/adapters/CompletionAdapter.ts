@@ -1,8 +1,17 @@
+import type { JSONSchemaType } from "ajv";
+
 export type CompletionStreamEvent = {
   type: "output" | "reasoning";
   delta: string;
   text: string;
   source?: "summary" | "text";
+};
+
+export type CompletionTool<Input = Record<string, any>, Output = any> = {
+  name: string;
+  input_schema: JSONSchemaType<Input>;
+  description?: string;
+  handler: (input: Input) => Promise<Output> | Output;
 };
 export interface CompletionAdapter {
 
@@ -26,6 +35,7 @@ export interface CompletionAdapter {
     maxTokens: number,
     outputSchema?: any,
     reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh',
+    tools?: CompletionTool[],
     onChunk?: (
       chunk: string,
       event?: CompletionStreamEvent,
