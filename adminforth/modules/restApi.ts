@@ -14,6 +14,7 @@ import {
   BackendOnlyInput,
   Filters,
 } from "../types/Back.js";
+import type { AnySchemaObject } from 'ajv';
 
 import {cascadeChildrenDelete} from './utils.js'
 
@@ -23,6 +24,7 @@ import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseE
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
+  AdminForthSortDirections,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
@@ -75,6 +77,136 @@ async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): 
   const fillOnCreate = !!col.fillOnCreate;
   return fillOnCreate;
 }
+
+const SIMPLE_FILTER_OPERATORS = Object.values(AdminForthFilterOperators).filter((operator) => {
+  return operator !== AdminForthFilterOperators.AND && operator !== AdminForthFilterOperators.OR;
+});
+
+const getResourceDataRequestSchema: AnySchemaObject = {
+  type: 'object',
+  $defs: {
+    singleFilter: {
+      type: 'object',
+      properties: {
+        field: { type: 'string' },
+        operator: { type: 'string', enum: SIMPLE_FILTER_OPERATORS },
+        value: {},
+        rightField: { type: 'string' },
+        insecureRawSQL: { type: 'string' },
+        insecureRawNoSQL: {},
+      },
+      additionalProperties: true,
+    },
+    filterNode: {
+      anyOf: [
+        { $ref: '#/$defs/singleFilter' },
+        {
+          type: 'object',
+          required: ['operator', 'subFilters'],
+          properties: {
+            operator: {
+              type: 'string',
+              enum: [AdminForthFilterOperators.AND, AdminForthFilterOperators.OR],
+            },
+            subFilters: {
+              type: 'array',
+              items: { $ref: '#/$defs/filterNode' },
+            },
+          },
+          additionalProperties: true,
+        },
+      ],
+    },
+    sortItem: {
+      type: 'object',
+      required: ['field', 'direction'],
+      properties: {
+        field: { type: 'string' },
+        direction: { type: 'string', enum: Object.values(AdminForthSortDirections) },
+      },
+      additionalProperties: true,
+    },
+  },
+  required: ['resourceId', 'source', 'limit', 'offset', 'filters', 'sort'],
+  properties: {
+    resourceId: { type: 'string' },
+    source: { type: 'string', enum: ['show', 'list', 'edit'] },
+    limit: { type: 'integer' },
+    offset: { type: 'integer' },
+    sort: {
+      type: 'array',
+      items: { $ref: '#/$defs/sortItem' },
+    },
+    filters: {
+      oneOf: [
+        {
+          type: 'array',
+          items: { $ref: '#/$defs/filterNode' },
+        },
+        { $ref: '#/$defs/filterNode' },
+      ],
+    },
+  },
+  additionalProperties: true,
+  allOf: [
+    {
+      if: {
+        properties: {
+          source: { enum: ['show', 'edit'] },
+        },
+        required: ['source'],
+      },
+      then: {
+        properties: {
+          filters: {
+            type: 'array',
+            items: {
+              allOf: [
+                { $ref: '#/$defs/singleFilter' },
+                {
+                  type: 'object',
+                  required: ['field'],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  ],
+};
+
+const getResourceDataResponseSchema: AnySchemaObject = {
+  oneOf: [
+    {
+      type: 'object',
+      required: ['error'],
+      properties: {
+        error: { type: 'string' },
+      },
+      additionalProperties: true,
+    },
+    {
+      type: 'object',
+      required: ['data'],
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: true,
+          },
+        },
+        total: { type: 'number' },
+        options: {
+          type: 'object',
+          additionalProperties: true,
+        },
+      },
+      additionalProperties: true,
+    },
+  ],
+};
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -267,7 +399,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       handler: async ({ tr }) => {
         const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
         return {
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: loginPromptHTML ? await tr(loginPromptHTML, 'system.loginPromptHTML') : null,
         }
       }
     })
@@ -311,7 +443,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies, tr, response}): Promise<GetBaseConfigResponse>=> {
+      handler: async ({ adminUser, cookies, tr, response }): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -655,7 +787,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
                     if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
-                      col.suggestOnCreate = await inCol.suggestOnCreate(adminUser);
+                      col.suggestOnCreate = await inCol.suggestOnCreate({ adminUser });
                     }
 
                     return {
@@ -701,6 +833,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
+      request_schema: getResourceDataRequestSchema,
+      response_schema: getResourceDataResponseSchema,
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl, abortSignal }) => {
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
