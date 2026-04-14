@@ -11,7 +11,7 @@ export function initApi(app: Express, admin: IAdminForth) {
         message: "List of admin users from AdminForth API",
         users: allUsers,
       });
-    }
+    },
 
     // you can use admin.express.authorize to get info about the current user
     admin.express.authorize(

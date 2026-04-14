@@ -90,13 +90,15 @@
               </svg>
             </button>
 
-            <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
-              <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                <li class="af-sidebar-menu-link">
-                    <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
+            <transition name="slow-drop">
+              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              
+                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+                  <li class="af-sidebar-menu-link">
+                      <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
                   </li>
-              </template>
-          </ul>
+                </template>
+              </ul>
+            </transition>
       </li>
       <li v-else class="af-sidebar-menu-link">
         <MenuLink :item="item" @click="$emit('hideSidebar')"/>
@@ -290,6 +292,25 @@
   .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb,
   .dark .sidebar-scroll:active::-webkit-scrollbar-thumb {
     background-color: rgba(75, 85, 99, 0.4);
+  }
+
+  /* Custom animation for dropdown */
+  .slow-drop-enter-active,
+  .slow-drop-leave-active {
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .slow-drop-enter-from,
+  .slow-drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  .slow-drop-enter-to,
+  .slow-drop-leave-from {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   /* For browsers that support overlay scrollbars natively */

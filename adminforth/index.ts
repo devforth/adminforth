@@ -128,6 +128,20 @@ class AdminForth implements IAdminForth {
 
   websocket: IWebSocketBroker;
 
+  async refreshMenuBadge(menuItemId: string, adminUser: AdminUser) {
+    const menuItem = this.config.menu.find((item) => item.itemId === menuItemId);
+    if (!menuItem) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it was not found in config.menu`);
+      return;
+    }
+    if (!menuItem.badge) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it does not have badge function in config.menu`);
+      return;
+    }
+    const badgeValue = typeof menuItem.badge === 'function' ? await menuItem.badge(adminUser, this) : menuItem.badge;
+    this.websocket.publish(`/opentopic/update-menu-badge/${menuItemId}`, { badge: badgeValue });
+  }
+
   operationalResources: {
     [resourceId: string]: IOperationalResource,
   }
