@@ -17,7 +17,7 @@
     <div 
         v-else-if="type === 'input'" 
         role="input" 
-        :class="['animate-pulse bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded', $attrs.class]"
+        :class="['animate-pulse bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-default', $attrs.class]"
     ></div>
     <div v-else role="status" class="flex items-center justify-center animate-pulse bg-lightSkeletonIconColor rounded-full dark:bg-darkSkeletonBackgroundColor">
         <span class="sr-only">Loading...</span>
