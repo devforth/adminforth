@@ -295,47 +295,23 @@
   }
 
   /* Custom animation for dropdown */
-  .slow-drop-enter-active {
-    transition: grid-template-rows 0.3s ease-out, opacity 0.2s ease-out;
-    display: grid;
-    grid-template-rows: 1fr;
-  }
-
+  .slow-drop-enter-active,
   .slow-drop-leave-active {
-    transition: grid-template-rows 0.2s ease-in, opacity 0.2s ease-in;
-    display: grid;
-    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
   .slow-drop-enter-from,
   .slow-drop-leave-to {
-    grid-template-rows: 0fr;
     opacity: 0;
+    transform: translateY(-4px);
   }
 
-  .slow-drop-enter-active li {
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-
-    @for $i from 1 through 10 {
-      &:nth-child(#{$i}) {
-        transition-delay: #{0.03 + ($i * 0.03)}s;
-      }
-    }
-  }
-
-  .slow-drop-enter-to li {
+  .slow-drop-enter-to,
+  .slow-drop-leave-from {
     opacity: 1;
     transform: translateY(0);
   }
-
-  .slow-drop-leave-active li {
-    transition: opacity 0.1s ease-in; 
-    opacity: 0;
-    transition-delay: 0s !important; 
-  }
-
 
   /* For browsers that support overlay scrollbars natively */
   @supports (overflow: overlay) {
